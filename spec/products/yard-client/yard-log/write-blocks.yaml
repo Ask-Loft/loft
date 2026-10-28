@@ -64,6 +64,8 @@ requirements:
         name: "Each version carries the session id of the agent that wrote it and, for a subagent, its agent id and type."
       - key: 01a1646f-546e-76cb-8b4f-f297362581d4
         name: "Each version carries the time of its write in UTC, to the second, as the clock gives it."
+      - key: 01a17f75-05dc-7361-a0cd-c02b73a9b723
+        name: "The batch's Act takes its time while applying the write under Yard Log's lock, after any Loft report is computed."
   - key: 01a1646f-546e-76cb-8b4f-f29829ddfdc8
     statement:
       form: ubiquitous

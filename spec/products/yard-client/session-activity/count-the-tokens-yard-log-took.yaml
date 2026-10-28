@@ -6,7 +6,7 @@ body: |
 
   A request's tokens are four counts, as Claude Code reports them: input tokens read fresh, input tokens read from the prompt cache, input tokens written to the prompt cache, and output tokens, thinking included.
 
-  A request counts toward the stage active for its agent. A subagent with no stage of its own active works for the agent that started it, so its request counts toward the stage active for its session's main agent: a stage then shows what the work it delegated cost, and each stage's counts say which agents spent them.
+  A reliable delegated-task context counts a request toward that task's recorded stage. Otherwise a request counts toward the stage active for its agent, or for its session's main agent where a subagent has none. An ambiguous delegated-task context stays without a stage. Each stage's counts say which agents spent them.
 
   ```text
   .yard/<branch>/tokens/<session id>.yaml
@@ -27,9 +27,9 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eae8aef1c957
         name: "The totals file holds the four counts of the requests counted toward each stage, by the stage's key, and of those counted toward none, under no stage."
       - key: 01a16995-313c-7343-8413-b54f3d6c820f
-        name: "A request of a subagent that has a stage of its own active counts toward that stage."
+        name: "A request of a subagent with no delegated-task context that has a stage of its own active counts toward that stage."
       - key: 01a16995-313c-7343-8413-b550557e1ea2
-        name: "A request of a subagent that has no stage of its own active counts toward the stage active for its session's main agent as the request ends, and toward none where the main agent has none active either."
+        name: "A request of a subagent with no delegated-task context and no active stage of its own counts toward its session's main agent's active stage as the request ends, or toward none where the main agent has none."
       - key: 01a16995-313c-7343-8413-b551e284ad7e
         name: "The totals file holds, under each stage, the four counts of each agent whose requests counted toward it: the main agent, and each subagent by its id and type."
       - key: 01a1646f-546d-7042-befd-eae9b48ca003
@@ -38,6 +38,10 @@ requirements:
         name: "The totals file holds the four counts of the requests that ended while each submission was open, by the submission's key, so that a request made while two submissions were open counts under both."
       - key: 01a1646f-546d-7042-befd-eaeb0ac9321e
         name: "The request that a compaction makes counts as the main agent's."
+      - key: 01a182b6-3c58-7235-ad04-3928beff72b2
+        name: "A compaction whose event holds no tokens adds nothing to the totals and leaves their accounting complete."
+      - key: 01a182b6-3c58-7235-ad04-3929b884eac9
+        name: "A model request whose event holds no tokens makes the totals' accounting partial."
       - key: 01a1646f-546d-7042-befd-eaec64de00c6
         name: "The totals file of a session that made no counted request is not written."
       - key: 01a1646f-546d-7042-befd-eaeda64b3661
@@ -48,3 +52,22 @@ requirements:
         name: "No request is counted once Yard Log is closed."
       - key: 01a1646f-546d-7042-befd-eaee2c0b5e00
         name: "A request whose agent works in another worktree is counted in the totals file of that worktree's Yard Log."
+  - key: 01a17d58-a535-7258-91b4-bc937a4bdd69
+    statement:
+      form: event_driven
+      when: "the page server counts or replays a Codex model request"
+      system: "the page server"
+      shall: "exclude ambiguous zero cache-write reports from measured totals while retaining their source events."
+    criteria:
+      - key: 01a17d58-a535-7258-91b4-bc947d9fa1f1
+        name: "A Codex zero cache-write report with ChatGPT or unknown account classification contributes an unavailable cache-write count."
+      - key: 01a17d58-a535-7258-91b4-bc95f4f30d26
+        name: "A Codex zero cache-write report with verified API-key classification contributes a measured zero."
+      - key: 01a17d58-a535-7258-91b4-bc968d111228
+        name: "Positive cache-write reports remain measured for every host and account classification."
+      - key: 01a17d58-a535-7258-91b4-bc97b03fa0e7
+        name: "The stored source event retains its original cache-write value and classification."
+      - key: 01a17d58-a535-7258-91b4-bc980ac52043
+        name: "Totals rebuilt from earlier Codex events without account classification treat zero cache-write counts as unavailable."
+      - key: 01a17d58-a535-7258-91b4-bc991c193166
+        name: "New Codex totals files carry cacheWriteClassified set to true to identify counts produced by this availability rule."

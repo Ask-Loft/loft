@@ -1,7 +1,8 @@
 key: 01a13654-6e11-74fa-a359-25996138a11d
 slug: the-codex-plugin
 name: "The Codex plugin"
-body: "The repository is a Codex marketplace that holds one plugin, `loft`, whose skill is the Codex package."
+body: |
+  The repository is a Codex marketplace that holds one plugin, loft, with the Codex skill package and its native Yard adapter. Its root manifest uses Codex's native shape, including hooks and interface metadata. Codex 0.164.0 ignores lifecycle hooks when the manifest declares the Agent Plugins schema, so this package has no schema declaration. The shared skill source and its composition are unchanged by this host compatibility choice.
 realizes:
   - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
 requirements:
@@ -25,10 +26,10 @@ requirements:
     statement:
       form: ubiquitous
       system: "The manifest `plugins/codex/loft/plugin.json`"
-      shall: "describe the plugin in the Agent Plugins format."
+      shall: "describe the plugin in the native Codex format that loads its Yard hooks."
     criteria:
       - key: 01a13654-6e11-74fa-a359-25a1fb8cabae
-        name: "The manifest declares the Agent Plugins schema."
+        name: "The native manifest names its hooks file without an Agent Plugins schema declaration."
       - key: 01a13654-6e11-74fa-a359-25a24d99231b
         name: "The manifest is named `loft`."
       - key: 01a13654-6e11-74fa-a359-25a3b563d673

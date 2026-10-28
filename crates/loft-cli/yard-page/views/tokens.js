@@ -3,26 +3,27 @@
 
 import { add, h } from '../lib/dom.js';
 import { tokens as amount, when } from '../lib/format.js';
-import { summarize, total, zero } from '../model/tokens.js';
+import * as kept from '../lib/kept.js';
+import { COUNTERS as KEYS, any, summary as keyed } from '../model/tokens.js';
 
-const COUNTS = [
-  ['input', 'Input'],
-  ['cacheRead', 'Cache read'],
-  ['cacheWrite', 'Cache write'],
-  ['output', 'Output'],
-];
+/** @type {Record<string, string>} */
+const WORDS = { input: 'Input', cacheRead: 'Cache read', cacheWrite: 'Cache write', output: 'Output' };
+/** Each counter with its word, in display order. */
+const COUNTS = KEYS.map((key) => [key, WORDS[key]]);
 
 /**
  * A count, with a bar of its share of Yard Log's count of that kind in all.
- * @param {number} count
- * @param {number} all
+ * @param {number | undefined} count
+ * @param {number | undefined} all
  * @param {string} word
  */
 function cell(count, all, word) {
+  if (count === undefined) return h('td', { class: 'number', title: 'Unavailable' }, 'Unavailable');
+  if (all === undefined) return h('td', { class: 'number', title: `${count.toLocaleString()} recorded` }, amount(count));
   const share = all ? count / all : 0;
   return h(
     'td',
-    { class: 'number', title: `${count.toLocaleString()} · ${Math.round(share * 100)}% of all ${word.toLowerCase()}` },
+    { class: 'number', title: `${count.toLocaleString()} · ${Math.round(share * 100)}% of recorded ${word.toLowerCase()}` },
     amount(count),
     h('span', { class: 'share', 'aria-hidden': 'true' }, h('span', { class: 'share-fill', style: `width:${share * 100}%` })),
   );
@@ -57,10 +58,11 @@ function breakdowns(groups, all) {
 
 /**
  * A session, by the start of its id, with when its first and last counted requests ended.
- * @param {{ session: string, firstEnded: string, lastEnded: string }} session
+ * @param {{ host?: string, session: string, firstEnded?: string, lastEnded?: string }} session
  */
 function sessionName(session) {
   return [
+    session.host ? h('span', { class: 'host' }, `${session.host} · `) : null,
     h('code', { title: session.session }, String(session.session).slice(0, 8)),
     h('span', { class: 'span' }, `${when(session.firstEnded)} – ${when(session.lastEnded)}`),
   ];
@@ -74,30 +76,44 @@ function agentName(agent) {
   return [agent.who.charAt(0).toUpperCase() + agent.who.slice(1), h('span', { class: 'model' }, agent.model)];
 }
 
+/** Detailed token information is closed by default, remembered for this Yard Log.
+ * @param {any} log
+ * @param {...any} content
+ */
+function tokenDetails(log, ...content) {
+  const path = log.yardLog?.key ? `${log.yardLog.key}/tokens` : null;
+  return kept.details({ path, open: false }, { class: 'token-details' },
+    h('summary', {}, 'Token details'),
+    h('div', { class: 'token-details-content' }, ...content));
+}
+
 /**
  * The tokens section of a Yard Log.
  * @param {any} log
  */
 export function tokensView(log) {
-  const summary = summarize(log.tokens);
+  const summary = keyed(log.tokenSums);
   const section = h('section', { class: 'tokens', id: 'tokens', 'aria-labelledby': 'tokens-title' }, h('h3', { id: 'tokens-title' }, 'Tokens'));
   const note = h(
     'p',
     { class: 'tokens-note' },
-    'Requests that Claude Code makes inside its own tools, such as a web search or a web fetch, are not counted.',
+    'Usage includes requests reported by each adapter. Requests a host makes inside its own tools may be outside these counts.',
   );
+  const reporting = reportingOf(log.activity ?? []);
+  if (summary.partial) add(section, h('p', { class: 'token-coverage', role: 'status' }, 'Token accounting: partial. Percentages show shares of recorded usage.'));
   if (!summary.counted) {
-    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), note);
+    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), tokenDetails(log, reporting, note));
     return section;
   }
-  const stages = (log.stages ?? []).flatMap((stage) => [
-    [stage.version.body.title, summary.stages.get(stage.key) ?? zero()],
-    // Each type of subagent that worked for the stage, its counts within the stage's.
-    ...[...(summary.stageAgents.get(stage.key) ?? [])]
-      .sort(([, a], [, b]) => total(b) - total(a))
-      .map(([type, counts]) => [`${type} subagent`, counts, 'within']),
-  ]);
-  if (total(summary.noStage)) stages.push([h('span', { class: 'no-stage' }, 'Under no stage'), summary.noStage]);
+  const stages = (log.stages ?? []).flatMap((stage) => {
+    const sums = summary.stages.get(stage.key);
+    return [
+      [stage.version.body.title, sums?.tokens ?? zeroFor(summary.sessions, stage.owner)],
+      // Each type of subagent that worked for the stage, its counts within the stage's.
+      ...(sums?.agents ?? []).map(({ type, tokens }) => [`${type} subagent`, tokens, 'within']),
+    ];
+  });
+  if (any(summary.noStage)) stages.push([h('span', { class: 'no-stage' }, 'Under no stage'), summary.noStage]);
   const submissions = (log.sent ?? [])
     .filter((submission) => summary.submissions.has(submission.key))
     .map((submission) => {
@@ -112,9 +128,28 @@ export function tokensView(log) {
   ].filter((group) => group.rows.length);
   add(
     section,
-    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: String(summary.all[name]) }, amount(summary.all[name]))))),
-    breakdowns(groups, summary.all),
-    note,
+    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: summary.all[name] === undefined ? 'Unavailable' : String(summary.all[name]) }, summary.all[name] === undefined ? 'Unavailable' : amount(summary.all[name]))))),
+    tokenDetails(log, breakdowns(groups, summary.all), reporting, note),
   );
   return section;
+}
+
+/** Recorded zero only for counters this session actually reports. @param {any[]} sessions @param {any} owner */
+function zeroFor(sessions, owner) {
+  const file = sessions.find((file) => file.session === owner?.session && file.host === owner?.host);
+  return Object.fromEntries(KEYS.filter((key) => file?.tokens?.[key] !== undefined).map((key) => [key, 0]));
+}
+
+/** The integration available from each session, including ones with no measured usage. @param {any[]} activities */
+function reportingOf(activities) {
+  if (!activities.length) return null;
+  return h('div', { class: 'reporting-coverage' }, h('h4', {}, 'Reporting coverage'), h('ul', {}, activities.map((activity) => {
+    const host = activity.host;
+    const descriptor = activity.adapter;
+    if (!descriptor) return h('li', {}, `${host} · ${activity.session}: reporting coverage unknown.`);
+    const caps = descriptor.capabilities ?? {};
+    const available = (flag) => flag ? 'available' : 'unavailable';
+    const usage = (caps.usage ?? []).length ? `Usage: ${caps.usage.join(', ')}.` : 'Usage unavailable.';
+    return h('li', {}, `${host} · ${activity.session} (${descriptor.version}): ${usage} Activity ${available((caps.events ?? []).length)}. Native questions ${available(caps.nativeQuestions)}. Native plans ${available(caps.nativePlans)}. Task mirroring ${available(caps.taskMirroring)}.`);
+  })));
 }

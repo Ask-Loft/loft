@@ -94,7 +94,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "A `task` block"
-      shall: "hold a title, an optional detail in Markdown, a state that is `open`, `active`, `done` or `dropped`, and a type that is `regular` or `fix`."
+      shall: "hold a title, an optional detail in Markdown, a state that is `open`, `active`, `done` or `dropped`, a type that is `regular` or `fix`, and an optional assignee."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f280569b2e04
         name: "A task written with no state is `open`."
@@ -104,6 +104,14 @@ requirements:
         name: "A task of the type `regular` is kept in YAML without a type, as a task was before tasks had types."
       - key: 01a16a04-3f8b-71a9-baa3-95e907cff850
         name: "A task written with a type other than `regular` or `fix` is refused."
+      - key: 01a18053-9e08-72a7-ab94-f3d744431518
+        name: "An assignee records the agent's host and session, with its agent id and type for a subagent."
+      - key: 01a18053-9e08-72a7-ab94-f3d8256f6eb2
+        name: "The assignee's host, session and optional agent id identify it independently of its descriptive type."
+      - key: 01a18053-9e08-72a7-ab94-f3d970c0a032
+        name: "A malformed assignee is refused before any block is written."
+      - key: 01a18053-9e08-72a7-ab94-f3da5a38f738
+        name: "A task without an assignee reads and writes without an assignee field."
   - key: 01a1646f-546e-76cb-8b4f-f281ceac4cef
     statement:
       form: ubiquitous

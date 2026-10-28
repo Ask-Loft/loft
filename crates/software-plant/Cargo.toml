@@ -16,6 +16,9 @@ autotests = false
 serde.workspace = true
 serde_json.workspace = true
 
+[target.'cfg(unix)'.dependencies]
+tungstenite.workspace = true
+
 [lints]
 workspace = true
 

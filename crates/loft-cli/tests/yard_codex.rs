@@ -1,0 +1,447 @@
+//! Codex's native hook boundary, run through the shipped binary with simulated git.
+
+use std::fs;
+#[cfg(unix)]
+use std::path::Path;
+use std::process::Child;
+use std::time::Duration;
+
+use serde_json::{Value, json};
+use software_plant::Clock;
+
+use crate::common::{stderr, stdout};
+use crate::served::within;
+use crate::yard::Yard;
+
+pub fn event(yard: &Yard, name: &str) -> Value {
+    json!({
+        "session_id": "codex-session",
+        "cwd": yard.scratch.0.canonicalize().unwrap(),
+        "hook_event_name": name,
+        "turn_id": "turn-one",
+        "permission_mode": "default",
+        "model": "test-model",
+    })
+}
+
+pub fn hook(yard: &Yard, event: &Value) -> Value {
+    let output = yard.run_with(&["codex", "hook"], &event.to_string());
+    assert!(output.status.success(), "{}", stderr(&output));
+    serde_json::from_slice(&output.stdout).unwrap()
+}
+
+pub fn state(yard: &Yard) -> Value {
+    let file = yard
+        .scratch
+        .home()
+        .join(".yard/codex/codex-session/state.json");
+    serde_json::from_slice(&fs::read(file).unwrap()).unwrap()
+}
+
+/// Yard Log as the Codex session reads it.
+pub fn read(yard: &Yard) -> Value {
+    yard.read("codex-session", &["--host", "codex"])
+}
+
+/// Yard Log as the Codex session reads it, marked read.
+pub fn read_marked(yard: &Yard) -> Value {
+    yard.read("codex-session", &["--host", "codex", "--mark-read"])
+}
+
+/// `input` as a successful native `update_plan` call that sets `steps`, each a step's text and
+/// status.
+pub fn plan_update(mut input: Value, steps: &[(&str, &str)]) -> Value {
+    input["tool_name"] = json!("update_plan");
+    input["tool_response"] = json!("Plan updated");
+    input["tool_input"] = json!({"plan":steps
+        .iter()
+        .map(|(step, status)| json!({"step":step,"status":status}))
+        .collect::<Vec<_>>()});
+    input
+}
+
+/// A running `yard codex watch`; dropping it ends the session its input names and stops it.
+pub struct Worker<'a>(pub Child, &'a Yard, Value);
+
+impl Drop for Worker<'_> {
+    fn drop(&mut self) {
+        let mut end = self.2.clone();
+        end["hook_event_name"] = json!("SessionEnd");
+        let _ = self.1.run_with(&["codex", "hook"], &end.to_string());
+        let _ = within(Duration::from_secs(2), || {
+            self.0.try_wait().is_ok_and(|status| status.is_some())
+        });
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+
+/// Starts `yard codex watch` on the hook `input` under `clock`, with the arguments `more`.
+pub fn watch<'a>(yard: &'a Yard, input: &Value, clock: &Clock, more: &[&str]) -> Worker<'a> {
+    let path = yard.scratch.home().join(format!(
+        "watch-{}.json",
+        input["session_id"].as_str().unwrap()
+    ));
+    fs::write(&path, input.to_string()).unwrap();
+    let process = yard
+        .scratch
+        .command(Some(&yard.git), clock)
+        .args(["yard", "codex", "watch", "--input", path.to_str().unwrap()])
+        .args(more)
+        .args(["--format", "json"])
+        .spawn()
+        .unwrap();
+    Worker(process, yard, input.clone())
+}
+
+/// The session's worker reporting to the page server at `port` and observing the app server at
+/// `socket`, on a clock that passes.
+#[cfg(unix)]
+pub fn worker<'a>(yard: &'a Yard, port: u16, socket: &Path) -> Worker<'a> {
+    let clock = Clock::fixed(crate::common::EPOCH).passing();
+    watch(
+        yard,
+        &event(yard, "SessionStart"),
+        &clock,
+        &[
+            "--port",
+            &port.to_string(),
+            "--app-server-socket",
+            socket.to_str().unwrap(),
+        ],
+    )
+}
+
+#[test]
+fn invalid_codex_hook_identity_changes_no_adapter_state() {
+    let yard = Yard::new();
+    for (field, invalid) in [("session_id", "../bad"), ("cwd", "relative")] {
+        let mut input = event(&yard, "UserPromptSubmit");
+        input[field] = json!(invalid);
+        let output = yard.run_with(&["codex", "hook"], &input.to_string());
+        assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+        let failed: Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(failed["outcome"], "error");
+        assert!(!yard.scratch.home().join(".yard/codex").exists());
+    }
+    let malformed = yard.run_with(&["codex", "hook"], "{not json");
+    assert_eq!(malformed.status.code(), Some(1));
+    assert!(!yard.scratch.home().join(".yard/codex").exists());
+}
+
+#[test]
+fn codex_activity_declares_coverage_without_retaining_native_words() {
+    let yard = Yard::new();
+    let mut input = event(&yard, "UserPromptSubmit");
+    input["prompt"] = json!("PRIVATE PROMPT");
+    hook(&yard, &input);
+    input["hook_event_name"] = json!("PreToolUse");
+    input["tool_name"] = json!("Bash");
+    input["tool_use_id"] = json!("call-one");
+    input["tool_input"] = json!({"command":"echo PRIVATE COMMAND"});
+    hook(&yard, &input);
+    input["hook_event_name"] = json!("PostToolUse");
+    input["tool_response"] = json!({"secret":"PRIVATE RESULT"});
+    hook(&yard, &input);
+    let kept = state(&yard);
+    let events = kept["events"].as_array().unwrap();
+    assert_eq!(events.len(), 3, "{kept}");
+    assert_eq!(events[0]["kind"], "turn.start");
+    assert_eq!(events[1]["call"], "call-one");
+    assert_eq!(events[2]["kind"], "tool.end");
+    assert!(events[2].get("failed").is_none());
+    let adapter = &events[0]["adapter"];
+    assert_eq!(
+        adapter["capabilities"]["usage"],
+        json!(["input", "cacheRead", "cacheWrite", "output"])
+    );
+    assert!(
+        adapter["capabilities"]["events"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("request"))
+    );
+    assert_eq!(adapter["capabilities"]["nativeQuestions"], false);
+    assert_eq!(adapter["capabilities"]["nativePlans"], false);
+    assert_eq!(adapter["capabilities"]["taskMirroring"], true);
+    for event in events {
+        assert_eq!(event["host"], "codex");
+        assert_eq!(event["session"], "codex-session");
+        assert_eq!(event["dir"], json!(yard.scratch.0.canonicalize().unwrap()));
+        assert_eq!(event["at"], "2026-01-01T00:00:00Z");
+        assert!(event.get("tokens").is_none());
+    }
+    assert!(!kept.to_string().contains("PRIVATE"));
+}
+
+#[test]
+fn codex_hooks_record_observed_modes_compaction_and_subagent_lifetimes() {
+    let yard = Yard::new();
+    let mut input = event(&yard, "UserPromptSubmit");
+    input["permission_mode"] = json!("plan");
+    hook(&yard, &input);
+    input["hook_event_name"] = json!("SubagentStart");
+    input["agent_id"] = json!("child-one");
+    input["agent_type"] = json!("reviewer");
+    hook(&yard, &input);
+    input["hook_event_name"] = json!("SubagentStop");
+    hook(&yard, &input);
+    input.as_object_mut().unwrap().remove("agent_id");
+    input["hook_event_name"] = json!("PostCompact");
+    hook(&yard, &input);
+    input["hook_event_name"] = json!("Interrupt");
+    input["permission_mode"] = json!("default");
+    hook(&yard, &input);
+    let kept = state(&yard);
+    let kinds: Vec<_> = kept["events"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|e| e["kind"].as_str().unwrap())
+        .collect();
+    assert_eq!(
+        kinds,
+        [
+            "plan.start",
+            "turn.start",
+            "subagent.start",
+            "subagent.end",
+            "compaction",
+            "plan.end",
+            "turn.end"
+        ]
+    );
+    assert_eq!(kept["events"][2]["agent"]["id"], "child-one");
+    assert!(kept["events"][4].get("before").is_none());
+}
+
+/// The context a hook gives, as text.
+fn context(output: &Value) -> &str {
+    output["hookOutput"]["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap()
+}
+
+const UNAVAILABLE: &str = "Yard decision notifications are unavailable; use explicit Yard waiting while a decision is needed.";
+
+#[test]
+fn codex_session_context_is_the_briefing_marked_read_with_the_caller_arguments_and_notifications() {
+    let yard = Yard::new();
+    yard.write(
+        "codex-session",
+        r#"[{"id":"build","kind":"stage","title":"Build","goal":"It works","status":"active"}]"#,
+        &["--host", "codex"],
+    );
+    yard.read("codex-session", &["--host", "codex", "--mark-read"]);
+    let sent = yard.write(
+        "codex-session",
+        r#"[{"id":"later","kind":"question","stage":"build","prompt":"Continue?","header":"Next","options":[{"label":"Yes"},{"label":"No"}]}]"#,
+        &["--host", "codex", "--send"],
+    );
+    let briefing = yard.read("codex-session", &["--host", "codex", "--context"])["context"]["text"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    assert!(
+        briefing.contains("Your working stage: `build`"),
+        "{briefing}"
+    );
+    assert!(
+        briefing.contains(sent["submission"].as_str().unwrap()),
+        "{briefing}"
+    );
+    let output = hook(&yard, &event(&yard, "SessionStart"));
+    assert_eq!(
+        context(&output),
+        format!(
+            "{briefing}\nYard caller: --host codex --session codex-session. Use these arguments for Yard commands.\n{UNAVAILABLE}"
+        )
+    );
+    assert_eq!(
+        yard.read("codex-session", &["--host", "codex"])["lastRead"],
+        2,
+        "the briefing's read is the agent's last"
+    );
+    let mut other = event(&yard, "SessionStart");
+    other["session_id"] = json!("a-distinct-session");
+    hook(&yard, &other);
+    assert!(
+        !yard
+            .scratch
+            .home()
+            .join(".yard/continuations.json")
+            .exists()
+    );
+}
+
+#[test]
+fn a_later_prompt_s_context_holds_only_whether_decision_notifications_reach_the_agent() {
+    let yard = Yard::new();
+    yard.write(
+        "codex-session",
+        r#"[{"id":"build","kind":"stage","title":"Build","status":"active"}]"#,
+        &["--host", "codex"],
+    );
+    hook(&yard, &event(&yard, "SessionStart"));
+    yard.write(
+        "codex-session",
+        r#"[{"id":"note","kind":"note","stage":"build","markdown":"Later"}]"#,
+        &["--host", "codex"],
+    );
+    let output = hook(&yard, &event(&yard, "UserPromptSubmit"));
+    assert_eq!(context(&output), UNAVAILABLE);
+    assert_eq!(
+        yard.read("codex-session", &["--host", "codex"])["lastRead"],
+        1,
+        "a prompt reads no briefing"
+    );
+}
+
+#[test]
+fn codex_sends_its_descriptor_with_a_session_s_first_event_and_each_turn_start_only() {
+    let yard = Yard::new();
+    let mut tool = event(&yard, "PreToolUse");
+    tool["tool_name"] = json!("Bash");
+    tool["tool_use_id"] = json!("call-one");
+    hook(&yard, &tool);
+    hook(&yard, &event(&yard, "UserPromptSubmit"));
+    hook(&yard, &tool);
+    hook(&yard, &event(&yard, "Stop"));
+    hook(&yard, &event(&yard, "UserPromptSubmit"));
+    let kept = state(&yard);
+    let described: Vec<_> = kept["events"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|event| {
+            (
+                event["kind"].as_str().unwrap(),
+                event.get("adapter").is_some(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        described,
+        [
+            ("tool.start", true),
+            ("turn.start", true),
+            ("tool.start", false),
+            ("turn.end", false),
+            ("turn.start", true),
+        ]
+    );
+}
+
+#[test]
+fn an_unknown_codex_hook_is_an_empty_native_response() {
+    let yard = Yard::new();
+    let input = event(&yard, "FutureEvent");
+    let path = yard.scratch.home().join("native-hook.json");
+    fs::write(&path, input.to_string()).unwrap();
+    let output = yard.scratch.loft_with(
+        &["yard", "codex", "hook", "--input", path.to_str().unwrap()],
+        Some(&yard.git),
+        &yard.clock,
+    );
+    assert!(output.status.success(), "{}", stderr(&output));
+    assert_eq!(
+        serde_json::from_str::<Value>(&stdout(&output)).unwrap(),
+        json!({})
+    );
+    assert!(!yard.scratch.home().join(".yard/codex").exists());
+}
+
+#[test]
+fn codex_context_distinguishes_absent_closed_and_ignored_logs_and_supplies_subagent_identity() {
+    let mut yard = Yard::new();
+    let absent = hook(&yard, &event(&yard, "SessionStart"));
+    assert!(absent.to_string().contains("no Yard Log yet"));
+    yard.write(
+        "codex-session",
+        r#"[{"id":"build","kind":"stage","title":"Build","status":"active"}]"#,
+        &["--host", "codex"],
+    );
+    yard.git = yard.git.clone().ignoring(":/.yard/");
+    let ignored = hook(&yard, &event(&yard, "SessionStart"));
+    assert!(ignored.to_string().contains("git ignores `.yard/`"));
+    let mut child = event(&yard, "SubagentStart");
+    child["agent_id"] = json!("child");
+    child["agent_type"] = json!("reviewer");
+    let context = hook(&yard, &child);
+    assert!(
+        context
+            .to_string()
+            .contains("--agent child --agent-type reviewer")
+    );
+    let end = yard.run(&["close", "--session", "codex-session", "--host", "codex"]);
+    assert!(end.status.success(), "{}", stderr(&end));
+    let closed = hook(&yard, &event(&yard, "SessionStart"));
+    assert!(closed.to_string().contains("Yard Log is closed"));
+}
+
+#[test]
+fn codex_omits_ambiguous_agent_events_and_keeps_explicit_tool_failures_distinct_from_unknown() {
+    let yard = Yard::new();
+    let mut input = event(&yard, "SubagentStart");
+    input["agent_id"] = json!("child");
+    input["agent_type"] = json!("reviewer");
+    hook(&yard, &input);
+    let mut tool = event(&yard, "PostToolUse");
+    tool["tool_name"] = json!("Bash");
+    tool["tool_use_id"] = json!("call");
+    tool["tool_response"] = json!({"exit_code":7});
+    hook(&yard, &tool);
+    assert_eq!(state(&yard)["events"].as_array().unwrap().len(), 1);
+    tool["agent_id"] = json!("child");
+    hook(&yard, &tool);
+    let kept = state(&yard);
+    assert_eq!(kept["events"][1]["agent"]["id"], "child");
+    assert_eq!(kept["events"][1]["failed"], true);
+    tool["tool_response"] = json!({"exit_code":0});
+    hook(&yard, &tool);
+    assert_eq!(state(&yard)["events"][2]["failed"], false);
+    tool["tool_response"] = json!("an opaque result");
+    hook(&yard, &tool);
+    assert!(state(&yard)["events"][3].get("failed").is_none());
+}
+
+#[test]
+fn a_codex_hook_queues_activity_without_contacting_the_page_server() {
+    let yard = Yard::new();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    let input = event(&yard, "UserPromptSubmit");
+    let output = yard.run_with(
+        &[
+            "codex",
+            "hook",
+            "--port",
+            &listener.local_addr().unwrap().port().to_string(),
+        ],
+        &input.to_string(),
+    );
+    assert!(output.status.success(), "{}", stderr(&output));
+    assert_eq!(
+        listener.accept().unwrap_err().kind(),
+        std::io::ErrorKind::WouldBlock
+    );
+    assert_eq!(state(&yard)["events"].as_array().unwrap().len(), 1);
+}
+
+#[test]
+fn a_codex_session_end_discards_subagents_before_the_session_resumes() {
+    let yard = Yard::new();
+    let mut child = event(&yard, "SubagentStart");
+    child["agent_id"] = json!("child");
+    child["agent_type"] = json!("reviewer");
+    hook(&yard, &child);
+    hook(&yard, &event(&yard, "SessionEnd"));
+    hook(&yard, &event(&yard, "SessionStart"));
+    let mut tool = event(&yard, "PreToolUse");
+    tool["tool_name"] = json!("Bash");
+    tool["tool_use_id"] = json!("call-after-resume");
+    hook(&yard, &tool);
+    let kept = state(&yard);
+    assert_eq!(kept["events"][1]["call"], "call-after-resume");
+    assert!(kept["events"][1].get("agent").is_none());
+}

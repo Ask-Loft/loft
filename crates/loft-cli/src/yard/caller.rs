@@ -4,6 +4,7 @@
 //! continuations and the revisions last read are the machine's, kept in `~/.yard/`.
 
 use serde_json::{Map, Value, json};
+use yardlog::identity::{SessionKey, session_key};
 use yardlog::{Actor, Agent, YardLogKey};
 use yardlog_store::home::{Home, HomeFile};
 
@@ -23,8 +24,8 @@ impl Caller {
     pub fn new(args: &args::Runner) -> Self {
         let agent = args.session.as_deref().map(|session| {
             match (args.agent.as_deref(), args.agent_type.as_deref()) {
-                (Some(id), Some(kind)) => Agent::sub(session, id, kind),
-                _ => Agent::main(session),
+                (Some(id), Some(kind)) => Agent::sub_in(&args.host, session, id, kind),
+                _ => Agent::main_in(&args.host, session),
             }
         });
         Self { agent }
@@ -38,21 +39,32 @@ impl Caller {
 
 /// Records that `session` continues `ended`, as `loft yard continue` does; whether it changed
 /// `~/.yard/continuations.json`, which it leaves as it was where it records that already.
-pub fn record_continuation(home: &Home, session: &str, ended: &str) -> Result<bool, Failure> {
-    home_json::set(home, HomeFile::Continuations, session, json!(ended))
+pub fn record_continuation(
+    home: &Home,
+    host: &str,
+    session: &str,
+    ended: &str,
+) -> Result<bool, Failure> {
+    home_json::set(
+        home,
+        HomeFile::Continuations,
+        &session_key(host, session),
+        json!(ended),
+    )
 }
 
 /// Who an agent counts as: the first session of its chain, and its subagent id.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Identity {
+    host: String,
     session: String,
     subagent: Option<String>,
 }
 
 impl Identity {
-    /// The first session of the agent's chain.
-    pub fn session(&self) -> &str {
-        &self.session
+    /// Whether both identities refer to one host's session.
+    pub fn same_session(&self, other: &Self) -> bool {
+        self.host == other.host && self.session == other.session
     }
 
     /// Whether the agent is a subagent.
@@ -63,8 +75,8 @@ impl Identity {
     /// The name under which the revision this agent last read is kept.
     fn reader(&self) -> String {
         match &self.subagent {
-            Some(id) => format!("{}/{id}", self.session),
-            None => self.session.clone(),
+            Some(id) => format!("{}/{id}", session_key(&self.host, &self.session)),
+            None => session_key(&self.host, &self.session),
         }
     }
 }
@@ -82,11 +94,15 @@ impl Continuations {
     }
 
     /// The first session of the chain `session` belongs to.
-    fn first(&self, session: &str) -> String {
+    fn first(&self, host: &str, session: &str) -> String {
         let mut current = session.to_owned();
         for _ in 0..LONGEST_CHAIN {
-            match self.0.get(&current).and_then(Value::as_str) {
-                Some(earlier) if earlier != session => current = earlier.to_owned(),
+            match self
+                .0
+                .get(&session_key(host, &current))
+                .and_then(Value::as_str)
+            {
+                Some(earlier) if earlier != session => earlier.clone_into(&mut current),
                 _ => break,
             }
         }
@@ -95,17 +111,20 @@ impl Continuations {
 
     pub fn identity(&self, agent: &Agent) -> Identity {
         Identity {
-            session: self.first(&agent.session),
+            host: agent.host.clone(),
+            session: self.first(&agent.host, &agent.session),
             subagent: agent.subagent.as_ref().map(|sub| sub.id.clone()),
         }
     }
 
     /// The session that continues `session`, where one does.
-    pub fn continued_by(&self, session: &str) -> Option<&str> {
+    pub fn continued_by(&self, host: &str, session: &str) -> Option<String> {
         self.0
             .iter()
-            .find(|(_, ended)| ended.as_str() == Some(session))
-            .map(|(next, _)| next.as_str())
+            .filter(|(_, ended)| ended.as_str() == Some(session))
+            .map(|(next, _)| SessionKey::parse(next))
+            .find(|next| next.host() == host)
+            .map(|next| next.session().to_owned())
     }
 
     /// Who an Act's actor counts as, where an agent made it.
@@ -124,6 +143,16 @@ impl<'a> LastRead<'a> {
         Self { home }
     }
 
+    /// Only this reader's recorded revision, without inheriting another agent's progress.
+    pub fn own(&self, key: YardLogKey, reader: &Identity) -> Result<Option<u64>, Failure> {
+        let bytes = self.home.read(HomeFile::LastRead)?;
+        let all = home_json::object(bytes.as_deref());
+        Ok(all
+            .get(&key.to_string())
+            .and_then(|readers| readers.get(reader.reader()))
+            .and_then(Value::as_u64))
+    }
+
     /// The revision `reader` last read of Yard Log `key`, or, where it read none, the latest
     /// any agent last read of it.
     pub fn before(&self, key: YardLogKey, reader: &Identity) -> Result<Option<u64>, Failure> {
@@ -133,7 +162,13 @@ impl<'a> LastRead<'a> {
             return Ok(None);
         };
         let own = readers.get(&reader.reader()).and_then(Value::as_u64);
-        Ok(own.or_else(|| readers.values().filter_map(Value::as_u64).max()))
+        Ok(own.or_else(|| {
+            readers
+                .iter()
+                .filter(|(name, _)| SessionKey::parse(name).host() == reader.host)
+                .filter_map(|(_, value)| value.as_u64())
+                .max()
+        }))
     }
 
     /// Records `revision` as the one `reader` last read of Yard Log `key`.

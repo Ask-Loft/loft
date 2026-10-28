@@ -8,3 +8,13 @@ diagrams with: Copyright (c) 2014 - 2022 Knut Sveidqvist, released under the MIT
 licence is in crates/loft-cli/yard-page/vendor/mermaid.LICENSE and is served beside it, and the
 script carries the notices of the third-party code it bundles. Where it comes from is recorded in
 crates/loft-cli/yard-page/vendor/README.md.
+
+The Codex Yard planning workflow is adapted from the Plan mode prompt in OpenAI Codex,
+release rust-v0.164.0, licensed under the Apache License, Version 2.0:
+https://github.com/openai/codex/blob/rust-v0.164.0/codex-rs/collaboration-mode-templates/templates/plan.md
+OpenAI Codex
+Copyright 2025 OpenAI
+
+The adaptation uses Yard planning records and page submissions in place of native question,
+plan-presentation and mode-transition instructions. The repository's LICENSE contains the
+Apache License, Version 2.0.

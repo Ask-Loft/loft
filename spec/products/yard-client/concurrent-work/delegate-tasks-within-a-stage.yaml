@@ -1,0 +1,163 @@
+key: 01a18053-9e08-72a7-ab94-f3ac99efc18e
+slug: delegate-tasks-within-a-stage
+name: "Delegate tasks within a stage"
+body: "A stage describes a piece of work, while a task's assignment identifies the agent executing it. A main agent can keep its stage while subagents execute separate tasks in it concurrently. Delegation names an existing task explicitly, so another agent can continue that task without creating a second record or taking ownership of its stage."
+realizes:
+  - 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b7852c58c8
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+requirements:
+  - key: 01a18053-9e08-72a7-ab94-f3ad133de73f
+    statement:
+      form: event_driven
+      when: "an agent accepts an existing task assigned to it in another agent's stage"
+      system: "Yard Client"
+      shall: "keep that task in its recorded stage while the assigned agent executes it."
+    criteria:
+      - key: 01a18053-9e08-72a7-ab94-f3aee9e26501
+        name: "An assigned subagent can make the task active without owning an active stage."
+      - key: 01a18053-9e08-72a7-ab94-f3afd216b408
+        name: "The task keeps its id, key, earlier versions and position when another agent updates it."
+      - key: 01a18053-9e08-72a7-ab94-f3b0addcc9a7
+        name: "Updating the task leaves its stage's owner unchanged."
+      - key: 01a18053-9e08-72a7-ab94-f3b195e2959f
+        name: "Tasks assigned to different agents can be active together in the same stage."
+      - key: 01a18053-9e08-72a7-ab94-f3b28937123c
+        name: "A change of the main agent's active stage leaves each delegated task in its recorded stage."
+  - key: 01a18053-9e08-72a7-ab94-f3b39adf76a4
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "apply task assignment changes against the current assignment under Yard Log's write rules."
+    criteria:
+      - key: 01a18053-9e08-72a7-ab94-f3b414175ea2
+        name: "A task has at most one assignee at a time."
+      - key: 01a18053-9e08-72a7-ab94-f3b5d4be2049
+        name: "The stage's owner or the current assignee can reassign or release an unfinished task."
+      - key: 01a18054-bf15-7113-9ce0-7fab6fdd8c58
+        name: "Reassignment by an agent other than the stage's owner or the current assignee is refused."
+      - key: 01a182b6-3c58-7235-ad04-392551bb92ee
+        name: "A write that makes active a stage another agent owns does not make its writer that stage's owner for the tasks of the same write."
+      - key: 01a182b6-3c58-7235-ad04-3926e5807160
+        name: "A write that makes active a stage no agent owns makes its writer that stage's owner for the tasks of the same write."
+      - key: 01a18053-9e08-72a7-ab94-f3b672906341
+        name: "An agent can claim an unassigned unfinished task for itself without taking its stage."
+      - key: 01a18053-9e08-72a7-ab94-f3b73fbe4a9f
+        name: "Once a task has an assignment history, an agent other than its current assignee or its stage's owner cannot change its execution state."
+      - key: 01a18053-9e08-72a7-ab94-f3b84e95736a
+        name: "A former assignee cannot finish a task after it was reassigned to another agent."
+      - key: 01a18053-9e08-72a7-ab94-f3b9b9de8e38
+        name: "A write based on a version preceding an assignment change is refused without changing any block."
+      - key: 01a18053-9e08-72a7-ab94-f3ba1405ce1b
+        name: "Tasks with no assignment history retain their existing write behavior."
+  - key: 01a18053-9e08-72a7-ab94-f3bb4253a6d1
+    statement:
+      form: event_driven
+      when: "a native task operation explicitly identifies an existing Yard task"
+      system: "the Yard adapter"
+      shall: "mirror execution changes to that task using its recorded assignment and stage."
+    criteria:
+      - key: 01a18053-9e08-72a7-ab94-f3bc9471690c
+        name: "Claude task operations can identify the Yard task by its block id in metadata."
+      - key: 01a18053-9e08-72a7-ab94-f3bd30efa1d3
+        name: "Codex plan steps can identify the Yard task by an explicit block-id prefix."
+      - key: 01a18053-9e08-72a7-ab94-f3be2573b3d5
+        name: "An explicit binding never creates a second Yard task for the same work."
+      - key: 01a18053-9e08-72a7-ab94-f3bf1de16fbf
+        name: "A missing or invalid explicit binding leaves the native operation's result unchanged without creating a replacement task."
+      - key: 01a18053-9e08-72a7-ab94-f3c09862bb9d
+        name: "A bound task update preserves its assignment, title, detail and type unless the operation explicitly changes a supported field."
+      - key: 01a18053-9e08-72a7-ab94-f3c1ed1cbf1f
+        name: "A native plan update from an agent other than the current assignee leaves a delegated task's execution state unchanged."
+      - key: 01a18053-9e08-72a7-ab94-f3c28cba54d2
+        name: "Removing a bound step from a native plan leaves the existing Yard task unchanged."
+      - key: 01a18053-9e08-72a7-ab94-f3c39ffa0b6c
+        name: "An automatic mirror does not reopen a completed or dropped delegated task."
+      - key: 01a18053-9e08-72a7-ab94-f3c430201df0
+        name: "Repeating an unchanged bound update creates no new version."
+      - key: 01a18053-9e08-72a7-ab94-f3c50ed30e6e
+        name: "A mirror changes an existing task as `loft yard task` does, applied to the task as it stands, without reading it first."
+      - key: 01a18053-9e08-72a7-ab94-f3c613583e48
+        name: "A mirror's change after reassignment leaves the former assignee's update unapplied."
+  - key: 01a18053-9e08-72a7-ab94-f3c745fcf013
+    statement:
+      form: event_driven
+      when: "an adapter reliably observes an assigned agent end or be interrupted while its task is active"
+      system: "the Yard adapter"
+      shall: "return the unfinished task to open without recording completion."
+    criteria:
+      - key: 01a18053-9e08-72a7-ab94-f3c89e4da1b7
+        name: "The task keeps its assignee so that the stage's owner can see which execution ended unfinished."
+      - key: 01a18053-9e08-72a7-ab94-f3c9767bbaf3
+        name: "A task already done or dropped is unchanged by the agent's end."
+      - key: 01a18053-9e08-72a7-ab94-f3cac642e25b
+        name: "A task reassigned before the end event is processed is unchanged by that former assignee's event."
+      - key: 01a18053-9e08-72a7-ab94-f3cbf539b498
+        name: "An event without a reliable agent identity changes no task."
+      - key: 01a182b6-3c58-7235-ad04-392745d42342
+        name: "The adapter returns the agent's tasks to open in one write, as `loft yard task --release` does."
+  - key: 01a18053-9e08-72a7-ab94-f3ccb1588733
+    statement:
+      form: ubiquitous
+      system: "The Yard page"
+      shall: "show a task's assignee separately from the agent that owns its stage."
+    criteria:
+      - key: 01a18053-9e08-72a7-ab94-f3cd1556846f
+        name: "A delegated task stays beneath its recorded stage in the timeline and Gantt chart."
+      - key: 01a18053-9e08-72a7-ab94-f3cec5239069
+        name: "The task identifies its assignee by host, session and agent, with the subagent's type where supplied."
+      - key: 01a18053-9e08-72a7-ab94-f3cfc5b103f2
+        name: "Concurrent delegated tasks have separate task bars."
+      - key: 01a18053-9e08-72a7-ab94-f3d041b93742
+        name: "Overlapping task bars do not multiply the chart's total elapsed work."
+      - key: 01a18054-bf15-7113-9ce0-7fac802e6dcf
+        name: "A task returned to open is not drawn as execution continuing beyond the return to open."
+  - key: 01a18054-bf15-7113-9ce0-7fad351280dc
+    statement:
+      form: event_driven
+      when: "an adapter provides Yard context to an identified agent with unfinished tasks assigned to it"
+      system: "the Yard adapter"
+      shall: "identify that delegated work without requiring the agent to own a stage."
+    criteria:
+      - key: 01a18054-bf15-7113-9ce0-7fae57e0bb10
+        name: "The context distinguishes assigned task ids and their recorded stages from the caller's own active stage."
+      - key: 01a18054-bf15-7113-9ce0-7fafa8cf72ab
+        name: "Where the full assignment list does not fit the context limit, the context names the remaining count and directs the agent to read Yard Log."
+      - key: 01a18054-bf15-7113-9ce0-7fb040e2af57
+        name: "The context uses only assignments recorded in Yard Log, without inferring identity from task titles or agent display names."
+  - key: 01a18053-9e08-72a7-ab94-f3d11902c34a
+    statement:
+      form: event_driven
+      when: "an activity or usage event has an unambiguous delegated-task execution context"
+      system: "Yard Client"
+      shall: "attribute that event to the delegated task's recorded stage."
+    criteria:
+      - key: 01a18053-9e08-72a7-ab94-f3d27168e568
+        name: "The delegated task's stage takes precedence over the main agent's current stage."
+      - key: 01a18053-9e08-72a7-ab94-f3d3e2162225
+        name: "An identified agent's active assigned tasks in one stage provide an unambiguous stage context."
+      - key: 01a18053-9e08-72a7-ab94-f3d4a5dd5445
+        name: "An event without an explicit task binding whose agent has active assigned tasks in different stages counts toward no stage."
+      - key: 01a18053-9e08-72a7-ab94-f3d53e9b56b5
+        name: "A usage event counted toward no stage still contributes its reported counters to the session totals."
+      - key: 01a18053-9e08-72a7-ab94-f3d6a2af5820
+        name: "Delegation creates no usage counter that the host did not report."
+  - key: 01a182be-ad51-7711-b8a8-4276081a6cc9
+    statement:
+      form: ubiquitous
+      system: "`yardlog`"
+      shall: "give each agent one working stage: the stage of the task its event names, else the one stage its active assigned tasks lie in, else its own active stage, else its session's main agent's active stage."
+    body: "Every part of Yard Client that asks which stage an agent works in asks this one rule, so that the stage its tokens count toward, the stage its activity is kept under, the stage its new native tasks are mirrored into and the stage its briefing names are the same stage."
+    criteria:
+      - key: 01a182be-ad52-75ba-879c-8ae4391118cc
+        name: "Token totals, session activity, the mirroring of unbound native tasks and the briefing each take an agent's stage from its working stage."
+      - key: 01a182be-ad52-75ba-879c-8ae5f4d9e35d
+        name: "An agent whose event names no task and whose active assigned tasks lie in more than one stage has no working stage."
+      - key: 01a182be-ad52-75ba-879c-8ae6c6d5f339
+        name: "A main agent with no active stage of its own and no assigned task has no working stage."
+      - key: 01a182be-ad52-75ba-879c-8ae7128d00aa
+        name: "An unbound native task mirrored into a stage the agent does not own is assigned to that agent."

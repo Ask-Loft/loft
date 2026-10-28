@@ -21,7 +21,15 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc43f8c8af27
         name: "The block's title is the plan's first heading, or the plan file's name where it has none."
       - key: 01a1646f-546c-7521-9643-bc440f533210
-        name: "A plan from a file that Yard Log already holds is a new version of the same `plan` block."
+        name: "A plan from a file already held in the invoking agent's active stage is a new version of that stage's same `plan` block."
+      - key: 01a17aa0-27b4-71a9-b430-6afc5dc27194
+        name: "Reusing a plan file in another active stage creates a new plan block in that stage."
+      - key: 01a17aa0-27b4-71a9-b430-6afdda893e1a
+        name: "Presenting a plan in a new stage leaves earlier plan blocks and their histories unchanged."
+      - key: 01a17aa0-27b4-71a9-b430-6afea45e9b49
+        name: "A plan without an active stage goes to a stage the mod opens for the invoking agent."
+      - key: 01a17aa0-27b4-71a9-b430-6aff1898efa6
+        name: "An existing plan with a legacy filename-based id is reused only within the invoking agent's active stage."
       - key: 01a1646f-546c-7521-9643-bc45e5810ca4
         name: "The block records that the agent presented it in plan mode."
       - key: 01a1646f-546c-7521-9643-bc46d0e7e92a
@@ -58,11 +66,11 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "say of a plan that an agent presented in plan mode that approving it lets the agent go on in auto mode."
+      shall: "say of every plan that approval authorizes the planned work, subject to the host's mode and permissions."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc4f1a3eb87b
         name: "The page offers a plan presented in plan mode for approval and for rejection."
       - key: 01a1646f-546c-7521-9643-bc506fea2e7b
-        name: "The page says beside the approval of a plan presented in plan mode that the agent goes on in auto mode."
+        name: "The page uses the same approval explanation for every plan, regardless of host or the planMode field: approval authorizes the planned work, subject to the host's mode and permissions."
       - key: 01a1646f-546c-7521-9643-bc51036e2440
         name: "Once the plan is approved in the terminal, the page shows it approved, with the channel `terminal`."

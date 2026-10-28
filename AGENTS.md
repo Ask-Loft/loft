@@ -89,14 +89,22 @@ change, or v1 reverts it.
   `.agents/plugins/marketplace.json` list them. The Claude Code plugin also holds the Loft mod,
   one hooks module written by hand that runs Yard Client: `hooks/register.tsx` registers the
   hooks it records events with around Claude Code's own, `loft.ts` runs `loft` and the pure
-  `model.ts` reads what it prints, and Yard Client lies in `hooks/yard/`. Its state contract is
+  `model.ts` reads what it prints, and Yard Client lies in `hooks/adapter/`. Its state contract is
   `types/index.d.ts` and its tests are `tests/`, written with Claude Code's test kit. It learns
   of the tree and of Yard Log only from `loft … --format json` (the accepted decision "Yard
   Client is a mod over loft"), and reaches the page server only to post its events. Beside `skills/loft-spec/` it
-  holds the `yard` skill, `skills/yard/SKILL.md`, written by hand for Claude Code alone.
+  holds the composed `yard` skill, `skills/yard/SKILL.md`, for the Claude adapter.
   CI runs `claude plugin validate plugins/claude/loft` and `claude plugin test
   plugins/claude/loft` under a pinned Claude Code; run both after a change to the mod, and
   type-check it with TypeScript once a session has loaded the plugin and written its types.
+- The Codex plugin holds native command hooks in `plugins/codex/loft/hooks/hooks.json`, calling
+  the adapter in `crates/loft-cli/src/yard/codex/`. It reaches Yard Log through JSON commands;
+  its native hook command returns Codex wire output by default and a Loft envelope with
+  `--format json`. Codex owns the background worker's lifetime. Test it with the focused
+  `yard_codex` suites; the ignored `real_codex_hooks` contract uses Codex 0.164.0, Python 3 and
+  a loopback model fixture, never a paid API. Its skill is composed beside `loft-spec` too.
+  Its root manifest uses Codex's native fields without `$schema`: Codex 0.164.0 ignores hooks
+  in schema-declared Agent Plugins manifests. The installed-plugin contract verifies activation.
 - `crates/loft-cli/yard-page/` is the Yard page, browser-native modules and CSS with no build
   step, which `loft yard serve` embeds and serves; each file is also listed in `ASSETS` in
   `crates/loft-cli/src/yard/serve/assets.rs`. Mermaid is vendored there as
@@ -146,6 +154,10 @@ text goes to standard error only.
   packages. Never edit a package under `plugins/` by hand: `crates/loft-cli/tests/plugins.rs`
   fails while a package differs from the composition, or a manifest's version from the version
   of `loft`.
+- This repository exposes that source to Codex through the relative link
+  `.agents/skills/loft-spec` to `../../crates/loft-cli/skill/loft-spec`. Keep the link; never
+  replace it with a copy. Before editing `spec/`, load the source skill's router and the
+  references it selects. The installer preserves this link and the packager checks it.
 - `SKILL.md` and the references name no host; whatever is particular to a host lies under
   `agents/`. A new source file is also listed in `SOURCE` in `crates/loft-cli/src/skill/mod.rs`.
 - Every YAML block of a reference is marked: `path=` blocks form the reference's example tree,
@@ -153,10 +165,14 @@ text goes to standard error only.
   rule and no other warning; a `fragment` is shown and not run. The lint guide describes every
   rule the linter defines. `crates/loft-cli/tests/skill.rs` holds the source to these rules and
   to each reference's opening and contents.
-- The `yard` skill is not composed: it lies only in the Claude Code plugin, at
-  `plugins/claude/loft/skills/yard/SKILL.md`, and is edited there by hand; the packaging script
-  leaves it alone. `crates/loft-cli/tests/yard_skill.rs` holds it to one file of at most 500
-  lines, to naming exactly the tools the mod registers, and to each habit its Feature states.
+- The `yard` skill has its shared workflow at `crates/loft-cli/skill/yard/SKILL.md`, with no
+  host or native tool names, and its adaptations at `agents/claude.md` and `agents/codex.md` beside it. Change
+  those sources and run `scripts/package-skill.sh`; never edit the plugin package by hand.
+  Composition appends the selected adaptation to the shared source, making each plugin's single
+  `skills/yard/SKILL.md`. `crates/loft-cli/tests/yard_skill.rs` and `yard_codex_skill.rs` hold it to that composition,
+  to at most 500 lines, to naming exactly the adapter's tools and to each habit its Feature
+  states. Only hosts with a Yard adapter receive a Yard package; `loft skill install` continues
+  to install the specification skill alone.
 
 ## Software Plant
 
@@ -295,7 +311,7 @@ A release happens only with the maintainer's approval, and in this order:
    with C code, shows here first.
 1. On a branch from `develop`, set the new version in every crate's `Cargo.toml`, in the
    workspace dependencies, in both plugin manifests and in `PLUGIN_VERSION` of the Claude Code
-   plugin's `hooks/yard/index.tsx` (`tests/plugins.rs` fails until they agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
+   plugin's `hooks/adapter/index.tsx` (`tests/plugins.rs` fails until they agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
    into `develop`, then `develop` into `main`.
 2. On `main`, run `loft publish` over the committed `spec/`, commit `spec/labels.yaml` and
    `loft.lock.json` together as the publish commit, and check that `loft verify` passes. A second

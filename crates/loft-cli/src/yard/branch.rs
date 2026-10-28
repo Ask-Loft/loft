@@ -111,6 +111,7 @@ impl Branch {
 pub enum Unapplied<R> {
     Store(YardStoreError),
     Refused(R),
+    Failed(Failure),
 }
 
 impl<R> From<YardStoreError> for Unapplied<R> {
@@ -130,6 +131,7 @@ impl Branch {
             Ok(updated) => Ok(Ok(updated.value)),
             Err(Unapplied::Store(error)) => Err(error.into()),
             Err(Unapplied::Refused(refused)) => Ok(Err(refused)),
+            Err(Unapplied::Failed(failure)) => Err(failure),
         }
     }
 

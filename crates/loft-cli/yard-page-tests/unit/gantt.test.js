@@ -23,7 +23,7 @@ function timed(id, owner, from, to, blocks = [], status = 'done') {
 
 /** A session's activity: its turns, plan and spec stretches and Loft runs. */
 function activity(more = {}) {
-  return { session: 's1', turns: [span(0, 600)], plan: [], spec: [], loft: [], ...more };
+  return { host: 'claude-code', session: 's1', turns: [span(0, 600)], plan: [], spec: [], loft: [], ...more };
 }
 
 test('the main agent’s lane comes first, and a subagent’s lane names its type', () => {

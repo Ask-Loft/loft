@@ -30,6 +30,8 @@ pub fn serving(port: u16) {
 pub struct Running {
     pub port: u16,
     pub version: String,
+    /// The process id the file gives, never used to tell whether the page server runs.
+    pub pid: Option<u64>,
 }
 
 /// The page server that runs, where one does: the lock on `~/.yard/server.lock` is held and
@@ -54,9 +56,10 @@ pub fn running(home: &Home) -> Result<Option<Running>, YardStoreError> {
         .as_u64()
         .and_then(|port| u16::try_from(port).ok());
     let version = server["version"].as_str().map(ToOwned::to_owned);
+    let pid = server["pid"].as_u64();
     Ok(port
         .zip(version)
-        .map(|(port, version)| Running { port, version }))
+        .map(|(port, version)| Running { port, version, pid }))
 }
 
 /// The address of `branch`'s Yard Log in `tree` on the page, or, where no page server runs, that

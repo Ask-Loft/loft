@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-yard-read-1.json",
-  "title": "The result of `loft yard read --format json`, version 1: the branch's Yard Log, or what changed since a revision",
+  "$id": "loft-yard-read-3.json",
+  "title": "The result of `loft yard read --format json`, version 3: the branch's Yard Log, or what changed since a revision",
   "oneOf": [
     {
       "type": "object",
@@ -60,15 +60,12 @@
             "$ref": "#/$defs/activityFile"
           }
         },
-        "tokens": {
-          "description": "The page server's only: each session's token totals file, as JSON",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/tokensFile"
-          }
+        "tokenSums": {
+          "description": "The page server's only: Yard Log's token sums, from every session's totals file",
+          "$ref": "#/$defs/tokenSums"
         },
         "sent": {
-          "description": "The page server's only: every submission, sent, answered or withdrawn, with its changes, for the Gantt chart",
+          "description": "With --submissions or on the page: every submission with its lifecycle and reached revision",
           "type": "array",
           "items": {
             "type": "object",
@@ -78,7 +75,8 @@
               "agent",
               "blocks",
               "state",
-              "changes"
+              "changes",
+              "reached"
             ],
             "properties": {
               "key": {
@@ -123,6 +121,10 @@
                     }
                   }
                 }
+              },
+              "reached": {
+                "type": "integer",
+                "minimum": 0
               }
             }
           }
@@ -229,6 +231,11 @@
                     },
                     "sent": {
                       "$ref": "#/$defs/act"
+                    },
+                    "sentReached": {
+                      "description": "The local revision at which the currently counted send or take-up reached this Yard Log",
+                      "type": "integer",
+                      "minimum": 0
                     }
                   }
                 }
@@ -237,7 +244,7 @@
           }
         },
         "schema": {
-          "const": "loft-yard-read/1"
+          "const": "loft-yard-read/3"
         },
         "outcome": {
           "const": "read"
@@ -247,6 +254,17 @@
           "items": {
             "$ref": "#/$defs/error"
           }
+        },
+        "ownLastRead": {
+          "description": "With --submissions: the caller\u2019s own recorded read revision, excluding fallback reads",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "context": {
+          "$ref": "#/$defs/context"
         }
       }
     },
@@ -260,7 +278,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-yard-read/1"
+          "const": "loft-yard-read/3"
         },
         "outcome": {
           "const": "error"
@@ -679,6 +697,9 @@
                 "regular",
                 "fix"
               ]
+            },
+            "assignee": {
+              "$ref": "#/$defs/assignee"
             }
           }
         },
@@ -970,6 +991,28 @@
           "items": {
             "$ref": "#/$defs/block"
           }
+        },
+        "executions": {
+          "description": "Execution attempts derived from task versions, closed on pause, completion or reassignment.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "started"
+            ],
+            "properties": {
+              "started": {
+                "type": "string"
+              },
+              "ended": {
+                "type": "string"
+              },
+              "assignee": {
+                "$ref": "#/$defs/assignee"
+              }
+            }
+          }
         }
       }
     },
@@ -991,12 +1034,7 @@
     "counts": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "input",
-        "cacheRead",
-        "cacheWrite",
-        "output"
-      ],
+      "required": [],
       "properties": {
         "input": {
           "type": "integer",
@@ -1013,6 +1051,19 @@
         "output": {
           "type": "integer",
           "minimum": 0
+        },
+        "partial": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "input",
+              "cacheRead",
+              "cacheWrite",
+              "output"
+            ]
+          },
+          "uniqueItems": true
         }
       }
     },
@@ -1021,7 +1072,8 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "session"
+        "session",
+        "host"
       ],
       "properties": {
         "session": {
@@ -1115,32 +1167,34 @@
               }
             }
           }
-        }
-      }
-    },
-    "tokensFile": {
-      "description": "A session's token totals file: in all, by stage and within each stage by agent, under no stage, by agent and model, and by submission",
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "session",
-        "host",
-        "tokens"
-      ],
-      "properties": {
-        "session": {
-          "type": "string"
         },
         "host": {
           "type": "string"
         },
-        "firstEnded": {
-          "type": "string"
+        "adapter": {
+          "$ref": "#/$defs/adapter"
+        }
+      }
+    },
+    "tokenSums": {
+      "description": "Yard Log's token sums, summed by the page server from every session's totals file: in all, under no stage, by stage with each type of subagent within it, by submission, by agent and model and by session",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "all",
+        "noStage",
+        "stages",
+        "submissions",
+        "agents",
+        "sessions",
+        "partial",
+        "counted"
+      ],
+      "properties": {
+        "all": {
+          "$ref": "#/$defs/counts"
         },
-        "lastEnded": {
-          "type": "string"
-        },
-        "tokens": {
+        "noStage": {
           "$ref": "#/$defs/counts"
         },
         "stages": {
@@ -1150,66 +1204,34 @@
             "additionalProperties": false,
             "required": [
               "stage",
-              "input",
-              "cacheRead",
-              "cacheWrite",
-              "output"
+              "tokens",
+              "agents"
             ],
             "properties": {
               "stage": {
+                "description": "The stage's key",
                 "type": "string"
               },
-              "input": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheRead": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheWrite": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "output": {
-                "type": "integer",
-                "minimum": 0
+              "tokens": {
+                "$ref": "#/$defs/counts"
               },
               "agents": {
-                "description": "What counted toward the stage, by agent: the main agent, and each subagent by its id and type",
+                "description": "Each type of subagent's counts within the stage's, the most tokens first",
                 "type": "array",
                 "items": {
+                  "description": "A type of subagent",
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
-                    "agent",
-                    "input",
-                    "cacheRead",
-                    "cacheWrite",
-                    "output"
+                    "type",
+                    "tokens"
                   ],
                   "properties": {
-                    "agent": {
-                      "type": "string"
-                    },
                     "type": {
                       "type": "string"
                     },
-                    "input": {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    "cacheRead": {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    "cacheWrite": {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    "output": {
-                      "type": "integer",
-                      "minimum": 0
+                    "tokens": {
+                      "$ref": "#/$defs/counts"
                     }
                   }
                 }
@@ -1217,85 +1239,351 @@
             }
           }
         },
-        "noStage": {
-          "$ref": "#/$defs/counts"
-        },
-        "agents": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "agent",
-              "model",
-              "input",
-              "cacheRead",
-              "cacheWrite",
-              "output"
-            ],
-            "properties": {
-              "agent": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string"
-              },
-              "model": {
-                "type": "string"
-              },
-              "input": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheRead": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheWrite": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "output": {
-                "type": "integer",
-                "minimum": 0
-              }
-            }
-          }
-        },
         "submissions": {
           "type": "array",
           "items": {
+            "description": "A submission, by its key, with the counts of the requests that ended while it was open",
             "type": "object",
             "additionalProperties": false,
             "required": [
               "submission",
-              "input",
-              "cacheRead",
-              "cacheWrite",
-              "output"
+              "tokens"
             ],
             "properties": {
               "submission": {
                 "type": "string"
               },
-              "input": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheRead": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheWrite": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "output": {
-                "type": "integer",
-                "minimum": 0
+              "tokens": {
+                "$ref": "#/$defs/counts"
               }
             }
           }
+        },
+        "agents": {
+          "description": "The Claude Code main agent first, then the most tokens first",
+          "type": "array",
+          "items": {
+            "description": "An agent, named with its host where that is not Claude Code, and the model it ran on",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "who",
+              "model",
+              "tokens"
+            ],
+            "properties": {
+              "who": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "tokens": {
+                "$ref": "#/$defs/counts"
+              }
+            }
+          }
+        },
+        "sessions": {
+          "description": "The earliest first",
+          "type": "array",
+          "items": {
+            "description": "A session with when its first and last counted requests ended",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "host",
+              "session",
+              "tokens"
+            ],
+            "properties": {
+              "host": {
+                "type": "string"
+              },
+              "session": {
+                "type": "string"
+              },
+              "firstEnded": {
+                "type": "string"
+              },
+              "lastEnded": {
+                "type": "string"
+              },
+              "tokens": {
+                "$ref": "#/$defs/counts"
+              }
+            }
+          }
+        },
+        "partial": {
+          "description": "Whether a counter of the sums is unavailable or was left unavailable by a totals file or by a session that kept none",
+          "type": "boolean"
+        },
+        "counted": {
+          "description": "Whether any counter was measured",
+          "type": "boolean"
+        }
+      }
+    },
+    "adapter": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "version",
+        "capabilities"
+      ],
+      "properties": {
+        "format": {
+          "const": "yard-adapter/1"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "events",
+            "usage",
+            "nativeQuestions",
+            "nativePlans",
+            "taskMirroring"
+          ],
+          "properties": {
+            "events": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "usage": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "input",
+                  "cacheRead",
+                  "cacheWrite",
+                  "output"
+                ]
+              }
+            },
+            "nativeQuestions": {
+              "type": "boolean"
+            },
+            "nativePlans": {
+              "type": "boolean"
+            },
+            "taskMirroring": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "assignee": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "session"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agentType": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "dependentRequired": {
+        "agent": [
+          "agentType"
+        ],
+        "agentType": [
+          "agent"
+        ]
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page",
+        "revision",
+        "since",
+        "noLog",
+        "closed",
+        "ignored",
+        "stage",
+        "assigned",
+        "open",
+        "responded",
+        "text"
+      ],
+      "properties": {
+        "page": {
+          "description": "The page's address, or null where no page server serves it",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "since": {
+          "description": "The revision the agent last read, from which `responded` counts",
+          "type": "integer",
+          "minimum": 0
+        },
+        "noLog": {
+          "description": "Whether the branch has no Yard Log yet",
+          "type": "boolean"
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "ignored": {
+          "description": "Whether git ignores `.yard/`",
+          "type": "boolean"
+        },
+        "stage": {
+          "description": "The agent's working stage, or null where it has none",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "title"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "assigned": {
+          "description": "The unfinished tasks assigned to the agent, each with the stage it is recorded in",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "stage",
+              "title",
+              "state"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "stage": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "active"
+                ]
+              }
+            }
+          }
+        },
+        "open": {
+          "description": "Every open submission",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "blocks",
+              "sentBy"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "blocks": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sentBy": {
+                "type": "string",
+                "enum": [
+                  "self",
+                  "other"
+                ]
+              }
+            }
+          }
+        },
+        "responded": {
+          "description": "The blocks answered or decided after `since`, in the order they were",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "response",
+              "title"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "response": {
+                "type": "string",
+                "enum": [
+                  "answered",
+                  "approved",
+                  "rejected"
+                ]
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "text": {
+          "description": "The briefing as text of at most 2,000 characters, naming no host's tools",
+          "type": "string",
+          "maxLength": 2000
         }
       }
     }

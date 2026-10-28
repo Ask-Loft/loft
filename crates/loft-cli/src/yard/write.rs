@@ -6,9 +6,9 @@
 use std::path::Path;
 
 use serde_json::{Value, json};
-use yardlog::input::{Fault, Request, read_batch};
+use yardlog::input::{Fault, Input, Request, read_batch};
 use yardlog::write::{Context, Refusal, Reports, Written};
-use yardlog::{Format, YardLog};
+use yardlog::{Format, Time, YardLog};
 use yardlog_store::Held;
 
 use super::args::{DEFAULT_BASE, WriteArgs};
@@ -85,25 +85,45 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         })
         .collect();
     let applied = branch.update(|current| {
-        let mut log =
-            current.unwrap_or_else(|| YardLog::open(&branch_name, &base, at, agent.clone()));
-        // The write's own Act records the upgrade.
-        let upgraded_from = log.upgrade_format();
-        let written = log
-            .write(&inputs, &context, &reports)
-            .map_err(Unapplied::Refused)?;
-        Ok((
-            log,
-            Applied {
-                written,
-                upgraded_from,
-            },
-        ))
+        apply(
+            current,
+            (&branch_name, &base),
+            &inputs,
+            context,
+            &reports,
+            super::now,
+        )
     })?;
     match applied {
         Ok(applied) => Ok(result(&branch, &applied)),
         Err(refusal) => Err(refusal_of(&branch, &branch.store.read()?, &refusal)),
     }
+}
+
+/// Applies a prepared batch under the branch lock, reading its time at application.
+fn apply(
+    current: Option<YardLog>,
+    location: (&str, &str),
+    inputs: &[Input],
+    mut context: Context,
+    reports: &Reports,
+    now: impl FnOnce() -> Result<Time, Failure>,
+) -> Result<(YardLog, Applied), Unapplied<Refusal>> {
+    context.at = now().map_err(Unapplied::Failed)?;
+    let (branch, base) = location;
+    let mut log =
+        current.unwrap_or_else(|| YardLog::open(branch, base, context.at, context.agent.clone()));
+    let upgraded_from = log.upgrade_format();
+    let written = log
+        .write(inputs, &context, reports)
+        .map_err(Unapplied::Refused)?;
+    Ok((
+        log,
+        Applied {
+            written,
+            upgraded_from,
+        },
+    ))
 }
 
 /// The base branch a write records as it opens Yard Log: the one `--base` names; else the local
@@ -153,7 +173,7 @@ fn fault(fault: &Fault) -> Value {
 
 /// The result of a refused batch: each fault, and for a stale batch each block changed since
 /// its base revision, with its current version.
-fn refusal_of(branch: &Branch, held: &Held, refusal: &Refusal) -> Failure {
+pub(super) fn refusal_of(branch: &Branch, held: &Held, refusal: &Refusal) -> Failure {
     let message = refusal.to_string();
     let errors = match refusal {
         Refusal::Faults(faults) => faults.iter().map(fault).collect(),
@@ -170,3 +190,6 @@ fn refusal_of(branch: &Branch, held: &Held, refusal: &Refusal) -> Failure {
     }
     Failure::Refused { fields, errors }
 }
+
+#[cfg(test)]
+mod tests;

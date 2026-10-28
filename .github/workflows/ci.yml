@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Install dogfood launcher contract tools
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq python3 zsh
       # Installs the toolchain rust-toolchain.toml pins.
       - run: rustup toolchain install
       - uses: Swatinem/rust-cache@v2

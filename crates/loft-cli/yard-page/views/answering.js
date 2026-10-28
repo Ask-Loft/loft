@@ -9,9 +9,11 @@ import { h, html, markdown } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
 import { getJson, setJson } from '../lib/prefs.js';
 import {
+  PLAN_APPROVAL,
   acceptRecommendations,
   answerOf,
   choose,
+  chooseOwnWords,
   isAnswered,
   readyToSend,
   say,
@@ -44,7 +46,6 @@ function keep(key, draft) {
  */
 export function submissionPanel(submission, waiting, where) {
   const questions = waiting.filter((block) => block.kind === 'question');
-  const decidable = waiting.filter((block) => block.kind !== 'question');
   const message = h('p', { class: 'send-message', role: 'status', 'aria-live': 'polite' });
   const send = h('button', { type: 'button', class: 'primary', id: `send-${submission.key}` }, 'Send answers');
   const update = () => {
@@ -75,7 +76,9 @@ export function submissionPanel(submission, waiting, where) {
       h('h3', {}, waiting.length === 1 ? 'Waits on you' : `${waiting.length} wait on you`),
       h('p', { class: 'sent' }, 'Sent by ', h('span', { class: 'who' }, who(submission.agent ?? submission.sent?.by)), ' at ', h('time', { datetime: submission.sent?.at }, when(submission.sent?.at))),
     ),
-    questions.map((block) => questionForm(block, submission.key, update)),
+    waiting.map((block) => block.kind === 'question'
+      ? questionForm(block, submission.key, update)
+      : decisionForm(block, where)),
     questions.length
       ? h(
           'div',
@@ -97,7 +100,6 @@ export function submissionPanel(submission, waiting, where) {
           send,
         )
       : null,
-    decidable.map((block) => decisionForm(block, where)),
     message,
   );
   update();
@@ -138,6 +140,17 @@ function questionForm(block, key, update) {
   const answer = answerOf(draft, block.key);
   const type = body.multiple ? 'checkbox' : 'radio';
   const name = `answer-${block.id}`;
+  const sync = () => {
+    const draft = draftOf(key);
+    const answer = answerOf(draft, block.key);
+    body.options.forEach((option, index) => {
+      /** @type {HTMLInputElement} */ (fieldset.querySelector(`#${name}-${index}`)).checked = answer.labels.includes(option.label);
+    });
+    const own = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`#${name}-words`));
+    if (own) own.checked = answer.ownWordsSelected === true;
+    fieldset.classList.toggle('is-answered', isAnswered(draft, block));
+    update();
+  };
   const fieldset = h(
     'fieldset',
     { class: ['question-form', isAnswered(draft, block) ? 'is-answered' : null], dataset: { key: block.key } },
@@ -156,13 +169,7 @@ function questionForm(block, key, update) {
           checked: answer.labels.includes(option.label),
           onchange: () => {
             keep(key, choose(draftOf(key), block, option.label));
-            fieldset.classList.toggle('is-answered', isAnswered(draftOf(key), block));
-            if (!body.multiple) {
-              for (const input of fieldset.querySelectorAll(`input[name="${name}"]`)) {
-                /** @type {HTMLInputElement} */ (input).checked = /** @type {HTMLInputElement} */ (input).value === option.label;
-              }
-            }
-            update();
+            sync();
           },
         }),
         h('span', { class: 'choice-label' }, option.label),
@@ -171,25 +178,35 @@ function questionForm(block, key, update) {
       ),
     ),
     body.ownWords
-      ? h(
-          'label',
-          { class: 'words', for: `words-${block.id}` },
-          'Or in your own words',
-          h('textarea', {
-            id: `words-${block.id}`,
-            rows: 2,
-            oninput: (event) => {
-              keep(key, say(draftOf(key), block, event.target.value));
-              fieldset.classList.toggle('is-answered', isAnswered(draftOf(key), block));
-              update();
-            },
-          }),
-        )
+      ? ownWordsForm(block, answer, () => {
+          keep(key, chooseOwnWords(draftOf(key), block));
+          sync();
+        }, (event) => {
+          keep(key, say(draftOf(key), block, event.target.value));
+          sync();
+        })
       : null,
   );
   const words = /** @type {HTMLTextAreaElement | null} */ (fieldset.querySelector('textarea'));
   if (words) words.value = answer.words ?? '';
   return fieldset;
+}
+
+/** A separate selection control and labelled text field, with text retained when unselected.
+ * @param {import('../model/log.js').Block} block
+ * @param {import('../model/answers.js').Answer} answer
+ * @param {() => void} choose
+ * @param {(event: any) => void} edit
+ */
+function ownWordsForm(block, answer, choose, edit) {
+  const name = `answer-${block.id}`;
+  return h('div', { class: 'own-words' },
+    h('label', { class: 'choice', for: `${name}-words` },
+      h('input', { id: `${name}-words`, name, type: block.version.body.multiple ? 'checkbox' : 'radio',
+        checked: answer.ownWordsSelected === true, onchange: choose }),
+      h('span', { class: 'choice-label' }, 'In your own words')),
+    h('label', { class: 'words', for: `words-${block.id}` }, 'Your answer',
+      h('textarea', { id: `words-${block.id}`, rows: 2, oninput: edit })));
 }
 
 /**
@@ -233,7 +250,7 @@ function decisionForm(block, where) {
     'div',
     { class: 'decision-form', dataset: { key: block.key } },
     h('h4', {}, h('span', { class: 'kind' }, block.kind === 'plan' ? 'Plan' : 'Approval'), ' ', body.title),
-    block.kind === 'plan' && body.planMode ? h('p', { class: 'plan-mode' }, 'Approving it lets the agent go on in auto mode.') : null,
+    block.kind === 'plan' ? h('p', { class: 'plan-mode' }, PLAN_APPROVAL) : null,
     html(body.html ?? ''),
     h(
       'div',

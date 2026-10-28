@@ -5,7 +5,8 @@ use std::collections::BTreeMap;
 
 use serde_json::{Map, Value, json};
 use yardlog::YardLog;
-use yardlog::query::State;
+use yardlog::log::Submission;
+use yardlog::query::{State, reached};
 
 use super::caller::{Continuations, Identity};
 use super::render::{act, actor, block};
@@ -16,6 +17,8 @@ pub struct Selection {
     pub since: Option<u64>,
     /// Every version of each block, oldest first.
     pub every_version: bool,
+    /// Include terminal submissions as well as the open-submission list.
+    pub submissions: bool,
 }
 
 /// Yard Log's root: its key, title, branch, format, the Act that opened it, and how it closed.
@@ -91,6 +94,7 @@ pub fn submissions(log: &YardLog, continuations: &Continuations) -> Vec<Value> {
             "state": State::Open.as_str(),
             "blocks": blocks,
             "sent": act(submission.sending()),
+            "sentReached": sent_reached(submission),
         }));
     }
     by_agent
@@ -98,3 +102,42 @@ pub fn submissions(log: &YardLog, continuations: &Continuations) -> Vec<Value> {
         .map(|(agent, open)| json!({ "agent": agent, "open": open }))
         .collect()
 }
+
+/// The arrival of the send currently counted, independent of subsequent lifecycle changes.
+pub fn sent_reached(submission: &Submission) -> u64 {
+    let sent = submission.sending();
+    let change = submission
+        .changes
+        .iter()
+        .find(|change| &change.act == sent)
+        .expect("a submission holds its sending Act");
+    reached(sent, change.arrived)
+}
+
+/// Submission history, including terminal states and the local revision of arrival.
+pub fn sent(log: &YardLog) -> Value {
+    Value::Array(
+        log.root
+            .submissions
+            .iter()
+            .map(|submission| {
+                let changes: Vec<Value> = submission
+                    .changes
+                    .iter()
+                    .map(|change| json!({ "what": change.what.as_str(), "act": act(&change.act) }))
+                    .collect();
+                json!({
+                    "key": submission.key.to_string(),
+                    "agent": actor(submission.sender()),
+                    "blocks": submission.blocks.iter().map(ToString::to_string).collect::<Vec<_>>(),
+                    "state": submission.state(log).as_str(),
+                    "reached": submission.reached(),
+                    "changes": changes,
+                })
+            })
+            .collect(),
+    )
+}
+
+#[cfg(test)]
+mod tests;

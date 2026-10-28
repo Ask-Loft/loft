@@ -1,0 +1,98 @@
+key: 01a1787c-f803-70b1-b946-b6ee1da9af0b
+slug: codex-yard-hook
+name: "Codex Yard hook"
+body: |
+  The Codex plugin uses native command hooks, with loft on the search path and no other runtime. `loft yard codex hook` reads one native hook object from standard input, or from `--input`, and returns a native hook response by default. `--format json` wraps that response as `hookOutput` in the standard Loft result. Codex controls hook trust, permissions and session cancellation.
+
+  The adapter uses Yard protocol 2 and host codex. Questions and plan approvals use the Yard page through the write, withdraw, close, read and published commands. The worker delivers decision notifications to the matching native thread, with explicit wait available as the fallback. A page approval does not change Codex's mode or permission controls. Native hooks do not report model usage themselves: the worker observes live request counters from an available local app server. Transcript parsing remains outside this adapter's coverage.
+tags:
+  - yard-command
+realizes:
+  - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+requirements:
+  - key: 01a1787c-f803-70b1-b946-b6efaf43646e
+    statement:
+      form: event_driven
+      when: "a native Codex hook is received"
+      system: "the Codex Yard adapter"
+      shall: "validate its identity before translating its supported activity into Yard events."
+    criteria:
+      - key: 01a1787c-f803-70b1-b946-b6f058cf6304
+        name: "An invalid session, relative directory or malformed input is refused before adapter state changes."
+      - key: 01a1787c-f803-70b1-b946-b6f16e2faa8c
+        name: "An unsupported hook returns an empty native response without recording an event."
+      - key: 01a1787c-f803-70b1-b946-b6f2452ea9af
+        name: "Every normalized event names host codex, its native session, its observation time and its absolute directory."
+      - key: 01a1787c-f803-70b1-b946-b6f3b78aec70
+        name: "Subagent lifecycle events name the supplied subagent identifier and type."
+      - key: 01a1787c-f803-70b1-b946-b6f43afbfc80
+        name: "Events with an ambiguous actor are omitted rather than attributed to another agent."
+      - key: 01a1787c-f803-70b1-b946-b6f5954db924
+        name: "UserPromptSubmit starts a turn while Stop or Interrupt ends the observed turn."
+      - key: 01a1787c-f803-70b1-b946-b6f644f3357a
+        name: "PreToolUse and PostToolUse retain the tool name and call identifier."
+      - key: 01a1787c-f803-70b1-b946-b6f717e44770
+        name: "PostCompact records compaction without invented sizes or usage."
+      - key: 01a1787c-f803-70b1-b946-b6f85d931b15
+        name: "Observed changes of permission_mode to or from plan produce plan activity events."
+      - key: 01a1787c-f803-70b1-b946-b6f9d60295bd
+        name: "Events retain no prompt, assistant message, raw tool input or raw tool result."
+      - key: 01a1787c-f803-70b1-b946-b6fa156f1f41
+        name: "Unavailable token counters and tool outcomes remain unknown."
+      - key: 01a1787c-f803-70b1-b946-b6fb02bd5c3e
+        name: "The adapter descriptor declares request events, four supported usage counters, task mirroring and unavailable native dialogs."
+  - key: 01a1787c-f803-70b1-b946-b6fcb7f93fca
+    statement:
+      form: event_driven
+      when: "Codex starts, resumes or restores a session after compaction"
+      system: "the Codex Yard adapter"
+      shall: "provide the caller's Yard context through native additionalContext."
+    criteria:
+      - key: 01a1787c-f803-70b1-b946-b6fde6757eda
+        name: "Context holds the caller's briefing from `loft yard read --context --mark-read`, followed only by the caller arguments and whether decision notifications reach the agent."
+      - key: 01a182c1-1fae-70a9-96eb-ffe3241b44ba
+        name: "With each later prompt, the context holds only whether decision notifications reach the agent."
+      - key: 01a1787c-f803-70b1-b946-b6fefbffd736
+        name: "Context states whether Yard Log is absent, closed or ignored by git."
+      - key: 01a1787c-f803-70b1-b946-b6ff99d0ee70
+        name: "The context read records the revision the briefing showed as the agent's last read, as the Claude mod's does."
+      - key: 01a1787c-f803-70b1-b946-b70058309a97
+        name: "Subagent context uses its supplied parent session and subagent identity."
+      - key: 01a1787c-f803-70b1-b946-b7014ffa12d6
+        name: "Distinct session identifiers are not joined as continuations by inference."
+  - key: 01a1787c-f803-70b1-b946-b702bab29a35
+    statement:
+      form: event_driven
+      when: "a successful update_plan hook supplies unbound plan steps for an identified agent"
+      system: "the Codex Yard adapter"
+      shall: "mirror the steps as tasks in that agent's working stage through Yard commands."
+    criteria:
+      - key: 01a1787c-f803-70b1-b946-b70398628515
+        name: "Pending, in_progress and completed steps become open, active and done tasks respectively."
+      - key: 01a1787c-f803-70b1-b946-b704ed89127d
+        name: "Exact step text and duplicate occurrence identify a task within its caller's stage."
+      - key: 01a1787c-f803-70b1-b946-b705fd32a8f1
+        name: "A renamed step creates a new task while a removed unfinished step becomes dropped."
+      - key: 01a1787c-f803-70b1-b946-b706b01c31bd
+        name: "Reordering steps preserves their task identifiers."
+      - key: 01a1787c-f803-70b1-b946-b7070c81d804
+        name: "A completed removed task remains done."
+      - key: 01a1787c-f803-70b1-b946-b708e98ffd86
+        name: "A mirrored task preserves an explicitly written fix classification."
+      - key: 01a1787c-f803-70b1-b946-b7099cf2b7ad
+        name: "A failed call, malformed step or missing working stage produces no unbound task write."
+      - key: 01a1787c-f803-70b1-b946-b70a6477a613
+        name: "Repeating an unchanged plan creates no task versions."
+      - key: 01a1787c-f803-70b1-b946-b70b5d8c32a4
+        name: "Adapter peeks do not mark the Yard revision as read by the agent."
+  - key: 01a182b6-62b5-70ae-a9a2-260f80bf529d
+    statement:
+      form: unwanted
+      if: "Yard Log cannot be read or written, or refuses a change, while a native Codex hook mirrors or releases the agent's tasks"
+      system: "the Codex Yard adapter"
+      shall: "answer the hook as it would without Yard."
+    criteria:
+      - key: 01a182b6-62b5-70ae-a9a2-261041cfe4ec
+        name: "A Stop, Interrupt, SubagentStop or SessionEnd hook outside a git repository exits 0."
+      - key: 01a182b6-62b5-70ae-a9a2-26117bfcbc6b
+        name: "A PostToolUse hook for `update_plan` whose task change Yard Log refuses exits 0 with the native response unchanged."

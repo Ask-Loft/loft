@@ -11,8 +11,9 @@ import { ms } from '../lib/format.js';
  *   version: { key: string, number: number, act: Act, arrived?: any, body: any },
  *   versions?: any[], versionCount: number, answer?: any, outcome?: any, responses?: any[],
  *   times?: { listed?: string, started?: string, ended?: string }, owner?: Actor,
+ *   executions?: { started: string, ended?: string, assignee?: Actor }[],
  *   reached: number, blocks?: Block[] }} Block
- * @typedef {{ key: string, state: string, blocks: string[], sent: Act, agent?: Actor }} Submission
+ * @typedef {{ key: string, state: string, blocks: string[], sent: Act, sentReached?: number, agent?: Actor }} Submission
  * @typedef {{ mode: 'plan' | 'spec', started: string, ended?: string }} Stretch
  */
 
@@ -75,7 +76,9 @@ export function openSubmissions(log) {
       if (submission.state === 'open') open.push({ ...submission, agent: group.agent });
     }
   }
-  return open.sort((a, b) => ms(a.sent?.at) - ms(b.sent?.at));
+  return open.sort((a, b) => ms(a.sent?.at) - ms(b.sent?.at)
+    || (a.sentReached ?? a.sent?.revision ?? 0) - (b.sentReached ?? b.sent?.revision ?? 0)
+    || a.key.localeCompare(b.key));
 }
 
 /**
@@ -160,7 +163,8 @@ export function writtenAt(block) {
 
 /**
  * The blocks of a stage in order, those written during one stretch of plan or spec mode drawn
- * together under it.
+ * together under it. Every plan has a Plan mode band, using its presentation and decision
+ * when no native plan stretch covers it. These per-plan bands add no native activity.
  * @param {Block[]} blocks
  * @param {Stretch[]} modes
  * @param {number} now
@@ -171,9 +175,12 @@ export function grouped(blocks, modes, now) {
   const items = [];
   for (const block of blocks) {
     const at = ms(writtenAt(block));
-    const stretch = modes.find(
-      (mode) => at >= ms(mode.started) && at <= (mode.ended ? ms(mode.ended) : now),
-    );
+    const covers = (mode) => at >= ms(mode.started) && at <= (mode.ended ? ms(mode.ended) : now);
+    /** @type {Stretch | undefined} */
+    const stretch = block.kind === 'plan'
+      ? modes.find((mode) => mode.mode === 'plan' && covers(mode))
+        ?? { mode: 'plan', started: writtenAt(block), ended: block.outcome?.act?.at }
+      : modes.find(covers);
     const last = items[items.length - 1];
     if (stretch && last && 'stretch' in last && last.stretch === stretch) {
       last.blocks.push(block);

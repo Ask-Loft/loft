@@ -8,10 +8,13 @@ mod answer;
 mod answer_input;
 pub mod args;
 mod branch;
+mod briefing;
 mod caller;
 mod change;
 mod close;
+pub mod codex;
 mod continuation;
+mod digest;
 mod failure;
 pub(crate) mod home_json;
 mod input;
@@ -26,6 +29,7 @@ mod render_log;
 mod serve;
 mod sessions;
 mod standing;
+mod task;
 mod upgrade;
 mod views;
 mod wait;
@@ -45,9 +49,11 @@ use failure::Failure;
 /// Runs a `loft yard` command in `root`.
 pub fn run(root: &Path, action: YardAction) -> Finished {
     match action {
+        YardAction::Codex { action } => codex::run(action),
         YardAction::Read(args) => read::run(root, args),
         YardAction::Write(args) => write::run(root, args),
         YardAction::Withdraw(args) => withdraw::run(root, args),
+        YardAction::Task(args) => task::run(root, args),
         YardAction::Wait(args) => wait::run(root, args),
         YardAction::Close(args) => close::run(root, args),
         YardAction::Published(args) => published::run(root, args),

@@ -32,7 +32,7 @@ pub(super) fn write_act(act: &Act, arrived: Option<Arrival>) -> Vec<Field> {
     fields
 }
 
-fn write_actor(actor: &Actor) -> Out {
+pub(super) fn write_actor(actor: &Actor) -> Out {
     match actor {
         Actor::Agent(agent) => {
             let mut fields = vec![
@@ -75,7 +75,7 @@ pub(super) fn read_arrival(fields: &mut Fields<'_>) -> Read<Option<Arrival>> {
         .map_err(|_| at(node.position, "`arrived` is `pending` or a revision"))
 }
 
-fn read_actor(node: &loft_common::yaml::Node) -> Read<Actor> {
+pub(super) fn read_actor(node: &loft_common::yaml::Node) -> Read<Actor> {
     let mut fields = Fields::of(node)?;
     let actor = if fields.get("name").is_some() {
         Actor::Person {

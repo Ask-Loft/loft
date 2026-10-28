@@ -14,9 +14,9 @@ use yardlog::log::Submission;
 use yardlog::query::State;
 use yardlog::respond::Refused;
 use yardlog::{Agent, Key, SubmissionKey, YardLog};
-use yardlog_store::Held;
 use yardlog_store::home::Home;
 use yardlog_store::lock::Locked;
+use yardlog_store::{Held, YardStoreError};
 
 use super::args::WaitArgs;
 use super::branch::{Branch, Unapplied, log_of, revision_of};
@@ -110,29 +110,27 @@ impl Waiter<'_> {
     ) -> Result<(&'static str, Value), Failure> {
         let mut checked = clock.elapsed();
         let mut last: Option<Held> = None;
+        let mut failed = false;
         loop {
-            // Every write of Yard Log rewrites its root, so a look reads the root alone and the
-            // stages only where the root is no longer the one last read.
-            let unchanged = match last.as_ref().and_then(log_of) {
-                Some(log) => matches!(
-                    self.branch.store.read_root()?,
-                    Some(Ok(root)) if root == log.root
-                ),
-                None => false,
-            };
-            if !unchanged {
-                last = Some(self.branch.store.read()?);
+            // A look that fails while Yard Log leaves the tree is looked again at the next tick,
+            // which finds it gone; a second failure in a row stands.
+            match self.look(&mut last) {
+                Ok(()) => failed = false,
+                Err(_) if !self.branch.store.folder().exists() => {
+                    return Err(self.vanished());
+                }
+                Err(error) if failed => return Err(error.into()),
+                Err(_) => {
+                    failed = true;
+                    clock.wait(EVERY.min(deadline.saturating_sub(clock.elapsed())));
+                    continue;
+                }
             }
             let held = last.as_ref().expect("Yard Log was read above");
             let Some((log, found)) =
                 log_of(held).and_then(|log| Some((log, log.submission(self.key)?)))
             else {
-                let message = format!(
-                    "the Yard Log of `{}` is no longer in the tree, as after a checkout of another \
-                     branch",
-                    self.branch.store.branch()
-                );
-                return Err(self.refused(held, failure::error("gone", &message)));
+                return Err(self.refused(held, self.gone()));
             };
             if !merged && !log.is_closed() && clock.elapsed().saturating_sub(checked) >= MERGE_EVERY
             {
@@ -227,6 +225,40 @@ impl Waiter<'_> {
                 let held = self.branch.store.read()?;
                 Err(self.refused(&held, refusal(&refused)))
             }
+        }
+    }
+
+    /// Reads Yard Log into `last`: the root alone where the root is the one last read, since
+    /// every write of Yard Log rewrites its root, and the whole of it otherwise.
+    fn look(&self, last: &mut Option<Held>) -> Result<(), YardStoreError> {
+        let unchanged = match last.as_ref().and_then(log_of) {
+            Some(log) => matches!(
+                self.branch.store.read_root()?,
+                Some(Ok(root)) if root == log.root
+            ),
+            None => false,
+        };
+        if !unchanged {
+            *last = Some(self.branch.store.read()?);
+        }
+        Ok(())
+    }
+
+    fn gone(&self) -> Value {
+        let message = format!(
+            "the Yard Log of `{}` is no longer in the tree, as after a checkout of another branch",
+            self.branch.store.branch()
+        );
+        failure::error("gone", &message)
+    }
+
+    /// A look that failed because Yard Log left the tree while it was read, refused as gone.
+    fn vanished(&self) -> Failure {
+        let mut fields = self.branch.fields(0);
+        fields["submission"] = json!(self.key.to_string());
+        Failure::Refused {
+            fields,
+            errors: vec![self.gone()],
         }
     }
 

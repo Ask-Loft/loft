@@ -116,13 +116,13 @@ function activities(log, now) {
     ],
     subagents: (activity.subagents ?? []).map((run) => ({
       ...span(run),
-      agent: `${activity.session}/${run.agent}`,
+      agent: agentKey({ host: activity.host, session: activity.session, agent: run.agent }),
       type: run.type ?? 'subagent',
       stage: run.stage,
     })),
     loft: (activity.loft ?? []).map((run) => ({
       ...span(run),
-      agent: run.agent === 'main' ? activity.session : `${activity.session}/${run.agent}`,
+      agent: agentKey({ host: activity.host, session: activity.session, ...(run.agent === 'main' ? {} : { agent: run.agent }) }),
       stage: run.stage,
       name: (run.commands ?? []).join(' '),
       failed: run.failed === true,
@@ -212,7 +212,7 @@ function sessionStarts(stages) {
   /** @type {Map<string, number>} */
   const starts = new Map();
   for (const stage of stages) {
-    const session = String(stage.owner.session ?? '');
+    const session = agentKey({ host: stage.owner.host, session: stage.owner.session });
     if (!starts.has(session)) starts.set(session, ms(stage.times.started));
   }
   return [...starts].map(([session, from], index) => ({ session, number: index + 1, from }));
@@ -252,12 +252,18 @@ function row(stage, span, agent, { loft, subagents, waits, turns }, now) {
       const written = ms(block.version.act.at);
       const from = times.listed ? ms(times.listed) : written;
       const to = times.listed ? (times.ended ? ms(times.ended) : now) : written;
+      const executions = block.executions ?? (times.started ? [{ started: times.started, ended: times.ended }] : []);
+      const active = executions.map((execution) => ({
+        from: ms(execution.started), to: execution.ended ? ms(execution.ended) : now, assignee: execution.assignee,
+      }));
       return {
         key: block.key,
         id: block.id,
         title: block.version.body.title,
         from,
-        activeFrom: times.started ? ms(times.started) : null,
+        activeFrom: active[0]?.from ?? null,
+        active,
+        assignee: block.version.body.assignee,
         to,
         done: block.version.body.state === 'done',
         fix: block.version.body.type === 'fix',
@@ -277,9 +283,7 @@ function row(stage, span, agent, { loft, subagents, waits, turns }, now) {
   const asked = waits
     .filter((wait) => wait.agent === agent && within(wait, span))
     .map(({ key, from, to, open, block }) => ({ key, from, to, open, block }));
-  const active = tasks
-    .filter((task) => task.activeFrom !== null)
-    .map((task) => ({ from: task.activeFrom, to: task.to }));
+  const active = tasks.flatMap((task) => task.active);
   const parts = split(turns.length ? intersect([span], turns) : [span], { loft: runs, subagents: helpers, tasks: active, waits: asked });
   const segments = Object.entries(parts)
     .flatMap(([kind, spans]) =>

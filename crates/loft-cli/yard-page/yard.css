@@ -534,6 +534,7 @@ button { font: inherit; }
 .choice .badge { grid-column: 2; justify-self: start; }
 .choice-detail { grid-column: 2; color: var(--body); font-size: 14px; }
 .words, .reason { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.own-words .words { padding: 0 8px 8px; }
 textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--rail); padding: 6px 8px; width: 100%; resize: vertical; }
 textarea:focus { border-color: var(--ink); }
 .send-row, .decide-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
@@ -736,6 +737,10 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .session-rule { width: 0; border-left: 1px dashed var(--muted); pointer-events: auto; padding-left: 3px; }
 .gantt-row { height: var(--row); }
 .task-row { height: var(--task-row); }
+.task-row--assigned { height: 32px; }
+.task-row--assigned .name-cell { display: block; padding-top: 1px; }
+.task-assignee { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.task-row .task-assignee { display: block; margin: 0; padding: 0 8px 0 26px; font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stage-row { border-top: 1px solid color-mix(in srgb, var(--rail) 60%, transparent); }
 .name-cell { position: sticky; left: 0; z-index: 6; display: flex; align-items: center; min-width: 0; background: var(--lane-bg); border-right: 1px solid var(--line); }
 .lane-label { padding: 0 8px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -784,6 +789,8 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .tokens { background: var(--surface); border: 1px solid var(--ink); padding: 16px; display: grid; gap: 12px; }
 .tokens h3 { font-size: 18px; font-weight: 700; }
 .tokens h4 { font-size: 14px; color: var(--muted); }
+.token-details > summary { cursor: pointer; font-size: 14px; }
+.token-details-content { display: grid; gap: 12px; margin-top: 12px; }
 .token-totals { display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 0; }
 .token-totals dt { color: var(--muted); font-size: 12px; }
 .token-totals dd { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }

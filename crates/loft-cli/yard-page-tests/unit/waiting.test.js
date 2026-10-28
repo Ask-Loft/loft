@@ -185,7 +185,8 @@ test('what was chosen or typed and not sent is shown again when the panel opens 
   words.dispatchEvent(new Event('input'));
   modal.close('waiting');
   openWaiting();
-  assert.ok(dialog().querySelector('input[value="Blue"]').checked);
+  assert.equal(dialog().querySelector('input[value="Blue"]').checked, false);
+  assert.equal(dialog().querySelector(`#answer-${asked.id}-words`).checked, true);
   assert.equal(dialog().querySelector(`#words-${asked.id}`).value, 'Or teal');
 });
 

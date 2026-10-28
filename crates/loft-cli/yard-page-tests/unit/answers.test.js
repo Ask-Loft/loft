@@ -49,10 +49,12 @@ test('a question that takes more than one option lets the person choose one or m
   assert.equal(panel.querySelectorAll('input[type=checkbox]').length, 3);
 });
 
-test('a question that allows the person own words offers a text field beside its options', () => {
+test('a question that allows own words offers a selectable option with a text field', () => {
   const asked = question('shelf', ['Top', 'Bottom'], { ownWords: true });
   const panel = submissionPanel({ key: 's', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
   assert.ok(panel.querySelector(`#words-${asked.id}`));
+  assert.equal(panel.querySelector(`#answer-${asked.id}-words`).type, 'radio');
+  assert.equal(panel.querySelectorAll('input[type=radio]').length, 3);
   const draft = say({}, asked, 'The window sill');
   assert.ok(readyToSend(draft, [asked]));
   assert.deepEqual(toSend(draft, [asked]), [{ block: asked.key, labels: [], words: 'The window sill' }]);
@@ -222,12 +224,25 @@ test('approving sends the outcome approved', async () => {
   assert.deepEqual(posted[0].body.answers, [{ block: approval.key, verdict: 'approved' }]);
 });
 
-test('a plan presented in plan mode says beside its approval that the agent goes on in auto mode', () => {
-  const plan = block('plan', 'p1', { title: 'The plan', markdown: 'x', html: '<p>x</p>', planMode: true });
-  const panel = submissionPanel({ key: 's7', state: 'open', blocks: [plan.key], sent: { at: '', revision: 1, by: {} } }, [plan], where);
-  assert.match(panel.querySelector('.plan-mode').textContent, /auto mode/);
-  assert.ok(panel.querySelector('#approve-p1'));
-  assert.ok(panel.querySelector('#reject-p1'));
+test('every plan has the same approval explanation regardless of host or native plan flag', () => {
+  const explanations = [];
+  for (const host of ['claude-code', 'codex']) {
+    for (const planMode of [true, false, undefined]) {
+      const body = { title: 'The plan', markdown: 'x', html: '<p>x</p>', ...(planMode === undefined ? {} : { planMode }) };
+      const plan = block('plan', 'p1', body, { by: { host, session: 's1' } });
+      const panel = submissionPanel({ key: 's7', state: 'open', blocks: [plan.key], sent: { at: '', revision: 1, by: {} } }, [plan], where);
+      const text = panel.querySelector('.plan-mode')?.textContent;
+      assert.match(text ?? '', /Approving authorizes the planned work, subject to the agent's mode and permissions/);
+      assert.doesNotMatch(text, /auto mode/);
+      explanations.push(text);
+      assert.ok(panel.querySelector('#approve-p1'));
+      assert.ok(panel.querySelector('#reject-p1'));
+    }
+  }
+  assert.equal(new Set(explanations).size, 1);
+  const approval = block('approval', 'a1', { title: 'Approve', markdown: 'x', html: '<p>x</p>' });
+  const panel = submissionPanel({ key: 's8', state: 'open', blocks: [approval.key], sent: { at: '', revision: 1, by: {} } }, [approval], where);
+  assert.equal(panel.querySelector('.plan-mode'), null);
 });
 
 test('an answer given elsewhere first is reported with the channel it came from', () => {

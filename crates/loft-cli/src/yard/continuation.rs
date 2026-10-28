@@ -17,7 +17,7 @@ const OUTCOME: &str = "recorded";
 pub fn run(args: &ContinueArgs) -> Finished {
     let recorded = Home::from_env()
         .ok_or_else(Failure::no_home)
-        .and_then(|home| record_continuation(&home, &args.session, &args.from))
+        .and_then(|home| record_continuation(&home, &args.host, &args.session, &args.from))
         .map(|changed| {
             let fields = json!({
                 "session": args.session,

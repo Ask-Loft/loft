@@ -1,0 +1,71 @@
+key: 01a182b6-3c58-7235-ad04-3916200a0c81
+slug: loft-yard-task
+name: "Change a task in place"
+body: "An adapter that mirrors an agent's native task changes one field or two of a task that Yard Log already holds. With `loft yard task` it names the task and the fields it changes, and Yard Log applies them to the task as it stands under its lock, so that the adapter reads nothing first, sends no revision it read and retries nothing, and the delegation rules are applied once, by Yard Log."
+tags:
+  - yard-command
+  - needs-repository
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a182b6-3c58-7235-ad04-39177c0e4cba
+    statement:
+      form: event_driven
+      when: "an agent runs `loft yard task` with a task's id and any of `--state`, `--title`, `--detail` and `--type`"
+      system: "`loft yard task`"
+      shall: "write a new version of that task that holds its current version with the fields given changed."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-3918a33b8514
+        name: "The new version keeps the task's stage, assignee and every field not given."
+      - key: 01a182b6-3c58-7235-ad04-3919838ebc43
+        name: "The change is applied to the task's version as it stands when Yard Log's lock is taken, without a revision to base it on."
+      - key: 01a182b6-3c58-7235-ad04-391a16adf69c
+        name: "A change that leaves the task as it was writes no version, and its outcome is `unchanged`."
+      - key: 01a182b6-3c58-7235-ad04-391b56829e22
+        name: "The result names the task's id and its state after the change."
+      - key: 01a182b6-3c58-7235-ad04-391c56e74744
+        name: "A change by an agent the delegation rules refuse is refused, with no block changed."
+  - key: 01a182b6-3c58-7235-ad04-391df714195a
+    statement:
+      form: unwanted
+      if: "the id given to `loft yard task` names no task of Yard Log"
+      system: "`loft yard task`"
+      shall: "refuse the change and name the id."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-391e7bba112b
+        name: "No file is changed."
+  - key: 01a182b6-3c58-7235-ad04-391f3221048b
+    statement:
+      form: event_driven
+      when: "an agent runs `loft yard task --release`"
+      system: "`loft yard task`"
+      shall: "return each active task assigned to that agent to `open`, in one write."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-39202de76849
+        name: "Each released task keeps its assignee."
+      - key: 01a182b6-3c58-7235-ad04-392155540e65
+        name: "A task of that agent already done, dropped or open is left as it was."
+      - key: 01a182b6-3c58-7235-ad04-3922e12e3989
+        name: "A task assigned to another agent is left as it was."
+      - key: 01a182b6-3c58-7235-ad04-3923e166a1b6
+        name: "Where no active task is assigned to the agent, nothing is written and the outcome is `unchanged`."
+      - key: 01a182b6-3c58-7235-ad04-39240719464e
+        name: "The result lists the ids of the tasks released."
+  - key: 01a182fd-3974-7514-9227-ad03c3be8ea9
+    statement:
+      form: optional
+      where: "an adapter runs `loft yard task` with `--mirror` to mirror a native task update"
+      system: "`loft yard task`"
+      shall: "leave the change unapplied where another agent is assigned the task or where the task is unassigned in a stage the agent does not own, and keep the state of a done or dropped task."
+    body: "Both adapters mirror a native task update through this one rule, applied to the task as it stands under Yard Log's lock, so that neither keeps a copy of it."
+    criteria:
+      - key: 01a182fd-3974-7514-9227-ad0427dcf719
+        name: "With `--mirror`, a change to a task assigned to another agent writes nothing, and the outcome is `unchanged`."
+      - key: 01a182fd-3974-7514-9227-ad0504225a5c
+        name: "With `--mirror`, a change to an unassigned task of a stage the agent does not own writes nothing, and the outcome is `unchanged`."
+      - key: 01a182fd-3974-7514-9227-ad06a33a79e2
+        name: "With `--mirror`, a change to a done or dropped task keeps its state and applies its other fields."
+      - key: 01a182fd-3974-7514-9227-ad07258dea79
+        name: "The Claude and Codex adapters each mirror a bound native task update with `--mirror`."

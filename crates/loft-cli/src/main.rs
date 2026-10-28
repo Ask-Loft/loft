@@ -197,8 +197,13 @@ fn dispatch(command: Command) -> Finished {
             output.json(),
         ),
         Command::Skill {
-            action: SkillAction::Install { no_plugin, output },
-        } => skill::run(root, plugin(no_plugin), output.json()),
+            action:
+                SkillAction::Install {
+                    host,
+                    no_plugin,
+                    output,
+                },
+        } => skill::run(root, host, plugin(no_plugin), output.json()),
         Command::RecordInstall { way, output } => record_install::run(way, output.json()),
         Command::Telemetry { action } => {
             let (action, as_json) = action.split();

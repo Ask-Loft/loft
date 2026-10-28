@@ -104,3 +104,8 @@ fn a_field_added_to_a_yard_schema_leaves_the_protocol_s_version_as_it_was() {
     fields.push("yard-read/oneOf/0/properties/somethingNew".to_owned());
     assert_eq!(broken(&promised, &fields), Vec::<String>::new());
 }
+
+#[test]
+fn host_aware_callers_and_adapter_descriptors_use_protocol_two() {
+    assert_eq!(protocol(&Scratch::empty(), None)["protocol"], 2);
+}

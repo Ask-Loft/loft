@@ -26,7 +26,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc8124f7fe40
         name: "The skill says to give each stage a goal that names what the step leaves done."
       - key: 01a1646f-546c-7521-9643-bc82fcce2ab4
-        name: "The skill says that each agent has its own active stage, so that a subagent opens a stage of its own."
+        name: "The skill says that a subagent executing an assigned task keeps it in its recorded stage, and opens its own stage for independent work."
   - key: 01a1646f-546c-7521-9643-bc833bcb2e08
     statement:
       form: ubiquitous
@@ -41,6 +41,31 @@ requirements:
         name: "The skill says that a plan the person approved counts as asking for the build it describes."
       - key: 01a16a1a-78f9-750e-8105-fbc410ef6700
         name: "The skill says that a change to the specification the person approved does not count as asking for its build."
+  - key: 01a179ce-71a7-726e-acc9-01da254fba3b
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to decompose each implementation plan into bounded tasks."
+    criteria:
+      - key: 01a179ce-71a7-726e-acc9-01db9e60eead
+        name: "The skill says that each task has one concrete outcome."
+      - key: 01a179ce-71a7-726e-acc9-01dc3b7f4fe5
+        name: "The skill says that each task has an explicit scope."
+      - key: 01a179ce-71a7-726e-acc9-01dd66cc26e5
+        name: "The skill says that each task has a verifiable completion condition."
+      - key: 01a179ce-71a7-726e-acc9-01de6de2d389
+        name: "The skill says to split a task whose outcomes can be finished independently."
+  - key: 01a179ce-71a7-726e-acc9-01df5026fdc0
+    statement:
+      form: event_driven
+      when: "the person approves an implementation plan"
+      system: "the `yard` skill"
+      shall: "tell the agent to register its planned implementation tasks in Yard Log before implementation starts."
+    criteria:
+      - key: 01a179ce-71a7-726e-acc9-01e0de97c444
+        name: "The skill says to register every planned implementation task before the first implementation task starts."
+      - key: 01a179ce-71a7-726e-acc9-01e1b6416ad2
+        name: "The skill says to register tasks through the host adaptation's task mirroring when available, or explicit task blocks otherwise."
   - key: 01a1646f-546c-7521-9643-bc87117049c9
     statement:
       form: ubiquitous
@@ -50,9 +75,15 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc883a0f6321
         name: "The skill says to mark a task `active` in a write before its work starts."
       - key: 01a1646f-546c-7521-9643-bc89c5da80bc
-        name: "The skill says to mark a task `done` or `dropped` once its work ends, before the next task is marked `active`."
+        name: "The skill says to mark each task `done` or `dropped` once its work ends, independently of other tasks running in parallel."
       - key: 01a1646f-546c-7521-9643-bc8a0a4ac1b9
         name: "The skill says not to mark the tasks of a stage `done` in one write at its end."
+      - key: 01a18053-9e08-72a7-ab94-f3a964c9ed6b
+        name: "The skill says to name an existing task explicitly when delegating it, then record or claim its assignment before execution."
+      - key: 01a18053-9e08-72a7-ab94-f3aac12732f2
+        name: "The skill says to reread a task after a stale refusal without overwriting another agent's assignment or progress."
+      - key: 01a18053-9e08-72a7-ab94-f3ab07cae130
+        name: "The skill says that an agent's end alone does not prove its delegated task complete."
   - key: 01a16a04-3f8b-71a9-baa3-95e142be0bf6
     statement:
       form: ubiquitous

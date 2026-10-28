@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { flagOf, HOME, readDoc, SESSION, start, stage, TREE, world, yardRuns } from './yard-world'
+import { briefingOf, flagOf, HOME, readDoc, SESSION, start, stage, TREE, world, yardRuns } from './yard-world'
 
 test('a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start', async ($, on) => {
   const w = world(on)
@@ -16,16 +16,16 @@ test('a loft with no yard commands leaves Yard Client off, registers no tool and
   await $.classic.SessionStart({ source: 'clear' })
   expect(w.state.tools).toEqual([])
   expect(w.state.toasts).toHaveLength(1)
-  expect(w.state.toasts[0]).toMatch(/Yard Client is off: the loft plugin 2\.2\.1 speaks the yard protocol 1, and `loft` runs loft .*, which has no yard commands\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\./)
+  expect(w.state.toasts[0]).toMatch(/Yard Client is off: the loft plugin 2\.2\.1 speaks the yard protocol 1–2, and `loft` runs loft .*, which has no yard commands\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\./)
   const denied = await $.tool.call({ tool: 'mcp__loft__yard_read' })
   expect(denied.deny ?? denied.text).toMatch(/Yard Client is off/)
 })
 
 test('a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update', async ($, on) => {
-  const w = world(on, { protocol: 2 })
+  const w = world(on, { protocol: 3 })
   await start($)
   expect(w.state.tools).toEqual([])
-  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 2\. To use Yard Client, bring the loft plugin up to date/)
+  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 3\. To use Yard Client, bring the loft plugin up to date/)
 })
 
 test('a loftCommand that cannot be run leaves Yard Client off and names the setting', async ($, on) => {
@@ -45,7 +45,7 @@ test('with Yard Client off, the agent asks and plans in Claude Code alone', asyn
   expect(w.state.calls.map(call => call.tool)).toEqual(['AskUserQuestion', 'ExitPlanMode'])
 })
 
-test('the session starts with the context of its branch, from one read in its own name that marks what it read', async ($, on) => {
+test('the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   const started = await start($)
@@ -53,11 +53,21 @@ test('the session starts with the context of its branch, from one read in its ow
   expect(reads).toHaveLength(1)
   expect(flagOf(reads[0]!.argv, '--session')).toBe(SESSION)
   expect(reads[0]!.cwd).toBe(TREE)
+  expect(reads[0]!.argv).toContain('--context')
   expect(reads[0]!.argv).toContain('--mark-read')
-  const text = (started.additionalContext ?? []).join('\n')
-  expect(text).toContain('Yard Log of `feat/shelf`')
-  expect(text).toContain('Your active stage: `shape`')
-  expect(text.length).toBeLessThanOrEqual(2000)
+  const briefing = briefingOf(w.state.read, reads[0]!.argv)
+  expect(started.additionalContext).toEqual([`${String(briefing.text)}\nRead Yard Log with \`yard_read\` before writing.`])
+  expect(String(briefing.text)).toContain('Your working stage: `shape`')
+})
+
+test('a prompt gives no briefing: only the session start does', async ($, on) => {
+  const w = world(on)
+  await start($)
+  const before = w.state.runs.length
+  const prompted = await $.classic.UserPromptSubmit({ prompt: 'go' } as never)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  expect(prompted.additionalContext ?? []).toEqual([])
+  expect(w.state.runs.slice(before).filter(run => run.argv.includes('read'))).toEqual([])
 })
 
 test('after /clear the session is given its context again, once loft yard continue has recorded the session it continues', async ($, on) => {

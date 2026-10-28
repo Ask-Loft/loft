@@ -147,6 +147,10 @@ fn the_result_lists_the_open_submissions_each_with_the_agent_that_sent_it_apart(
         json!({ "host": "claude-code", "session": "s2", "agent": "a1", "agentType": "plan" }),
         1
     )));
+    for group in read["submissions"].as_array().unwrap() {
+        let sent = &group["open"][0];
+        assert_eq!(sent["sentReached"], sent["sent"]["revision"]);
+    }
 }
 
 #[test]

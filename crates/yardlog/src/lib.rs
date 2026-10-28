@@ -4,10 +4,13 @@
 //! I/O: a store reads and writes its files, and the clock and the actor are given to it.
 
 pub mod act;
+pub mod adapter;
 pub mod body;
 pub mod codec;
 pub mod datum;
+pub mod delegation;
 pub mod format;
+pub mod identity;
 pub mod input;
 pub mod keys;
 pub mod log;
@@ -17,6 +20,9 @@ pub mod query;
 pub mod respond;
 mod rules;
 pub mod settle;
+pub mod task_change;
+pub mod usage;
+mod working;
 pub mod write;
 
 pub use act::{Act, Actor, Agent, Channel, Time};

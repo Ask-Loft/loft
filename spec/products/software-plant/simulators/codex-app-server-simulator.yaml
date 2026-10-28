@@ -1,0 +1,55 @@
+key: 01a17989-a8b9-74b1-9049-073969b8f0f3
+slug: codex-app-server-simulator
+name: "Codex app server simulator"
+body: "A local Unix-domain WebSocket peer for the Codex app-server port. Its scenarios script the metadata responses, usage notifications, decision delivery and anticipated failures consumed by Loft's unchanged Codex Yard worker. A shared contract suite compares the simulator with a real pinned Codex app server using an isolated home and a loopback model provider."
+tags:
+  - plant-simulator
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+mentions:
+  - 01a17989-a8b4-7254-bee6-8c17685ca099
+requirements:
+  - key: 01a17989-a8b9-74b1-9049-073a0753ae54
+    statement:
+      form: ubiquitous
+      system: "The Codex app server simulator"
+      shall: "serve its scenario's app-server metadata, notifications and turn-control responses over the local WebSocket contract."
+    criteria:
+      - key: 01a17989-a8b9-74b1-9049-073b0be616b1
+        name: "A scenario supplies loaded-thread membership and subscription responses."
+      - key: 01a17989-a8b9-74b1-9049-073c2d26a1c0
+        name: "A test reads the requests received by the simulator."
+      - key: 01a17989-a8b9-74b1-9049-073db67a1af0
+        name: "A scenario emits usage with thread, turn, latest-request counters and cumulative counters."
+      - key: 01a17989-a8b9-74b1-9049-073e8bf3acdd
+        name: "Scenarios include repeated snapshots, counter resets, absent optional counters and unrelated notifications."
+      - key: 01a17989-a8b9-74b1-9049-073f82de693f
+        name: "Scenarios include refused or silent connections, disconnects and malformed responses."
+      - key: 01a17989-a8b9-74b1-9049-0740529d4832
+        name: "The same supported subscription and usage scenarios run against the simulator and real Codex."
+      - key: 01a17989-a8b9-74b1-9049-0741c5c9ac70
+        name: "The real contract half uses a temporary Codex home and a loopback model provider without a remote model account."
+      - key: 01a17afd-c25e-744a-84c1-0854f822502b
+        name: "A scenario accepts a new turn on an idle loaded thread."
+      - key: 01a17afd-c25e-744a-84c1-0855c7bb7148
+        name: "A scenario accepts steering of the expected active turn."
+      - key: 01a17afd-c25e-744a-84c1-08562ca4abc8
+        name: "A stale expected turn identifier is refused."
+      - key: 01a17afd-c25e-744a-84c1-08570f7a52fc
+        name: "A turn/start that arrives during an active turn adds input to that turn."
+      - key: 01a17afd-c25e-744a-84c1-0858fa7ebd34
+        name: "A scenario exposes a native receipt of a notification marker."
+      - key: 01a17afd-c25e-744a-84c1-08598ae1c84f
+        name: "A scenario can accept model input while dropping its acknowledgment."
+      - key: 01a17afd-c25e-744a-84c1-085a2e450238
+        name: "A scenario scripts native interruption and a later idle state."
+      - key: 01a17afd-c25e-744a-84c1-085b7fc4beb5
+        name: "The same supported wakeup and steering cases run against the simulator and real Codex."
+      - key: 01a17d58-a534-746d-9e9d-03f5abb36ae3
+        name: "A scenario supplies API-key, ChatGPT, absent or unrecognized account metadata without real credentials."
+      - key: 01a17d58-a534-746d-9e9d-03f697c334af
+        name: "A scenario emits account-type updates among usage notifications."
+      - key: 01a17d58-a534-746d-9e9d-03f7e278dd81
+        name: "Account inspection can be refused independently of usage subscription."
+      - key: 01a17d58-a534-746d-9e9d-03f81335617c
+        name: "The account-inspection contract runs against the simulator and a real isolated Codex app server."

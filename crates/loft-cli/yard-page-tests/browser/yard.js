@@ -3,7 +3,7 @@
 // and in front of the same git simulator, and it reaches the page server as the mod does.
 
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -50,6 +50,12 @@ function yard(driver, args, input) {
  */
 export function write(batch, extra = []) {
   return yard(setup.driver, ['write', '--session', 's1', ...extra], batch);
+}
+
+/** Sends a batch as another caller, using the clock simulator's fixed epoch. */
+export function sendAs(session, batch, epoch) {
+  const driver = { ...setup.driver, env: { ...setup.driver.env, SOURCE_DATE_EPOCH: String(epoch) } };
+  return yard(driver, ['write', '--session', session, '--send'], batch);
 }
 
 /**
@@ -107,4 +113,20 @@ export function address(block) {
 /** The ISO time `seconds` from now, as Yard Log writes times. */
 export function since(seconds) {
   return new Date(Date.now() + seconds * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
+}
+
+/** A synthetic totals file written before account provenance was recorded. */
+export function historicalCodexTotals() {
+  const folder = join(setup.tree, '.yard', setup.branch, 'tokens');
+  mkdirSync(folder, { recursive: true });
+  const path = join(folder, 'codex~historical-cache-write.yaml');
+  const text = 'session: historical-cache-write\nhost: codex\ntokens:\n  input: 10\n  cacheRead: 100\n  cacheWrite: 0\n  output: 2\n';
+  writeFileSync(path, text);
+  return { path, text, read: () => readFileSync(path, 'utf8') };
+}
+
+/** Runs a command as the named caller with the simulated clock fixed to `epoch`. */
+export function atEpoch(args, input, epoch) {
+  const driver = { ...setup.driver, env: { ...setup.driver.env, SOURCE_DATE_EPOCH: String(epoch) } };
+  return yard(driver, args, input);
 }

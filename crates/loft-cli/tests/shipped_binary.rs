@@ -25,8 +25,11 @@ const BUILT_IN: [&str; 7] = [
 /// where an npm install puts it, which only `Scratch::npm_installed` starts, to show how `loft`
 /// tells it was installed by npm; `whoami` and `hostname`, whose answers a test plants as text the command
 /// event must never carry; `script`, which runs the built `loft` on a pseudo-terminal; and
-/// `mkfifo`, which makes the named pipe that a test file path names.
-const OTHER_PROGRAMS: [&str; 11] = [
+/// `mkfifo`, which makes the named pipe that a test file path names; and the copied skill
+/// packager, whose discovery guard is tested before it reaches a build command; and Python,
+/// which hosts the on-demand real Codex contract's loopback model fixture.
+const OTHER_PROGRAMS: [&str; 13] = [
+    "\"python3\"",
     "\"mkfifo\"",
     "&copy",
     "\"script\"",
@@ -38,6 +41,7 @@ const OTHER_PROGRAMS: [&str; 11] = [
     "workspace().join(\"scripts/npm-packages.sh\")",
     "workspace().join(\"scripts/npm-smoke.sh\")",
     "repo.join(SCRIPT)",
+    "scratch.0.join(\"scripts/package-skill.sh\")",
 ];
 
 /// How a test starts `loft`.

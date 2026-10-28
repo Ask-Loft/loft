@@ -21,13 +21,13 @@ requirements:
       shall: "write the `loft-spec` skill into the current directory."
     criteria:
       - key: 01a13654-bf86-77e9-8fd5-8dc2abcad562
-        name: "The Claude Code package is written to `.claude/skills/loft-spec/`."
+        name: "A selected Claude Code package is written to `.claude/skills/loft-spec/`."
       - key: 01a13654-bf86-77e9-8fd5-8dc38e0eec9a
-        name: "The Codex package is written to `.agents/skills/loft-spec/`."
+        name: "A selected materialized Codex package is written to `.agents/skills/loft-spec/`."
       - key: 01a13654-bf86-77e9-8fd5-8dc45d64494e
-        name: "Each package is the composition of the skill that `loft` embeds."
+        name: "Each materialized package is the composition of the skill that `loft` embeds."
       - key: 01a13654-bf86-77e9-8fd5-8dc58145c4bd
-        name: "A file that a skill directory held and its package does not is removed."
+        name: "A file that a replaced materialized directory held and its package does not is removed."
       - key: 01a13654-bf86-77e9-8fd5-8dc69b2cc428
         name: "No file outside the two skill directories and `.claude/settings.json` is written."
       - key: 01a1549d-6653-72d3-930f-ce5d71b3edcf
@@ -36,9 +36,10 @@ requirements:
         name: "The command writes the skill where there is no `spec/`."
   - key: 01a13654-bf86-77e9-8fd5-8dc8af39c9d9
     statement:
-      form: ubiquitous
+      form: optional
+      where: "a selected skill destination is a materialized directory"
       system: "`loft skill install`"
-      shall: "replace each skill directory whole, through a directory written beside it and a rename."
+      shall: "replace that directory whole, through a directory written beside it and a rename."
     criteria:
       - key: 01a13654-bf86-77e9-8fd5-8dc99bc8eceb
         name: "The package is written to a temporary directory beside the skill directory."
@@ -67,7 +68,7 @@ requirements:
       - key: 01a13654-bf86-77e9-8fd5-8dd023338c07
         name: "The document lists each skill directory written."
       - key: 01a13654-bf86-77e9-8fd5-8dd1585f57e4
-        name: "The outcome is `installed` when both skill directories were written."
+        name: "The outcome is `installed` when the selected hosts have their skills available."
       - key: 01a13654-bf86-77e9-8fd5-8dd2a7db3828
         name: "An error is listed among the document's errors."
   - key: 01a156af-5306-73ab-a0e4-ce9ba1b99a5f
@@ -171,3 +172,43 @@ requirements:
         name: "The error names the origin."
       - key: 01a156af-5307-7725-b0b7-f7c6ccc9dcf4
         name: "Nothing is written."
+  - key: 01a17844-cbcb-77bf-af93-ba95cf8a740a
+    statement:
+      form: ubiquitous
+      system: "`loft skill install`"
+      shall: "select the hosts with `--host codex|claude-code|all`, defaulting to `all`."
+    criteria:
+      - key: 01a17844-cbcb-77bf-af93-ba96b26094e4
+        name: "An omitted host option and an explicit all option install both host packages."
+      - key: 01a17844-cbcb-77bf-af93-ba97849d5605
+        name: "Selecting Codex writes only its package and leaves Claude Code files and settings unchanged."
+      - key: 01a17844-cbcb-77bf-af93-ba9899a0a2a8
+        name: "Selecting Claude Code writes only its package and leaves Codex files unchanged."
+      - key: 01a17844-cbcb-77bf-af93-ba99e75f4bed
+        name: "An unknown host is a usage error before any file is written."
+      - key: 01a17844-cbcb-77bf-af93-ba9af5ee5df5
+        name: "The JSON document lists only the skill directories written."
+  - key: 01a17844-cbcb-77bf-af93-ba9ba63a0b99
+    statement:
+      form: optional
+      where: "the selected Codex destination is the repository discovery link"
+      system: "the skill installer"
+      shall: "preserve that link without writing the source it exposes."
+    criteria:
+      - key: 01a17844-cbcb-77bf-af93-ba9c3e6fb522
+        name: "The known link is .agents/skills/loft-spec pointing relatively to ../../crates/loft-cli/skill/loft-spec, with the router and Codex metadata present in that source."
+      - key: 01a17844-cbcb-77bf-af93-ba9d055e3558
+        name: "Repeated installation preserves the link, its target and the source bytes."
+      - key: 01a17844-cbcb-77bf-af93-ba9ef9131ceb
+        name: "A preserved link is reported as unchanged in text and is omitted from the JSON list of directories written."
+  - key: 01a17844-cbcb-77bf-af93-ba9f9baa7524
+    statement:
+      form: unwanted
+      if: "a selected skill destination is a broken or unexpected symbolic link"
+      system: "the skill installer"
+      shall: "refuse before writing any selected skill or plugin settings."
+    criteria:
+      - key: 01a17844-cbcb-77bf-af93-baa026e0f72c
+        name: "The error names the destination and leaves the link and its target unchanged."
+      - key: 01a17844-cbcb-77bf-af93-baa10982a76c
+        name: "An invalid unselected destination does not prevent installation for the selected host."

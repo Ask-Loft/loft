@@ -9,6 +9,40 @@ realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
 requirements:
+  - key: 01a18025-1c03-72bb-b904-c23c34877a3d
+    statement:
+      form: event_driven
+      when: "the repository's `scripts/yard-dogfood.sh` launcher finishes building `loft` for a Claude Code or Codex session"
+      system: "the dogfood launcher"
+      shall: "restart the shared page server with the binary it just built before starting the session."
+    criteria:
+      - key: 01a18025-1c03-72bb-b904-c23d0979cab4
+        name: "A running page server is replaced even when its release version equals the newly built binary's version."
+      - key: 01a18025-1c03-72bb-b904-c23e06b616f8
+        name: "The server uses the dogfood port, 7412."
+      - key: 01a18025-1c03-72bb-b904-c23ff7831364
+        name: "The launcher verifies that the replacement serves before starting Claude Code or Codex."
+      - key: 01a18025-1c03-72bb-b904-c240304554ce
+        name: "Concurrent dogfood launches leave one page server holding the machine-wide server lock."
+      - key: 01a18025-1c03-72bb-b904-c241ca7ef9be
+        name: "A session already using Yard connects to the replacement without restarting its agent."
+      - key: 01a18025-1c03-72bb-b904-c24253398c1b
+        name: "Previously registered trees and recorded Yard state are kept through the restart."
+      - key: 01a18025-1c03-72bb-b904-c243a3da37e9
+        name: "The caller's working directory is kept when Claude Code or Codex starts."
+  - key: 01a18025-1c03-72bb-b904-c2440aac601a
+    statement:
+      form: unwanted
+      if: "the dogfood launcher's build or page server restart fails"
+      system: "the dogfood launcher"
+      shall: "exit with a nonzero status and name the failure before starting an agent session."
+    criteria:
+      - key: 01a18025-1c03-72bb-b904-c245ed0737b2
+        name: "A build failure leaves the existing page server running."
+      - key: 01a18025-1c03-72bb-b904-c246b403e158
+        name: "An unrelated process named by stale server metadata is left running."
+      - key: 01a18025-1c03-72bb-b904-c24747d8b962
+        name: "A restart that cannot be confirmed within a bounded wait fails instead of starting Claude Code or Codex."
   - key: 01a1646f-546d-7042-befd-ea8d95ec4aad
     statement:
       form: event_driven

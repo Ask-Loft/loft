@@ -1,7 +1,8 @@
 //! `loft yard serve`: one page server on the machine, listening on the loopback interface. A run
 //! that finds one of its version or a newer one leaves it serving; one that finds an older one
-//! asks it to stop through `~/.yard/stop.json` and serves once its lock is free; a page server
-//! asked to stop by a newer `loft` finishes and exits; and the commands count a page server as
+//! asks it to stop through `~/.yard/stop.json` and serves once its lock is free, as one run with
+//! `--replace` does whatever the running one's version; a page server asked to stop by a newer
+//! `loft`, or by one that replaces it, finishes and exits; and the commands count a page server as
 //! running only while it holds its lock.
 
 use std::fs;
@@ -364,6 +365,64 @@ fn a_stop_request_of_the_same_or_an_older_version_leaves_the_page_server_serving
         assert!(!served.ends_within(Duration::from_millis(800)), "{version}");
         assert_eq!(served.get("/api/version").status, 200, "{version}");
     }
+}
+
+#[test]
+fn serve_replace_asks_a_page_server_of_any_version_to_stop_and_serves_once_it_has() {
+    for version in [VERSION, "99.0.0"] {
+        let yard = Yard::new();
+        let port = free_port();
+        let running = pretend_server(&yard, port, version);
+        let mut replacing = yard.spawn(&["serve", "--replace", "--port", &port.to_string()]);
+        let stop = yard_home(&yard).join("stop.json");
+        assert!(
+            within(Duration::from_secs(5), || stop.exists()),
+            "{version}"
+        );
+        let request: Value = serde_json::from_slice(&fs::read(&stop).unwrap()).unwrap();
+        assert_eq!(request["version"], VERSION, "{version}");
+        assert_eq!(request["replace"], true, "{version}");
+        drop(running);
+        let started = first_document(&mut replacing);
+        assert_eq!(started["outcome"], "serving", "{started}");
+        assert_eq!(yard.home_file("server.json")["version"], VERSION);
+        assert!(!stop.exists(), "{version}");
+        let _ = replacing.kill();
+        let _ = replacing.wait();
+    }
+}
+
+#[test]
+fn a_stop_request_that_replaces_stops_the_page_server_whatever_version_made_it() {
+    let yard = Yard::new();
+    let mut served = Served::start(&yard, &[]);
+    let stop = yard_home(&yard).join("stop.json");
+    let request = json!({ "version": "0.0.1", "replace": true });
+    fs::write(&stop, request.to_string()).unwrap();
+    assert!(served.ends_within(Duration::from_secs(1)));
+}
+
+#[test]
+fn serve_replace_serves_every_tree_the_page_server_it_replaced_served() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let dir = yard.scratch.0.display().to_string();
+    let mut replaced = Served::start(&yard, &["--tree", &dir]);
+    let replacing = Served::start(&yard, &["--replace"]);
+    assert!(replaced.ends_within(Duration::from_secs(1)));
+    assert_eq!(yard.home_file("server.json")["port"], replacing.port);
+    let listing = replacing.get("/api/trees").json();
+    let trees = &listing["repositories"][0]["trees"];
+    assert_eq!(trees.as_array().unwrap().len(), 1, "{listing}");
+}
+
+#[test]
+fn with_no_page_server_running_serve_replace_serves_as_serve_does() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &["--replace"]);
+    assert_eq!(served.get("/api/version").status, 200);
+    assert_eq!(yard.home_file("server.json")["port"], served.port);
+    assert!(!yard_home(&yard).join("stop.json").exists());
 }
 
 #[test]

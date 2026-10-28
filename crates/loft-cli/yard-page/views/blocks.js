@@ -4,8 +4,9 @@
 // version and when, and its earlier versions.
 
 import { h, html, markdown } from '../lib/dom.js';
-import { count, when, who } from '../lib/format.js';
+import { assignee, count, when, who } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
+import { PLAN_APPROVAL } from '../model/answers.js';
 import { loftView } from './loft/index.js';
 
 /**
@@ -234,8 +235,8 @@ function decidable(block, context) {
     head,
     decided,
     body.path ? h('p', { class: 'path' }, body.path) : null,
-    block.kind === 'plan' && body.planMode
-      ? h('p', { class: 'plan-mode' }, 'Presented in plan mode: approving it lets the agent go on in auto mode.')
+    block.kind === 'plan'
+      ? h('p', { class: 'plan-mode' }, PLAN_APPROVAL)
       : null,
     html(body.html ?? '', 'prose'),
     waiting
@@ -273,6 +274,7 @@ function task(block) {
       body.type === 'fix' ? h('span', { class: ['task-type', 'task-type--fix'], title: 'A fix the person asked for' }, 'Fix') : null,
       h('h4', {}, body.title),
     ),
+    body.assignee ? h('p', { class: 'task-assignee' }, `Assigned to ${assignee(body.assignee)}`) : null,
     markdown(body.detailHtml, body.detail, 'detail'),
   ];
 }
@@ -304,13 +306,18 @@ const VIEW_NAMES = {
  */
 function meta(block) {
   const version = block.version;
+  const first = (block.versions ?? []).find((each) => each.number === 1)
+    ?? (version.number === 1 ? version : null);
   const earlier = (block.versions ?? []).filter((each) => each.key !== version.key).reverse();
   return h(
     'footer',
     { class: 'block-meta' },
     h('span', { class: 'who' }, who(version.act.by)),
     h('span', {}, `version ${version.number}`),
-    h('time', { datetime: version.act.at }, when(version.act.at)),
+    h('span', {}, 'Created ', first ? h('time', { datetime: first.act.at }, when(first.act.at)) : 'unavailable'),
+    version.number > 1
+      ? h('span', {}, 'Updated ', h('time', { datetime: version.act.at }, when(version.act.at)))
+      : null,
     earlier.length
       ? kept.details(
           { path: `${block.key}/versions`, open: false },

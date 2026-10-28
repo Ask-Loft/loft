@@ -380,6 +380,7 @@ fn a_turn_of_every_kind(yard: &Yard) -> Vec<Value> {
 fn activity_of_the_turn(stage: &str) -> String {
     format!(
         "session: s1
+host: claude-code
 lastEnded: 2026-01-01T10:00:09Z
 turns:
   - started: 2026-01-01T10:00:00Z

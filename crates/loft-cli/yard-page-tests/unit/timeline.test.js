@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
 import * as prefs from '../../yard-page/lib/prefs.js';
-import { blocksByKey, changedSince, decisionsByQuestion, grouped, ordered } from '../../yard-page/model/log.js';
+import { blocksByKey, changedSince, decisionsByQuestion, grouped, ordered, stretches } from '../../yard-page/model/log.js';
+import { chart } from '../../yard-page/model/gantt.js';
 import { card } from '../../yard-page/views/blocks.js';
 import { logView, unreadable } from '../../yard-page/views/log.js';
 import { timeline } from '../../yard-page/views/timeline.js';
@@ -209,13 +210,15 @@ test('a field whose HTML the page server did not give is drawn as its text', () 
   assert.ok(!drawn.querySelector('.detail code'));
 });
 
-test('each block offers the agent that wrote it, its version and the time it was written', () => {
+test('each block offers its current author and version with its creation time labelled', () => {
   const note = block('note', 'n1', { markdown: 'x', html: '<p>x</p>', folded: false }, { by: EXPLORE });
   const drawn = card(note, context(log([stage('s', 'S', 'active', [note])])));
   const meta = drawn.querySelector('.block-meta');
   assert.equal(meta.querySelector('.who').textContent, 'Explore');
   assert.match(meta.textContent, /version 1/);
   assert.equal(meta.querySelector('time').getAttribute('datetime'), '2026-01-01T10:00:00Z');
+  assert.match(meta.textContent, /Created/);
+  assert.doesNotMatch(meta.textContent, /Updated/);
 });
 
 test('a block with more than one version offers each earlier version, with who wrote it and when', () => {
@@ -350,4 +353,65 @@ test('an inherited Yard Log shows its open questions and offers no answer or dec
   assert.ok(drawn.querySelector(`article[data-key="${asked.key}"]`));
   assert.ok(!drawn.querySelector('.submission'));
   assert.ok(!drawn.querySelector('button.link'));
+});
+
+test('every host plan has the same Plan mode band and approval explanation without native activity', () => {
+  const explanations = [];
+  for (const host of ['claude-code', 'codex']) {
+    for (const planMode of [true, false, undefined]) {
+      const plan = block('plan', 'p1', { title: 'Build', markdown: 'x', html: '<p>x</p>', ...(planMode === undefined ? {} : { planMode }) }, { by: { host, session: 's1' } });
+      const shown = log([stage('s', 'S', 'active', [plan])]);
+      const drawn = timeline(shown, context(shown));
+      const band = drawn.querySelector('.mode-band--plan');
+      assert.ok(band, `${host} planMode=${planMode}`);
+      assert.match(band.querySelector('.mode-head').textContent, /Plan mode from .* and goes on/);
+      assert.equal(band.querySelectorAll('article.block').length, 1);
+      const text = band.querySelector('.plan-mode').textContent;
+      assert.match(text, /Approving authorizes the planned work, subject to the agent's mode and permissions/);
+      assert.doesNotMatch(text, /auto mode/);
+      explanations.push(text);
+    }
+  }
+  assert.equal(new Set(explanations).size, 1);
+});
+
+test('a plan fallback band uses its current presentation and decision times and contains that plan alone', () => {
+  const before = block('note', 'before', { html: '<p>Before</p>' });
+  const plan = block('plan', 'p1', { title: 'Build', html: '<p>x</p>' }, { at: '2026-01-01T10:01:00Z' });
+  plan.versions.unshift({ ...plan.version, act: act('2026-01-01T09:00:00Z', 1) });
+  plan.outcome = { verdict: 'approved', channel: 'page', act: act('2026-01-01T10:04:00Z', 3, PERSON) };
+  const after = block('note', 'after', { html: '<p>After</p>' }, { at: '2026-01-01T10:02:00Z' });
+  const shown = log([stage('s', 'S', 'active', [before, plan, after])]);
+  const original = structuredClone(shown);
+  const beforeChart = chart(shown, Date.parse('2026-01-01T12:00:00Z'));
+  const items = grouped([before, plan, after], [], Date.now());
+  assert.equal(items.length, 3);
+  assert.deepEqual(items[1].stretch, { mode: 'plan', started: plan.version.act.at, ended: plan.outcome.act.at });
+  assert.deepEqual(items[1].blocks, [plan]);
+  const drawn = timeline(shown, context(shown));
+  assert.match(drawn.querySelector('.mode-head').textContent, /Plan mode from .* for 3 min/);
+  assert.equal(drawn.querySelectorAll('.mode-band article.block').length, 1);
+  assert.equal(drawn.querySelectorAll('article.block').length, 3);
+  assert.deepEqual(shown, original);
+  assert.deepEqual(stretches(shown), []);
+  assert.deepEqual(chart(shown, Date.parse('2026-01-01T12:00:00Z')), beforeChart);
+  assert.deepEqual(beforeChart.bands, []);
+});
+
+test('a plan within native plan activity reuses its band once and otherwise receives its own Plan mode band', () => {
+  const plan = block('plan', 'p1', { title: 'Build', html: '' }, { at: '2026-01-01T10:01:00Z' });
+  const note = block('note', 'n1', { html: '' }, { at: '2026-01-01T10:02:00Z' });
+  const span = { mode: 'plan', started: '2026-01-01T10:00:00Z', ended: '2026-01-01T10:03:00Z' };
+  const shown = log([stage('s', 'S', 'active', [plan, note])]);
+  const items = grouped([plan, note], [span], Date.now());
+  assert.equal(items.length, 1);
+  assert.equal(items[0].stretch, span);
+  const drawn = timeline(shown, context(shown, { modes: [span] }));
+  assert.equal(drawn.querySelectorAll('.mode-band--plan').length, 1);
+  assert.equal(drawn.querySelectorAll('article[data-kind="plan"]').length, 1);
+  const spec = { ...span, mode: 'spec' };
+  const fallback = timeline(shown, context(shown, { modes: [spec] }));
+  assert.equal(fallback.querySelectorAll('.mode-band--plan article').length, 1);
+  assert.equal(fallback.querySelector('.mode-band--plan article').dataset.kind, 'plan');
+  assert.equal(fallback.querySelector('.mode-band--spec article').dataset.kind, 'note');
 });

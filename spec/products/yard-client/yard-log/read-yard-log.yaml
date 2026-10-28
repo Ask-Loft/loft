@@ -96,3 +96,56 @@ requirements:
         name: "With `--reports`, each version of a `loft` block in the result carries its report as recorded."
       - key: 01a16880-126c-7301-9603-b9906374c516
         name: "The page server gives the page each `loft` block with its report."
+  - key: 01a17afd-c25f-722a-ae3f-483a1ff24b4d
+    statement:
+      form: optional
+      where: "`--submissions` is given"
+      system: "`loft yard read`"
+      shall: "include every submission's key, effective sender, blocks, state, reached revision and recorded state changes in `sent`."
+    criteria:
+      - key: 01a17afd-c25f-722a-ae3f-483b9601f120
+        name: "The history includes open, answered and withdrawn submissions."
+      - key: 01a17afd-c25f-722a-ae3f-483c121a4c30
+        name: "Each state change identifies what happened and its Act."
+      - key: 01a17afd-c25f-722a-ae3f-483dd642f05b
+        name: "A submission retains its key after it leaves the open-submission list."
+      - key: 01a17afd-c25f-722a-ae3f-483e4e411436
+        name: "`--since` filters changed blocks without removing submission history."
+      - key: 01a17afd-c25f-722a-ae3f-483feb4b3ff8
+        name: "The history is empty where no Yard Log exists."
+      - key: 01a17afd-c25f-722a-ae3f-484029df9095
+        name: "Without `--submissions`, the command retains its existing open-submission list without adding history."
+      - key: 01a17afe-ab68-7371-b097-a2697b51e3cd
+        name: "With `--submissions`, `ownLastRead` gives the caller's recorded read revision or null when the caller has no read marker."
+      - key: 01a17afe-ab68-7371-b097-a26a032aabad
+        name: "An inherited fallback revision remains separate from `ownLastRead`."
+      - key: 01a17aff-1fb3-736f-855e-562cf1be30a3
+        name: "A merged resolution's reached revision names when it arrived in the current Yard Log."
+  - key: 01a182b6-3c58-7235-ad04-3938ab6a49a4
+    statement:
+      form: event_driven
+      when: "an agent reads Yard Log with `--context`"
+      system: "`loft yard read`"
+      shall: "add the agent's briefing to the result, as fields and as text of at most 2,000 characters."
+    body: "Each adapter gives an agent where the work stands when its session starts. The briefing is written once, by Yard Log's own reader, so that every host tells its agents the same things in the same words, and an adapter adds only what is particular to its host."
+    criteria:
+      - key: 01a182b6-3c59-766a-a80e-37e4c4e10e3b
+        name: "The briefing names the page's address, Yard Log's revision, the stage active for the agent, the open submissions and what was answered or decided since the agent last read Yard Log."
+      - key: 01a182b6-3c59-766a-a80e-37e54697116e
+        name: "The briefing lists the unfinished tasks assigned to the agent, each with the stage it is recorded in, apart from the agent's own active stage."
+      - key: 01a182b6-3c59-766a-a80e-37e62a9ce27d
+        name: "The briefing's text counts what it leaves out to keep within 2,000 characters, and directs the agent to read Yard Log for it."
+      - key: 01a182b6-3c59-766a-a80e-37e7ac57cb5d
+        name: "The briefing of a branch with no Yard Log names only the page's address and that the branch has no Yard Log yet."
+      - key: 01a182b6-3c59-766a-a80e-37e807efebd5
+        name: "The briefing says whether Yard Log is closed and whether git ignores `.yard/`."
+      - key: 01a182b6-3c59-766a-a80e-37e925896ef9
+        name: "`--context` given without `--session` exits 2 and names `--session`."
+      - key: 01a182b6-3c59-766a-a80e-37ead56f7f2d
+        name: "The Claude and Codex adapters each give the agent the briefing's text, followed only by what is particular to their host."
+      - key: 01a182be-ad52-75ba-879c-8ae870a8278f
+        name: "Both adapters read the briefing with `--mark-read`, so that the agent's next read since its last starts from what the briefing showed."
+      - key: 01a182be-ad52-75ba-879c-8ae989acf96b
+        name: "Neither adapter gives the briefing with each prompt of a session."
+      - key: 01a182be-ad52-75ba-879c-8aea5f45df7a
+        name: "The stage the briefing names for the agent is the agent's working stage."

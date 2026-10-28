@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use serde_json::{Value, json};
+use yardlog::adapter::Descriptor;
 use yardlog::{Agent, YardLog};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
@@ -18,6 +19,7 @@ use yardlog_store::{Held, Place, YardStore};
 
 use super::activity::Activity;
 use super::event::{Event, Who, strings};
+use super::event_ids::{Receipt, Receipts};
 use super::http::Response;
 use super::newest::Newest;
 use super::tokens::Totals;
@@ -26,17 +28,35 @@ use super::tokens::Totals;
 #[derive(Default)]
 struct Kept {
     activity: Option<Activity>,
+    activity_written: bool,
     totals: Option<Totals>,
 }
 
 /// What one session keeps, by the tree and branch of each Yard Log it keeps it in.
 type ByLog = BTreeMap<(String, String), Kept>;
 
+#[derive(Default)]
+struct SessionKept {
+    logs: ByLog,
+    receipts: Receipts,
+    /// The last descriptor the session posted, which each event that carries none is kept under.
+    adapter: Option<Descriptor>,
+}
+
+impl SessionKept {
+    /// Takes the descriptor `event` carries, if any, as the session's last.
+    fn describe(&mut self, event: &Event) {
+        if let Some(adapter) = &event.adapter {
+            self.adapter = Some(adapter.clone());
+        }
+    }
+}
+
 /// Each session's activity and totals, by session, and the newest text written of each of their
 /// files.
 #[derive(Default)]
 pub struct Sessions {
-    kept: Mutex<HashMap<String, ByLog>>,
+    kept: Mutex<HashMap<String, SessionKept>>,
     written: Newest,
 }
 
@@ -48,25 +68,67 @@ struct Arrival {
     open: Vec<String>,
 }
 
-/// The stage `event` counts toward, by its key: the one active for its agent, or for a subagent
-/// with none of its own, the one active for its session's main agent, which started it. A
-/// subagent's run works for the main agent's stage as it starts, whatever the subagent owns.
-fn counted_stage(log: &YardLog, event: &Event) -> Option<String> {
-    let own = match (&event.who, event.kind.as_str()) {
-        (Who::Sub { .. }, "subagent.start") => None,
-        (who, _) => active_stage(log, &event.session, who),
-    };
-    own.or_else(|| active_stage(log, &event.session, &Who::Main))
+/// What the stage an event counts toward depends on: its directory's Yard Log, its agent,
+/// whether a subagent's run starts, and the task it names, if any, where that is text. A batch
+/// works out each one's stage once.
+#[derive(PartialEq, Eq, Hash)]
+struct StageQuery<'a> {
+    dir: &'a str,
+    host: &'a str,
+    session: &'a str,
+    who: &'a Who,
+    starting: bool,
+    task: Named<'a>,
 }
 
-/// The stage active for `who` of `session` in `log`, by its key.
-fn active_stage(log: &YardLog, session: &str, who: &Who) -> Option<String> {
-    let agent = match who {
-        Who::Main => Agent::main(session),
-        Who::Sub { id, kind } => Agent::sub(session, id, kind),
-    };
-    let stage = log.active_stages_of(&agent).next()?;
-    Some(stage.key.to_string())
+/// The task an event names.
+#[derive(PartialEq, Eq, Hash)]
+enum Named<'a> {
+    None,
+    Task(&'a str),
+    /// A `task` that is not text, which names no block.
+    Unusable,
+}
+
+impl<'a> StageQuery<'a> {
+    fn of(event: &'a Event) -> Self {
+        Self {
+            dir: &event.dir,
+            host: &event.host,
+            session: &event.session,
+            who: &event.who,
+            starting: matches!(event.who, Who::Sub { .. }) && event.kind == "subagent.start",
+            task: match event.posted.get("task").map(Value::as_str) {
+                None => Named::None,
+                Some(Some(id)) => Named::Task(id),
+                Some(None) => Named::Unusable,
+            },
+        }
+    }
+
+    /// The stage counted, by its key: the agent's working stage, or, as a subagent's run
+    /// starts, the stage that run starts in. A posted task that is not text counts toward none.
+    fn stage(&self, log: &YardLog) -> Option<String> {
+        let agent = agent_of(self.host, self.session, self.who);
+        let task = match self.task {
+            Named::None => None,
+            Named::Task(id) => Some(id),
+            Named::Unusable => return None,
+        };
+        let stage = if self.starting {
+            log.starting_stage(&agent, task)
+        } else {
+            log.working_stage(&agent, task)
+        };
+        stage.map(|stage| stage.to_string())
+    }
+}
+
+fn agent_of(host: &str, session: &str, who: &Who) -> Agent {
+    match who {
+        Who::Main => Agent::main_in(host, session),
+        Who::Sub { id, kind } => Agent::sub_in(host, session, id, kind),
+    }
 }
 
 /// The store and open Yard Log of the branch the directory `dir` is on, where it has one.
@@ -89,6 +151,7 @@ fn arrivals(
     // Each directory's Yard Log, with its open submissions, worked out once for the batch.
     type Opened = Option<(YardStore, YardLog, Vec<String>)>;
     let mut opened: HashMap<&str, Opened> = HashMap::new();
+    let mut stages: HashMap<StageQuery, Option<String>> = HashMap::new();
     events
         .iter()
         .map(|event| {
@@ -104,8 +167,11 @@ fn arrivals(
                     Some((store, log, submissions))
                 })
                 .as_ref()?;
+            let stage = stages
+                .entry(StageQuery::of(event))
+                .or_insert_with_key(|query| query.stage(log));
             Some(Arrival {
-                stage: counted_stage(log, event),
+                stage: stage.clone(),
                 open: submissions.clone(),
                 store: store.clone(),
             })
@@ -114,18 +180,21 @@ fn arrivals(
 }
 
 impl Kept {
-    /// Keeps what `event` adds; gives the files whose text changed.
+    /// Keeps what `event` adds, under its session's last descriptor `adapter`; gives the files
+    /// whose text changed.
     fn apply(
         &mut self,
         event: &Event,
-        stage: Option<&str>,
-        open: &[String],
+        arrival: (Option<&str>, &[String]),
+        adapter: Option<&Descriptor>,
     ) -> Vec<(SessionFile, String)> {
+        let (stage, open) = arrival;
         let mut changed = Vec::new();
         let activity = self
             .activity
             .get_or_insert_with(|| Activity::new(&event.session));
-        if activity.apply(event, stage) {
+        if activity.apply(event, stage, adapter) {
+            self.activity_written = true;
             changed.push((SessionFile::Activity, activity.text()));
         }
         let totals = self
@@ -136,6 +205,21 @@ impl Kept {
         }
         changed
     }
+
+    fn snapshot(&self) -> Vec<(SessionFile, String)> {
+        let mut files = Vec::new();
+        if self.activity_written
+            && let Some(activity) = &self.activity
+        {
+            files.push((SessionFile::Activity, activity.text()));
+        }
+        if let Some(totals) = &self.totals
+            && totals.counted()
+        {
+            files.push((SessionFile::Tokens, totals.text()));
+        }
+        files
+    }
 }
 
 /// The open submissions an event's line in the log names.
@@ -144,8 +228,8 @@ fn named_open(line: &Value) -> Vec<String> {
 }
 
 /// What a session kept before the page server heard of it, rebuilt from its event log.
-fn replay(home: &Home, session: &str) -> ByLog {
-    let mut kept = ByLog::new();
+fn replay(home: &Home, session: &str) -> SessionKept {
+    let mut kept = SessionKept::default();
     let Ok(Some(bytes)) = home.read_events(session) else {
         return kept;
     };
@@ -160,9 +244,22 @@ fn replay(home: &Home, session: &str) -> ByLog {
         ) else {
             continue;
         };
-        kept.entry((tree.to_owned(), branch.to_owned()))
+        let Ok(receipt) = Receipt::replay(&line) else {
+            continue;
+        };
+        if kept.receipts.contains(receipt.as_ref()) != Ok(false) {
+            continue;
+        }
+        kept.receipts.keep(receipt.as_ref());
+        kept.describe(&event);
+        kept.logs
+            .entry((tree.to_owned(), branch.to_owned()))
             .or_default()
-            .apply(&event, line["stage"].as_str(), &named_open(&line));
+            .apply(
+                &event,
+                (line["stage"].as_str(), &named_open(&line)),
+                kept.adapter.as_ref(),
+            );
     }
     kept
 }
@@ -247,12 +344,12 @@ fn note(
     files: Vec<(SessionFile, String)>,
 ) {
     for (file, text) in files {
-        let path = arrival.store.session_path(file, &event.session);
+        let path = arrival.store.session_path(file, &event.session_key());
         let entry = (
             index,
             arrival.store.clone(),
             file,
-            event.session.clone(),
+            event.session_key(),
             text,
         );
         changed.insert(path, entry);
@@ -267,32 +364,44 @@ const SESSIONS_KEPT: usize = 256;
 /// Yard Log's folder whose text changed.
 fn keep(
     home: &Home,
-    kept: &mut HashMap<String, ByLog>,
+    kept: &mut HashMap<String, SessionKept>,
     event: &Event,
     arrival: &Arrival,
 ) -> Result<Vec<(SessionFile, String)>, String> {
     let place = arrival.store.place();
     let tree = place.tree.display().to_string();
     let branch = arrival.store.branch().to_owned();
-    if !kept.contains_key(&event.session) && kept.len() >= SESSIONS_KEPT {
+    if !kept.contains_key(&event.session_key()) && kept.len() >= SESSIONS_KEPT {
         let gone = kept.keys().next().cloned();
         gone.map(|gone| kept.remove(&gone));
     }
     let session = kept
-        .entry(event.session.clone())
-        .or_insert_with(|| replay(home, &event.session));
+        .entry(event.session_key())
+        .or_insert_with(|| replay(home, &event.session_key()));
+    let place_key = (tree.clone(), branch.clone());
+    if session.receipts.contains(event.receipt.as_ref())? {
+        return Ok(session
+            .logs
+            .get(&place_key)
+            .map_or_else(Vec::new, Kept::snapshot));
+    }
     let mut line = event.posted.clone();
+    if let Some(receipt) = &event.receipt {
+        receipt.annotate(&mut line);
+    }
     line["tree"] = json!(tree);
     line["branch"] = json!(branch);
     line["stage"] = json!(arrival.stage);
     line["submissions"] = json!(arrival.open);
     let text = serde_json::to_vec(&line).map_err(|error| error.to_string())?;
-    home.append_event(&event.session, &text)
+    home.append_event(&event.session_key(), &text)
         .map_err(|error| error.to_string())?;
-    Ok(session.entry((tree, branch)).or_default().apply(
+    session.receipts.keep(event.receipt.as_ref());
+    session.describe(event);
+    Ok(session.logs.entry(place_key).or_default().apply(
         event,
-        arrival.stage.as_deref(),
-        &arrival.open,
+        (arrival.stage.as_deref(), &arrival.open),
+        session.adapter.as_ref(),
     ))
 }
 
@@ -302,12 +411,12 @@ fn hear(home: &Home, events: &[Event]) {
     let Ok(at) = crate::yard::now() else {
         return;
     };
-    let mut sessions: Vec<&str> = events.iter().map(|event| event.session.as_str()).collect();
+    let mut sessions: Vec<String> = events.iter().map(Event::session_key).collect();
     sessions.sort_unstable();
     sessions.dedup();
     for session in sessions {
         // Liveness is a hint for take-up: a failed write of it loses no event.
-        let _ = crate::yard::sessions::heard(home, session, at);
+        let _ = crate::yard::sessions::heard(home, &session, at);
     }
 }
 

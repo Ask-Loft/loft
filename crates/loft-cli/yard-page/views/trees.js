@@ -189,15 +189,9 @@ export function welcome(listing) {
       h(
         'p',
         {},
-        'Yard Log is kept by an agent in Claude Code with the Loft plugin. Start a session in a git repository, on the branch of the work, and ask it to plan or build a change: its first write opens the branch’s Yard Log, which is listed here as soon as it is written.',
+        'Yard Log is kept by an agent through its Yard adapter. Start a session in a git repository, on the branch of the work, and ask it to plan or build a change: its first write opens the branch’s Yard Log, which is listed here as soon as it is written.',
       ),
-      h('p', {}, 'To install the plugin, run these in Claude Code:'),
-      h(
-        'ol',
-        { class: 'commands' },
-        h('li', {}, h('code', {}, '/plugin marketplace add Ask-Loft/loft')),
-        h('li', {}, h('code', {}, '/plugin install loft@ask-loft')),
-      ),
+      h('p', {}, h('a', { href: 'https://github.com/Ask-Loft/loft#yard-client', target: '_blank', rel: 'noopener noreferrer' }, 'Install a Yard adapter for your agent host.')),
     );
   }
   return h(

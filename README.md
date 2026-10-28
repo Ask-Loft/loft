@@ -119,6 +119,16 @@ project, and after an upgrade of `loft` brings it to the new version, enabling t
 same way. Commit both directories and `.claude/settings.json` so that everyone working on the
 project has the skill and is offered the plugin.
 
+Use `loft skill install --host codex` or `--host claude-code` to install only that host; an
+omitted `--host`, or `--host all`, installs both. A Codex-only install leaves Claude Code's files
+and settings untouched. `--no-plugin` leaves plugin settings untouched when installing for
+Claude Code.
+
+In this repository, `.agents/skills/loft-spec` is a relative link to the source under
+`crates/loft-cli/skill/loft-spec/`, so Codex discovers the same router and references that we
+edit and ship. Installation preserves that link and reports it as unchanged. Broken or
+unexpected skill links are refused before any selected skill or plugin settings are written.
+
 The skill is also a plugin, for an agent that works across projects:
 
 - Claude Code: `/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@ask-loft`.
@@ -136,7 +146,12 @@ In Claude Code the plugin runs `loft` itself, with telemetry and the update chec
 
 ### Yard Client
 
-In Claude Code the plugin also keeps each branch's Yard Log: what the agent planned, asked,
+Yard's core keeps the log, submissions, reports and page independently of the agent host.
+Adapters translate a host's native tools and events into Yard's JSON commands and events;
+Claude Code and Codex have native adapters. Sessions are identified by host as well as session
+and subagent, so different hosts can share a branch without sharing an agent's state.
+
+In Claude Code the plugin keeps each branch's Yard Log: what the agent planned, asked,
 decided and did on the branch, kept as YAML under `.yard/<branch>/` and committed with the work.
 The `yard` skill teaches the agent to open it as work on a branch begins, to give each step a
 stage, to send the questions of one decision point together and wait for the answers, and to
@@ -151,9 +166,77 @@ comes first counts, and the other closes. `loft yard serve` serves the page on t
 interface only; the plugin starts it and keeps one running for the machine. Set the plugin's
 `yardPort` setting to serve another port.
 
+The page reports each adapter's capabilities. Unreported usage is shown as unavailable, and a
+subtotal missing contributing counters is marked partial. The Claude adapter supports Yard
+protocols 1 and 2; protocol 2 carries explicit host identity and adapter capabilities.
+
+In local Codex sessions, the plugin's native command hooks run `loft yard codex hook` and a
+background `loft yard codex watch`. Use a build of `loft` that provides those commands, install
+the Codex plugin as above, then review and trust its hooks in `/hooks`; installing a skill alone
+does not activate them. Codex may require another review after a hook definition changes.
+Keep hooks enabled in Codex's configuration (`features.hooks = true`). This integration is for
+local Codex workflows and is not available with cloud orchestration.
+The plugin uses Codex's native manifest: Codex 0.164.0 ignores lifecycle hooks in a manifest
+that declares the Agent Plugins schema.
+
+The Codex `yard` skill uses the six existing Yard CLI operations and sends questions and plans
+to the Yard page. Page approval records your decision; Codex's own mode and permission controls
+still govern execution. Successful `update_plan` calls mirror tasks into the caller's active
+stage when Codex offers that tool; otherwise the skill maintains tasks through explicit Yard
+writes. Native dialogs are not synchronized with the page. Usage counters are unavailable, and
+tool activity with ambiguous subagent identity is omitted. No transcripts are parsed.
+
+Codex owns its background worker, which sends a heartbeat every five seconds, recovers the page
+server and retains at most 1,000 queued events. Each worker lasts at most 24 hours; later hooked
+activity restarts one that ended. Adapter bookkeeping lives in Codex's plugin data directory,
+with a fallback under `~/.yard/codex/`. The on-demand native contract requires Codex 0.164.0 and
+Python 3 and uses a loopback model fixture, with no API account:
+`cargo nextest run -p loft-cli --run-ignored only -E 'test(real_codex_hooks)'`.
+
+Tasks can be assigned explicitly to another agent while staying in their original stage. Set a
+task's `assignee` to `{ "host": "codex", "session": "SESSION", "agent": "AGENT", "agentType": "TYPE" }`
+(without the agent fields for a main agent). The stage owner or current assignee can reassign or
+release unfinished work; a worker can claim an unassigned task for itself. Read the latest
+revision before writing. The page identifies the assignee separately from the stage owner and
+keeps separate execution attempts and concurrent task bars without counting overlapping time twice.
+
+After assignment, Claude native task operations bind with `metadata.yardTask: "TASK-ID"` on
+every update. Codex native plan steps bind with `[yard:TASK-ID] Local wording`. These references
+update the existing task in its original stage, without requiring the worker to own a stage.
+Unbound native tasks retain their normal mirroring behavior. An observed end or interruption
+returns active assignments to open, retaining the assignee; it never marks unfinished work done.
+Activity and reported tokens use the assigned task's stage where unambiguous. Active assignments
+in different stages remain unassigned to a stage unless an event explicitly identifies a current
+assignment; reported counters still contribute to session totals. Restart agent sessions to load
+updated adapter hooks, and refresh the Yard page after rebuilding the server.
+
+The Yard skill is composed from a shared workflow and each host's adaptation under
+`crates/loft-cli/skill/yard/`. `scripts/package-skill.sh` updates both plugin packages alongside
+the specification skill. Standalone `loft skill install` installs the specification skill;
+the Yard skill ships with its adapter's plugin.
+
 A repository that keeps its plans off git ignores `.yard/`. Run `loft merge-driver --install` so
 that a merge joins two copies of a Yard Log record by record. What belongs to the machine, such
 as the page server's address and each session's events, is kept in `~/.yard/`.
+
+For development on Unix, use this checkout's `scripts/yard-dogfood.sh` with Python 3, `ps` and
+`lsof` installed:
+
+```sh
+scripts/yard-dogfood.sh claude
+scripts/yard-dogfood.sh claude resume <session-id>
+scripts/yard-dogfood.sh codex
+scripts/yard-dogfood.sh codex resume <session-id>
+```
+
+Each launch builds the release binary, restarts the shared Yard server on port 7412 even when
+the version number is unchanged, and confirms it is serving before starting the agent. You can
+invoke the script by its path from another directory; the agent starts in that directory.
+Concurrent launches serialize their builds and restarts. Other running Claude and Codex
+sessions reconnect without restarting their agents; refresh open Yard pages to load files from
+a same-version rebuild. Registered trees and Yard state are kept. A build failure leaves the
+current server running, and a restart failure stops the launch with an error. Detached server
+output is kept in `~/.yard/dogfood-server.log`.
 
 ## Exit codes and JSON
 

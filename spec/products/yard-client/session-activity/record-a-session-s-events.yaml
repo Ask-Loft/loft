@@ -9,6 +9,29 @@ realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
 requirements:
+  - key: 01a17989-a8ba-7109-a214-b51853740db3
+    statement:
+      form: optional
+      where: "a posted event names an eventId"
+      system: "the page server"
+      shall: "retain the first application of that event within its host and session."
+    criteria:
+      - key: 01a17989-a8ba-7109-a214-b519f2ff0e19
+        name: "A repeated eventId with the same payload leaves the session's event log unchanged."
+      - key: 01a1798c-4746-7044-bb90-3e4fc9a74e63
+        name: "A repeated eventId with the same payload leaves token totals unchanged."
+      - key: 01a1798c-4746-7044-bb90-3e50a68ef266
+        name: "An identical repeated event is acknowledged as accepted."
+      - key: 01a1798c-4746-7044-bb90-3e514d240f21
+        name: "An empty or non-string eventId is refused before the event log changes."
+      - key: 01a17989-a8ba-7109-a214-b51a276715b1
+        name: "Reusing an eventId with a different payload is refused."
+      - key: 01a17989-a8ba-7109-a214-b51ba964e015
+        name: "A page-server restart rebuilds event identities from the machine's session event log."
+      - key: 01a17989-a8ba-7109-a214-b51c4e8ab04f
+        name: "Identical eventId values in different hosts or sessions remain independent."
+      - key: 01a17989-a8ba-7109-a214-b51df5bfdc4f
+        name: "Events without eventId retain the existing append behavior."
   - key: 01a1646f-546d-7042-befd-eafcf7724f38
     statement:
       form: event_driven

@@ -156,11 +156,29 @@ fn the_page_reads_the_activity_and_token_totals_each_session_keeps() {
     assert_eq!(activity[0]["session"], "s1");
     assert_eq!(activity[0]["turns"][0]["started"], "2026-01-01T10:00:01Z");
     assert_eq!(activity[0]["turns"][0]["ended"], "2026-01-01T10:00:09Z");
-    let totals = read["tokens"].as_array().unwrap();
-    assert_eq!(totals.len(), 1, "{read}");
-    assert_eq!(totals[0]["tokens"]["input"], 10);
-    assert_eq!(totals[0]["tokens"]["cacheRead"], 100);
-    assert_eq!(totals[0]["agents"][0]["model"], "opus");
+    let sums = &read["tokenSums"];
+    assert_eq!(sums["all"]["input"], 10, "{read}");
+    assert_eq!(sums["all"]["cacheRead"], 100);
+    assert_eq!(sums["sessions"][0]["session"], "s1");
+    assert_eq!(sums["agents"][0]["model"], "opus");
+    assert_eq!(sums["counted"], true);
+}
+
+#[test]
+fn an_activity_file_that_names_no_host_reaches_the_page_as_a_claude_code_session_s() {
+    let yard = Yard::new();
+    yard.write("s1", NOTES, &[]);
+    let folder = yard.folder(BRANCH).join("activity");
+    fs::create_dir_all(&folder).unwrap();
+    fs::write(
+        folder.join("s1.yaml"),
+        "session: s1\nlastEnded: 2026-01-01T10:00:09Z\n",
+    )
+    .unwrap();
+    let served = served(&yard);
+    let read = log(&yard, &served);
+    assert_eq!(read["activity"][0]["session"], "s1", "{read}");
+    assert_eq!(read["activity"][0]["host"], "claude-code");
 }
 
 #[test]
@@ -170,7 +188,9 @@ fn a_yard_log_with_no_session_files_reads_with_no_activity_and_no_totals() {
     let served = served(&yard);
     let read = log(&yard, &served);
     assert_eq!(read["activity"], json!([]));
-    assert_eq!(read["tokens"], json!([]));
+    assert_eq!(read["tokenSums"]["all"], json!({}));
+    assert_eq!(read["tokenSums"]["sessions"], json!([]));
+    assert_eq!(read["tokenSums"]["counted"], false);
 }
 
 #[test]

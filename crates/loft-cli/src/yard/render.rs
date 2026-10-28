@@ -102,6 +102,13 @@ pub fn body(body: &Body) -> Value {
             );
         }
         Body::Task(task) => {
+            put(
+                &mut fields,
+                "assignee",
+                task.assignee
+                    .as_ref()
+                    .map(|agent| actor(&Actor::Agent(agent.clone()))),
+            );
             fields.insert("title".to_owned(), json!(task.title));
             put(&mut fields, "detail", text(task.detail.as_ref()));
             fields.insert("state".to_owned(), json!(task.state.as_str()));
@@ -198,6 +205,23 @@ pub fn block(log: &YardLog, block: &Block, stage: Option<&Block>, every_version:
         fields.insert("responses".to_owned(), Value::Array(responses.collect()));
     }
     times(&mut fields, block);
+    if block.kind == yardlog::body::Kind::Task {
+        let executions: Vec<_> = block
+            .executions()
+            .into_iter()
+            .map(|span| {
+                let mut value = json!({"started":span.started.to_string()});
+                if let Some(ended) = span.ended {
+                    value["ended"] = json!(ended.to_string());
+                }
+                if let Some(agent) = span.assignee {
+                    value["assignee"] = actor(&Actor::Agent(agent));
+                }
+                value
+            })
+            .collect();
+        fields.insert("executions".to_owned(), json!(executions));
+    }
     fields.insert("reached".to_owned(), json!(block.reached()));
     Value::Object(fields)
 }

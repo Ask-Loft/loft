@@ -238,6 +238,9 @@ pub enum SkillAction {
     /// Write the skill for Claude Code and Codex into the current directory, replacing any
     /// earlier version.
     Install {
+        /// Install only this host's skill; all retains both host packages.
+        #[arg(long, value_enum, default_value = "all")]
+        host: crate::skill::Hosts,
         /// Leave `.claude/settings.json` as it is, without enabling the Claude Code plugin.
         #[arg(long)]
         no_plugin: bool,

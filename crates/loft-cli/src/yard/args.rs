@@ -6,7 +6,7 @@
 
 use std::path::PathBuf;
 
-use clap::{Args, Subcommand};
+use clap::{ArgGroup, Args, Subcommand};
 
 use crate::cli::Output;
 
@@ -19,6 +19,11 @@ pub const DEFAULT_BASE: &str = "develop";
 
 #[derive(Subcommand)]
 pub enum YardAction {
+    /// Translate native Codex hooks and run their session worker.
+    Codex {
+        #[command(subcommand)]
+        action: super::codex::Action,
+    },
     /// Read the branch's Yard Log: all of it, or what changed since a revision.
     Read(ReadArgs),
     /// Write a batch of blocks, read as JSON from `--input`, and send its questions, approvals
@@ -26,6 +31,9 @@ pub enum YardAction {
     Write(WriteArgs),
     /// Withdraw an open submission.
     Withdraw(WithdrawArgs),
+    /// Change fields of a task as Yard Log holds it, or with `--release` return the calling
+    /// agent's active tasks to `open`.
+    Task(TaskArgs),
     /// Wait until a submission is answered or withdrawn, or Yard Log is closed, for at most
     /// `--timeout` seconds.
     Wait(WaitArgs),
@@ -53,6 +61,9 @@ pub enum YardAction {
 
 #[derive(Args)]
 pub struct ServeArgs {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The port to serve the page on.
     #[arg(long, value_name = "PORT", default_value_t = DEFAULT_PORT)]
     pub port: u16,
@@ -62,6 +73,10 @@ pub struct ServeArgs {
     /// A directory of a worktree whose Yard Logs the page server is to serve.
     #[arg(long, value_name = "DIR")]
     pub tree: Option<PathBuf>,
+    /// Replace the running page server whatever its version, as one built anew from the same
+    /// version would not otherwise.
+    #[arg(long)]
+    pub replace: bool,
     #[command(flatten)]
     pub output: Output,
 }
@@ -69,6 +84,9 @@ pub struct ServeArgs {
 /// The agent that runs a command, as a host names it.
 #[derive(Args, Clone, Default)]
 pub struct Runner {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The id of the session whose agent runs the command.
     #[arg(long, value_name = "ID")]
     pub session: Option<String>,
@@ -83,6 +101,9 @@ pub struct Runner {
 /// The agent that runs a command that changes Yard Log, which must name its session.
 #[derive(Args, Clone)]
 pub struct Writer {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The id of the session whose agent runs the command.
     #[arg(long, value_name = "ID", required = true)]
     pub session: String,
@@ -97,6 +118,7 @@ pub struct Writer {
 impl From<Writer> for Runner {
     fn from(writer: Writer) -> Self {
         Self {
+            host: writer.host,
             session: Some(writer.session),
             agent: writer.agent,
             agent_type: writer.agent_type,
@@ -120,18 +142,31 @@ pub struct ReadArgs {
     /// Return every version of each block returned, oldest first.
     #[arg(long)]
     pub versions: bool,
-    /// Return each `loft` block's report, which is otherwise given by its size in bytes.
-    #[arg(long)]
-    pub reports: bool,
+    #[command(flatten)]
+    pub details: ReadDetails,
     /// Record the revision read as the one the calling agent last read: the agent's own read.
     #[arg(long, requires = "session")]
     pub mark_read: bool,
+    /// Add the calling agent's briefing: where Yard Log stands for it, as fields and as text.
+    #[arg(long, requires = "session")]
+    pub context: bool,
     #[command(flatten)]
     pub agent: Runner,
     #[command(flatten)]
     pub beyond: Beyond,
     #[command(flatten)]
     pub output: Output,
+}
+
+/// Optional detailed material accompanying a Yard read.
+#[derive(Args)]
+pub struct ReadDetails {
+    /// Return each `loft` block's report, which is otherwise given by its size in bytes.
+    #[arg(long)]
+    pub reports: bool,
+    /// Include every submission's lifecycle and the caller's explicit read marker.
+    #[arg(long)]
+    pub submissions: bool,
 }
 
 #[derive(Args)]
@@ -166,6 +201,40 @@ pub struct WithdrawArgs {
     /// The key of the submission.
     #[arg(long, value_name = "KEY")]
     pub submission: String,
+    #[command(flatten)]
+    pub writer: Writer,
+    #[command(flatten)]
+    pub beyond: Beyond,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+#[derive(Args)]
+#[command(group(ArgGroup::new("target").required(true).args(["id", "release"])))]
+pub struct TaskArgs {
+    /// The id of the task to change.
+    #[arg(value_name = "ID")]
+    pub id: Option<String>,
+    /// Return each active task assigned to the calling agent to `open`, in one write.
+    #[arg(long, conflicts_with_all = ["id", "state", "title", "detail", "kind", "mirror"])]
+    pub release: bool,
+    /// Mirror a native task update: leave a task assigned to another agent, and an unassigned
+    /// task of a stage the calling agent does not own, as they are, and keep the state of a
+    /// done or dropped task.
+    #[arg(long, requires = "id")]
+    pub mirror: bool,
+    /// The task's new state.
+    #[arg(long, value_name = "STATE", value_parser = ["open", "active", "done", "dropped"])]
+    pub state: Option<String>,
+    /// The task's new title.
+    #[arg(long, value_name = "TEXT")]
+    pub title: Option<String>,
+    /// The task's new detail.
+    #[arg(long, value_name = "TEXT")]
+    pub detail: Option<String>,
+    /// The task's new type.
+    #[arg(long = "type", value_name = "TYPE", value_parser = ["regular", "fix"])]
+    pub kind: Option<String>,
     #[command(flatten)]
     pub writer: Writer,
     #[command(flatten)]
@@ -239,6 +308,9 @@ pub struct UpgradeArgs {
 
 #[derive(Args)]
 pub struct ContinueArgs {
+    /// The agent host; omitted by legacy Claude callers.
+    #[arg(long, value_name = "HOST", default_value = yardlog::act::CLAUDE_CODE, value_parser = host)]
+    pub host: String,
     /// The id of the session that goes on.
     #[arg(long, value_name = "ID")]
     pub session: String,
@@ -247,4 +319,11 @@ pub struct ContinueArgs {
     pub from: String,
     #[command(flatten)]
     pub output: Output,
+}
+
+/// Parses an open adapter identifier before a command can write anything.
+fn host(value: &str) -> Result<String, String> {
+    yardlog::identity::is_host_id(value)
+        .then(|| value.to_owned())
+        .ok_or_else(|| "a host starts with a lowercase letter and holds at most 64 lowercase letters, digits or hyphens".to_owned())
 }

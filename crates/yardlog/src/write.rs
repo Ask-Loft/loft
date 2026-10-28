@@ -381,6 +381,13 @@ impl Plan {
         if let Some(base) = context.base {
             crate::rules::stale(log, base, &plan.existing)?;
         }
+        let faults: Vec<_> = inputs
+            .iter()
+            .flat_map(|input| crate::delegation::faults(log, inputs, input, context))
+            .collect();
+        if !faults.is_empty() {
+            return Err(Refusal::Faults(faults));
+        }
         if context.send && !inputs.iter().any(|input| input.request.kind().is_asked()) {
             return Err(Refusal::NothingToSend);
         }

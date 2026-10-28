@@ -4,7 +4,7 @@
 
 import { expect, test } from '@playwright/test';
 
-import { address, answerInTerminal, postAsMod, read, setup, since, withdraw, write, writeOther } from './yard.js';
+import { atEpoch, address, answerInTerminal, historicalCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, writeOther } from './yard.js';
 
 /** Live changes reach an open page within this many milliseconds. */
 const LIVE = 2000;
@@ -970,4 +970,295 @@ test('the page draws the menu again only when the list, the Yard Log chosen or t
   await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
   await expect(marked).toHaveCount(0);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
+});
+
+test('Claude and Codex plans use the same Plan mode bands and approval explanation', async ({ page }) => {
+  for (const [host, id, title] of [['claude-code', 'claude', 'Claude shared plan'], ['codex', 'codex', 'Codex shared plan']]) {
+    write([
+      { id: `shared-${id}`, kind: 'stage', title, status: 'planned' },
+      { id: `shared-plan-${id}`, kind: 'plan', stage: `shared-${id}`, title, markdown: 'Build the shelf.', ...(host === 'claude-code' ? { planMode: true } : {}) },
+    ], ['--host', host, '--send']);
+  }
+  await page.goto(address());
+  const waiting = waitingModal(page);
+  const copy = "Approving authorizes the planned work, subject to the agent's mode and permissions.";
+  for (const id of ['claude', 'codex']) {
+    const form = waiting.locator('.decision-form').filter({ has: page.locator(`#approve-shared-plan-${id}`) });
+    await expect(form.locator('.plan-mode')).toHaveText(copy);
+    await form.getByRole('button', { name: 'Approve', exact: true }).click();
+    await expect(page.locator(`#block-shared-plan-${id} .verdict-word`)).toHaveText('Approved');
+  }
+  if (await waiting.isVisible()) await closeWaiting(page);
+  for (const id of ['claude', 'codex']) {
+    await page.locator(`#block-shared-${id} > summary`).click();
+    const band = page.locator('.mode-band--plan').filter({ has: page.locator(`#block-shared-plan-${id}`) });
+    await expect(band).toHaveCount(1);
+    await expect(band.locator('.mode-head')).toContainText('Plan mode');
+    await expect(band.locator('.plan-mode')).toHaveText(copy);
+    await expect(band.locator('.verdict-word')).toHaveText('Approved');
+  }
+});
+
+
+test('historical Codex cache-write zeros display as unavailable while their source file stays intact', async ({ page }) => {
+  const source = historicalCodexTotals();
+  await page.goto(address());
+  const row = page.locator('tbody[data-by="session"] tr').filter({ has: page.locator('code[title="historical-cache-write"]') });
+  await expect(row).toHaveCount(1);
+  await expect(row.locator('td').nth(2)).toHaveText('Unavailable');
+  await expect(row.locator('td').nth(2).locator('.share')).toHaveCount(0);
+  expect(source.read()).toBe(source.text);
+  await page.reload();
+  await expect(row.locator('td').nth(2)).toHaveText('Unavailable');
+  expect(source.read()).toBe(source.text);
+});
+
+test('editing a card keeps its position and creation time while showing its update', async ({ page }) => {
+  write([
+    { id: 'order-first', kind: 'note', stage: 'shape', title: 'First captured', markdown: 'Before' },
+    { id: 'order-second', kind: 'note', stage: 'shape', title: 'Second captured', markdown: 'After' },
+  ]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  const shape = page.locator('#block-shape');
+  if (await shape.getAttribute('open') === null) await shape.locator(':scope > summary').click();
+  const first = page.locator('#block-order-first');
+  const meta = first.locator('.block-meta');
+  await expect(meta).toContainText('Created');
+  const created = await meta.locator('time').first().getAttribute('datetime');
+  await expect(meta).not.toContainText('Updated');
+  write([{ id: 'order-first', kind: 'note', stage: 'shape', title: 'First captured', markdown: 'Edited' }]);
+  await expect(meta).toContainText('Updated', { timeout: LIVE });
+  await expect(meta.locator('time').first()).toHaveAttribute('datetime', created);
+  const cards = page.locator('[id="block-order-first"], [id="block-order-second"]');
+  expect(await cards.evaluateAll(elements => elements.map(element => element.id))).toEqual(['block-order-first', 'block-order-second']);
+});
+
+test('mixed waiting forms retain submission order through decisions and sending all question answers', async ({ page }) => {
+  const question = id => ({ id, kind: 'question', stage: 'shape', prompt: id, header: id, options: [{ label: 'Red' }, { label: 'Blue' }] });
+  const sent = write([
+    { id: 'mixed-plan', kind: 'plan', stage: 'shape', title: 'Mixed plan', markdown: 'A plan first' },
+    question('mixed-first'),
+    { id: 'mixed-approval', kind: 'approval', stage: 'shape', title: 'Mixed approval', markdown: 'Approve this' },
+    question('mixed-second'),
+  ], ['--send']);
+  const shown = await read();
+  const blocks = shown.stages.flatMap(stage => stage.blocks);
+  const key = id => blocks.find(block => block.id === id).key;
+  await page.goto(address());
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const forms = panel.locator('.question-form, .decision-form');
+  await expect(forms).toHaveCount(4);
+  expect(await forms.evaluateAll(elements => elements.map(element => element.dataset.key))).toEqual(
+    ['mixed-plan', 'mixed-first', 'mixed-approval', 'mixed-second'].map(key));
+  await panel.locator(`[data-key="${key('mixed-first')}"]`).getByLabel('Red').check();
+  await panel.locator('#approve-mixed-plan').click();
+  await expect(forms).toHaveCount(3, { timeout: LIVE });
+  expect(await forms.evaluateAll(elements => elements.map(element => element.dataset.key))).toEqual(
+    ['mixed-first', 'mixed-approval', 'mixed-second'].map(key));
+  await expect(panel.locator(`[data-key="${key('mixed-first')}"]`).getByLabel('Red')).toBeChecked();
+  await panel.locator(`[data-key="${key('mixed-second')}"]`).getByLabel('Blue').check();
+  await expect(panel.getByRole('button', { name: 'Send answers', exact: true })).toHaveCount(1);
+  await panel.getByRole('button', { name: 'Send answers', exact: true }).click();
+  await expect(forms).toHaveCount(1, { timeout: LIVE });
+  await panel.locator('#approve-mixed-approval').click();
+  await expect(panel).toBeHidden({ timeout: LIVE });
+});
+
+test('same second submissions from different callers retain arrival order in the panel and sidebar', async ({ page }) => {
+  const epoch = Math.floor(Date.now() / 1000);
+  const approval = id => [{ id, kind: 'approval', stage: 'shape', title: id, markdown: 'Ready' }];
+  const earlier = sendAs('z-order', approval('arrival-earlier'), epoch).submission;
+  const later = sendAs('a-order', approval('arrival-later'), epoch).submission;
+  await page.goto(address());
+  const modal = waitingModal(page);
+  const selector = `#submission-${earlier}, #submission-${later}`;
+  await expect(modal.locator(selector)).toHaveCount(2);
+  expect(await modal.locator(selector).evaluateAll(elements => elements.map(element => element.id)))
+    .toEqual([`submission-${earlier}`, `submission-${later}`]);
+  await expect(page.locator('.everywhere')).toContainText('arrival-later');
+  const waits = await page.locator('.everywhere .wait-item').allTextContents();
+  expect(waits.findIndex(text => text.includes('arrival-earlier'))).toBeLessThan(waits.findIndex(text => text.includes('arrival-later')));
+  await modal.locator('#approve-arrival-earlier').click();
+  await expect(modal.locator(`#submission-${earlier}`)).toBeHidden({ timeout: LIVE });
+  await modal.locator('#approve-arrival-later').click();
+  await expect(modal.locator(`#submission-${later}`)).toBeHidden({ timeout: LIVE });
+});
+
+test('typing selects the free form radio while a later named choice sends no retained text', async ({ page }) => {
+  const id = 'freeform-radio';
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colour?', header: 'Colour', ownWords: true,
+    options: [{ label: 'Red' }, { label: 'Blue' }] }], ['--send']);
+  await page.goto(address());
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const own = panel.getByRole('radio', { name: 'In your own words', exact: true });
+  const text = panel.getByLabel('Your answer', { exact: true });
+  const send = panel.getByRole('button', { name: 'Send answers', exact: true });
+  await panel.getByRole('radio', { name: 'Red', exact: true }).check();
+  await text.fill('Teal');
+  await expect(own).toBeChecked();
+  await expect(panel.getByRole('radio', { name: 'Red', exact: true })).not.toBeChecked();
+  await text.fill('');
+  await expect(own).toBeChecked();
+  await expect(send).toBeDisabled();
+  await text.fill('Teal');
+  await panel.getByRole('radio', { name: 'Blue', exact: true }).check();
+  await expect(own).not.toBeChecked();
+  await expect(text).toHaveValue('Teal');
+  await page.reload();
+  await expect(panel.getByRole('radio', { name: 'Blue', exact: true })).toBeChecked();
+  await expect(own).not.toBeChecked();
+  await expect(text).toHaveValue('Teal');
+  const sending = page.waitForRequest(request => request.url().endsWith('/api/answer') && request.method() === 'POST');
+  await send.click();
+  expect((await sending).postDataJSON().answers).toEqual([{ block: (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key, labels: ['Blue'] }]);
+  await expect(panel).toBeHidden({ timeout: LIVE });
+  const recorded = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).answer;
+  expect(recorded.labels).toEqual(['Blue']);
+  expect(recorded.words).toBeUndefined();
+});
+
+test('legacy text stays unselected until editing and explicit free form selection survives reload', async ({ page }) => {
+  const id = 'freeform-legacy';
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colour?', header: 'Colour', ownWords: true,
+    options: [{ label: 'Red', recommended: true }, { label: 'Blue' }] }], ['--send']);
+  const block = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key;
+  await page.goto(address());
+  await page.evaluate(({ submission, block }) => {
+    localStorage.setItem(`yard.draft.${submission}`, JSON.stringify({ [block]: { labels: [], words: 'Legacy text' } }));
+  }, { submission: sent.submission, block });
+  await page.reload();
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const own = panel.getByRole('radio', { name: 'In your own words', exact: true });
+  const text = panel.getByLabel('Your answer', { exact: true });
+  const send = panel.getByRole('button', { name: 'Send answers', exact: true });
+  await expect(text).toHaveValue('Legacy text');
+  await expect(own).not.toBeChecked();
+  await expect(send).toBeDisabled();
+  await text.fill('Green');
+  await expect(own).toBeChecked();
+  await page.reload();
+  await expect(text).toHaveValue('Green');
+  await expect(own).toBeChecked();
+  const sending = page.waitForRequest(request => request.url().endsWith('/api/answer') && request.method() === 'POST');
+  await send.click();
+  expect((await sending).postDataJSON().answers).toEqual([{ block, labels: [], words: 'Green' }]);
+  await expect(panel).toBeHidden({ timeout: LIVE });
+});
+
+test('free form checkboxes combine with named choices and keep selection independently of text', async ({ page }) => {
+  const id = 'freeform-multi';
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colours?', header: 'Colours', ownWords: true, multiple: true,
+    options: [{ label: 'Red' }, { label: 'Blue' }] }], ['--send']);
+  const block = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key;
+  await page.goto(address());
+  const panel = page.locator(`#submission-${sent.submission}`);
+  const own = panel.getByRole('checkbox', { name: 'In your own words', exact: true });
+  const text = panel.getByLabel('Your answer', { exact: true });
+  const send = panel.getByRole('button', { name: 'Send answers', exact: true });
+  await panel.getByRole('checkbox', { name: 'Red', exact: true }).check();
+  await text.fill('Teal');
+  await expect(own).toBeChecked();
+  await panel.getByRole('checkbox', { name: 'Blue', exact: true }).check();
+  await own.uncheck();
+  await page.reload();
+  await expect(own).not.toBeChecked();
+  await expect(text).toHaveValue('Teal');
+  await expect(panel.getByRole('checkbox', { name: 'Red', exact: true })).toBeChecked();
+  await expect(panel.getByRole('checkbox', { name: 'Blue', exact: true })).toBeChecked();
+  await own.check();
+  await text.fill('');
+  await expect(own).toBeChecked();
+  await expect(send).toBeDisabled();
+  await text.fill('Amber');
+  const sending = page.waitForRequest(request => request.url().endsWith('/api/answer') && request.method() === 'POST');
+  await send.click();
+  expect((await sending).postDataJSON().answers).toEqual([{ block, labels: ['Red', 'Blue'], words: 'Amber' }]);
+  await expect(panel).toBeHidden({ timeout: LIVE });
+});
+
+test('token details start closed and keyboard choices survive live counts and reloads', async ({ page }) => {
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  const section = page.locator('#tokens');
+  const details = section.locator('details.token-details');
+  const summary = details.locator(':scope > summary');
+  const totals = section.locator('.token-totals');
+  await expect(totals).toBeVisible();
+  await expect(details).not.toHaveAttribute('open', '');
+  await expect(section.locator('.tokens-table')).toBeHidden();
+  await expect(section.locator('.reporting-coverage')).toBeHidden();
+  await expect(section.locator('.tokens-note')).toBeHidden();
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(details).toHaveAttribute('open', '');
+  await expect(section.locator('.tokens-table')).toBeVisible();
+  await expect(section.locator('.reporting-coverage')).toBeVisible();
+  await expect(section.locator('.tokens-note')).toBeVisible();
+  const before = Number(await totals.locator('dd').first().getAttribute('title'));
+  const posted = await postAsMod('/api/events', [{
+    session: 's1', dir: setup.tree, at: since(0), kind: 'request', model: 'claude-opus-5-5',
+    tokens: { input: 1, cacheRead: 0, cacheWrite: 0, output: 1 },
+  }]);
+  expect(posted.status).toBe(200);
+  await expect(totals.locator('dd').first()).toHaveAttribute('title', String(before + 1), { timeout: LIVE });
+  await expect(details).toHaveAttribute('open', '');
+  await page.reload();
+  await expect(details).toHaveAttribute('open', '');
+  await expect(totals).toBeVisible();
+  await summary.focus();
+  await page.keyboard.press('Space');
+  await expect(details).not.toHaveAttribute('open', '');
+  await page.reload();
+  await expect(totals).toBeVisible();
+  await expect(details).not.toHaveAttribute('open', '');
+  await expect(section.locator('.tokens-table')).toBeHidden();
+});
+
+
+test('delegated tasks stay in their owner stage through parallel execution, interruption and reassignment', async ({ page }) => {
+  const epoch = Math.floor(Date.now() / 1000) - 90;
+  const session = 'delegation-browser';
+  const owner = ['--session', session];
+  const actor = (host, agent) => ({ host, session, agent, agentType: 'builder' });
+  const a = { id: 'delegated-a', kind: 'task', stage: 'delegated-stage', title: 'Delegated A', state: 'open', assignee: actor('codex', 'worker-a') };
+  const b = { id: 'delegated-b', kind: 'task', stage: 'delegated-stage', title: 'Delegated B', state: 'open', assignee: actor('claude-code', 'worker-b') };
+  atEpoch(['write', ...owner], [{ id: 'delegated-stage', kind: 'stage', title: 'Delegated build', status: 'active' }, a, b], epoch);
+  atEpoch(['write', ...owner, '--host', 'codex', '--agent', 'worker-a', '--agent-type', 'builder'], [{ ...a, state: 'active' }], epoch + 5);
+  atEpoch(['write', ...owner, '--agent', 'worker-b', '--agent-type', 'builder'], [{ ...b, state: 'active' }], epoch + 10);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  const original = page.locator('#block-delegated-stage');
+  const card = original.locator('#block-delegated-a');
+  await expect(card.locator('.task-assignee')).toHaveText('Assigned to codex / delegation-browser / worker-a (builder)');
+  await expect(original.locator(':scope > summary .owner')).toHaveText('main agent');
+  const end = { session_id: session, cwd: setup.tree, hook_event_name: 'SubagentStop', agent_id: 'worker-a', agent_type: 'builder' };
+  atEpoch(['codex', 'hook'], end, epoch + 20);
+  await expect(card.locator('.state')).toHaveText('Open', { timeout: LIVE });
+  const held = (await read()).stages.flatMap(stage => stage.blocks).find(block => block.id === a.id);
+  expect(held.executions).toHaveLength(1);
+  expect(held.executions[0].ended).toBe(new Date((epoch + 20) * 1000).toISOString().replace('.000', ''));
+  const reassigned = { ...a, assignee: actor('claude-code', 'worker-c'), state: 'active' };
+  atEpoch(['write', ...owner], [
+    { id: 'delegated-stage', kind: 'stage', title: 'Delegated build', status: 'planned' },
+    { id: 'delegated-next', kind: 'stage', title: 'Next work', status: 'active' }, reassigned,
+  ], epoch + 25);
+  const revision = (await read()).revision;
+  atEpoch(['codex', 'hook'], end, epoch + 26);
+  expect((await read()).revision).toBe(revision);
+  await page.getByRole('button', { name: 'Gantt chart', exact: true }).click();
+  const aRow = page.locator('.task-row').filter({ has: page.getByRole('button', { name: 'Delegated A', exact: true }) });
+  const bRow = page.locator('.task-row').filter({ has: page.getByRole('button', { name: 'Delegated B', exact: true }) });
+  await expect(aRow.locator('.task-assignee')).toContainText('worker-c', { timeout: LIVE });
+  await expect(aRow.locator('.task-active')).toHaveCount(2);
+  await expect(bRow.locator('.task-active')).toHaveCount(1);
+  const active = aRow.locator('.task-active').first();
+  await expect(active).toHaveAttribute('title', /worker-a.*15 s/);
+  atEpoch(['write', ...owner, '--agent', 'worker-c', '--agent-type', 'builder'], [{ ...reassigned, state: 'done' }], epoch + 40);
+  await expect(aRow.locator('.task-done')).toHaveCount(1, { timeout: LIVE });
+  await expect(aRow.locator('.task-active').last()).toHaveAttribute('title', /worker-c.*15 s/);
+  await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  await expect(original.locator('#block-delegated-a .task-assignee')).toContainText('worker-c');
+  expect(await page.locator('#block-delegated-next #block-delegated-a').count()).toBe(0);
 });

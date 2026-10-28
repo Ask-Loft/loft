@@ -1,0 +1,163 @@
+{
+  "description": "Native Yard activity, session context and heartbeat. Review and trust these hooks in Codex.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "loft yard codex watch",
+            "async": true,
+            "timeout": 86400
+          }
+        ]
+      }
+    ],
+    "Interrupt": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 3
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "loft yard codex hook",
+            "timeout": 3
+          }
+        ]
+      }
+    ]
+  }
+}

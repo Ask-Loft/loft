@@ -25,13 +25,15 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eaf19ca8018b
         name: "A session's activity file is `activity/<session id>.yaml` in Yard Log's folder."
       - key: 01a1652c-8a87-75c3-a415-c00b3be4bc74
-        name: "The activity file holds the session's id and the time its last kept event ended."
+        name: "The activity file holds the session's id, its host and the time its last kept event ended."
+      - key: 01a182b6-3c58-7235-ad04-392a7e9e9217
+        name: "An activity file that names no host is read as a Claude Code session's, and the page is given its host."
       - key: 01a1646f-546d-7042-befd-eaf221179a3a
         name: "Each of the main agent's turns is kept with the time it started and the time it ended."
       - key: 01a1646f-546d-7042-befd-eaf39c9c8fa0
         name: "Each subagent's run is kept with its agent id, its type, the time it started and the time it ended."
       - key: 01a16995-313c-7343-8413-b55299748fdd
-        name: "Each subagent's run is kept with the stage active for its session's main agent as the run started, where the main agent had one active."
+        name: "Each subagent's run is kept with its unambiguous delegated-task stage context as the run started, or with its session's main agent's active stage where no delegated-task context exists."
       - key: 01a1646f-546d-7042-befd-eaf4217a481b
         name: "A turn already under way when Yard Log opened is kept from the session's first recorded event."
       - key: 01a1646f-546d-7042-befd-eaf5bc56ffef

@@ -1,11 +1,10 @@
 import { expect, test } from 'claude-code/testing'
 
-import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, taskId, taskState } from '../hooks/yard/answers'
-import { contextOf, LIMIT } from '../hooks/yard/context'
-import { APPROVE, dialogOf, MORE, recordedOf, REJECT } from '../hooks/yard/dialog'
-import { activeStage, lastUnplanned, waitingOf, whoOf, type Block } from '../hooks/yard/log'
-import { loftSubcommands } from '../hooks/yard/shell'
-import { argumentsOf, commandOf, specOf, TOOL_NAMES } from '../hooks/yard/tools'
+import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, taskId, taskState } from '../hooks/adapter/answers'
+import { APPROVE, dialogOf, MORE, recordedOf, REJECT } from '../hooks/adapter/dialog'
+import { activeStage, lastUnplanned, waitingOf, whoOf, type Block } from '../hooks/adapter/log'
+import { loftSubcommands } from '../hooks/adapter/shell'
+import { argumentsOf, commandOf, specOf, TOOL_NAMES } from '../hooks/adapter/tools'
 import { block, readDoc, stage } from './yard-world'
 
 const ASKED = [
@@ -225,50 +224,6 @@ test('a subcommand is never taken from quoted text, a heredoc, or a word that is
   expect(loftSubcommands('cargo run -q -p loft-cli -- check')).toEqual([])
 })
 
-test('the context gives the page, the active stage, the open submissions and what was answered since the last read', () => {
-  const text = contextOf(
-    readDoc({
-      revision: 9,
-      lastRead: 5,
-      stages: [
-        {
-          ...stage('shape', 'active', { session: 's1' }),
-          blocks: [
-            { ...question('q1', 2), answer: { labels: ['O1'], act: { revision: 7 } } },
-            { ...question('q0', 2), answer: { labels: ['O1'], act: { revision: 4 } } },
-          ],
-        },
-      ],
-      submissions: [{ agent: { session: 's1' }, open: [{ key: 'sub-7', blocks: ['k1'], state: 'open' }] }],
-    }),
-    { sessions: ['s1'] },
-  )
-  expect(text).toContain('http://127.0.0.1:7411/#tree=')
-  expect(text).toContain('`shape`')
-  expect(text).toContain('`sub-7`, 1 block, sent by you')
-  expect(text).toContain('`q1` answered')
-  expect(text).not.toContain('`q0`')
-})
-
-test('the context holds at most 2,000 characters and counts what it leaves out', () => {
-  const blocks = Array.from({ length: 120 }, (_, n) => ({ ...question(`question-number-${n}`, 2), answer: { act: { revision: 8 } } }))
-  const text = contextOf(readDoc({ revision: 9, lastRead: 1, stages: [{ ...stage('shape', 'active', { session: 's1' }), blocks }] }), { sessions: ['s1'] })
-  expect(text.length).toBeLessThanOrEqual(LIMIT)
-  expect(text).toMatch(/… and \d+ more/)
-})
-
-test('a branch with no Yard Log is given only the page and that it has none yet', () => {
-  const text = contextOf(readDoc({ yardLog: { branch: 'feat/shelf', closedBy: 'open' }, ignored: true }), { sessions: ['s1'] })
-  expect(text).toContain('has no Yard Log yet')
-  expect(text).toContain('http://127.0.0.1:7411/')
-  expect(text).not.toContain('git ignores')
-})
-
-test('a closed Yard Log is said to be closed, and an ignored .yard/ to stay out of the commits', () => {
-  expect(contextOf(readDoc({ yardLog: { key: 'y', closedBy: 'agent' } }), { sessions: ['s1'] })).toContain('Yard Log is closed')
-  expect(contextOf(readDoc({ ignored: true }), { sessions: ['s1'] })).toContain('stays out of the commits')
-})
-
 test("each of Yard's six tools has a JSON schema of its input", () => {
   expect(TOOL_NAMES).toEqual(['yard_read', 'yard_write', 'yard_wait', 'yard_withdraw', 'yard_close', 'yard_published'])
   const schema = (name: (typeof TOOL_NAMES)[number]) => specOf(name).inputSchema as { properties: object; required: string[] }
@@ -297,21 +252,6 @@ test("each tool runs its loft yard command with the caller's session and, for a 
     stdin: '[{"id":"x"}]',
   })
   expect(commandOf('yard_published', { branch: 'feat/x', note: 'n' }, main).args).toEqual(['published', '--branch', 'feat/x', '--note', 'n', '--session', 's1'])
-})
-
-test('after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read', () => {
-  const text = contextOf(
-    readDoc({
-      revision: 9,
-      lastRead: 6,
-      stages: [{ ...stage('shape', 'active', { session: 's1' }), blocks: [{ ...question('q1', 2), answer: { labels: ['O1'], act: { revision: 8 } } }] }],
-      submissions: [{ agent: { session: 's1' }, open: [{ key: 'sub-7', blocks: ['k1'], state: 'open' }] }],
-    }),
-    { sessions: ['s2', 's1'] },
-  )
-  expect(text).toContain('Your active stage: `shape`')
-  expect(text).toContain('`sub-7`, 1 block, sent by you')
-  expect(text).toContain('since revision 6, which you last read (1)')
 })
 
 test('Reject with no notes typed records the block as rejected with no reason', () => {

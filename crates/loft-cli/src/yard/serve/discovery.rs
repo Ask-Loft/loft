@@ -1,6 +1,7 @@
 //! How one page server learns of another: `~/.yard/server.json` names the running one, which
-//! holds the lock on `~/.yard/server.lock` while it runs; and a newer one asks it to stop through
-//! `~/.yard/stop.json`, which names the newer `loft`'s version. No connection is opened to learn
+//! holds the lock on `~/.yard/server.lock` while it runs; and a newer one, or one run to replace
+//! it, asks it to stop through `~/.yard/stop.json`, which names the asking `loft`'s version and
+//! whether it replaces the running one whatever its version. No connection is opened to learn
 //! either.
 
 use std::cmp::Ordering;
@@ -23,20 +24,26 @@ pub fn against_ours(version: &str) -> Ordering {
     }
 }
 
-/// Asks the running page server to stop, naming this `loft`'s version.
-pub fn request_stop(home: &Home) -> Result<(), Failure> {
-    let request = json!({ "version": VERSION, "pid": std::process::id() });
+/// Asks the running page server to stop, naming this `loft`'s version, and whether it is to
+/// stop whatever its own version, to be replaced.
+pub fn request_stop(home: &Home, replace: bool) -> Result<(), Failure> {
+    let mut request = json!({ "version": VERSION, "pid": std::process::id() });
+    if replace {
+        request["replace"] = json!(true);
+    }
     home.write(HomeFile::Stop, request.to_string().as_bytes())?;
     Ok(())
 }
 
-/// Whether `~/.yard/stop.json` holds a request made by a `loft` newer than this one.
+/// Whether `~/.yard/stop.json` holds a request that replaces this page server, or one made by a
+/// `loft` newer than this one.
 pub fn asked_to_stop(home: &Home) -> bool {
     let Ok(Some(bytes)) = home.read(HomeFile::Stop) else {
         return false;
     };
-    serde_json::from_slice::<Value>(&bytes)
-        .ok()
-        .and_then(|request| request["version"].as_str().map(against_ours))
-        == Some(Ordering::Greater)
+    let Ok(request) = serde_json::from_slice::<Value>(&bytes) else {
+        return false;
+    };
+    request["replace"] == true
+        || request["version"].as_str().map(against_ours) == Some(Ordering::Greater)
 }

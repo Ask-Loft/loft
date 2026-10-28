@@ -20,6 +20,7 @@ use serde_json::{Value, json};
 
 use super::Server;
 use super::assets;
+use super::event::host_in;
 use super::guard::{Access, admit};
 use super::http::{self, Request, Response};
 use super::listener::Connection;
@@ -28,7 +29,7 @@ use super::stream::stream;
 use super::trees;
 use crate::yard::failure::Failure;
 use crate::yard::{protocol, sessions};
-use yardlog_store::session::is_session_id;
+use yardlog::identity::is_session_id;
 
 /// Answers the one request `connection` carries.
 pub fn handle(server: &Server, mut connection: Connection) {
@@ -147,8 +148,16 @@ fn heard(server: &Server, body: &[u8]) -> Response {
     else {
         return Response::refused(400, "session", "the request names no session");
     };
+    let host = match host_in(&sent) {
+        Ok(host) => host,
+        Err(message) => return Response::refused(400, "host", message),
+    };
     let heard = crate::yard::now().and_then(|at| {
-        sessions::heard(&server.home, session, at)?;
+        sessions::heard(
+            &server.home,
+            &yardlog::identity::session_key(host, session),
+            at,
+        )?;
         Ok(at)
     });
     match heard {

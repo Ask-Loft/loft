@@ -1,0 +1,85 @@
+key: 01a177f9-8294-77e4-aa6e-7076e270dd65
+slug: report-an-adapter-s-capabilities
+name: "Report an adapter's capabilities"
+body: |
+  The adapter descriptor is `adapter: { format: "yard-adapter/1", version, capabilities }` in a normalized event. Capabilities hold `events`, the supported normalized event kinds; `nativeQuestions`, `nativePlans` and `taskMirroring`, booleans; and `usage`, the supported counters among `input`, `cacheRead`, `cacheWrite` and `output`. The event's `host` identifies the adapter's host.
+
+  A descriptor is a report of available integration, not permission to answer for the person. Missing descriptors mean unknown coverage; an unlisted capability in a descriptor means unavailable. Session activity keeps the descriptor, including when the session reports no counted model request, so a log copied to another machine retains its coverage. Events hold only identifiers, names, times and counts, never prompts, tool arguments or tool results.
+realizes:
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a177f9-8294-77e4-aa6e-7077cbfe5844
+    statement:
+      form: event_driven
+      when: "an adapter posts an event with its descriptor"
+      system: "the page server"
+      shall: "retain the descriptor with that host's session activity and return it to the page."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-7078a4c09f21
+        name: "A session with no token event can still report its adapter's capabilities."
+      - key: 01a177f9-8294-77e4-aa6e-7079dff4b963
+        name: "Replaying events after a server restart restores the descriptor and host identity."
+      - key: 01a177f9-8294-77e4-aa6e-707ae3c700b2
+        name: "Missing descriptors remain unknown, and an explicitly empty capability list reports unavailable coverage."
+      - key: 01a177f9-8294-77e4-aa6e-707bd3345e9c
+        name: "A malformed descriptor is refused before its event is recorded."
+  - key: 01a177f9-8294-77e4-aa6e-707c7c77310f
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "keep unreported usage counters distinct from measured zero."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-707df5aba626
+        name: "An absent counter is not stored or displayed as a measured zero."
+      - key: 01a182b6-62b5-70ae-a9a2-26121c1b8193
+        name: "A counter posted as null, or as anything but a whole number, is unreported, and its event is still recorded."
+      - key: 01a177f9-8294-77e4-aa6e-707e68eb827c
+        name: "Measured zero is displayed as zero even when no positive count was recorded."
+      - key: 01a177f9-8294-77e4-aa6e-707f3b171f93
+        name: "A Yard Log with missing contributing counters reports token accounting as partial."
+      - key: 01a17a6d-c247-738d-ac55-ded57a9a6ce5
+        name: "Yard Log's token-accounting completeness is derived from its recorded coverage evidence."
+      - key: 01a17a6d-c247-738d-ac55-ded626362168
+        name: "Partial token accounting is indicated once for the whole Yard Log."
+      - key: 01a17a6d-c247-738d-ac55-ded71d91edfc
+        name: "Individual token counts display their recorded numeric values without partial suffixes."
+      - key: 01a17a6d-c247-738d-ac55-ded87f1a5251
+        name: "Complete recorded coverage is not marked partial."
+      - key: 01a177f9-8294-77e4-aa6e-70807ce3385d
+        name: "A counter unavailable from every contributor is displayed as unavailable, without a numeric share bar."
+      - key: 01a177f9-8294-77e4-aa6e-708196a2cfcf
+        name: "Claude events that report all four counters retain their existing totals."
+  - key: 01a177f9-8294-77e4-aa6e-70828f820367
+    statement:
+      form: ubiquitous
+      system: "The Yard page"
+      shall: "describe agent sessions and their reporting coverage without assuming a single host."
+    criteria:
+      - key: 01a177f9-8294-77e4-aa6e-708363ed3edf
+        name: "Session and usage views identify the host and explain unknown or unavailable reporting coverage."
+      - key: 01a177f9-8294-77e4-aa6e-70846d43994b
+        name: "The empty page describes the Yard workflow without requiring one named agent host."
+  - key: 01a182b6-3c57-749f-95d3-aa287dde38b3
+    statement:
+      form: ubiquitous
+      system: "A Yard adapter"
+      shall: "send its descriptor with the first event it posts for a session and with each turn's start, and with no other event."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-3910ed80f427
+        name: "The Claude and Codex adapters each post their descriptor with a session's first event and with each `turn.start`."
+      - key: 01a182b6-3c58-7235-ad04-39111bdbea4a
+        name: "An event between two turn starts carries no descriptor."
+  - key: 01a182b6-3c58-7235-ad04-391267b19e77
+    statement:
+      form: event_driven
+      when: "the page server records an event that carries no descriptor"
+      system: "the page server"
+      shall: "keep that event under the last descriptor its session posted."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-3913b96391cb
+        name: "The session's activity keeps the last descriptor its session posted."
+      - key: 01a182b6-3c58-7235-ad04-391493273b63
+        name: "Replaying a session's events after a restart applies each descriptor to the events after it."
+      - key: 01a182b6-3c58-7235-ad04-39157bf8284b
+        name: "A session that has posted no descriptor keeps unknown coverage."

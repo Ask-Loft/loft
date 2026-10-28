@@ -54,6 +54,19 @@ pub fn post_json(url: &str, body: &[u8], left: Duration) -> Option<u16> {
     Some(response.status().as_u16())
 }
 
+/// An adapter's authenticated post to the local Yard page server, with no redirects or Origin.
+pub fn post_local_json(port: u16, path: &str, token: &str, body: &[u8]) -> bool {
+    if token.is_empty() || !matches!(path, "/api/events" | "/api/heard" | "/api/register") {
+        return false;
+    }
+    agent(LIMIT, "loft-yard")
+        .post(format!("http://127.0.0.1:{port}{path}"))
+        .header("Content-Type", "application/json")
+        .header("Authorization", &format!("Bearer {token}"))
+        .send(body)
+        .is_ok_and(|response| response.status().is_success())
+}
+
 /// `GET`s `url` within `left`, asking for GitHub's JSON, following no redirect, and gives the
 /// answer's status and body, or none when no answer came. The request names `loft` and nothing
 /// else about it, not even its version.

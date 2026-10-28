@@ -24,6 +24,17 @@ pub(super) struct Fields<'a> {
 }
 
 impl<'a> Fields<'a> {
+    pub(super) fn assignee(&mut self) -> Option<crate::Agent> {
+        let value = self.take("assignee")?;
+        match crate::identity::agent(value) {
+            Ok(agent) => Some(agent),
+            Err(error) => {
+                self.fault("assignee", error);
+                None
+            }
+        }
+    }
+
     pub(super) fn new(map: &'a Map<String, Value>, block: String) -> Self {
         Self {
             map,

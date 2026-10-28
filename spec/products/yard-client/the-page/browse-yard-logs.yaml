@@ -80,12 +80,12 @@ requirements:
       form: state_driven
       while: "the page server serves no Yard Log"
       system: "the page"
-      shall: "ask the person to start a Claude Code session with the Loft plugin on a branch of a git repository, and say that the agent's first write there opens the branch's Yard Log."
+      shall: "ask the person to start a session in an agent host with a Yard adapter on a branch of a git repository, and say that the agent's first write there opens the branch's Yard Log."
     criteria:
       - key: 01a16827-8a6d-74e8-a5d2-6fa3517630a4
         name: "With no Yard Log served, the page asks for a session rather than a choice from the list."
       - key: 01a16827-8a6d-74e8-a5d2-6fa4147c7a28
-        name: "With no Yard Log served, the page gives the commands that install the Loft plugin in Claude Code."
+        name: "With no Yard Log served, the page links to installation instructions for agent adapters."
   - key: 01a1649f-62ef-71e6-98de-e10df45e19aa
     statement:
       form: event_driven
@@ -141,6 +141,10 @@ requirements:
         name: "Each status shows as a word as well as a colour."
       - key: 01a1646f-546d-7042-befd-eb2d6203081e
         name: "A stage owned by a subagent names the subagent's type."
+      - key: 01a17f75-05dc-7361-a0cd-c0247d869c6b
+        name: "The blocks within each stage retain Yard Log's stored order through mode grouping."
+      - key: 01a17f75-05dc-7361-a0cd-c025788f6f99
+        name: "Changing a block's current version leaves its timeline position unchanged."
   - key: 01a1690b-2c9b-7594-809f-4a8a666e8f7c
     statement:
       form: ubiquitous
@@ -169,6 +173,8 @@ requirements:
         name: "The person's choice of order is kept in the browser."
       - key: 01a16984-aadb-7721-9995-4722a569ce6d
         name: "The switch of order lies at the left of the line above the stages, and is shown only with the timeline."
+      - key: 01a17f75-05dc-7361-a0cd-c0268b033931
+        name: "Choosing newest first reverses stages without reversing the blocks within them."
   - key: 01a1646f-546d-7042-befd-eb3071ddc29b
     statement:
       form: optional
@@ -184,6 +190,22 @@ requirements:
         name: "A task counts as written during a stretch where it was listed during it."
       - key: 01a1646f-546d-7042-befd-eb3400bc25ff
         name: "A band of spec mode is told apart from a band of plan mode by its colour, its hatching and its label."
+  - key: 01a17b28-85cd-71b5-8420-67ee22ffafa7
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw every plan under a Plan mode band, regardless of the agent's host or the native mode activity available."
+    criteria:
+      - key: 01a17b28-3826-7755-a564-ddfae0c6fd36
+        name: "Every plan block is drawn under the same Plan mode band, regardless of its host or whether native mode activity was recorded."
+      - key: 01a17b28-3826-7755-a564-ddfb45598062
+        name: "A plan outside a recorded plan-mode stretch has a band from its current version's presentation until its decision, or marked as ongoing while undecided."
+      - key: 01a17b28-c0f9-7056-82dd-76cfcc7c78cc
+        name: "A band derived from a plan contains that plan alone."
+      - key: 01a17b28-3826-7755-a564-ddfc714df647
+        name: "A plan within a recorded plan-mode stretch uses that band's recorded times and is drawn once."
+      - key: 01a17b28-3826-7755-a564-ddfd119e623a
+        name: "A plan outside a recorded plan-mode stretch creates no native activity or Gantt duration."
   - key: 01a1646f-546d-7042-befd-eb36770e933e
     statement:
       form: ubiquitous
@@ -213,7 +235,9 @@ requirements:
       - key: 01a16a04-3f8b-71a9-baa3-95e52d75699d
         name: "A task of the type `fix` shows a mark that names it a fix beside its state, and a task of the type `regular` shows none."
       - key: 01a1646f-546d-7042-befd-eb3eba30c3b0
-        name: "Each block offers the agent that wrote it, its version and the time it was written."
+        name: "Each block offers the agent that wrote its current version, its version number and its first version's time marked Created."
+      - key: 01a17f75-05dc-7361-a0cd-c027e9f5c5a1
+        name: "A block with more than one version shows its current version's time marked Updated, including when it shares the creation time to the second."
       - key: 01a1646f-546d-7042-befd-eb3f215b9440
         name: "A block with more than one version offers each earlier version, with who wrote it and when."
   - key: 01a1646f-546d-7042-befd-eb402c999dbd

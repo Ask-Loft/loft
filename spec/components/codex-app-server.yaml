@@ -1,0 +1,7 @@
+key: 01a17989-a8b4-7254-bee6-8c17685ca099
+slug: codex-app-server
+name: "Codex app server"
+body: "The existing local Codex daemon whose Unix-domain WebSocket serves JSON-RPC, thread usage notifications and model-input delivery. The Codex Yard adapter uses one port for accounting observation and bounded Yard decision notifications without replacing the person's native client or starting a Codex server."
+boundary: external
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77

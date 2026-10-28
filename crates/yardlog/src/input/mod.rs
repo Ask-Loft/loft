@@ -178,6 +178,7 @@ fn request(kind: Kind, fields: &mut Fields<'_>) -> Request {
             question: fields.handle("question"),
         },
         Kind::Task => Request::Task(Task {
+            assignee: fields.assignee(),
             title: fields.text("title"),
             detail: fields.optional_text("detail"),
             state: fields

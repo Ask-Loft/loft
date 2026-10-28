@@ -6,39 +6,14 @@
 use loftspec::yaml::Out;
 use serde_json::Value;
 use yardlog::Time;
-use yardlog_store::session::is_session_id;
+use yardlog::identity::is_session_id;
 
-/// The four counts of a model request's tokens.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct Tokens {
-    pub input: u64,
-    pub cache_read: u64,
-    pub cache_write: u64,
-    pub output: u64,
-}
+use super::event_ids::Receipt;
 
-impl Tokens {
-    /// The counts an event's `tokens` gives: none where it gives none.
-    fn of(value: &Value) -> Option<Self> {
-        let count = |name: &str| value[name].as_u64().unwrap_or_default();
-        value.is_object().then(|| Self {
-            input: count("input"),
-            cache_read: count("cacheRead"),
-            cache_write: count("cacheWrite"),
-            output: count("output"),
-        })
-    }
-
-    pub fn add(&mut self, other: Self) {
-        self.input += other.input;
-        self.cache_read += other.cache_read;
-        self.cache_write += other.cache_write;
-        self.output += other.output;
-    }
-}
+pub use yardlog::usage::Counts as Tokens;
 
 /// The agent an event happened in.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Who {
     Main,
     Sub { id: String, kind: String },
@@ -82,6 +57,16 @@ pub fn strings(value: &Value) -> Vec<String> {
     })
 }
 
+/// A wire request's host: omitted fields retain the legacy identity; invalid fields do not.
+pub(super) fn host_in(value: &Value) -> Result<&str, &'static str> {
+    let host = match value.get("host") {
+        None => Some(yardlog::act::CLAUDE_CODE),
+        Some(host) => host.as_str(),
+    };
+    host.filter(|host| yardlog::identity::is_host_id(host))
+        .ok_or("the request names no valid host identifier")
+}
+
 /// An event, read and checked.
 #[derive(Debug, Clone)]
 pub struct Event {
@@ -94,6 +79,9 @@ pub struct Event {
     pub host: String,
     /// The event as it was posted, kept whole in the event log.
     pub posted: Value,
+    pub adapter: Option<yardlog::adapter::Descriptor>,
+    pub receipt: Option<Receipt>,
+    tokens: Option<Tokens>,
 }
 
 /// The time an event gives, to the second: a fraction of a second is dropped.
@@ -103,6 +91,20 @@ fn time(text: &str) -> Option<Time> {
         _ => text.to_owned(),
     };
     whole.parse().ok()
+}
+
+// Source values remain in `posted`; only measured contributions enter the aggregates.
+fn measured_tokens(posted: &Value, host: &str, tokens: &Value) -> Tokens {
+    let reported = Tokens::read(tokens);
+    if host != "codex"
+        || tokens["cacheWrite"].as_u64() != Some(0)
+        || posted["usageSource"]["account"] == "apiKey"
+    {
+        return reported;
+    }
+    let mut measured = tokens.clone();
+    measured.as_object_mut().unwrap().remove("cacheWrite");
+    Tokens::read(&measured)
 }
 
 impl Event {
@@ -128,23 +130,37 @@ impl Event {
             .as_str()
             .filter(|kind| !kind.is_empty())
             .ok_or("the event names no kind")?;
+        let host = host_in(posted)?;
+        let adapter = posted
+            .get("adapter")
+            .map(yardlog::adapter::Descriptor::read)
+            .transpose()
+            .map_err(str::to_owned)?;
+        let tokens = posted
+            .get("tokens")
+            .map(|tokens| measured_tokens(posted, host, tokens));
         Ok(Self {
             session: session.to_owned(),
             dir: dir.to_owned(),
             at,
             who: Who::of(&posted["agent"]),
             kind: kind.to_owned(),
-            host: posted["host"]
-                .as_str()
-                .unwrap_or(yardlog::act::CLAUDE_CODE)
-                .to_owned(),
+            host: host.to_owned(),
             posted: posted.clone(),
+            adapter,
+            receipt: Receipt::read(posted)?,
+            tokens,
         })
+    }
+
+    /// This session's storage identity, separate from its native identifier.
+    pub fn session_key(&self) -> String {
+        yardlog::identity::session_key(&self.host, &self.session)
     }
 
     /// A model request's tokens, or a compaction's own request's.
     pub fn tokens(&self) -> Option<Tokens> {
-        Tokens::of(&self.posted["tokens"])
+        self.tokens
     }
 
     /// The model that answered a request.
@@ -172,7 +188,10 @@ impl Event {
     }
 
     /// Whether a tool call's end says it failed.
-    pub fn failed(&self) -> bool {
-        self.posted["failed"].as_bool().unwrap_or(false)
+    pub fn failed(&self) -> Option<bool> {
+        self.posted["failed"].as_bool()
     }
 }
+
+#[cfg(test)]
+mod usage_tests;
