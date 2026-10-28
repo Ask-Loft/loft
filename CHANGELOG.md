@@ -18,6 +18,22 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   serves in its place, with every tree it served; the dogfood launcher restarts the shared server
   through it. A page server built before `--replace` stops only for a newer version, and the
   replacing run fails naming its process.
+- `loft yard task <id> [--state --title --detail --type] [--mirror]` changes a task in place under
+  Yard Log's lock, with no based-on revision, and `loft yard task --release` returns an agent's
+  active tasks to open in one write. Both adapters mirror native task updates through it, so
+  neither reads before writing or retries a stale write, and one rule keeps a mirror from
+  changing another agent's task or reopening a finished one.
+- `loft yard read --context` gives an agent its briefing: its working stage, its assigned tasks,
+  the open submissions and what was answered since it last read, as fields and as text of at
+  most 2,000 characters. The Claude and Codex adapters both give it at session start and mark it
+  read, and neither repeats it with each prompt.
+- Every part of Yard asks one working-stage rule where an agent's tokens, activity, mirrored
+  tasks and briefing belong. A subagent's own native tasks mirror into its working stage,
+  assigned to it where it does not own that stage.
+- The page server sums Yard Log's token totals for the page, and keeps each session's host and
+  last adapter descriptor, which adapters now send only with a session's first event and each
+  turn start. A compaction that reports no tokens leaves the accounting complete, and an
+  unusable token counter is unreported rather than dropping its event.
 - Yard's token details start collapsed while summary totals stay visible, with the fold choice
   remembered separately for each Yard Log through live updates and reloads.
 - Yard's free-form answers have explicit radio buttons or checkboxes. Typing selects the
