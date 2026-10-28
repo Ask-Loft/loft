@@ -54,20 +54,16 @@ requirements:
         name: "A request whose agent works in another worktree is counted in the totals file of that worktree's Yard Log."
   - key: 01a17d58-a535-7258-91b4-bc937a4bdd69
     statement:
-      form: event_driven
-      when: "the page server counts or replays a Codex model request"
-      system: "the page server"
-      shall: "exclude ambiguous zero cache-write reports from measured totals while retaining their source events."
+      form: ubiquitous
+      system: "The page server"
+      shall: "count each request's tokens as its event gives them, whatever its host, and mark every totals file it writes `cacheWriteClassified: true`."
+    body: "Whether a host's count is measured is the adapter's to decide, where it knows the source: the Codex adapter leaves out a cache-write count it cannot measure. The page server keeps no rule of any host's."
     criteria:
-      - key: 01a17d58-a535-7258-91b4-bc947d9fa1f1
-        name: "A Codex zero cache-write report with ChatGPT or unknown account classification contributes an unavailable cache-write count."
-      - key: 01a17d58-a535-7258-91b4-bc95f4f30d26
-        name: "A Codex zero cache-write report with verified API-key classification contributes a measured zero."
       - key: 01a17d58-a535-7258-91b4-bc968d111228
         name: "Positive cache-write reports remain measured for every host and account classification."
       - key: 01a17d58-a535-7258-91b4-bc97b03fa0e7
-        name: "The stored source event retains its original cache-write value and classification."
-      - key: 01a17d58-a535-7258-91b4-bc980ac52043
-        name: "Totals rebuilt from earlier Codex events without account classification treat zero cache-write counts as unavailable."
+        name: "The stored source event retains its original cache-write value and classification under `usageSource`."
       - key: 01a17d58-a535-7258-91b4-bc991c193166
-        name: "New Codex totals files carry cacheWriteClassified set to true to identify counts produced by this availability rule."
+        name: "Every totals file the page server writes carries `cacheWriteClassified: true`, whatever its host."
+      - key: 01a1835b-a222-7677-8e34-d527ef5cc7b5
+        name: "The page server reads no account classification and treats no host apart when it counts."

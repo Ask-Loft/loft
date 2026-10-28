@@ -4,7 +4,7 @@ name: "Compose the Yard skill"
 body: |
   The shared Yard workflow has one source under `crates/loft-cli/skill/yard/`. Its `SKILL.md` names no host or native host tool; the Claude-specific tools, task metadata, automatic mirroring and plan-mode instructions lie in `agents/claude.md`. Composition appends that adaptation to the common source and produces the Claude plugin's single `skills/yard/SKILL.md`, with its existing name, description fields and 500-line ceiling.
 
-  The Codex adaptation lies in agents/codex.md beside the shared source. It describes the six Yard CLI operations, page-based questions and plans, automatic plan-step mirroring and the limits of native integration. Both plugins carry the composition for their own adapter. The existing specification skill's installation is unchanged: loft skill install installs loft-spec alone. The packaging script rewrites the composed Yard packages, and a guard detects drift.
+  The Codex adaptation lies in agents/codex.md beside the shared source. It describes the six Yard CLI operations, page-based questions and plans, automatic plan-step mirroring and the limits of native integration. Both plugins carry the composition for their own adapter. The existing specification skill's installation is unchanged: loft skill install installs loft-spec alone. `loft` embeds the Yard source and composes the Yard packages, as it composes `loft-spec`: `loft skill package` rewrites them, and a guard detects drift.
 
   Codex planning follows an adaptation of OpenAI Codex's Plan mode prompt at release rust-v0.164.0, with its source and attribution retained. Yard supplies the planning records, questions and approval surface while Codex retains its native collaboration mode and permissions.
 realizes:
@@ -24,6 +24,8 @@ requirements:
         name: "The composed Claude package is one SKILL.md of at most 500 lines, whose frontmatter holds name and description alone."
       - key: 01a177f9-8294-77e4-aa6e-7064fd177e6d
         name: "The committed package equals the composition, and packaging does not install Yard for a host without an adapter."
+      - key: 01a1835b-df01-7555-84b6-2dc33427b39a
+        name: "The Yard packages are composed by `loft` from the source it embeds, with no composition outside it."
       - key: 01a1787c-f803-70b1-b946-b71adb17c6f4
         name: "The Codex package is the shared source followed by its Codex adaptation in one SKILL.md of at most 500 lines."
       - key: 01a1787c-f803-70b1-b946-b71b18646046

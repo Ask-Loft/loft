@@ -109,7 +109,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The Codex usage observer"
-      shall: "classify cache-write availability from the source count and the account type reported by its app-server connection."
+      shall: "classify cache-write availability from the source count and the account type reported by its app-server connection, and give a request's tokens a cache-write count only where it is measured."
     criteria:
       - key: 01a17d58-a534-746d-9e9d-03faace608a9
         name: "A reported zero cache-write count from a ChatGPT account is unavailable for accounting."
@@ -119,8 +119,10 @@ requirements:
         name: "A reported zero cache-write count from a verified API-key account remains measured."
       - key: 01a17d58-a534-746d-9e9d-03fd5b60ece0
         name: "An absent cache-write count remains unavailable even for a verified API-key account."
+      - key: 01a1835b-a222-7677-8e34-d5261370ae59
+        name: "A request whose cache-write count is unavailable for accounting carries no `cacheWrite` in its tokens."
       - key: 01a17d58-a534-746d-9e9d-03fe586bb77d
-        name: "The raw latest-request cache-write count is retained in the machine event log even when it is unavailable for accounting."
+        name: "The raw latest-request cache-write count is retained under `usageSource.reported` in the machine event log, even when it is unavailable for accounting."
       - key: 01a17d58-a534-746d-9e9d-03ff056b0671
         name: "Each reported request retains only the account classification apiKey, chatgpt or unknown in usageSource.account beside its source counters."
       - key: 01a17d58-a534-746d-9e9d-0400724a00e6
