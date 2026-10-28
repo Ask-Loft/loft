@@ -11,7 +11,7 @@ use std::sync::OnceLock;
 use serde_json::{Value, json};
 use yardlog_store::YardStoreError;
 use yardlog_store::home::{Home, HomeFile};
-use yardlog_store::lock;
+use yardlog_store::lock::{self, Locked};
 
 /// The lock a running page server holds, in `~/.yard/`.
 pub const SERVER_LOCK: &str = "server.lock";
@@ -60,6 +60,20 @@ pub fn running(home: &Home) -> Result<Option<Running>, YardStoreError> {
     Ok(port
         .zip(version)
         .map(|(port, version)| Running { port, version, pid }))
+}
+
+/// The page server's lock, taken where no process holds it, so that no page server starts while
+/// the result lives; else the page server that holds it, or none where its holder has not named
+/// itself in `~/.yard/server.json` yet, as a page server that is starting has not.
+///
+/// # Errors
+///
+/// The lock or the file cannot be read.
+pub fn quiet(home: &Home) -> Result<Result<Locked, Option<Running>>, YardStoreError> {
+    match lock::try_lock(&home.dir().join(SERVER_LOCK))? {
+        Some(locked) => Ok(Ok(locked)),
+        None => Ok(Err(running(home)?)),
+    }
 }
 
 /// The address of `branch`'s Yard Log in `tree` on the page, or, where no page server runs, that

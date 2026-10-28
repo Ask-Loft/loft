@@ -131,13 +131,18 @@ impl Home {
     }
 
     /// Replaces a session's event log with `bytes`, through a temporary file beside it renamed
-    /// into place. Only a command that knows no page server runs may call it, since a page
-    /// server appends to the log without a lock.
+    /// into place. A page server appends to the log without a lock, so the caller holds the page
+    /// server's lock, `_server`, which keeps any page server from starting meanwhile.
     ///
     /// # Errors
     ///
     /// The log cannot be written.
-    pub fn replace_events(&self, session: &str, bytes: &[u8]) -> Result<(), YardStoreError> {
+    pub fn replace_events(
+        &self,
+        _server: &lock::Locked,
+        session: &str,
+        bytes: &[u8],
+    ) -> Result<(), YardStoreError> {
         Ok(replace_synced(&self.events(session), bytes, false)?)
     }
 

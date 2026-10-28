@@ -439,3 +439,21 @@ fn a_page_server_whose_process_ended_is_no_longer_counted_as_running() {
     assert_eq!(read["page"]["available"], false);
     assert!(yard_home(&yard).join("server.json").exists());
 }
+
+#[test]
+fn no_page_server_starts_while_another_process_holds_its_lock_without_naming_itself() {
+    let yard = Yard::new();
+    let dir = yard_home(&yard);
+    fs::create_dir_all(&dir).unwrap();
+    let _upgrading = lock::lock(&dir.join("server.lock")).unwrap();
+    let clock = Clock::fixed(EPOCH).passing();
+    let output = yard.scratch.loft_with(
+        &["yard", "serve", "--format", "json"],
+        Some(&yard.git),
+        &clock,
+    );
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    let refused = document("serve", &output);
+    assert_eq!(refused["errors"][0]["kind"], "stop", "{refused}");
+    assert!(!dir.join("server.json").exists());
+}

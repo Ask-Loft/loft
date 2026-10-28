@@ -226,3 +226,27 @@ fn while_a_page_server_runs_a_session_s_events_are_left_as_they_were() {
         "a run after it stops moves them"
     );
 }
+
+#[test]
+fn while_another_process_holds_the_page_server_s_lock_unnamed_events_and_totals_are_left() {
+    let yard = current_session();
+    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let (events, current) = (fs::read(&path).unwrap(), totals(&yard));
+    let home = yard.scratch.home().join(".yard");
+    fs::remove_file(home.join("server.json")).unwrap();
+    let held = yardlog_store::lock::lock(&home.join("server.lock")).unwrap();
+    let (code, result) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    assert!(result["totalsLeft"].get("port").is_none(), "{result}");
+    let reason = result["totalsLeft"]["reason"].as_str().unwrap();
+    assert!(reason.contains("server.lock"), "{reason}");
+    assert_eq!(fs::read(&path).unwrap(), events);
+    assert_eq!(totals(&yard), current);
+    drop(held);
+    upgrade(&yard);
+    assert_ne!(
+        fs::read(&path).unwrap(),
+        events,
+        "a run after it lets go moves them"
+    );
+}

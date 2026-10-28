@@ -23889,6 +23889,15 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "while_a_page_server_runs_a_session_s_events_are_left_as_they_were"
         body: af6ba83670de9476a1e8c264343c57a34c89bd19b14d6199e0d466eb84da2ffa
+  - node: 01a1839e-0cd9-75bc-b853-1fefb3d37734
+    reviewed: 6cfb6b21b3d17fe057ce1c16cc1991fb432552b4b33fa2cc1d3a124423b5a89e
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "while_another_process_holds_the_page_server_s_lock_unnamed_events_and_totals_are_left"
+        body: b060e224a5569229a215b31a1c5aafb4daee13b2b81883d03cb4808d7e789cc4
+      - file: "crates/loft-cli/tests/yard_serve.rs"
+        name: "no_page_server_starts_while_another_process_holds_its_lock_without_naming_itself"
+        body: e50e2768743c2cd9b0bc5c0bb35c0a3cd6c4865bce9bd42d4ba0aaa4a88d0533
   - node: 01a1835b-a222-7677-8e34-d52f17634aa3
     reviewed: b2531498f0908e13b863eb697e51cd5b1871d778402f3d10ef5e8b8415b0932a
     tests:

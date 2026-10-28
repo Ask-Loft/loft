@@ -5,8 +5,9 @@
 //! where this machine keeps them, else settled from the file itself. The events of every Codex
 //! session of an open Yard Log are moved first, whatever its file's format, since an earlier page
 //! server wrote Codex files in the current format without moving their events. While a page
-//! server runs, nothing is written: it appends to the event logs and would write its own counts
-//! over the files.
+//! server holds its lock, nothing is written: it appends to the event logs and would write its own
+//! counts over the files. Otherwise the step holds that lock until it has written the last file,
+//! so that no page server starts meanwhile.
 
 use std::collections::BTreeSet;
 use std::path::PathBuf;
@@ -26,8 +27,9 @@ use crate::yard::totals::replayed_totals;
 pub enum Classifying {
     /// Each file written in the current totals format: its branch, host and session.
     Done(Vec<Value>),
-    /// Every file left as it was, because the page server on `port` runs.
-    Left { port: u16 },
+    /// Every file left as it was, because a page server holds its lock: the one on `port`, or one
+    /// that has not named itself yet.
+    Left { port: Option<u16> },
     /// The step stopped on a file it failed to settle, after writing `classified`.
     Failed {
         classified: Vec<Value>,
@@ -62,10 +64,7 @@ impl Classifying {
             Self::Done(classified) => fields["classified"] = json!(classified),
             Self::Left { port } => {
                 fields["classified"] = json!([]);
-                let reason = format!(
-                    "a page server runs on port {port}: stop it and run `loft yard upgrade` again to settle the totals files"
-                );
-                fields["totalsLeft"] = json!({ "port": port, "reason": reason });
+                fields["totalsLeft"] = left(*port);
             }
             Self::Failed {
                 classified,
@@ -79,14 +78,29 @@ impl Classifying {
     }
 }
 
+/// Why every totals file was left: the page server on `port` runs, or a process holds its lock
+/// without naming itself.
+fn left(port: Option<u16>) -> Value {
+    let again = "run `loft yard upgrade` again to settle the totals files";
+    let Some(port) = port else {
+        let lock = page::SERVER_LOCK;
+        let reason = format!(
+            "a process holds the page server's lock `~/.yard/{lock}` without naming itself, as a page server does while it starts: stop it and {again}"
+        );
+        return json!({ "reason": reason });
+    };
+    let reason = format!("a page server runs on port {port}: stop it and {again}");
+    json!({ "port": port, "reason": reason })
+}
+
 /// Moves the unverified zeros of each Codex session's events, whatever its totals file's format,
 /// then writes each totals file of an older totals format of the Yard Logs `open`, each by its
 /// branch; stops on the first file it fails to settle.
 pub fn classify(open: &[(String, YardStore)]) -> Classifying {
     let mut classified = Vec::new();
     match settle(open, &mut classified) {
-        Ok(None) => Classifying::Done(classified),
-        Ok(Some(port)) => Classifying::Left { port },
+        Ok(Ok(())) => Classifying::Done(classified),
+        Ok(Err(port)) => Classifying::Left { port },
         Err(unsettled) => Classifying::Failed {
             classified,
             unsettled,
@@ -94,12 +108,13 @@ pub fn classify(open: &[(String, YardStore)]) -> Classifying {
     }
 }
 
-/// [`classify`]'s work: each file it writes added to `classified`; gives the port of a page
-/// server that runs, where one does.
+/// [`classify`]'s work, under the page server's lock: each file it writes added to `classified`;
+/// where a page server holds the lock, nothing is written, and the error gives its port, where it
+/// named one.
 fn settle(
     open: &[(String, YardStore)],
     classified: &mut Vec<Value>,
-) -> Result<Option<u16>, Unsettled> {
+) -> Result<Result<(), Option<u16>>, Unsettled> {
     let files: Vec<_> = open
         .iter()
         .flat_map(|(branch, store)| {
@@ -113,7 +128,7 @@ fn settle(
     let first_older = files.iter().find(|(.., file)| older(file));
     let home = match (Home::from_env(), first_older) {
         (Some(home), _) => home,
-        (None, None) => return Ok(None),
+        (None, None) => return Ok(Ok(())),
         (None, Some((_, store, key, _))) => {
             let path = store.session_path(SessionFile::Tokens, key);
             return Err(Unsettled::at(path, &Failure::NO_HOME));
@@ -132,16 +147,18 @@ fn settle(
         }
     }
     if pending.is_empty() && first_older.is_none() {
-        return Ok(None);
+        return Ok(Ok(()));
     }
-    let running = page::running(&home);
+    // Held until the last file is written, so that no page server starts meanwhile.
+    let quiet = page::quiet(&home);
     let lock = || home.dir().join(page::SERVER_LOCK);
-    if let Some(server) = running.map_err(|error| Unsettled::at(lock(), &error))? {
-        return Ok(Some(server.port));
-    }
+    let server = match quiet.map_err(|error| Unsettled::at(lock(), &error))? {
+        Ok(locked) => locked,
+        Err(running) => return Ok(Err(running.map(|server| server.port))),
+    };
     // The events first: a run stopped after them settles the totals files on the next.
     for key in pending {
-        let settled = super::events::settle(&home, key);
+        let settled = super::events::settle(&home, &server, key);
         settled.map_err(|error| Unsettled::at(home.events(key), &error))?;
     }
     for (branch, store, key, file) in files.into_iter().filter(|(.., file)| older(file)) {
@@ -156,7 +173,7 @@ fn settle(
         written.map_err(|error| Unsettled::at(path, &error))?;
         classified.push(json!({ "branch": branch, "host": host, "session": file["session"] }));
     }
-    Ok(None)
+    Ok(Ok(()))
 }
 
 /// A Codex session's totals, counted as the page server counts them from the session's moved

@@ -3,9 +3,9 @@
 //! under its own lock, whole or not at all. Closed Yard Log and Yard Log already in this
 //! format are left as they are; one of a newer format, or one that does not read, is left and
 //! named, and the command exits 1. Then each open Yard Log's totals files of an older totals
-//! format are written in the current one, unless a page server runs (`totals`); where that step
-//! fails to settle a file, the command still reports each Yard Log's fate, names the file, and
-//! exits 1. The person runs it, so it takes no `--session`.
+//! format are written in the current one, under the page server's lock and unless a page server
+//! holds it (`totals`); where that step fails to settle a file, the command still reports each
+//! Yard Log's fate, names the file, and exits 1. The person runs it, so it takes no `--session`.
 
 mod events;
 mod totals;

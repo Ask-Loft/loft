@@ -8,6 +8,7 @@
 use serde_json::Value;
 use yardlog_store::YardStoreError;
 use yardlog_store::home::Home;
+use yardlog_store::lock::Locked;
 
 use crate::yard::codex::classify_event;
 
@@ -22,7 +23,8 @@ pub fn pending(home: &Home, key: &str) -> Result<bool, YardStoreError> {
 }
 
 /// Rewrites session `key`'s event log, where it holds a count to move.
-pub fn settle(home: &Home, key: &str) -> Result<(), YardStoreError> {
+/// `server` is the page server's lock, held meanwhile.
+pub fn settle(home: &Home, server: &Locked, key: &str) -> Result<(), YardStoreError> {
     let Some(bytes) = home.read_events(key)? else {
         return Ok(());
     };
@@ -38,7 +40,7 @@ pub fn settle(home: &Home, key: &str) -> Result<(), YardStoreError> {
         }
     }
     if changed {
-        home.replace_events(key, &settled)?;
+        home.replace_events(server, key, &settled)?;
     }
     Ok(())
 }

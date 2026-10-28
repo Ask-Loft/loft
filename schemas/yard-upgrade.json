@@ -107,7 +107,6 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "port",
             "reason"
           ],
           "properties": {
