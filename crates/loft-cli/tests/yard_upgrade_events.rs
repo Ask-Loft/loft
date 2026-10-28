@@ -1,5 +1,5 @@
-//! `loft yard upgrade` over the event logs of the Codex sessions whose totals it classified: each
-//! zero cache-write count no verified API-key account reported moves under
+//! `loft yard upgrade` over the machine's event logs: in each Codex event, whichever Yard Log it
+//! counts toward, each zero cache-write count no verified API-key account reported moves under
 //! `usageSource.reported`, so that replaying the log gives the totals the upgrade wrote, and each
 //! line keeps its event identity, so that a retry of the original event is still recognized.
 
@@ -249,4 +249,39 @@ fn while_another_process_holds_the_page_server_s_lock_unnamed_events_and_totals_
         events,
         "a run after it lets go moves them"
     );
+}
+
+#[test]
+fn the_events_of_a_codex_session_are_moved_whichever_tree_they_count_toward_and_others_kept() {
+    let yard = Yard::new();
+    let events = yard.scratch.home().join(".yard/events");
+    fs::create_dir_all(&events).unwrap();
+    let codex = legacy(&yard, 1, "one", Some("chatgpt"), 0);
+    let mut claude = codex.clone();
+    claude["host"] = json!("claude-code");
+    fs::write(events.join("codex~elsewhere.jsonl"), format!("{codex}\n")).unwrap();
+    let other = format!("{claude}\n");
+    fs::write(events.join("claude-code~elsewhere.jsonl"), &other).unwrap();
+    let (code, _) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    let moved = fs::read_to_string(events.join("codex~elsewhere.jsonl")).unwrap();
+    let moved: Value = serde_json::from_str(moved.trim_end()).unwrap();
+    assert!(moved["tokens"].get("cacheWrite").is_none(), "{moved}");
+    assert_eq!(moved["usageSource"]["reported"], json!({"cacheWrite":0}));
+    let kept = fs::read_to_string(events.join("claude-code~elsewhere.jsonl")).unwrap();
+    assert_eq!(kept, other, "a line of another host keeps its bytes");
+}
+
+#[test]
+fn the_events_of_a_codex_session_of_a_closed_yard_log_are_moved_and_its_totals_left() {
+    let yard = legacy_session(unclassified);
+    yard.run(&["close", "--session", "s1"]);
+    let written = totals(&yard);
+    let (code, _) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    for line in lines(&yard) {
+        assert!(line["tokens"].get("cacheWrite").is_none(), "{line}");
+        assert_eq!(line["usageSource"]["reported"], json!({"cacheWrite":0}));
+    }
+    assert_eq!(totals(&yard), written);
 }

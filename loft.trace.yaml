@@ -23917,11 +23917,17 @@ links:
         name: "each_unverified_zero_moves_under_its_source_and_keeps_its_event_identity"
         body: d71ec9eaeed6e3e845acc64491d53049bcd29e77b3b545d5b8ef3dad2350e4d1
   - node: 01a1838b-6fc9-778b-82be-c3b09a65599b
-    reviewed: 83bded92a6508adbf1c721300fe4f5426bb379d6fb7a47d1e53a07689192ca44
+    reviewed: 209958e86729e422632ce6a5e3cc1d3a10115fbf0ef3ac14e25b721419b6bb91
     tests:
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "the_events_of_a_session_whose_totals_are_in_the_current_format_are_moved_and_its_totals_kept"
-        body: 36afcb2ee0871ac040cf194d0a7c711a203b95890d62a20f2136b9beb8e904d7
+        body: e500f13a60df86f42aac6d09e10afda1f4d2cadb6fb1bcb9cea8eec3fce67209
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "the_events_of_a_codex_session_are_moved_whichever_tree_they_count_toward_and_others_kept"
+        body: 602c6d46f10e120aeb878b0b5b22957912a508a7691f919a05cf9658ef11d171
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "the_events_of_a_codex_session_of_a_closed_yard_log_are_moved_and_its_totals_left"
+        body: 375c0fcd17f43829654d697acf8c5eaf54b4429196c67edda6b827708e3dc4b5
   - node: 01a1838b-6fc9-778b-82be-c3b15f337a17
     reviewed: 066265ed5dfdd042a952a8bd717d739cbc378b21bcdbb993f92dc33722852445
     tests:

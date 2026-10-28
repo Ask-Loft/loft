@@ -3,13 +3,13 @@
 //! cache-write count unavailable, since a Codex adapter that did not classify cache writes at the
 //! source may have given a zero it did not measure: counted again from the session's moved events
 //! where this machine keeps them, else settled from the file itself. The events of every Codex
-//! session of an open Yard Log are moved first, whatever its file's format, since an earlier page
-//! server wrote Codex files in the current format without moving their events. While a page
-//! server holds its lock, nothing is written: it appends to the event logs and would write its own
-//! counts over the files. Otherwise the step holds that lock until it has written the last file,
-//! so that no page server starts meanwhile.
+//! session this machine keeps are moved first, whatever its file's format and whichever Yard Log
+//! they count toward, since an earlier page server wrote Codex files in the current format without
+//! moving their events, and the event logs belong to the machine. While a page server holds its
+//! lock, nothing is written: it appends to the event logs and would write its own counts over the
+//! files. Otherwise the step holds that lock until it has written the last file, so that no page
+//! server starts meanwhile.
 
-use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use serde_json::{Value, json};
@@ -93,9 +93,9 @@ fn left(port: Option<u16>) -> Value {
     json!({ "port": port, "reason": reason })
 }
 
-/// Moves the unverified zeros of each Codex session's events, whatever its totals file's format,
-/// then writes each totals file of an older totals format of the Yard Logs `open`, each by its
-/// branch; stops on the first file it fails to settle.
+/// Moves the unverified zeros of the Codex events in every event log of the machine, then writes
+/// each totals file of an older totals format of the Yard Logs `open`, each by its branch; stops
+/// on the first file it fails to settle.
 pub fn classify(open: &[(String, YardStore)]) -> Classifying {
     let mut classified = Vec::new();
     match settle(open, &mut classified) {
@@ -134,15 +134,12 @@ fn settle(
             return Err(Unsettled::at(path, &Failure::NO_HOME));
         }
     };
-    let codex: BTreeSet<_> = files
-        .iter()
-        .filter(|(.., file)| file["host"] == "codex")
-        .map(|(_, _, key, _)| key.clone())
-        .collect();
+    let sessions = home.event_sessions();
+    let events = || home.dir().join("events");
     let mut pending = Vec::new();
-    for key in &codex {
-        let found = super::events::pending(&home, key);
-        if found.map_err(|error| Unsettled::at(home.events(key), &error))? {
+    for key in sessions.map_err(|error| Unsettled::at(events(), &error))? {
+        let found = super::events::pending(&home, &key);
+        if found.map_err(|error| Unsettled::at(home.events(&key), &error))? {
             pending.push(key);
         }
     }
@@ -158,8 +155,8 @@ fn settle(
     };
     // The events first: a run stopped after them settles the totals files on the next.
     for key in pending {
-        let settled = super::events::settle(&home, &server, key);
-        settled.map_err(|error| Unsettled::at(home.events(key), &error))?;
+        let settled = super::events::settle(&home, &server, &key);
+        settled.map_err(|error| Unsettled::at(home.events(&key), &error))?;
     }
     for (branch, store, key, file) in files.into_iter().filter(|(.., file)| older(file)) {
         let host = file["host"].as_str().unwrap_or_default().to_owned();
