@@ -1,6 +1,6 @@
 // Captures from one caller run in hook receipt order, independently of other callers.
 // Reserve before any asynchronous preparation; only capture belongs here, never a decision wait.
-import { state } from './state'
+import { actorKey, state } from './state'
 
 export function checkCapture(signal: AbortSignal) {
   if (signal.aborted) throw new Error('Yard capture was interrupted.')
@@ -13,7 +13,7 @@ export function checkCapture(signal: AbortSignal) {
  */
 export function capture<T>(agentId: string | undefined, signal: AbortSignal, operation: (keep: (ran: T) => T) => Promise<T>): Promise<T> {
   const lanes = state.captures
-  const key = JSON.stringify([state.sessions[0], agentId ?? null])
+  const key = actorKey(state.sessions[0], agentId)
   let kept: { ran: T } | undefined
   const keep = (ran: T) => {
     kept = { ran }

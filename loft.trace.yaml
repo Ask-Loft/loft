@@ -19454,7 +19454,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: 2b327a27b24f8e8d92641858283568440579f733d74251d676716b9f64d360c6
+        body: 67cce3062e3b504c818b2d225c937ddeed2eb3634e56c0819173d398db2a9fe5
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
         body: ab055ee3a1914d3ef7baf55d02849c493c88f278b14a7a31fe1d0b043c42baaa
@@ -19478,7 +19478,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: 2b327a27b24f8e8d92641858283568440579f733d74251d676716b9f64d360c6
+        body: 67cce3062e3b504c818b2d225c937ddeed2eb3634e56c0819173d398db2a9fe5
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "protocol one keeps the Claude arguments and events without adapter descriptors"
         body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
@@ -19487,7 +19487,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "a foreign host with the same native identifiers is another actor in stages and context"
-        body: 91b9a9e1118f3b6a3d173b4224279240e7b42f68dc73746cf555da6c3677956e
+        body: a8addb5f160ecbc223d27b048802c4ec2817636b67af0013c934d44ec905d153
   - node: 01a177f9-8294-77e4-aa6e-7078a4c09f21
     reviewed: 18e266fc39c2e3f6dd3bf2e61c33c39a6554cabb1c6807b3d6782912b3635ae9
     tests:
@@ -19609,16 +19609,23 @@ links:
         name: "the empty page describes an agent host without requiring Claude"
         body: 4031f330b7afc8fc22321f0bea12253483c092b1697c7413596c3379f74361ae
   - node: 01a182b6-3c58-7235-ad04-3910ed80f427
+    reviewed: 4e96a45db9a2e8454eba1fd470f63fb2f29ec2113877d462236cf08f6a19dc8c
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_sends_its_descriptor_with_a_session_s_first_event_and_each_turn_start_only"
         body: e6c110d91047af65db06508cf72179fe0f8634d0ef42b2fb862f23846211fe31
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "the Claude adapter posts its descriptor with the session's first event and with each turn.start, and with no other event"
+        body: 755da31bb07536387f938a753918dad895821ec262bc787469dfff8372f09da0
   - node: 01a182b6-3c58-7235-ad04-39111bdbea4a
     reviewed: c2f33f5537c8ed54a1ff1831f347c851d40c003c989db1565f79a1907f249c84
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_sends_its_descriptor_with_a_session_s_first_event_and_each_turn_start_only"
         body: e6c110d91047af65db06508cf72179fe0f8634d0ef42b2fb862f23846211fe31
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "the Claude adapter posts its descriptor with the session's first event and with each turn.start, and with no other event"
+        body: 755da31bb07536387f938a753918dad895821ec262bc787469dfff8372f09da0
   - node: 01a182b6-3c58-7235-ad04-3913b96391cb
     reviewed: b53d7a888e93d9c177ce8a90441981d02d9a63b06bb19cf85cb56d40cf049230
     tests:
@@ -21009,20 +21016,38 @@ links:
         name: "context_given_without_session_exits_2_and_names_session"
         body: 2c4ba027c71d1dc10f88f9828f9cfa9f4356e31c3c9567239e5db4af192ec0b2
   - node: 01a182b6-3c59-766a-a80e-37ead56f7f2d
+    reviewed: a7ac2c399d92cef833ad2fb9acdb22c2ac07ead624f2d42c3a80cf299752f7de
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_session_context_is_the_briefing_marked_read_with_the_caller_arguments_and_notifications"
         body: 2f8ab23b783847d273406e5288cfb82beef2696345829d8e51cf67ca9d40f3ac
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
+        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "native subagent start gives the worker its briefing, marked read in its own name, without taking the stage"
+        body: 477eb8fa05550296b55f7ad74d8571369e044dfaceb6f9e8654a2d11f6954edb
   - node: 01a182be-ad52-75ba-879c-8ae870a8278f
+    reviewed: 1e088ff8bff9564cf374ed886b3f2bf4c790b039496abdda6431a06692737ab5
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_session_context_is_the_briefing_marked_read_with_the_caller_arguments_and_notifications"
         body: 2f8ab23b783847d273406e5288cfb82beef2696345829d8e51cf67ca9d40f3ac
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
+        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "native subagent start gives the worker its briefing, marked read in its own name, without taking the stage"
+        body: 477eb8fa05550296b55f7ad74d8571369e044dfaceb6f9e8654a2d11f6954edb
   - node: 01a182be-ad52-75ba-879c-8ae989acf96b
+    reviewed: 69e6b0478da824db95f903b4ba6e57f16f4e4008e67caec7e933ba30422c5f79
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "a_later_prompt_s_context_holds_only_whether_decision_notifications_reach_the_agent"
         body: 1541eb85dd56e67dc5f173647a311cb7ac108c5558c34ca033afca4b67410bec
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a prompt gives no briefing: only the session start does"
+        body: 2e856d7949a33eb0c033fee03b0957030ba314fa45a7ddc0966f931b219b1803
   - node: 01a182be-ad52-75ba-879c-8aea5f45df7a
     reviewed: f37b1b1ade1a2c13a996652861e1e78cb1a7f326a21317295405cdf711ffe90b
     tests:
@@ -23179,7 +23204,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a worker updates the explicitly bound task without owning or taking its stage"
-        body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
+        body: e4355941e58e8233c23bad6fcdbb6c7a13c9dc464be5083db01818b696d9798a
   - node: 01a18053-9e08-72a7-ab94-f3bd30efa1d3
     reviewed: 79ae4ad41d0b164059e63a6c2b15e2c6378162ed6314127fd7bae7ff4f3218bd
     tests:
@@ -23191,10 +23216,10 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a bound native create leaves the existing task identity and scope intact"
-        body: db9f7ba31d7e6bc838beafa6e4b9db2f44f3ed6619fe3f634af4548034d5bb7f
+        body: 9a2a5bf0a595fd766d70054aba0be8158706ce661fe26bbd2f77470b9d074447
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a worker updates the explicitly bound task without owning or taking its stage"
-        body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
+        body: e4355941e58e8233c23bad6fcdbb6c7a13c9dc464be5083db01818b696d9798a
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
         body: 77b359578499dcc79f54d59f91c6b8144bcdc476c66c4a50fb397628f991aae3
@@ -23206,7 +23231,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "invalid explicit bindings never create replacement native tasks"
-        body: 4f231c8cf3e658af2ed898d2de43f6ee32528804d36db759e16e85805c55772c
+        body: 7edff318e740b85c877ebc7c048ee3524dfd6ba68554df29a616956f25ba3ecc
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "invalid_unknown_duplicate_and_removed_bindings_never_create_or_drop_a_task"
         body: 3d189fcbab078257f45e358ddcb79b8739b172d662bed81da656a686135f55db
@@ -23215,13 +23240,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a worker updates the explicitly bound task without owning or taking its stage"
-        body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "a stale retry preserves unrelated fields from the latest task body"
-        body: 0623ccdc1ca6d512f71b953409b4f00d9a4a3a30ece9f08b6e4f0ac8b038b051
+        body: e4355941e58e8233c23bad6fcdbb6c7a13c9dc464be5083db01818b696d9798a
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
         body: 77b359578499dcc79f54d59f91c6b8144bcdc476c66c4a50fb397628f991aae3
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "each native update is mirrored once with loft yard task --mirror, which leaves the delegation rules to Yard Log, with no read first and no retry"
+        body: cf8a90c8cb049f6c49827a0936330a1af04c6acbdce53278055c516bee961e63
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_changed_task_keeps_its_stage_assignee_and_every_field_not_given"
+        body: 52803ccc0c2355d2a23d91c14a9b0effaa8f8c9f263f4ea5bf3fcf16919acbec
   - node: 01a18053-9e08-72a7-ab94-f3c1ed1cbf1f
     reviewed: d4d542689e5354feb3ba58e3db78ae52d6223402b82cf3a709d36302d1c07770
     tests:
@@ -23240,48 +23268,57 @@ links:
   - node: 01a18053-9e08-72a7-ab94-f3c39ffa0b6c
     reviewed: fcdb1f05f13fa603e7ba8dd4d58fe27dd07d9b4b73afbd4518d3a69e3b3a6b22
     tests:
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "unchanged and terminal delegated updates create no versions"
-        body: 91a63bece044d0e66645358c79da1608a89fdcdb4c35d69f01f90f745830af30
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks"
         body: 7700f6d31635ec58263d7764d2d9050cdc77e1c75c8a9943c819abeea069907f
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_mirrored_change_of_a_done_or_dropped_task_keeps_its_state_and_applies_its_other_fields"
+        body: 8836f9ad04c72f66527a382e46c610f664b2f5d91b9f0b092c27455f011e9138
+      - file: "crates/loft-cli/tests/yard_task.rs"
+        name: "a_mirrored_task_change_leaves_another_agent_s_task_alone_and_keeps_a_done_task_s_state"
+        body: 7b97048e45737b8eecfb6564a598a1d09039562422079def381399dc75b6d9a8
   - node: 01a18053-9e08-72a7-ab94-f3c430201df0
     reviewed: 015f10a45c5f8242c688e643d21e43126f754eeb9a2556938dc9d8170e4f1b02
     tests:
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "unchanged and terminal delegated updates create no versions"
-        body: 91a63bece044d0e66645358c79da1608a89fdcdb4c35d69f01f90f745830af30
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
         body: 77b359578499dcc79f54d59f91c6b8144bcdc476c66c4a50fb397628f991aae3
-  - node: 01a18053-9e08-72a7-ab94-f3c50ed30e6e
-    reviewed: 8eba1babcbf481a4bd3377000ae34bd5729ab5bf865e82554738c62bfcfc05ce
-    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_change_that_leaves_the_task_as_it_was_writes_nothing"
+        body: fa738d41235996c4508c33e48542d4d546d02b4d71f9f53fa5a4868b4df52282
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "a stale retry preserves unrelated fields from the latest task body"
-        body: 0623ccdc1ca6d512f71b953409b4f00d9a4a3a30ece9f08b6e4f0ac8b038b051
+        name: "each native update is mirrored once with loft yard task --mirror, which leaves the delegation rules to Yard Log, with no read first and no retry"
+        body: cf8a90c8cb049f6c49827a0936330a1af04c6acbdce53278055c516bee961e63
+  - node: 01a18053-9e08-72a7-ab94-f3c50ed30e6e
+    reviewed: ba75384101ec2fca10df2e5dcc77e2e334026de65a7b627e12ed17c5f7a077ee
+    tests:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "a_bound_change_applies_to_the_task_as_it_stands_without_a_read_first"
         body: 146ac25becd9dc7abe05d193e2ba4d00737e8547dfd035ebc095d9d74abeb0d4
-  - node: 01a18053-9e08-72a7-ab94-f3c613583e48
-    reviewed: 5b0cad78e2bb38825254f1ffabc687aedf298f8a4295f564155c62ca04cae831
-    tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "stale retries reread the task and stop when another worker received its assignment"
-        body: aed0ff95255893b8267fd249e63dc19ddf69a47cf53e44ad72407535c9025e4b
+        name: "each native update is mirrored once with loft yard task --mirror, which leaves the delegation rules to Yard Log, with no read first and no retry"
+        body: cf8a90c8cb049f6c49827a0936330a1af04c6acbdce53278055c516bee961e63
+  - node: 01a18053-9e08-72a7-ab94-f3c613583e48
+    reviewed: 5f4e366c04a8754f910851d614c2faeb137a931417a02a6edefd0f0ccb1f5595
+    tests:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks"
         body: 7700f6d31635ec58263d7764d2d9050cdc77e1c75c8a9943c819abeea069907f
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_mirrored_change_of_a_task_assigned_to_another_agent_writes_nothing"
+        body: 2579180e62448ddb5222e8f60ec09e2d7bdad23258453bacdb46043bb4cd4094
+      - file: "crates/loft-cli/tests/yard_task.rs"
+        name: "a_mirrored_task_change_leaves_another_agent_s_task_alone_and_keeps_a_done_task_s_state"
+        body: 7b97048e45737b8eecfb6564a598a1d09039562422079def381399dc75b6d9a8
   - node: 01a18053-9e08-72a7-ab94-f3c89e4da1b7
     reviewed: 7764c38824c5b8d9e453eddd470c5d93ebfaf18ac55e309e2664d379e3edf38a
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "an identified worker end reopens its unfinished assignment and keeps the assignee"
-        body: 7f97a68aa229728aabc1662f4db5d99a210b461d07a47614394707d166f7896b
+        name: "an identified worker end returns its active tasks to open in one loft yard task --release"
+        body: e8e51ba04464e225371eabe1977da3334e16862233aa71a930b06354d3a3b408
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "an actual interruption returns unfinished execution to open without changing the native answer"
-        body: a96b9c9edafec1b259be6ddd496455b4d0c672c6ad136904b4a76aebb7c874d2
+        body: 868db0cbd3b1561bf249c018938860fce6009c6dea66d5a6dba643532905feff
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "worker_end_opens_unfinished_tasks_and_late_progress_waits_for_a_new_start"
         body: 1b4ea6247a41a41331456e19d677f5ff7ca0d9c95de64933c5f45d9b0540fd4a
@@ -23291,21 +23328,21 @@ links:
   - node: 01a18053-9e08-72a7-ab94-f3c9767bbaf3
     reviewed: d8e589e0eb1fe6676adddf91299d7ea1edfc9d7a84090ef9ae9853cfda874545
     tests:
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "worker end leaves completed and reassigned tasks untouched"
-        body: 826a7994e21656ca0fd032380dcc4e451e8936cc237d87313cdd7d26edce2cdd
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks"
         body: 7700f6d31635ec58263d7764d2d9050cdc77e1c75c8a9943c819abeea069907f
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "releasing_leaves_the_agent_s_finished_and_open_tasks_and_other_agents_tasks_as_they_were"
+        body: 7c0c2cdc33c9ea485e0e70d128cf4d558b71419cf3c2cb6e113178047e4dbec5
   - node: 01a18053-9e08-72a7-ab94-f3cac642e25b
     reviewed: 1eb003fe2a5e2202ec2a476a3e0758425b61ce32dd2eb54b930a5eb601b39bb7
     tests:
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "worker end leaves completed and reassigned tasks untouched"
-        body: 826a7994e21656ca0fd032380dcc4e451e8936cc237d87313cdd7d26edce2cdd
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks"
         body: 7700f6d31635ec58263d7764d2d9050cdc77e1c75c8a9943c819abeea069907f
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "releasing_leaves_the_agent_s_finished_and_open_tasks_and_other_agents_tasks_as_they_were"
+        body: 7c0c2cdc33c9ea485e0e70d128cf4d558b71419cf3c2cb6e113178047e4dbec5
   - node: 01a18053-9e08-72a7-ab94-f3cbf539b498
     reviewed: c88b90d3773157a2a3c11e19ba4500ae8786101e7c4f966814b20773a00f43c4
     tests:
@@ -23318,6 +23355,12 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "a_worker_s_end_returns_all_its_active_tasks_to_open_in_one_write"
         body: dcca7dca7e6c90c6d635a0a57fbf703595f6fc86b780a4bcc6ed0517b93336b9
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "an identified worker end returns its active tasks to open in one loft yard task --release"
+        body: e8e51ba04464e225371eabe1977da3334e16862233aa71a930b06354d3a3b408
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "the main agent's turn end and its session's end each release the main agent's tasks"
+        body: 75de73e900ddf3d5e15b93974a9384c7f157639c723923bed32437ff72affaf1
   - node: 01a18053-9e08-72a7-ab94-f3cd1556846f
     reviewed: ab0fcc31148ec45734b51b359a9981ed13e81d86892659aa89afbd2495d0faeb
     tests:
@@ -23361,35 +23404,32 @@ links:
     reviewed: fdc32fccdeeacd6d6d4d8de36ee37b897ce6935ca9a2c995c0baa4ebb723c5b4
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "assignment context names existing tasks and stages without an owned stage"
-        body: 680404cd2092f53c1f315551862aa7b454b45c04bf5cda1829672807a18f0b0c
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "native subagent start supplies its assigned task context without taking the stage"
-        body: e136ff4bee26620315548594bd339f33fdb7f1c94e05dbe951909a6dbef8ae8b
+        name: "native subagent start gives the worker its briefing, marked read in its own name, without taking the stage"
+        body: 477eb8fa05550296b55f7ad74d8571369e044dfaceb6f9e8654a2d11f6954edb
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "identified_worker_context_lists_its_recorded_assignment_in_a_bounded_message"
         body: 4ac2844f1dba70244f8f7e585501a537e0a7e7be213ab18d559d559bdb2d1603
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_lists_the_unfinished_tasks_assigned_to_the_agent_with_their_stages"
+        body: 7f36522bacb67aa01c1917e0ae0a3835a9b152027e198e74c712682747e99a9b
   - node: 01a18054-bf15-7113-9ce0-7fafa8cf72ab
     reviewed: 341c44ac13b90298dbe2bd290629c7a0c26b9f6b63ec3a4b2e4fb1dec76eb540
     tests:
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "assignment context bounds its list and directs the worker to read the rest"
-        body: 205d158a9102a105e57f150e054bee69de9784c12757ec107e986ef6f4c4696b
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "long page addresses leave room for assignment counts and a read instruction"
-        body: a3d29eb4f3792fd8cfee1783ce2098dcd7f32dec4ae3bf16531af9120cc38244
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "assignment_context_reports_omitted_tasks_and_directs_the_agent_to_read_yard_log"
         body: 65fe25c8b5e1229a26354e7e13e3c019c32cc925d3a82d1b3bb2f60f11d19bfb
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_s_text_counts_what_it_leaves_out_within_2000_characters"
+        body: ed4eec512b1ad07fcc9b23da8afcd421ea361b6fe39f376f56305558dffa7b28
   - node: 01a18054-bf15-7113-9ce0-7fb040e2af57
     reviewed: 1c0ee0d9ba3c1aeb31ce5a4e50732fd9408e6bae2c5e1cde0f40f9821df02e68
     tests:
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "assignment context names existing tasks and stages without an owned stage"
-        body: 680404cd2092f53c1f315551862aa7b454b45c04bf5cda1829672807a18f0b0c
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "identified_worker_context_lists_its_recorded_assignment_in_a_bounded_message"
         body: 4ac2844f1dba70244f8f7e585501a537e0a7e7be213ab18d559d559bdb2d1603
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_lists_the_unfinished_tasks_assigned_to_the_agent_with_their_stages"
+        body: 7f36522bacb67aa01c1917e0ae0a3835a9b152027e198e74c712682747e99a9b
   - node: 01a18053-9e08-72a7-ab94-f3d27168e568
     reviewed: 456692309e29ce1349665c2d5dab7fb3a5c58d0220454e356f7ce71e7a5c908b
     tests:
@@ -23444,6 +23484,9 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "a_worker_s_plain_steps_mirror_into_its_working_stage_assigned_to_it"
         body: c54c43278ca2dd3db6c62ba6228d1844e28f6a9a5241a566a34b796dd9e8d2a5
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "an unbound task mirrored into a working stage the agent does not own is assigned to that agent"
+        body: 64cbe5364b6626542596391f382de9d7d009ff826b0af02f425cc50f093dcca9
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:
@@ -27189,8 +27232,8 @@ links:
         name: "a task's block id is made of the task's id and its agent, and its states follow the task's"
         body: 1d0a26c799365b277c5d25a6d3ec9cf5fb13c88d1fca794a5c5b30e2759879de
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
+        name: "a task the agent makes is mirrored as a task block of its working stage, and the task's updates as changes of it"
+        body: 42695e686633ba42c2d5a99d76f16bf53605c628715da7addcd43cbeb0456ac4
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was"
         body: ef5e484fdddc054dbb31231cd678595c4a935987a2d2f10eb0e614d9cc456bbb
@@ -27204,8 +27247,8 @@ links:
     reviewed: dbd2b44aee6add17d78b38ca1f6e92a0e695bc5a65554ace87700c251e04ff1a
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
+        name: "a task the agent makes is mirrored as a task block of its working stage, and the task's updates as changes of it"
+        body: 42695e686633ba42c2d5a99d76f16bf53605c628715da7addcd43cbeb0456ac4
   - node: 01a17f75-05db-72d1-b940-2d49f24fff4a
     reviewed: 61308535366cd3d6aa197d72047aedd34d9f73597de5e7bbcb7403fd7c033db8
     tests:
@@ -27213,11 +27256,11 @@ links:
         name: "task creation keeps the stage selected before its native tool runs"
         body: 9a884a8a0ea00606a902bc022d8f64520f9da61e206c7396b2cb53ff00ea148a
   - node: 01a1646f-546c-7521-9643-bc56c4873439
-    reviewed: e3e36e5192ea2e0253a982d308e4f5b4e6c7880db8b95df98186cd633f0674d6
+    reviewed: 40e7448a752e26352b1e7c197a1a48a288c15863a1cce9d98b380fc7c175c513
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "an agent with no active stage has no task mirrored, and a failed task call mirrors nothing"
-        body: ba9f40c49916990a547b24a2b9240cbc431bda13e8adee638e6ecfaef7503969
+        name: "an agent with no working stage has no task mirrored, and a failed task call mirrors nothing"
+        body: 7a6dd882c73758521e56d33ea4f17267132e37d93633952ace269c8ecda9c69b
   - node: 01a16a04-3f8b-71a9-baa3-95dcb14f98d9
     reviewed: 84069ef156b003febb887720a86ddef2f2ab92a33ff75911518c83a157f91c2c
     tests:
@@ -27237,32 +27280,32 @@ links:
         name: "a task's block id is made of the task's id and its agent, and its states follow the task's"
         body: 1d0a26c799365b277c5d25a6d3ec9cf5fb13c88d1fca794a5c5b30e2759879de
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
+        name: "a task the agent makes is mirrored as a task block of its working stage, and the task's updates as changes of it"
+        body: 42695e686633ba42c2d5a99d76f16bf53605c628715da7addcd43cbeb0456ac4
   - node: 01a1646f-546c-7521-9643-bc59de3d65ed
     reviewed: 72084d4e53e62b34f39706430a192d33dac96b193861c4ffc73f59f05bbeda66
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it"
-        body: c20cd4e0e26423184d5ecfde3ec8dbcd80dcb5a3181cea6f59ea8e40a5b93574
+        name: "a task the agent makes is mirrored as a task block of its working stage, and the task's updates as changes of it"
+        body: 42695e686633ba42c2d5a99d76f16bf53605c628715da7addcd43cbeb0456ac4
   - node: 01a16a04-3f8b-71a9-baa3-95de591588b3
     reviewed: 7ea4570c6383bbfe69ed2d7d9998b019db3b68073bb5dd255ab3def1aaf8827d
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone"
-        body: 3ce5ea29f42fbf37c2cbcb5bf7e8a915735b37d5f1f5900fe793bad0fe34b8d7
+        body: 0a75ea98d548b9bd4eb82a4f4c884a787fbf710b86ccd5a467e515c59134cfb0
   - node: 01a16a04-3f8b-71a9-baa3-95dfe4529c42
     reviewed: 9616e7409508560af60613b11c2b4e7e9aaf29fc636e14ec044806fc36ee9868
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone"
-        body: 3ce5ea29f42fbf37c2cbcb5bf7e8a915735b37d5f1f5900fe793bad0fe34b8d7
+        body: 0a75ea98d548b9bd4eb82a4f4c884a787fbf710b86ccd5a467e515c59134cfb0
   - node: 01a16a04-3f8b-71a9-baa3-95e0a38355ed
     reviewed: 94a9f6ad8d77a4da3bb56f304f3b18d70a7acb7cbdde7cc861bdd07dd91e80df
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone"
-        body: 3ce5ea29f42fbf37c2cbcb5bf7e8a915735b37d5f1f5900fe793bad0fe34b8d7
+        body: 0a75ea98d548b9bd4eb82a4f4c884a787fbf710b86ccd5a467e515c59134cfb0
   - node: 01a17f75-05db-72d1-b940-2d4b9e8362e2
     reviewed: 078af02c3a6951b405b6d462b9ff981e42fdb8066828c73df755c7d7f16d4bc8
     tests:
@@ -27320,30 +27363,30 @@ links:
   - node: 01a1646f-546c-7521-9643-bc648ffcbb12
     reviewed: e657ae2eedeb6d2fe2d49f0520ec25d53ce556237ca193242826b68535ca3e4c
     tests:
-      - file: "plugins/claude/loft/tests/yard-model.test.ts"
-        name: "the context holds at most 2,000 characters and counts what it leaves out"
-        body: 039c20cc026bc464ad8e1db5b09ddba1b4776a1e842a7129f8f65cc170a73d0b
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the session starts with the context of its branch, from one read in its own name that marks what it read"
-        body: 04f96aa180f5c69d671842cf0621d6640028b21b4868c8a2558214097c57fa83
+        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
+        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_s_text_counts_what_it_leaves_out_within_2000_characters"
+        body: ed4eec512b1ad07fcc9b23da8afcd421ea361b6fe39f376f56305558dffa7b28
   - node: 01a1646f-546c-7521-9643-bc652c97d270
     reviewed: 6c3058de595e0fc50b301f0bbe28ef73f0d071bf1a2619f48d4b14e0eb996cda
     tests:
-      - file: "plugins/claude/loft/tests/yard-model.test.ts"
-        name: "a branch with no Yard Log is given only the page and that it has none yet"
-        body: 25af21ee69823f3cf50720de63c768782cd376e291a750c8d717f0a1fc6da1a0
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_of_a_branch_with_no_yard_log_names_only_the_page_and_that_there_is_none"
+        body: a07b77fbe9177914678a124cc393290107a8e64f7dfa8e7a1895b37b84b4f60d
   - node: 01a1646f-546c-7521-9643-bc668f484c8e
     reviewed: 5569a32fe07c9c59504335a6604a6e87e43612e0ae29bc5e09400339b8bb94df
     tests:
-      - file: "plugins/claude/loft/tests/yard-model.test.ts"
-        name: "a closed Yard Log is said to be closed, and an ignored .yard/ to stay out of the commits"
-        body: 93d3b9ad5770b24248dae9986eba4cd62d616b0bcd5ba2abbb55307c2a1c60c1
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_says_whether_yard_log_is_closed_and_whether_git_ignores_yard"
+        body: 14e676b41cef836a59d34639654b696a4ef837187e25dc89e713f2cc21c95a65
   - node: 01a1646f-546c-7521-9643-bc673dc31f07
     reviewed: 4e39e45ae53b70269ff77217900a20478342269e9ed821b5c166dad447a595ab
     tests:
-      - file: "plugins/claude/loft/tests/yard-model.test.ts"
-        name: "a closed Yard Log is said to be closed, and an ignored .yard/ to stay out of the commits"
-        body: 93d3b9ad5770b24248dae9986eba4cd62d616b0bcd5ba2abbb55307c2a1c60c1
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_says_whether_yard_log_is_closed_and_whether_git_ignores_yard"
+        body: 14e676b41cef836a59d34639654b696a4ef837187e25dc89e713f2cc21c95a65
   - node: 01a1646f-546c-7521-9643-bc687ad65bab
     reviewed: bd13bbd1931d94afd43b3b13acbd9d5088c5d49dae9d35677faf4652a246f2cc
     tests:
@@ -27351,26 +27394,26 @@ links:
         name: "the context is given again after /resume and /branch, and a session a new process starts names no session it continues"
         body: b80af379e012e979a09650aac5f8311c39b68ac922b0eb17aef5b5d28fe40c7e
   - node: 01a16621-e7bc-7707-b123-2161fe5b53dc
-    reviewed: ddfccc8dd598b2187bb86092cc84615f547c9dc7f137b5b66e2871a4329a0134
+    reviewed: 3ee46ac7dc9bbb1ab5d5536c598751dd8d5b24b908570750c93695aa6f4cd983
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the session starts with the context of its branch, from one read in its own name that marks what it read"
-        body: 04f96aa180f5c69d671842cf0621d6640028b21b4868c8a2558214097c57fa83
+        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
+        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
   - node: 01a1647c-e680-7753-bf17-f177bc991450
     reviewed: 35460d9e89d8fc90aa4c9d49d392d9a87b97a9471484e4af166494372d18d2da
     tests:
-      - file: "plugins/claude/loft/tests/yard-model.test.ts"
-        name: "after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read"
-        body: b2257aa349af519711a17711de4be57cdd7f28745680f2c01237a8dead203020
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "after /clear the session is given its context again, once loft yard continue has recorded the session it continues"
         body: 03230dbe35bb2d837dd3a5bea9971c4618b01dee972fb43751f0f5ac5862c9cc
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "a_submission_the_ended_session_sent_counts_as_sent_by_the_session_that_continues_it"
+        body: 65778f4e433c22fe30794b50b6aec8709520876aacad2603e1df821a4da0d1ce
   - node: 01a1647c-e680-7753-bf17-f1789d014daa
     reviewed: 4089d9674a1f5e80f5c9336b639420894c9938466f393125d4a1a74533968356
     tests:
-      - file: "plugins/claude/loft/tests/yard-model.test.ts"
-        name: "after /clear the context counts the submissions the session before it sent as its own, and what was answered since it last read"
-        body: b2257aa349af519711a17711de4be57cdd7f28745680f2c01237a8dead203020
+      - file: "crates/loft-cli/tests/yard_callers.rs"
+        name: "the_continuing_session_starts_from_the_revision_the_ended_session_last_read"
+        body: ec02b5486218537651457db5cd2ee221c40616f65fcf5b52ce15a2bb71ecbee9
   - node: 01a1646f-546c-7521-9643-bc72fc00b830
     reviewed: 3c22ab6158564ca67cff544ff4612d677892041251f9a69865347c1148796832
     tests:
@@ -27919,7 +27962,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: 2b327a27b24f8e8d92641858283568440579f733d74251d676716b9f64d360c6
+        body: 67cce3062e3b504c818b2d225c937ddeed2eb3634e56c0819173d398db2a9fe5
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "protocol one keeps the Claude arguments and events without adapter descriptors"
         body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
@@ -28226,6 +28269,15 @@ links:
       - file: "crates/loft-cli/tests/yard_task.rs"
         name: "a_mirrored_task_change_leaves_another_agent_s_task_alone_and_keeps_a_done_task_s_state"
         body: 7b97048e45737b8eecfb6564a598a1d09039562422079def381399dc75b6d9a8
+  - node: 01a182fd-3974-7514-9227-ad07258dea79
+    reviewed: 8c009eb233ce3f5581374b70e673c0e140da758f52a4fb3b39e00092109d52a5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
+        name: "a worker updates the explicitly bound task without owning or taking its stage"
+        body: e4355941e58e8233c23bad6fcdbb6c7a13c9dc464be5083db01818b696d9798a
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "a_bound_change_applies_to_the_task_as_it_stands_without_a_read_first"
+        body: 146ac25becd9dc7abe05d193e2ba4d00737e8547dfd035ebc095d9d74abeb0d4
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:

@@ -29,8 +29,11 @@ A question you ask with `AskUserQuestion` reaches Yard Log as well, in your acti
 answered in either place in the same way. Its blocks take ids such as `ask-r12-1`; read Yard Log
 to find them when a decision names the question.
 
-The tasks you create with `TaskCreate` are mirrored as `task` blocks of your active stage, and
-each `TaskUpdate` writes the new state: `in_progress` as `active`, `completed` as `done`.
+The tasks you create with `TaskCreate` are mirrored as `task` blocks of your working stage, the
+one your briefing names: the stage of your active assigned tasks, else your own active stage,
+else your session's main agent's active stage. With none, a new task is not mirrored; a task
+mirrored into a stage you do not own is assigned to you. Each `TaskUpdate` changes the task
+through `loft yard task`: `in_progress` as `active`, `completed` as `done`.
 Create a fix with `TaskCreate` and `metadata: { type: "fix" }`, or write its `task` block with
 `type: fix`. A `TaskUpdate` with a `type` in its metadata changes it; `null` makes it `regular`.
 
@@ -42,10 +45,11 @@ update its existing block through `yard_write`. The explicit Yard id is independ
 native task id; a bound `TaskCreate` makes no second Yard task. Do not recreate a parent's task
 under your own stage. Assignment context names your tasks and their recorded stages.
 
-Only the assigned executor's native progress is mirrored for an assigned task. A stale mirror
-reads the latest assignment and body before retrying; it stops after reassignment. Finished
-delegated tasks are not reopened by automatic mirroring. A reliably observed end or interruption
-returns active assignments to `open`, keeping their assignee for the stage owner's review.
+Only the assigned executor's native progress is mirrored for an assigned task: Yard Log applies
+each mirror to the task as it stands, with no read first and no retry, and leaves another
+agent's task as it is. Finished tasks are not reopened by automatic mirroring. A reliably
+observed end or interruption returns active assignments to `open` in one `loft yard task
+--release`, keeping their assignee for the stage owner's review.
 
 ## Plan the build in plan mode once the change is approved
 

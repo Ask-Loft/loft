@@ -10,9 +10,9 @@ import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } f
 import { HOST } from './contract'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
-import { agentOf, PLUGIN, prepare, state } from './state'
-import { contextOf } from './context'
-import { actorKey, endAssigned } from './task-writes'
+import { actorKey, agentOf, PLUGIN, state } from './state'
+import { contextFor } from './context'
+import { endAssigned } from './task-writes'
 
 /** Model usage as the page counts it. */
 export function tokensOf(usage: ModelUsage) {
@@ -46,7 +46,10 @@ export function tell($: EngineInterface, agentId: string | undefined, fields: Ev
   const read = Promise.all([$.session.id(), $.session.cwd(), $.clock.now(), agentOf($, agentId)])
   told = Promise.all([told, read])
     .then(([, [session, dir, now, agent]]) => {
-      keep(state.box, { session, dir, at: timeOf(now), host: HOST, ...(state.adapter ? { adapter: state.adapter } : {}), ...(agent ? { agent } : {}), ...fields })
+      // The descriptor goes with the session's first event and each turn's start only.
+      const described = state.adapter !== undefined && (fields.kind === 'turn.start' || !state.described.has(session))
+      if (described) state.described.add(session)
+      keep(state.box, { session, dir, at: timeOf(now), host: HOST, ...(described ? { adapter: state.adapter } : {}), ...(agent ? { agent } : {}), ...fields })
       void flush($, state.box)
     })
     .catch(() => {})
@@ -78,7 +81,7 @@ export function registerEvents(on: On) {
   told = Promise.resolve()
 
   on('turn.start', async ($, e, next) => {
-    state.endedTasks.delete(actorKey({ session: state.sessions[0] ?? await $.session.id(), ...(e.agentId ? { agent: { id: e.agentId, type: '' } } : {}) }))
+    state.endedTasks.delete(actorKey(state.sessions[0] ?? await $.session.id(), e.agentId))
     tell($, e.agentId, { kind: 'turn.start', turn: e.turnId })
     return next(e)
   })
@@ -103,13 +106,12 @@ export function registerEvents(on: On) {
   })
 
   on('classic.SubagentStart', async ($, e, next) => {
-    state.endedTasks.delete(actorKey({ session: state.sessions[0] ?? e.session_id, agent: { id: e.agent_id, type: e.agent_type } }))
+    state.endedTasks.delete(actorKey(state.sessions[0] ?? e.session_id, e.agent_id))
     state.types.set(e.agent_id, e.agent_type)
     starting.set(e.agent_id, { at: timeOf(await $.clock.now()), type: e.agent_type })
     const started = await next(e)
-    const asking = state.isOn ? await prepare($, e.agent_id).catch(() => undefined) : undefined
-    if (!asking) return started
-    const text = contextOf(asking.doc, { sessions: [asking.caller.session], agent: e.agent_id })
+    const text = state.isOn ? await contextFor($, await $.session.cwd(), e.agent_id).catch(() => undefined) : undefined
+    if (text === undefined) return started
     return { ...started, additionalContext: [...(started.additionalContext ?? []), text] }
   })
 
@@ -134,7 +136,7 @@ export function registerEvents(on: On) {
 
   // Claude Code gives each classic hook the permission mode, however plan mode began or ended.
   on('classic.UserPromptSubmit', async ($, e, next) => {
-    state.endedTasks.delete(actorKey({ session: state.sessions[0] ?? e.session_id }))
+    state.endedTasks.delete(actorKey(state.sessions[0] ?? e.session_id))
     heard($, e)
     return next(e)
   })

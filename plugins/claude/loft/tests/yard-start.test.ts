@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { flagOf, HOME, readDoc, SESSION, start, stage, TREE, world, yardRuns } from './yard-world'
+import { briefingOf, flagOf, HOME, readDoc, SESSION, start, stage, TREE, world, yardRuns } from './yard-world'
 
 test('a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start', async ($, on) => {
   const w = world(on)
@@ -45,7 +45,7 @@ test('with Yard Client off, the agent asks and plans in Claude Code alone', asyn
   expect(w.state.calls.map(call => call.tool)).toEqual(['AskUserQuestion', 'ExitPlanMode'])
 })
 
-test('the session starts with the context of its branch, from one read in its own name that marks what it read', async ($, on) => {
+test('the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   const started = await start($)
@@ -53,11 +53,21 @@ test('the session starts with the context of its branch, from one read in its ow
   expect(reads).toHaveLength(1)
   expect(flagOf(reads[0]!.argv, '--session')).toBe(SESSION)
   expect(reads[0]!.cwd).toBe(TREE)
+  expect(reads[0]!.argv).toContain('--context')
   expect(reads[0]!.argv).toContain('--mark-read')
-  const text = (started.additionalContext ?? []).join('\n')
-  expect(text).toContain('Yard Log of `feat/shelf`')
-  expect(text).toContain('Your active stage: `shape`')
-  expect(text.length).toBeLessThanOrEqual(2000)
+  const briefing = briefingOf(w.state.read, reads[0]!.argv)
+  expect(started.additionalContext).toEqual([`${String(briefing.text)}\nRead Yard Log with \`yard_read\` before writing.`])
+  expect(String(briefing.text)).toContain('Your working stage: `shape`')
+})
+
+test('a prompt gives no briefing: only the session start does', async ($, on) => {
+  const w = world(on)
+  await start($)
+  const before = w.state.runs.length
+  const prompted = await $.classic.UserPromptSubmit({ prompt: 'go' } as never)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  expect(prompted.additionalContext ?? []).toEqual([])
+  expect(w.state.runs.slice(before).filter(run => run.argv.includes('read'))).toEqual([])
 })
 
 test('after /clear the session is given its context again, once loft yard continue has recorded the session it continues', async ($, on) => {

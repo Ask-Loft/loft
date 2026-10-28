@@ -44,8 +44,10 @@ export type YardState = {
   sessions: string[]
   /** Capture tails, reserved synchronously by session and native agent at hook receipt. */
   captures: Map<string, Promise<void>>
-  /** Exact actors whose execution ended, until a new identified start. */
+  /** Exact actors whose execution ended, by `actorKey`, until a new identified start. */
   endedTasks: Set<string>
+  /** The sessions whose events have carried the adapter's descriptor. */
+  described: Set<string>
   /** The session that ended with `/clear` or a resume, until `loft yard continue` records it. */
   continues: string | undefined
   isOn: boolean
@@ -64,6 +66,7 @@ function fresh(options: PluginOptions): YardState {
     sessions: [],
     captures: new Map(),
     endedTasks: new Set(),
+    described: new Set(),
     continues: undefined,
     isOn: false,
     enabling: undefined,
@@ -77,6 +80,9 @@ export const state: YardState = fresh({})
 export function reset(options: PluginOptions) {
   Object.assign(state, fresh(options))
 }
+
+/** One key for an exact actor, the session and its subagent: its capture lane and its end. */
+export const actorKey = (session: string | undefined, agentId?: string) => JSON.stringify([session ?? null, agentId ?? null])
 
 /** The calling agent, once the session it may continue is recorded. */
 export async function callerOf($: EngineInterface, agentId: string | undefined): Promise<Caller> {
@@ -131,12 +137,13 @@ export async function peek($: EngineInterface, cwd: string, caller: Caller): Pro
 
 /**
  * Where the calling agent works, who it is, and Yard Log as the mod peeks at it on their behalf;
- * undefined where Yard Log cannot be read.
+ * undefined where Yard Log cannot be read. With `briefed`, the read holds the agent's briefing
+ * too, still without `--mark-read`.
  */
-export async function prepare($: EngineInterface, agentId: string | undefined) {
+export async function prepare($: EngineInterface, agentId: string | undefined, briefed = false) {
   const cwd = await $.session.cwd()
   const caller = await callerOf($, agentId)
-  const read = await peek($, cwd, caller)
+  const read = briefed ? await run($, cwd, ['read', '--context', ...callerArgs(caller)]) : await peek($, cwd, caller)
   return succeeded(read) ? { cwd, caller, doc: read.doc } : undefined
 }
 

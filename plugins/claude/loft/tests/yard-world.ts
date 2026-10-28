@@ -53,6 +53,40 @@ export function deferred<T>() {
   return { promise, resolve }
 }
 
+const sameActor = (actor: unknown, session: string | undefined, agent: string | undefined) => {
+  const named = (actor ?? {}) as { session?: string; agent?: string }
+  return named.session === session && (named.agent ?? undefined) === agent
+}
+
+/**
+ * The briefing `loft yard read --context` adds for the caller `argv` names, as loft works it out:
+ * the working stage is the one stage of the caller's active assigned tasks, else its own active
+ * stage, else its session's main agent's.
+ */
+export function briefingOf(doc: Doc, argv: readonly string[]): Doc {
+  const session = flagOf(argv, '--session')
+  const agent = flagOf(argv, '--agent')
+  const stages = (doc.stages ?? []) as Stage[]
+  const tasks = stages.flatMap(each => (each.blocks ?? [])
+    .filter(held => held.kind === 'task' && sameActor(held.version.body.assignee, session, agent))
+    .map(held => ({ id: held.id, stage: each.id, title: String(held.version.body.title), state: String(held.version.body.state) })))
+  const busy = [...new Set(tasks.filter(task => task.state === 'active').map(task => task.stage))]
+  const active = (owner: (actor: unknown) => boolean) => stages.find(each => each.version.body.status === 'active' && owner(each.owner))
+  const working = busy.length > 1 ? undefined : busy.length === 1 ? stages.find(each => each.id === busy[0])
+    : active(owner => sameActor(owner, session, agent)) ?? active(owner => sameActor(owner, session, undefined))
+  const assigned = tasks.filter(task => task.state === 'open' || task.state === 'active')
+  const lines = [
+    `Yard Log of \`${String(doc.branch)}\`.`,
+    working ? `Your working stage: \`${working.id}\` — ${String(working.version.body.title)}.` : 'You have no working stage.',
+    ...assigned.map(task => `- \`${task.id}\`, ${task.state}, in stage \`${task.stage}\``),
+  ]
+  return {
+    page: PAGE, revision: doc.revision, since: doc.lastRead, noLog: false, closed: false, ignored: doc.ignored,
+    stage: working ? { id: working.id, title: working.version.body.title } : null,
+    assigned, open: [], responded: [], text: lines.join('\n'),
+  }
+}
+
 export type Run = { argv: readonly string[]; cwd?: string; env?: Record<string, string>; stdin?: string; spawned: boolean }
 
 const out = (doc: Doc | undefined, exitCode = 0, stderr = '') => ({
@@ -174,7 +208,10 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
         return out({ schema: 'loft-yard-protocol/1', outcome: 'ok', errors: [], protocol: state.protocol, loft: '2.2.1', formats: {} })
       case 'read':
         await state.reading
-        return out(state.read)
+        if (!e.argv.includes('--context') || 'context' in state.read) return out(state.read)
+        return out({ ...state.read, context: briefingOf(state.read, e.argv) })
+      case 'task':
+        return out({ outcome: e.argv.includes('--release') ? 'released' : 'changed', errors: [], revision: 5 })
       case 'write': {
         const response = state.writing?.({ argv: e.argv, cwd: e.init?.cwd, stdin: e.init?.stdin, spawned: false })
         if (response) return out(response.doc, response.exitCode ?? 0)

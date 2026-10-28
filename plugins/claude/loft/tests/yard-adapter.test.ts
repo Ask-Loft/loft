@@ -1,6 +1,5 @@
 import { expect, test } from 'claude-code/testing'
 
-import { contextOf } from '../hooks/adapter/context'
 import { activeStage, isAsker } from '../hooks/adapter/log'
 import { flagOf, readDoc, SESSION, stage, start, world, yardRuns } from './yard-world'
 
@@ -22,7 +21,7 @@ test('the Claude adapter names its host on protocol two commands, events and hea
   await w.clock.advance(5000)
   const runs = w.state.runs.filter(run => run.argv.includes('--session'))
   expect(runs.length).toBeGreaterThan(5)
-  expect([...new Set(yardRuns(w).map(run => run.split(' ')[0]))].sort()).toEqual(['answer', 'close', 'continue', 'protocol', 'published', 'read', 'serve', 'wait', 'withdraw', 'write'])
+  expect([...new Set(yardRuns(w).map(run => run.split(' ')[0]))].sort()).toEqual(['answer', 'close', 'continue', 'protocol', 'published', 'read', 'serve', 'task', 'wait', 'withdraw', 'write'])
   for (const run of runs) expect(flagOf(run.argv, '--host')).toBe('claude-code')
   expect(yardRuns(w)[0]).toBe('protocol --format json')
   expect(w.state.tools).toHaveLength(6)
@@ -58,11 +57,23 @@ test('a foreign host with the same native identifiers is another actor in stages
   const asker = { host: 'claude-code', sessions: [SESSION] }
   const doc = readDoc({
     stages: [stage('foreign', 'active', foreign), stage('own', 'active', own)],
-    submissions: [{ agent: foreign, open: [{ key: 'foreign-sub', blocks: [], state: 'open' }] }],
   })
   expect(activeStage(doc, asker)?.id).toBe('own')
-  expect(contextOf(doc, asker)).toContain('`foreign-sub`, 0 blocks, sent by another agent')
   expect(isAsker({ ...foreign, agent: 'a1' }, { ...asker, agent: 'a1' })).toBe(false)
   expect(isAsker({ ...own, agent: 'a1' }, { ...asker, agent: 'a1' })).toBe(true)
   expect(isAsker({ session: SESSION }, asker)).toBe(true)
+})
+
+test("the Claude adapter posts its descriptor with the session's first event and with each turn.start, and with no other event", async ($, on) => {
+  const w = world(on, { protocol: 2 })
+  await start($)
+  await $.tool.call({ tool: 'Read', file_path: '/x', tool_use_id: 'u1' } as never)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Read', file_path: '/y', tool_use_id: 'u2' } as never)
+  await $.turn.start({ text: 'again', turnId: 't2' })
+  await w.clock.settle()
+  const posted = w.state.posts.flatMap(post => post.events)
+  expect(posted.map(event => [event.kind, event.adapter !== undefined])).toEqual([
+    ['tool.start', true], ['tool.end', false], ['turn.start', true], ['tool.start', false], ['tool.end', false], ['turn.start', true],
+  ])
 })

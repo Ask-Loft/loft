@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { flush, keep, MOST, outboxOf } from '../hooks/adapter/outbox'
-import { block, deferred, readDoc, SESSION, stage, start, TREE, world, type Engine, type World } from './yard-world'
+import { block, deferred, readDoc, SESSION, stage, start, TREE, world, yardRuns, type Engine, type World } from './yard-world'
 
 const events = (w: World) => w.state.posts.flatMap(post => post.events)
 const kinds = (w: World) => events(w).map(event => String(event.kind))
@@ -149,23 +149,44 @@ test('with Yard Client off, no event is posted', async ($, on) => {
   expect(w.state.posts).toEqual([])
 })
 
-test("a task the agent makes is mirrored as a task block of its active stage, and the task's updates as new versions of it", async ($, on) => {
+const taskRuns = (w: World) => yardRuns(w).filter(run => run.startsWith('task ')).map(run => run.split(' --session ')[0])
+
+test("a task the agent makes is mirrored as a task block of its working stage, and the task's updates as changes of it", async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
   await start($)
   await $.tool.call({ tool: 'TaskCreate', subject: 'Write the tests', description: '' } as never)
   await w.clock.settle()
-  w.state.read = readDoc({ stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('task-session1-3', 'task', { title: 'Write the tests', state: 'open' })] }] })
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'in_progress' } as never)
   await w.clock.settle()
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'completed', subject: 'Write the kit tests' } as never)
   await w.clock.settle()
+  const written = w.state.runs.filter(run => run.argv.includes('write'))
+  expect(written.map(run => JSON.parse(run.stdin!))).toEqual([
+    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'open' }],
+  ])
+  expect(written[0]!.argv).not.toContain('--based-on')
+  expect(taskRuns(w)).toEqual([
+    'task task-session1-3 --mirror --state active',
+    'task task-session1-3 --mirror --state done --title=Write the kit tests',
+  ])
+})
+
+test("an unbound task mirrored into a working stage the agent does not own is assigned to that agent", async ($, on) => {
+  const w = world(on, { protocol: 2 })
+  w.state.agents.push({ id: 'a9', type: 'Explore' })
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { host: 'claude-code', session: SESSION })] })
+  w.state.terminal.TaskCreate = () => ({ result: { task: { id: '4' } }, text: 'ok' })
+  await start($)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Dig', description: '', agentId: 'a9' } as never)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Shape', description: '' } as never)
+  await w.clock.settle()
   const written = w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin!))
   expect(written).toEqual([
-    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'open' }],
-    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the tests', state: 'active' }],
-    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'Write the kit tests', state: 'done' }],
+    [{ id: 'task-a9-4', kind: 'task', stage: 'shape', title: 'Dig', state: 'open',
+      assignee: { host: 'claude-code', session: SESSION, agent: 'a9', agentType: 'Explore' } }],
+    [{ id: 'task-session1-4', kind: 'task', stage: 'shape', title: 'Shape', state: 'open' }],
   ])
 })
 
@@ -189,26 +210,21 @@ test('a task created with the type fix in its metadata is mirrored as a fix, and
 
 test("a task's update sets its type from its metadata, null makes it regular, and an update keeps the type and detail it leaves alone", async ($, on) => {
   const w = world(on)
-  const held = (body: Record<string, unknown>) =>
-    readDoc({ stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block('task-session1-3', 'task', { title: 'T', detail: 'Why', state: 'open', ...body })] }] })
   await start($)
-  w.state.read = held({})
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', metadata: { type: 'fix' } } as never)
-  await w.clock.settle()
-  w.state.read = held({ type: 'fix' })
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'in_progress' } as never)
-  await w.clock.settle()
   await $.tool.call({ tool: 'TaskUpdate', taskId: '3', metadata: { type: null } } as never)
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', description: 'Why not' } as never)
   await w.clock.settle()
-  const written = w.state.runs.filter(run => run.argv.includes('write')).map(run => JSON.parse(run.stdin!))
-  expect(written).toEqual([
-    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'T', detail: 'Why', state: 'open', type: 'fix' }],
-    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'T', detail: 'Why', state: 'active', type: 'fix' }],
-    [{ id: 'task-session1-3', kind: 'task', stage: 'shape', title: 'T', detail: 'Why', state: 'open' }],
+  expect(taskRuns(w)).toEqual([
+    'task task-session1-3 --mirror --type fix',
+    'task task-session1-3 --mirror --state active',
+    'task task-session1-3 --mirror --type regular',
+    'task task-session1-3 --mirror --detail=Why not',
   ])
 })
 
-test('an agent with no active stage has no task mirrored, and a failed task call mirrors nothing', async ($, on) => {
+test('an agent with no working stage has no task mirrored, and a failed task call mirrors nothing', async ($, on) => {
   const w = world(on)
   w.state.terminal.TaskCreate = () => ({ result: { task: { id: '3' } }, text: 'ok' })
   await start($)
@@ -217,8 +233,11 @@ test('an agent with no active stage has no task mirrored, and a failed task call
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   w.state.terminal.TaskCreate = () => ({ deny: 'no' })
   await $.tool.call({ tool: 'TaskCreate', subject: 'B', description: '' } as never)
+  w.state.terminal.TaskUpdate = () => ({ deny: 'no' })
+  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'completed' } as never)
   await w.clock.settle()
   expect(w.state.runs.filter(run => run.argv.includes('write'))).toEqual([])
+  expect(taskRuns(w)).toEqual([])
 })
 
 test("the agent's task call waits until its mirror has been attempted", async ($, on) => {

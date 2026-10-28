@@ -8,16 +8,16 @@ import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
 import { QUIET, type Ran } from '../loft'
 import { askQuestions, decideOnPage, ownDialog, presentPlan, waitOn } from './asking'
-import { contextOf } from './context'
+import { contextFor } from './context'
 import { capture, checkCapture } from './capture'
 import { descriptor } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
-import { callerArgs, failureOf, succeeded, yard } from './run'
+import { failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
-import { askerOf, callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
+import { actorKey, callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
 import { mirrorCreated, mirrorUpdated } from './tasks'
-import { actorKey, endAssigned } from './task-writes'
+import { endAssigned } from './task-writes'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
 
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
@@ -104,13 +104,6 @@ async function callTool($: EngineInterface, name: ToolName, e: Record<string, un
   return { result: JSON.stringify(ran.doc) }
 }
 
-/** The session's context for its branch's Yard Log, as one `loft yard read` gives it: the agent's own read. */
-async function contextFor($: EngineInterface, cwd: string): Promise<string | undefined> {
-  const caller = await callerOf($, undefined)
-  const ran = await run($, cwd, ['read', '--mark-read', ...callerArgs(caller)])
-  return succeeded(ran) ? contextOf(ran.doc, askerOf(caller)) : undefined
-}
-
 /** Registers Yard Client's own hooks; the entry hooks the events it records around Claude Code's. */
 export function registerYard(on: On, options: PluginOptions) {
   reset(options)
@@ -126,8 +119,8 @@ export function registerYard(on: On, options: PluginOptions) {
     const started = await next(e)
     if (!['startup', 'resume', 'clear', 'fork'].includes(e.source)) return started
     if (!(await ensureYard($, e.cwd))) return started
-    state.endedTasks.delete(actorKey(await callerOf($, undefined)))
-    const text = await contextFor($, e.cwd)
+    state.endedTasks.delete(actorKey((await callerOf($, undefined)).session))
+    const text = await contextFor($, e.cwd, undefined)
     return text === undefined ? started : { ...started, additionalContext: [...(started.additionalContext ?? []), text] }
   })
 
@@ -160,7 +153,7 @@ export function registerYard(on: On, options: PluginOptions) {
   on('tool.call', { tool: 'TaskCreate' }, ($, e, next) => {
     if (!state.isOn) return next(e)
     return capture(e.agentId, next.signal, async keep => {
-      const asking = await prepare($, e.agentId).catch(() => undefined)
+      const asking = await prepare($, e.agentId, true).catch(() => undefined)
       checkCapture(next.signal)
       const ran = keep(await next(e))
       if (!next.signal.aborted) await mirrorCreated($, e, ran, asking, next.signal).catch(() => {})
@@ -172,10 +165,7 @@ export function registerYard(on: On, options: PluginOptions) {
     if (!state.isOn) return next(e)
     return capture(e.agentId, next.signal, async keep => {
       const ran = keep(await next(e))
-      if (!next.signal.aborted) {
-        const asking = await prepare($, e.agentId).catch(() => undefined)
-        if (!next.signal.aborted) await mirrorUpdated($, e, ran, asking, next.signal).catch(() => {})
-      }
+      if (!next.signal.aborted) await mirrorUpdated($, e, ran, next.signal).catch(() => {})
       return ran
     })
   })

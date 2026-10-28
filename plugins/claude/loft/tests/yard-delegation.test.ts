@@ -1,7 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { contextOf, LIMIT } from '../hooks/adapter/context'
-import { block, readDoc, SESSION, stage, start, world } from './yard-world'
+import { block, briefingOf, readDoc, SESSION, stage, start, world, yardRuns, type World } from './yard-world'
 
 const assignee = (id = 'worker') => ({ host: 'claude-code', session: SESSION, agent: id, agentType: 'builder' })
 const work = (id = 'shared', state = 'active', assigned = 'worker') => block(id, 'task', {
@@ -12,22 +11,21 @@ const doc = (state = 'active', assigned = 'worker') => {
   parent.blocks = [work('shared', state, assigned)]
   return readDoc({ stages: [parent] })
 }
+const WORKER = `--session ${SESSION} --agent worker --agent-type builder --host claude-code --port 7411 --format json`
+const taskRuns = (w: World) => yardRuns(w).filter(run => run.startsWith('task '))
+const writes = (w: World) => w.state.runs.filter(run => run.argv.includes('write'))
 
 test('a worker updates the explicitly bound task without owning or taking its stage', async ($, on) => {
-  const w = world(on)
+  const w = world(on, { protocol: 2 })
   w.state.agents.push({ id: 'worker', type: 'builder' })
   w.state.read = doc()
   await start($)
+  const before = yardRuns(w).length
   const result = await $.tool.call({ tool: 'TaskUpdate', taskId: 'native-7', agentId: 'worker',
     status: 'completed', metadata: { yardTask: 'shared' } } as never)
-  const writes = w.state.runs.filter(run => run.argv.includes('write'))
   expect(result).toMatchObject({ result: { success: true } })
-  expect(writes).toHaveLength(1)
-  expect(writes[0]!.argv).toContain('--based-on')
-  expect(JSON.parse(writes[0]!.stdin!)).toEqual([{
-    id: 'shared', kind: 'task', stage: 'build', title: 'Original scope', state: 'done',
-    detail: 'Keep this detail', type: 'fix', assignee: assignee(),
-  }])
+  expect(yardRuns(w).slice(before)).toEqual([`task shared --mirror --state done ${WORKER}`])
+  expect(writes(w)).toHaveLength(0)
 })
 
 test('invalid explicit bindings never create replacement native tasks', async ($, on) => {
@@ -38,78 +36,63 @@ test('invalid explicit bindings never create replacement native tasks', async ($
   for (const yardTask of ['missing', '', '../wrong', 17]) {
     await $.tool.call({ tool: 'TaskCreate', subject: 'Duplicate', description: '', metadata: { yardTask } } as never)
   }
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(0)
+  expect(writes(w)).toHaveLength(0)
+  expect(taskRuns(w)).toHaveLength(0)
 })
 
-test('a creator mirror preserves a task delegated to another executor', async ($, on) => {
-  const w = world(on)
-  const held = doc()
-  const parent = (held.stages as ReturnType<typeof stage>[])[0]!
-  parent.blocks[0]!.id = 'task-session1-3'
-  w.state.read = held
-  await start($)
-  await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status: 'pending' } as never)
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(0)
-})
-
-test('unchanged and terminal delegated updates create no versions', async ($, on) => {
-  const w = world(on)
+test("each native update is mirrored once with loft yard task --mirror, which leaves the delegation rules to Yard Log, with no read first and no retry", async ($, on) => {
+  const w = world(on, { protocol: 2 })
   w.state.agents.push({ id: 'worker', type: 'builder' })
+  w.state.read = doc()
+  w.state.answers.task = { exitCode: 0, doc: { outcome: 'unchanged', errors: [], task: 'shared', state: 'done', revision: 4 } }
   await start($)
-  for (const [held, status] of [['active', 'in_progress'], ['done', 'in_progress'], ['dropped', 'completed']]) {
-    w.state.read = doc(held)
-    await $.tool.call({ tool: 'TaskUpdate', taskId: '7', agentId: 'worker', status, metadata: { yardTask: 'shared' } } as never)
+  const before = w.state.runs.length
+  for (const [agentId, status] of [[undefined, 'pending'], ['worker', 'in_progress'], ['worker', 'completed']] as const) {
+    await $.tool.call({ tool: 'TaskUpdate', taskId: '3', status, ...(agentId ? { agentId, metadata: { yardTask: 'shared' } } : {}) } as never)
   }
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(0)
+  const runs = w.state.runs.slice(before).map(run => run.argv.slice(run.argv.indexOf('yard') + 1).join(' '))
+  expect(runs).toEqual([
+    `task task-session1-3 --mirror --state open --session ${SESSION} --host claude-code --port 7411 --format json`,
+    `task shared --mirror --state active ${WORKER}`,
+    `task shared --mirror --state done ${WORKER}`,
+  ])
 })
 
-test('an identified worker end reopens its unfinished assignment and keeps the assignee', async ($, on) => {
-  const w = world(on)
+test('an identified worker end returns its active tasks to open in one loft yard task --release', async ($, on) => {
+  const w = world(on, { protocol: 2 })
   w.state.agents.push({ id: 'worker', type: 'builder' })
   w.state.read = doc()
   await start($)
+  const before = yardRuns(w).length
   await $.turn.complete({ agentId: 'worker', turnId: 'worker-turn', answer: '', durationMs: 1, reason: 'answer', isAborted: false } as never)
-  const writes = w.state.runs.filter(run => run.argv.includes('write'))
-  expect(writes).toHaveLength(1)
-  expect(JSON.parse(writes[0]!.stdin!)[0]).toMatchObject({ id: 'shared', stage: 'build', state: 'open', assignee: assignee() })
+  expect(yardRuns(w).slice(before)).toEqual([`task --release ${WORKER}`])
+  expect(writes(w)).toHaveLength(0)
 })
 
-test('worker end leaves completed and reassigned tasks untouched', async ($, on) => {
-  const w = world(on)
-  w.state.agents.push({ id: 'worker', type: 'builder' })
+test("the main agent's turn end and its session's end each release the main agent's tasks", async ($, on) => {
+  const w = world(on, { protocol: 2 })
   await start($)
-  for (const held of [doc('done'), doc('active', 'other')]) {
-    w.state.read = held
-    await $.turn.complete({ agentId: 'worker', turnId: 'worker-turn', answer: '', durationMs: 1, reason: 'answer', isAborted: false } as never)
-  }
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(0)
+  await $.turn.complete({ turnId: 't1', answer: '', durationMs: 1, reason: 'answer', isAborted: false } as never)
+  await $.session.end({ reason: 'other', sessionId: SESSION } as never)
+  expect(taskRuns(w)).toEqual([
+    `task --release --session ${SESSION} --host claude-code --port 7411 --format json`,
+    `task --release --session ${SESSION} --host claude-code --port 7411 --format json`,
+  ])
 })
 
-test('assignment context names existing tasks and stages without an owned stage', () => {
-  const text = contextOf(doc(), { sessions: [SESSION], agent: 'worker' })
-  expect(text).toContain('shared')
-  expect(text).toContain('build')
-  expect(text).toContain('assigned')
-  expect(text).toContain('no active stage')
-})
-
-test('assignment context bounds its list and directs the worker to read the rest', () => {
-  const held = doc()
-  const parent = (held.stages as ReturnType<typeof stage>[])[0]!
-  parent.blocks = Array.from({ length: 150 }, (_, n) => work(`assigned-${n}-${'x'.repeat(40)}`))
-  const text = contextOf(held, { sessions: [SESSION], agent: 'worker' })
-  expect(text.length).toBeLessThanOrEqual(LIMIT)
-  expect(text).toContain('more')
-  expect(text).toContain('yard_read')
-})
-
-test('native subagent start supplies its assigned task context without taking the stage', async ($, on) => {
+test('native subagent start gives the worker its briefing, marked read in its own name, without taking the stage', async ($, on) => {
   const w = world(on)
   w.state.read = doc('open')
   await start($)
+  const before = w.state.runs.length
   const result = await $.classic.SubagentStart({ agent_id: 'worker', agent_type: 'builder' } as never)
-  expect(result.additionalContext?.join('\n')).toContain('shared')
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(0)
+  const reads = w.state.runs.slice(before).filter(run => run.argv.includes('read'))
+  expect(reads).toHaveLength(1)
+  expect(reads[0]!.argv).toEqual(expect.arrayContaining(['--context', '--mark-read', '--agent', 'worker', '--agent-type', 'builder']))
+  const briefing = briefingOf(w.state.read, reads[0]!.argv)
+  expect(result.additionalContext).toEqual([`${String(briefing.text)}\nRead Yard Log with \`yard_read\` before writing.`])
+  expect(String(briefing.text)).toContain('`shared`, open, in stage `build`')
+  expect(writes(w)).toHaveLength(0)
 })
 
 test('an ended worker cannot mirror late delegated progress until an identified new start', async ($, on) => {
@@ -120,47 +103,10 @@ test('an ended worker cannot mirror late delegated progress until an identified 
   await $.turn.complete({ agentId: 'worker', turnId: 'worker-turn', answer: '', durationMs: 1, reason: 'answer', isAborted: false } as never)
   w.state.read = doc('open')
   await $.tool.call({ tool: 'TaskUpdate', taskId: '7', agentId: 'worker', status: 'in_progress', metadata: { yardTask: 'shared' } } as never)
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(1)
+  expect(taskRuns(w).filter(run => run.startsWith('task shared'))).toHaveLength(0)
   await $.classic.SubagentStart({ agent_id: 'worker', agent_type: 'builder' } as never)
   await $.tool.call({ tool: 'TaskUpdate', taskId: '7', agentId: 'worker', status: 'in_progress', metadata: { yardTask: 'shared' } } as never)
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(2)
-})
-
-test('stale retries reread the task and stop when another worker received its assignment', async ($, on) => {
-  const w = world(on)
-  w.state.agents.push({ id: 'worker', type: 'builder' })
-  w.state.read = doc()
-  let writes = 0
-  w.state.writing = () => {
-    writes++
-    w.state.read = { ...doc('active', 'other'), revision: 5 }
-    return { exitCode: 1, doc: { outcome: 'refused', errors: [{ kind: 'stale' }] } }
-  }
-  await start($)
-  const result = await $.tool.call({ tool: 'TaskUpdate', taskId: '7', agentId: 'worker', status: 'completed', metadata: { yardTask: 'shared' } } as never)
-  expect(result).toMatchObject({ result: { success: true } })
-  expect(writes).toBe(1)
-})
-
-test('a stale retry preserves unrelated fields from the latest task body', async ($, on) => {
-  const w = world(on)
-  w.state.agents.push({ id: 'worker', type: 'builder' })
-  w.state.read = doc()
-  let writes = 0
-  w.state.writing = () => {
-    if (++writes > 1) return undefined
-    const latest = doc()
-    const parent = (latest.stages as ReturnType<typeof stage>[])[0]!
-    parent.blocks[0]!.version.body.detail = 'Concurrent detail'
-    w.state.read = { ...latest, revision: 5 }
-    return { exitCode: 1, doc: { outcome: 'refused', errors: [{ kind: 'stale' }] } }
-  }
-  await start($)
-  await $.tool.call({ tool: 'TaskUpdate', taskId: '7', agentId: 'worker', status: 'completed', metadata: { yardTask: 'shared' } } as never)
-  const saved = w.state.runs.filter(run => run.argv.includes('write'))
-  expect(saved).toHaveLength(2)
-  expect(saved[1]!.argv).toContain('5')
-  expect(JSON.parse(saved[1]!.stdin!)[0]).toMatchObject({ detail: 'Concurrent detail', assignee: assignee(), state: 'done' })
+  expect(taskRuns(w).filter(run => run.startsWith('task shared'))).toHaveLength(1)
 })
 
 test('a bound native create leaves the existing task identity and scope intact', async ($, on) => {
@@ -170,7 +116,7 @@ test('a bound native create leaves the existing task identity and scope intact',
   await start($)
   const result = await $.tool.call({ tool: 'TaskCreate', subject: 'Local checklist', description: '', metadata: { yardTask: 'shared' } } as never)
   expect(result).toMatchObject({ result: { task: { id: '3' } } })
-  expect(w.state.runs.filter(run => run.argv.includes('write'))).toHaveLength(0)
+  expect(writes(w)).toHaveLength(0)
 })
 
 test('an actual interruption returns unfinished execution to open without changing the native answer', async ($, on) => {
@@ -179,19 +125,6 @@ test('an actual interruption returns unfinished execution to open without changi
   await start($)
   const result = await $.turn.complete({ agentId: 'worker', turnId: 't1', answer: '', durationMs: 1, reason: 'aborted', isAborted: true } as never)
   expect(result).toMatchObject({ text: '' })
-  const writes = w.state.runs.filter(run => run.argv.includes('write'))
-  expect(writes).toHaveLength(1)
-  expect(JSON.parse(writes[0]!.stdin!)[0]).toMatchObject({ id: 'shared', state: 'open', assignee: assignee() })
-})
-
-test('long page addresses leave room for assignment counts and a read instruction', () => {
-  const held = doc()
-  held.branch = 'b'.repeat(2500)
-  held.page = { url: `http://127.0.0.1:7411/${'x'.repeat(2500)}` }
-  const parent = (held.stages as ReturnType<typeof stage>[])[0]!
-  parent.blocks = Array.from({ length: 150 }, (_, n) => work(`assigned-${n}-${'x'.repeat(40)}`))
-  const text = contextOf(held, { sessions: [SESSION], agent: 'worker' })
-  expect(text.length).toBeLessThanOrEqual(LIMIT)
-  expect(text).toContain('more')
-  expect(text).toContain('yard_read')
+  expect(taskRuns(w)).toHaveLength(1)
+  expect(taskRuns(w)[0]).toMatch(/^task --release --session session-1 --agent worker /)
 })
