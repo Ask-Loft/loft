@@ -42,3 +42,15 @@ requirements:
     criteria:
       - key: 01a1835b-defe-736c-aa9f-0f48d7979372
         name: "No package file is changed."
+  - key: 01a1839e-0cd6-73b2-a193-4ffbaa5479e0
+    statement:
+      form: unwanted
+      if: "a skill source that `loft` embeds differs from its file under `crates/loft-cli/skill/` in the repository"
+      system: "`loft skill package`"
+      shall: "refuse to write or check, and name each source file that differs."
+    body: "A `loft` built from other sources, such as an installed release, would otherwise write its own copy over the packages, or call stale packages current."
+    criteria:
+      - key: 01a1839e-0cd6-73b2-a193-4ffccbfe1f90
+        name: "No package file is changed."
+      - key: 01a1839e-0cd6-73b2-a193-4ffd235245ba
+        name: "`--check` does not report `current` while a source differs."

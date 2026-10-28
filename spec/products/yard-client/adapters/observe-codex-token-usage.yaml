@@ -137,3 +137,17 @@ requirements:
         name: "The accounting checkpoint retains the raw cumulative cache-write count."
       - key: 01a17d59-37d3-7407-b1b0-e84595ee6fd4
         name: "Account identifiers, email addresses, access tokens and refresh tokens are not retained in adapter state or events."
+      - key: 01a1839e-0cd8-73ef-8531-db3db3d4e5bb
+        name: "The Codex adapter states the rule of a measured cache-write count once, and every part of `loft` that classifies a Codex count applies it."
+  - key: 01a1839e-0cd8-73ef-8531-db3efd452631
+    statement:
+      form: event_driven
+      when: "the Codex adapter delivers a queued model request whose tokens hold a zero cache-write count that no verified API-key account reported"
+      system: "the Codex adapter"
+      shall: "move that count under the request's `usageSource.reported` before it posts the request."
+    body: "Requests queued by an adapter that did not yet classify cache writes are delivered after an upgrade, wherever the adapter keeps its queue."
+    criteria:
+      - key: 01a1839e-0cd8-73ef-8531-db3fb8986e3d
+        name: "A request queued before the upgrade reaches the page server with no unverified zero in its tokens."
+      - key: 01a1839e-0cd8-73ef-8531-db40c33411a9
+        name: "A queued request the page server already holds is not counted twice."
