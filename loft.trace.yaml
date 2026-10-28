@@ -22641,6 +22641,51 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "the_result_lists_the_open_submissions_each_with_the_agent_that_sent_it_apart"
         body: b502c9889b3fdcc316860c225f46416e9f29f0412957032a9659c42de8c207f8
+  - node: 01a18025-1c03-72bb-b904-c23d0979cab4
+    reviewed: 6dcddd855c2e99dce1c11914affe4f86f4bcdaf79ec53701418845fae6a3b122
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_same_version_server_is_replaced_before_success"
+        body: 29a20e7aed2c28e5aed0d18233e5f64fc42dcc6fb3915e3589a80a2b4727483b
+  - node: 01a18025-1c03-72bb-b904-c23e06b616f8
+    reviewed: dc61c1f800449a331857808e4cf09656198cfd106083be4e5f5f84236bc94776
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_same_version_server_is_replaced_before_success"
+        body: 29a20e7aed2c28e5aed0d18233e5f64fc42dcc6fb3915e3589a80a2b4727483b
+  - node: 01a18025-1c03-72bb-b904-c23ff7831364
+    reviewed: 993a2c88d46ab376c640d6a95387d1965eb98a9cf78b0c336ac31417a03a232a
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_readiness_is_confirmed_before_a_launch_completes"
+        body: b9ce42444fb7060978bf41c3be8e288ee60edb0642287986e52340a6e26a10dd
+  - node: 01a18025-1c03-72bb-b904-c245ed0737b2
+    reviewed: b57d3767095df0f11cf47f582a1bdf8fedbcfec0c2781aa288f0908c01c25e6e
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_build_failure_leaves_the_existing_server_alone"
+        body: 65ec3a234ebb83b91d068c68644ea97943e7c7978aeec4a09a45f65efcc7f3b6
+  - node: 01a18025-1c03-72bb-b904-c246b403e158
+    reviewed: 9f4187fba01304f06c69228155b5420686287d25a37dbf36115c53deb09095b9
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_a_reused_pid_is_never_signalled"
+        body: 7d8a1de8d1aea91815babceb07933479d6baeb8a06d2e79f30167beccb51dcf1
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_a_process_without_the_server_lock_and_listener_is_never_signalled"
+        body: 935f9784dd5d974da2bda5f3375b090fda5abe172fa2d1a60a8eeb38229da10d
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_a_changed_registration_is_never_signalled"
+        body: b9151a04ee4664a96c67e2f0fb9893e4584354eacdcb2d59a5683e1e6b7ae404
+  - node: 01a18025-1c03-72bb-b904-c24747d8b962
+    reviewed: e2c5aca5d46140ef6b1a2b42d743927c976b6153db665ba2a973f2bc75001392
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_an_unverified_server_times_out_without_starting_another"
+        body: 372f5c29b520ffdd74eb72356f73b3f0515be41af01c44d1d127823ba5f6b105
+      - file: "crates/loft-cli/tests/yard_dogfood_test.py"
+        name: "test_an_unready_child_is_cleaned_up_on_a_bounded_failure"
+        body: 2b34c5e49750275ececf4999620b806283dfe37f374964045eee6df3c367c183
   - node: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
     reviewed: c915d004fdcea33a9c0dee16c199ac54477b6f7d577930b621a4235c0b4e989a
     tests:

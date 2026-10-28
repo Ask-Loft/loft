@@ -100,6 +100,8 @@ mod yard_codex_usage;
 mod yard_codex_watch;
 mod yard_commands;
 mod yard_continue;
+#[cfg(unix)]
+mod yard_dogfood;
 mod yard_event_ids;
 mod yard_hosts;
 mod yard_merge_contract;
