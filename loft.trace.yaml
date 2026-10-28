@@ -19510,8 +19510,8 @@ links:
     reviewed: 6403df28c11693c8802248580a8c0c3c9a84392c90251f501976634c732b34dd
     tests:
       - file: "crates/loft-cli/tests/yard_capabilities.rs"
-        name: "malformed_descriptors_and_usage_are_rejected_before_recording"
-        body: 493c1e26d2ea681970f20893b4003524edc897a13e16012a40185b3203db232c
+        name: "malformed_descriptors_are_rejected_before_recording"
+        body: dfe2c1a31d5581e6a8dc5d1443046b8d8e5b72e717e0495a32f8922a229ac93c
   - node: 01a177f9-8294-77e4-aa6e-707df5aba626
     reviewed: d2e1492e8101a387c4ea6f4196651e212c6271461b7142f3e0d371256edcd92f
     tests:
@@ -19521,6 +19521,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
         name: "missing counters display unavailable while measured zero displays zero"
         body: 3ceea8c5f3a10a70a65f98c631e3f1372464657c90f8e7a7ea22c345a2e35670
+  - node: 01a182b6-62b5-70ae-a9a2-26121c1b8193
+    reviewed: 2519ad3ee2b849752bdcfb73d5ef9705f6042f3ae31c870ea5c82a897502565d
+    tests:
+      - file: "crates/yardlog/tests/adapter.rs"
+        name: "a_counter_that_is_not_a_whole_number_is_unreported_beside_the_counters_measured"
+        body: 4d1e946aae9e7c8847fa92da1de3e3aff8ef71e8d67963f1022ff69bc0acf4a4
+      - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
+        name: "an_unusable_counter_is_unreported_and_its_event_is_still_read"
+        body: fe485745f9cd0a1cc8dafbfddea4eacced994243d9a3f6bdc711e12422d8ccd5
+      - file: "crates/loft-cli/tests/yard_serve_usage.rs"
+        name: "a_request_with_an_unusable_counter_is_recorded_and_that_counter_is_unreported"
+        body: cdcdf6aa989707a8cf07adb0a1d4672fab7ec5947d144256e81cbdb2b5098030
   - node: 01a177f9-8294-77e4-aa6e-707e68eb827c
     reviewed: ed45f5ec443d9c716446f69e4d87fcae1408d251dd9f9f7dcca802ebcfee5eed
     tests:
@@ -20129,7 +20141,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/serve/event_usage_tests.rs"
         name: "missing_or_malformed_source_counters_are_not_replaced_with_measured_zeros"
-        body: 22bb2e6bafe3dbb832e47fe682f0aad6e1996da1e079fac2653fbcbe8fefccd9
+        body: 85a947217128e905565cea38f3bd9a29be1b7d706809b4f1e520c7b563a2b7b3
   - node: 01a17d58-a534-746d-9e9d-03fe586bb77d
     reviewed: 24c30cfc403ebc94d0d77dc0fda5e735b990fb63f690bc7fd3e2da416acd4bda
     tests:

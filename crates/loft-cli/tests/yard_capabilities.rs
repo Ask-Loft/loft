@@ -81,7 +81,7 @@ fn missing_usage_is_not_written_as_zero_and_partial_subtotals_are_marked() {
 }
 
 #[test]
-fn malformed_descriptors_and_usage_are_rejected_before_recording() {
+fn malformed_descriptors_are_rejected_before_recording() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
     let served = Served::start(&yard, &[]);
@@ -90,7 +90,6 @@ fn malformed_descriptors_and_usage_are_rejected_before_recording() {
         json!({"adapter":{"format":"yard-adapter/9","version":"1","capabilities":{}}}),
         json!({"adapter":{"format":"yard-adapter/1","version":"1","capabilities":{"nativePlans":"yes"}}}),
         json!({"adapter":{"format":"yard-adapter/1","version":"1","capabilities":{"usage":["money"]}}}),
-        json!({"tokens":{"input":-1}}),
     ] {
         let result = post(&served, &[event(&yard, "request", 1, &extra)]);
         assert_eq!(result["recorded"], 0, "{result}");

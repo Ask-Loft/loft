@@ -94,13 +94,13 @@ fn time(text: &str) -> Option<Time> {
 }
 
 // Source values remain in `posted`; only measured contributions enter the aggregates.
-fn measured_tokens(posted: &Value, host: &str, tokens: &Value) -> Result<Tokens, &'static str> {
-    let reported = Tokens::read(tokens)?;
+fn measured_tokens(posted: &Value, host: &str, tokens: &Value) -> Tokens {
+    let reported = Tokens::read(tokens);
     if host != "codex"
         || tokens["cacheWrite"].as_u64() != Some(0)
         || posted["usageSource"]["account"] == "apiKey"
     {
-        return Ok(reported);
+        return reported;
     }
     let mut measured = tokens.clone();
     measured.as_object_mut().unwrap().remove("cacheWrite");
@@ -138,9 +138,7 @@ impl Event {
             .map_err(str::to_owned)?;
         let tokens = posted
             .get("tokens")
-            .map(|tokens| measured_tokens(posted, host, tokens))
-            .transpose()
-            .map_err(str::to_owned)?;
+            .map(|tokens| measured_tokens(posted, host, tokens));
         Ok(Self {
             session: session.to_owned(),
             dir: dir.to_owned(),

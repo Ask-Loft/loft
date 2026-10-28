@@ -123,6 +123,7 @@ mod yard_serve_inherited;
 mod yard_serve_logs;
 mod yard_serve_page_data;
 mod yard_serve_subagents;
+mod yard_serve_usage;
 mod yard_settle;
 mod yard_skill;
 mod yard_take_up;

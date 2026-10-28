@@ -14,24 +14,21 @@ pub struct Counts {
 }
 
 impl Counts {
-    /// Reads one request. Absent counters remain unknown; malformed values are refused.
-    pub fn read(value: &Value) -> Result<Self, &'static str> {
-        let values = value.as_object().ok_or("tokens must be an object")?;
+    /// Reads one request. A counter that is absent, or anything but a whole number, is
+    /// unreported; usage that is not a mapping leaves every counter unreported.
+    #[must_use]
+    pub fn read(value: &Value) -> Self {
+        let Some(values) = value.as_object() else {
+            return Self::unreported();
+        };
         let mut counts = Self::default();
         for (n, name) in COUNTERS.iter().enumerate() {
-            counts.values[n] = values
-                .get(*name)
-                .map(|value| {
-                    value
-                        .as_u64()
-                        .ok_or("a token counter must be a nonnegative integer")
-                })
-                .transpose()?;
+            counts.values[n] = values.get(*name).and_then(Value::as_u64);
             if counts.values[n].is_none() {
                 counts.missing |= 1 << n;
             }
         }
-        Ok(counts)
+        counts
     }
 
     /// One request for which no usage was available.

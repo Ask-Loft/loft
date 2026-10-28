@@ -63,7 +63,22 @@ fn missing_or_malformed_source_counters_are_not_replaced_with_measured_zeros() {
             .len(),
         3
     );
-    for invalid in [Value::Null, json!(-1), json!("0")] {
-        assert!(Event::read(&source("codex", "chatgpt", &invalid)).is_err());
+}
+
+#[test]
+fn an_unusable_counter_is_unreported_and_its_event_is_still_read() {
+    for unusable in [Value::Null, json!(-1), json!(2.5), json!("0")] {
+        let posted = source("codex", "chatgpt", &unusable);
+        let read = Event::read(&posted).unwrap();
+        let fields = read.tokens().unwrap().fields();
+        let names: Vec<_> = fields.iter().map(|(name, _)| *name).collect();
+        assert_eq!(names, ["input", "cacheRead", "output"], "{unusable}");
+        assert_eq!(read.posted, posted);
+    }
+    for unusable in [Value::Null, json!("many"), json!([1, 2])] {
+        let mut posted = source("claude-code", "unknown", &json!(0));
+        posted["tokens"] = unusable;
+        let read = Event::read(&posted).unwrap();
+        assert_eq!(read.tokens(), Some(super::Tokens::unreported()));
     }
 }
