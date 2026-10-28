@@ -13,7 +13,7 @@ use super::event_ids::Receipt;
 pub use yardlog::usage::Counts as Tokens;
 
 /// The agent an event happened in.
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Who {
     Main,
     Sub { id: String, kind: String },

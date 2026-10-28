@@ -10,7 +10,6 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use serde_json::{Value, json};
-use yardlog::delegation::StageContext;
 use yardlog::{Agent, YardLog};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
@@ -57,34 +56,60 @@ struct Arrival {
     open: Vec<String>,
 }
 
-/// Delegation supplies the stage before the legacy owner/main fallback. An explicit binding
-/// must identify a current assignment; ambiguous active assignments never guess a stage.
-fn counted_stage(log: &YardLog, event: &Event) -> Option<String> {
-    let agent = agent_of(&event.host, &event.session, &event.who);
-    if let Some(reference) = event.posted.get("task") {
-        let id = reference.as_str()?;
-        return log
-            .assigned_to(&agent)
-            .find(|(_, block, _)| block.id.as_str() == id)
-            .map(|(file, _, _)| file.stage.key.to_string());
+/// What the stage an event counts toward depends on: its directory's Yard Log, its agent,
+/// whether a subagent's run starts, and the task it names, if any, where that is text. A batch
+/// works out each one's stage once.
+#[derive(PartialEq, Eq, Hash)]
+struct StageQuery<'a> {
+    dir: &'a str,
+    host: &'a str,
+    session: &'a str,
+    who: &'a Who,
+    starting: bool,
+    task: Named<'a>,
+}
+
+/// The task an event names.
+#[derive(PartialEq, Eq, Hash)]
+enum Named<'a> {
+    None,
+    Task(&'a str),
+    /// A `task` that is not text, which names no block.
+    Unusable,
+}
+
+impl<'a> StageQuery<'a> {
+    fn of(event: &'a Event) -> Self {
+        Self {
+            dir: &event.dir,
+            host: &event.host,
+            session: &event.session,
+            who: &event.who,
+            starting: matches!(event.who, Who::Sub { .. }) && event.kind == "subagent.start",
+            task: match event.posted.get("task").map(Value::as_str) {
+                None => Named::None,
+                Some(Some(id)) => Named::Task(id),
+                Some(None) => Named::Unusable,
+            },
+        }
     }
-    match log.delegation_context(&agent) {
-        StageContext::Stage(stage) => return Some(stage.to_string()),
-        StageContext::Ambiguous => return None,
-        StageContext::None => {}
+
+    /// The stage counted, by its key: the agent's working stage, or, as a subagent's run
+    /// starts, the stage that run starts in. A posted task that is not text counts toward none.
+    fn stage(&self, log: &YardLog) -> Option<String> {
+        let agent = agent_of(self.host, self.session, self.who);
+        let task = match self.task {
+            Named::None => None,
+            Named::Task(id) => Some(id),
+            Named::Unusable => return None,
+        };
+        let stage = if self.starting {
+            log.starting_stage(&agent, task)
+        } else {
+            log.working_stage(&agent, task)
+        };
+        stage.map(|stage| stage.to_string())
     }
-    let own = match (&event.who, event.kind.as_str()) {
-        (Who::Sub { .. }, "subagent.start") => None,
-        _ => log
-            .active_stages_of(&agent)
-            .next()
-            .map(|stage| stage.key.to_string()),
-    };
-    own.or_else(|| {
-        log.active_stages_of(&Agent::main_in(&event.host, &event.session))
-            .next()
-            .map(|stage| stage.key.to_string())
-    })
 }
 
 fn agent_of(host: &str, session: &str, who: &Who) -> Agent {
@@ -114,6 +139,7 @@ fn arrivals(
     // Each directory's Yard Log, with its open submissions, worked out once for the batch.
     type Opened = Option<(YardStore, YardLog, Vec<String>)>;
     let mut opened: HashMap<&str, Opened> = HashMap::new();
+    let mut stages: HashMap<StageQuery, Option<String>> = HashMap::new();
     events
         .iter()
         .map(|event| {
@@ -129,8 +155,11 @@ fn arrivals(
                     Some((store, log, submissions))
                 })
                 .as_ref()?;
+            let stage = stages
+                .entry(StageQuery::of(event))
+                .or_insert_with_key(|query| query.stage(log));
             Some(Arrival {
-                stage: counted_stage(log, event),
+                stage: stage.clone(),
                 open: submissions.clone(),
                 store: store.clone(),
             })

@@ -23325,6 +23325,18 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_delegation.rs"
         name: "assignments_across_stages_keep_reported_tokens_in_session_totals_without_guessing_a_stage"
         body: 092b4ddd9c1d8c83d37d1345e56b87db06c937d7f038d2ef7493631f66be79fd
+  - node: 01a182be-ad52-75ba-879c-8ae5f4d9e35d
+    reviewed: 524de3b333ff476ee62ac23bef040678f940bc5e9255c7c9412fd51611bccc2b
+    tests:
+      - file: "crates/yardlog/tests/working_stage.rs"
+        name: "an_agent_whose_active_assigned_tasks_lie_in_two_stages_has_no_working_stage"
+        body: d215ac98e9f1696a9f17604a3be9d35862293c46793eb237d3fe4431abd7ebcf
+  - node: 01a182be-ad52-75ba-879c-8ae6c6d5f339
+    reviewed: d188f590b237e2256cfaa0e9c0e339591df787fe699095ddcc3dee12ae992e76
+    tests:
+      - file: "crates/yardlog/tests/working_stage.rs"
+        name: "a_main_agent_with_no_active_stage_and_no_assigned_task_has_no_working_stage"
+        body: 942607805c2a5f61c20bbef551a4e929b6381a74fcae507e0ae7a32b4b5e9a33
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:

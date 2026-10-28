@@ -13,4 +13,5 @@ mod identity;
 mod merge;
 mod session_files;
 mod three_way;
+mod working_stage;
 mod write_blocks;
