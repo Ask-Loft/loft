@@ -14,6 +14,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - Both dogfood launch commands rebuild Loft and restart the shared Yard server on port 7412
   before starting the agent, including same-version rebuilds. Concurrent launches serialize;
   existing sessions reconnect, and a failed build leaves the running server alone.
+- `loft yard serve --replace` asks the running page server to stop whatever its version and
+  serves in its place, with every tree it served; the dogfood launcher restarts the shared server
+  through it. A page server built before `--replace` stops only for a newer version, and the
+  replacing run fails naming its process.
 - Yard's token details start collapsed while summary totals stay visible, with the fold choice
   remembered separately for each Yard Log through live updates and reloads.
 - Yard's free-form answers have explicit radio buttons or checkboxes. Typing selects the

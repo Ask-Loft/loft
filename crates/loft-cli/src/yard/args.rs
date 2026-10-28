@@ -73,6 +73,10 @@ pub struct ServeArgs {
     /// A directory of a worktree whose Yard Logs the page server is to serve.
     #[arg(long, value_name = "DIR")]
     pub tree: Option<PathBuf>,
+    /// Replace the running page server whatever its version, as one built anew from the same
+    /// version would not otherwise.
+    #[arg(long)]
+    pub replace: bool,
     #[command(flatten)]
     pub output: Output,
 }

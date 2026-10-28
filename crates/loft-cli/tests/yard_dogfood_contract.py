@@ -1,4 +1,4 @@
-"""Local contract: actual Loft, ps, lsof and locks, under an isolated home and git simulator."""
+"""Local contract: actual Loft and its locks, under an isolated home and git simulator."""
 
 import fcntl
 import hashlib
@@ -42,11 +42,7 @@ class ContractTests(unittest.TestCase):
         cargo = tools / "cargo"
         cargo.write_text(f"#!{sys.executable}\nimport os,sys\nsys.exit(int(os.environ.get('BUILD_FAIL','0')))\n")
         cargo.chmod(0o755)
-        # Add just the real systems this contract exercises; keep real git off PATH.
-        for name in ["ps", "lsof"]:
-            tool = shutil.which(name)
-            self.assertIsNotNone(tool, f"the local contract requires {name}")
-            (tools / name).symlink_to(tool)
+        # Keep real git off PATH.
         self.env = os.environ.copy()
         for key, value in SETUP["env"].items():
             if value is None:
@@ -69,7 +65,9 @@ class ContractTests(unittest.TestCase):
                 current = self.runtime.running()
             except server.RestartError:
                 current = None
-            if current and self.runtime.stop(current):
+            # The helper's server outlives it in its own session; the isolated home names it.
+            if current and current.pid != os.getpid():
+                os.kill(current.pid, signal.SIGTERM)
                 self.within(lambda: not self.runtime.held())
         finally:
             for child in self.children:
@@ -123,8 +121,6 @@ class ContractTests(unittest.TestCase):
     def test_same_version_restart_preserves_trees_tokens_and_a_clients_recorded_log(self):
         original = self.initial_server()
         current = self.runtime.running()
-        self.assertTrue(self.runtime.owns(current), "real process owns its lock file and listener")
-        self.assertTrue(self.runtime.process(current.pid).is_server())
         other = self.tree / "other-tree"
         other.mkdir(exist_ok=True)
         subprocess.run([str(self.binary), "yard", "serve", "--tree", str(other), "--format", "json"],
@@ -144,7 +140,6 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(replacement.version, current.version)
         self.assertEqual(replacement.port, self.port)
         self.assertIn(f"PID {replacement.pid}", out)
-        self.assertTrue(self.runtime.owns(replacement))
         after = self.get(client, path)
         self.assertEqual(after["yardLog"], before["yardLog"])
         self.assertEqual((self.runtime.home / "token").read_bytes(), token)
@@ -160,7 +155,6 @@ class ContractTests(unittest.TestCase):
         current = self.runtime.running()
         self.assertIn(f"PID {current.pid}", reports)
         self.assertTrue(self.runtime.ready(current, current.version))
-        self.assertTrue(self.runtime.owns(current))
         with (self.runtime.home / "server.lock").open("rb") as handle:
             with self.assertRaises(BlockingIOError):
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -176,13 +170,21 @@ class ContractTests(unittest.TestCase):
         self.assertEqual(current.pid, original.pid)
         self.assertTrue(self.runtime.ready(current, current.version))
 
+
     def test_a_real_unrelated_process_named_by_stale_metadata_is_left_running(self):
+        # This process holds the lock as a page server built before `--replace` would: it never
+        # reads the stop request. The passing clock ends the replacement's wait at once.
         with (self.runtime.home / "server.lock").open("a+b") as handle:
             fcntl.flock(handle, fcntl.LOCK_EX)
             named = server.Server(os.getpid(), self.port, "2.2.1")
             (self.runtime.home / "server.json").write_text(json.dumps(vars(named)))
             self.assertEqual(self.runtime.running(), named)
-            self.assertFalse(self.runtime.stop(named))
+            child = self.helper(LOFT_CLOCK="passing")
+            out, err = child.communicate(timeout=20)
+            self.assertEqual(child.returncode, 1, out + err)
+            self.assertNotIn("Yard restarted", out)
+            self.assertIn(f"process {os.getpid()}", self.runtime.log.read_text())
+            self.assertEqual(self.runtime.running(), named)
             os.kill(os.getpid(), 0)
 
 

@@ -62,24 +62,19 @@ class Runtime:
         return "2.2.1"
 
     def running(self):
+        # A rival that holds the lock first is replaced in turn by the child that replaces it.
+        if self.rivals:
+            self.current = self.rivals.pop(0)
+        elif self.children and not self.stuck:
+            child = self.children[-1]
+            self.current = server.Server(child.pid, 7412, "2.2.1")
         return self.current
-
-    def stop(self, current):
-        self.events.append(("stop", current.pid))
-        if not self.stuck:
-            self.current = None
-        return not self.stuck
 
     def spawn(self, binary, port, cwd):
         pid = 200 + len(self.children)
         child = Child(pid)
         self.children.append(child)
         self.events.append(("spawn", binary, port, cwd))
-        if self.rivals:
-            self.current = self.rivals.pop(0)
-            child.code = 0
-        else:
-            self.current = server.Server(pid, port, "2.2.1")
         return child
 
     def ready(self, current, version):
@@ -95,12 +90,12 @@ class RestartTests(unittest.TestCase):
     def launch(self, runtime, clock=None):
         return server.start(runtime, clock or Clock(), Path("/source"), 7412, Path("/caller"))
 
-    def test_same_version_server_is_replaced_before_success(self):
+    def test_the_running_server_is_replaced_by_one_started_to_replace_it(self):
         runtime = Runtime()
         result = self.launch(runtime)
         self.assertEqual(result.pid, 200)
         self.assertEqual(runtime.events, [
-            "lock", "build", "version", ("stop", 100),
+            "lock", "build", "version",
             ("spawn", Path("/source/target/release/loft"), 7412, Path("/caller")),
             ("ready", 200), "unlock",
         ])
@@ -112,7 +107,6 @@ class RestartTests(unittest.TestCase):
             self.launch(runtime)
         self.assertEqual(runtime.current.pid, 100)
         self.assertEqual(runtime.children, [])
-        self.assertFalse(any(isinstance(x, tuple) and x[0] == "stop" for x in runtime.events))
 
     def test_readiness_is_confirmed_before_a_launch_completes(self):
         runtime = Runtime()
@@ -122,22 +116,22 @@ class RestartTests(unittest.TestCase):
         self.assertGreater(clock.elapsed, 0)
         self.assertEqual(runtime.events.count(("ready", 200)), 4)
 
-    def test_an_unverified_server_times_out_without_starting_another(self):
+    def test_a_server_that_is_not_replaced_times_out_and_the_child_is_cleaned_up(self):
         runtime = Runtime()
         runtime.stuck = True
         clock = Clock()
-        with self.assertRaisesRegex(server.RestartError, "restart.*timed out"):
+        with self.assertRaisesRegex(server.RestartError, "restart timed out"):
             self.launch(runtime, clock)
-        self.assertEqual(runtime.children, [])
-        self.assertGreaterEqual(clock.elapsed, 10)
-        self.assertLess(clock.elapsed, 11)
+        self.assertEqual(len(runtime.children), 1)
+        self.assertIn(("cleanup", 200), runtime.events)
+        self.assertGreaterEqual(clock.elapsed, server.WAITING)
+        self.assertLess(clock.elapsed, server.WAITING + 1)
 
-    def test_a_worker_winning_startup_is_replaced_rather_than_accepted(self):
+    def test_a_rival_that_registers_first_is_not_accepted_as_the_replacement(self):
         runtime = Runtime()
         runtime.rivals = [server.Server(300, 7412, "2.2.1")]
         result = self.launch(runtime)
-        self.assertEqual(result.pid, 201)
-        self.assertIn(("stop", 300), runtime.events)
+        self.assertEqual(result.pid, 200)
         self.assertNotIn(("ready", 300), runtime.events)
 
     def test_an_unready_child_is_cleaned_up_on_a_bounded_failure(self):
@@ -154,7 +148,6 @@ class RestartTests(unittest.TestCase):
         def fail(*args):
             child = original(*args)
             child.code = 1
-            runtime.current = None
             return child
 
         runtime.spawn = fail
@@ -162,69 +155,23 @@ class RestartTests(unittest.TestCase):
             self.launch(runtime)
 
 
-class ProcessSafetyTests(unittest.TestCase):
+class RuntimeTests(unittest.TestCase):
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()
         self.addCleanup(self.scratch.cleanup)
         self.runtime = server.Runtime(Path(self.scratch.name))
-        self.current = server.Server(123, 7412, "2.2.1")
-        self.identity = server.Process("/path with spaces/loft", "yard serve --port 7412", "born")
 
-    def test_only_a_verified_server_is_signalled(self):
-        with patch.object(self.runtime, "process", return_value=self.identity), \
-                patch.object(self.runtime, "owns", return_value=True), \
-                patch.object(self.runtime, "running", return_value=self.current), \
-                patch.object(server.os, "kill") as kill:
-            self.assertTrue(self.runtime.stop(self.current))
-        kill.assert_called_once_with(123, server.signal.SIGTERM)
-
-    def test_a_reused_pid_is_never_signalled(self):
-        other = server.Process("/bin/something", "yard serve", "later")
-        for identities in [[other, other], [self.identity, other]]:
-            with self.subTest(identities=identities), \
-                    patch.object(self.runtime, "process", side_effect=identities), \
-                    patch.object(self.runtime, "owns", return_value=True), \
-                    patch.object(self.runtime, "running", return_value=self.current), \
-                    patch.object(server.os, "kill") as kill:
-                self.assertFalse(self.runtime.stop(self.current))
-                kill.assert_not_called()
-
-    def test_a_process_without_the_server_lock_and_listener_is_never_signalled(self):
-        with patch.object(self.runtime, "process", return_value=self.identity), \
-                patch.object(self.runtime, "owns", return_value=False), \
-                patch.object(server.os, "kill") as kill:
-            self.assertFalse(self.runtime.stop(self.current))
-            kill.assert_not_called()
-
-    def test_a_changed_registration_is_never_signalled(self):
-        with patch.object(self.runtime, "process", return_value=self.identity), \
-                patch.object(self.runtime, "owns", return_value=True), \
-                patch.object(self.runtime, "running", return_value=server.Server(456, 7412, "2.2.1")), \
-                patch.object(server.os, "kill") as kill:
-            self.assertFalse(self.runtime.stop(self.current))
-            kill.assert_not_called()
+    def test_the_replacement_is_started_with_replace(self):
+        with patch.object(server.subprocess, "Popen") as popen:
+            self.runtime.spawn(Path("/source/loft"), 7412, Path("/caller"))
+        arguments = popen.call_args.args[0]
+        self.assertEqual(arguments[:4], ["/source/loft", "yard", "serve", "--replace"])
+        self.assertIn("--tree", arguments)
+        self.assertEqual(arguments[arguments.index("--port") + 1], "7412")
 
     def test_stale_metadata_without_a_held_lock_names_no_running_server(self):
         (self.runtime.home / "server.json").write_text('{"pid":123,"port":7412,"version":"2.2.1"}')
         self.assertIsNone(self.runtime.running())
-
-    def test_process_inspection_handles_wide_paths_and_linux_basenames(self):
-        for command in ["/path with spaces/loft", "loft"]:
-            with self.subTest(command=command), patch.object(self.runtime, "inspect", side_effect=[
-                command, "/path with spaces/loft yard serve --port 7412", "born",
-            ]):
-                self.assertEqual(self.runtime.process(123), self.identity)
-
-    def test_both_the_registered_lock_file_and_listener_must_belong_to_the_pid(self):
-        lock = f"p123\nn{self.runtime.home}/server.lock"
-        listener = "p123\nn127.0.0.1:7412"
-        for files, ports, expected in [
-            (lock, listener, True), (lock, "", False), ("", listener, False),
-            (lock, "p456\nn127.0.0.1:7412", False),
-        ]:
-            with self.subTest(files=files, ports=ports), \
-                    patch.object(self.runtime, "inspect", side_effect=[files, ports]):
-                self.assertEqual(self.runtime.owns(self.current), expected)
 
     def test_build_lock_contention_uses_a_simulated_clock_and_releases_on_error(self):
         clock = Clock()

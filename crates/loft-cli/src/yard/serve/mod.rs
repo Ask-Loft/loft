@@ -182,7 +182,7 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
     if let Some(tree) = &args.tree {
         trees::register(&home, tree)?;
     }
-    let lock = match take_over(&home)? {
+    let lock = match take_over(&home, args.replace)? {
         Ok(lock) => lock,
         Err(running) => {
             return Ok(Started::Running(json!({
@@ -231,32 +231,53 @@ fn held(port: u16, error: &io::Error) -> Failure {
     Failure::one("port", message)
 }
 
-/// The lock on `~/.yard/server.lock`, once no page server holds it: an older one asked to stop
-/// and waited for, or none; or the page server of this version or a newer one that runs.
-fn take_over(home: &Home) -> Result<Result<Locked, discovery::Running>, Failure> {
+/// The lock on `~/.yard/server.lock`, once no page server holds it: an older one, or any one
+/// where it is to `replace` it, asked to stop and waited for, or none; or the page server of
+/// this version or a newer one that runs.
+fn take_over(home: &Home, replace: bool) -> Result<Result<Locked, discovery::Running>, Failure> {
     let clock = clock();
     let began = clock.elapsed();
-    let mut asked = false;
+    let mut asked = None;
     loop {
         if let Some(running) = discovery::running(home)? {
-            if discovery::against_ours(&running.version) != Compared::Less {
+            if !replace && discovery::against_ours(&running.version) != Compared::Less {
                 return Ok(Err(running));
             }
-            if !asked {
-                discovery::request_stop(home)?;
-                asked = true;
+            if asked.is_none() {
+                discovery::request_stop(home, replace)?;
             }
+            asked = Some(running);
         } else if let Some(locked) = lock::try_lock(&home.dir().join(SERVER_LOCK))? {
             return Ok(Ok(locked));
         }
         if clock.elapsed().saturating_sub(began) >= WAITING {
-            return Err(Failure::one(
-                "stop",
-                "another page server holds `~/.yard/server.lock` and did not give it up",
-            ));
+            return Err(did_not_stop(asked.as_ref()));
         }
         clock.wait(AGAIN);
     }
+}
+
+/// The error of a page server that did not give up its lock when asked: one built before
+/// `--replace` stops only for a newer version.
+fn did_not_stop(running: Option<&discovery::Running>) -> Failure {
+    let Some(running) = running else {
+        return Failure::one(
+            "stop",
+            "another page server holds `~/.yard/server.lock` and did not give it up",
+        );
+    };
+    let process = running
+        .pid
+        .map_or_else(String::new, |pid| format!(", process {pid},"));
+    Failure::one(
+        "stop",
+        format!(
+            "the page server of loft {}{process} was asked to stop and did not give up \
+             `~/.yard/server.lock`; a page server older than `--replace` stops only for a newer \
+             version: stop that process, then serve again",
+            running.version
+        ),
+    )
 }
 
 /// The control token in `~/.yard/token`, made where there is none.

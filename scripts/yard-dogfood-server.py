@@ -1,4 +1,4 @@
-"""Build and restart the shared development Yard server, before either agent starts."""
+"""Build loft and have it replace the shared development Yard server, before either agent starts."""
 
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -7,7 +7,6 @@ import http.client
 import json
 import os
 from pathlib import Path
-import signal
 import subprocess
 import sys
 import time
@@ -22,18 +21,6 @@ class Server:
     pid: int
     port: int
     version: str
-
-
-@dataclass(frozen=True)
-class Process:
-    executable: str
-    arguments: str
-    started: str
-
-    def is_server(self):
-        return Path(self.executable).name == "loft" and (
-            self.arguments == "yard serve" or self.arguments.startswith("yard serve ")
-        )
 
 
 class Clock:
@@ -51,38 +38,33 @@ def pause(clock, until, reason):
     clock.wait(min(0.05, remaining))
 
 
+# `loft yard serve --replace` waits ten seconds for the running server to stop.
+WAITING = 15
+
+
 def replace(runtime, clock, binary, port, cwd, version):
-    until = clock.now() + 10
-    child = None
-    stopping = set()
-    reason = "no replacement has been confirmed"
+    """Starts `loft yard serve --replace`, which asks the running page server to stop whatever
+    its version and serves in its place, and waits until it serves and answers."""
+    until = clock.now() + WAITING
+    child = runtime.spawn(binary, port, cwd)
+    reason = "the replacement has not registered itself"
     succeeded = False
     try:
-        while clock.now() < until:
-            if child and child.poll() not in (None, 0):
+        while True:
+            if child.poll() is not None:
                 raise RestartError(f"page server exited with status {child.poll()}")
             try:
                 current = runtime.running()
             except RestartError as error:
-                reason = str(error)
-                pause(clock, until, reason)
-                continue
-            if current and child and current.pid == child.pid and child.poll() is None:
+                current, reason = None, str(error)
+            if current and current.pid == child.pid:
                 if current.port == port and runtime.ready(current, version):
                     succeeded = True
                     return current
                 reason = "the replacement has not answered its protocol endpoint"
-            elif current:
-                if current not in stopping and runtime.stop(current):
-                    stopping.add(current)
-                reason = "the registered server has not released its lock or cannot be verified"
-            elif child is None or child.poll() is not None:
-                child = runtime.spawn(binary, port, cwd)
-                reason = "the replacement has not registered itself"
             pause(clock, until, f"restart timed out: {reason}")
-        raise RestartError(f"restart timed out: {reason}")
     finally:
-        if child and not succeeded:
+        if not succeeded:
             runtime.cleanup(child)
 
 
@@ -159,59 +141,10 @@ class Runtime:
         except (OSError, ValueError, KeyError, TypeError) as error:
             raise RestartError(f"held server lock has no valid registration: {error}") from error
 
-    @staticmethod
-    def inspect(arguments):
-        try:
-            result = subprocess.run(arguments, capture_output=True, text=True, timeout=2)
-        except (OSError, subprocess.TimeoutExpired) as error:
-            raise RestartError(f"cannot inspect the Yard server: {error}") from error
-        return result.stdout.strip() if result.returncode == 0 else ""
-
-    def process(self, pid):
-        executable = self.inspect(["ps", "-ww", "-p", str(pid), "-o", "comm="])
-        full = self.inspect(["ps", "-ww", "-p", str(pid), "-o", "args="])
-        started = self.inspect(["ps", "-ww", "-p", str(pid), "-o", "lstart="])
-        if not executable or not full or not started:
-            return None
-        if full.startswith(executable + " "):
-            arguments = full[len(executable) + 1:]
-        else:
-            # Linux's comm is the basename; macOS's wide comm includes the full path.
-            prefix, separator, tail = full.partition(" yard serve")
-            if not separator or Path(prefix).name != executable:
-                return None
-            executable, arguments = prefix, "yard serve" + tail
-        return Process(executable, arguments, started)
-
-    def owns(self, current):
-        pid = str(current.pid)
-        lock = self.home / "server.lock"
-        files = self.inspect(["lsof", "-nP", "-a", "-p", pid, "-F", "pn", "--", str(lock)])
-        listeners = self.inspect([
-            "lsof", "-nP", "-a", "-p", pid, f"-iTCP:{current.port}",
-            "-sTCP:LISTEN", "-F", "pn",
-        ])
-        return (f"p{pid}" in files.splitlines() and f"n{lock}" in files.splitlines()
-                and f"p{pid}" in listeners.splitlines()
-                and f"n127.0.0.1:{current.port}" in listeners.splitlines())
-
-    def stop(self, current):
-        before = self.process(current.pid)
-        if not before or not before.is_server() or not self.owns(current):
-            return False
-        # Recheck registration and process lifetime immediately before signalling.
-        if self.running() != current or self.process(current.pid) != before:
-            return False
-        try:
-            os.kill(current.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            return False
-        return True
-
     def spawn(self, binary, port, cwd):
         with self.log.open("ab") as output:
             return subprocess.Popen([
-                str(binary), "yard", "serve", "--tree", str(cwd),
+                str(binary), "yard", "serve", "--replace", "--tree", str(cwd),
                 "--port", str(port), "--format", "json",
             ], cwd=cwd, env=self.env, stdin=subprocess.DEVNULL,
                 stdout=output, stderr=output, start_new_session=True, close_fds=True)

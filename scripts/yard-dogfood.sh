@@ -2,7 +2,7 @@
 # Start Claude Code or Codex with this worktree's Loft binary and Yard plugin.
 # Each launch builds Loft and restarts the one shared Yard server on port 7412.
 # Existing sessions reconnect; refresh open pages after a same-version UI rebuild.
-# Both start in the caller's working directory. Requires Python 3, ps and lsof.
+# Both start in the caller's working directory. Requires Python 3.
 # Claude is the default.
 #   ./scripts/yard-dogfood.sh claude                    start Claude Code
 #   ./scripts/yard-dogfood.sh claude resume <session-id> resume Claude Code

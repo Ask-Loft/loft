@@ -11,7 +11,7 @@ use crate::yard::Yard;
 use software_plant::Clock;
 
 #[test]
-fn the_dogfood_restart_policy_checks_process_identity_and_bounded_waits() {
+fn the_dogfood_restart_policy_replaces_through_serve_replace_with_bounded_waits() {
     let status = Command::new("python3")
         .arg(workspace().join("crates/loft-cli/tests/yard_dogfood_test.py"))
         .status()
