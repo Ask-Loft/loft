@@ -264,6 +264,19 @@ fn replay(home: &Home, session: &str) -> SessionKept {
     kept
 }
 
+/// The text of the totals file the page server would write for session `key` in the Yard Log of
+/// `branch` in `tree`, rebuilt from the session's event log; none where the log counts no
+/// request there.
+pub fn replayed_totals(home: &Home, key: &str, tree: &str, branch: &str) -> Option<String> {
+    let kept = replay(home, key);
+    let totals = kept
+        .logs
+        .get(&(tree.to_owned(), branch.to_owned()))?
+        .totals
+        .as_ref()?;
+    totals.counted().then(|| totals.text())
+}
+
 impl Sessions {
     /// Records the events `body` holds, one event or a list of them in the order they happened.
     pub fn record(&self, home: &Home, body: &[u8]) -> Response {

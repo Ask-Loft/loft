@@ -23783,7 +23783,10 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "replaying_the_session_after_the_upgrade_gives_the_totals_it_wrote"
-        body: fc0458b870b383cd414347782d3c121ce29770c43b40882288f2d116df4e8cbb
+        body: f7ab49160675b8b1b80c7c7233a3d2a36cb9492e5d1fb256f3ac0b2f5bbc3021
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "a_scope_with_a_zero_and_a_positive_cache_write_is_upgraded_as_replay_counts_it"
+        body: d6911057ab775335012dc93fa318f50997aae21786bc25bd2d425c6b4adbf52a
   - node: 01a1835b-a222-7677-8e34-d530298dfd95
     reviewed: 6568c6304ffb8cb0721958088342f5960bb01feac0d40ebd97b6715f22fe2a33
     tests:

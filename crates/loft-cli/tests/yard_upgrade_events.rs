@@ -101,30 +101,51 @@ fn each_unverified_zero_moves_under_its_source_and_keeps_its_event_identity() {
     assert_eq!(moved, before[0], "nothing else of the line changed");
 }
 
-#[test]
-fn replaying_the_session_after_the_upgrade_gives_the_totals_it_wrote() {
-    let yard = legacy_session(unclassified);
-    upgrade(&yard);
-    let written = totals(&yard);
+/// Upgrades `yard`, whose last request ended at second 2, and checks that the page server,
+/// replaying the session's events, writes the totals the upgrade wrote.
+fn replay_gives_what_the_upgrade_wrote(yard: &Yard) {
+    upgrade(yard);
+    let written = totals(yard);
     assert!(written.contains(MARKER), "{written}");
-    let served = Served::start(&yard, &[]);
+    let served = Served::start(yard, &[]);
     // A request that adds nothing but its time makes the page server write the totals it
     // replayed.
     let nothing = json!({"input":0,"cacheRead":0,"output":0});
     let mut idle = event(
-        &yard,
+        yard,
         "request",
         5,
         &json!({"host":"codex","model":"fixture"}),
     );
     idle["tokens"] = nothing;
     post(&served, &[idle]);
-    let replayed = totals(&yard);
+    let replayed = totals(yard);
     let expected = written.replace(
         "lastEnded: 2026-01-01T10:00:02Z",
         "lastEnded: 2026-01-01T10:00:05Z",
     );
     assert_eq!(replayed, expected);
+}
+
+#[test]
+fn replaying_the_session_after_the_upgrade_gives_the_totals_it_wrote() {
+    replay_gives_what_the_upgrade_wrote(&legacy_session(unclassified));
+}
+
+#[test]
+fn a_scope_with_a_zero_and_a_positive_cache_write_is_upgraded_as_replay_counts_it() {
+    let yard = legacy_session(|yard| {
+        vec![
+            legacy(yard, 1, "one", Some("chatgpt"), 0),
+            legacy(yard, 2, "two", Some("chatgpt"), 4),
+        ]
+    });
+    replay_gives_what_the_upgrade_wrote(&yard);
+    let written = totals(&yard);
+    assert!(
+        written.contains("tokens:\n  input: 140\n  cacheRead: 60\n  cacheWrite: 4\n  output: 10\n  partial:\n    - cacheWrite\n"),
+        "{written}"
+    );
 }
 
 #[test]

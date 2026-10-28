@@ -1,7 +1,8 @@
 //! The totals step of `loft yard upgrade`: each totals file of an open Yard Log that carries no
 //! `cacheWriteClassified` marker, written again with the marker, and where its host is Codex,
 //! with each zero cache-write count unavailable, since a Codex adapter that did not classify
-//! cache writes at the source may have given a zero it did not measure. While a page server
+//! cache writes at the source may have given a zero it did not measure: counted again from the
+//! session's moved events where this machine keeps them, else settled from the file itself. While a page server
 //! runs, nothing is written: it appends to the event logs and would write its own counts over
 //! the files.
 
@@ -14,8 +15,8 @@ use yardlog_store::session::SessionFile;
 
 use crate::yard::failure::Failure;
 use crate::yard::page;
-use crate::yard::serve::session_files;
 use crate::yard::serve::tokens::Totals;
+use crate::yard::serve::{replayed_totals, session_files};
 
 /// What became of the totals files of the open Yard Logs.
 pub enum Classifying {
@@ -62,20 +63,33 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
     }
     let mut classified = Vec::new();
     let mut settled = BTreeSet::new();
-    for (branch, store, key, mut file) in unmarked {
+    for (branch, store, key, file) in unmarked {
         let host = file["host"].as_str().unwrap_or_default().to_owned();
-        if host == "codex" {
+        let text = if host == "codex" {
             // The events first: a run stopped after them settles the file on the next.
             if settled.insert(key.clone()) {
                 super::events::settle(&home, &key)?;
             }
-            classify_codex(&mut file);
-        }
-        let text = Totals::read(&file).text();
+            codex_totals(&home, store, &key, file.clone())
+        } else {
+            Totals::read(&file).text()
+        };
         store.write_session(SessionFile::Tokens, &key, text.as_bytes())?;
         classified.push(json!({ "branch": branch, "host": host, "session": file["session"] }));
     }
     Ok(Classifying::Done(classified))
+}
+
+/// A Codex session's totals, counted as the page server counts them from the session's moved
+/// events, so that a later replay writes the same. Where this machine keeps no event of the
+/// session in this Yard Log, the file itself is settled: each zero cache-write count is made
+/// unavailable, and each positive one is kept, with no word of the zeros it may hold.
+fn codex_totals(home: &Home, store: &YardStore, key: &str, mut file: Value) -> String {
+    let tree = store.place().tree.display().to_string();
+    replayed_totals(home, key, &tree, store.branch()).unwrap_or_else(|| {
+        classify_codex(&mut file);
+        Totals::read(&file).text()
+    })
 }
 
 /// Makes each zero cache-write count of a Codex totals file unavailable: in all, under no stage,

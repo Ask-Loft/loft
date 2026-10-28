@@ -52,6 +52,7 @@ use crate::json;
 use crate::out::outln;
 use crate::version::VERSION;
 use events::Sessions;
+pub(super) use events::replayed_totals;
 use listener::Listener;
 
 const SCHEMA: &str = "loft-yard-serve/1";
