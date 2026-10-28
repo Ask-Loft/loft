@@ -20346,6 +20346,21 @@ links:
       - file: "crates/loft-cli/src/yard/codex/app_server/account_tests.rs"
         name: "account_updates_apply_to_subsequent_usage_without_retaining_account_details"
         body: 10090580622542f81a9c55aadcd6ab46aff8337fe5ebb9bf8ffb316419e55a39
+  - node: 01a1839e-0cd8-73ef-8531-db3db3d4e5bb
+    reviewed: b218cd389381acc0bd1f41be7d3196eaa051550b59fd2b1b68195698ff0bf5dc
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/usage/tests.rs"
+        name: "the_rule_keeps_a_zero_cache_write_in_an_events_tokens_only_for_a_verified_api_key_account"
+        body: 796c1ae85a5b42e39891b01bdf0f184736edd57b80dbe87734b853f588bc6d5e
+      - file: "crates/loft-cli/src/yard/codex/usage/tests.rs"
+        name: "the_rule_moves_an_unverified_zero_cache_write_of_an_event_under_its_source"
+        body: de4965c6c39ca767ddb068c22933bb095bd14baeb5ca23bf14770d599474c22d
+      - file: "crates/loft-cli/src/yard/codex/usage/tests.rs"
+        name: "the_rule_keeps_a_positive_cache_write_of_an_event_and_leaves_other_kinds_alone"
+        body: c554e9b630ff38bcbb7a5d575f52c25e823881c004be87f6ad7b09a950720752
+      - file: "crates/loft-cli/src/yard/codex/usage/tests.rs"
+        name: "an_unverified_zero_cache_write_leaves_the_tokens_and_is_reported_under_its_source"
+        body: a6c5fc953ad0a7c722de722bad592e91d092d0e45e43393e28d59443170b6ec8
   - node: 01a17afe-ab67-76b3-964d-3fd4fc2e4d1b
     reviewed: cc764e2163a8ffd67590372eb449d5b24eb1f31899cfb06319d5626c573422d0
     tests:
@@ -23889,6 +23904,12 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "a_second_run_moves_no_event"
         body: 83702c428c03cc8815bcb4ddad4d5f6c23a799c4e9308e2a29c0e7e14ffb4b30
+  - node: 01a1839e-0cd9-75bc-b853-1ff3e60d801e
+    reviewed: 50e6fd3d6bbcadf6190ff2565a9da6dde8765922050d06f59c13809bef57a318
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "each_unverified_zero_moves_under_its_source_and_keeps_its_event_identity"
+        body: d71ec9eaeed6e3e845acc64491d53049bcd29e77b3b545d5b8ef3dad2350e4d1
   - node: 01a1839e-0cd9-75bc-b853-1ff548163d29
     reviewed: c6d606e9e1beb4beedeac1550833f13bd6db1fccc306ab5434b49fe1ab4d2b76
     tests:

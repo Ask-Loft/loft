@@ -167,3 +167,62 @@ fn an_absent_cache_write_is_neither_measured_nor_reported_even_for_an_api_key_ac
     assert!(state.events[0]["tokens"].get("cacheWrite").is_none());
     assert_eq!(state.events[0]["usageSource"], json!({"account":"apiKey"}));
 }
+
+fn queued(account: Option<&str>, write: u64) -> Value {
+    let mut event = json!({"kind":"request","eventId":"id","tokens":{"input":70,"cacheRead":30,"cacheWrite":write,"output":5}});
+    if let Some(account) = account {
+        event["usageSource"] = json!({"account":account});
+    }
+    event
+}
+
+#[test]
+fn the_rule_keeps_a_zero_cache_write_in_an_events_tokens_only_for_a_verified_api_key_account() {
+    let mut event = queued(Some("apiKey"), 0);
+    assert!(!super::classify_event(&mut event));
+    assert_eq!(event, queued(Some("apiKey"), 0));
+}
+
+#[test]
+fn the_rule_moves_an_unverified_zero_cache_write_of_an_event_under_its_source() {
+    for (account, kept) in [
+        (
+            Some("chatgpt"),
+            json!({"account":"chatgpt","reported":{"cacheWrite":0}}),
+        ),
+        (
+            Some("unknown"),
+            json!({"account":"unknown","reported":{"cacheWrite":0}}),
+        ),
+        (None, json!({"reported":{"cacheWrite":0}})),
+    ] {
+        let mut event = queued(account, 0);
+        assert!(super::classify_event(&mut event));
+        assert_eq!(
+            event["tokens"],
+            json!({"input":70,"cacheRead":30,"output":5})
+        );
+        assert_eq!(event["usageSource"], kept);
+        assert_eq!(event["eventId"], "id");
+        assert!(
+            !super::classify_event(&mut event),
+            "a second pass moves nothing"
+        );
+    }
+}
+
+#[test]
+fn the_rule_keeps_a_positive_cache_write_of_an_event_and_leaves_other_kinds_alone() {
+    for account in [Some("apiKey"), Some("chatgpt"), None] {
+        let mut event = queued(account, 4);
+        assert!(!super::classify_event(&mut event));
+        assert_eq!(event, queued(account, 4));
+    }
+    let mut prompt = queued(None, 0);
+    prompt["kind"] = json!("prompt");
+    assert!(!super::classify_event(&mut prompt));
+    assert!(prompt.get("usageSource").is_none());
+    let mut compaction = queued(Some("chatgpt"), 0);
+    compaction["kind"] = json!("compaction");
+    assert!(super::classify_event(&mut compaction));
+}

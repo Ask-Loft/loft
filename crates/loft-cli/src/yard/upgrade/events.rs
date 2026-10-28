@@ -5,9 +5,11 @@
 //! line, its event identity and the digest of its original payload among them, is kept, so a
 //! retry of the original event is still recognized; every other line keeps its bytes.
 
-use serde_json::{Value, json};
+use serde_json::Value;
 use yardlog_store::YardStoreError;
 use yardlog_store::home::Home;
+
+use crate::yard::codex::classify_event;
 
 /// Whether session `key`'s event log holds a count to move.
 pub fn pending(home: &Home, key: &str) -> Result<bool, YardStoreError> {
@@ -41,19 +43,14 @@ pub fn settle(home: &Home, key: &str) -> Result<(), YardStoreError> {
     Ok(())
 }
 
-/// The line `line` with its zero cache write moved, or none where it holds none to move.
+/// The line `line` with its zero cache write moved by the Codex adapter's rule, or none where it
+/// holds none to move.
 fn moved(line: &[u8]) -> Option<Vec<u8>> {
     let text = line.strip_suffix(b"\n").unwrap_or(line);
     let mut event: Value = serde_json::from_slice(text).ok()?;
-    let counted = matches!(event["kind"].as_str(), Some("request" | "compaction"));
-    if !counted || event["tokens"]["cacheWrite"] != 0 || event["usageSource"]["account"] == "apiKey"
-    {
+    if !classify_event(&mut event) {
         return None;
     }
-    event["tokens"].as_object_mut()?.remove("cacheWrite");
-    let fields = event.as_object_mut()?;
-    let source = fields.entry("usageSource").or_insert_with(|| json!({}));
-    source["reported"] = json!({ "cacheWrite": 0 });
     let mut written = serde_json::to_vec(&event).ok()?;
     if line.ends_with(b"\n") {
         written.push(b'\n');

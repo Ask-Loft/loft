@@ -17,6 +17,8 @@ mod translate;
 mod usage;
 mod watch;
 
+pub use usage::classify_event;
+
 use std::path::PathBuf;
 
 use clap::{Args, Subcommand};
