@@ -6,7 +6,6 @@ use std::collections::BTreeSet;
 use std::fs;
 
 use crate::common::{Scratch, stderr, workspace};
-use crate::plugins::drifted;
 
 const SKILL: &str = "plugins/claude/loft/skills/yard";
 const TOOLS: &str = "plugins/claude/loft/hooks/adapter/tools.ts";
@@ -73,11 +72,6 @@ fn the_claude_yard_adaptation_holds_the_native_tools_dialogs_tasks_and_planning(
 
 #[test]
 fn the_committed_yard_package_equals_the_shared_source_with_its_claude_adaptation() {
-    assert_eq!(
-        drifted(SKILL),
-        Vec::<String>::new(),
-        "run scripts/package-skill.sh"
-    );
     let package = read(&format!("{SKILL}/SKILL.md"));
     assert!(package.starts_with(&read(&format!("{SOURCE}/SKILL.md"))));
     assert!(package.ends_with(&read(&format!("{SOURCE}/agents/claude.md"))));

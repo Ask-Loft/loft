@@ -68,13 +68,12 @@ struct Session {
 impl Sums {
     fn add(&mut self, file: &Value) {
         let host = file["host"].as_str().unwrap_or_default();
-        let counts = Counts::from_fields;
-        let tokens = counts(&file["tokens"]);
+        let tokens = Counts::from_fields(&file["tokens"]);
         self.all.get_or_insert_default().add(tokens);
         // A file that keeps no counts under no stage counted nothing there: a measured zero
         // of each counter it reports.
         let no_stage = match file.get("noStage") {
-            Some(value) => counts(value),
+            Some(value) => Counts::from_fields(value),
             None => Counts::from_fields(&zeros(&tokens.json())),
         };
         self.no_stage.get_or_insert_default().add(no_stage);
@@ -83,16 +82,16 @@ impl Sums {
                 continue;
             };
             let at = self.stage(key);
-            at.tokens.add(counts(stage));
+            at.tokens.add(Counts::from_fields(stage));
             let subagents = array(stage, "agents").filter(|agent| agent["agent"] != "main");
             for agent in subagents {
                 let kind = agent["type"].as_str().unwrap_or("subagent");
-                add_to(&mut at.agents, kind, counts(agent));
+                add_to(&mut at.agents, kind, Counts::from_fields(agent));
             }
         }
         for submission in array(file, "submissions") {
             if let Some(key) = submission["submission"].as_str() {
-                add_to(&mut self.submissions, key, counts(submission));
+                add_to(&mut self.submissions, key, Counts::from_fields(submission));
             }
         }
         for agent in array(file, "agents") {
@@ -102,7 +101,9 @@ impl Sums {
                 agent["type"].as_str().unwrap_or("subagent")
             };
             let model = agent["model"].as_str().unwrap_or("unknown");
-            self.agent(host, who, model).tokens.add(counts(agent));
+            self.agent(host, who, model)
+                .tokens
+                .add(Counts::from_fields(agent));
         }
         let text = |name: &str| file[name].as_str().map(ToOwned::to_owned);
         self.sessions.push(Session {

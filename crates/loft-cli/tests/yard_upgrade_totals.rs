@@ -6,20 +6,18 @@
 
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use std::process::Output;
 
 use serde_json::{Value, json};
 
-use crate::common::workspace;
-use crate::schema;
 use crate::served::Served;
 use crate::snapshot::snapshot;
-use crate::yard::{ASK, BRANCH, Yard, document};
+use crate::yard::{ASK, BRANCH, Yard};
+use crate::yard_upgrade::{conforming, upgrade};
 
 /// A Codex session's totals as a page server wrote them before cache writes were classified:
 /// a zero cache write in every scope but the subagent's, whose positive count reaches the
 /// session total and the model counts.
-pub(crate) const CODEX: &str = "session: s1
+const CODEX: &str = "session: s1
 host: codex
 firstEnded: 2026-01-01T10:00:01Z
 lastEnded: 2026-01-01T10:00:02Z
@@ -153,7 +151,7 @@ pub(crate) fn tokens(yard: &Yard, key: &str) -> std::path::PathBuf {
 }
 
 /// An open Yard Log on [`BRANCH`] holding the totals `files`, by session key.
-pub(crate) fn with_totals(files: &[(&str, &str)]) -> Yard {
+fn with_totals(files: &[(&str, &str)]) -> Yard {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);
     fs::create_dir_all(yard.folder(BRANCH).join("tokens")).unwrap();
@@ -161,10 +159,6 @@ pub(crate) fn with_totals(files: &[(&str, &str)]) -> Yard {
         fs::write(tokens(&yard, key), text).unwrap();
     }
     yard
-}
-
-pub(crate) fn upgrade(yard: &Yard) -> (Option<i32>, Value) {
-    conforming(&yard.run(&["upgrade"]))
 }
 
 /// Runs `loft yard upgrade` where no home directory is known.
@@ -177,13 +171,6 @@ fn upgrade_without_home(yard: &Yard) -> (Option<i32>, Value) {
         .output()
         .unwrap();
     conforming(&output)
-}
-
-fn conforming(output: &Output) -> (Option<i32>, Value) {
-    let doc = document("upgrade", output);
-    let schema = fs::read_to_string(workspace().join("schemas/yard-upgrade.json")).unwrap();
-    let text = serde_json::to_vec(&doc).unwrap();
-    (output.status.code(), schema::conforming(&text, &schema))
 }
 
 fn text(yard: &Yard, key: &str) -> String {

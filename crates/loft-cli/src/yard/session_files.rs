@@ -19,8 +19,18 @@ pub fn read(store: &YardStore, kind: SessionFile) -> Vec<Value> {
 /// Session `session`'s file of `kind` in the Yard Log of `store`, as JSON; none where it does not
 /// read.
 pub fn one(store: &YardStore, kind: SessionFile, session: &str) -> Option<Value> {
-    let bytes = store.session_file(kind, session)?;
-    Some(json(&yaml::read(&bytes).ok().flatten()?))
+    parsed(&store.session_file(kind, session)?)
+}
+
+/// A file's bytes as JSON; none where they do not read.
+fn parsed(bytes: &[u8]) -> Option<Value> {
+    Some(json(&yaml::read(bytes).ok().flatten()?))
+}
+
+/// A file's text as the page reads it, for the tests of what writes it.
+#[cfg(test)]
+pub fn as_read(text: &str) -> Value {
+    parsed(text.as_bytes()).expect("the file reads")
 }
 
 /// Every file of `kind` in the Yard Log of `store`, by the session key that names it, as JSON.
@@ -47,7 +57,7 @@ pub fn entries(store: &YardStore, kind: SessionFile) -> Vec<(String, Value)> {
 
 /// A node of the YAML subset as JSON: a whole number or `true` and `false` written plain as
 /// themselves, every other scalar as text.
-pub fn json(node: &Node) -> Value {
+fn json(node: &Node) -> Value {
     match &node.value {
         Yaml::Mapping(entries) => Value::Object(
             entries

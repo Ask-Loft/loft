@@ -51,7 +51,7 @@ fn the_repository_codex_skill_is_a_relative_link_to_the_shared_source() {
 
 /// The JSON document of `loft skill package --check` run at the repository's root, which
 /// compares every committed package with the composition `loft` writes and writes nothing.
-pub fn package_check() -> Value {
+fn package_check() -> Value {
     let home = Scratch::empty();
     let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
     isolate(&mut command, &home.home());
@@ -69,18 +69,6 @@ pub fn package_check() -> Value {
         &output.stdout,
         include_str!("../../../schemas/skill-package.json"),
     )
-}
-
-/// The files under `directory` that differ from their composition, by `loft skill package
-/// --check`.
-pub fn drifted(directory: &str) -> Vec<String> {
-    let check = package_check();
-    ["changed", "missing", "extra"]
-        .iter()
-        .flat_map(|list| check[list].as_array().unwrap().clone())
-        .map(|path| path.as_str().unwrap().to_owned())
-        .filter(|path| path.starts_with(&format!("{directory}/")))
-        .collect()
 }
 
 #[test]

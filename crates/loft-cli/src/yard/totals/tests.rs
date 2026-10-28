@@ -4,7 +4,7 @@ use yardlog::totals::Totals;
 
 use super::count;
 use crate::yard::event::Event;
-use crate::yard::session_files;
+use crate::yard::session_files::as_read;
 
 fn request(second: u32, more: &Value) -> Event {
     let mut posted = json!({"host":"codex","session":"s1","dir":"/work",
@@ -13,12 +13,6 @@ fn request(second: u32, more: &Value) -> Event {
         posted[name] = value.clone();
     }
     Event::read(&posted).unwrap()
-}
-
-/// The totals file's text as the page reads it.
-fn as_read(text: &str) -> Value {
-    let node = loftspec::yaml::read(text.as_bytes()).unwrap().unwrap();
-    session_files::json(&node)
 }
 
 #[test]

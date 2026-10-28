@@ -5,7 +5,6 @@ use std::fs;
 use serde_json::Value;
 
 use crate::common::workspace;
-use crate::plugins::drifted;
 
 const SOURCE: &str = "crates/loft-cli/skill/yard";
 const PACKAGE: &str = "plugins/codex/loft/skills/yard";
@@ -26,11 +25,6 @@ fn the_codex_yard_package_equals_the_shared_source_with_only_its_codex_adaptatio
     let shared = read(&format!("{SOURCE}/SKILL.md"));
     let adapted = read(&format!("{SOURCE}/agents/codex.md"));
     let package = read(&format!("{PACKAGE}/SKILL.md"));
-    assert_eq!(
-        drifted(PACKAGE),
-        Vec::<String>::new(),
-        "run scripts/package-skill.sh"
-    );
     assert!(package.starts_with(&shared) && package.ends_with(&adapted));
     assert!(package.lines().count() <= 500);
     assert!(!adapted.starts_with("---"));

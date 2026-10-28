@@ -59,7 +59,7 @@ pub(crate) fn session_file(yard: &Yard, folder: &str, session: &str) -> Option<S
 }
 
 /// Session `session`'s event log, a line to an event.
-fn log(yard: &Yard, session: &str) -> Vec<Value> {
+pub(crate) fn log(yard: &Yard, session: &str) -> Vec<Value> {
     let path: PathBuf = yard
         .scratch
         .home()

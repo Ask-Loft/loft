@@ -11,7 +11,12 @@ use std::fs;
 
 /// A Codex request as the adapter posts it: `write` in its tokens where it is measured, and
 /// `source` as its `usageSource`.
-fn request(yard: &Yard, second: u32, source: Option<Value>, write: Option<u64>) -> Value {
+pub(crate) fn request(
+    yard: &Yard,
+    second: u32,
+    source: Option<Value>,
+    write: Option<u64>,
+) -> Value {
     let mut tokens = json!({"input":70,"cacheRead":30,"output":5});
     if let Some(write) = write {
         tokens["cacheWrite"] = json!(write);

@@ -106,23 +106,29 @@ fn skipped_observations_record_one_unavailable_request_without_guessing_counts()
     assert_eq!(state.events.len(), 3);
 }
 
-fn zero_write(account: Option<&str>) -> State {
+/// The state after one request is observed for `account`, where one is given, with `write`
+/// cache writes in its latest and cumulative counts, where given.
+fn observed(account: Option<&str>, write: Option<u64>) -> State {
     let mut state = state();
     let mut counters = usage(100, 30, 5);
     if let Some(account) = account {
         counters["account"] = json!(account);
     }
-    counters["last"]["cacheWriteInputTokens"] = json!(0);
-    counters["total"]["cacheWriteInputTokens"] = json!(0);
+    if let Some(write) = write {
+        counters["last"]["cacheWriteInputTokens"] = json!(write);
+        counters["total"]["cacheWriteInputTokens"] = json!(write);
+    }
     assert!(observe(&mut state, "thread", "turn", &counters, "now"));
-    let kept = serde_json::to_value(&state.usage.cursors["thread"]).unwrap();
-    assert_eq!(kept["snapshot"]["write"], 0);
+    if let Some(write) = write {
+        let kept = serde_json::to_value(&state.usage.cursors["thread"]).unwrap();
+        assert_eq!(kept["snapshot"]["write"], write);
+    }
     state
 }
 
 #[test]
 fn a_zero_cache_write_from_a_verified_api_key_account_is_measured_in_the_tokens() {
-    let state = zero_write(Some("apiKey"));
+    let state = observed(Some("apiKey"), Some(0));
     assert_eq!(state.events[0]["tokens"]["cacheWrite"], 0);
     assert_eq!(state.events[0]["usageSource"], json!({"account":"apiKey"}));
 }
@@ -134,7 +140,7 @@ fn an_unverified_zero_cache_write_leaves_the_tokens_and_is_reported_under_its_so
         (Some("unknown"), "unknown"),
         (None, "unknown"),
     ] {
-        let state = zero_write(account);
+        let state = observed(account, Some(0));
         let tokens = &state.events[0]["tokens"];
         assert!(tokens.get("cacheWrite").is_none(), "{tokens}");
         assert_eq!(tokens["input"], 70);
@@ -148,11 +154,7 @@ fn an_unverified_zero_cache_write_leaves_the_tokens_and_is_reported_under_its_so
 #[test]
 fn a_positive_cache_write_is_measured_for_every_account() {
     for account in ["apiKey", "chatgpt", "unknown"] {
-        let mut state = state();
-        let mut counters = usage(100, 30, 5);
-        counters["account"] = json!(account);
-        counters["last"]["cacheWriteInputTokens"] = json!(4);
-        assert!(observe(&mut state, "thread", "turn", &counters, "now"));
+        let state = observed(Some(account), Some(4));
         assert_eq!(state.events[0]["tokens"]["cacheWrite"], 4);
         assert_eq!(state.events[0]["usageSource"], json!({"account":account}));
     }
@@ -160,10 +162,7 @@ fn a_positive_cache_write_is_measured_for_every_account() {
 
 #[test]
 fn an_absent_cache_write_is_neither_measured_nor_reported_even_for_an_api_key_account() {
-    let mut state = state();
-    let mut counters = usage(100, 30, 5);
-    counters["account"] = json!("apiKey");
-    assert!(observe(&mut state, "thread", "turn", &counters, "now"));
+    let state = observed(Some("apiKey"), None);
     assert!(state.events[0]["tokens"].get("cacheWrite").is_none());
     assert_eq!(state.events[0]["usageSource"], json!({"account":"apiKey"}));
 }

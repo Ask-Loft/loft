@@ -4,58 +4,55 @@
 //! line keeps its event identity, so that a retry of the original event is still recognized.
 
 use std::fs;
+use std::path::PathBuf;
 
 use serde_json::{Value, json};
 
 use crate::served::Served;
 use crate::yard::{ASK, Yard};
-use crate::yard_serve_events::{event, post, session_file};
-use crate::yard_upgrade_totals::upgrade;
+use crate::yard_codex_cachewrite::request;
+use crate::yard_serve_events::{event, log, post, session_file};
+use crate::yard_upgrade::upgrade;
+use crate::yard_upgrade_totals::tokens;
 
 const FORMAT: &str = "format: yardtokens/2\n";
 
 /// A Codex request as an adapter that did not classify cache writes posted it, under `id`, with
 /// `account` as its source's account where it gives one and `write` cache writes.
 fn legacy(yard: &Yard, second: u32, id: &str, account: Option<&str>, write: u64) -> Value {
-    let tokens = json!({"input":70,"cacheRead":30,"cacheWrite":write,"output":5});
-    let mut row = event(
-        yard,
-        "request",
-        second,
-        &json!({"host":"codex","model":"fixture","eventId":id,"tokens":tokens}),
-    );
-    if let Some(account) = account {
-        row["usageSource"] = json!({ "account": account });
-    }
+    let source = account.map(|account| json!({ "account": account }));
+    let mut row = request(yard, second, source, Some(write));
+    row["eventId"] = json!(id);
     row
 }
 
+/// The Codex session's event log on the machine.
+fn events_path(yard: &Yard) -> PathBuf {
+    yard.scratch.home().join(".yard/events/codex~s1.jsonl")
+}
+
 fn lines(yard: &Yard) -> Vec<Value> {
-    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
-    let text = fs::read_to_string(path).unwrap();
-    text.lines()
-        .map(|line| serde_json::from_str(line).unwrap())
-        .collect()
+    log(yard, "codex~s1")
 }
 
 fn totals(yard: &Yard) -> String {
     session_file(yard, "tokens", "codex~s1").unwrap()
 }
 
-/// A Codex session's events posted and counted, then its totals file left in the first totals
-/// format, as a page server that did not classify cache writes left it, and the page server
-/// stopped.
-fn legacy_session(rows: impl Fn(&Yard) -> Vec<Value>) -> Yard {
+/// A Codex session's events posted and counted, as a page server that did not classify cache
+/// writes counted them, and the page server stopped; its totals file left in the current totals
+/// format where `keep_format` says so, else in the first.
+fn legacy_session(rows: impl Fn(&Yard) -> Vec<Value>, keep_format: bool) -> Yard {
     let yard = Yard::new();
     yard.write("s1", ASK, &["--host", "codex", "--send"]);
     let served = Served::start(&yard, &["--tree", yard.scratch.0.to_str().unwrap()]);
     let reply = post(&served, &rows(&yard));
     assert_eq!(reply["rejected"], json!([]));
     drop(served);
-    let path = yard
-        .folder(crate::yard::BRANCH)
-        .join("tokens/codex~s1.yaml");
-    fs::write(&path, totals(&yard).replacen(FORMAT, "", 1)).unwrap();
+    if !keep_format {
+        let first = totals(&yard).replacen(FORMAT, "", 1);
+        fs::write(tokens(&yard, "codex~s1"), first).unwrap();
+    }
     yard
 }
 
@@ -69,12 +66,15 @@ fn unclassified(yard: &Yard) -> Vec<Value> {
 
 #[test]
 fn each_unverified_zero_moves_under_its_source_and_keeps_its_event_identity() {
-    let yard = legacy_session(|yard| {
-        let mut rows = unclassified(yard);
-        rows.push(legacy(yard, 3, "three", Some("chatgpt"), 4));
-        rows.push(legacy(yard, 4, "four", Some("apiKey"), 0));
-        rows
-    });
+    let yard = legacy_session(
+        |yard| {
+            let mut rows = unclassified(yard);
+            rows.push(legacy(yard, 3, "three", Some("chatgpt"), 4));
+            rows.push(legacy(yard, 4, "four", Some("apiKey"), 0));
+            rows
+        },
+        false,
+    );
     let before = lines(&yard);
     upgrade(&yard);
     let after = lines(&yard);
@@ -130,17 +130,20 @@ fn replay_gives_what_the_upgrade_wrote(yard: &Yard) {
 
 #[test]
 fn replaying_the_session_after_the_upgrade_gives_the_totals_it_wrote() {
-    replay_gives_what_the_upgrade_wrote(&legacy_session(unclassified));
+    replay_gives_what_the_upgrade_wrote(&legacy_session(unclassified, false));
 }
 
 #[test]
 fn a_scope_with_a_zero_and_a_positive_cache_write_is_upgraded_as_replay_counts_it() {
-    let yard = legacy_session(|yard| {
-        vec![
-            legacy(yard, 1, "one", Some("chatgpt"), 0),
-            legacy(yard, 2, "two", Some("chatgpt"), 4),
-        ]
-    });
+    let yard = legacy_session(
+        |yard| {
+            vec![
+                legacy(yard, 1, "one", Some("chatgpt"), 0),
+                legacy(yard, 2, "two", Some("chatgpt"), 4),
+            ]
+        },
+        false,
+    );
     replay_gives_what_the_upgrade_wrote(&yard);
     let written = totals(&yard);
     assert!(
@@ -151,7 +154,7 @@ fn a_scope_with_a_zero_and_a_positive_cache_write_is_upgraded_as_replay_counts_i
 
 #[test]
 fn a_retry_of_an_original_event_is_still_recognized_after_the_upgrade() {
-    let yard = legacy_session(unclassified);
+    let yard = legacy_session(unclassified, false);
     upgrade(&yard);
     let written = totals(&yard);
     let served = Served::start(&yard, &[]);
@@ -168,13 +171,7 @@ fn a_retry_of_an_original_event_is_still_recognized_after_the_upgrade() {
 /// A Codex session's unverified zeros posted to a page server that did not move them, its
 /// totals file left in the current totals format as that page server wrote it.
 fn current_session() -> Yard {
-    let yard = legacy_session(unclassified);
-    let path = yard
-        .folder(crate::yard::BRANCH)
-        .join("tokens/codex~s1.yaml");
-    let text = totals(&yard);
-    fs::write(&path, format!("{FORMAT}{text}")).unwrap();
-    yard
+    legacy_session(unclassified, true)
 }
 
 #[test]
@@ -203,7 +200,7 @@ fn a_totals_file_in_the_current_format_counted_from_unmoved_events_is_written_as
 #[test]
 fn a_totals_file_whose_events_an_earlier_upgrade_moved_is_counted_again_without_the_zero() {
     let yard = current_session();
-    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let path = events_path(&yard);
     let mut moved = String::new();
     for mut line in lines(&yard) {
         line["tokens"].as_object_mut().unwrap().remove("cacheWrite");
@@ -224,9 +221,7 @@ fn a_totals_file_whose_events_an_earlier_upgrade_moved_is_counted_again_without_
 fn a_totals_file_replay_gives_byte_for_byte_is_not_written_again() {
     let yard = current_session();
     upgrade(&yard);
-    let path = yard
-        .folder(crate::yard::BRANCH)
-        .join("tokens/codex~s1.yaml");
+    let path = tokens(&yard, "codex~s1");
     let first = fs::read(&path).unwrap();
     let modified = fs::metadata(&path).unwrap().modified().unwrap();
     let (code, result) = upgrade(&yard);
@@ -241,7 +236,7 @@ fn a_totals_file_replay_gives_byte_for_byte_is_not_written_again() {
 fn a_second_run_moves_no_event() {
     let yard = current_session();
     upgrade(&yard);
-    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let path = events_path(&yard);
     let first = fs::read(&path).unwrap();
     let modified = fs::metadata(&path).unwrap().modified().unwrap();
     upgrade(&yard);
@@ -252,7 +247,7 @@ fn a_second_run_moves_no_event() {
 #[test]
 fn while_a_page_server_runs_a_session_s_events_are_left_as_they_were() {
     let yard = current_session();
-    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let path = events_path(&yard);
     let before = fs::read(&path).unwrap();
     let served = Served::start(&yard, &[]);
     let (code, result) = upgrade(&yard);
@@ -271,7 +266,7 @@ fn while_a_page_server_runs_a_session_s_events_are_left_as_they_were() {
 #[test]
 fn while_another_process_holds_the_page_server_s_lock_unnamed_events_and_totals_are_left() {
     let yard = current_session();
-    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let path = events_path(&yard);
     let (events, current) = (fs::read(&path).unwrap(), totals(&yard));
     let home = yard.scratch.home().join(".yard");
     fs::remove_file(home.join("server.json")).unwrap();
@@ -315,7 +310,7 @@ fn the_events_of_a_codex_session_are_moved_whichever_tree_they_count_toward_and_
 
 #[test]
 fn the_events_of_a_codex_session_of_a_closed_yard_log_are_moved_and_its_totals_left() {
-    let yard = legacy_session(unclassified);
+    let yard = legacy_session(unclassified, false);
     yard.run(&["close", "--session", "s1"]);
     let written = totals(&yard);
     let (code, _) = upgrade(&yard);

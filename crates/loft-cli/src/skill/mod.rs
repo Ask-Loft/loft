@@ -208,28 +208,3 @@ pub fn run(root: &Path, hosts: Hosts, plugin: Plugin, as_json: bool) -> Finished
         Err(error) => json::stop(SCHEMA, vec![error_json(&error)], &error, as_json),
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use std::fs;
-    use std::path::Path;
-
-    use super::YARD_SOURCE;
-    use super::compose::compose_yard;
-
-    #[test]
-    fn the_embedded_yard_source_composes_each_committed_yard_package_byte_for_byte() {
-        for (plugin, adaptation) in [("claude", "agents/claude.md"), ("codex", "agents/codex.md")] {
-            let committed = Path::new(env!("CARGO_MANIFEST_DIR"))
-                .join(format!("../../plugins/{plugin}/loft/skills/yard/SKILL.md"));
-            assert_eq!(
-                compose_yard(adaptation, YARD_SOURCE),
-                Ok(vec![(
-                    "SKILL.md".to_owned(),
-                    fs::read_to_string(committed).unwrap()
-                )]),
-                "{plugin}"
-            );
-        }
-    }
-}
