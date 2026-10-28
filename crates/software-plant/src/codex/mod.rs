@@ -15,7 +15,6 @@ use tungstenite::{Error, Message, accept};
 
 static NEXT: AtomicU64 = AtomicU64::new(0);
 
-#[path = "codex_turns.rs"]
 mod turns;
 
 #[derive(Clone)]

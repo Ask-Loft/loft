@@ -87,5 +87,4 @@ impl Snapshot {
 }
 
 #[cfg(test)]
-#[path = "notification_discovery_tests.rs"]
 mod tests;

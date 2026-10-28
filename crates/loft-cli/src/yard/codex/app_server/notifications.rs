@@ -116,9 +116,7 @@ fn is_receipt(item: &Value, marker: &str) -> bool {
 }
 
 #[cfg(all(test, unix))]
-#[path = "notification_connection_tests.rs"]
 mod tests;
 
 #[cfg(all(test, unix))]
-#[path = "notification_contract.rs"]
 mod contract;

@@ -220,5 +220,4 @@ fn message(attempt: &Attempt) -> String {
 }
 
 #[cfg(test)]
-#[path = "notification_worker_tests.rs"]
 mod tests;

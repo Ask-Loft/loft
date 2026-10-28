@@ -253,5 +253,4 @@ fn add_to(list: &mut Vec<(String, Counts)>, key: &str, counts: Counts) {
 }
 
 #[cfg(test)]
-#[path = "token_sums_tests.rs"]
 mod tests;

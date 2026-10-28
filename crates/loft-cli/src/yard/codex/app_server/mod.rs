@@ -42,21 +42,17 @@ pub fn endpoint(
         .map(|path| path.join("app-server-control/app-server-control.sock")))
 }
 
-#[path = "app_server_connection.rs"]
-mod transport;
-pub use transport::Connection;
+mod connection;
+mod socket;
+pub use connection::Connection;
 
-#[path = "notification_connection.rs"]
 pub mod notifications;
 
 #[cfg(all(test, unix))]
-#[path = "app_server_tests.rs"]
 mod tests;
 
 #[cfg(all(test, unix))]
-#[path = "app_server_contract.rs"]
 mod contract;
 
 #[cfg(all(test, unix))]
-#[path = "account_tests.rs"]
 mod account_tests;

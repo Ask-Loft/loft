@@ -314,5 +314,4 @@ fn cancel(ticket: &mut Ticket) {
 }
 
 #[cfg(test)]
-#[path = "notification_state_tests.rs"]
 mod tests;

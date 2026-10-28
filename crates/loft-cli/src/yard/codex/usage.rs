@@ -218,5 +218,4 @@ pub fn observe(state: &mut State, thread: &str, turn: &str, usage: &Value, at: &
 }
 
 #[cfg(test)]
-#[path = "usage_tests.rs"]
 mod tests;

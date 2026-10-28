@@ -132,7 +132,6 @@ fn drive(
 }
 
 #[cfg(test)]
-#[path = "watch_tests.rs"]
 mod tests;
 
 fn start_server(hook: &Hook, port: u16, child: &mut ServerChild) -> Result<()> {

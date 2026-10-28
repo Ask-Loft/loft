@@ -15,10 +15,8 @@ use tungstenite::protocol::WebSocketConfig;
 use tungstenite::{Error, Message, WebSocket};
 
 use super::super::account::{Account, Provenance};
+use super::socket;
 use super::{CallFailure, Notice, Result};
-
-#[path = "app_server_socket.rs"]
-mod socket;
 
 const FAILURE: &str = "local Codex app-server observation is unavailable";
 const LIMIT: usize = 1_048_576;
