@@ -1,9 +1,10 @@
 //! What the release workflow, `.github/workflows/release.yml`, promises, held by guards over its
-//! jobs: a version tag starts it, the release check, the gate and `loft verify` run on the tag's
-//! commit before anything is built, the build is `.github/workflows/build.yml`, which also runs
-//! by hand before a tag, the npm packages are packed and run before the approval and
-//! run again before anything is published, the GitHub release carries every platform's binary,
-//! and no registry token is stored in the repository.
+//! jobs: a version tag starts it, the release check and the gate run on the tag's commit before
+//! anything is built, and `loft verify` too for a release, the build is
+//! `.github/workflows/build.yml`, which also runs by hand before a tag, the npm packages are
+//! packed and run before the approval and run again before anything is published, under the
+//! channel the release check names, the GitHub release carries every platform's binary and marks
+//! a prerelease as one, and no registry token is stored in the repository.
 
 use std::fs;
 use std::path::Path;
@@ -90,7 +91,7 @@ fn a_version_tag_runs_the_release_check_on_the_tag_s_commit_first() {
 }
 
 #[test]
-fn the_check_job_runs_the_gate_and_verify_and_the_build_waits_for_it() {
+fn the_check_job_runs_the_gate_and_the_build_waits_for_it() {
     let workflow = release();
     let gate = job(&read(".github/workflows/ci.yml"), "rust").runs();
     assert!(gate.len() >= 8, "the scan found {gate:?}");
@@ -100,11 +101,6 @@ fn the_check_job_runs_the_gate_and_verify_and_the_build_waits_for_it() {
             "CI no longer runs `{step}`"
         );
     }
-    // Verify among them, which CI runs only on main.
-    assert!(
-        gate.iter()
-            .any(|run| run == "cargo run -q -p loft-cli -- verify")
-    );
     let check = job(&workflow, "check").runs();
     for step in &gate {
         let form = RELEASE_FORM.iter().find(|(run, _)| run == step);
@@ -117,8 +113,8 @@ fn the_check_job_runs_the_gate_and_verify_and_the_build_waits_for_it() {
     }
     for (name, needs) in [
         ("build", "check"),
-        ("package", "build"),
-        ("publish", "package"),
+        ("package", "[build, check]"),
+        ("publish", "[package, check]"),
     ] {
         let lines = job(&workflow, name);
         assert_eq!(lines[0], format!("needs: {needs}"), "the job `{name}`");
@@ -130,6 +126,79 @@ fn the_check_job_runs_the_gate_and_verify_and_the_build_waits_for_it() {
     assert_eq!(
         block(&build(), "on:", " "),
         ["workflow_call:", "workflow_dispatch:"]
+    );
+}
+
+/// The check job's output `channel`, the npm dist-tag the release check names: `latest` for a
+/// release, or a prerelease's identifier.
+const CHANNEL: &str = "steps.release.outputs.channel";
+
+#[test]
+fn loft_verify_runs_on_the_tag_s_commit_for_a_release_and_not_for_a_prerelease() {
+    let workflow = release();
+    // CI runs verify, on main only.
+    let gate = job(&read(".github/workflows/ci.yml"), "rust").runs();
+    assert!(
+        gate.iter()
+            .any(|run| run == "cargo run -q -p loft-cli -- verify")
+    );
+    let check = job(&workflow, "check");
+    let outputs = check.position("outputs:");
+    assert_eq!(check[outputs + 1], format!("channel: ${{{{ {CHANNEL} }}}}"));
+    let release_check = check.position("- run: scripts/release-check.sh \"$GITHUB_REF_NAME\"");
+    assert_eq!(check[release_check + 1], "id: release");
+    let verify = check.position("- run: cargo run -q -p loft-cli -- verify");
+    assert_eq!(check[verify + 1], format!("if: {CHANNEL} == 'latest'"));
+}
+
+/// The job `name`, asserting it reads the check job's channel as `CHANNEL`.
+fn on_the_channel<'a>(workflow: &'a str, name: &str) -> Job<'a> {
+    let lines = job(workflow, name);
+    lines.position("CHANNEL: ${{ needs.check.outputs.channel }}");
+    lines
+}
+
+#[test]
+fn each_npm_package_is_published_under_the_channel_the_release_check_names() {
+    let workflow = release();
+    let package = on_the_channel(&workflow, "package");
+    package.position("- run: scripts/publish-npm.sh release/npm --tag \"$CHANNEL\" --dry-run");
+    let publish = on_the_channel(&workflow, "publish");
+    publish.position("- run: scripts/publish-npm.sh release/npm --tag \"$CHANNEL\"");
+    assert!(
+        !publish
+            .iter()
+            .chain(package.iter())
+            .any(|line| *line == "- run: scripts/publish-npm.sh release/npm"),
+        "npm publishes under its default dist-tag"
+    );
+}
+
+#[test]
+fn the_github_release_of_a_prerelease_is_marked_one_and_not_the_latest() {
+    let workflow = release();
+    let publish = on_the_channel(&workflow, "publish");
+    let script = publish
+        .runs()
+        .into_iter()
+        .find(|run| run.contains("gh release create"))
+        .expect("the publishing job creates the GitHub release");
+    let lines: Vec<&str> = script.lines().collect();
+    let marked = lines
+        .iter()
+        .position(|line| {
+            *line == "[ \"$CHANNEL\" = latest ] || kind=\"--prerelease --latest=false\""
+        })
+        .unwrap_or_else(|| panic!("{script}"));
+    let created = lines
+        .iter()
+        .position(|line| line.starts_with("gh release create "))
+        .unwrap();
+    assert!(marked < created, "{script}");
+    assert_eq!(
+        lines[created + 1],
+        "--notes-file notes.md $kind",
+        "{script}"
     );
 }
 
@@ -204,7 +273,7 @@ fn before_the_approval(workflow: &str) -> Job<'_> {
         assert!(!job(workflow, name).has_environment(), "{name}");
     }
     let publish = job(workflow, "publish");
-    publish.position("needs: package");
+    publish.position("needs: [package, check]");
     publish.position("environment: release");
     job(workflow, "package")
 }
@@ -238,7 +307,7 @@ fn the_publishing_job_runs_the_tarballs_it_downloaded_before_it_publishes() {
     );
     let smoke = publish.position("- run: scripts/npm-smoke.sh release/npm");
     let crates = publish.position("- run: scripts/publish-crates.sh");
-    let npm = publish.position("- run: scripts/publish-npm.sh release/npm");
+    let npm = publish.position("- run: scripts/publish-npm.sh release/npm --tag \"$CHANNEL\"");
     let github = publish.position("- name: GitHub release");
     assert!(
         download < smoke && smoke < crates.min(npm).min(github),

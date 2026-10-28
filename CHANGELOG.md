@@ -21,6 +21,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - The Claude plugin registers its session's tree with a page server another session already
   runs, so the page shows that tree and takes its answers; before, it did so only where its own
   `loft yard serve` started the page server.
+- A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, is released from `develop` without
+  `loft verify`: npm publishes it under the dist-tag of its identifier and GitHub marks it a
+  prerelease, so neither offers it as the latest. `loft` orders a prerelease before the release
+  of its numbers, in the update check and between page servers.
 
 - Tasks can be assigned to agents independently of stage ownership, including parallel subagents
   within a main agent's stage. Claude task metadata and Codex plan-step prefixes bind native

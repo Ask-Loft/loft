@@ -1,25 +1,57 @@
 key: 01a136db-1a3c-76b9-8641-d0a122869236
 slug: releases
 name: "Releases"
-body: "A release is cut by the maintainer: a version tag on `main` starts the release workflow, which checks the tag, waits for the maintainer's approval, and then publishes the crates, the npm packages and the binaries."
+body: "A release is cut by the maintainer: a version tag starts the release workflow, which checks the tag, waits for the maintainer's approval, and then publishes the crates, the npm packages and the binaries. A release `vX.Y.Z` comes from `main`, whose specification it publishes. A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, comes from `develop`, so that people can try what `develop` holds before the release: its specification is not yet published, and the registries and GitHub offer it only to those who ask for it."
 realizes:
   - 01a136db-1a3c-76b9-8641-d09fc8730b8a
 requirements:
   - key: 01a136db-1a3c-76b9-8641-d0a2457ecaf4
     statement:
       form: event_driven
-      when: "a tag `vX.Y.Z` is pushed"
+      when: "a version tag is pushed"
       system: "the release workflow"
       shall: "check that the tag may be released before it publishes anything."
     criteria:
       - key: 01a136db-1a3c-76b9-8641-d0a37bb4accb
         name: "The tag names the version that every published crate carries."
-      - key: 01a136db-1a3c-76b9-8641-d0a4250b26f1
-        name: "The tag's commit is on `main`."
       - key: 01a136db-1a3c-76b9-8641-d0a55992721a
         name: "`CHANGELOG.md` holds an entry for the version, dated."
       - key: 01a136db-1a3c-76b9-8641-d0a6d8371817
-        name: "The gate and `loft verify` pass on the tag's commit."
+        name: "The gate passes on the tag's commit."
+  - key: 01a183e8-7f64-7529-8822-369b2607c66e
+    statement:
+      form: optional
+      where: "the tag names a release, `vX.Y.Z`"
+      system: "the release workflow"
+      shall: "release it only from a commit on `main` whose specification `loft verify` finds published."
+    criteria:
+      - key: 01a136db-1a3c-76b9-8641-d0a4250b26f1
+        name: "The tag's commit is on `main`."
+      - key: 01a183e8-7f64-7529-8822-369ca1a3330a
+        name: "`loft verify` passes on the tag's commit."
+  - key: 01a183e8-7f64-7529-8822-369d7dc07684
+    statement:
+      form: optional
+      where: "the tag names a prerelease, `vX.Y.Z-alpha.N`, `vX.Y.Z-beta.N` or `vX.Y.Z-rc.N`"
+      system: "the release workflow"
+      shall: "release it only from a commit on `develop` or `main`, without checking that its specification is published."
+    body: "The specification of `develop` holds candidates that only a release on `main` publishes, so a prerelease leaves `loft verify` and `loft publish` to the release that follows it."
+    criteria:
+      - key: 01a183e8-7f64-7529-8822-369ef44f59a2
+        name: "A prerelease tag on a commit of `develop` may be released."
+      - key: 01a183e8-7f64-7529-8822-369faf07c801
+        name: "A prerelease tag on a commit of neither `develop` nor `main` is refused."
+      - key: 01a183e8-7f64-7529-8822-36a09db88ebb
+        name: "`loft verify` is not run for a prerelease."
+  - key: 01a183e8-7f64-7529-8822-36a1aed8792b
+    statement:
+      form: unwanted
+      if: "a version tag names neither `vX.Y.Z` nor `vX.Y.Z-alpha.N`, `vX.Y.Z-beta.N` or `vX.Y.Z-rc.N`"
+      system: "the release workflow"
+      shall: "refuse it before it builds anything."
+    criteria:
+      - key: 01a183e8-7f64-7529-8822-36a28ba195f4
+        name: "The refusal names the version forms the workflow releases."
   - key: 01a136db-1a3c-76b9-8641-d0a7f6751d9b
     statement:
       form: ubiquitous
@@ -46,6 +78,17 @@ requirements:
         name: "The GitHub release's notes are the version's entry in `CHANGELOG.md`."
       - key: 01a136db-1a3c-76b9-8641-d0aff368382c
         name: "Each registry authenticates the workflow by its trusted-publishing identity."
+  - key: 01a183e8-7f64-7529-8822-36a3bc402a5d
+    statement:
+      form: optional
+      where: "the release is a prerelease"
+      system: "the release workflow"
+      shall: "offer it only to those who ask for it."
+    criteria:
+      - key: 01a183e8-7f64-7529-8822-36a40bf19ad0
+        name: "Each npm package is published under the dist-tag of the prerelease's identifier, `alpha`, `beta` or `rc`, and `latest` is left as it was."
+      - key: 01a183e8-7f64-7529-8822-36a5bbafc01b
+        name: "The GitHub release is marked a prerelease, so it is not the repository's latest release."
   - key: 01a13804-d7aa-7131-91ff-bee4ed990cd9
     statement:
       form: ubiquitous
@@ -69,3 +112,18 @@ requirements:
     criteria:
       - key: 01a136db-1a3d-7739-a3f4-9ac88b69ecbe
         name: "A release run that stopped part way publishes the remainder when it runs again."
+  - key: 01a183e8-7f64-7529-8822-36a664adfecd
+    statement:
+      form: ubiquitous
+      system: "`loft`"
+      shall: "order versions so that a prerelease comes before the release of its numbers, `alpha` before `beta` before `rc`, and prereleases of one identifier by their number."
+    body: "The update check, the page server that gives way to a newer one and the Codex adapter that looks for a page server of its own version or newer all compare versions this one way."
+    criteria:
+      - key: 01a183e8-7f64-7529-8822-36a78dcfb50e
+        name: "A prerelease's `loft` is told of the release of its numbers when it is published."
+      - key: 01a183e8-7f64-7529-8822-36a819554a92
+        name: "A page server of a prerelease gives way to one of the release of its numbers, and a prerelease's page server replaces one of an earlier release."
+      - key: 01a183e8-7f64-7529-8822-36a9cf012a38
+        name: "Two `loft`s of the same prerelease find their versions equal."
+      - key: 01a183e8-7f64-7529-8822-36aa1b2f0cf2
+        name: "A version that is neither a release nor a prerelease of the accepted forms is earlier than every version that is."
