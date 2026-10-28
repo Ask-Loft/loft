@@ -4,6 +4,7 @@
 
 use std::fs;
 use std::os::unix::fs::symlink;
+use std::path::Path;
 use std::process::Output;
 
 use crate::common::telemetry::{asking, sent};
@@ -18,6 +19,7 @@ use software_plant::{Clock, ReleaseFeed};
 
 /// The skill's source and its Codex discovery entry, from the repository's root.
 const SOURCE: &str = "crates/loft-cli/skill/loft-spec";
+const YARD: &str = "crates/loft-cli/skill/yard";
 const DISCOVERY: &str = ".agents/skills/loft-spec";
 const LINK: &str = "../../crates/loft-cli/skill/loft-spec";
 
@@ -28,18 +30,29 @@ const PLUGINS: [(&str, &str, &str); 2] = [
     ("plugins/codex/loft", CODEX, "agents/codex.md"),
 ];
 
-/// A directory standing for the repository of `loft`: the skill's router and Codex metadata,
-/// and the discovery entry linked to them.
+/// A directory standing for the repository of `loft`: the sources of both skills, and the
+/// discovery entry linked to the `loft-spec` skill's.
 fn repository() -> Scratch {
     let scratch = Scratch::empty();
-    let source = scratch.0.join(SOURCE);
-    fs::create_dir_all(source.join("agents")).unwrap();
-    for path in ["SKILL.md", "agents/openai.yaml"] {
-        fs::copy(skill_source().join(path), source.join(path)).unwrap();
-    }
+    copy_tree(&skill_source(), &scratch.0.join(SOURCE));
+    copy_tree(&skill_source().join("../yard"), &scratch.0.join(YARD));
     fs::create_dir_all(scratch.0.join(".agents/skills")).unwrap();
     symlink(LINK, scratch.0.join(DISCOVERY)).unwrap();
     scratch
+}
+
+/// Copies every file under `from` to the same path under `to`.
+fn copy_tree(from: &Path, to: &Path) {
+    fs::create_dir_all(to).unwrap();
+    for entry in fs::read_dir(from).unwrap() {
+        let path = entry.unwrap().path();
+        let target = to.join(path.file_name().unwrap());
+        if path.is_dir() {
+            copy_tree(&path, &target);
+        } else {
+            fs::copy(&path, &target).unwrap();
+        }
+    }
 }
 
 /// `scratch` after `loft skill package` ran there and succeeded.
@@ -214,4 +227,62 @@ fn a_broken_discovery_entry_is_refused_and_named_and_no_package_file_changes() {
             assert!(snapshot(&scratch.0) == before, "{case}: a file changed");
         }
     }
+}
+
+/// A packaged repository whose sources differ from the ones `loft` embeds: one edited, one
+/// removed. Gives the two, from the repository's root.
+fn stale() -> (Scratch, [String; 2]) {
+    let scratch = packaged(repository());
+    let edited = format!("{YARD}/agents/codex.md");
+    let removed = format!("{SOURCE}/references/format.md");
+    fs::write(scratch.0.join(&edited), "edited after the build\n").unwrap();
+    fs::remove_file(scratch.0.join(&removed)).unwrap();
+    (scratch, [edited, removed])
+}
+
+#[test]
+fn a_source_that_differs_from_the_embedded_one_is_refused_and_named_and_no_package_file_changes() {
+    let (scratch, sources) = stale();
+    let before = snapshot(&scratch.0);
+    for check in [&[][..], &["--check"]] {
+        let output = scratch.loft(&[&["skill", "package"][..], check].concat());
+        assert_eq!(
+            output.status.code(),
+            Some(1),
+            "{check:?}: {}",
+            stderr(&output)
+        );
+        for source in &sources {
+            assert!(
+                stderr(&output).contains(source.as_str()),
+                "{check:?} {source}: {}",
+                stderr(&output)
+            );
+        }
+        let args = [&["skill", "package", "--format", "json"][..], check].concat();
+        let document = json_of(&scratch.loft(&args));
+        assert_eq!(document["outcome"], "error", "{check:?}");
+        let kinds: Vec<&Value> = document["errors"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|error| &error["kind"])
+            .collect();
+        assert_eq!(kinds, [&json!("stale"), &json!("stale")], "{check:?}");
+        assert!(snapshot(&scratch.0) == before, "{check:?}: a file changed");
+    }
+}
+
+#[test]
+fn skill_package_check_does_not_report_current_while_a_source_differs() {
+    let (scratch, _) = stale();
+    let output = scratch.loft(&["skill", "package", "--check", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    assert_ne!(json_of(&output)["outcome"], "current");
+    let output = scratch.loft(&["skill", "package", "--check"]);
+    assert!(
+        !stdout(&output).contains("every package equals its composition"),
+        "{}",
+        stdout(&output)
+    );
 }

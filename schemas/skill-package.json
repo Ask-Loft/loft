@@ -125,7 +125,8 @@
           "type": "string",
           "enum": [
             "discovery",
-            "package"
+            "package",
+            "stale"
           ]
         },
         "message": {

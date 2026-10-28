@@ -14820,6 +14820,18 @@ links:
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "a_broken_discovery_entry_is_refused_and_named_and_no_package_file_changes"
         body: 8033b686d2febe70f0f70fc2a96d455661311e893256bf9544cd28f726c84468
+  - node: 01a1839e-0cd6-73b2-a193-4ffccbfe1f90
+    reviewed: bd28b55c44b55078aee387749ff5508e0d5a2aaa4ff6bf7af54185945575805b
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_source_that_differs_from_the_embedded_one_is_refused_and_named_and_no_package_file_changes"
+        body: b4d4265519d48e74de24ed1ec1ede9b9269314095e099e2958dc6f08280b4fba
+  - node: 01a1839e-0cd6-73b2-a193-4ffd235245ba
+    reviewed: 7970380212290fb07c5c4063e7286cf210d9780a4d1f12291a838576b755bd7b
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "skill_package_check_does_not_report_current_while_a_source_differs"
+        body: b6d0948fc381219c32c7d1ca952d4602cf648254aaf8ab4c9ebaf3d00ff5cc2c
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:

@@ -3,7 +3,7 @@
 //! host with a Yard adapter, its `yard` package; or, with `--check`, writes nothing and names
 //! each package file that differs from its composition. It runs at the root of the repository of
 //! `loft`, and refuses while the repository's Codex discovery entry is not the link to the
-//! canonical skill source.
+//! canonical skill source, or while a source it embeds differs from the repository's.
 
 use std::collections::BTreeMap;
 use std::fs;
@@ -17,6 +17,7 @@ use super::{SOURCE, YARD_SOURCE, discovery, write};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
+use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
 const SCHEMA: &str = "loft-skill-package/1";
@@ -168,12 +169,37 @@ fn discovered(root: &Path) -> Result<(), String> {
     }
 }
 
+/// Each embedded source file that differs from its file under `crates/loft-cli/skill/` in the
+/// repository at `root`, or is missing there, as a line naming it from the repository's root.
+fn stale(root: &Path) -> Vec<String> {
+    [("loft-spec", SOURCE), ("yard", YARD_SOURCE)]
+        .into_iter()
+        .flat_map(|(skill, source)| {
+            source.iter().filter_map(move |(path, text)| {
+                let shown = format!("crates/loft-cli/skill/{skill}/{path}");
+                match fs::read(root.join(&shown)) {
+                    Ok(bytes) if bytes == text.as_bytes() => None,
+                    Ok(_) => Some(format!(
+                        "{shown}: differs from the source this `loft` embeds; package with a `loft` built from the repository"
+                    )),
+                    Err(error) => Some(format!("{shown}: cannot compare it with the source this `loft` embeds: {error}")),
+                }
+            })
+        })
+        .collect()
+}
+
 /// `loft skill package`: writes every package, or with `check` names each package file that
-/// differs from its composition and exits 1 if any does.
+/// differs from its composition and exits 1 if any does. Refuses either while a source it
+/// embeds differs from the repository's.
 pub fn run(root: &Path, check: bool, as_json: bool) -> Finished {
     if let Err(message) = discovered(root) {
         let error = json::error("discovery", &message, &[]);
         return json::stop(SCHEMA, vec![error], &message, as_json);
+    }
+    let stale = stale(root);
+    if !stale.is_empty() {
+        return Stop::all("stale", stale).exit(SCHEMA, as_json);
     }
     let packages = packages(&PLUGINS);
     let done = if check {
