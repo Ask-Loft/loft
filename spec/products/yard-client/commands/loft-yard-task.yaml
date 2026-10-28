@@ -53,3 +53,19 @@ requirements:
         name: "Where no active task is assigned to the agent, nothing is written and the outcome is `unchanged`."
       - key: 01a182b6-3c58-7235-ad04-39240719464e
         name: "The result lists the ids of the tasks released."
+  - key: 01a182fd-3974-7514-9227-ad03c3be8ea9
+    statement:
+      form: optional
+      where: "an adapter runs `loft yard task` with `--mirror` to mirror a native task update"
+      system: "`loft yard task`"
+      shall: "leave the change unapplied where another agent is assigned the task or where the task is unassigned in a stage the agent does not own, and keep the state of a done or dropped task."
+    body: "Both adapters mirror a native task update through this one rule, applied to the task as it stands under Yard Log's lock, so that neither keeps a copy of it."
+    criteria:
+      - key: 01a182fd-3974-7514-9227-ad0427dcf719
+        name: "With `--mirror`, a change to a task assigned to another agent writes nothing, and the outcome is `unchanged`."
+      - key: 01a182fd-3974-7514-9227-ad0504225a5c
+        name: "With `--mirror`, a change to an unassigned task of a stage the agent does not own writes nothing, and the outcome is `unchanged`."
+      - key: 01a182fd-3974-7514-9227-ad06a33a79e2
+        name: "With `--mirror`, a change to a done or dropped task keeps its state and applies its other fields."
+      - key: 01a182fd-3974-7514-9227-ad07258dea79
+        name: "The Claude and Codex adapters each mirror a bound native task update with `--mirror`."
