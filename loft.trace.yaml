@@ -22956,6 +22956,9 @@ links:
       - file: "crates/yardlog/tests/delegation.rs"
         name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
         body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
+        body: 933bb43b7644ce8494f4bb20e6bec0ced0a5f7bc48b942ca5099830d21e4d42b
   - node: 01a18053-9e08-72a7-ab94-f3afd216b408
     reviewed: a7ceaea1d99361a569938f29dd7c47b4157d0ffab8aa6bb72460c5d551fcd71d
     tests:
@@ -22968,12 +22971,18 @@ links:
       - file: "crates/yardlog-store/tests/delegation.rs"
         name: "delegated_tasks_keep_identity_and_reassignment_guards_in_memory_and_files"
         body: 368baa1cb56392e4a7ae841a81b890e4c76fe838e65d924958da0cf27f40115c
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
+        body: 933bb43b7644ce8494f4bb20e6bec0ced0a5f7bc48b942ca5099830d21e4d42b
   - node: 01a18053-9e08-72a7-ab94-f3b0addcc9a7
     reviewed: 2ceee3e3fc778a028987bccedfeb8697c19cd646bc09abf2dd79da1027cf531f
     tests:
       - file: "crates/yardlog/tests/delegation.rs"
         name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
         body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
+        body: 933bb43b7644ce8494f4bb20e6bec0ced0a5f7bc48b942ca5099830d21e4d42b
   - node: 01a18053-9e08-72a7-ab94-f3b195e2959f
     reviewed: 8965a1cd8002102872eba60c328a9dc2a76ce8c053aa7811644fc6b853176aef
     tests:
@@ -23040,6 +23049,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a worker updates the explicitly bound task without owning or taking its stage"
         body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
+  - node: 01a18053-9e08-72a7-ab94-f3bd30efa1d3
+    reviewed: 79ae4ad41d0b164059e63a6c2b15e2c6378162ed6314127fd7bae7ff4f3218bd
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
+        body: 933bb43b7644ce8494f4bb20e6bec0ced0a5f7bc48b942ca5099830d21e4d42b
   - node: 01a18053-9e08-72a7-ab94-f3be2573b3d5
     reviewed: 54e209b70fa441d4fdff835daab5cc23a704250ccaa4b16cbdfe00e9f841af2f
     tests:
@@ -23049,12 +23064,21 @@ links:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a worker updates the explicitly bound task without owning or taking its stage"
         body: f3a04e59910650557b3ec249ac5cdffbc64ab33f88e3d4bf8e8893d4bc3b871f
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
+        body: 933bb43b7644ce8494f4bb20e6bec0ced0a5f7bc48b942ca5099830d21e4d42b
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "invalid_unknown_duplicate_and_removed_bindings_never_create_or_drop_a_task"
+        body: 3d189fcbab078257f45e358ddcb79b8739b172d662bed81da656a686135f55db
   - node: 01a18053-9e08-72a7-ab94-f3bf1de16fbf
     reviewed: c5e7f52f195c62f93607e2b301709216b3a0fbc9ef650947baefc6b90c6b1f62
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "invalid explicit bindings never create replacement native tasks"
         body: 4f231c8cf3e658af2ed898d2de43f6ee32528804d36db759e16e85805c55772c
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "invalid_unknown_duplicate_and_removed_bindings_never_create_or_drop_a_task"
+        body: 3d189fcbab078257f45e358ddcb79b8739b172d662bed81da656a686135f55db
   - node: 01a18053-9e08-72a7-ab94-f3c09862bb9d
     reviewed: 425bd8d01ee4cbf8bcc4d95ca83d4924e7cd62bd876330e606127db8f9893b38
     tests:
@@ -23064,30 +23088,60 @@ links:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a stale retry preserves unrelated fields from the latest task body"
         body: 0623ccdc1ca6d512f71b953409b4f00d9a4a3a30ece9f08b6e4f0ac8b038b051
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
+        body: 933bb43b7644ce8494f4bb20e6bec0ced0a5f7bc48b942ca5099830d21e4d42b
+  - node: 01a18053-9e08-72a7-ab94-f3c1ed1cbf1f
+    reviewed: d4d542689e5354feb3ba58e3db78ae52d6223402b82cf3a709d36302d1c07770
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "a_parent_plan_cannot_reset_another_assignees_bound_progress"
+        body: f97b90cce29c4cc50db0eae5cbf2f15049e50f65d9b796804e8d6a185d5f0077
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "a_parent_unbound_plan_preserves_the_native_task_after_delegation_and_removal"
+        body: f445a6160bb0dbee26b07fe80d6068b7c78d45c4f4eca166a8e5b387750ae038
+  - node: 01a18053-9e08-72a7-ab94-f3c28cba54d2
+    reviewed: b36906abeefeff9c4ccb24cfb334c02a80b18a76ca18692698aebf09c1c72a41
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "invalid_unknown_duplicate_and_removed_bindings_never_create_or_drop_a_task"
+        body: 3d189fcbab078257f45e358ddcb79b8739b172d662bed81da656a686135f55db
   - node: 01a18053-9e08-72a7-ab94-f3c39ffa0b6c
     reviewed: fcdb1f05f13fa603e7ba8dd4d58fe27dd07d9b4b73afbd4518d3a69e3b3a6b22
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "unchanged and terminal delegated updates create no versions"
         body: 91a63bece044d0e66645358c79da1608a89fdcdb4c35d69f01f90f745830af30
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks"
+        body: ef860c90be963082d8c0e9a471d4a69a8c8a8344c606e2433554023cfba31f4d
   - node: 01a18053-9e08-72a7-ab94-f3c430201df0
     reviewed: 015f10a45c5f8242c688e643d21e43126f754eeb9a2556938dc9d8170e4f1b02
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "unchanged and terminal delegated updates create no versions"
         body: 91a63bece044d0e66645358c79da1608a89fdcdb4c35d69f01f90f745830af30
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "bound_codex_steps_update_the_existing_task_without_owning_its_stage"
+        body: 933bb43b7644ce8494f4bb20e6bec0ced0a5f7bc48b942ca5099830d21e4d42b
   - node: 01a18053-9e08-72a7-ab94-f3c50ed30e6e
     reviewed: 8eba1babcbf481a4bd3377000ae34bd5729ab5bf865e82554738c62bfcfc05ce
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "a stale retry preserves unrelated fields from the latest task body"
         body: 0623ccdc1ca6d512f71b953409b4f00d9a4a3a30ece9f08b6e4f0ac8b038b051
+      - file: "crates/loft-cli/src/yard/codex/task_writes.rs"
+        name: "stale_task_retries_reselect_the_current_assignment_and_preserve_unrelated_fields"
+        body: 5854b1c444ba67359fb0346818e6ff06ad0a7e32ea02d1e72d183a1719ca9028
   - node: 01a18053-9e08-72a7-ab94-f3c613583e48
     reviewed: 5b0cad78e2bb38825254f1ffabc687aedf298f8a4295f564155c62ca04cae831
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "stale retries reread the task and stop when another worker received its assignment"
         body: aed0ff95255893b8267fd249e63dc19ddf69a47cf53e44ad72407535c9025e4b
+      - file: "crates/loft-cli/src/yard/codex/task_writes.rs"
+        name: "stale_task_retries_reselect_the_current_assignment_and_preserve_unrelated_fields"
+        body: 5854b1c444ba67359fb0346818e6ff06ad0a7e32ea02d1e72d183a1719ca9028
   - node: 01a18053-9e08-72a7-ab94-f3c89e4da1b7
     reviewed: 7764c38824c5b8d9e453eddd470c5d93ebfaf18ac55e309e2664d379e3edf38a
     tests:
@@ -23097,18 +23151,33 @@ links:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "an actual interruption returns unfinished execution to open without changing the native answer"
         body: a96b9c9edafec1b259be6ddd496455b4d0c672c6ad136904b4a76aebb7c874d2
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "worker_end_opens_unfinished_tasks_and_late_progress_waits_for_a_new_start"
+        body: 1b4ea6247a41a41331456e19d677f5ff7ca0d9c95de64933c5f45d9b0540fd4a
   - node: 01a18053-9e08-72a7-ab94-f3c9767bbaf3
     reviewed: d8e589e0eb1fe6676adddf91299d7ea1edfc9d7a84090ef9ae9853cfda874545
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "worker end leaves completed and reassigned tasks untouched"
         body: 826a7994e21656ca0fd032380dcc4e451e8936cc237d87313cdd7d26edce2cdd
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks"
+        body: ef860c90be963082d8c0e9a471d4a69a8c8a8344c606e2433554023cfba31f4d
   - node: 01a18053-9e08-72a7-ab94-f3cac642e25b
     reviewed: 1eb003fe2a5e2202ec2a476a3e0758425b61ce32dd2eb54b930a5eb601b39bb7
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "worker end leaves completed and reassigned tasks untouched"
         body: 826a7994e21656ca0fd032380dcc4e451e8936cc237d87313cdd7d26edce2cdd
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks"
+        body: ef860c90be963082d8c0e9a471d4a69a8c8a8344c606e2433554023cfba31f4d
+  - node: 01a18053-9e08-72a7-ab94-f3cbf539b498
+    reviewed: c88b90d3773157a2a3c11e19ba4500ae8786101e7c4f966814b20773a00f43c4
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "an_ambiguous_end_cannot_open_another_actors_active_assignment"
+        body: 119e14084883a14014fc0384550b797c8d785bed719493f45a04aaed20f650c7
   - node: 01a18054-bf15-7113-9ce0-7fae57e0bb10
     reviewed: fdc32fccdeeacd6d6d4d8de36ee37b897ce6935ca9a2c995c0baa4ebb723c5b4
     tests:
@@ -23118,6 +23187,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "native subagent start supplies its assigned task context without taking the stage"
         body: e136ff4bee26620315548594bd339f33fdb7f1c94e05dbe951909a6dbef8ae8b
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "identified_worker_context_lists_its_recorded_assignment_in_a_bounded_message"
+        body: 4ac2844f1dba70244f8f7e585501a537e0a7e7be213ab18d559d559bdb2d1603
   - node: 01a18054-bf15-7113-9ce0-7fafa8cf72ab
     reviewed: 341c44ac13b90298dbe2bd290629c7a0c26b9f6b63ec3a4b2e4fb1dec76eb540
     tests:
@@ -23127,12 +23199,18 @@ links:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "long page addresses leave room for assignment counts and a read instruction"
         body: a3d29eb4f3792fd8cfee1783ce2098dcd7f32dec4ae3bf16531af9120cc38244
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "assignment_context_reports_omitted_tasks_and_keeps_the_read_instruction"
+        body: 4e5522f572ca3ca06fc578536697caf7ef39db85d7c6f0b21f84ce6efa71fb6d
   - node: 01a18054-bf15-7113-9ce0-7fb040e2af57
     reviewed: 1c0ee0d9ba3c1aeb31ce5a4e50732fd9408e6bae2c5e1cde0f40f9821df02e68
     tests:
       - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
         name: "assignment context names existing tasks and stages without an owned stage"
         body: 680404cd2092f53c1f315551862aa7b454b45c04bf5cda1829672807a18f0b0c
+      - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
+        name: "identified_worker_context_lists_its_recorded_assignment_in_a_bounded_message"
+        body: 4ac2844f1dba70244f8f7e585501a537e0a7e7be213ab18d559d559bdb2d1603
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:

@@ -10,6 +10,8 @@ mod notification_state;
 mod notification_worker;
 mod observer;
 mod state;
+mod task_bindings;
+mod task_writes;
 mod tasks;
 mod translate;
 mod usage;
@@ -120,11 +122,32 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         );
     }
     let events = translate::events(hook, &mut state)?;
+    if let Some(caller) = &caller {
+        let key = task_writes::actor_key(caller);
+        if matches!(
+            hook.name(),
+            "SessionStart" | "SubagentStart" | "UserPromptSubmit"
+        ) {
+            state.ended_tasks.remove(&key);
+        } else if matches!(
+            hook.name(),
+            "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
+        ) {
+            state.ended_tasks.insert(key);
+        }
+    }
     usage::native(hook, &mut state);
     state.keep(events);
     files.write(&state)?;
     if let Some(caller) = &caller {
-        tasks::mirror(hook, caller, port)?;
+        if matches!(
+            hook.name(),
+            "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
+        ) {
+            task_writes::finish(hook, caller, port)?;
+        } else if !state.ended_tasks.contains(&task_writes::actor_key(caller)) {
+            tasks::mirror(hook, caller, port)?;
+        }
     }
     drop(locked);
     if disposition != notification_hooks::Disposition::Notification {

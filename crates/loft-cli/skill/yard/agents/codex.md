@@ -159,8 +159,22 @@ Do not duplicate these tasks in explicit writes.
 
 When Codex does not offer `update_plan`, write Yard task blocks yourself. For a fix, read the
 mirrored task and write its whole block with `type: fix`; later mirrors retain that classification.
-No task is mirrored without an active stage belonging to its caller. Keep stages, notes,
-decisions and Loft reports yourself.
+Unbound steps need an active stage belonging to their caller. Keep stages, notes, decisions
+and Loft reports yourself.
+
+For delegated work, claim or assign the existing task through a normal Yard write first. Use
+its exact ID as the prefix of every bound native step: `[yard:TASK-ID] Local checklist wording`.
+The adapter updates that task in its original stage without creating another task or requiring
+a worker-owned stage. The prefix binds identity; the wording does not rename the task. Retain
+the prefix on every update. Unknown, malformed or duplicate bindings create no replacement;
+removing a bound step leaves the task unchanged. Another assignee's progress and terminal
+delegated tasks are preserved.
+
+An identified end or interruption returns your still-active assignments to open, retaining their
+assignee and execution history. It never implies completion. A new start permits progress again;
+late native updates from an ended worker are ignored. Ambiguous actor identity changes no task.
+Startup context lists your assigned task IDs and original stages separately from your own stage;
+read Yard Log for any assignments omitted from that bounded context.
 
 Native hooks carry no token counters. During an identified native turn, the worker observes
 latest-request usage from an already running local Codex app server over its Unix-domain

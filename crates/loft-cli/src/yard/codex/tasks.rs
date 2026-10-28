@@ -7,6 +7,8 @@ use sha2::{Digest as _, Sha256};
 
 use super::Result;
 use super::commands::{self, Caller};
+use super::task_bindings::{self, Reference};
+use super::task_writes;
 use super::translate::Hook;
 
 fn successful(response: &Value) -> bool {
@@ -24,7 +26,7 @@ fn steps(hook: &Hook) -> Option<Vec<(&str, &str)>> {
     {
         return None;
     }
-    hook.0["tool_input"]["plan"]
+    let steps: Vec<_> = hook.0["tool_input"]["plan"]
         .as_array()?
         .iter()
         .map(|step| {
@@ -39,7 +41,16 @@ fn steps(hook: &Hook) -> Option<Vec<(&str, &str)>> {
             };
             Some((text, status))
         })
-        .collect()
+        .collect::<Option<_>>()?;
+    let mut seen = BTreeSet::new();
+    for (text, _) in &steps {
+        match task_bindings::reference(text) {
+            Reference::Invalid => return None,
+            Reference::Bound(id) if !seen.insert(id) => return None,
+            _ => {}
+        }
+    }
+    Some(steps)
 }
 
 fn digest(value: &Value) -> String {
@@ -47,8 +58,9 @@ fn digest(value: &Value) -> String {
 }
 
 fn batch(doc: &Value, caller: &Caller, steps: &[(&str, &str)]) -> Vec<Value> {
+    let mut batch = task_bindings::batch(doc, caller, steps);
     let Some(stage) = commands::active(doc, caller) else {
-        return vec![];
+        return batch;
     };
     let prefix = format!(
         "codex-task-{}-",
@@ -62,16 +74,34 @@ fn batch(doc: &Value, caller: &Caller, steps: &[(&str, &str)]) -> Vec<Value> {
         .filter(|(id, block)| id.starts_with(&prefix) && block["kind"] == "task")
         .collect();
     let mut occurrences = BTreeMap::new();
-    let mut seen = BTreeSet::new();
-    let mut batch = vec![];
+    let mut seen: BTreeSet<String> = steps
+        .iter()
+        .filter_map(|(text, _)| match task_bindings::reference(text) {
+            Reference::Bound(id) => Some(id.to_owned()),
+            _ => None,
+        })
+        .collect();
     for (text, status) in steps {
+        if task_bindings::reference(text) != Reference::Plain {
+            continue;
+        }
         let occurrence = occurrences.entry(*text).or_insert(0usize);
         let id = format!("{prefix}{}", digest(&json!([text, occurrence])));
         *occurrence += 1;
+        if seen.contains(&id) {
+            continue;
+        }
         seen.insert(id.clone());
         let body = existing
             .get(id.as_str())
             .map(|block| &block["version"]["body"]);
+        if body.is_some_and(|body| {
+            !task_writes::executable(body, caller)
+                || (body["assignee"].is_object()
+                    && matches!(body["state"].as_str(), Some("done" | "dropped")))
+        }) {
+            continue;
+        }
         let mut block = body.cloned().unwrap_or_else(|| json!({"title":text}));
         block["state"] = json!(status);
         if body == Some(&block) {
@@ -84,7 +114,10 @@ fn batch(doc: &Value, caller: &Caller, steps: &[(&str, &str)]) -> Vec<Value> {
     }
     for (id, held) in existing {
         let body = &held["version"]["body"];
-        if seen.contains(id) || matches!(body["state"].as_str(), Some("done" | "dropped")) {
+        if seen.contains(id)
+            || !task_writes::executable(body, caller)
+            || matches!(body["state"].as_str(), Some("done" | "dropped"))
+        {
             continue;
         }
         let mut block = body.clone();
@@ -101,30 +134,5 @@ pub fn mirror(hook: &Hook, caller: &Caller, port: u16) -> Result<()> {
     let Some(steps) = steps(hook) else {
         return Ok(());
     };
-    for _ in 0..3 {
-        let doc = commands::read(hook.dir(), caller, port)?;
-        let batch = batch(&doc, caller, &steps);
-        if batch.is_empty() {
-            return Ok(());
-        }
-        let mut args = vec![
-            "write".into(),
-            "--input".into(),
-            "-".into(),
-            "--based-on".into(),
-            doc["revision"].to_string(),
-        ];
-        args.extend(caller.args());
-        let written = commands::run(hook.dir(), &args, port, Some(&json!(batch)))?;
-        if written["outcome"] == "written" {
-            return Ok(());
-        }
-        if !written["errors"]
-            .as_array()
-            .is_some_and(|errors| errors.iter().any(|error| error["kind"] == "stale"))
-        {
-            return Err(format!("Yard refused a task mirror: {}", written["errors"]));
-        }
-    }
-    Err("Yard changed during three task mirror attempts".to_owned())
+    task_writes::update(hook, caller, port, |doc| batch(doc, caller, &steps))
 }

@@ -67,9 +67,12 @@ impl Hook {
             && !state.subagents.is_empty()
             && matches!(
                 self.name(),
-                "PreToolUse" | "PostToolUse" | "PostCompact" | "Stop"
+                "PreToolUse" | "PostToolUse" | "PostCompact" | "Stop" | "Interrupt"
             )
         {
+            return None;
+        }
+        if agent.is_none() && matches!(self.name(), "SubagentStart" | "SubagentStop") {
             return None;
         }
         let kind = agent.and_then(|id| {

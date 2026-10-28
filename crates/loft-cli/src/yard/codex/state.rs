@@ -1,6 +1,6 @@
 //! Machine-local adapter state, atomically replaced under a per-session lock.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::PathBuf;
 
@@ -23,6 +23,7 @@ pub struct State {
     pub planning: Option<bool>,
     pub stopped: bool,
     pub subagents: BTreeMap<String, String>,
+    pub ended_tasks: BTreeSet<String>,
     pub usage: super::usage::Usage,
     pub notifications: super::notification_state::Ledger,
 }
