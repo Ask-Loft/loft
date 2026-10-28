@@ -200,6 +200,38 @@ test('every five seconds the mod tells the page server the session is live, and 
   expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
 })
 
+const registers = (w: ReturnType<typeof world>) => w.state.posts.filter(post => post.url.endsWith('/api/register'))
+
+test("where another session's page server answers, the session's tree is registered with it once, and no loft yard serve runs", async ($, on) => {
+  const w = world(on)
+  w.state.answersBeat = true
+  await start($)
+  await w.clock.advance(10000)
+  expect(registers(w).map(post => post.events)).toEqual([{ tree: TREE }])
+  expect(registers(w)[0]!.url).toBe('http://127.0.0.1:7411/api/register')
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toEqual([])
+})
+
+test('a registration the page server refuses is tried again at the next beat', async ($, on) => {
+  const w = world(on)
+  w.state.answersBeat = true
+  w.state.postStatus = 503
+  await start($)
+  w.state.postStatus = 200
+  await w.clock.advance(5000)
+  await w.clock.advance(5000)
+  expect(registers(w)).toHaveLength(2)
+})
+
+test('the tree the mod\'s own loft yard serve registers is not posted again', async ($, on) => {
+  const w = world(on, { serve: 'serving' })
+  await start($)
+  w.state.answersBeat = true
+  await w.clock.advance(10000)
+  expect(w.state.heard.length).toBeGreaterThan(1)
+  expect(registers(w)).toEqual([])
+})
+
 test("the session whose mod's child is the page server is heard every five seconds too", async ($, on) => {
   const w = world(on, { serve: 'serving' })
   await start($)

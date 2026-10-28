@@ -23241,6 +23241,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
         body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where another session's page server answers, the session's tree is registered with it once, and no loft yard serve runs"
+        body: 3bf12ad684ab238d65503bb8415bc3a7d7b700d9e6c7dfb8e255a7e11f506116
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a registration the page server refuses is tried again at the next beat"
+        body: 2dcddd0937943ce229fa84d672f2e6361d24ed09af4f1538054778fbd1129d46
   - node: 01a1646f-546c-7521-9643-bc5f9317855f
     reviewed: 3652bfa2bb06bb29c8aa69b032e0661c587fd251a6874d3251dd7bfd219f12e5
     tests:
@@ -23277,6 +23283,12 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "the_trees_served_are_kept_in_trees_json_once_each_and_served_again_by_a_later_page_server"
         body: 7e4924781137c494f0450b3f1a586907a9c7cc203fdf58f93965c3b07b46af68
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tree a tool call reaches is registered with the page server once"
+        body: 6efca2c58b6734331c6d095b8edd84ffac8e3ebaec24a95dabb2d9470e1ea14f
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the tree the mod's own loft yard serve registers is not posted again"
+        body: a99f5fbfa24de7244e90b97bf9dbaea631ca933f76598bb2155fd6e902e46f94
   - node: 01a1647b-208d-7169-85c8-9a53c278bbaf
     reviewed: c259e2d64be99b2d25359d1e588cc474cbea184a76d5b6778ce428525589172b
     tests:

@@ -62,15 +62,20 @@ export async function hear($: EngineInterface, box: Outbox, session: string, pro
 }
 
 /**
- * One beat: tells the page server the session is live; where none answers, runs `loft yard
- * serve`, unless the mod's own child serves or the last run has yet to say what it did.
+ * One beat: tells the page server the session is live, and registers the session's tree with one
+ * that answers until it takes it; where none answers, runs `loft yard serve`, which registers the
+ * tree itself, unless the mod's own child serves or the last run has yet to say what it did.
  */
 export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
-  if (await hear($, box, session, settings.protocol)) return
+  if (await hear($, box, session, settings.protocol)) {
+    if (!server.trees.has(tree) && (await postToServer($, box, '/api/register', { tree }))) server.trees.add(tree)
+    return
+  }
   if (server.isBeating || server.isServing) return
   server.isBeating = true
   try {
-    await serve($, settings, server, session, tree)
+    const outcome = await serve($, settings, server, session, tree)
+    if (outcome === 'serving' || outcome === 'running') server.trees.add(tree)
   } finally {
     server.isBeating = false
   }

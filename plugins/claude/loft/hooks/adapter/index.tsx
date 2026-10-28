@@ -47,7 +47,6 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
   if (home) state.box.tokenPath = `${home}/.yard/token`
   state.isOn = true
-  state.server.trees.add(cwd)
   void beat($, state.settings, state.server, state.box, await continued($), cwd)
   $.clock.every(BEAT, async () => {
     void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())
