@@ -163,3 +163,69 @@ fn a_retry_of_an_original_event_is_still_recognized_after_the_upgrade() {
     let reply = post(&served, &[conflicting]);
     assert_eq!(reply["rejected"][0]["index"], 0);
 }
+
+/// A Codex session's unverified zeros posted to a page server that did not move them, its
+/// totals file left as that page server marked it.
+fn marked_session() -> Yard {
+    let yard = legacy_session(unclassified);
+    let path = yard
+        .folder(crate::yard::BRANCH)
+        .join("tokens/codex~s1.yaml");
+    let text = totals(&yard);
+    fs::write(
+        &path,
+        text.replacen("host: codex\n", &format!("host: codex\n{MARKER}"), 1),
+    )
+    .unwrap();
+    yard
+}
+
+#[test]
+fn the_events_of_a_session_whose_totals_are_already_marked_are_moved_and_its_totals_kept() {
+    let yard = marked_session();
+    let marked = totals(&yard);
+    assert!(marked.contains(MARKER), "{marked}");
+    let (code, result) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    assert_eq!(result["classified"], json!([]));
+    for line in lines(&yard) {
+        assert!(line["tokens"].get("cacheWrite").is_none(), "{line}");
+        assert_eq!(line["usageSource"]["reported"], json!({"cacheWrite":0}));
+    }
+    assert_eq!(
+        totals(&yard),
+        marked,
+        "the marked totals file is left as it was"
+    );
+}
+
+#[test]
+fn a_second_run_moves_no_event() {
+    let yard = marked_session();
+    upgrade(&yard);
+    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let first = fs::read(&path).unwrap();
+    let modified = fs::metadata(&path).unwrap().modified().unwrap();
+    upgrade(&yard);
+    assert_eq!(fs::read(&path).unwrap(), first);
+    assert_eq!(fs::metadata(&path).unwrap().modified().unwrap(), modified);
+}
+
+#[test]
+fn while_a_page_server_runs_a_marked_session_s_events_are_left_as_they_were() {
+    let yard = marked_session();
+    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let before = fs::read(&path).unwrap();
+    let served = Served::start(&yard, &[]);
+    let (code, result) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    assert_eq!(result["totalsLeft"]["port"], served.port);
+    assert_eq!(fs::read(&path).unwrap(), before);
+    drop(served);
+    upgrade(&yard);
+    assert_ne!(
+        fs::read(&path).unwrap(),
+        before,
+        "a run after it stops moves them"
+    );
+}

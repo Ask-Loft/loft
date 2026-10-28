@@ -2,9 +2,11 @@
 //! `cacheWriteClassified` marker, written again with the marker, and where its host is Codex,
 //! with each zero cache-write count unavailable, since a Codex adapter that did not classify
 //! cache writes at the source may have given a zero it did not measure: counted again from the
-//! session's moved events where this machine keeps them, else settled from the file itself. While a page server
-//! runs, nothing is written: it appends to the event logs and would write its own counts over
-//! the files.
+//! session's moved events where this machine keeps them, else settled from the file itself. The
+//! events of every Codex session of an open Yard Log are moved first, whatever its file's
+//! marker, since an older page server marked Codex files without moving their events. While a
+//! page server runs, nothing is written: it appends to the event logs and would write its own
+//! counts over the files.
 
 use std::collections::BTreeSet;
 
@@ -42,9 +44,10 @@ impl Classifying {
     }
 }
 
-/// Writes each unmarked totals file of the Yard Logs `open`, each by its branch.
+/// Moves the unverified zeros of each Codex session's events, whatever its totals file's marker,
+/// then writes each unmarked totals file of the Yard Logs `open`, each by its branch.
 pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
-    let unmarked: Vec<_> = open
+    let files: Vec<_> = open
         .iter()
         .flat_map(|(branch, store)| {
             let files = session_files::entries(&store.folder(), SessionFile::Tokens);
@@ -52,24 +55,41 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
                 .into_iter()
                 .map(move |(key, file)| (branch, store, key, file))
         })
-        .filter(|(_, _, _, file)| file["cacheWriteClassified"] != Value::Bool(true))
         .collect();
-    if unmarked.is_empty() {
+    let unmarked = |file: &Value| file["cacheWriteClassified"] != Value::Bool(true);
+    let home = if files.iter().any(|(.., file)| unmarked(file)) {
+        Some(Home::from_env().ok_or_else(Failure::no_home)?)
+    } else {
+        Home::from_env()
+    };
+    let Some(home) = home else {
+        return Ok(Classifying::Done(Vec::new()));
+    };
+    let codex: BTreeSet<_> = files
+        .iter()
+        .filter(|(.., file)| file["host"] == "codex")
+        .map(|(_, _, key, _)| key.clone())
+        .collect();
+    let mut pending = Vec::new();
+    for key in &codex {
+        if super::events::pending(&home, key)? {
+            pending.push(key);
+        }
+    }
+    if pending.is_empty() && !files.iter().any(|(.., file)| unmarked(file)) {
         return Ok(Classifying::Done(Vec::new()));
     }
-    let home = Home::from_env().ok_or_else(Failure::no_home)?;
     if let Some(server) = page::running(&home)? {
         return Ok(Classifying::Left { port: server.port });
     }
+    // The events first: a run stopped after them settles the totals files on the next.
+    for key in pending {
+        super::events::settle(&home, key)?;
+    }
     let mut classified = Vec::new();
-    let mut settled = BTreeSet::new();
-    for (branch, store, key, file) in unmarked {
+    for (branch, store, key, file) in files.into_iter().filter(|(.., file)| unmarked(file)) {
         let host = file["host"].as_str().unwrap_or_default().to_owned();
         let text = if host == "codex" {
-            // The events first: a run stopped after them settles the file on the next.
-            if settled.insert(key.clone()) {
-                super::events::settle(&home, &key)?;
-            }
             codex_totals(&home, store, &key, file.clone())
         } else {
             Totals::read(&file).text()

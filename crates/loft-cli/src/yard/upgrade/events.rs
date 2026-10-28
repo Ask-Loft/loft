@@ -1,5 +1,5 @@
-//! The event step of `loft yard upgrade`: in the event log of each Codex session whose totals it
-//! classified, each zero cache-write count of a request or compaction that no verified API-key
+//! The event step of `loft yard upgrade`: in the event log of each Codex session of an open Yard
+//! Log, each zero cache-write count of a request or compaction that no verified API-key
 //! account reported moves from its tokens to `usageSource.reported`, as the adapter now gives
 //! it, so that replaying the log gives the totals the upgrade wrote. Every other field of the
 //! line, its event identity and the digest of its original payload among them, is kept, so a
@@ -9,6 +9,16 @@ use serde_json::{Value, json};
 use yardlog_store::home::Home;
 
 use crate::yard::failure::Failure;
+
+/// Whether session `key`'s event log holds a count to move.
+pub fn pending(home: &Home, key: &str) -> Result<bool, Failure> {
+    let Some(bytes) = home.read_events(key)? else {
+        return Ok(false);
+    };
+    Ok(bytes
+        .split_inclusive(|byte| *byte == b'\n')
+        .any(|line| moved(line).is_some()))
+}
 
 /// Rewrites session `key`'s event log, where it holds a count to move.
 pub fn settle(home: &Home, key: &str) -> Result<(), Failure> {
