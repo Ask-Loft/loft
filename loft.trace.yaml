@@ -20361,6 +20361,21 @@ links:
       - file: "crates/loft-cli/src/yard/codex/usage/tests.rs"
         name: "an_unverified_zero_cache_write_leaves_the_tokens_and_is_reported_under_its_source"
         body: a6c5fc953ad0a7c722de722bad592e91d092d0e45e43393e28d59443170b6ec8
+      - file: "crates/loft-cli/tests/yard_codex_outbox.rs"
+        name: "a_request_queued_before_the_upgrade_reaches_the_page_server_classified"
+        body: b0aa36542efc87ce46cb3f6b34a6e5fa7586709e054e645ca797795baaa32df3
+  - node: 01a1839e-0cd8-73ef-8531-db3fb8986e3d
+    reviewed: f4eda51805bf2e2f1db3c385f673bc96839b4e9f15503c3f65402a93132f73e5
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_outbox.rs"
+        name: "a_request_queued_before_the_upgrade_reaches_the_page_server_classified"
+        body: b0aa36542efc87ce46cb3f6b34a6e5fa7586709e054e645ca797795baaa32df3
+  - node: 01a1839e-0cd8-73ef-8531-db40c33411a9
+    reviewed: 02ba3efb7f0661407c8a044e9989183867cf79d634d4b1a8195b4c918e66d4e2
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_outbox.rs"
+        name: "a_queued_request_the_page_server_already_holds_leaves_the_queue_and_is_counted_once"
+        body: fa253f29ad0c9ff988ef8a4ff71c1557c5ef5f05a13b3c36abc8edf764bd9391
   - node: 01a17afe-ab67-76b3-964d-3fd4fc2e4d1b
     reviewed: cc764e2163a8ffd67590372eb449d5b24eb1f31899cfb06319d5626c573422d0
     tests:
