@@ -22,7 +22,7 @@ import { endAssigned } from './task-writes'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
 
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
-export const PLUGIN_VERSION = '2.3.0'
+export const PLUGIN_VERSION = '2.3.0-alpha.1'
 /** The oldest and the newest yard protocol this mod speaks. */
 export const PROTOCOLS = { oldest: 1, newest: 2 } as const
 
