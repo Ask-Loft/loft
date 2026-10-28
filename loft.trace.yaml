@@ -16450,8 +16450,8 @@ links:
     reviewed: f8100a30302d2d9bbb3c9b9562b8e3d0227d5f3c26478f33bec20f102a2732c9
     tests:
       - file: "crates/loft-cli/tests/telemetry_event.rs"
-        name: "the_readme_s_sample_event_follows_the_schema"
-        body: b214f2a303a242820456228609f95f9eaf547af8980576a0aba5d4e0e3196551
+        name: "the_documented_sample_event_follows_the_schema"
+        body: 45da8a741b923b05163147f698f496cf3cf3c91bd9782fd3dc6019e700b136d0
   - node: 01a13a90-3556-7106-a68c-266eda4a7888
     reviewed: 03729d0c990bf331dd99a80d4b67f32dc9f0720e692ec7c38be1a0bc38e1c5e9
     tests:

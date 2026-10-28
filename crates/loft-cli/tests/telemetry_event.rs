@@ -227,13 +227,9 @@ fn every_event_has_its_own_random_id() {
 }
 
 #[test]
-fn the_readme_s_sample_event_follows_the_schema() {
-    let readme = include_str!("../../../README.md");
-    let section = readme
-        .split_once("## Telemetry and the update check")
-        .unwrap()
-        .1;
-    let sample = section
+fn the_documented_sample_event_follows_the_schema() {
+    let page = include_str!("../../../docs/telemetry.md");
+    let sample = page
         .split_once("```json\n")
         .unwrap()
         .1
