@@ -1,7 +1,8 @@
 //! Composition for a host: the skill's host-neutral source becomes one host's package. The
 //! Claude Code package takes the frontmatter fragment, the route bullet and the host reference
 //! under `agents/claude/`, and holds no `agents/` directory; the Codex package keeps
-//! `agents/openai.yaml` alone. No package carries another host's adaptation.
+//! `agents/openai.yaml` alone. No package carries another host's adaptation. The `yard` skill
+//! composes for each host with a Yard adapter: its shared workflow, then that host's adaptation.
 
 use std::fmt;
 
@@ -87,13 +88,7 @@ pub type Files = Vec<(String, String)>;
 ///
 /// A [`ComposeError`] for a source the host's adaptation does not fit.
 pub fn compose(host: Host, source: &[(&str, &str)]) -> Result<Files, ComposeError> {
-    let find = |path: &'static str| {
-        source
-            .iter()
-            .find(|(each, _)| *each == path)
-            .map(|(_, text)| *text)
-            .ok_or(ComposeError::Missing(path))
-    };
+    let find = |path| find(source, path);
     // Every host drops `agents/`, but for the adaptation it reads in place.
     let (kept, skill_md, added) = match host {
         Host::ClaudeCode => {
@@ -119,6 +114,37 @@ pub fn compose(host: Host, source: &[(&str, &str)]) -> Result<Files, ComposeErro
         .collect();
     files.extend(added);
     Ok(files)
+}
+
+/// The `yard` package whose host adaptation lies at `adaptation` in `source`: one `SKILL.md`,
+/// the shared workflow followed by a line break and the adaptation.
+///
+/// # Errors
+///
+/// [`ComposeError::Missing`] for a source without the shared workflow or the adaptation.
+#[cfg_attr(
+    not(test),
+    expect(dead_code, reason = "`loft skill package` composes it next")
+)]
+pub fn compose_yard(
+    adaptation: &'static str,
+    source: &[(&str, &str)],
+) -> Result<Files, ComposeError> {
+    let skill_md = format!(
+        "{}\n{}",
+        find(source, "SKILL.md")?,
+        find(source, adaptation)?
+    );
+    Ok(vec![("SKILL.md".to_owned(), skill_md)])
+}
+
+/// The text of the file at `path` in `source`.
+fn find<'a>(source: &[(&str, &'a str)], path: &'static str) -> Result<&'a str, ComposeError> {
+    source
+        .iter()
+        .find(|(each, _)| *each == path)
+        .map(|(_, text)| *text)
+        .ok_or(ComposeError::Missing(path))
 }
 
 /// `SKILL.md` with the fragment's fields after its own and the route after the anchor bullet.
@@ -188,7 +214,7 @@ fn budget(frontmatter: &[&str], added: &[&str]) -> Result<(), ComposeError> {
 
 #[cfg(test)]
 mod tests {
-    use super::{ComposeError, Host, LISTING_BUDGET, compose};
+    use super::{ComposeError, Host, LISTING_BUDGET, compose, compose_yard};
 
     const SKILL_MD: &str = "---\nname: x\ndescription: d\n---\n\n- Read `references/the-loop.md`\n  first.\n- Read `references/b.md`.\n";
 
@@ -281,5 +307,30 @@ mod tests {
                 format!("the fragment defines `{field}`, which `SKILL.md` owns")
             );
         }
+    }
+
+    #[test]
+    fn a_yard_package_is_the_shared_workflow_a_blank_line_and_its_host_adaptation() {
+        let source = [
+            ("SKILL.md", "shared\n"),
+            ("agents/claude.md", "claude\n"),
+            ("agents/codex.md", "codex\n"),
+        ];
+        assert_eq!(
+            compose_yard("agents/codex.md", &source),
+            Ok(vec![(
+                "SKILL.md".to_owned(),
+                "shared\n\ncodex\n".to_owned()
+            )])
+        );
+    }
+
+    #[test]
+    fn a_yard_source_without_the_adaptation_does_not_compose() {
+        let source = [("SKILL.md", "shared\n")];
+        assert_eq!(
+            compose_yard("agents/claude.md", &source),
+            Err(ComposeError::Missing("agents/claude.md"))
+        );
     }
 }

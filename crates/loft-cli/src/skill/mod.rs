@@ -27,14 +27,15 @@ use settings::SETTINGS;
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-skill/1";
 
-/// The skill's source, each file by its path under `skill/loft-spec/`, embedded in the binary.
+/// A skill's source, each file by its path under `skill/<skill>/`, embedded in the binary.
 macro_rules! source {
-    ($($path:literal),* $(,)?) => {
-        &[$(($path, include_str!(concat!("../../skill/loft-spec/", $path)))),*]
+    ($skill:literal: $($path:literal),* $(,)?) => {
+        &[$(($path, include_str!(concat!("../../skill/", $skill, "/", $path)))),*]
     };
 }
 
 const SOURCE: &[(&str, &str)] = source![
+    "loft-spec":
     "SKILL.md",
     "agents/claude/claude-host.md",
     "agents/claude/frontmatter.yaml",
@@ -52,6 +53,14 @@ const SOURCE: &[(&str, &str)] = source![
     "references/the-loop.md",
     "references/writing-rules.md",
 ];
+
+/// The `yard` skill's source: its shared workflow and each host's adaptation.
+#[cfg_attr(
+    not(test),
+    expect(dead_code, reason = "`loft skill package` composes it next")
+)]
+const YARD_SOURCE: &[(&str, &str)] =
+    source!["yard": "SKILL.md", "agents/claude.md", "agents/codex.md"];
 
 /// A skill directory that could not be written.
 #[derive(Debug)]
@@ -199,5 +208,30 @@ pub fn run(root: &Path, hosts: Hosts, plugin: Plugin, as_json: bool) -> Finished
             Finished::success("installed")
         }
         Err(error) => json::stop(SCHEMA, vec![error_json(&error)], &error, as_json),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+    use std::path::Path;
+
+    use super::YARD_SOURCE;
+    use super::compose::compose_yard;
+
+    #[test]
+    fn the_embedded_yard_source_composes_each_committed_yard_package_byte_for_byte() {
+        for (plugin, adaptation) in [("claude", "agents/claude.md"), ("codex", "agents/codex.md")] {
+            let committed = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("../../plugins/{plugin}/loft/skills/yard/SKILL.md"));
+            assert_eq!(
+                compose_yard(adaptation, YARD_SOURCE),
+                Ok(vec![(
+                    "SKILL.md".to_owned(),
+                    fs::read_to_string(committed).unwrap()
+                )]),
+                "{plugin}"
+            );
+        }
     }
 }
