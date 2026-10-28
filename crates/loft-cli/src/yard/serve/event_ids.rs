@@ -32,21 +32,16 @@ impl Receipt {
         line[DIGEST] = Value::String(self.digest.clone());
     }
 
+    /// The receipt a kept line carries: none for a line kept without its digest.
     pub fn replay(line: &Value) -> Result<Option<Self>, String> {
         let Some(mut receipt) = Self::read(line)? else {
             return Ok(None);
         };
-        if let Some(digest) = line.get(DIGEST).and_then(Value::as_str) {
-            digest.clone_into(&mut receipt.digest);
-            return Ok(Some(receipt));
-        }
-        // Older receivers preserved unknown eventId fields without a receipt.
-        let mut posted = line.clone();
-        let object = posted.as_object_mut().ok_or("an event must be an object")?;
-        for field in ["tree", "branch", "stage", "submissions"] {
-            object.remove(field);
-        }
-        Self::read(&posted)
+        let Some(digest) = line.get(DIGEST).and_then(Value::as_str) else {
+            return Ok(None);
+        };
+        digest.clone_into(&mut receipt.digest);
+        Ok(Some(receipt))
     }
 }
 

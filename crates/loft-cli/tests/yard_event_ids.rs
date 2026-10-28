@@ -159,3 +159,20 @@ fn empty_or_non_string_event_identifiers_change_no_event_log() {
     assert_eq!(recorded(&yard, "s1"), 0);
     assert!(session_file(&yard, "tokens", "s1").is_none());
 }
+
+#[test]
+fn an_identified_line_kept_without_its_digest_gives_no_receipt_after_a_restart() {
+    let (yard, served) = open();
+    let sample = request(&yard, "kept-without-digest", 7);
+    post(&served, std::slice::from_ref(&sample));
+    drop(served);
+    let log = yard.scratch.home().join(".yard/events/s1.jsonl");
+    let mut line: Value = serde_json::from_str(fs::read_to_string(&log).unwrap().trim()).unwrap();
+    line.as_object_mut().unwrap().remove("eventDigest").unwrap();
+    fs::write(&log, format!("{line}\n")).unwrap();
+    let served = Served::start(&yard, &[]);
+    let reply = post(&served, &[sample]);
+    assert_eq!(reply["rejected"], json!([]));
+    assert_eq!(recorded(&yard, "s1"), 2);
+    input_is(&yard, "s1", 14);
+}
