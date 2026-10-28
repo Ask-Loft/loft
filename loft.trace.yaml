@@ -19237,11 +19237,11 @@ links:
         name: "the_claude_code_plugins_hooks_json_names_its_hooks_module_which_lies_beside_it"
         body: 0315668a5db151d6e39ae67502ebe781b68913070b0b02538397bae140313a5d
   - node: 01a14522-b2c9-7634-a3b0-225e35d97412
-    reviewed: ec4b357c3b7b77fb5400bf702987aadd301a1e40799f19796bf540ec76cdcacd
+    reviewed: ac338b3a166693c2febd7069e99a5a899922e7c3b737e0e4e11aafe9f43287c2
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
-        name: "the_claude_code_plugins_hooks_json_holds_an_empty_hooks_record_for_a_host_without_modules"
-        body: 32ba3ea5c57eabd852605b23e0dd4e6842ce57c579c5f56038dc8c8104ccd180
+        name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
+        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
   - node: 01a144ee-c59e-7325-802c-d71e478c6971
     reviewed: a8e7865b7c32261c3575a15d9a16df55f2ee43b9ae69ce220b201a9d9c92891e
     tests:
@@ -19547,13 +19547,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: a3b933cef569fa9903ac57aa58977531f4c08733adbd260bb67304ae1a75afd3
+        body: dfc949e64409e10150359c87524d6cd41ff0309da68bff9bc91278f086beb7e6
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's questions go to Yard Log as Claude Code's dialog shows them, and the page's answer reaches the agent by its labels"
         body: ab055ee3a1914d3ef7baf55d02849c493c88f278b14a7a31fe1d0b043c42baaa
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_approved_on_the_page_is_allowed_with_its_input_and_auto_mode"
+        body: 53b08d2df52c6c105ae076b4ab3002252cea1771f91f6fe23811dec10876b3b8
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
-        body: 16b30d774e15e9d4ff89f72d0c57dedcc1465fd04bebb21a7e9e60ae57bc3547
+        name: "a plan approved on the page goes on as Claude Code allowed it, and nothing is recorded from the terminal"
+        body: 06c4ad92ffb96135b2a9ec8396a183179947208a48c95e2e8101910dcd8fda1b
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "an interrupt while yard_wait waits ends the running wait, closes the dialog, records nothing and leaves the submission open"
         body: 326db6ab8694ef3ce477a8c1e24c9d02cff57bc2c0802195db153468341bedc5
@@ -19565,13 +19568,13 @@ links:
         body: 24d50f0f39fc2e3dfa3e27b24a58562cef3d47cdeb867af5351f098bf0dc28c5
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
+        body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
   - node: 01a177f9-8294-77e4-aa6e-70743921560a
     reviewed: 1c79b8403fe00167a811709fa76b3315810b27be738397e003ee5b6c3a75d7cb
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: a3b933cef569fa9903ac57aa58977531f4c08733adbd260bb67304ae1a75afd3
+        body: dfc949e64409e10150359c87524d6cd41ff0309da68bff9bc91278f086beb7e6
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "protocol one keeps the Claude arguments and events without adapter descriptors"
         body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
@@ -21360,24 +21363,30 @@ links:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_session_context_is_the_briefing_marked_read_with_the_caller_arguments_and_notifications"
         body: 2f8ab23b783847d273406e5288cfb82beef2696345829d8e51cf67ca9d40f3ac
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
-        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "native subagent start gives the worker its briefing, marked read in its own name, without taking the stage"
-        body: 477eb8fa05550296b55f7ad74d8571369e044dfaceb6f9e8654a2d11f6954edb
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_gives_the_main_agent_its_briefing_and_the_line_that_tells_it_to_read"
+        body: 4432f197368e03fbdaa3fc5bd2384850dba15abb12e3d9f396be78dcd95defc5
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_briefing_s_read_is_recorded_as_the_main_agent_s_last"
+        body: ec5db1a298f6491c75c0c3b7d070e34e545f77867db0d4c9e945e3d5fffc9c04
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_subagent_s_briefing_names_its_assigned_tasks_and_is_read_in_its_own_name"
+        body: 2075286f1c4c520ce73b8670f6ff1e2a5d8f88980494292fe456778570ee6289
   - node: 01a182be-ad52-75ba-879c-8ae870a8278f
     reviewed: 1e088ff8bff9564cf374ed886b3f2bf4c790b039496abdda6431a06692737ab5
     tests:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_session_context_is_the_briefing_marked_read_with_the_caller_arguments_and_notifications"
         body: 2f8ab23b783847d273406e5288cfb82beef2696345829d8e51cf67ca9d40f3ac
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
-        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "native subagent start gives the worker its briefing, marked read in its own name, without taking the stage"
-        body: 477eb8fa05550296b55f7ad74d8571369e044dfaceb6f9e8654a2d11f6954edb
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_gives_the_main_agent_its_briefing_and_the_line_that_tells_it_to_read"
+        body: 4432f197368e03fbdaa3fc5bd2384850dba15abb12e3d9f396be78dcd95defc5
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_briefing_s_read_is_recorded_as_the_main_agent_s_last"
+        body: ec5db1a298f6491c75c0c3b7d070e34e545f77867db0d4c9e945e3d5fffc9c04
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_subagent_s_briefing_names_its_assigned_tasks_and_is_read_in_its_own_name"
+        body: 2075286f1c4c520ce73b8670f6ff1e2a5d8f88980494292fe456778570ee6289
   - node: 01a182be-ad52-75ba-879c-8ae989acf96b
     reviewed: 69e6b0478da824db95f903b4ba6e57f16f4e4008e67caec7e933ba30422c5f79
     tests:
@@ -21385,8 +21394,8 @@ links:
         name: "a_later_prompt_s_context_holds_only_whether_decision_notifications_reach_the_agent"
         body: 1541eb85dd56e67dc5f173647a311cb7ac108c5558c34ca033afca4b67410bec
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "a prompt gives no briefing: only the session start does"
-        body: 2e856d7949a33eb0c033fee03b0957030ba314fa45a7ddc0966f931b219b1803
+        name: "the mod reads no briefing at the session's start or at a prompt: the plugin's command hooks give the context"
+        body: 09900ef04cdac3e6b81cc81b3c26265f3d555b3b92adbedeeb1a3c7eb4f6a98e
   - node: 01a182be-ad52-75ba-879c-8aea5f45df7a
     reviewed: f37b1b1ade1a2c13a996652861e1e78cb1a7f326a21317295405cdf711ffe90b
     tests:
@@ -23009,7 +23018,7 @@ links:
         body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a subagent calls a tool in its own name: its id and its type"
-        body: cd8daf70d77d697fd908763d7f9ec8483f18622059d1a6b65caeed464464eb3f
+        body: fdd0ec871ab390032aac2bd31b4940c5f8260eff314a1738fbcb00cefe3d054d
   - node: 01a1646f-546d-7042-befd-ea6d4a1030f6
     reviewed: 7a876287bc4be1c4296f32322bc04700da61cf32fc3d8dd37f2921ede33e6908
     tests:
@@ -23231,19 +23240,19 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
+        body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
   - node: 01a1646f-546c-7521-9643-bc5f9317855f
     reviewed: 3652bfa2bb06bb29c8aa69b032e0661c587fd251a6874d3251dd7bfd219f12e5
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
+        body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
   - node: 01a1646f-546d-7042-befd-ea8e5a514259
     reviewed: 5b17d1cb84271dd77eabad6cc8e0527fbd2b4c949ebcb9213b3f76d035ec2e68
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
+        body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
         body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
@@ -23261,7 +23270,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
+        body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
   - node: 01a1646f-546d-7042-befd-ea91076e0f8d
     reviewed: 6d9a8cbbdb32d648ebae9f998f7a185dd521a56436102231ba5a70ae8edc02a0
     tests:
@@ -23342,7 +23351,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
-        body: 9f82043d33b93c6cf89f994c9201aaa583fe782481b378f24f31c045d2c5efcf
+        body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers the beat, the mod runs loft yard serve at every beat"
         body: 80c151d32eec3f47f4e161fd31189a74b8e8e8e235a1bfe140c25fc568fcf168
@@ -23361,21 +23370,27 @@ links:
   - node: 01a1647c-e680-7753-bf17-f17a693b5c4a
     reviewed: 688b25531d1ce280769f1afcd4af8149d7db27feed12208cd06a12342b827c71
     tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_session_after_clear_is_briefed_as_continuing_the_one_that_ended"
+        body: f6063fd08c744a4d2645601b6c65693c59ab9ab308c1fda48421773d0c51e2e2
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "after /clear the session is given its context again, once loft yard continue has recorded the session it continues"
-        body: 03230dbe35bb2d837dd3a5bea9971c4618b01dee972fb43751f0f5ac5862c9cc
+        name: "after /clear the new session's first turn records once the session it continues, before any other command"
+        body: 4f115206a72787d1d3e2d3332aabb0fb12b0cb62c3a0477c4f4957c0a1ba2253
   - node: 01a1647c-e680-7753-bf17-f17b0ccd5e22
     reviewed: ea87a66480e6695c2f2968b29e1dd25f7f16b4be46ff7a07cc1346720392d9df
     tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_session_after_clear_is_briefed_as_continuing_the_one_that_ended"
+        body: f6063fd08c744a4d2645601b6c65693c59ab9ab308c1fda48421773d0c51e2e2
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "after /clear the session is given its context again, once loft yard continue has recorded the session it continues"
-        body: 03230dbe35bb2d837dd3a5bea9971c4618b01dee972fb43751f0f5ac5862c9cc
+        name: "after /clear the new session's first turn records once the session it continues, before any other command"
+        body: 4f115206a72787d1d3e2d3332aabb0fb12b0cb62c3a0477c4f4957c0a1ba2253
   - node: 01a1647c-e680-7753-bf17-f17c4e518163
     reviewed: 0e937df5ffca5d1a7fb7695eda5d6bf4532dec7e2512dfcb226f17456d926591
     tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the context is given again after /resume and /branch, and a session a new process starts names no session it continues"
-        body: b80af379e012e979a09650aac5f8311c39b68ac922b0eb17aef5b5d28fe40c7e
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_of_each_other_source_gives_the_context"
+        body: b4bd1a67115d4ab259a69a3f3f1479d0c99c2a2f8a08277dc2c3b3b426aa2885
   - node: 01a1647c-e680-7753-bf17-f17e03443c33
     reviewed: 82b3edaa8f1c0e0b9f358655381e311c49e6f07995efe13faaf9839cb74b59bc
     tests:
@@ -23733,9 +23748,9 @@ links:
   - node: 01a18054-bf15-7113-9ce0-7fae57e0bb10
     reviewed: fdc32fccdeeacd6d6d4d8de36ee37b897ce6935ca9a2c995c0baa4ebb723c5b4
     tests:
-      - file: "plugins/claude/loft/tests/yard-delegation.test.ts"
-        name: "native subagent start gives the worker its briefing, marked read in its own name, without taking the stage"
-        body: 477eb8fa05550296b55f7ad74d8571369e044dfaceb6f9e8654a2d11f6954edb
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_subagent_s_briefing_names_its_assigned_tasks_and_is_read_in_its_own_name"
+        body: 2075286f1c4c520ce73b8670f6ff1e2a5d8f88980494292fe456778570ee6289
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "identified_worker_context_lists_its_recorded_assignment_in_a_bounded_message"
         body: 4ac2844f1dba70244f8f7e585501a537e0a7e7be213ab18d559d559bdb2d1603
@@ -23840,13 +23855,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
+        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
   - node: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
     reviewed: b2e92b9d8b9c74a9d59cd5659f907052d70f12b94cce8d1d02e27351878b33f4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
+        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
         body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
@@ -23858,7 +23873,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
+        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
         body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
@@ -23870,7 +23885,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 2182fba1f568cd71900c2fc18991901ac46d77626531f74b8f104280529be4ec
+        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
   - node: 01a1646f-546e-76cb-8b4f-f1fde62cb279
     reviewed: bc1bfca105244ab915945501c1d149f7e84b784c53afba66d2612967917a7561
     tests:
@@ -26911,14 +26926,14 @@ links:
         name: "each event names the session, its directory, its time to the second, its kind and the host, and is posted to the page server's events with the token"
         body: 1a59a54f5d80d7a560de28a0aea6e0037a07481667947cd0946a34856f7bcdcc
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a subagent's events name it by its id and type"
-        body: 9adbe30b877fa7a232d9254fc35cecacc299b57c24548a42a4b0e6c0a20710ee
+        name: "a subagent's events name it by its id and type, from its spawn to its turn's end"
+        body: 4ec21b2d108dbcc4cb8027fffc741c76c3d1ae68820734687af0a8fa9fe2cba3
   - node: 01a1646f-546d-7042-befd-eafe7b5c5ec1
     reviewed: d8d0a94dfb82c1810801da523cbda9b3edd4d7500af0a0584b8df661b818cbe0
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model"
-        body: c3f823df296c88fb1d87f5585541c35407c7f478b2c6a96156afea8c44772a73
+        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start is posted as it is spawned, with its model"
+        body: 4a42e98adf9e6e557f44ea060927cdd0ab87fd80471f72addd2e66c98f49d338
   - node: 01a1646f-546d-7042-befd-eaff9cc533cb
     reviewed: be0b0a21e49a820862ddd8e34a91b8203f9ff1c7315a5d9b4573bafa8d1e14b7
     tests:
@@ -26929,8 +26944,8 @@ links:
     reviewed: ae723b9bef1e370b7ce29346e53c4bf51b69c7189b2bd56ec72d3715668b837c
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a turn's end carries its tokens, and a compaction the tokens before and after"
-        body: 4ffa315a2ad38616e594d658792f385569d6304efa1190aeeb4285f7b25db304
+        name: "a turn's end carries its tokens"
+        body: 7811846e66421785b69be6bf5c58741d6451392b4b0277c1e62eb9cfd204bc44
   - node: 01a1646f-546d-7042-befd-eb01a1b7b060
     reviewed: 2b5b50ce985c026f50e6c375c953f6224f0b52140ffbb4ccc14d589a72078a90
     tests:
@@ -26947,8 +26962,14 @@ links:
     reviewed: b12f3d1fe644d453a3ef76159fba9c75d7f8ab114eff92650308fe973f0f72af
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model"
-        body: c3f823df296c88fb1d87f5585541c35407c7f478b2c6a96156afea8c44772a73
+        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start is posted as it is spawned, with its model"
+        body: 4a42e98adf9e6e557f44ea060927cdd0ab87fd80471f72addd2e66c98f49d338
+  - node: 01a183e9-dfd3-7653-8da8-4c16b6410896
+    reviewed: 1d0e56d235199ac6989f5e73f19ab2e9785c7387f34144f7744ce0ef797fe213
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a subagent's events name it by its id and type, from its spawn to its turn's end"
+        body: 4ec21b2d108dbcc4cb8027fffc741c76c3d1ae68820734687af0a8fa9fe2cba3
   - node: 01a1646f-546d-7042-befd-eb0424c61342
     reviewed: 21675eb5daafef4d3cee5de0a1055f1f5dea335690aad5e33ae9305cf77dcb52
     tests:
@@ -26958,9 +26979,9 @@ links:
   - node: 01a1646f-546d-7042-befd-eb05c5d3d538
     reviewed: 1d4dede35a26114c4362dd932b5370730ffe5aec563d8877a8f080dffa119fe2
     tests:
-      - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "plan mode starting and ending is posted once for each change, as the main agent is heard in it"
-        body: 15a6a72e013f50ffcc5de786639c9acc3199a6fe43517f8301adfad8ba3766e0
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "plan_mode_starting_and_ending_is_posted_once_for_each_change_of_the_main_agent_s_mode"
+        body: 57e00a634a1e04eaafebe1e1192d67f534c9964557c5b2d6cf21334df738343d
   - node: 01a16475-7fbc-7732-a78c-bc53338212c4
     reviewed: 8837faacebd2a669a88f0e331fbbaa61f448076ae4385991522fb06e8451b992
     tests:
@@ -26980,11 +27001,11 @@ links:
     reviewed: 9b9ccec472b3c063470bb72a888aaa4f89a59d81afb8d30d4ff1514792df6667
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a subagent's events name it by its id and type"
-        body: 9adbe30b877fa7a232d9254fc35cecacc299b57c24548a42a4b0e6c0a20710ee
+        name: "a subagent's events name it by its id and type, from its spawn to its turn's end"
+        body: 4ec21b2d108dbcc4cb8027fffc741c76c3d1ae68820734687af0a8fa9fe2cba3
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model"
-        body: c3f823df296c88fb1d87f5585541c35407c7f478b2c6a96156afea8c44772a73
+        name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start is posted as it is spawned, with its model"
+        body: 4a42e98adf9e6e557f44ea060927cdd0ab87fd80471f72addd2e66c98f49d338
   - node: 01a1646f-546d-7042-befd-eb0881f33bd6
     reviewed: 2b2a58e0ed6b39cc26999027f8b8cb6b61255e58c03c7fa379ec5d562a9c7a9d
     tests:
@@ -27461,7 +27482,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "two subagents asking at one revision write to stages and blocks whose ids are made from each call's own id, not from what the mod read"
-        body: 1b969d1d00a016b172845825c91669e81db9a5ec1dd7dc015a443d77e069d6e9
+        body: bae3f0f1718b8c63514d6f8c273451e7d40b9293dc6ed4851eae3060f293d828
   - node: 01a165f5-4587-7632-89a7-b4dae037e014
     reviewed: dc19a5339b2ea4ffd7b4f999ee41f891262852e6d0fde875304b6dc6d3e82802
     tests:
@@ -27620,7 +27641,7 @@ links:
         body: c9ddaa048ac06535435604b86d9fdd27c454f23593fc12409947eac535258188
       - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
         name: "the selected stage belongs to the invoking subagent even when another caller holds the same file"
-        body: 2e7da30e2c2094c33a1494b6ea98ba201f30949eb0d3250f15f9a65629dc7bf3
+        body: 1dd423995f3b25bd41e82ef71ed56c9ca3b700fd3f7d7d6cbaba5f776bd3aad8
       - file: "plugins/claude/loft/tests/yard-plan-stage.test.ts"
         name: "a plan held by another host cannot override the invoking agent active stage"
         body: b2c58839687253dc5f05e2a9c977ab80554853174c722e910b7043e2bd177d28
@@ -27667,8 +27688,11 @@ links:
         name: "a repeated file plan revises its block within the active stage and records terminal approval"
         body: 35a75da0a16993f135de4e15cb843c9ab160c82911ab7d948c4b0c70ec443615
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan decided in the terminal first ends the wait the permission request runs, and its verdict is recorded"
-        body: 0d4e9aa55e927e0d1c54675ca8d06d3982749a31416e31d74e3486beb193f817
+        name: "a plan decided in the terminal first is recorded with its verdict"
+        body: fda78224593f5c9cef953acca530aefe9b5a892fa83f43886922f99456b90daf
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_decided_in_the_terminal_first_ends_the_wait_and_the_hook_answers_nothing"
+        body: 1fadefb381ef4769e73be7aa8bd4caa744ccf5f146fd657595a59ac2cda87677
   - node: 01a1646f-546c-7521-9643-bc49188fb63b
     reviewed: 5f1143c45834704ce302e3e2fd2be76139d1bb5a45154278aedba43c7ea95a1b
     tests:
@@ -27687,27 +27711,36 @@ links:
   - node: 01a1646f-546c-7521-9643-bc4b064c0cda
     reviewed: 4cc6d766b76e707ef2f023dcecff83a982f8899eb5a1a563f29c6004b69a0c3c
     tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_approved_on_the_page_is_allowed_with_its_input_and_auto_mode"
+        body: 53b08d2df52c6c105ae076b4ab3002252cea1771f91f6fe23811dec10876b3b8
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
-        body: 16b30d774e15e9d4ff89f72d0c57dedcc1465fd04bebb21a7e9e60ae57bc3547
+        name: "a plan approved on the page goes on as Claude Code allowed it, and nothing is recorded from the terminal"
+        body: 06c4ad92ffb96135b2a9ec8396a183179947208a48c95e2e8101910dcd8fda1b
   - node: 01a1646f-546c-7521-9643-bc4c62a6d12f
     reviewed: d517dfdbda65bb2d5a0a85d743ebc1b44d26f3eb68eb25b664658244a48ab4a6
     tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_rejected_on_the_page_is_denied_with_the_person_s_reason"
+        body: 33c1264d05b8ed10a3e3f8f738fccf80bdd431dc102a56f646f0838817a75630
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan rejected on the page first denies the plan with the reason"
-        body: c9e561dfec4a8df2468e02cc4410167a54678ec65ab0444d8dbced13d01c68d9
+        name: "a plan rejected on the page gives the agent the person's reason, and nothing is recorded from the terminal"
+        body: 85b7453c9c53f707ca8858d32939e12a05d5c350fbf20c72e0e5128e98e50383
   - node: 01a1646f-546c-7521-9643-bc4d46ffa3da
     reviewed: c3a8bbbba28994fbd5f60544a0af31bac594c244efa63146ec824f54680f0cc0
     tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_plan_approved_on_the_page_is_allowed_with_its_input_and_auto_mode"
+        body: 53b08d2df52c6c105ae076b4ab3002252cea1771f91f6fe23811dec10876b3b8
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "a plan approved on the page first answers Claude Code's permission: it allows the plan, gives the input back and turns auto mode on"
-        body: 16b30d774e15e9d4ff89f72d0c57dedcc1465fd04bebb21a7e9e60ae57bc3547
+        name: "a plan approved on the page goes on as Claude Code allowed it, and nothing is recorded from the terminal"
+        body: 06c4ad92ffb96135b2a9ec8396a183179947208a48c95e2e8101910dcd8fda1b
   - node: 01a16845-e4a5-74f5-a40c-79dc8ac95133
     reviewed: 5db2712a2fad514057accee64287f64bc9a6c57cbcca5e6c7cb92ade2fe7926e
     tests:
-      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
-        name: "the permission request runs the wait for the plan itself, and nothing waits before it is raised"
-        body: a6fe929b708e4338e4db31a373a6d6a186a69a42701c3901acc5cbf4c7b34166
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "a_page_decision_made_after_waits_that_ended_pending_still_reaches_claude_code"
+        body: ff9ada4971dd276e4d0822f9decbc649fc8e0d28f3e349464d4f52689168161d
   - node: 01a1646f-546c-7521-9643-bc4f1a3eb87b
     reviewed: b39cd79380774b3a76f00dd3e903ead390d6467d68fa97555af5314201ca595f
     tests:
@@ -27737,13 +27770,13 @@ links:
         body: 42695e686633ba42c2d5a99d76f16bf53605c628715da7addcd43cbeb0456ac4
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was"
-        body: ef5e484fdddc054dbb31231cd678595c4a935987a2d2f10eb0e614d9cc456bbb
+        body: 09d16b6389b8da15a3395fc7f029096d596ff56baa577fa7493cc0f27b3621e2
   - node: 01a165f5-4587-7632-89a7-b4db5092dc0c
     reviewed: 40723b9c7fb5b96d0ae9267e76dbbf0c72ebdf7c8b2addfa7e22d1ef93d9a47b
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was"
-        body: ef5e484fdddc054dbb31231cd678595c4a935987a2d2f10eb0e614d9cc456bbb
+        body: 09d16b6389b8da15a3395fc7f029096d596ff56baa577fa7493cc0f27b3621e2
   - node: 01a1646f-546c-7521-9643-bc550810c75a
     reviewed: dbd2b44aee6add17d78b38ca1f6e92a0e695bc5a65554ace87700c251e04ff1a
     tests:
@@ -27859,14 +27892,17 @@ links:
         name: "a delayed main agent capture leaves a subagent free to capture its own task"
         body: d26e9324da394dc36ed4a7afafd5d9dd9bcd2981e66b26e07f6699dc7f30c670
       - file: "plugins/claude/loft/tests/yard-capture.test.ts"
-        name: "a new session has its own capture lane while an old native task finishes"
-        body: 3befe384b5a05c738665c7370231913723d8d1dabdcad19f0802e39cf80c02df
+        name: "a new session's first turn gives it its own capture lane while an old native task finishes"
+        body: 1bdf39a3ddeae1ebe2b0854be711dea1713232fa23e027b671a08eeb76e2610e
   - node: 01a1646f-546c-7521-9643-bc648ffcbb12
     reviewed: e657ae2eedeb6d2fe2d49f0520ec25d53ce556237ca193242826b68535ca3e4c
     tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
-        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_gives_the_main_agent_its_briefing_and_the_line_that_tells_it_to_read"
+        body: 4432f197368e03fbdaa3fc5bd2384850dba15abb12e3d9f396be78dcd95defc5
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_briefing_s_read_is_recorded_as_the_main_agent_s_last"
+        body: ec5db1a298f6491c75c0c3b7d070e34e545f77867db0d4c9e945e3d5fffc9c04
       - file: "crates/loft-cli/tests/yard_read_context.rs"
         name: "the_briefing_s_text_counts_what_it_leaves_out_within_2000_characters"
         body: ed4eec512b1ad07fcc9b23da8afcd421ea361b6fe39f376f56305558dffa7b28
@@ -27891,21 +27927,27 @@ links:
   - node: 01a1646f-546c-7521-9643-bc687ad65bab
     reviewed: bd13bbd1931d94afd43b3b13acbd9d5088c5d49dae9d35677faf4652a246f2cc
     tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the context is given again after /resume and /branch, and a session a new process starts names no session it continues"
-        body: b80af379e012e979a09650aac5f8311c39b68ac922b0eb17aef5b5d28fe40c7e
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_of_each_other_source_gives_the_context"
+        body: b4bd1a67115d4ab259a69a3f3f1479d0c99c2a2f8a08277dc2c3b3b426aa2885
   - node: 01a16621-e7bc-7707-b123-2161fe5b53dc
-    reviewed: 3ee46ac7dc9bbb1ab5d5536c598751dd8d5b24b908570750c93695aa6f4cd983
+    reviewed: 1e7f98025b292d32681496d5c4eeb815cfae4504ab2d79f02083155e3bdd9b52
     tests:
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with"
-        body: e85737f192b85b8d987ad04f0d774f4d85f1a68f3a0b03b2538705a031fba24c
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_gives_the_main_agent_its_briefing_and_the_line_that_tells_it_to_read"
+        body: 4432f197368e03fbdaa3fc5bd2384850dba15abb12e3d9f396be78dcd95defc5
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_briefing_s_read_is_recorded_as_the_main_agent_s_last"
+        body: ec5db1a298f6491c75c0c3b7d070e34e545f77867db0d4c9e945e3d5fffc9c04
   - node: 01a1647c-e680-7753-bf17-f177bc991450
     reviewed: 35460d9e89d8fc90aa4c9d49d392d9a87b97a9471484e4af166494372d18d2da
     tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_session_after_clear_is_briefed_as_continuing_the_one_that_ended"
+        body: f6063fd08c744a4d2645601b6c65693c59ab9ab308c1fda48421773d0c51e2e2
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "after /clear the session is given its context again, once loft yard continue has recorded the session it continues"
-        body: 03230dbe35bb2d837dd3a5bea9971c4618b01dee972fb43751f0f5ac5862c9cc
+        name: "after /clear the new session's first turn records once the session it continues, before any other command"
+        body: 4f115206a72787d1d3e2d3332aabb0fb12b0cb62c3a0477c4f4957c0a1ba2253
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "a_submission_the_ended_session_sent_counts_as_sent_by_the_session_that_continues_it"
         body: 65778f4e433c22fe30794b50b6aec8709520876aacad2603e1df821a4da0d1ce
@@ -27921,6 +27963,57 @@ links:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "both_plugins_hold_loft_spec_and_their_adapters_yard_skills"
         body: 779ad4bf895d18a350c0a26dad07050eca62fe401e5d385ea8641c419f9734d7
+  - node: 01a183e9-dfd2-74b1-a45a-14bf569c68bb
+    reviewed: 079df47ec9f5430a3c95a66df596eb55d4b9dc688ed49f4659d53f42ffa2c68c
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
+        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+  - node: 01a183e9-dfd2-74b1-a45a-14c0b6bfae37
+    reviewed: 7fa34b7a2892b5bd9d4e204a8cd40f272ef02e5a0daeca683e3e74fd0b3971c0
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process"
+        body: 51da38ae4b65ea4a572e8d886c6a2c5d97f009653a039b5406f68c50316f31c1
+  - node: 01a183e9-dfd2-74b1-a45a-14c1bcd08990
+    reviewed: 29436b5cea974d688dcea016474dd114094c4abb98b41d78df5b78b89f5cda72
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process"
+        body: 51da38ae4b65ea4a572e8d886c6a2c5d97f009653a039b5406f68c50316f31c1
+  - node: 01a183e9-dfd2-74b1-a45a-14c2f1e0d78d
+    reviewed: 81db55acf6d5c0d5a646c6b486111c8959d632b602ac6c78cb872e3fab8398c4
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
+        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+  - node: 01a183e9-dfd2-74b1-a45a-14c4d303077f
+    reviewed: 0fc620a0e045b14afe69f5cad45b8dddca86a5b76219c3f1f76005d32c8eaa33
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_mod_registers_no_hook_on_an_event_claude_code_s_guard_passes_over"
+        body: 72a74feeb2645bba838a8882a0805ee5a0f9a4721c8897f14000f4b98bd631dd
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "a_hook_on_an_event_the_guard_passes_over_is_found"
+        body: 489c76c7cf0cd1b7fb5abed4a0d9a107986ce6e09d1ffaba300bc50dafb9f40d
+  - node: 01a183e9-dfd2-74b1-a45a-14c5a979d9e4
+    reviewed: 55fa5246cb3c1004828aaa14bf36337d6281f49cf2e6b4e00bd71e085a7dc372
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_mod_registers_no_hook_on_an_event_claude_code_s_guard_passes_over"
+        body: 72a74feeb2645bba838a8882a0805ee5a0f9a4721c8897f14000f4b98bd631dd
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "a_hook_on_an_event_the_guard_passes_over_is_found"
+        body: 489c76c7cf0cd1b7fb5abed4a0d9a107986ce6e09d1ffaba300bc50dafb9f40d
+  - node: 01a183e9-dfd2-74b1-a45a-14c6ffcb6274
+    reviewed: f17e820316d4ad9c9e00e00af65d8eec69a13eaff33745b0c405c2476f213b62
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_mod_registers_no_hook_on_an_event_claude_code_s_guard_passes_over"
+        body: 72a74feeb2645bba838a8882a0805ee5a0f9a4721c8897f14000f4b98bd631dd
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "a_hook_on_an_event_the_guard_passes_over_is_found"
+        body: 489c76c7cf0cd1b7fb5abed4a0d9a107986ce6e09d1ffaba300bc50dafb9f40d
   - node: 01a1646f-546c-7521-9643-bc76e3286f0f
     reviewed: 7fa34b7a2892b5bd9d4e204a8cd40f272ef02e5a0daeca683e3e74fd0b3971c0
     tests:
@@ -28463,7 +28556,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: a3b933cef569fa9903ac57aa58977531f4c08733adbd260bb67304ae1a75afd3
+        body: dfc949e64409e10150359c87524d6cd41ff0309da68bff9bc91278f086beb7e6
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "protocol one keeps the Claude arguments and events without adapter descriptors"
         body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf

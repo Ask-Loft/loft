@@ -1,7 +1,8 @@
 // The session's events, posted to the page server as they happen: turns, model requests, tool
-// calls, subagents, compactions and plan mode, each naming only what the page counts (the Feature
-// "Record a session's events"). The agent never waits on an event: neither on its post nor on
-// reading what it names.
+// calls and subagents, each naming only what the page counts (the Feature "Record a session's
+// events"). Plan mode and compactions are heard by the plugin's command hooks, since Claude Code's
+// built-in guard keeps their events from a user's mod. The agent never waits on an event: neither
+// on its post nor on reading what it names.
 
 import type { EngineInterface, ModelUsage, On } from 'claude-code'
 
@@ -10,8 +11,7 @@ import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } f
 import { HOST } from './contract'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
-import { actorKey, agentOf, PLUGIN, state } from './state'
-import { contextFor } from './context'
+import { actorKey, agentOf, continued, PLUGIN, state } from './state'
 import { endAssigned } from './task-writes'
 
 /** Model usage as the page counts it. */
@@ -55,32 +55,14 @@ export function tell($: EngineInterface, agentId: string | undefined, fields: Ev
     .catch(() => {})
 }
 
-/** Whether the main agent is in plan mode, as last heard; null until first heard. */
-const mode: { isPlanning: boolean | null } = { isPlanning: null }
-
-/** Plan mode starting or ending, once for each change; a session first heard out of it says nothing. */
-function planMode($: EngineInterface, isPlanning: boolean) {
-  const was = mode.isPlanning
-  mode.isPlanning = isPlanning
-  if (was === isPlanning || (was === null && !isPlanning)) return
-  tell($, undefined, { kind: isPlanning ? 'plan.start' : 'plan.end' })
-}
-
-/** The main agent's permission mode, as each classic hook is given it. */
-function heard($: EngineInterface, e: { agent_id?: string; permission_mode?: string }) {
-  if (!e.agent_id && e.permission_mode) planMode($, e.permission_mode === 'plan')
-}
-
-/** Subagents that started and whose start waits for the model their first request names. */
-const starting = new Map<string, { at: string; type: string }>()
-
 /** Registers the hooks that record the session's events, but those the entry hooks for both parts. */
 export function registerEvents(on: On) {
-  mode.isPlanning = null
-  starting.clear()
   told = Promise.resolve()
 
   on('turn.start', async ($, e, next) => {
+    // The main loop's turn names the session now, so that after `/clear`, which no session start
+    // follows, the session's captures run in its own lane.
+    if (!e.agentId && state.isOn) await continued($).catch(() => {})
     state.endedTasks.delete(actorKey(state.sessions[0] ?? await $.session.id(), e.agentId))
     tell($, e.agentId, { kind: 'turn.start', turn: e.turnId })
     return next(e)
@@ -88,11 +70,6 @@ export function registerEvents(on: On) {
 
   on('turn.step', async function* ($, e, next) {
     const response = yield* next(e)
-    const start = e.agentId ? starting.get(e.agentId) : undefined
-    if (e.agentId && start) {
-      starting.delete(e.agentId)
-      tell($, undefined, { kind: 'subagent.start', at: start.at, agent: { id: e.agentId, type: start.type }, model: e.model })
-    }
     if (response?.usage) {
       tell($, e.agentId, {
         kind: 'request',
@@ -105,54 +82,23 @@ export function registerEvents(on: On) {
     return response
   })
 
-  on('classic.SubagentStart', async ($, e, next) => {
-    state.endedTasks.delete(actorKey(state.sessions[0] ?? e.session_id, e.agent_id))
-    state.types.set(e.agent_id, e.agent_type)
-    starting.set(e.agent_id, { at: timeOf(await $.clock.now()), type: e.agent_type })
-    const started = await next(e)
-    const text = state.isOn ? await contextFor($, await $.session.cwd(), e.agent_id).catch(() => undefined) : undefined
-    if (text === undefined) return started
-    return { ...started, additionalContext: [...(started.additionalContext ?? []), text] }
-  })
-
-  on('classic.SubagentStop', async ($, e, next) => {
-    starting.delete(e.agent_id)
-    tell($, e.agent_id, { kind: 'subagent.end' })
-    return next(e)
-  })
-
-  on('session.compact', async ($, e, next) => {
-    const compacted = await next(e)
-    if (compacted.skip === undefined) {
-      tell($, undefined, {
-        kind: 'compaction',
-        ...(compacted.tokensBefore !== undefined ? { before: compacted.tokensBefore } : {}),
-        ...(compacted.tokensAfter !== undefined ? { after: compacted.tokensAfter } : {}),
-        ...(compacted.usage ? { tokens: tokensOf(compacted.usage) } : {}),
-      })
-    }
-    return compacted
-  })
-
-  // Claude Code gives each classic hook the permission mode, however plan mode began or ended.
-  on('classic.UserPromptSubmit', async ($, e, next) => {
-    state.endedTasks.delete(actorKey(state.sessions[0] ?? e.session_id))
-    heard($, e)
-    return next(e)
-  })
-  on('classic.PostToolUse', async ($, e, next) => {
-    heard($, e)
-    return next(e)
-  })
-  on('classic.Stop', async ($, e, next) => {
-    heard($, e)
-    return next(e)
+  // A subagent's start: the type it was spawned as and the model it runs on.
+  on('agent.spawn', async ($, e, next) => {
+    const spawned = await next(e)
+    const id = spawned.deny === undefined ? spawned.agentId : undefined
+    if (id === undefined) return spawned
+    state.endedTasks.delete(actorKey(state.sessions[0] ?? await $.session.id(), id))
+    state.types.set(id, e.subagentType)
+    tell($, undefined, { kind: 'subagent.start', agent: { id, type: e.subagentType }, model: spawned.model })
+    return spawned
   })
 }
 
 /** A turn's end, posted once Claude Code has ended it. */
 export async function eventsOfTurnEnd($: EngineInterface, e: TurnCompleteEvent) {
   tell($, e.agentId, { kind: 'turn.end', turn: e.turnId, ...(e.usage ? { tokens: tokensOf(e.usage) } : {}) })
+  // Each run of a subagent's loop is one turn, so its turn's end is the subagent's.
+  if (e.agentId) tell($, e.agentId, { kind: 'subagent.end' })
   await endAssigned($, e.agentId).catch(() => {})
 }
 
@@ -173,8 +119,5 @@ export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, nex
     return ran
   } finally {
     tell($, e.agentId, { kind: 'tool.end', tool: e.tool, call, failed })
-    if (!failed && !e.agentId && (e.tool === 'EnterPlanMode' || e.tool === 'ExitPlanMode')) {
-      planMode($, e.tool === 'EnterPlanMode')
-    }
   }
 }

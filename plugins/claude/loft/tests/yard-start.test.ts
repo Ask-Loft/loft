@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { PLUGIN_VERSION } from '../hooks/adapter'
-import { briefingOf, flagOf, HOME, readDoc, SESSION, start, stage, TREE, world, yardRuns } from './yard-world'
+import { flagOf, HOME, readDoc, SESSION, spawn, start, stage, TREE, world, yardRuns } from './yard-world'
 
 test('a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start', async ($, on) => {
   const w = world(on)
@@ -14,7 +14,6 @@ test('a loft that speaks the yard protocol turns Yard Client on: its six tools a
 test('a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update', async ($, on) => {
   const w = world(on, { protocol: 'none' })
   await start($)
-  await $.classic.SessionStart({ source: 'clear' })
   expect(w.state.tools).toEqual([])
   expect(w.state.toasts).toHaveLength(1)
   expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–2, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
@@ -46,54 +45,27 @@ test('with Yard Client off, the agent asks and plans in Claude Code alone', asyn
   expect(w.state.calls.map(call => call.tool)).toEqual(['AskUserQuestion', 'ExitPlanMode'])
 })
 
-test('the session starts with its briefing, from one read in its own name that marks what it read, followed by the tool to read with', async ($, on) => {
-  const w = world(on)
-  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  const started = await start($)
-  const reads = w.state.runs.filter(run => run.argv.includes('read'))
-  expect(reads).toHaveLength(1)
-  expect(flagOf(reads[0]!.argv, '--session')).toBe(SESSION)
-  expect(reads[0]!.cwd).toBe(TREE)
-  expect(reads[0]!.argv).toContain('--context')
-  expect(reads[0]!.argv).toContain('--mark-read')
-  const briefing = briefingOf(w.state.read, reads[0]!.argv)
-  expect(started.additionalContext).toEqual([`${String(briefing.text)}\nRead Yard Log with \`yard_read\` before writing.`])
-  expect(String(briefing.text)).toContain('Your working stage: `shape`')
-})
-
-test('a prompt gives no briefing: only the session start does', async ($, on) => {
+test("the mod reads no briefing at the session's start or at a prompt: the plugin's command hooks give the context", async ($, on) => {
   const w = world(on)
   await start($)
-  const before = w.state.runs.length
-  const prompted = await $.classic.UserPromptSubmit({ prompt: 'go' } as never)
   await $.turn.start({ text: 'go', turnId: 't1' })
-  expect(prompted.additionalContext ?? []).toEqual([])
-  expect(w.state.runs.slice(before).filter(run => run.argv.includes('read'))).toEqual([])
+  await w.clock.advance(1)
+  expect(w.state.runs.filter(run => run.argv.includes('read'))).toEqual([])
 })
 
-test('after /clear the session is given its context again, once loft yard continue has recorded the session it continues', async ($, on) => {
+test("after /clear the new session's first turn records once the session it continues, before any other command", async ($, on) => {
   const w = world(on)
   await start($)
   await $.session.end({ reason: 'clear', sessionId: SESSION } as never)
   w.state.session = 'session-2'
   const before = yardRuns(w).length
-  const again = await $.classic.SessionStart({ source: 'clear' })
-  expect((again.additionalContext ?? []).join('\n')).toContain('Yard Log of `feat/shelf`')
+  await $.turn.start({ text: 'go', turnId: 't1' })
   await $.tool.call({ tool: 'mcp__loft__yard_read' })
   await w.clock.advance(5000)
   const after = yardRuns(w).slice(before)
   expect(after[0]).toBe('continue --session session-2 --from session-1 --format json')
   expect(after.filter(run => run.startsWith('continue'))).toHaveLength(1)
   for (const run of after.slice(1)) expect(run).not.toContain(SESSION)
-})
-
-test('a compaction gives no new context', async ($, on) => {
-  const w = world(on)
-  await start($)
-  const before = w.state.runs.length
-  const compacted = await $.classic.SessionStart({ source: 'compact' })
-  expect(compacted.additionalContext ?? []).toEqual([])
-  expect(w.state.runs.length).toBe(before)
 })
 
 test('every command Yard Client runs is loftCommand with --format json, quietly, and no other program', { options: { loftCommand: 'pnpm exec loft' } }, async ($, on) => {
@@ -185,7 +157,7 @@ test('output cut short is never read as a document, even where the bytes kept wo
 test('a subagent calls a tool in its own name: its id and its type', async ($, on) => {
   const w = world(on)
   await start($)
-  await $.classic.SubagentStart({ agent_id: 'a9', agent_type: 'Explore' } as never)
+  await spawn($, w, 'a9', 'Explore')
   await $.tool.call({ tool: 'mcp__loft__yard_read', agentId: 'a9' })
   const run = w.state.runs.at(-1)!
   expect(flagOf(run.argv, '--agent')).toBe('a9')
@@ -198,6 +170,7 @@ test('a subagent calls a tool in its own name: its id and its type', async ($, o
 test('where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again', async ($, on) => {
   const w = world(on, { serve: 'serving' })
   await start($)
+  await w.clock.advance(1)
   const serves = () => w.state.runs.filter(run => run.argv.includes('serve'))
   expect(serves()).toHaveLength(1)
   expect(serves()[0]!.argv).toEqual(['loft', 'yard', 'serve', '--session', SESSION, '--tree', TREE, '--port', '7411', '--format', 'json'])
@@ -255,16 +228,6 @@ test('the token is read from the home directory', async ($, on) => {
   await w.clock.settle()
   expect(w.state.posts[0]!.headers.Authorization).toBe('Bearer token-1')
   expect(HOME).toBe('/home/reader')
-})
-
-test('the context is given again after /resume and /branch, and a session a new process starts names no session it continues', async ($, on) => {
-  const w = world(on)
-  await start($)
-  for (const source of ['resume', 'fork'] as const) {
-    const again = await $.classic.SessionStart({ source })
-    expect((again.additionalContext ?? []).join('\n')).toContain('Yard Log of `feat/shelf`')
-  }
-  expect(yardRuns(w).some(run => run.startsWith('continue'))).toBe(false)
 })
 
 test("the main agent's call names no agent, and an input at fault runs no command", async ($, on) => {

@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { block, briefingOf, readDoc, SESSION, stage, start, world, yardRuns, type World } from './yard-world'
+import { block, readDoc, SESSION, spawn, stage, start, world, yardRuns, type World } from './yard-world'
 
 const assignee = (id = 'worker') => ({ host: 'claude-code', session: SESSION, agent: id, agentType: 'builder' })
 const work = (id = 'shared', state = 'active', assigned = 'worker') => block(id, 'task', {
@@ -80,21 +80,6 @@ test("the main agent's turn end and its session's end each release the main agen
   ])
 })
 
-test('native subagent start gives the worker its briefing, marked read in its own name, without taking the stage', async ($, on) => {
-  const w = world(on)
-  w.state.read = doc('open')
-  await start($)
-  const before = w.state.runs.length
-  const result = await $.classic.SubagentStart({ agent_id: 'worker', agent_type: 'builder' } as never)
-  const reads = w.state.runs.slice(before).filter(run => run.argv.includes('read'))
-  expect(reads).toHaveLength(1)
-  expect(reads[0]!.argv).toEqual(expect.arrayContaining(['--context', '--mark-read', '--agent', 'worker', '--agent-type', 'builder']))
-  const briefing = briefingOf(w.state.read, reads[0]!.argv)
-  expect(result.additionalContext).toEqual([`${String(briefing.text)}\nRead Yard Log with \`yard_read\` before writing.`])
-  expect(String(briefing.text)).toContain('`shared`, open, in stage `build`')
-  expect(writes(w)).toHaveLength(0)
-})
-
 test('an ended worker cannot mirror late delegated progress until an identified new start', async ($, on) => {
   const w = world(on)
   w.state.agents.push({ id: 'worker', type: 'builder' })
@@ -104,7 +89,7 @@ test('an ended worker cannot mirror late delegated progress until an identified 
   w.state.read = doc('open')
   await $.tool.call({ tool: 'TaskUpdate', taskId: '7', agentId: 'worker', status: 'in_progress', metadata: { yardTask: 'shared' } } as never)
   expect(taskRuns(w).filter(run => run.startsWith('task shared'))).toHaveLength(0)
-  await $.classic.SubagentStart({ agent_id: 'worker', agent_type: 'builder' } as never)
+  await spawn($, w, 'worker', 'builder')
   await $.tool.call({ tool: 'TaskUpdate', taskId: '7', agentId: 'worker', status: 'in_progress', metadata: { yardTask: 'shared' } } as never)
   expect(taskRuns(w).filter(run => run.startsWith('task shared'))).toHaveLength(1)
 })

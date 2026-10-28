@@ -124,7 +124,7 @@ test('an interrupted native task releases its capture lane without a late mirror
   expect(writes(w).map(batch => batch[0]!.title)).toEqual(['Later'])
 })
 
-test('a new session has its own capture lane while an old native task finishes', async ($, on) => {
+test("a new session's first turn gives it its own capture lane while an old native task finishes", async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('before', 'active', { session: SESSION })] })
   const native = deferred<typeof created>()
@@ -135,7 +135,7 @@ test('a new session has its own capture lane while an old native task finishes',
   await $.session.end({ reason: 'clear', sessionId: SESSION } as never)
   w.state.session = 'session-2'
   w.state.read = readDoc({ stages: [stage('after', 'active', { session: 'session-2' })] })
-  await $.classic.SessionStart({ source: 'clear' })
+  await $.turn.start({ text: 'go', turnId: 't2' })
   const fresh = $.tool.call({ tool: 'TaskCreate', subject: 'New', description: '' } as never)
   await w.clock.settle()
   const independent = writes(w).map(batch => batch[0]!.stage)

@@ -26,10 +26,12 @@ const BUILT_IN: [&str; 7] = [
 /// tells it was installed by npm; `whoami` and `hostname`, whose answers a test plants as text the command
 /// event must never carry; `script`, which runs the built `loft` on a pseudo-terminal; and
 /// `mkfifo`, which makes the named pipe that a test file path names; and the copied skill
-/// packager, whose discovery guard is tested before it reaches a build command; and Python,
-/// which hosts the on-demand real Codex contract's loopback model fixture.
-const OTHER_PROGRAMS: [&str; 13] = [
+/// packager, whose discovery guard is tested before it reaches a build command; Python,
+/// which hosts the on-demand real Codex contract's loopback model fixture; and `sh`, which runs
+/// the Claude Code plugin's hook command as Claude Code does, and through it the built `loft`.
+const OTHER_PROGRAMS: [&str; 14] = [
     "\"python3\"",
+    "\"sh\"",
     "\"mkfifo\"",
     "&copy",
     "\"script\"",

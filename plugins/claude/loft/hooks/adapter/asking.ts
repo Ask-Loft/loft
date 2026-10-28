@@ -12,7 +12,7 @@ import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog
 import { capture, checkCapture } from './capture'
 import { activeStage, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Running } from './run'
-import { askerOf, peek, prepare, run, state, type Outcome, type Presenting } from './state'
+import { askerOf, peek, prepare, run, state, type Outcome } from './state'
 
 type Next = ((e: never) => Promise<ToolCallResult>) & { signal: AbortSignal }
 type SelectedStage = { id: string; key?: string; blocks?: Block[]; opened?: Record<string, unknown> }
@@ -144,11 +144,13 @@ export async function askQuestions($: EngineInterface, e: { questions: readonly 
   return ran
 }
 
-/** A plan's outcome in a wait's document, where the person decided it. */
-function outcomeOf(ran: Ran | undefined, id: string): Outcome | undefined {
-  if (!ran || !succeeded(ran)) return undefined
-  const block = [...blocksOf(ran.doc).values()].find(each => each.id === id)
-  return block?.outcome ?? undefined
+/** A plan's outcome as Yard Log holds it, where the page decided it. */
+async function decidedOnPage($: EngineInterface, cwd: string, caller: Caller, id: string): Promise<Outcome | undefined> {
+  const read = await peek($, cwd, caller)
+  if (!succeeded(read)) return undefined
+  const stages = Array.isArray(read.doc.stages) ? (read.doc.stages as { blocks?: Block[] }[]) : []
+  const block = stages.flatMap(stage => stage.blocks ?? []).find(each => each.id === id)
+  return block?.outcome?.channel === 'page' ? block.outcome : undefined
 }
 
 const rejection = (reason: unknown) =>
@@ -156,7 +158,9 @@ const rejection = (reason: unknown) =>
 
 /**
  * The agent's plan: sent to Yard Log, and decided in the terminal or on the page. The page's
- * decision reaches Claude Code through its permission request (`decideOnPage`), which waits for it.
+ * decision reaches Claude Code through the plugin's `PermissionRequest` command hook, which waits
+ * for it beside Claude Code's dialog; once Claude Code goes on, a decision the page made is
+ * Yard Log's already, and only one made in the terminal is recorded here.
  */
 export async function presentPlan(
   $: EngineInterface,
@@ -181,62 +185,19 @@ export async function presentPlan(
   })
   if (!captured) return next(e as never)
   const { id, cwd, caller, submission } = captured
-  const presenting: Presenting = { id, cwd, caller, submission }
-  state.presenting = presenting
-  try {
-    const ran = await next(e as never)
-    presenting.end?.()
-    const page = presenting.decided
-    if (page) return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
-    if (next.signal.aborted) {
-      await withdraw($, cwd, caller, submission)
-      return ran
-    }
-    const isApproved = ran.deny === undefined && ran.isError !== true
-    const reason = isApproved ? undefined : feedbackIn(ran.deny ?? ran.text ?? '')
-    await record($, cwd, caller, [
-      { block: id, verdict: isApproved ? 'approved' : 'rejected', ...(reason ? { reason } : {}) },
-    ])
+  const ran = await next(e as never)
+  const page = await decidedOnPage($, cwd, caller, id)
+  if (page) return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
+  if (next.signal.aborted) {
+    await withdraw($, cwd, caller, submission)
     return ran
-  } finally {
-    state.presenting = null
-    presenting.end?.()
   }
-}
-
-/** Claude Code's permission for a plan the page approved: plan mode ends and auto mode begins. */
-export function approval(input: unknown) {
-  return {
-    behavior: 'allow' as const,
-    // Claude Code drops an allow for a tool that needs the person unless it gives the input back.
-    updatedInput: (input ?? {}) as Record<string, unknown>,
-    updatedPermissions: [{ type: 'setMode' as const, mode: 'auto' as const, destination: 'session' as const }],
-  }
-}
-
-/**
- * Answers Claude Code's request to approve the plan where the page decides it first. Claude Code
- * shows its dialog apart from this request and answers beneath it at once with no decision, so the
- * request runs the plan's wait itself: the wait's process is this hook's own, and a hook's time
- * stands still while its own `$` calls run, so it waits as long as the person takes. It ends once
- * the page decides, the terminal decided and the call went on, or Claude Code drops the request.
- */
-export async function decideOnPage<R>(
-  $: EngineInterface,
-  presented: Presenting,
-  beneath: () => Promise<R>,
-  input: unknown,
-  signal: AbortSignal,
-) {
-  const wait = waiting($, presented.cwd, presented.submission, presented.caller)
-  presented.end = wait.end
-  const ran = await Promise.race([wait.done, endedBy(signal)])
-  wait.end()
-  const decided = outcomeOf(ran, presented.id)
-  if (decided?.channel !== 'page') return beneath()
-  presented.decided = decided
-  if (decided.verdict === 'approved') return { decision: approval(input) }
-  return { decision: { behavior: 'deny' as const, message: rejection(decided.reason) } }
+  const isApproved = ran.deny === undefined && ran.isError !== true
+  const reason = isApproved ? undefined : feedbackIn(ran.deny ?? ran.text ?? '')
+  await record($, cwd, caller, [
+    { block: id, verdict: isApproved ? 'approved' : 'rejected', ...(reason ? { reason } : {}) },
+  ])
+  return ran
 }
 
 /**

@@ -7,7 +7,9 @@ use std::process::Child;
 use std::time::Duration;
 
 use serde_json::{Value, json};
+use software_plant::Clock;
 
+use crate::common::EPOCH;
 use crate::served::{Served, within};
 use crate::yard::{BRANCH, Yard, document};
 use crate::yard_claude_hook::{hook, input};
@@ -196,6 +198,25 @@ fn a_plan_approved_on_the_page_is_allowed_with_its_input_and_auto_mode() {
             "updatedInput": {"plan": "1. Do it", "planFilePath": "/plans/p.md"},
             "updatedPermissions": [{"type": "setMode", "mode": "auto", "destination": "session"}],
         }})
+    );
+}
+
+#[test]
+fn a_page_decision_made_after_waits_that_ended_pending_still_reaches_claude_code() {
+    let (mut yard, served) = presented(&[]);
+    // On a clock that passes as the hook waits, each of its 540-second waits ends pending at once.
+    yard.clock = Clock::fixed(EPOCH).passing();
+    let child = asking(&yard, None);
+    std::thread::sleep(Duration::from_millis(1500));
+    decide(
+        &yard,
+        &served,
+        &json!({"block": "p1", "verdict": "approved"}),
+    );
+    let output = answered(child);
+    assert_eq!(
+        output["hookOutput"]["hookSpecificOutput"]["decision"]["behavior"],
+        "allow"
     );
 }
 

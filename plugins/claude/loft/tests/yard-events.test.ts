@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { flush, keep, MOST, outboxOf } from '../hooks/adapter/outbox'
-import { block, deferred, readDoc, SESSION, stage, start, TREE, world, yardRuns, type Engine, type World } from './yard-world'
+import { block, deferred, readDoc, SESSION, spawn, stage, start, TREE, world, yardRuns, type Engine, type World } from './yard-world'
 
 const events = (w: World) => w.state.posts.flatMap(post => post.events)
 const kinds = (w: World) => events(w).map(event => String(event.kind))
@@ -48,40 +48,36 @@ test("a tool call's start and end are posted, the end saying whether it failed, 
   ])
 })
 
-test("a subagent's events name it by its id and type", async ($, on) => {
+test("a subagent's events name it by its id and type, from its spawn to its turn's end", async ($, on) => {
   const w = world(on)
   await start($)
-  await $.classic.SubagentStart({ agent_id: 'a9', agent_type: 'Explore' } as never)
+  await spawn($, w, 'a9', 'Explore')
   await $.tool.call({ tool: 'Read', file_path: '/x', agentId: 'a9', tool_use_id: 'u1' } as never)
-  await $.classic.SubagentStop({ agent_id: 'a9', agent_type: 'Explore', stop_hook_active: false } as never)
+  await $.turn.complete({ agentId: 'a9', turnId: 'a9-turn', answer: '', durationMs: 1, reason: 'answer', isAborted: false } as never)
   await w.clock.settle()
-  const of = events(w).filter(event => event.kind === 'tool.start' || event.kind === 'subagent.end')
+  const of = events(w).filter(event => ['subagent.start', 'tool.start', 'subagent.end'].includes(String(event.kind)))
   expect(of.map(event => [event.kind, event.agent])).toEqual([
+    ['subagent.start', { id: 'a9', type: 'Explore' }],
     ['tool.start', { id: 'a9', type: 'Explore' }],
     ['subagent.end', { id: 'a9', type: 'Explore' }],
   ])
 })
 
-test("a turn's end carries its tokens, and a compaction the tokens before and after", async ($, on) => {
+test("a turn's end carries its tokens", async ($, on) => {
   const w = world(on)
   await start($)
   await $.turn.complete({ turnId: 't1', answer: '', usage: USAGE } as never)
-  await $.session.compact({ trigger: 'auto', messages: [{ role: 'user', text: 'so far', toolUses: [] }] } as never)
   await w.clock.settle()
-  const [end, compaction] = events(w)
-  expect(end).toMatchObject({ kind: 'turn.end', turn: 't1', tokens: { input: 10, cacheRead: 100, cacheWrite: 20, output: 5 } })
-  expect(compaction).toMatchObject({ kind: 'compaction', before: 9000, after: 1200, tokens: { input: 7000, cacheRead: 0, cacheWrite: 0, output: 900 } })
+  expect(events(w)[0]).toMatchObject({ kind: 'turn.end', turn: 't1', tokens: { input: 10, cacheRead: 100, cacheWrite: 20, output: 5 } })
 })
 
-test('plan mode starting and ending is posted once for each change, as the main agent is heard in it', async ($, on) => {
+test("the mod posts no plan mode: the plugin's command hooks hear it from the permission mode", async ($, on) => {
   const w = world(on)
   await start($)
-  await $.classic.UserPromptSubmit({ prompt: 'a', permission_mode: 'default' } as never)
-  await $.classic.UserPromptSubmit({ prompt: 'b', permission_mode: 'plan' } as never)
-  await $.classic.Stop({ stop_hook_active: false, permission_mode: 'plan' } as never)
-  await $.classic.UserPromptSubmit({ prompt: 'c', permission_mode: 'auto' } as never)
+  await $.tool.call({ tool: 'EnterPlanMode' } as never)
+  await $.turn.start({ text: 'go', turnId: 't1' })
   await w.clock.settle()
-  expect(kinds(w)).toEqual(['plan.start', 'plan.end'])
+  expect(kinds(w).filter(kind => kind.startsWith('plan.'))).toEqual([])
 })
 
 test("the mod's own dialogs and commands are not posted as the agent's tool calls", async ($, on) => {
@@ -273,15 +269,15 @@ const step = async ($: Engine, agentId?: string) => {
   for await (const _ of $.turn.step({ ...STEP, ...(agentId ? { agentId } : {}) } as never)) void _
 }
 
-test("a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start waits for its first request's model", async ($, on) => {
+test("a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start is posted as it is spawned, with its model", async ($, on) => {
   const w = world(on)
   on('turn.step', async function* () {
     return RESPONSE as never
   })
   await start($)
-  await $.classic.SubagentStart({ agent_id: 'a9', agent_type: 'Explore' } as never)
+  await spawn($, w, 'a9', 'Explore')
   await w.clock.settle()
-  expect(kinds(w)).toEqual([])
+  expect(kinds(w)).toEqual(['subagent.start'])
   await step($, 'a9')
   await step($)
   await w.clock.settle()
@@ -316,17 +312,6 @@ test("the agent's work goes on while the page server has yet to answer", async (
   expect(ran.text).toBe('ok')
 })
 
-test('plan mode is heard from the EnterPlanMode and ExitPlanMode calls that succeed', async ($, on) => {
-  const w = world(on, { protocol: 1 })
-  w.state.terminal.ExitPlanMode = () => ({ deny: 'no' })
-  await start($)
-  await $.tool.call({ tool: 'EnterPlanMode' } as never)
-  await $.tool.call({ tool: 'ExitPlanMode' } as never)
-  w.state.terminal.ExitPlanMode = () => ({ result: 'ok', text: 'ok' })
-  await $.tool.call({ tool: 'ExitPlanMode' } as never)
-  await w.clock.settle()
-  expect(kinds(w).filter(kind => kind.startsWith('plan.'))).toEqual(['plan.start', 'plan.end'])
-})
 
 test("after /clear a task the new session makes is a block of its own, and the mirror's reads leave the last-read revision as it was", async ($, on) => {
   const w = world(on)
@@ -337,7 +322,7 @@ test("after /clear a task the new session makes is a block of its own, and the m
   await w.clock.settle()
   await $.session.end({ reason: 'clear', sessionId: SESSION } as never)
   w.state.session = 'session-2'
-  await $.classic.SessionStart({ source: 'clear' })
+  await $.turn.start({ text: 'go', turnId: 't2' })
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: 'session-2' })] })
   const before = w.state.runs.length
   await $.tool.call({ tool: 'TaskCreate', subject: 'After', description: '' } as never)
