@@ -103,14 +103,17 @@ impl Activity {
         }
     }
 
-    /// Keeps what `event` starts or ends, `stage` the stage it counts toward; says whether
-    /// it changed anything.
-    pub fn apply(&mut self, event: &Event, stage: Option<&str>) -> bool {
-        let metadata_changed = event
-            .adapter
-            .as_ref()
-            .is_some_and(|adapter| self.adapter.as_ref() != Some(adapter));
-        if let Some(adapter) = &event.adapter {
+    /// Keeps what `event` starts or ends, `stage` the stage it counts toward, under `adapter`,
+    /// the last descriptor its session posted; says whether it changed anything.
+    pub fn apply(
+        &mut self,
+        event: &Event,
+        stage: Option<&str>,
+        adapter: Option<&yardlog::adapter::Descriptor>,
+    ) -> bool {
+        let metadata_changed =
+            adapter.is_some_and(|adapter| self.adapter.as_ref() != Some(adapter));
+        if let Some(adapter) = adapter {
             self.adapter = Some(adapter.clone());
         }
         self.host.clone_from(&event.host);

@@ -10,6 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
 use serde_json::{Value, json};
+use yardlog::adapter::Descriptor;
 use yardlog::{Agent, YardLog};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
@@ -38,6 +39,17 @@ type ByLog = BTreeMap<(String, String), Kept>;
 struct SessionKept {
     logs: ByLog,
     receipts: Receipts,
+    /// The last descriptor the session posted, which each event that carries none is kept under.
+    adapter: Option<Descriptor>,
+}
+
+impl SessionKept {
+    /// Takes the descriptor `event` carries, if any, as the session's last.
+    fn describe(&mut self, event: &Event) {
+        if let Some(adapter) = &event.adapter {
+            self.adapter = Some(adapter.clone());
+        }
+    }
 }
 
 /// Each session's activity and totals, by session, and the newest text written of each of their
@@ -168,18 +180,20 @@ fn arrivals(
 }
 
 impl Kept {
-    /// Keeps what `event` adds; gives the files whose text changed.
+    /// Keeps what `event` adds, under its session's last descriptor `adapter`; gives the files
+    /// whose text changed.
     fn apply(
         &mut self,
         event: &Event,
-        stage: Option<&str>,
-        open: &[String],
+        arrival: (Option<&str>, &[String]),
+        adapter: Option<&Descriptor>,
     ) -> Vec<(SessionFile, String)> {
+        let (stage, open) = arrival;
         let mut changed = Vec::new();
         let activity = self
             .activity
             .get_or_insert_with(|| Activity::new(&event.session));
-        if activity.apply(event, stage) {
+        if activity.apply(event, stage, adapter) {
             self.activity_written = true;
             changed.push((SessionFile::Activity, activity.text()));
         }
@@ -237,10 +251,15 @@ fn replay(home: &Home, session: &str) -> SessionKept {
             continue;
         }
         kept.receipts.keep(receipt.as_ref());
+        kept.describe(&event);
         kept.logs
             .entry((tree.to_owned(), branch.to_owned()))
             .or_default()
-            .apply(&event, line["stage"].as_str(), &named_open(&line));
+            .apply(
+                &event,
+                (line["stage"].as_str(), &named_open(&line)),
+                kept.adapter.as_ref(),
+            );
     }
     kept
 }
@@ -378,10 +397,11 @@ fn keep(
     home.append_event(&event.session_key(), &text)
         .map_err(|error| error.to_string())?;
     session.receipts.keep(event.receipt.as_ref());
+    session.describe(event);
     Ok(session.logs.entry(place_key).or_default().apply(
         event,
-        arrival.stage.as_deref(),
-        &arrival.open,
+        (arrival.stage.as_deref(), &arrival.open),
+        session.adapter.as_ref(),
     ))
 }
 

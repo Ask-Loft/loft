@@ -19608,6 +19608,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
         name: "the empty page describes an agent host without requiring Claude"
         body: 4031f330b7afc8fc22321f0bea12253483c092b1697c7413596c3379f74361ae
+  - node: 01a182b6-3c58-7235-ad04-3913b96391cb
+    reviewed: b53d7a888e93d9c177ce8a90441981d02d9a63b06bb19cf85cb56d40cf049230
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "an_event_without_a_descriptor_is_kept_under_the_last_descriptor_its_session_posted"
+        body: fb7ed1cc52642168e0770d0af790a7780c033892c79075ec87a7a28b65fd4da2
+  - node: 01a182b6-3c58-7235-ad04-391493273b63
+    reviewed: f27b8ba7737be0aae3c4c2d6b798a3ba33de0b241e11d8485e5a401875ab97a1
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "replaying_a_session_after_a_restart_applies_each_descriptor_to_the_events_after_it"
+        body: 9d01de7f7d9e5f6992822a91a1b290694c58c4b9e2137e60ab84d7cc1d4ec4cd
+  - node: 01a182b6-3c58-7235-ad04-39157bf8284b
+    reviewed: 49d8b4cc83d4b51076d9c1d6f14aa72e3a5a107a07ef70db29a18a9d900a6ff4
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "a_session_that_has_posted_no_descriptor_keeps_unknown_coverage"
+        body: 63cb832228c71cd35f32e69156ba2d9bf426a5e36951281738632529425c1ede
   - node: 01a1787c-f803-70b1-b946-b6f058cf6304
     reviewed: d4f605818d87cb4ecd67c4049a9a70eafbc9d17b73cb8424e1d823c9c70cfadd
     tests:
