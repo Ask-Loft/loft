@@ -47,8 +47,8 @@ You talk; the agent writes. Each step below starts with something you might say.
    is written.
 4. **Watch the build.** The agent works test-first, step by step. Its tasks, the questions it
    still has and, where your agent reports them, the tokens each step takes show up live on the
-   Yard page. It links each test
-   to the criterion it verifies, so a criterion that changes later marks its tests for review.
+   Yard page. It links each test to the criterion it verifies, so a criterion that changes later
+   marks its tests for review.
 5. **Review.** Read the diff, the notes the agent left for each step, and Loft's reports. "Render
    the spec" gives you `docs/spec.md` to read as a document.
 6. **Publish.** "Merge and publish." On `main`, `loft publish` gives the new nodes their labels
