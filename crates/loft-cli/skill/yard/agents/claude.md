@@ -17,7 +17,7 @@ You reach it through six tools:
 | `mcp__loft__yard_wait` | Waits until the person has answered or decided a `submission`, and returns what they gave. |
 | `mcp__loft__yard_withdraw` | Withdraws a `submission` that no longer needs answers. |
 | `mcp__loft__yard_close` | Closes Yard Log once the branch's work is finished. |
-| `mcp__loft__yard_published` | On the base branch, records the publish that followed a merge in the Yard Log of the `branch` the merge brought in. |
+| `mcp__loft__yard_published` | On the base branch, records the publish that followed a merge in the Yard Log of the `branch` the merge brought in, with an optional `note` in Markdown. |
 
 The tools run for your host, session and optional subagent. Do not supply another agent's
 identity or write answers or outcomes on the person's behalf.
@@ -25,15 +25,19 @@ identity or write answers or outcomes on the person's behalf.
 `yard_wait` holds the turn until the person answers on the page or in the dialog, or the
 submission is withdrawn, or Yard Log is closed.
 
-A question you ask with `AskUserQuestion` reaches Yard Log as well, in your active stage, and is
-answered in either place in the same way. Its blocks take ids such as `ask-r12-1`; read Yard Log
-to find them when a decision names the question.
+A question you ask with `AskUserQuestion` reaches Yard Log as well, and is answered in either
+place in the same way. It goes to your own active stage, or, where you have none, to a stage
+titled "Asked in the session" that the plugin opens for you. Its blocks take ids made from the
+tool call's id, such as `ask-toolu-01abc-1`; read Yard Log to find them when a decision names the
+question.
 
 The tasks you create with `TaskCreate` are mirrored as `task` blocks of your working stage, the
 one your briefing names: the stage of your active assigned tasks, else your own active stage,
 else your session's main agent's active stage. With none, a new task is not mirrored; a task
 mirrored into a stage you do not own is assigned to you. Each `TaskUpdate` changes the task
-through `loft yard task`: `in_progress` as `active`, `completed` as `done`.
+through `loft yard task`: `pending` as `open`, `in_progress` as `active`, `completed` as `done`
+and `deleted` as `dropped`, with its `subject` as the title and its `description` as the
+detail.
 Create a fix with `TaskCreate` and `metadata: { type: "fix" }`, or write its `task` block with
 `type: fix`. A `TaskUpdate` with a `type` in its metadata changes it; `null` makes it `regular`.
 
@@ -47,9 +51,14 @@ under your own stage. Assignment context names your tasks and their recorded sta
 
 Only the assigned executor's native progress is mirrored for an assigned task: Yard Log applies
 each mirror to the task as it stands, with no read first and no retry, and leaves another
-agent's task as it is. Finished tasks are not reopened by automatic mirroring. A reliably
-observed end or interruption returns active assignments to `open` in one `loft yard task
---release`, keeping their assignee for the stage owner's review.
+agent's task as it is. Finished tasks are not reopened by automatic mirroring. The end of your
+run as a subagent, an interrupted turn, or the end of your session returns your active
+assignments to `open` in one `loft yard task --release`, keeping their assignee for the stage
+owner's review. The end of an uninterrupted turn of the main agent leaves them active.
+
+After `/clear` or a resume, Claude Code goes on under a new session id, and the plugin records
+that the new session continues the one that ended. It keeps that session's stages, tasks and
+open submissions, and starts from the revision it last read.
 
 ## Plan the build in plan mode once the change is approved
 
@@ -62,7 +71,8 @@ revise in plan mode with their reason, and present again.
 
 A plan you present with `ExitPlanMode` reaches Yard Log as a `plan` block and may be approved or
 rejected on the page or in the terminal. Approved on the page, it ends plan mode and you go on in
-auto mode.
+auto mode. Rejected on the page, `ExitPlanMode` is denied with the person's reason: revise the plan
+in plan mode and present it again.
 
 Where the person changes a requirement once the plan is approved, commit the change to `spec/` and
 record its `spec-change` view before you write any code that meets it. Then call `EnterPlanMode`

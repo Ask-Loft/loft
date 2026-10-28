@@ -29,8 +29,8 @@ The startup context is your briefing, from `loft yard read --context --mark-read
 recorded as your last, so a later read with `--since` starts from what it showed. A later prompt's
 context says only whether decision notifications reach you. Read with `--mark-read` before your
 first write, then base your write on that result's revision. Run the commands in the worktree
-whose branch you are recording. Each result reports the page's address and whether git
-ignores `.yard/`; where it is ignored, leave it out of commits.
+whose branch you are recording. Each result reports the page's address, and a read also
+reports whether git ignores `.yard/`; where it is ignored, leave it out of commits.
 
 ### Questions and plan approval use the Yard page
 
@@ -161,8 +161,10 @@ It identifies steps by exact text and duplicate occurrence: reordering retains t
 renaming creates a new task and drops the old unfinished task. Removed completed tasks stay done.
 Do not duplicate these tasks in explicit writes.
 
-When Codex does not offer `update_plan`, write Yard task blocks yourself. For a fix, read the
-mirrored task and write its whole block with `type: fix`; later mirrors retain that classification.
+When Codex does not offer `update_plan`, write Yard task blocks yourself. For a fix, run
+`loft yard task TASK-ID --type fix` with your caller arguments, which changes that field alone,
+or read the mirrored task and write its whole block with `type: fix`; later mirrors retain that
+classification.
 Unbound steps need a working stage: none is mirrored while your active assigned tasks lie in more
 than one stage. A step mirrored into a stage you do not own is assigned to you. Keep stages,
 notes, decisions and Loft reports yourself.
@@ -176,8 +178,11 @@ removing a bound step leaves the task unchanged. Another assignee's progress and
 delegated tasks are preserved.
 
 An identified end or interruption returns your still-active assignments to open, retaining their
-assignee and execution history. It never implies completion. A new start permits progress again;
-late native updates from an ended worker are ignored. Ambiguous actor identity changes no task.
+assignee and execution history; it never implies completion. A subagent's stop, an interruption
+and the session's end each count. The main agent's `Stop` at the end of an uninterrupted turn
+does not, and leaves them active. A new start permits progress again; late native updates from an
+ended worker are ignored. Ambiguous actor identity changes no task. A new Codex session does not
+continue an earlier one: it needs an explicit assignment or stage handoff.
 Startup context lists your assigned task IDs and original stages separately from your own stage;
 read Yard Log for any assignments omitted from that bounded context.
 
