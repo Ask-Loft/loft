@@ -12,7 +12,7 @@ use crate::yard::{ASK, Yard};
 use crate::yard_serve_events::{event, post, session_file};
 use crate::yard_upgrade_totals::upgrade;
 
-const MARKER: &str = "cacheWriteClassified: true\n";
+const FORMAT: &str = "format: yardtokens/2\n";
 
 /// A Codex request as an adapter that did not classify cache writes posted it, under `id`, with
 /// `account` as its source's account where it gives one and `write` cache writes.
@@ -42,8 +42,9 @@ fn totals(yard: &Yard) -> String {
     session_file(yard, "tokens", "codex~s1").unwrap()
 }
 
-/// A Codex session's events posted and counted, then its totals file left without the marker,
-/// as a page server that did not classify cache writes left it, and the page server stopped.
+/// A Codex session's events posted and counted, then its totals file left in the first totals
+/// format, as a page server that did not classify cache writes left it, and the page server
+/// stopped.
 fn legacy_session(rows: impl Fn(&Yard) -> Vec<Value>) -> Yard {
     let yard = Yard::new();
     yard.write("s1", ASK, &["--host", "codex", "--send"]);
@@ -54,7 +55,7 @@ fn legacy_session(rows: impl Fn(&Yard) -> Vec<Value>) -> Yard {
     let path = yard
         .folder(crate::yard::BRANCH)
         .join("tokens/codex~s1.yaml");
-    fs::write(&path, totals(&yard).replacen(MARKER, "", 1)).unwrap();
+    fs::write(&path, totals(&yard).replacen(FORMAT, "", 1)).unwrap();
     yard
 }
 
@@ -106,7 +107,7 @@ fn each_unverified_zero_moves_under_its_source_and_keeps_its_event_identity() {
 fn replay_gives_what_the_upgrade_wrote(yard: &Yard) {
     upgrade(yard);
     let written = totals(yard);
-    assert!(written.contains(MARKER), "{written}");
+    assert!(written.starts_with(FORMAT), "{written}");
     let served = Served::start(yard, &[]);
     // A request that adds nothing but its time makes the page server write the totals it
     // replayed.
@@ -165,26 +166,22 @@ fn a_retry_of_an_original_event_is_still_recognized_after_the_upgrade() {
 }
 
 /// A Codex session's unverified zeros posted to a page server that did not move them, its
-/// totals file left as that page server marked it.
-fn marked_session() -> Yard {
+/// totals file left in the current totals format as that page server wrote it.
+fn current_session() -> Yard {
     let yard = legacy_session(unclassified);
     let path = yard
         .folder(crate::yard::BRANCH)
         .join("tokens/codex~s1.yaml");
     let text = totals(&yard);
-    fs::write(
-        &path,
-        text.replacen("host: codex\n", &format!("host: codex\n{MARKER}"), 1),
-    )
-    .unwrap();
+    fs::write(&path, format!("{FORMAT}{text}")).unwrap();
     yard
 }
 
 #[test]
-fn the_events_of_a_session_whose_totals_are_already_marked_are_moved_and_its_totals_kept() {
-    let yard = marked_session();
-    let marked = totals(&yard);
-    assert!(marked.contains(MARKER), "{marked}");
+fn the_events_of_a_session_whose_totals_are_in_the_current_format_are_moved_and_its_totals_kept() {
+    let yard = current_session();
+    let current = totals(&yard);
+    assert!(current.starts_with(FORMAT), "{current}");
     let (code, result) = upgrade(&yard);
     assert_eq!(code, Some(0));
     assert_eq!(result["classified"], json!([]));
@@ -194,14 +191,14 @@ fn the_events_of_a_session_whose_totals_are_already_marked_are_moved_and_its_tot
     }
     assert_eq!(
         totals(&yard),
-        marked,
-        "the marked totals file is left as it was"
+        current,
+        "the totals file in the current format is left as it was"
     );
 }
 
 #[test]
 fn a_second_run_moves_no_event() {
-    let yard = marked_session();
+    let yard = current_session();
     upgrade(&yard);
     let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
     let first = fs::read(&path).unwrap();
@@ -212,8 +209,8 @@ fn a_second_run_moves_no_event() {
 }
 
 #[test]
-fn while_a_page_server_runs_a_marked_session_s_events_are_left_as_they_were() {
-    let yard = marked_session();
+fn while_a_page_server_runs_a_session_s_events_are_left_as_they_were() {
+    let yard = current_session();
     let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
     let before = fs::read(&path).unwrap();
     let served = Served::start(&yard, &[]);

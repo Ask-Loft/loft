@@ -1,11 +1,13 @@
 //! Yard Log's token sums as the page shows them, summed from every session's totals file by the
 //! rules of Yard Log's model: in all, by stage and within each stage by type of subagent, under
 //! no stage, by session, by agent and model, and by submission. Each totals file is summed as it
-//! gives its counts, whatever its host.
+//! gives its counts, whatever its host; one of a newer totals format is left out, and makes the
+//! sums partial.
 
 use std::cmp::Reverse;
 
 use serde_json::{Value, json};
+use yardlog::totals::TotalsFormat;
 use yardlog::usage::Counts;
 
 /// The sums of `files`, the totals files as JSON, with `activities` the activity files: a session
@@ -13,7 +15,11 @@ use yardlog::usage::Counts;
 pub fn sums(files: &[Value], activities: &[Value]) -> Value {
     let mut sums = Sums::default();
     for file in files {
-        sums.add(file);
+        if TotalsFormat::of(file).is_some_and(TotalsFormat::is_known) {
+            sums.add(file);
+        } else {
+            sums.all.get_or_insert_default().add(Counts::unreported());
+        }
     }
     for activity in activities {
         let counted = sums.sessions.iter().any(|session| {

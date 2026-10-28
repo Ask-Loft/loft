@@ -1,7 +1,7 @@
-//! `loft yard upgrade` over the totals files of open Yard Logs: a Codex file written before the
-//! adapter classified cache writes has its zero cache-write counts made unavailable, every file
-//! gains the marker, a file that has it, and every file of a closed Yard Log, is left as it was,
-//! and nothing is touched while a page server runs.
+//! `loft yard upgrade` over the totals files of open Yard Logs: a Codex file of an older totals
+//! format has its zero cache-write counts made unavailable, every such file gains the current
+//! format, a file already in it, and every file of a closed Yard Log, is left as it was, and
+//! nothing is touched while a page server runs.
 
 use std::fs;
 
@@ -67,9 +67,9 @@ submissions:
 ";
 
 /// [`CODEX`] once upgraded: each zero cache write unavailable, each positive one kept.
-const CODEX_CLASSIFIED: &str = "session: s1
+const CODEX_CLASSIFIED: &str = "format: yardtokens/2
+session: s1
 host: codex
-cacheWriteClassified: true
 firstEnded: 2026-01-01T10:00:01Z
 lastEnded: 2026-01-01T10:00:02Z
 tokens:
@@ -112,7 +112,7 @@ submissions:
     output: 5
 ";
 
-/// A Claude Code session's totals with a measured zero cache write, before the marker.
+/// A Claude Code session's totals with a measured zero cache write, in the first totals format.
 const CLAUDE: &str = "session: s2
 host: claude-code
 firstEnded: 2026-01-01T10:00:01Z
@@ -185,16 +185,11 @@ fn a_codex_zero_cache_write_becomes_unavailable_in_every_scope_and_positive_coun
 }
 
 #[test]
-fn a_claude_code_totals_file_keeps_its_counts_and_gains_the_marker() {
+fn a_claude_code_totals_file_keeps_its_counts_and_gains_its_format() {
     let yard = with_totals(&[("s2", CLAUDE)]);
     let (code, result) = upgrade(&yard);
     assert_eq!(code, Some(0));
-    let marked = CLAUDE.replacen(
-        "host: claude-code\n",
-        "host: claude-code\ncacheWriteClassified: true\n",
-        1,
-    );
-    assert_eq!(text(&yard, "s2"), marked);
+    assert_eq!(text(&yard, "s2"), format!("format: yardtokens/2\n{CLAUDE}"));
     assert_eq!(
         result["classified"],
         json!([{ "branch": BRANCH, "host": "claude-code", "session": "s2" }])
@@ -202,7 +197,7 @@ fn a_claude_code_totals_file_keeps_its_counts_and_gains_the_marker() {
 }
 
 #[test]
-fn a_totals_file_that_carries_the_marker_is_left_and_a_second_run_changes_nothing() {
+fn a_totals_file_already_in_the_current_format_is_left_and_a_second_run_changes_nothing() {
     let yard = with_totals(&[("codex~s1", CODEX), ("s2", CLAUDE)]);
     upgrade(&yard);
     let before = snapshot(&yard.scratch.0.join(".yard"));
@@ -213,6 +208,20 @@ fn a_totals_file_that_carries_the_marker_is_left_and_a_second_run_changes_nothin
         snapshot(&yard.scratch.0.join(".yard")) == before,
         "a file changed"
     );
+}
+
+#[test]
+fn a_totals_file_that_carries_only_an_earlier_build_s_marker_gains_its_format() {
+    let marked = CLAUDE.replacen(
+        "host: claude-code\n",
+        "host: claude-code\ncacheWriteClassified: true\n",
+        1,
+    );
+    let yard = with_totals(&[("s2", &marked)]);
+    let (code, result) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    assert_eq!(text(&yard, "s2"), format!("format: yardtokens/2\n{CLAUDE}"));
+    assert_eq!(result["classified"][0]["session"], "s2");
 }
 
 #[test]

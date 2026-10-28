@@ -195,9 +195,9 @@ fn a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open
 /// `submission` was open.
 fn totals_of_three_requests(stage: &str, submission: &str) -> String {
     format!(
-        "session: s1
+        "format: yardtokens/2
+session: s1
 host: claude-code
-cacheWriteClassified: true
 firstEnded: 2026-01-01T10:00:05Z
 lastEnded: 2026-01-01T10:00:12Z
 tokens:

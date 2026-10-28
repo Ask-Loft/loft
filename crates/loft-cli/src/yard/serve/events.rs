@@ -3,7 +3,8 @@
 //! branch its agent's directory is on as it arrives, the stage it counts toward and the
 //! submissions open; and what it starts or ends, or counts, is kept in the session's activity
 //! and token totals in that Yard Log's folder. The page server rebuilds a session's activity and
-//! totals from its event log the first time it hears of the session.
+//! totals from its event log the first time it hears of the session. A totals file of a newer
+//! totals format is left as it is, and the session's requests are counted into no file.
 
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
@@ -17,13 +18,14 @@ use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
-use yardlog::totals::Totals;
+use yardlog::totals::{Totals, TotalsFormat};
 
 use super::activity::Activity;
 use super::http::Response;
 use super::newest::Newest;
 use crate::yard::event::{Event, Who};
 use crate::yard::event_ids::Receipts;
+use crate::yard::session_files;
 use crate::yard::totals;
 
 /// What one session keeps in one branch's Yard Log.
@@ -294,6 +296,9 @@ impl Sessions {
         // a post that writes after a later one leaves that one's newer text in place.
         drop(kept);
         for (path, ((index, generation), store, file, session, text)) in changed {
+            if file == SessionFile::Tokens && newer_totals(&store, &session) {
+                continue;
+            }
             let wrote = self.written.write(&path, generation, || {
                 store.write_session(file, &session, text.as_bytes())
             });
@@ -306,6 +311,13 @@ impl Sessions {
             &json!({ "recorded": recorded, "skipped": skipped, "rejected": rejected }),
         )
     }
+}
+
+/// Whether session `session`'s totals file in the Yard Log of `store` is of a totals format newer
+/// than this `loft`'s, or one it does not know.
+fn newer_totals(store: &YardStore, session: &str) -> bool {
+    session_files::one(store, SessionFile::Tokens, session)
+        .is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
 }
 
 /// A session's file a batch changed: the index of the event that last changed it with the

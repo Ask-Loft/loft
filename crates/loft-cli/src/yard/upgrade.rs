@@ -2,9 +2,9 @@
 //! tree's `.yard/` that is open and in an older format, written in this `loft`'s format, each
 //! under its own lock, whole or not at all. Closed Yard Log and Yard Log already in this
 //! format are left as they are; one of a newer format, or one that does not read, is left and
-//! named, and the command exits 1. Then each open Yard Log's totals files that carry no
-//! `cacheWriteClassified` marker are classified, unless a page server runs (`totals`). The
-//! person runs it, so it takes no `--session`.
+//! named, and the command exits 1. Then each open Yard Log's totals files of an older totals
+//! format are written in the current one, unless a page server runs (`totals`). The person runs
+//! it, so it takes no `--session`.
 
 mod events;
 mod totals;

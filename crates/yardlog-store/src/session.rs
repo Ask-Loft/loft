@@ -67,6 +67,12 @@ impl YardStore {
         Ok(replace_synced(&path, bytes, false)?)
     }
 
+    /// Session `session`'s file of `kind` in Yard Log's folder; none where it cannot be read.
+    #[must_use]
+    pub fn session_file(&self, kind: SessionFile, session: &str) -> Option<Vec<u8>> {
+        fs::read(self.session_path(kind, session)).ok()
+    }
+
     /// Every session's file of `kind` in Yard Log's folder, by the session key that names it, in
     /// the order of their keys. A file that cannot be read is left out, since only its own
     /// session's events change it and the next event writes it whole again.

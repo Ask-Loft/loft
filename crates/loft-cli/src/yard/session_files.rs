@@ -16,6 +16,13 @@ pub fn read(store: &YardStore, kind: SessionFile) -> Vec<Value> {
         .collect()
 }
 
+/// Session `session`'s file of `kind` in the Yard Log of `store`, as JSON; none where it does not
+/// read.
+pub fn one(store: &YardStore, kind: SessionFile, session: &str) -> Option<Value> {
+    let bytes = store.session_file(kind, session)?;
+    Some(json(&yaml::read(&bytes).ok().flatten()?))
+}
+
 /// Every file of `kind` in the Yard Log of `store`, by the session key that names it, as JSON.
 pub fn entries(store: &YardStore, kind: SessionFile) -> Vec<(String, Value)> {
     store

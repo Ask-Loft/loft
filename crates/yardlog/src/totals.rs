@@ -1,15 +1,60 @@
 //! A session's token totals in one branch's Yard Log, as its model requests add to them: in all,
 //! by the stage the request counts toward and within it by agent, by agent and model, and by each
 //! submission open when the request ended. A compaction's own request counts as the main agent's.
-//! A session's totals file in Yard Log's folder holds them, `tokens/<session id>.yaml`.
+//! A session's totals file in Yard Log's folder holds them, `tokens/<session id>.yaml`, and names
+//! its totals format, `yardtokens/<n>`.
 
 use std::collections::BTreeMap;
+use std::fmt;
 
 use loft_common::yaml::{Out, write};
 use serde_json::Value;
 
 use crate::Time;
 use crate::usage::Counts;
+
+/// A version of the totals format, `yardtokens/<n>`, which a totals file names as its `format`. A
+/// `loft` reads its own totals format and every older one, writes only its own, and leaves a file
+/// of a newer one as it is.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TotalsFormat(u32);
+
+impl TotalsFormat {
+    /// The totals format this `loft` writes, and the newest it reads.
+    pub const CURRENT: Self = Self(2);
+
+    #[must_use]
+    pub const fn new(version: u32) -> Self {
+        Self(version)
+    }
+
+    /// The totals format the totals file `file`, as JSON, names: `yardtokens/1` where it names
+    /// none, as the files written before totals named their format; none where it names one
+    /// that is not `yardtokens/<n>`.
+    #[must_use]
+    pub fn of(file: &Value) -> Option<Self> {
+        let Some(named) = file.get("format") else {
+            return Some(Self(1));
+        };
+        let digits = named.as_str()?.strip_prefix("yardtokens/")?;
+        let canonical = !digits.is_empty()
+            && digits.bytes().all(|byte| byte.is_ascii_digit())
+            && !digits.starts_with('0');
+        canonical.then(|| digits.parse().ok().map(Self)).flatten()
+    }
+
+    /// Whether this `loft` may write a totals file of this format.
+    #[must_use]
+    pub fn is_known(self) -> bool {
+        self <= Self::CURRENT
+    }
+}
+
+impl fmt::Display for TotalsFormat {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "yardtokens/{}", self.0)
+    }
+}
 
 /// The agent a request counted toward.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -151,8 +196,8 @@ impl Totals {
         true
     }
 
-    /// Reads a totals file as JSON, as [`Totals::text`] wrote it, so that writing it again
-    /// gives the same text, marked classified.
+    /// Reads a totals file of a known totals format as JSON, as [`Totals::text`] wrote it, so
+    /// that writing it again gives the same text, in the current totals format.
     #[must_use]
     pub fn read(file: &Value) -> Self {
         let time = |name: &str| file[name].as_str().and_then(|at| at.parse().ok());
@@ -196,10 +241,10 @@ impl Totals {
     #[must_use]
     pub fn text(&self) -> String {
         let mut fields = vec![
+            ("format", Out::Token(TotalsFormat::CURRENT.to_string())),
             ("session", Out::Token(self.session.clone())),
             ("host", Out::Token(self.host.clone())),
         ];
-        fields.push(("cacheWriteClassified", Out::Plain("true".into())));
         if let Some(at) = self.first_ended {
             fields.push(("firstEnded", Out::Token(at.to_string())));
         }

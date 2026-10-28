@@ -166,21 +166,33 @@ fn with_no_totals_file_nothing_is_counted() {
 }
 
 #[test]
-fn a_zero_cache_write_is_summed_as_its_totals_file_gives_it_whatever_the_host_or_marker() {
+fn a_zero_cache_write_is_summed_as_its_totals_file_gives_it_whatever_the_host_or_format() {
     for host in ["codex", "claude-code"] {
-        for classified in [None, Some(false), Some(true)] {
+        for format in [None, Some("yardtokens/1"), Some("yardtokens/2")] {
             let mut file = codex_totals();
             file["host"] = json!(host);
-            if let Some(classified) = classified {
-                file["cacheWriteClassified"] = json!(classified);
+            if let Some(format) = format {
+                file["format"] = json!(format);
             }
             let sums = sums(&[file], &[]);
             for counts in every_sum(&sums) {
-                assert_eq!(counts["cacheWrite"], 0, "{host} {classified:?}: {counts}");
+                assert_eq!(counts["cacheWrite"], 0, "{host} {format:?}: {counts}");
             }
-            assert_eq!(sums["partial"], false, "{host} {classified:?}");
+            assert_eq!(sums["partial"], false, "{host} {format:?}");
         }
     }
+}
+
+#[test]
+fn a_totals_file_of_a_newer_format_is_left_out_of_the_sums_and_makes_them_partial() {
+    let mut newer = other("two", &counts(5, 0, 0, 1));
+    newer["format"] = json!("yardtokens/3");
+    let sums = sums(&[other("one", &counts(2, 0, 0, 3)), newer], &[]);
+    assert_eq!(sums["all"]["input"], 2);
+    assert_eq!(sums["all"]["output"], 3);
+    assert_eq!(sums["sessions"].as_array().unwrap().len(), 1);
+    assert_eq!(sums["sessions"][0]["session"], "one");
+    assert_eq!(sums["partial"], true);
 }
 
 #[test]

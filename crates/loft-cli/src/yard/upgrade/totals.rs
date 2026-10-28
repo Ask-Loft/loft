@@ -1,17 +1,17 @@
-//! The totals step of `loft yard upgrade`: each totals file of an open Yard Log that carries no
-//! `cacheWriteClassified` marker, written again with the marker, and where its host is Codex,
-//! with each zero cache-write count unavailable, since a Codex adapter that did not classify
-//! cache writes at the source may have given a zero it did not measure: counted again from the
-//! session's moved events where this machine keeps them, else settled from the file itself. The
-//! events of every Codex session of an open Yard Log are moved first, whatever its file's
-//! marker, since an older page server marked Codex files without moving their events. While a
-//! page server runs, nothing is written: it appends to the event logs and would write its own
-//! counts over the files.
+//! The totals step of `loft yard upgrade`: each totals file of an open Yard Log in an older totals
+//! format, written again in the current one, and where its host is Codex, with each zero
+//! cache-write count unavailable, since a Codex adapter that did not classify cache writes at the
+//! source may have given a zero it did not measure: counted again from the session's moved events
+//! where this machine keeps them, else settled from the file itself. The events of every Codex
+//! session of an open Yard Log are moved first, whatever its file's format, since an earlier page
+//! server wrote Codex files in the current format without moving their events. While a page
+//! server runs, nothing is written: it appends to the event logs and would write its own counts
+//! over the files.
 
 use std::collections::BTreeSet;
 
 use serde_json::{Value, json};
-use yardlog::totals::Totals;
+use yardlog::totals::{Totals, TotalsFormat};
 use yardlog_store::YardStore;
 use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
@@ -23,7 +23,7 @@ use crate::yard::totals::replayed_totals;
 
 /// What became of the totals files of the open Yard Logs.
 pub enum Classifying {
-    /// Each file written with the marker: its branch, host and session.
+    /// Each file written in the current totals format: its branch, host and session.
     Done(Vec<Value>),
     /// Every file left as it was, because the page server on `port` runs.
     Left { port: u16 },
@@ -45,8 +45,9 @@ impl Classifying {
     }
 }
 
-/// Moves the unverified zeros of each Codex session's events, whatever its totals file's marker,
-/// then writes each unmarked totals file of the Yard Logs `open`, each by its branch.
+/// Moves the unverified zeros of each Codex session's events, whatever its totals file's format,
+/// then writes each totals file of an older totals format of the Yard Logs `open`, each by its
+/// branch.
 pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
     let files: Vec<_> = open
         .iter()
@@ -57,8 +58,8 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
                 .map(move |(key, file)| (branch, store, key, file))
         })
         .collect();
-    let unmarked = |file: &Value| file["cacheWriteClassified"] != Value::Bool(true);
-    let home = if files.iter().any(|(.., file)| unmarked(file)) {
+    let older = |file: &Value| TotalsFormat::of(file).is_some_and(|f| f < TotalsFormat::CURRENT);
+    let home = if files.iter().any(|(.., file)| older(file)) {
         Some(Home::from_env().ok_or_else(Failure::no_home)?)
     } else {
         Home::from_env()
@@ -77,7 +78,7 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
             pending.push(key);
         }
     }
-    if pending.is_empty() && !files.iter().any(|(.., file)| unmarked(file)) {
+    if pending.is_empty() && !files.iter().any(|(.., file)| older(file)) {
         return Ok(Classifying::Done(Vec::new()));
     }
     if let Some(server) = page::running(&home)? {
@@ -88,7 +89,7 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
         super::events::settle(&home, key)?;
     }
     let mut classified = Vec::new();
-    for (branch, store, key, file) in files.into_iter().filter(|(.., file)| unmarked(file)) {
+    for (branch, store, key, file) in files.into_iter().filter(|(.., file)| older(file)) {
         let host = file["host"].as_str().unwrap_or_default().to_owned();
         let text = if host == "codex" {
             codex_totals(&home, store, &key, file.clone())

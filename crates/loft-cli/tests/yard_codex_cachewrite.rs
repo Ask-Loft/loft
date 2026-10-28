@@ -1,5 +1,6 @@
 //! The page server counts each request's tokens as the adapter gives them, including on replay,
-//! and keeps the source report in the raw event.
+//! keeps the source report in the raw event, writes each totals file in its totals format, and
+//! leaves a totals file of a newer format as it was.
 use crate::common::workspace;
 use crate::schema;
 use crate::served::Served;
@@ -50,7 +51,7 @@ fn subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_brea
     post(&served, &[row]);
     let doc = read(&yard, &served);
     let totals = session_file(&yard, "tokens", "codex~s1").unwrap();
-    assert!(totals.contains("cacheWriteClassified: true"), "{totals}");
+    assert!(totals.contains("format: yardtokens/2"), "{totals}");
     let sums = &doc["tokenSums"];
     for counts in [
         &sums["all"],
@@ -101,6 +102,25 @@ fn replay_counts_each_request_s_tokens_as_given_whatever_its_source() {
     assert!(
         session_file(&yard, "tokens", "codex~s1")
             .unwrap()
-            .contains("cacheWriteClassified: true")
+            .contains("format: yardtokens/2")
     );
+}
+
+#[test]
+fn a_totals_file_of_a_newer_format_keeps_its_bytes_while_the_session_s_requests_go_on() {
+    let (yard, served) = start();
+    let path = yard.folder(BRANCH).join("tokens/codex~s1.yaml");
+    fs::create_dir_all(path.parent().unwrap()).unwrap();
+    let newer = "format: yardtokens/3\nsession: s1\nhost: codex\n";
+    fs::write(&path, newer).unwrap();
+    for second in [1, 2] {
+        let reply = post(&served, &[request(&yard, second, None, Some(7))]);
+        assert_eq!(reply["recorded"], 1);
+        assert_eq!(reply["rejected"], json!([]));
+    }
+    assert_eq!(fs::read_to_string(&path).unwrap(), newer);
+    let raw = fs::read_to_string(yard.scratch.home().join(".yard/events/codex~s1.jsonl")).unwrap();
+    assert_eq!(raw.lines().count(), 2, "the events are kept");
+    let doc = read(&yard, &served);
+    assert_eq!(doc["tokenSums"]["partial"], true);
 }
