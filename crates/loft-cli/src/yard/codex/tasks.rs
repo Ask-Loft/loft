@@ -14,7 +14,7 @@ use yardlog::{Agent, Handle, YardLog};
 use super::Result;
 use super::commands::{self, Caller};
 use super::task_bindings::{self, Reference};
-use super::task_writes::{finished, foreign, owns, wrote};
+use super::task_writes::wrote;
 use super::translate::Hook;
 
 fn successful(response: &Value) -> bool {
@@ -116,48 +116,40 @@ fn batch(log: &YardLog, caller: &Caller, steps: &[(&str, TaskState)]) -> Vec<Inp
         if !seen.insert(id.clone()) {
             continue;
         }
-        if let Some(change) = step(file, &agent, existing.get(id.as_str()), &id, text, *state) {
-            batch.push(change);
-        }
+        let change = match existing.get(id.as_str()) {
+            Some((handle, _)) => task_bindings::mirror(log, &agent, handle, *state),
+            None => created(file, &agent, &id, text, *state),
+        };
+        batch.extend(change);
     }
-    for (id, (handle, task)) in existing {
-        if seen.contains(id) || foreign(task, &agent) || finished(task) {
-            continue;
+    for (id, (handle, _)) in existing {
+        if !seen.contains(id) {
+            batch.extend(task_bindings::mirror(
+                log,
+                &agent,
+                handle,
+                TaskState::Dropped,
+            ));
         }
-        let mut next = task.clone();
-        next.state = TaskState::Dropped;
-        batch.push(input(handle, &file.stage.id, next));
     }
     batch
 }
 
-/// The change a plain step makes: its task new, or changed to the step's state where the agent
-/// may still change it.
-fn step(
+/// The task a new plain step makes, assigned to the agent where it does not own the stage.
+fn created(
     file: &StageFile,
     agent: &Agent,
-    existing: Option<&(&Handle, &Task)>,
     id: &str,
     text: &str,
     state: TaskState,
 ) -> Option<Input> {
-    if let Some((handle, task)) = existing {
-        if foreign(task, agent)
-            || (task.assignee.is_some() && finished(task))
-            || task.state == state
-        {
-            return None;
-        }
-        let mut next = (*task).clone();
-        next.state = state;
-        return Some(input(handle, &file.stage.id, next));
-    }
+    let owns = file.stage.owner().is_some_and(|owner| owner.same(agent));
     let task = Task {
         title: text.to_owned(),
         detail: None,
         state,
         kind: TaskType::Regular,
-        assignee: (!owns(file, agent)).then(|| agent.clone()),
+        assignee: (!owns).then(|| agent.clone()),
     };
     Some(input(&Handle::parse(id).ok()?, &file.stage.id, task))
 }

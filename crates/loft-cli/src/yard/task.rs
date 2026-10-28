@@ -161,6 +161,7 @@ fn target(args: &TaskArgs) -> Result<Target, Failure> {
         title: args.title.clone(),
         detail: args.detail.clone(),
         kind: (args.kind.as_deref()).map(|word| TaskType::parse(word).expect("clap checks it")),
+        mirror: args.mirror,
     };
     Ok(Target::Task(id, patch))
 }

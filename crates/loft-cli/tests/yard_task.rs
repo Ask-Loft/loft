@@ -102,6 +102,32 @@ fn a_task_change_the_delegation_rules_refuse_exits_1_and_changes_no_file() {
 }
 
 #[test]
+fn a_mirrored_task_change_leaves_another_agent_s_task_alone_and_keeps_a_done_task_s_state() {
+    let yard = planned();
+    let before = snapshot(&yard.folder(BRANCH));
+    let output = task(&yard, "w2", &["one", "--state", "done", "--mirror"]);
+    let unchanged = document("task", &output);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(unchanged["outcome"], "unchanged");
+    assert_eq!(unchanged["state"], "open");
+    assert!(snapshot(&yard.folder(BRANCH)) == before, "a file changed");
+    let output = task(
+        &yard,
+        "w1",
+        &[
+            "done", "--state", "active", "--title", "Finished", "--mirror",
+        ],
+    );
+    let changed = document("task", &output);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(
+        (&changed["outcome"], &changed["state"]),
+        (&"changed".into(), &"done".into())
+    );
+    assert_eq!(body(&yard.read("s1", &[]), "done")["title"], "Finished");
+}
+
+#[test]
 fn a_task_id_that_names_no_task_is_refused_naming_it_and_changes_no_file() {
     let yard = planned();
     let before = snapshot(&yard.scratch.0);

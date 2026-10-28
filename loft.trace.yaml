@@ -28129,7 +28129,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/task_change.rs"
         name: "a_change_that_leaves_the_task_as_it_was_writes_nothing"
-        body: 418d2d219d65904db43ab400f089e773513ed7ce76b21f02d00af4c831b3bdb0
+        body: fa738d41235996c4508c33e48542d4d546d02b4d71f9f53fa5a4868b4df52282
       - file: "crates/loft-cli/tests/yard_task.rs"
         name: "a_task_change_that_leaves_the_task_as_it_was_is_unchanged_and_writes_nothing"
         body: e48ada622d9bee53517fdbcd489eb58dfca251d55ec20b1821e5c87c0502ecac
@@ -28202,6 +28202,30 @@ links:
       - file: "crates/loft-cli/tests/yard_task.rs"
         name: "releasing_returns_the_agent_s_active_tasks_to_open_and_lists_them"
         body: d9eb34726043a6929b05f75e950dafc4fa953a280659ba96c35d20bf4da39874
+  - node: 01a182fd-3974-7514-9227-ad0427dcf719
+    reviewed: 9a5bccbe4f5a288449af652a2c89b018373b4c2bc4981868231306869b973305
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_mirrored_change_of_a_task_assigned_to_another_agent_writes_nothing"
+        body: 2579180e62448ddb5222e8f60ec09e2d7bdad23258453bacdb46043bb4cd4094
+      - file: "crates/loft-cli/tests/yard_task.rs"
+        name: "a_mirrored_task_change_leaves_another_agent_s_task_alone_and_keeps_a_done_task_s_state"
+        body: 7b97048e45737b8eecfb6564a598a1d09039562422079def381399dc75b6d9a8
+  - node: 01a182fd-3974-7514-9227-ad0504225a5c
+    reviewed: 28bb6298339c9a3bcf9b737153c70bfdea668be5b63bb0658250988bd366ab90
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_mirrored_change_of_an_unassigned_task_of_a_stage_the_agent_does_not_own_writes_nothing"
+        body: 9bd2446d713eaf9e671f9a5b1d90b3dea51db019ec6cc738fa37cac3eedd8edc
+  - node: 01a182fd-3974-7514-9227-ad06a33a79e2
+    reviewed: 03a78ffe0c733872c3ed67b5026c4d75b2615b6f035f0154fa95a31dbbc9585c
+    tests:
+      - file: "crates/yardlog/tests/task_change.rs"
+        name: "a_mirrored_change_of_a_done_or_dropped_task_keeps_its_state_and_applies_its_other_fields"
+        body: 8836f9ad04c72f66527a382e46c610f664b2f5d91b9f0b092c27455f011e9138
+      - file: "crates/loft-cli/tests/yard_task.rs"
+        name: "a_mirrored_task_change_leaves_another_agent_s_task_alone_and_keeps_a_done_task_s_state"
+        body: 7b97048e45737b8eecfb6564a598a1d09039562422079def381399dc75b6d9a8
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:

@@ -1,11 +1,9 @@
 //! Explicit plan-step references never mint a replacement task or infer a title match.
 
-use yardlog::body::{Body, TaskState};
+use yardlog::body::TaskState;
 use yardlog::input::Input;
-use yardlog::task_change::input;
+use yardlog::task_change::TaskPatch;
 use yardlog::{Agent, Handle, YardLog};
-
-use super::task_writes::{finished, foreign, owns};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Reference<'a> {
@@ -29,8 +27,7 @@ pub fn reference(text: &str) -> Reference<'_> {
 }
 
 /// The changes of the tasks the bound `steps` name, each to its step's state as the task
-/// stands. A task another agent executes, an unassigned task of a stage the agent does not own
-/// and a finished task are left as they are.
+/// stands, under the mirror rule `loft yard task --mirror` applies.
 pub fn batch(log: &YardLog, agent: &Agent, steps: &[(&str, TaskState)]) -> Vec<Input> {
     steps
         .iter()
@@ -38,23 +35,18 @@ pub fn batch(log: &YardLog, agent: &Agent, steps: &[(&str, TaskState)]) -> Vec<I
             let Reference::Bound(id) = reference(text) else {
                 return None;
             };
-            let (file, block) = log.stages.iter().find_map(|file| {
-                let block = file.blocks.iter().find(|block| block.id.as_str() == id)?;
-                Some((file, block))
-            })?;
-            let Body::Task(task) = &block.current().body else {
-                return None;
-            };
-            if foreign(task, agent)
-                || (task.assignee.is_none() && !owns(file, agent))
-                || finished(task)
-                || task.state == *state
-            {
-                return None;
-            }
-            let mut next = task.clone();
-            next.state = *state;
-            Some(input(&block.id, &file.stage.id, next))
+            mirror(log, agent, &Handle::parse(id).ok()?, *state)
         })
         .collect()
+}
+
+/// The change that mirrors `state` onto the task `id` as `agent`, where the mirror rule
+/// applies it.
+pub fn mirror(log: &YardLog, agent: &Agent, id: &Handle, state: TaskState) -> Option<Input> {
+    let patch = TaskPatch {
+        state: Some(state),
+        mirror: true,
+        ..TaskPatch::default()
+    };
+    log.patched(id, &patch, agent).ok().flatten()
 }

@@ -126,6 +126,7 @@ fn a_change_that_leaves_the_task_as_it_was_writes_nothing() {
         title: Some("one".to_owned()),
         detail: Some("As planned".to_owned()),
         kind: Some(TaskType::Fix),
+        mirror: false,
     };
     let change = log
         .change_task(&handle("one"), &patch, &context(&worker("first"), 3))
@@ -163,6 +164,87 @@ fn a_change_of_an_id_that_names_no_task_is_refused_naming_the_id() {
         assert!(faults[0].message.contains(&format!("`{id}`")));
     }
     assert_eq!(log, before);
+}
+
+fn mirrored(progress: TaskState) -> TaskPatch {
+    TaskPatch {
+        mirror: true,
+        ..state(progress)
+    }
+}
+
+#[test]
+fn a_mirrored_change_of_a_task_assigned_to_another_agent_writes_nothing() {
+    let mut log = prepared();
+    let before = log.clone();
+    let change = log
+        .change_task(
+            &handle("one"),
+            &mirrored(TaskState::Done),
+            &context(&worker("other"), 3),
+        )
+        .unwrap();
+    assert_eq!(change, TaskChange::Unchanged);
+    assert_eq!(log, before);
+}
+
+#[test]
+fn a_mirrored_change_of_an_unassigned_task_of_a_stage_the_agent_does_not_own_writes_nothing() {
+    let mut log = prepared();
+    write(
+        &mut log,
+        &json!([{"id": "free", "kind": "task", "stage": "build", "title": "Free", "state": "open"}]),
+        &context(&main_agent(), 3),
+    );
+    let before = log.clone();
+    let change = log
+        .change_task(
+            &handle("free"),
+            &mirrored(TaskState::Active),
+            &context(&worker("first"), 4),
+        )
+        .unwrap();
+    assert_eq!(change, TaskChange::Unchanged);
+    assert_eq!(log, before);
+    log.change_task(
+        &handle("free"),
+        &mirrored(TaskState::Active),
+        &context(&main_agent(), 5),
+    )
+    .unwrap();
+    assert_eq!(task(&log, "free").state, TaskState::Active);
+}
+
+#[test]
+fn a_mirrored_change_of_a_done_or_dropped_task_keeps_its_state_and_applies_its_other_fields() {
+    let mut log = prepared();
+    let first = worker("first");
+    write(
+        &mut log,
+        &json!([
+            assigned("one", "done", &first),
+            assigned("two", "dropped", &first)
+        ]),
+        &context(&main_agent(), 3),
+    );
+    for (id, kept) in [("one", TaskState::Done), ("two", TaskState::Dropped)] {
+        let patch = TaskPatch {
+            title: Some(format!("Renamed {id}")),
+            ..mirrored(TaskState::Active)
+        };
+        log.change_task(&handle(id), &patch, &context(&first, 4))
+            .unwrap();
+        let after = task(&log, id);
+        assert_eq!((after.state, after.title), (kept, format!("Renamed {id}")));
+    }
+    let unchanged = log
+        .change_task(
+            &handle("one"),
+            &mirrored(TaskState::Open),
+            &context(&first, 5),
+        )
+        .unwrap();
+    assert_eq!(unchanged, TaskChange::Unchanged);
 }
 
 #[test]

@@ -212,8 +212,13 @@ pub struct TaskArgs {
     #[arg(value_name = "ID")]
     pub id: Option<String>,
     /// Return each active task assigned to the calling agent to `open`, in one write.
-    #[arg(long, conflicts_with_all = ["id", "state", "title", "detail", "kind"])]
+    #[arg(long, conflicts_with_all = ["id", "state", "title", "detail", "kind", "mirror"])]
     pub release: bool,
+    /// Mirror a native task update: leave a task assigned to another agent, and an unassigned
+    /// task of a stage the calling agent does not own, as they are, and keep the state of a
+    /// done or dropped task.
+    #[arg(long, requires = "id")]
+    pub mirror: bool,
     /// The task's new state.
     #[arg(long, value_name = "STATE", value_parser = ["open", "active", "done", "dropped"])]
     pub state: Option<String>,
