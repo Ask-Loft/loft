@@ -435,3 +435,68 @@ test("the mod's own reads, to send what the agent asks, leave the agent's last-r
   expect(reads.length).toBeGreaterThan(0)
   for (const run of reads) expect(run.argv).not.toContain('--mark-read')
 })
+
+const askWith = ($: Engine, questions: unknown) => $.tool.call({ tool: 'AskUserQuestion', questions } as never)
+
+const option = (label: string) => ({ label, description: `About ${label}` })
+
+const asked = (fields: Record<string, unknown> = {}) => ({
+  question: 'Which readers?',
+  header: 'Readers',
+  multiSelect: false,
+  options: [option('Members'), option('Visitors')],
+  ...fields,
+})
+
+/** A world with an active stage of the session, where Claude Code refuses the call as given. */
+function refusing(on: Parameters<typeof world>[0]) {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.AskUserQuestion = () => ({ result: 'InputValidationError', isError: true, text: 'InputValidationError' })
+  return w
+}
+
+test('a call with an option that has no description writes no block and opens no stage', async ($, on) => {
+  const w = refusing(on)
+  await start($)
+  await askWith($, [asked({ options: [{ label: 'Members' }, option('Visitors')] })])
+  expect(writes(w)).toEqual([])
+  expect(yardRuns(w).filter(run => run.startsWith('withdraw'))).toEqual([])
+})
+
+test('a call with no questions or more than four, or a question with fewer than two options or more than four, writes no block', async ($, on) => {
+  const w = refusing(on)
+  await start($)
+  await askWith($, [])
+  await askWith($, [asked(), asked(), asked(), asked(), asked()])
+  await askWith($, [asked({ options: [option('Members')] })])
+  await askWith($, [asked({ options: ['A', 'B', 'C', 'D', 'E'].map(option) })])
+  expect(writes(w)).toEqual([])
+})
+
+test('a call whose question has no question text or no header writes no block', async ($, on) => {
+  const w = refusing(on)
+  await start($)
+  const { question: _question, ...noText } = asked()
+  const { header: _header, ...noHeader } = asked()
+  await askWith($, [noText])
+  await askWith($, [noHeader])
+  expect(writes(w)).toEqual([])
+})
+
+test('a call that leaves out multiSelect is written as a question that takes one option', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.AskUserQuestion = () => ({ deny: 'The person closed the dialog.' })
+  await start($)
+  const { multiSelect: _multiSelect, ...single } = asked()
+  await askWith($, [single])
+  expect(writes(w).flat().filter(each => each.kind === 'question').map(each => each.multiple)).toEqual([false])
+})
+
+test("the agent receives Claude Code's refusal of a call the tool's schema refuses as it would without the plugin", async ($, on) => {
+  refusing(on)
+  await start($)
+  const ran = await askWith($, [asked({ options: [{ label: 'Members' }, option('Visitors')] })])
+  expect(ran).toEqual({ result: 'InputValidationError', isError: true, text: 'InputValidationError' })
+})

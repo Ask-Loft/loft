@@ -13,6 +13,31 @@ export type Asked = {
   options: readonly { label: string; description: string }[]
 }
 
+const isText = (value: unknown): value is string => typeof value === 'string'
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
+const counts = (value: unknown, least: number, most: number): value is unknown[] =>
+  Array.isArray(value) && value.length >= least && value.length <= most
+
+/**
+ * Whether Claude Code takes `input` as the input of `AskUserQuestion`: the shape of the tool's
+ * input schema, which Claude Code checks only after a mod's `tool.call` hooks have run. A call it
+ * refuses never reaches Yard Log.
+ */
+export function isAskable(input: unknown): input is { questions: Asked[] } {
+  if (!isRecord(input) || !counts(input.questions, 1, 4)) return false
+  return input.questions.every(
+    asked =>
+      isRecord(asked) &&
+      isText(asked.question) &&
+      isText(asked.header) &&
+      (asked.multiSelect === undefined || typeof asked.multiSelect === 'boolean') &&
+      counts(asked.options, 2, 4) &&
+      asked.options.every(
+        option => isRecord(option) && isText(option.label) && isText(option.description) && (option.preview === undefined || isText(option.preview)),
+      ),
+  )
+}
+
 /** The words after an option's label that make it the recommended one. */
 const RECOMMENDED = /\s*\(Recommended\)\s*$/i
 
@@ -40,7 +65,7 @@ export function questionBlocks(questions: readonly Asked[], ids: readonly string
       stage,
       prompt: asked.question,
       header: asked.header || 'Question',
-      multiple: asked.multiSelect,
+      multiple: asked.multiSelect === true,
       ownWords: true,
       options,
     }

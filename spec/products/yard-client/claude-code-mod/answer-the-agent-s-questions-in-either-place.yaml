@@ -35,6 +35,23 @@ requirements:
         name: "The terminal's dialog shows the questions as it would without the plugin."
       - key: 01a1646f-546c-7521-9643-bc34a2faaf4f
         name: "The terminal's dialog shows the page's address above the questions."
+  - key: 01a18487-dd38-733a-b685-bd69a66801c3
+    statement:
+      form: unwanted
+      if: "the input of an `AskUserQuestion` call lacks a field that the tool's input schema requires, or holds a field of the wrong type or a count of questions or options it does not allow"
+      system: "the Loft mod"
+      shall: "write nothing to Yard Log for the call and pass it to Claude Code unchanged."
+    criteria:
+      - key: 01a18487-dd38-733a-b685-bd6a7926ae02
+        name: "A call with an option that has no `description` writes no block and opens no stage."
+      - key: 01a18487-dd38-733a-b685-bd6b92c6fe3f
+        name: "A call with no questions or more than four, or a question with fewer than two options or more than four, writes no block."
+      - key: 01a18487-dd38-733a-b685-bd6c2062bf27
+        name: "A call whose question has no `question` text or no `header` writes no block."
+      - key: 01a18487-dd38-733a-b685-bd6d3d4f7e23
+        name: "A call that leaves out `multiSelect`, which the tool's schema defaults to false, is written as a question that takes one option."
+      - key: 01a18487-dd38-733a-b685-bd6e6853059a
+        name: "The agent receives Claude Code's refusal of such a call as it would without the plugin."
   - key: 01a1646f-546c-7521-9643-bc352794dbaf
     statement:
       form: event_driven
