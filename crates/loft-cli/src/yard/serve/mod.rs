@@ -21,10 +21,10 @@ mod logs;
 mod markdown;
 mod newest;
 mod routes;
-mod session_files;
+pub(super) mod session_files;
 mod stream;
 mod token_sums;
-mod tokens;
+pub(super) mod tokens;
 mod trees;
 mod watch;
 

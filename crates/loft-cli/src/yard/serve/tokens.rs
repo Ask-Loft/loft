@@ -6,6 +6,7 @@
 use std::collections::BTreeMap;
 
 use loftspec::yaml::{Out, write};
+use serde_json::Value;
 use yardlog::Time;
 
 use super::event::{Event, Tokens, Who};
@@ -91,6 +92,46 @@ impl Totals {
         true
     }
 
+    /// Reads a totals file as JSON, as [`Totals::text`] wrote it, so that writing it again
+    /// gives the same text, marked classified.
+    pub fn read(file: &Value) -> Self {
+        let time = |name: &str| file[name].as_str().and_then(|at| at.parse().ok());
+        let items = |name: &str| file[name].as_array().cloned().unwrap_or_default();
+        let stages = items("stages").into_iter().filter_map(|stage| {
+            let agents = stage["agents"].as_array().into_iter().flatten();
+            let agents = agents.map(|agent| (Who::from_fields(agent), Tokens::from_fields(agent)));
+            let counted = Stage {
+                all: Tokens::from_fields(&stage),
+                agents: agents.collect(),
+            };
+            Some((stage["stage"].as_str()?.to_owned(), counted))
+        });
+        let agents = items("agents").into_iter().map(|agent| {
+            let model = agent["model"].as_str().unwrap_or("unknown").to_owned();
+            (
+                (Who::from_fields(&agent), model),
+                Tokens::from_fields(&agent),
+            )
+        });
+        let submissions = items("submissions").into_iter().filter_map(|submission| {
+            let key = submission["submission"].as_str()?.to_owned();
+            Some((key, Tokens::from_fields(&submission)))
+        });
+        Self {
+            session: file["session"].as_str().unwrap_or_default().to_owned(),
+            host: file["host"].as_str().unwrap_or_default().to_owned(),
+            first_ended: time("firstEnded"),
+            last_ended: time("lastEnded"),
+            all: file
+                .get("tokens")
+                .map_or_else(Tokens::default, Tokens::from_fields),
+            stages: stages.collect(),
+            no_stage: file.get("noStage").map(Tokens::from_fields),
+            agents: agents.collect(),
+            submissions: submissions.collect(),
+        }
+    }
+
     /// The totals file's text.
     pub fn text(&self) -> String {
         let mut fields = vec![
@@ -156,3 +197,6 @@ fn stage_out(stage: &str, counted: &Stage) -> Out {
 fn counts(tokens: Tokens) -> Vec<(&'static str, Out)> {
     tokens.fields()
 }
+
+#[cfg(test)]
+mod tests;

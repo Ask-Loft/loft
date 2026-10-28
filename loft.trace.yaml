@@ -23739,6 +23739,45 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade.rs"
         name: "yard_log_of_a_newer_format_or_that_does_not_read_is_left_named_and_exits_1"
         body: df6be8f338991e131eebbc61019bd3666947354588a25fb1961c8693b653faad
+  - node: 01a1835b-a222-7677-8e34-d5298ccf7576
+    reviewed: 72933703ff1ce4fc64f7d06b2e84a9d462ca70dddb0aeb2d8ac831414b45b1bf
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "a_codex_zero_cache_write_becomes_unavailable_in_every_scope_and_positive_counts_are_kept"
+        body: 21b3bf4cdf12e089e2025938b7e2b61d582de10a5ba8e922676a86fe3240f852
+  - node: 01a1835b-a222-7677-8e34-d52ae113612e
+    reviewed: 95ddcd0592e42289ffe4c53f1ae30ad003a43382339728c6c09b5d819a9fd2c3
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "a_codex_zero_cache_write_becomes_unavailable_in_every_scope_and_positive_counts_are_kept"
+        body: 21b3bf4cdf12e089e2025938b7e2b61d582de10a5ba8e922676a86fe3240f852
+  - node: 01a1835b-a222-7677-8e34-d52bc84f5349
+    reviewed: 22618199b832c11a8e71003bf94814080b198f5c9f0c7e6dbb9ec8b8500e518f
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "a_claude_code_totals_file_keeps_its_counts_and_gains_the_marker"
+        body: 36d65fa0bc578392d1d1b23ce26141f607d15dcec239226b21a88b318eb31c9c
+      - file: "crates/loft-cli/src/yard/serve/tokens/tests.rs"
+        name: "a_totals_file_read_back_is_written_as_the_same_text"
+        body: db23d7ea93b58952d121ba7d54e21845f74293113fc56b71854afdc41af65226
+  - node: 01a1835b-a222-7677-8e34-d52c0920576b
+    reviewed: 8b033ae60b820dacccd5e0ac0f934bda7295e11fdc2528ca4c3498ac2947d0fa
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "a_totals_file_that_carries_the_marker_is_left_and_a_second_run_changes_nothing"
+        body: 06c317c6fc61997da398cd70b9a41e91969887b846a638f99ad131e2e6725a16
+  - node: 01a1835b-a222-7677-8e34-d52d413fb73b
+    reviewed: 39acd5e1c94d60550488c5e8d39299cbba9e3df6ccbd7a52710e2bcf0e7ed3f6
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "the_totals_files_of_a_closed_yard_log_are_left_as_they_were_written"
+        body: b601b6febc8820297cc170d003476278508d97f3d3b972bca729a369f15d3eb0
+  - node: 01a18368-8abb-774b-ad89-b2abe250e47c
+    reviewed: 8e6a3909757057e154890ce35aadf1f7303f152d8e03ec887e552897ddc98cbb
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "while_a_page_server_runs_totals_files_are_left_and_the_page_server_is_named"
+        body: 021975fc026df1cb349742ec7f2b2d8520bc06f4c254808e9d00d7a4c62e58b3
   - node: 01a168d9-f2df-7350-8964-7ecb58ac5bcb
     reviewed: 986b16aee741106e6c2b49bc4e18fa5b80896ee9f68dc263c4c94742bcaf122a
     tests:

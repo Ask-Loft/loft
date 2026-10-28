@@ -130,6 +130,7 @@ mod yard_skill;
 mod yard_take_up;
 mod yard_task;
 mod yard_upgrade;
+mod yard_upgrade_totals;
 mod yard_view_reports;
 mod yard_views;
 mod yard_wait;

@@ -12,6 +12,15 @@ use yardlog_store::session::SessionFile;
 
 /// Every file of `kind` in Yard Log's folder `folder`, as JSON.
 pub fn read(folder: &Path, kind: SessionFile) -> Vec<Value> {
+    entries(folder, kind)
+        .into_iter()
+        .map(|(_, value)| value)
+        .collect()
+}
+
+/// Every file of `kind` in Yard Log's folder `folder`, by the session key that names it, as
+/// JSON.
+pub fn entries(folder: &Path, kind: SessionFile) -> Vec<(String, Value)> {
     let Ok(entries) = fs::read_dir(folder.join(kind.folder())) else {
         return Vec::new();
     };
@@ -26,9 +35,12 @@ pub fn read(folder: &Path, kind: SessionFile) -> Vec<Value> {
     paths.sort();
     paths
         .iter()
-        .filter_map(|path| fs::read(path).ok())
-        .filter_map(|bytes| yaml::read(&bytes).ok().flatten())
-        .filter_map(|node| {
+        .filter_map(|path| {
+            let key = path.file_stem()?.to_str()?.to_owned();
+            let node = yaml::read(&fs::read(path).ok()?).ok().flatten()?;
+            Some((key, node))
+        })
+        .filter_map(|(key, node)| {
             let mut value = json(&node);
             // A file written before files named their host is a Claude Code session's.
             if let Some(file) = value.as_object_mut() {
@@ -39,14 +51,14 @@ pub fn read(folder: &Path, kind: SessionFile) -> Vec<Value> {
                 let descriptor = yardlog::adapter::Descriptor::read(adapter).ok()?;
                 value["adapter"] = descriptor.json();
             }
-            Some(value)
+            Some((key, value))
         })
         .collect()
 }
 
 /// A node of the YAML subset as JSON: a whole number or `true` and `false` written plain as
 /// themselves, every other scalar as text.
-fn json(node: &Node) -> Value {
+pub(super) fn json(node: &Node) -> Value {
     match &node.value {
         Yaml::Mapping(entries) => Value::Object(
             entries

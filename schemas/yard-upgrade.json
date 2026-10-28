@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-yard-upgrade-1.json",
-  "title": "The result of `loft yard upgrade --format json`, version 1: each branch's Yard Log under the tree, upgraded, current or left",
+  "title": "The result of `loft yard upgrade --format json`, version 1: each branch's Yard Log under the tree, upgraded, current or left, and the totals files whose cache writes it classified",
   "oneOf": [
     {
       "type": "object",
@@ -12,6 +12,7 @@
         "upgraded",
         "current",
         "left",
+        "classified",
         "errors"
       ],
       "properties": {
@@ -76,6 +77,47 @@
               "reason": {
                 "type": "string"
               }
+            }
+          }
+        },
+        "classified": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "branch",
+              "host",
+              "session"
+            ],
+            "properties": {
+              "branch": {
+                "type": "string"
+              },
+              "host": {
+                "type": "string"
+              },
+              "session": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "totalsLeft": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "port",
+            "reason"
+          ],
+          "properties": {
+            "port": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 65535
+            },
+            "reason": {
+              "type": "string"
             }
           }
         },

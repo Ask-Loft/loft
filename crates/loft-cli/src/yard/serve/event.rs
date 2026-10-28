@@ -35,6 +35,17 @@ impl Who {
     }
 
     /// The fields a session's file names the agent by: `agent`, and a subagent's `type`.
+    /// Reads what [`Who::fields`] wrote: the main agent, or a subagent by its id and type.
+    pub fn from_fields(value: &Value) -> Self {
+        match (value["agent"].as_str(), value["type"].as_str()) {
+            (Some("main") | None, None) => Self::Main,
+            (id, kind) => Self::Sub {
+                id: id.unwrap_or_default().to_owned(),
+                kind: kind.unwrap_or_default().to_owned(),
+            },
+        }
+    }
+
     pub fn fields(&self) -> Vec<(&'static str, Out)> {
         match self {
             Self::Main => vec![("agent", Out::Token("main".to_owned()))],
