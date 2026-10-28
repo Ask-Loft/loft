@@ -1,7 +1,6 @@
 //! Worker lifecycle and recovery against the actual local Yard page server.
 
 use std::fs;
-use std::process::Child;
 use std::time::Duration;
 
 use serde_json::{Value, json};
@@ -9,41 +8,10 @@ use yardlog_store::lock;
 
 use crate::served::{Served, within};
 use crate::yard::Yard;
-use crate::yard_codex::{event, hook};
-
-struct Worker<'a>(Child, &'a Yard, Value);
-
-impl Drop for Worker<'_> {
-    fn drop(&mut self) {
-        let mut end = self.2.clone();
-        end["hook_event_name"] = json!("SessionEnd");
-        let _ = self.1.run_with(&["codex", "hook"], &end.to_string());
-        let _ = within(Duration::from_secs(1), || {
-            self.0.try_wait().is_ok_and(|status| status.is_some())
-        });
-        let _ = self.0.kill();
-        let _ = self.0.wait();
-    }
-}
+use crate::yard_codex::{Worker, event, hook, watch};
 
 fn worker<'a>(yard: &'a Yard, input: &Value, port: u16) -> Worker<'a> {
-    let path = yard.scratch.home().join(format!(
-        "watch-{}.json",
-        input["session_id"].as_str().unwrap()
-    ));
-    fs::write(&path, input.to_string()).unwrap();
-    Worker(
-        yard.spawn(&[
-            "codex",
-            "watch",
-            "--input",
-            path.to_str().unwrap(),
-            "--port",
-            &port.to_string(),
-        ]),
-        yard,
-        input.clone(),
-    )
+    watch(yard, input, &yard.clock, &["--port", &port.to_string()])
 }
 
 fn events(yard: &Yard) -> Vec<Value> {

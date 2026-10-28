@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 
 use crate::yard::Yard;
-use crate::yard_codex::{event, hook};
+use crate::yard_codex::{event, hook, plan_update, read};
 
 fn stage(yard: &Yard) {
     yard.write(
@@ -15,15 +15,8 @@ fn stage(yard: &Yard) {
 
 fn plan(yard: &Yard, steps: &[(&str, &str)]) -> Value {
     let mut input = event(yard, "PostToolUse");
-    input["tool_name"] = json!("update_plan");
     input["tool_use_id"] = json!("plan-call");
-    input["tool_input"] = json!({"plan":steps.iter().map(|(text,status)|json!({"step":text,"status":status})).collect::<Vec<_>>()});
-    input["tool_response"] = json!("Plan updated");
-    input
-}
-
-fn read(yard: &Yard) -> Value {
-    yard.read("codex-session", &["--host", "codex"])
+    plan_update(input, steps)
 }
 
 fn tasks(doc: &Value) -> &[Value] {

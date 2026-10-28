@@ -275,7 +275,7 @@ pub fn listing(home: &Home, port: u16, entries: &Entries) -> Result<Value, Failu
 
 fn order_waiting(waits: &mut [Value]) {
     // Revisions are local to one log: group equal-time ties by log before comparing them.
-    waits.sort_by_key(|wait| {
+    waits.sort_by_cached_key(|wait| {
         let text = |field| wait[field].as_str().unwrap_or_default().to_owned();
         (
             wait["sent"]["at"].as_str().unwrap_or_default().to_owned(),

@@ -3,54 +3,14 @@
 
 use std::fs;
 use std::path::Path;
-use std::process::Child;
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
-use software_plant::Clock;
 use software_plant::codex::{CodexAppServer, Scenario};
-
-use crate::common::EPOCH;
 
 use crate::served::{Served, within};
 use crate::yard::Yard;
-use crate::yard_codex::{event, hook, state};
-
-struct Worker<'a>(Child, &'a Yard);
-impl Drop for Worker<'_> {
-    fn drop(&mut self) {
-        hook(self.1, &event(self.1, "SessionEnd"));
-        let _ = within(Duration::from_secs(2), || {
-            self.0.try_wait().unwrap().is_some()
-        });
-        let _ = self.0.kill();
-        let _ = self.0.wait();
-    }
-}
-
-fn worker<'a>(yard: &'a Yard, port: u16, socket: &Path) -> Worker<'a> {
-    let path = yard.scratch.home().join("watch.json");
-    fs::write(&path, event(yard, "SessionStart").to_string()).unwrap();
-    Worker(
-        yard.scratch
-            .command(Some(&yard.git), &Clock::fixed(EPOCH).passing())
-            .args([
-                "yard",
-                "codex",
-                "watch",
-                "--input",
-                path.to_str().unwrap(),
-                "--port",
-                &port.to_string(),
-                "--app-server-socket",
-                socket.to_str().unwrap(),
-            ])
-            .args(["--format", "json"])
-            .spawn()
-            .unwrap(),
-        yard,
-    )
-}
+use crate::yard_codex::{event, hook, state, worker};
 
 fn setup() -> (Yard, CodexAppServer) {
     let yard = Yard::new();

@@ -1,10 +1,16 @@
 //! Codex's native hook boundary, run through the shipped binary with simulated git.
 
 use std::fs;
+#[cfg(unix)]
+use std::path::Path;
+use std::process::Child;
+use std::time::Duration;
 
 use serde_json::{Value, json};
+use software_plant::Clock;
 
 use crate::common::{stderr, stdout};
+use crate::served::within;
 use crate::yard::Yard;
 
 pub fn event(yard: &Yard, name: &str) -> Value {
@@ -30,6 +36,80 @@ pub fn state(yard: &Yard) -> Value {
         .home()
         .join(".yard/codex/codex-session/state.json");
     serde_json::from_slice(&fs::read(file).unwrap()).unwrap()
+}
+
+/// Yard Log as the Codex session reads it.
+pub fn read(yard: &Yard) -> Value {
+    yard.read("codex-session", &["--host", "codex"])
+}
+
+/// Yard Log as the Codex session reads it, marked read.
+pub fn read_marked(yard: &Yard) -> Value {
+    yard.read("codex-session", &["--host", "codex", "--mark-read"])
+}
+
+/// `input` as a successful native `update_plan` call that sets `steps`, each a step's text and
+/// status.
+pub fn plan_update(mut input: Value, steps: &[(&str, &str)]) -> Value {
+    input["tool_name"] = json!("update_plan");
+    input["tool_response"] = json!("Plan updated");
+    input["tool_input"] = json!({"plan":steps
+        .iter()
+        .map(|(step, status)| json!({"step":step,"status":status}))
+        .collect::<Vec<_>>()});
+    input
+}
+
+/// A running `yard codex watch`; dropping it ends the session its input names and stops it.
+pub struct Worker<'a>(pub Child, &'a Yard, Value);
+
+impl Drop for Worker<'_> {
+    fn drop(&mut self) {
+        let mut end = self.2.clone();
+        end["hook_event_name"] = json!("SessionEnd");
+        let _ = self.1.run_with(&["codex", "hook"], &end.to_string());
+        let _ = within(Duration::from_secs(2), || {
+            self.0.try_wait().is_ok_and(|status| status.is_some())
+        });
+        let _ = self.0.kill();
+        let _ = self.0.wait();
+    }
+}
+
+/// Starts `yard codex watch` on the hook `input` under `clock`, with the arguments `more`.
+pub fn watch<'a>(yard: &'a Yard, input: &Value, clock: &Clock, more: &[&str]) -> Worker<'a> {
+    let path = yard.scratch.home().join(format!(
+        "watch-{}.json",
+        input["session_id"].as_str().unwrap()
+    ));
+    fs::write(&path, input.to_string()).unwrap();
+    let process = yard
+        .scratch
+        .command(Some(&yard.git), clock)
+        .args(["yard", "codex", "watch", "--input", path.to_str().unwrap()])
+        .args(more)
+        .args(["--format", "json"])
+        .spawn()
+        .unwrap();
+    Worker(process, yard, input.clone())
+}
+
+/// The session's worker reporting to the page server at `port` and observing the app server at
+/// `socket`, on a clock that passes.
+#[cfg(unix)]
+pub fn worker<'a>(yard: &'a Yard, port: u16, socket: &Path) -> Worker<'a> {
+    let clock = Clock::fixed(crate::common::EPOCH).passing();
+    watch(
+        yard,
+        &event(yard, "SessionStart"),
+        &clock,
+        &[
+            "--port",
+            &port.to_string(),
+            "--app-server-socket",
+            socket.to_str().unwrap(),
+        ],
+    )
 }
 
 #[test]

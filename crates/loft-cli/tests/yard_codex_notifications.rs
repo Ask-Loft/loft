@@ -2,53 +2,14 @@
 #![cfg(unix)]
 
 use std::fs;
-use std::process::Child;
 use std::time::Duration;
 
 use serde_json::{Value, json};
-use software_plant::Clock;
 use software_plant::codex::{CodexAppServer, NativeThread, Scenario};
 
-use crate::common::EPOCH;
 use crate::served::{Served, within};
 use crate::yard::{ASK, Yard, document};
-use crate::yard_codex::{event, hook, state};
-
-struct Worker<'a>(Child, &'a Yard);
-impl Drop for Worker<'_> {
-    fn drop(&mut self) {
-        hook(self.1, &event(self.1, "SessionEnd"));
-        let _ = within(Duration::from_secs(2), || {
-            self.0.try_wait().unwrap().is_some()
-        });
-        let _ = self.0.kill();
-        let _ = self.0.wait();
-    }
-}
-
-fn worker<'a>(yard: &'a Yard, page: &Served, peer: &CodexAppServer) -> Worker<'a> {
-    let input = yard.scratch.home().join("notify-hook.json");
-    fs::write(&input, event(yard, "SessionStart").to_string()).unwrap();
-    let process = yard
-        .scratch
-        .command(Some(&yard.git), &Clock::fixed(EPOCH).passing())
-        .args([
-            "yard",
-            "codex",
-            "watch",
-            "--input",
-            input.to_str().unwrap(),
-            "--port",
-            &page.port.to_string(),
-            "--app-server-socket",
-            peer.path().to_str().unwrap(),
-            "--format",
-            "json",
-        ])
-        .spawn()
-        .unwrap();
-    Worker(process, yard)
-}
+use crate::yard_codex::{event, hook, state, worker};
 
 fn peer(yard: &Yard) -> CodexAppServer {
     CodexAppServer::start(Scenario {
@@ -87,7 +48,7 @@ fn an_answer_before_the_first_scan_wakes_its_caller_despite_another_readers_fall
     yard.read("another-session", &["--host", "codex", "--mark-read"]);
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
-    let _worker = worker(&yard, &page, &peer);
+    let _worker = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || peer
         .requests()
         .iter()
@@ -156,7 +117,7 @@ fn a_decision_after_normal_turn_end_wakes_an_idle_caller_without_an_agent_wait_l
     hook(&yard, &event(&yard, "Stop"));
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
-    let _worker = worker(&yard, &page, &peer);
+    let _worker = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || scanned(&peer)));
     assert_eq!(starts(&peer), 0);
     answer(&yard);
@@ -188,7 +149,7 @@ fn a_lost_acknowledgement_is_checked_against_native_receipts_before_retrying_inp
         drop_acknowledgements: vec!["turn/start".into()],
         ..Scenario::default()
     });
-    let _worker = worker(&yard, &page, &peer);
+    let _worker = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || {
         state(&yard)["notifications"]["deliveries"]
             .as_object()
@@ -211,7 +172,7 @@ fn acknowledged_delivery_survives_a_worker_restart_without_another_model_input()
     answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
-    let mut first = worker(&yard, &page, &peer);
+    let mut first = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || {
         state(&yard)["notifications"]["deliveries"]
             .as_object()
@@ -220,7 +181,7 @@ fn acknowledged_delivery_survives_a_worker_restart_without_another_model_input()
     first.0.kill().unwrap();
     first.0.wait().unwrap();
     let before = peer.requests().len();
-    let _second = worker(&yard, &page, &peer);
+    let _second = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || peer.requests().len()
         >= before + 5));
     assert_eq!(starts(&peer), 1);
@@ -235,7 +196,7 @@ fn an_unloaded_thread_keeps_its_decision_queued_without_reopening_codex() {
     answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = CodexAppServer::start(Scenario::default());
-    let _worker = worker(&yard, &page, &peer);
+    let _worker = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || peer
         .requests()
         .iter()
@@ -267,7 +228,7 @@ fn an_already_read_resolution_is_not_sent_back_to_its_caller() {
     hook(&yard, &event(&yard, "SessionStart"));
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
-    let _worker = worker(&yard, &page, &peer);
+    let _worker = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || scanned(&peer)));
     assert_eq!(starts(&peer), 0);
     assert!(
@@ -299,7 +260,7 @@ fn an_active_native_turn_receives_a_steer_without_any_configuration_overrides() 
         .into(),
         ..Scenario::default()
     });
-    let _worker = worker(&yard, &page, &peer);
+    let _worker = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || peer
         .requests()
         .iter()
@@ -333,7 +294,7 @@ fn context_reports_delivery_status_and_late_cancelled_prompts_cannot_rearm_the_w
     answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
-    let mut running = worker(&yard, &page, &peer);
+    let mut running = worker(&yard, page.port, peer.path());
     assert!(within(Duration::from_secs(3), || {
         state(&yard)["notifications"]["deliveries"]
             .as_object()
@@ -407,7 +368,7 @@ fn an_unavailable_worker_recovers_its_queued_identity_when_the_endpoint_returns(
     answer(&yard);
     let page = Served::start(&yard, &[]);
     let unavailable = CodexAppServer::start(Scenario::default());
-    let mut first = worker(&yard, &page, &unavailable);
+    let mut first = worker(&yard, page.port, unavailable.path());
     assert!(within(Duration::from_secs(3), || {
         state(&yard)["notifications"]["deliveries"]
             .as_object()
@@ -424,7 +385,7 @@ fn an_unavailable_worker_recovers_its_queued_identity_when_the_endpoint_returns(
         .clone();
     assert_eq!(starts(&unavailable), 0);
     let returned = peer(&yard);
-    let _second = worker(&yard, &page, &returned);
+    let _second = worker(&yard, page.port, returned.path());
     assert!(within(Duration::from_secs(3), || starts(&returned) == 1));
     let requests = returned.requests();
     let delivered = requests

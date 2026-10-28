@@ -6,12 +6,10 @@ import { tokens as amount, when } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import { COUNTERS as KEYS, any, summary as keyed } from '../model/tokens.js';
 
-const COUNTS = [
-  ['input', 'Input'],
-  ['cacheRead', 'Cache read'],
-  ['cacheWrite', 'Cache write'],
-  ['output', 'Output'],
-];
+/** @type {Record<string, string>} */
+const WORDS = { input: 'Input', cacheRead: 'Cache read', cacheWrite: 'Cache write', output: 'Output' };
+/** Each counter with its word, in display order. */
+const COUNTS = KEYS.map((key) => [key, WORDS[key]]);
 
 /**
  * A count, with a bar of its share of Yard Log's count of that kind in all.
