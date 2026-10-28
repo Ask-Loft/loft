@@ -9,6 +9,7 @@
 import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
 import { QUIET, type Ran } from '../loft'
+import { isAskable } from './answers'
 import { askQuestions, ownDialog, presentPlan, waitOn } from './asking'
 import { capture, checkCapture } from './capture'
 import { descriptor } from './contract'
@@ -124,7 +125,7 @@ export function registerYard(on: On, options: PluginOptions) {
 
   on('tool.call', { tool: 'AskUserQuestion' }, async ($, e, next) => {
     if (next.origin.plugin === PLUGIN) return ownDialog(e, next)
-    if (!state.isOn) return next(e)
+    if (!state.isOn || !isAskable(e)) return next(e)
     return askQuestions($, e, next)
   })
 

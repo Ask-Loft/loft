@@ -27732,6 +27732,36 @@ links:
       - file: "plugins/claude/loft/tests/yard-dialog.test.tsx"
         name: "Claude Code's dialog shows the page's address above what it asks, once a command has given it"
         body: db27c6ad4a995f83adb33e6eb079561389e8fda9a666b7c1d1f055ef31bf7a9f
+  - node: 01a18487-dd38-733a-b685-bd6a7926ae02
+    reviewed: 7acde3bf91d5b897920d70fefe215f255e991fdaf9f178722fc0f666ead28a13
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a call with an option that has no description writes no block and opens no stage"
+        body: 276dfcafeb3429a26d149c6210af3c9dea2be01f0c3c0ec8faf10b3bd6df5e0b
+  - node: 01a18487-dd38-733a-b685-bd6b92c6fe3f
+    reviewed: 3491fd9e6d3d6852a618cba8be452494729ff140cbcaa3526da6a57314bf187a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a call with no questions or more than four, or a question with fewer than two options or more than four, writes no block"
+        body: 20253ef93c38c29b3f896c7f013694afd889d38360db40f7ffbd8e874739e53d
+  - node: 01a18487-dd38-733a-b685-bd6c2062bf27
+    reviewed: 550238fd93df8ef44c123bf184f785ad5d374f85d3f947a387d21c98b0efc5c1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a call whose question has no question text or no header writes no block"
+        body: 8770a84a658524221e7b1668a1be86c1ca9fcc054f0e3a1be3db7eed12e2927f
+  - node: 01a18487-dd38-733a-b685-bd6d3d4f7e23
+    reviewed: c7a6620295db989445dc01ac523dd6a98c30868cb86b68b36d052c711dc09ef7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a call that leaves out multiSelect is written as a question that takes one option"
+        body: 4c6fac460ad095ce438dcfaa5a29bd70ca2c219d77d512a3e39b3c5d340a32d2
+  - node: 01a18487-dd38-733a-b685-bd6e6853059a
+    reviewed: 962fc7e8e20f1dc300698e7c3bc537a655a23128de197ce1a51a922c8ba4961a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "the agent receives Claude Code's refusal of a call the tool's schema refuses as it would without the plugin"
+        body: e6a329deea71d8866ad10b3b6557812a60111cd05e5da76953416ab56e7059e1
   - node: 01a1646f-546c-7521-9643-bc3699faece5
     reviewed: fe973e59e680f8ebfdcc7d917b7f7f1ec06fd84597d357b0d4d6b67b77920c30
     tests:

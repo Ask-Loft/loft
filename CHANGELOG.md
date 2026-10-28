@@ -28,6 +28,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   change to `spec/` is committed only once the person has approved it there. The Claude Code skill
   also pre-approves `loft find`, `loft terms`, `loft status` and `loft review`, which write
   nothing.
+- A question whose `AskUserQuestion` call Claude Code refuses, such as one with an option that
+  has no description, no longer reaches Yard Log: the Claude plugin records a call only once its
+  input has the shape the tool's schema takes.
 - A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, is released from `develop` without
   `loft verify`: npm publishes it under the dist-tag of its identifier and GitHub marks it a
   prerelease, so neither offers it as the latest. `loft` orders a prerelease before the release
