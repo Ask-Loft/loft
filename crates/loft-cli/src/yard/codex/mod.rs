@@ -139,14 +139,16 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     usage::native(hook, &mut state);
     state.keep(events);
     files.write(&state)?;
+    // A task write Yard cannot take leaves the hook answered as it would be without Yard: the
+    // native call already ran and its events are kept.
     if let Some(caller) = &caller {
         if matches!(
             hook.name(),
             "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
         ) {
-            task_writes::finish(hook, caller, port)?;
+            let _ = task_writes::finish(hook, caller, port);
         } else if !state.ended_tasks.contains(&task_writes::actor_key(caller)) {
-            tasks::mirror(hook, caller, port)?;
+            let _ = tasks::mirror(hook, caller, port);
         }
     }
     drop(locked);

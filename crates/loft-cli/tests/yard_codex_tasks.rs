@@ -132,3 +132,33 @@ fn failed_malformed_and_unowned_codex_plans_create_no_task_write() {
     hook(&absent, &plan(&absent, &[("Check", "pending")]));
     assert_eq!(read(&absent)["revision"], 0);
 }
+
+#[test]
+fn codex_hooks_that_release_tasks_outside_a_git_repository_still_answer() {
+    let mut yard = Yard::new();
+    yard.git = software_plant::GitScenario::outside_repository();
+    for name in ["Stop", "Interrupt", "SubagentStop", "SessionEnd"] {
+        let mut input = event(&yard, name);
+        if name == "SubagentStop" {
+            input["agent_id"] = json!("child");
+            input["agent_type"] = json!("reviewer");
+        }
+        assert_eq!(hook(&yard, &input)["hookOutput"], json!({}), "{name}");
+    }
+}
+
+#[test]
+fn a_codex_plan_whose_task_change_yard_refuses_keeps_its_native_response() {
+    let yard = Yard::new();
+    stage(&yard);
+    let closed = yard.run(&["close", "--session", "codex-session", "--host", "codex"]);
+    assert!(
+        closed.status.success(),
+        "{}",
+        crate::common::stderr(&closed)
+    );
+    let before = read(&yard)["revision"].clone();
+    let answer = hook(&yard, &plan(&yard, &[("Check", "pending")]));
+    assert_eq!(answer["hookOutput"], json!({}));
+    assert_eq!(read(&yard)["revision"], before);
+}

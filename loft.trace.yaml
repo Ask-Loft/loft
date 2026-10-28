@@ -19761,6 +19761,18 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_tasks.rs"
         name: "codex_plan_updates_preserve_task_identity_when_reordered_and_skip_unchanged_versions"
         body: af12c0e65abb1f5c623d05ca3bc4108f1f60e9af5caad596a8fb2d2a10a62660
+  - node: 01a182b6-62b5-70ae-a9a2-261041cfe4ec
+    reviewed: 28be3e6a142cf8f5071ef8e9e91d97c6c95cf459d26b7f8a81db5d135d3e8766
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_tasks.rs"
+        name: "codex_hooks_that_release_tasks_outside_a_git_repository_still_answer"
+        body: 07cb9b31bce916fb1ebe5d3ae5be54cac50f24d3632033095d90301acfb465d9
+  - node: 01a182b6-62b5-70ae-a9a2-26117bfcbc6b
+    reviewed: 38365f1c873f830e725420267dad10f4983a0d2974c4dea2bb9413d2298ff514
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_tasks.rs"
+        name: "a_codex_plan_whose_task_change_yard_refuses_keeps_its_native_response"
+        body: dc66feb2a1bae4dcd9f92f4aca5bfdabfa4a8a1fa2d1e51932d6a5826793ec11
   - node: 01a1787c-f803-70b1-b946-b70e2947594a
     reviewed: b779938e23095d8283f1552cbb1e14b5ce2a5a9b38aa7eb87bd35560108c79d1
     tests:
