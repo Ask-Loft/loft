@@ -93,13 +93,5 @@ pub fn replayed(home: &Home, key: &str) -> BTreeMap<(String, String), Totals> {
     by_log
 }
 
-/// The text of the totals file the page server would write for session `key` in the Yard Log of
-/// `branch` in `tree`, rebuilt from the session's event log; none where the log counts no
-/// request there.
-pub fn replayed_totals(home: &Home, key: &str, tree: &str, branch: &str) -> Option<String> {
-    let totals = replayed(home, key).remove(&(tree.to_owned(), branch.to_owned()))?;
-    totals.counted().then(|| totals.text())
-}
-
 #[cfg(test)]
 mod tests;

@@ -2,10 +2,10 @@
 //! tree's `.yard/` that is open and in an older format, written in this `loft`'s format, each
 //! under its own lock, whole or not at all. Closed Yard Log and Yard Log already in this
 //! format are left as they are; one of a newer format, or one that does not read, is left and
-//! named, and the command exits 1. Then each open Yard Log's totals files of an older totals
-//! format are written in the current one, under the page server's lock and unless a page server
-//! holds it (`totals`); where that step fails to settle a file, the command still reports each
-//! Yard Log's fate, names the file, and exits 1. The person runs it, so it takes no `--session`.
+//! named, and the command exits 1. Then the machine's Codex events are moved and each open Yard
+//! Log's totals files settled, under the page server's lock and unless a page server holds it
+//! (`totals`); where that step fails to settle a file, the command still reports each Yard Log's
+//! fate, names the file, and exits 1. The person runs it, so it takes no `--session`.
 
 mod events;
 mod totals;

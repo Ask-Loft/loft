@@ -196,6 +196,26 @@ impl Totals {
         true
     }
 
+    /// Makes each of the counts these totals hold what `map` makes of it: in all, by stage and
+    /// within each by agent, under no stage, by agent and model, and by submission.
+    pub fn map_counts(&mut self, map: impl Fn(Counts) -> Counts) {
+        self.all = map(self.all);
+        for stage in self.stages.values_mut() {
+            stage.all = map(stage.all);
+            for counts in stage.agents.values_mut() {
+                *counts = map(*counts);
+            }
+        }
+        self.no_stage = self.no_stage.map(&map);
+        let scopes = self
+            .agents
+            .values_mut()
+            .chain(self.submissions.values_mut());
+        for counts in scopes {
+            *counts = map(*counts);
+        }
+    }
+
     /// Reads a totals file of a known totals format as JSON, as [`Totals::text`] wrote it, so
     /// that writing it again gives the same text, in the current totals format.
     #[must_use]

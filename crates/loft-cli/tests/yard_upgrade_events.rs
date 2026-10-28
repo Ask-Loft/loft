@@ -178,22 +178,63 @@ fn current_session() -> Yard {
 }
 
 #[test]
-fn the_events_of_a_session_whose_totals_are_in_the_current_format_are_moved_and_its_totals_kept() {
+fn the_events_of_a_session_whose_totals_are_in_the_current_format_are_moved_and_its_totals_counted_again()
+ {
     let yard = current_session();
-    let current = totals(&yard);
-    assert!(current.starts_with(FORMAT), "{current}");
+    assert!(totals(&yard).contains("cacheWrite: 0"));
     let (code, result) = upgrade(&yard);
     assert_eq!(code, Some(0));
-    assert_eq!(result["classified"], json!([]));
+    let counted = json!([{"branch":crate::yard::BRANCH,"host":"codex","session":"s1"}]);
+    assert_eq!(result["classified"], counted);
     for line in lines(&yard) {
         assert!(line["tokens"].get("cacheWrite").is_none(), "{line}");
         assert_eq!(line["usageSource"]["reported"], json!({"cacheWrite":0}));
     }
-    assert_eq!(
-        totals(&yard),
-        current,
-        "the totals file in the current format is left as it was"
-    );
+    let written = totals(&yard);
+    assert!(!written.contains("cacheWrite: 0"), "{written}");
+}
+
+#[test]
+fn a_totals_file_in_the_current_format_counted_from_unmoved_events_is_written_as_replay_counts_it()
+{
+    replay_gives_what_the_upgrade_wrote(&current_session());
+}
+
+#[test]
+fn a_totals_file_whose_events_an_earlier_upgrade_moved_is_counted_again_without_the_zero() {
+    let yard = current_session();
+    let path = yard.scratch.home().join(".yard/events/codex~s1.jsonl");
+    let mut moved = String::new();
+    for mut line in lines(&yard) {
+        line["tokens"].as_object_mut().unwrap().remove("cacheWrite");
+        line["usageSource"]["reported"] = json!({"cacheWrite":0});
+        moved.push_str(&line.to_string());
+        moved.push('\n');
+    }
+    fs::write(&path, &moved).unwrap();
+    let (code, result) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    assert_eq!(result["classified"][0]["session"], "s1", "{result}");
+    assert_eq!(fs::read_to_string(&path).unwrap(), moved);
+    let written = totals(&yard);
+    assert!(!written.contains("cacheWrite: 0"), "{written}");
+}
+
+#[test]
+fn a_totals_file_replay_gives_byte_for_byte_is_not_written_again() {
+    let yard = current_session();
+    upgrade(&yard);
+    let path = yard
+        .folder(crate::yard::BRANCH)
+        .join("tokens/codex~s1.yaml");
+    let first = fs::read(&path).unwrap();
+    let modified = fs::metadata(&path).unwrap().modified().unwrap();
+    let (code, result) = upgrade(&yard);
+    assert_eq!(code, Some(0));
+    assert_eq!(result["classified"], json!([]));
+    assert!(result.get("totalsLeft").is_none(), "{result}");
+    assert_eq!(fs::read(&path).unwrap(), first);
+    assert_eq!(fs::metadata(&path).unwrap().modified().unwrap(), modified);
 }
 
 #[test]

@@ -1,19 +1,21 @@
-//! The totals step of `loft yard upgrade`: each totals file of an open Yard Log in an older totals
-//! format, written again in the current one, and where its host is Codex, with each zero
-//! cache-write count unavailable, since a Codex adapter that did not classify cache writes at the
-//! source may have given a zero it did not measure: counted again from the session's moved events
-//! where this machine keeps them, else settled from the file itself. The events of every Codex
-//! session this machine keeps are moved first, whatever its file's format and whichever Yard Log
-//! they count toward, since an earlier page server wrote Codex files in the current format without
-//! moving their events, and the event logs belong to the machine. While a page server holds its
-//! lock, nothing is written: it appends to the event logs and would write its own counts over the
-//! files. Otherwise the step holds that lock until it has written the last file, so that no page
-//! server starts meanwhile.
+//! The totals step of `loft yard upgrade`. The events of every Codex session this machine keeps
+//! are moved first, whatever its totals file's format and whichever Yard Log they count toward,
+//! since the event logs belong to the machine (`events`). Then each Codex totals file of an open
+//! Yard Log whose session's events this machine keeps is written as replaying them counts it,
+//! whatever its totals format, since an earlier page server may have counted a zero it did not
+//! measure. Every other totals file of an older totals format is written in the current one, a
+//! Codex one with each zero cache-write count unavailable, since the file cannot tell which zeros
+//! were measured. A file whose text would not change keeps its bytes. While a page server holds
+//! its lock, nothing is written: it appends to the event logs and would write its own counts over
+//! the files. Otherwise the step holds that lock until it has written the last file, so that no
+//! page server starts meanwhile.
 
+use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use serde_json::{Value, json};
 use yardlog::totals::{Totals, TotalsFormat};
+use yardlog::usage::Counts;
 use yardlog_store::YardStore;
 use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
@@ -21,11 +23,11 @@ use yardlog_store::session::SessionFile;
 use crate::yard::failure::Failure;
 use crate::yard::page;
 use crate::yard::session_files;
-use crate::yard::totals::replayed_totals;
+use crate::yard::totals::replayed;
 
 /// What became of the totals files of the open Yard Logs.
 pub enum Classifying {
-    /// Each file written in the current totals format: its branch, host and session.
+    /// Each file written: its branch, host and session.
     Done(Vec<Value>),
     /// Every file left as it was, because a page server holds its lock: the one on `port`, or one
     /// that has not named itself yet.
@@ -94,8 +96,8 @@ fn left(port: Option<u16>) -> Value {
 }
 
 /// Moves the unverified zeros of the Codex events in every event log of the machine, then writes
-/// each totals file of an older totals format of the Yard Logs `open`, each by its branch; stops
-/// on the first file it fails to settle.
+/// each totals file of the Yard Logs `open`, each by its branch, that the step counts otherwise;
+/// stops on the first file it fails to settle.
 pub fn classify(open: &[(String, YardStore)]) -> Classifying {
     let mut classified = Vec::new();
     match settle(open, &mut classified) {
@@ -108,6 +110,10 @@ pub fn classify(open: &[(String, YardStore)]) -> Classifying {
     }
 }
 
+/// A totals file of an open Yard Log: its branch, the Yard Log's store, its session key and the
+/// file as JSON.
+type File<'a> = (&'a String, &'a YardStore, String, Value);
+
 /// [`classify`]'s work, under the page server's lock: each file it writes added to `classified`;
 /// where a page server holds the lock, nothing is written, and the error gives its port, where it
 /// named one.
@@ -115,7 +121,7 @@ fn settle(
     open: &[(String, YardStore)],
     classified: &mut Vec<Value>,
 ) -> Result<Result<(), Option<u16>>, Unsettled> {
-    let files: Vec<_> = open
+    let files: Vec<File<'_>> = open
         .iter()
         .flat_map(|(branch, store)| {
             let files = session_files::entries(store, SessionFile::Tokens);
@@ -134,17 +140,16 @@ fn settle(
             return Err(Unsettled::at(path, &Failure::NO_HOME));
         }
     };
-    let sessions = home.event_sessions();
-    let events = || home.dir().join("events");
-    let mut pending = Vec::new();
-    for key in sessions.map_err(|error| Unsettled::at(events(), &error))? {
-        let found = super::events::pending(&home, &key);
-        if found.map_err(|error| Unsettled::at(home.events(&key), &error))? {
-            pending.push(key);
-        }
-    }
+    let pending = pending(&home)?;
     if pending.is_empty() && first_older.is_none() {
-        return Ok(Ok(()));
+        // Nothing to move and nothing older: only a Codex file its replay counts otherwise.
+        let mut replays = Replays::new(&home);
+        if !files
+            .iter()
+            .any(|file| rewritten(file, &mut replays).is_some())
+        {
+            return Ok(Ok(()));
+        }
     }
     // Held until the last file is written, so that no page server starts meanwhile.
     let quiet = page::quiet(&home);
@@ -158,63 +163,83 @@ fn settle(
         let settled = super::events::settle(&home, &server, &key);
         settled.map_err(|error| Unsettled::at(home.events(&key), &error))?;
     }
-    for (branch, store, key, file) in files.into_iter().filter(|(.., file)| older(file)) {
-        let host = file["host"].as_str().unwrap_or_default().to_owned();
-        let text = if host == "codex" {
-            codex_totals(&home, store, &key, file.clone())
-        } else {
-            Totals::read(&file).text()
+    let mut replays = Replays::new(&home);
+    for file in &files {
+        let Some(text) = rewritten(file, &mut replays) else {
+            continue;
         };
-        let path = store.session_path(SessionFile::Tokens, &key);
-        let written = store.write_session(SessionFile::Tokens, &key, text.as_bytes());
+        let (branch, store, key, totals) = file;
+        let path = store.session_path(SessionFile::Tokens, key);
+        let written = store.write_session(SessionFile::Tokens, key, text.as_bytes());
         written.map_err(|error| Unsettled::at(path, &error))?;
-        classified.push(json!({ "branch": branch, "host": host, "session": file["session"] }));
+        let (host, session) = (&totals["host"], &totals["session"]);
+        classified.push(json!({ "branch": branch, "host": host, "session": session }));
     }
     Ok(Ok(()))
 }
 
-/// A Codex session's totals, counted as the page server counts them from the session's moved
-/// events, so that a later replay writes the same. Where this machine keeps no event of the
-/// session in this Yard Log, the file itself is settled: each zero cache-write count is made
-/// unavailable, and each positive one is kept, with no word of the zeros it may hold.
-fn codex_totals(home: &Home, store: &YardStore, key: &str, mut file: Value) -> String {
-    let tree = store.place().tree.display().to_string();
-    replayed_totals(home, key, &tree, store.branch()).unwrap_or_else(|| {
-        classify_codex(&mut file);
-        Totals::read(&file).text()
-    })
-}
-
-/// Makes each zero cache-write count of a Codex totals file unavailable: in all, under no stage,
-/// by stage and within each by agent, by agent and model, and by submission.
-fn classify_codex(file: &mut Value) {
-    for name in ["tokens", "noStage"] {
-        if let Some(counts) = file.get_mut(name) {
-            unavailable_zero(counts);
+/// The sessions whose event logs hold a Codex count to move.
+fn pending(home: &Home) -> Result<Vec<String>, Unsettled> {
+    let sessions = home.event_sessions();
+    let events = || home.dir().join("events");
+    let mut pending = Vec::new();
+    for key in sessions.map_err(|error| Unsettled::at(events(), &error))? {
+        let found = super::events::pending(home, &key);
+        if found.map_err(|error| Unsettled::at(home.events(&key), &error))? {
+            pending.push(key);
         }
     }
-    for stage in items(file, "stages") {
-        unavailable_zero(stage);
-        items(stage, "agents").for_each(unavailable_zero);
-    }
-    for name in ["agents", "submissions"] {
-        items(file, name).for_each(unavailable_zero);
-    }
+    Ok(pending)
 }
 
-fn items<'a>(value: &'a mut Value, name: &str) -> impl Iterator<Item = &'a mut Value> {
-    value
-        .get_mut(name)
-        .and_then(Value::as_array_mut)
-        .into_iter()
-        .flatten()
+/// The text the totals step writes for `file`, where it differs from the file's bytes: a Codex
+/// session's totals as replaying its events counts them, where this machine keeps events of it
+/// in the file's Yard Log, whatever the file's known totals format; else a file of an older
+/// totals format in the current one, with each zero cache-write count unavailable where its host
+/// is Codex, since the file cannot tell which zeros were measured.
+fn rewritten((_, store, key, file): &File<'_>, replays: &mut Replays<'_>) -> Option<String> {
+    let format = TotalsFormat::of(file).filter(|format| *format <= TotalsFormat::CURRENT)?;
+    let codex = file["host"] == "codex";
+    let text = match replays.of(store, key).filter(|_| codex) {
+        Some(replayed) => replayed.text(),
+        None if format < TotalsFormat::CURRENT => {
+            let mut totals = Totals::read(file);
+            if codex {
+                totals.map_counts(Counts::without_zero_write);
+            }
+            totals.text()
+        }
+        None => return None,
+    };
+    let bytes = store.session_file(SessionFile::Tokens, key);
+    (bytes.as_deref() != Some(text.as_bytes())).then_some(text)
 }
 
-/// Makes a zero cache-write count unavailable: a counter the file does not give.
-fn unavailable_zero(counts: &mut Value) {
-    if counts["cacheWrite"] == 0
-        && let Some(fields) = counts.as_object_mut()
-    {
-        fields.remove("cacheWrite");
+/// Each session's totals in every Yard Log its events count toward, replayed once.
+struct Replays<'a> {
+    home: &'a Home,
+    sessions: BTreeMap<String, BTreeMap<(String, String), Totals>>,
+}
+
+impl<'a> Replays<'a> {
+    const fn new(home: &'a Home) -> Self {
+        Self {
+            home,
+            sessions: BTreeMap::new(),
+        }
+    }
+
+    /// Session `key`'s totals in the Yard Log of `store`, where its events count a request there.
+    fn of(&mut self, store: &YardStore, key: &str) -> Option<&Totals> {
+        let home = self.home;
+        let replayed = self
+            .sessions
+            .entry(key.to_owned())
+            .or_insert_with(|| replayed(home, key));
+        let place = (
+            store.place().tree.display().to_string(),
+            store.branch().to_owned(),
+        );
+        replayed.get(&place).filter(|totals| totals.counted())
     }
 }

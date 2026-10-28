@@ -23850,6 +23850,12 @@ links:
   - node: 01a1835b-a222-7677-8e34-d5298ccf7576
     reviewed: 72933703ff1ce4fc64f7d06b2e84a9d462ca70dddb0aeb2d8ac831414b45b1bf
     tests:
+      - file: "crates/yardlog/tests/totals.rs"
+        name: "mapping_the_counts_of_totals_reaches_every_scope_they_hold"
+        body: 97a470c441b353283ec843f2f0909ff85ac7dac4b2b9c765cbd46e6cb658b6f5
+      - file: "crates/yardlog/tests/totals.rs"
+        name: "a_zero_cache_write_count_is_made_unavailable_and_every_other_count_kept"
+        body: f723e60ffdcb6e5c696c0a11fa8f41ad7a1d36d22e62a6ec047c7f67379ba891
       - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
         name: "a_codex_zero_cache_write_becomes_unavailable_in_every_scope_and_positive_counts_are_kept"
         body: 21b3bf4cdf12e089e2025938b7e2b61d582de10a5ba8e922676a86fe3240f852
@@ -23902,11 +23908,29 @@ links:
     reviewed: b2531498f0908e13b863eb697e51cd5b1871d778402f3d10ef5e8b8415b0932a
     tests:
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "a_totals_file_in_the_current_format_counted_from_unmoved_events_is_written_as_replay_counts_it"
+        body: 78895cc179bd7770b701e1adf71017e94055a092157adb07686a332242349cee
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "replaying_the_session_after_the_upgrade_gives_the_totals_it_wrote"
         body: f7ab49160675b8b1b80c7c7233a3d2a36cb9492e5d1fb256f3ac0b2f5bbc3021
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "a_scope_with_a_zero_and_a_positive_cache_write_is_upgraded_as_replay_counts_it"
         body: d6911057ab775335012dc93fa318f50997aae21786bc25bd2d425c6b4adbf52a
+  - node: 01a1839e-0cd9-75bc-b853-1ff103f78b92
+    reviewed: 5f79be94e7ad82535b67c9e32602a0b356af76f67f82be172dd12b92949866a5
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "the_events_of_a_session_whose_totals_are_in_the_current_format_are_moved_and_its_totals_counted_again"
+        body: bcbc75c830376700f8010943b79a08bd21fbb36293dc159fb69a8166391bbbcb
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "a_totals_file_whose_events_an_earlier_upgrade_moved_is_counted_again_without_the_zero"
+        body: b7ef79d8a4124319c6ad3419ecb3e5340528b3a1159f6438c01122813c8237fa
+  - node: 01a1839e-0cd9-75bc-b853-1ff209c46c09
+    reviewed: 1b1995cfcc28ed03f8a7f583dec68a24af600c7509ce9a93fe173ee9196aae54
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "a_totals_file_replay_gives_byte_for_byte_is_not_written_again"
+        body: aef816ace16e52865b2ca15ab313978585d2bac5cea09867c24b64456ed7de7f
   - node: 01a1835b-a222-7677-8e34-d530298dfd95
     reviewed: 6568c6304ffb8cb0721958088342f5960bb01feac0d40ebd97b6715f22fe2a33
     tests:
@@ -23920,8 +23944,8 @@ links:
     reviewed: 209958e86729e422632ce6a5e3cc1d3a10115fbf0ef3ac14e25b721419b6bb91
     tests:
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
-        name: "the_events_of_a_session_whose_totals_are_in_the_current_format_are_moved_and_its_totals_kept"
-        body: e500f13a60df86f42aac6d09e10afda1f4d2cadb6fb1bcb9cea8eec3fce67209
+        name: "the_events_of_a_session_whose_totals_are_in_the_current_format_are_moved_and_its_totals_counted_again"
+        body: bcbc75c830376700f8010943b79a08bd21fbb36293dc159fb69a8166391bbbcb
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "the_events_of_a_codex_session_are_moved_whichever_tree_they_count_toward_and_others_kept"
         body: 602c6d46f10e120aeb878b0b5b22957912a508a7691f919a05cf9658ef11d171
