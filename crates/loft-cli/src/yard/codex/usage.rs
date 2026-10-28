@@ -95,9 +95,7 @@ pub enum Source {
 }
 
 pub fn native(hook: &Hook, state: &mut State) {
-    let thread = hook.0["agent_id"]
-        .as_str()
-        .unwrap_or_else(|| hook.session());
+    let thread = hook.thread();
     if hook.name() == "SessionEnd" {
         for turn in state.usage.active.values_mut() {
             turn.ended = true;

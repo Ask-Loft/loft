@@ -58,15 +58,8 @@ pub fn update(
     retry(
         || commands::read(hook.dir(), caller, port),
         |doc, batch| {
-            let mut args = vec![
-                "write".into(),
-                "--input".into(),
-                "-".into(),
-                "--based-on".into(),
-                doc["revision"].to_string(),
-            ];
-            args.extend(caller.args());
-            commands::run(hook.dir(), &args, port, Some(&json!(batch)))
+            let revision = doc["revision"].as_u64().unwrap_or_default();
+            commands::write(hook.dir(), caller, port, revision, &json!(batch))
         },
         select,
     )
@@ -125,7 +118,7 @@ mod tests {
             agent: Some(("worker".into(), "builder".into())),
         };
         let doc = RefCell::new(
-            json!({"revision":1,"stages":[{"id":"build","blocks":[{"id":"shared","kind":"task","version":{"body":{"title":"Keep","detail":"Before","state":"active","assignee":{"host":"codex","session":"s","agent":"worker"}}}}]}]}),
+            json!({"revision":1,"stages":[{"id":"build","blocks":[{"id":"shared","kind":"task","version":{"body":{"title":"Keep","detail":"Before","state":"active","assignee":{"host":"codex","session":"s","agent":"worker","agentType":"builder"}}}}]}]}),
         );
         let writes = RefCell::new(vec![]);
         retry(

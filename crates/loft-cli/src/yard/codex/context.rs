@@ -64,10 +64,7 @@ fn footer(hook: &Hook) -> String {
 }
 
 fn notification_context(hook: &Hook, caller: &Caller) -> &'static str {
-    let thread = caller
-        .agent
-        .as_ref()
-        .map_or(caller.session.as_str(), |(id, _)| id.as_str());
+    let thread = caller.thread();
     let delivery = super::state::Files::of(hook)
         .and_then(|files| files.read())
         .map(|s| s.notifications.availability(thread))

@@ -67,7 +67,7 @@ fn refresh(
         return report(files, watcher, Availability::Unavailable);
     };
     let snapshot = Snapshot::read(&doc, &watcher.route);
-    if doc["schema"] != "loft-yard-read/3"
+    if doc["schema"] != crate::yard::read::SCHEMA
         || (snapshot.is_none() && doc["revision"] != 0)
         || doc["detached"] == true
     {

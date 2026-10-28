@@ -42,6 +42,7 @@ fn discovery_requires_the_exact_host_session_and_subagent_sender() {
     let mut doc = history();
     let owner = &mut doc["sent"][1]["agent"];
     owner["agent"] = json!("reviewer");
+    owner["agentType"] = json!("review");
     assert_eq!(Snapshot::read(&doc, &route()).unwrap().resolved, vec![]);
     let mut sub = route();
     sub.caller.agent = Some(("reviewer".into(), "review".into()));

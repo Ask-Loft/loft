@@ -36,6 +36,12 @@ impl Hook {
     pub fn session(&self) -> &str {
         self.0["session_id"].as_str().unwrap_or_default()
     }
+    /// The Codex thread the hook runs in: its subagent's, or the session's.
+    pub fn thread(&self) -> &str {
+        self.0["agent_id"]
+            .as_str()
+            .unwrap_or_else(|| self.session())
+    }
     pub fn dir(&self) -> &str {
         self.0["cwd"].as_str().unwrap_or_default()
     }

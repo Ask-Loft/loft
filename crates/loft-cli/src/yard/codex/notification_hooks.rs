@@ -15,10 +15,7 @@ pub fn record(hook: &Hook, caller: Option<&Caller>, ledger: &mut Ledger) -> Disp
     let Some(caller) = caller else {
         return Disposition::Ordinary;
     };
-    let thread = caller
-        .agent
-        .as_ref()
-        .map_or(caller.session.as_str(), |(id, _)| id.as_str());
+    let thread = caller.thread();
     let route = Route {
         caller: caller.clone(),
         thread: thread.into(),

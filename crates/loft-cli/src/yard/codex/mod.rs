@@ -96,7 +96,7 @@ pub fn run(action: Action) -> Finished {
     }
 }
 
-fn message(error: super::failure::Failure) -> String {
+pub(super) fn message(error: super::failure::Failure) -> String {
     match error {
         super::failure::Failure::Usage(message) => message,
         super::failure::Failure::Stopped(stop) => stop.lines.join("; "),

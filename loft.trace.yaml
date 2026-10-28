@@ -20258,7 +20258,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_discovery_tests.rs"
         name: "discovery_requires_the_exact_host_session_and_subagent_sender"
-        body: 486125c1af3b53970a5c897da31c5f5a8fbbb60dcef6515c540a73d411a97996
+        body: 330eee52f6e841d92c6092cdbdf9588ac4d06f5c10d94d538a3a4b787ecd7b21
   - node: 01a17afd-c25e-744a-84c1-0863d066971e
     reviewed: f43087e4ca07a05ecda18ee6af85c01693c1c7638eef26b23aebcf3a0bc5a3d2
     tests:
@@ -20345,7 +20345,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_discovery_tests.rs"
         name: "discovery_requires_the_exact_host_session_and_subagent_sender"
-        body: 486125c1af3b53970a5c897da31c5f5a8fbbb60dcef6515c540a73d411a97996
+        body: 330eee52f6e841d92c6092cdbdf9588ac4d06f5c10d94d538a3a4b787ecd7b21
   - node: 01a17afd-c25e-744a-84c1-08700cbb7969
     reviewed: aa8009beed3216f975e8efbb514aefe4fdd4007db9d8fb03990a5aee9a728671
     tests:

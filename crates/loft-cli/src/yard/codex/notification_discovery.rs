@@ -18,7 +18,7 @@ pub struct Snapshot {
 
 impl Snapshot {
     pub fn read(doc: &Value, route: &Route) -> Option<Self> {
-        if doc["schema"] != "loft-yard-read/3" || doc["outcome"] != "read" {
+        if doc["schema"] != crate::yard::read::SCHEMA || doc["outcome"] != "read" {
             return None;
         }
         if doc["leftOut"].as_u64().is_some_and(|count| count > 0) {

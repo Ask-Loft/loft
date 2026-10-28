@@ -150,9 +150,7 @@ pub fn readiness(files: &Files, hook: &super::translate::Hook) {
     if hook.name() != "UserPromptSubmit" {
         return;
     }
-    let thread = hook.0["agent_id"]
-        .as_str()
-        .unwrap_or_else(|| hook.session());
+    let thread = hook.thread();
     let turn = hook.0["turn_id"].as_str();
     let deadline = Instant::now() + Duration::from_millis(500);
     while Instant::now() < deadline {

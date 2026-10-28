@@ -87,9 +87,7 @@ fn resume(files: &Files, hook: &Hook) -> Result<()> {
     if matches!(hook.name(), "SessionStart" | "UserPromptSubmit") {
         let _locked = files.lock()?;
         let mut state = files.read()?;
-        let thread = hook.0["agent_id"]
-            .as_str()
-            .unwrap_or_else(|| hook.session());
+        let thread = hook.thread();
         let generated = state
             .notifications
             .is_notification(thread, hook.0["prompt"].as_str().unwrap_or_default());
