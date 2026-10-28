@@ -143,6 +143,9 @@ pub struct ReadArgs {
     /// Record the revision read as the one the calling agent last read: the agent's own read.
     #[arg(long, requires = "session")]
     pub mark_read: bool,
+    /// Add the calling agent's briefing: where Yard Log stands for it, as fields and as text.
+    #[arg(long, requires = "session")]
+    pub context: bool,
     #[command(flatten)]
     pub agent: Runner,
     #[command(flatten)]

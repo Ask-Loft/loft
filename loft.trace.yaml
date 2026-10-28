@@ -20937,6 +20937,48 @@ links:
       - file: "crates/loft-cli/tests/yard_settle.rs"
         name: "submission_history_reports_when_a_merged_resolution_reached_this_copy"
         body: f3c18df9e074af5f8e86ddf83ba0cc96b304b6f36951ac8ebea87a2de7451eb5
+  - node: 01a182b6-3c59-766a-a80e-37e4c4e10e3b
+    reviewed: f42855828dbb020979be3deae6c59869d15f8995708ab93b51ae9fd1130243d6
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_names_the_page_revision_stage_open_submissions_and_what_was_answered_since"
+        body: cc952ba5930c706619aeddff465ae65947c690a0626d0682cc6908f182d0d497
+  - node: 01a182b6-3c59-766a-a80e-37e54697116e
+    reviewed: e83e9c7d61f70f1d5468deb0c19d8937793965270a0c3f0b664a34cc1e6e2865
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_lists_the_unfinished_tasks_assigned_to_the_agent_with_their_stages"
+        body: 7f36522bacb67aa01c1917e0ae0a3835a9b152027e198e74c712682747e99a9b
+  - node: 01a182b6-3c59-766a-a80e-37e62a9ce27d
+    reviewed: 23447c7b870701f3106e3e444a33be084a5a59c586cca665a31abc8de6c48ef9
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_s_text_counts_what_it_leaves_out_within_2000_characters"
+        body: ed4eec512b1ad07fcc9b23da8afcd421ea361b6fe39f376f56305558dffa7b28
+  - node: 01a182b6-3c59-766a-a80e-37e7ac57cb5d
+    reviewed: 502d83cc261c4cd9dae4f22c078adae15fb1a350c12ccb8010eb3beb7f6b7ae5
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_of_a_branch_with_no_yard_log_names_only_the_page_and_that_there_is_none"
+        body: a07b77fbe9177914678a124cc393290107a8e64f7dfa8e7a1895b37b84b4f60d
+  - node: 01a182b6-3c59-766a-a80e-37e807efebd5
+    reviewed: 092cf90d085e8bde29283960d08a797b63cbd40ede3f1cfa8432931e2de89cfd
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_briefing_says_whether_yard_log_is_closed_and_whether_git_ignores_yard"
+        body: 14e676b41cef836a59d34639654b696a4ef837187e25dc89e713f2cc21c95a65
+  - node: 01a182b6-3c59-766a-a80e-37e925896ef9
+    reviewed: f814073b351143f67aac346e32d86435b7275935b7f3354af82142cb126976f1
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "context_given_without_session_exits_2_and_names_session"
+        body: 2c4ba027c71d1dc10f88f9828f9cfa9f4356e31c3c9567239e5db4af192ec0b2
+  - node: 01a182be-ad52-75ba-879c-8aea5f45df7a
+    reviewed: f37b1b1ade1a2c13a996652861e1e78cb1a7f326a21317295405cdf711ffe90b
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "the_stage_the_briefing_names_is_the_agent_s_working_stage"
+        body: 01f2b1c6d5c341fa7cd88db1e481866c0eeeef484c437adbdfec339b591d5513
   - node: 01a1646f-546e-76cb-8b4f-f25c4364af72
     reviewed: 710151f2138cb362ba0f5cf501de448a65ce9b6f523e3846d6f96a1a4015b787
     tests:

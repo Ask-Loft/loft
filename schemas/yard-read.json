@@ -265,6 +265,9 @@
             "null"
           ],
           "minimum": 0
+        },
+        "context": {
+          "$ref": "#/$defs/context"
         }
       }
     },
@@ -1487,6 +1490,175 @@
         "agentType": [
           "agent"
         ]
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "page",
+        "revision",
+        "since",
+        "noLog",
+        "closed",
+        "ignored",
+        "stage",
+        "assigned",
+        "open",
+        "responded",
+        "text"
+      ],
+      "properties": {
+        "page": {
+          "description": "The page's address, or null where no page server serves it",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "since": {
+          "description": "The revision the agent last read, from which `responded` counts",
+          "type": "integer",
+          "minimum": 0
+        },
+        "noLog": {
+          "description": "Whether the branch has no Yard Log yet",
+          "type": "boolean"
+        },
+        "closed": {
+          "type": "boolean"
+        },
+        "ignored": {
+          "description": "Whether git ignores `.yard/`",
+          "type": "boolean"
+        },
+        "stage": {
+          "description": "The agent's working stage, or null where it has none",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "id",
+                "title"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "assigned": {
+          "description": "The unfinished tasks assigned to the agent, each with the stage it is recorded in",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "stage",
+              "title",
+              "state"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "stage": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "active"
+                ]
+              }
+            }
+          }
+        },
+        "open": {
+          "description": "Every open submission",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "key",
+              "blocks",
+              "sentBy"
+            ],
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "blocks": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sentBy": {
+                "type": "string",
+                "enum": [
+                  "self",
+                  "other"
+                ]
+              }
+            }
+          }
+        },
+        "responded": {
+          "description": "The blocks answered or decided after `since`, in the order they were",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "kind",
+              "response",
+              "title"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "response": {
+                "type": "string",
+                "enum": [
+                  "answered",
+                  "approved",
+                  "rejected"
+                ]
+              },
+              "title": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "text": {
+          "description": "The briefing as text of at most 2,000 characters, naming no host's tools",
+          "type": "string",
+          "maxLength": 2000
+        }
       }
     }
   }

@@ -16,6 +16,7 @@ use yardlog_store::{Held, Place};
 
 use super::args::ReadArgs;
 use super::branch::{Branch, revision_of};
+use super::briefing::{Where, briefing};
 use super::caller::{Caller, Continuations, LastRead};
 use super::failure::{self, Failure};
 use super::render_log::{Selection, closed_by, root, stages, submissions};
@@ -68,6 +69,17 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
             fields["ownLastRead"] = Value::Null;
         }
         fields["ignored"] = json!(git.ignores_yard(&place.tree)?);
+        if args.context {
+            let at = Where {
+                branch: None,
+                page: None,
+                ignored: fields["ignored"] == true,
+                closed: false,
+                since: 0,
+            };
+            let continuations = Continuations::read(None)?;
+            fields["context"] = briefing(None, caller.agent(), &continuations, &at);
+        }
         return Ok(fields);
     }
     let branch = Branch::at(git, place, args.beyond)?;
@@ -79,6 +91,11 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
         every_version: args.versions,
         submissions: args.details.submissions,
     };
+    let briefed = match (args.context, &held) {
+        (false, _) | (_, Held::Absent) => None,
+        (true, Held::Log(log)) => Some((**log).clone()),
+        (true, Held::Newer(_)) => branch.store.read_partial()?.map(|partial| partial.log),
+    };
     let (mut fields, read) = shown(&branch, held, &selection, &continuations)?;
     if !args.details.reports {
         super::render_loft::without_reports(&mut fields["stages"]);
@@ -89,18 +106,32 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     if args.details.submissions {
         fields["ownLastRead"] = Value::Null;
     }
+    let mut before = None;
     if let (Some(agent), Some(home), Some((key, revision))) = (&caller.agent, &home, read) {
         let reader = continuations.identity(agent);
         let last_read = LastRead::new(home);
         if args.details.submissions {
             fields["ownLastRead"] = json!(last_read.own(key, &reader)?);
         }
-        if let Some(before) = last_read.before(key, &reader)? {
+        before = last_read.before(key, &reader)?;
+        if let Some(before) = before {
             fields["lastRead"] = json!(before);
         }
         if args.mark_read {
             last_read.record(key, &reader, revision)?;
         }
+    }
+    if args.context {
+        let at = Where {
+            branch: fields["branch"].as_str(),
+            page: fields["page"]["url"].as_str(),
+            ignored: fields["ignored"] == true,
+            closed: fields["yardLog"]["closedBy"]
+                .as_str()
+                .is_some_and(|by| by != closed_by(false, false)),
+            since: before.unwrap_or(0),
+        };
+        fields["context"] = briefing(briefed.as_ref(), caller.agent(), &continuations, &at);
     }
     Ok(fields)
 }

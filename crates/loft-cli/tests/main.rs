@@ -113,6 +113,7 @@ mod yard_page_browser;
 mod yard_protocol;
 mod yard_published;
 mod yard_read;
+mod yard_read_context;
 mod yard_read_history;
 mod yard_serve;
 mod yard_serve_access;
