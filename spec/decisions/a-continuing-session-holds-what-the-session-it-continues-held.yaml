@@ -1,0 +1,77 @@
+key: 01a1841d-e026-7794-a4d0-b53ef95e66bd
+slug: a-continuing-session-holds-what-the-session-it-continues-held
+title: "A continuing session holds what the session it continues held"
+context: "After `/clear` or a resume, Claude Code goes on in the same process under a new session id, and Yard Client records that the new session continues the one that ended. That continuation kept the ended session's submissions and its last-read revision, but each stage and task stayed with the session id that wrote it, so the continuing session was briefed with no working stage, could not reassign the tasks of the stage it had opened, and had its mirrored tasks, tokens and activity counted elsewhere."
+state:
+  kind: accepted
+  selectedOption: 01a1841d-e027-75bc-9ff6-67f5c0716bec
+  outcome: "Wherever Yard Client compares agents, a session counts as the first of its chain of continuations: the continuing session owns the stages and holds the tasks the ended session had, and each block and Act still keeps the session id that wrote it."
+drivers:
+  - key: 01a1841d-e027-75bc-9ff6-67f2529c515a
+    kind: local
+    label: "One agent across /clear"
+    statement: "The agent that goes on after `/clear` or a resume goes on with the stage and tasks it had."
+  - key: 01a1841d-e027-75bc-9ff6-67f3451db108
+    kind: local
+    label: "Rules that agree"
+    statement: "The briefing, the counting of tokens and activity, and the rules of who may change a stage or a task agree on which agent holds it."
+  - key: 01a1841d-e027-75bc-9ff6-67f4e509277f
+    kind: local
+    label: "History as written"
+    statement: "Yard Log keeps the session id that wrote each block and Act."
+options:
+  - key: 01a1841d-e027-75bc-9ff6-67f5c0716bec
+    title: "The chain holds them"
+    description: "Every comparison of agents counts a session as the first of its chain, so the continuing session holds the ended session's stages and tasks."
+  - key: 01a1841d-e027-75bc-9ff6-67f6f3fca81f
+    title: "The working stage alone"
+    description: "The briefing and the stage that tokens, activity and mirrored tasks count toward follow the chain, while ownership stays with the session id that wrote it."
+  - key: 01a1841d-e027-75bc-9ff6-67f73147567b
+    title: "Handed over by a write"
+    description: "As the continuing session starts, its stages and tasks are written again in its own name."
+assessments:
+  - option: 01a1841d-e027-75bc-9ff6-67f5c0716bec
+    driver: 01a1841d-e027-75bc-9ff6-67f2529c515a
+    rating: supports
+    rationale: "the continuing session holds every stage and task the ended session held"
+  - option: 01a1841d-e027-75bc-9ff6-67f5c0716bec
+    driver: 01a1841d-e027-75bc-9ff6-67f3451db108
+    rating: supports
+    rationale: "every comparison of agents follows the chain"
+  - option: 01a1841d-e027-75bc-9ff6-67f5c0716bec
+    driver: 01a1841d-e027-75bc-9ff6-67f4e509277f
+    rating: supports
+    rationale: "nothing is written again, and each Act keeps its session id"
+  - option: 01a1841d-e027-75bc-9ff6-67f6f3fca81f
+    driver: 01a1841d-e027-75bc-9ff6-67f2529c515a
+    rating: neutral
+    rationale: "the session is briefed with its stage but cannot act on it as its owner"
+  - option: 01a1841d-e027-75bc-9ff6-67f6f3fca81f
+    driver: 01a1841d-e027-75bc-9ff6-67f3451db108
+    rating: conflicts
+    rationale: "the briefing names a stage the rules do not treat as the session's own"
+  - option: 01a1841d-e027-75bc-9ff6-67f6f3fca81f
+    driver: 01a1841d-e027-75bc-9ff6-67f4e509277f
+    rating: supports
+    rationale: "nothing is written again"
+  - option: 01a1841d-e027-75bc-9ff6-67f73147567b
+    driver: 01a1841d-e027-75bc-9ff6-67f2529c515a
+    rating: neutral
+    rationale: "only the Yard Logs of the tree the session starts in are handed over"
+  - option: 01a1841d-e027-75bc-9ff6-67f73147567b
+    driver: 01a1841d-e027-75bc-9ff6-67f3451db108
+    rating: supports
+    rationale: "once written, the new session owns them under every rule"
+  - option: 01a1841d-e027-75bc-9ff6-67f73147567b
+    driver: 01a1841d-e027-75bc-9ff6-67f4e509277f
+    rating: conflicts
+    rationale: "every `/clear` writes new versions of stages and tasks that did not change"
+consequences:
+  - key: 01a1841d-e027-75bc-9ff6-67f8ca88d9a3
+    kind: obligation
+    statement: "Every comparison of agents in Yard Client, in the commands and in the page server, reads the chain of continuations from `~/.yard/continuations.json`."
+subjects:
+  - role: affected
+    node: 01a16621-e7bc-7707-b123-216501e46cf7
+  - role: outcome
+    node: 01a1647c-e680-7753-bf17-f17d6f5c0cb6
