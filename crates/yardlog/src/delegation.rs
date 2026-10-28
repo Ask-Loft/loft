@@ -31,13 +31,23 @@ pub(crate) fn faults(
         return vec![];
     };
     let held = log.stages.iter().find(|file| file.stage.id == *stage);
+    // Making a stage active in the same write makes its writer the owner only of a stage no
+    // other agent owns now.
+    let owned_by_another = held.is_some_and(|file| {
+        file.stage.is_active()
+            && file
+                .stage
+                .owner()
+                .is_some_and(|owner| !owner.same(&context.agent))
+    });
+    let activated = inputs.iter().any(|input| {
+        input.id == *stage
+            && matches!(&input.request, Request::Stage(body) if body.status == Status::Active)
+    });
     let owner = held
         .and_then(|file| file.stage.owner())
         .is_some_and(|owner| owner.same(&context.agent))
-        || inputs.iter().any(|input| {
-            input.id == *stage
-                && matches!(&input.request, Request::Stage(body) if body.status == Status::Active)
-        });
+        || (activated && !owned_by_another);
     let previous = log.find(&input.id);
     let before = previous.and_then(|block| {
         if let Body::Task(task) = &block.current().body {
@@ -54,13 +64,13 @@ pub(crate) fn faults(
             .assignee
             .as_ref()
             .is_some_and(|agent| agent.same(&context.agent));
+    let authorized = owner || assigned || claim;
     let mut faults = vec![];
-    if !same(
-        before.and_then(|task| task.assignee.as_ref()),
-        next.assignee.as_ref(),
-    ) && !owner
-        && !assigned
-        && !claim
+    if !authorized
+        && !same(
+            before.and_then(|task| task.assignee.as_ref()),
+            next.assignee.as_ref(),
+        )
     {
         faults.push(fault(input, "assignee", "only the stage owner or current assignee can reassign; claim an unassigned unfinished task only for yourself"));
     }
@@ -70,12 +80,7 @@ pub(crate) fn faults(
             .iter()
             .any(|version| matches!(&version.body, Body::Task(task) if task.assignee.is_some()))
     });
-    if protected
-        && before.is_some_and(|task| task.state != next.state)
-        && !owner
-        && !assigned
-        && !claim
-    {
+    if !authorized && protected && before.is_some_and(|task| task.state != next.state) {
         faults.push(fault(input, "state", "only the current assignee or stage owner can change this delegated task's execution state"));
     }
     faults

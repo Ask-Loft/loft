@@ -286,3 +286,53 @@ fn merging_parallel_assignments_keeps_both_tasks_and_their_histories() {
         );
     }
 }
+
+#[test]
+fn making_active_a_stage_another_agent_owns_grants_no_ownership_of_the_same_write_s_tasks() {
+    let mut log = prepared();
+    let first = worker("first");
+    let intruder = worker("intruder");
+    write(
+        &mut log,
+        &json!([assigned("one", "active", Some(&first))]),
+        &context(&first, 3),
+    );
+    let before = log.clone();
+    let stage = json!({"id":"build","kind":"stage","title":"Build","status":"active"});
+    for task in [
+        assigned("one", "active", Some(&intruder)),
+        assigned("one", "done", Some(&first)),
+    ] {
+        assert!(
+            try_write(&mut log, &json!([stage, task]), &context(&intruder, 4)).is_err(),
+            "{task}"
+        );
+        assert_eq!(log, before);
+    }
+}
+
+#[test]
+fn making_active_a_stage_no_agent_owns_grants_ownership_of_the_same_write_s_tasks() {
+    let mut log = prepared();
+    let first = worker("first");
+    let second = worker("second");
+    write(
+        &mut log,
+        &json!([assigned("one", "active", Some(&first))]),
+        &context(&first, 3),
+    );
+    write(
+        &mut log,
+        &json!([{"id":"build","kind":"stage","title":"Build","status":"planned"}]),
+        &context(&main_agent(), 4),
+    );
+    write(
+        &mut log,
+        &json!([
+            {"id":"build","kind":"stage","title":"Build","status":"active"},
+            assigned("one", "open", Some(&second))
+        ]),
+        &context(&second, 5),
+    );
+    assert_eq!(log.stages[0].stage.owner(), Some(&second));
+}

@@ -23037,6 +23037,18 @@ links:
       - file: "crates/yardlog/tests/delegation.rs"
         name: "releasing_an_assignment_keeps_protection_and_allows_a_new_self_claim"
         body: 95936670556fbd95e5f97cf1297b8033fe86765a69863bbd138a17c34c0b06f7
+  - node: 01a182b6-3c58-7235-ad04-392551bb92ee
+    reviewed: 94d129f1b0f10ed4f402f21710b3de8c96ecafb4bdd0cb679e228a454dc05c53
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "making_active_a_stage_another_agent_owns_grants_no_ownership_of_the_same_write_s_tasks"
+        body: 4bede52b247924b761fa12c9c6cfa15559ce19cb792652d168d6f3333d6377d7
+  - node: 01a182b6-3c58-7235-ad04-3926e5807160
+    reviewed: 402bdedd53bf31258f8fc1d0df1a7504a88db4d62b5d07f1557eea02acf0fb11
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "making_active_a_stage_no_agent_owns_grants_ownership_of_the_same_write_s_tasks"
+        body: ced80fa489e3f03326191fb2bc03c1184a6b08f7c5f839f511efeec700d31817
   - node: 01a18053-9e08-72a7-ab94-f3b672906341
     reviewed: 737a38a60397584de15bd118fe62e04650bd303cf99b3f499f281def84953e65
     tests:
