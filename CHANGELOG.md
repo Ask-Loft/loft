@@ -5,6 +5,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, is released from `develop` without
+  `loft verify`: npm publishes it under the dist-tag of its identifier and GitHub marks it a
+  prerelease, so neither offers it as the latest. `loft` orders a prerelease before the release
+  of its numbers, in the update check and between page servers.
+
 - Tasks can be assigned to agents independently of stage ownership, including parallel subagents
   within a main agent's stage. Claude task metadata and Codex plan-step prefixes bind native
   progress to existing tasks. Reassignment guards protect progress; observed ends return active

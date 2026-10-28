@@ -344,6 +344,23 @@ Each step skips what its registry or GitHub already holds, so the run publishes 
 `software-plant` is never published (`publish = false`). CI on `main` runs
 `cargo publish --workspace --dry-run`, so a crate that would not package fails before a release.
 
+### Prerelease from `develop`
+
+A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, lets people try what `develop` holds before
+the release `X.Y.Z`. It too happens only with the maintainer's approval:
+
+1. Run step 0 on `develop`.
+2. On a branch from `develop`, set the version `X.Y.Z-alpha.N` everywhere step 1 sets one, and
+   add a dated entry `## X.Y.Z-alpha.N (YYYY-MM-DD)` above `## Unreleased` in `CHANGELOG.md`,
+   whose notes say what the prerelease lets people try; `## Unreleased` stays for the release.
+   Merge it into `develop` and push `develop`.
+3. On `develop`, run `scripts/release-check.sh vX.Y.Z-alpha.N`, then tag `vX.Y.Z-alpha.N` there
+   and push the tag. There is no `loft publish`: `develop`'s specification is published by the
+   release that follows, so the workflow skips `loft verify`.
+4. Approve the run as in step 4. npm publishes the packages under the dist-tag `alpha` (`beta`,
+   `rc`), so `npm install @ask-loft/loft@alpha` installs it and `latest` stays the last release;
+   the GitHub release is marked a prerelease; crates.io serves it only to those who name it.
+
 ### Release setup
 
 Set up once, and kept as it is:
