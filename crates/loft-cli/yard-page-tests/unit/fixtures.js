@@ -103,7 +103,6 @@ export function log(stages, more = {}) {
     stages,
     submissions: [],
     activity: [],
-    tokens: [],
     sent: [],
     ...more,
   };

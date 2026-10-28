@@ -60,12 +60,9 @@
             "$ref": "#/$defs/activityFile"
           }
         },
-        "tokens": {
-          "description": "The page server's only: each session's token totals file, as JSON",
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/tokensFile"
-          }
+        "tokenSums": {
+          "description": "The page server's only: Yard Log's token sums, from every session's totals file",
+          "$ref": "#/$defs/tokenSums"
         },
         "sent": {
           "description": "With --submissions or on the page: every submission with its lifecycle and reached revision",
@@ -1179,29 +1176,25 @@
         }
       }
     },
-    "tokensFile": {
-      "description": "A session's token totals file: in all, by stage and within each stage by agent, under no stage, by agent and model, and by submission",
+    "tokenSums": {
+      "description": "Yard Log's token sums, summed by the page server from every session's totals file: in all, under no stage, by stage with each type of subagent within it, by submission, by agent and model and by session",
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "session",
-        "host",
-        "tokens"
+        "all",
+        "noStage",
+        "stages",
+        "submissions",
+        "agents",
+        "sessions",
+        "partial",
+        "counted"
       ],
       "properties": {
-        "session": {
-          "type": "string"
+        "all": {
+          "$ref": "#/$defs/counts"
         },
-        "host": {
-          "type": "string"
-        },
-        "firstEnded": {
-          "type": "string"
-        },
-        "lastEnded": {
-          "type": "string"
-        },
-        "tokens": {
+        "noStage": {
           "$ref": "#/$defs/counts"
         },
         "stages": {
@@ -1210,142 +1203,38 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "stage"
+              "stage",
+              "tokens",
+              "agents"
             ],
             "properties": {
               "stage": {
+                "description": "The stage's key",
                 "type": "string"
               },
-              "input": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheRead": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheWrite": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "output": {
-                "type": "integer",
-                "minimum": 0
+              "tokens": {
+                "$ref": "#/$defs/counts"
               },
               "agents": {
-                "description": "What counted toward the stage, by agent: the main agent, and each subagent by its id and type",
+                "description": "Each type of subagent's counts within the stage's, the most tokens first",
                 "type": "array",
                 "items": {
+                  "description": "A type of subagent",
                   "type": "object",
                   "additionalProperties": false,
                   "required": [
-                    "agent"
+                    "type",
+                    "tokens"
                   ],
                   "properties": {
-                    "agent": {
-                      "type": "string"
-                    },
                     "type": {
                       "type": "string"
                     },
-                    "input": {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    "cacheRead": {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    "cacheWrite": {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    "output": {
-                      "type": "integer",
-                      "minimum": 0
-                    },
-                    "partial": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "enum": [
-                          "input",
-                          "cacheRead",
-                          "cacheWrite",
-                          "output"
-                        ]
-                      },
-                      "uniqueItems": true
+                    "tokens": {
+                      "$ref": "#/$defs/counts"
                     }
                   }
                 }
-              },
-              "partial": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "input",
-                    "cacheRead",
-                    "cacheWrite",
-                    "output"
-                  ]
-                },
-                "uniqueItems": true
-              }
-            }
-          }
-        },
-        "noStage": {
-          "$ref": "#/$defs/counts"
-        },
-        "agents": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "agent",
-              "model"
-            ],
-            "properties": {
-              "agent": {
-                "type": "string"
-              },
-              "type": {
-                "type": "string"
-              },
-              "model": {
-                "type": "string"
-              },
-              "input": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheRead": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheWrite": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "output": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "partial": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "input",
-                    "cacheRead",
-                    "cacheWrite",
-                    "output"
-                  ]
-                },
-                "uniqueItems": true
               }
             }
           }
@@ -1353,50 +1242,86 @@
         "submissions": {
           "type": "array",
           "items": {
+            "description": "A submission, by its key, with the counts of the requests that ended while it was open",
             "type": "object",
             "additionalProperties": false,
             "required": [
-              "submission"
+              "submission",
+              "tokens"
             ],
             "properties": {
               "submission": {
                 "type": "string"
               },
-              "input": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheRead": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "cacheWrite": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "output": {
-                "type": "integer",
-                "minimum": 0
-              },
-              "partial": {
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "enum": [
-                    "input",
-                    "cacheRead",
-                    "cacheWrite",
-                    "output"
-                  ]
-                },
-                "uniqueItems": true
+              "tokens": {
+                "$ref": "#/$defs/counts"
               }
             }
           }
         },
-        "cacheWriteClassified": {
-          "type": "boolean",
-          "description": "True for Codex totals whose zero cache-write reports have been classified by source account. Legacy totals omit this marker."
+        "agents": {
+          "description": "The Claude Code main agent first, then the most tokens first",
+          "type": "array",
+          "items": {
+            "description": "An agent, named with its host where that is not Claude Code, and the model it ran on",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "who",
+              "model",
+              "tokens"
+            ],
+            "properties": {
+              "who": {
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "tokens": {
+                "$ref": "#/$defs/counts"
+              }
+            }
+          }
+        },
+        "sessions": {
+          "description": "The earliest first",
+          "type": "array",
+          "items": {
+            "description": "A session with when its first and last counted requests ended",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "host",
+              "session",
+              "tokens"
+            ],
+            "properties": {
+              "host": {
+                "type": "string"
+              },
+              "session": {
+                "type": "string"
+              },
+              "firstEnded": {
+                "type": "string"
+              },
+              "lastEnded": {
+                "type": "string"
+              },
+              "tokens": {
+                "$ref": "#/$defs/counts"
+              }
+            }
+          }
+        },
+        "partial": {
+          "description": "Whether a counter of the sums is unavailable or was left unavailable by a totals file or by a session that kept none",
+          "type": "boolean"
+        },
+        "counted": {
+          "description": "Whether any counter was measured",
+          "type": "boolean"
         }
       }
     },

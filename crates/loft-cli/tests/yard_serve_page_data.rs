@@ -156,11 +156,12 @@ fn the_page_reads_the_activity_and_token_totals_each_session_keeps() {
     assert_eq!(activity[0]["session"], "s1");
     assert_eq!(activity[0]["turns"][0]["started"], "2026-01-01T10:00:01Z");
     assert_eq!(activity[0]["turns"][0]["ended"], "2026-01-01T10:00:09Z");
-    let totals = read["tokens"].as_array().unwrap();
-    assert_eq!(totals.len(), 1, "{read}");
-    assert_eq!(totals[0]["tokens"]["input"], 10);
-    assert_eq!(totals[0]["tokens"]["cacheRead"], 100);
-    assert_eq!(totals[0]["agents"][0]["model"], "opus");
+    let sums = &read["tokenSums"];
+    assert_eq!(sums["all"]["input"], 10, "{read}");
+    assert_eq!(sums["all"]["cacheRead"], 100);
+    assert_eq!(sums["sessions"][0]["session"], "s1");
+    assert_eq!(sums["agents"][0]["model"], "opus");
+    assert_eq!(sums["counted"], true);
 }
 
 #[test]
@@ -187,7 +188,9 @@ fn a_yard_log_with_no_session_files_reads_with_no_activity_and_no_totals() {
     let served = served(&yard);
     let read = log(&yard, &served);
     assert_eq!(read["activity"], json!([]));
-    assert_eq!(read["tokens"], json!([]));
+    assert_eq!(read["tokenSums"]["all"], json!({}));
+    assert_eq!(read["tokenSums"]["sessions"], json!([]));
+    assert_eq!(read["tokenSums"]["counted"], false);
 }
 
 #[test]

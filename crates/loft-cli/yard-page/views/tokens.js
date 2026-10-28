@@ -4,7 +4,7 @@
 import { add, h } from '../lib/dom.js';
 import { tokens as amount, when } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
-import { COUNTERS as KEYS, summarize, total } from '../model/tokens.js';
+import { COUNTERS as KEYS, any, summary as keyed } from '../model/tokens.js';
 
 const COUNTS = [
   ['input', 'Input'],
@@ -60,7 +60,7 @@ function breakdowns(groups, all) {
 
 /**
  * A session, by the start of its id, with when its first and last counted requests ended.
- * @param {{ host?: string, session: string, firstEnded: string, lastEnded: string }} session
+ * @param {{ host?: string, session: string, firstEnded?: string, lastEnded?: string }} session
  */
 function sessionName(session) {
   return [
@@ -94,7 +94,7 @@ function tokenDetails(log, ...content) {
  * @param {any} log
  */
 export function tokensView(log) {
-  const summary = summarize(log.tokens, log.activity);
+  const summary = keyed(log.tokenSums);
   const section = h('section', { class: 'tokens', id: 'tokens', 'aria-labelledby': 'tokens-title' }, h('h3', { id: 'tokens-title' }, 'Tokens'));
   const note = h(
     'p',
@@ -107,14 +107,15 @@ export function tokensView(log) {
     add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), tokenDetails(log, reporting, note));
     return section;
   }
-  const stages = (log.stages ?? []).flatMap((stage) => [
-    [stage.version.body.title, summary.stages.get(stage.key) ?? zeroFor(summary.sessions, stage.owner)],
-    // Each type of subagent that worked for the stage, its counts within the stage's.
-    ...[...(summary.stageAgents.get(stage.key) ?? [])]
-      .sort(([, a], [, b]) => total(b) - total(a))
-      .map(([type, counts]) => [`${type} subagent`, counts, 'within']),
-  ]);
-  if (total(summary.noStage)) stages.push([h('span', { class: 'no-stage' }, 'Under no stage'), summary.noStage]);
+  const stages = (log.stages ?? []).flatMap((stage) => {
+    const sums = summary.stages.get(stage.key);
+    return [
+      [stage.version.body.title, sums?.tokens ?? zeroFor(summary.sessions, stage.owner)],
+      // Each type of subagent that worked for the stage, its counts within the stage's.
+      ...(sums?.agents ?? []).map(({ type, tokens }) => [`${type} subagent`, tokens, 'within']),
+    ];
+  });
+  if (any(summary.noStage)) stages.push([h('span', { class: 'no-stage' }, 'Under no stage'), summary.noStage]);
   const submissions = (log.sent ?? [])
     .filter((submission) => summary.submissions.has(submission.key))
     .map((submission) => {

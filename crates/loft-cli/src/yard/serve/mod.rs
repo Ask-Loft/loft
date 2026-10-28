@@ -23,6 +23,7 @@ mod newest;
 mod routes;
 mod session_files;
 mod stream;
+mod token_sums;
 mod tokens;
 mod trees;
 mod watch;

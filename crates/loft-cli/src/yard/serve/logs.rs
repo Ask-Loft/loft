@@ -16,7 +16,7 @@ use yardlog_store::session::SessionFile;
 
 use super::http::Response;
 use super::trees::is_served;
-use super::{markdown, session_files};
+use super::{markdown, session_files, token_sums};
 use crate::json;
 use crate::yard::answer::{OUTCOME, PARTLY, record};
 use crate::yard::answer_input;
@@ -106,8 +106,8 @@ fn inherited(place: &Place, branch: &str, beyond: Beyond) -> Result<Value, Failu
 }
 
 /// Yard Log as a read with every version renders it, recording nothing, with its Markdown
-/// rendered, every submission it sent, the files its sessions keep, their activity and their
-/// token totals, and whether it is `inherited` from the branch the tree's was cut from.
+/// rendered, every submission it sent, the activity its sessions keep, the sums of their token
+/// totals, and whether it is `inherited` from the branch the tree's was cut from.
 fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<Value, Failure> {
     let selection = Selection {
         since: None,
@@ -118,8 +118,10 @@ fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<V
     let mut fields = shown(branch, held, &selection, &continuations)?.0;
     markdown::render_document(&mut fields);
     let folder = branch.store.folder();
-    fields["activity"] = Value::Array(session_files::read(&folder, SessionFile::Activity));
-    fields["tokens"] = Value::Array(session_files::read(&folder, SessionFile::Tokens));
+    let activity = session_files::read(&folder, SessionFile::Activity);
+    let totals = session_files::read(&folder, SessionFile::Tokens);
+    fields["tokenSums"] = token_sums::sums(&totals, &activity);
+    fields["activity"] = Value::Array(activity);
     fields["inherited"] = json!(inherited);
     Ok(fields)
 }

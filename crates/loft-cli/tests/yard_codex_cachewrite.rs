@@ -42,14 +42,16 @@ fn subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_brea
     row["agent"] = json!({"id":"reviewer","type":"review"});
     post(&served, &[row]);
     let doc = read(&yard, &served);
-    let totals = &doc["tokens"][0];
-    assert_eq!(totals["cacheWriteClassified"], true);
+    let totals = session_file(&yard, "tokens", "codex~s1").unwrap();
+    assert!(totals.contains("cacheWriteClassified: true"), "{totals}");
+    let sums = &doc["tokenSums"];
     for counts in [
-        &totals["tokens"],
-        &totals["stages"][0],
-        &totals["stages"][0]["agents"][0],
-        &totals["agents"][0],
-        &totals["submissions"][0],
+        &sums["all"],
+        &sums["sessions"][0]["tokens"],
+        &sums["stages"][0]["tokens"],
+        &sums["stages"][0]["agents"][0]["tokens"],
+        &sums["agents"][0]["tokens"],
+        &sums["submissions"][0]["tokens"],
     ] {
         assert!(counts.get("cacheWrite").is_none(), "{counts}");
         assert_eq!(counts["input"], 70);
@@ -71,12 +73,12 @@ fn replay_preserves_known_api_zeros_and_positive_counts_without_counting_legacy_
     let again = Served::start(&yard, &[]);
     post(&again, &[request(&yard, 2, Some("apiKey"), 0)]);
     let doc = read(&yard, &again);
-    assert_eq!(doc["tokens"][0]["tokens"]["cacheWrite"], 0);
-    assert_eq!(doc["tokens"][0]["tokens"]["partial"], json!(["cacheWrite"]));
+    assert_eq!(doc["tokenSums"]["all"]["cacheWrite"], 0);
+    assert_eq!(doc["tokenSums"]["all"]["partial"], json!(["cacheWrite"]));
     post(&again, &[request(&yard, 3, Some("chatgpt"), 7)]);
     let doc = read(&yard, &again);
-    assert_eq!(doc["tokens"][0]["tokens"]["cacheWrite"], 7);
-    assert_eq!(doc["tokens"][0]["tokens"]["input"], 210);
+    assert_eq!(doc["tokenSums"]["all"]["cacheWrite"], 7);
+    assert_eq!(doc["tokenSums"]["all"]["input"], 210);
     assert!(
         session_file(&yard, "tokens", "codex~s1")
             .unwrap()

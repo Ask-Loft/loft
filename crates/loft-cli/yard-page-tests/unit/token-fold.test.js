@@ -10,10 +10,15 @@ beforeEach(() => { forget(); kept.reset(); });
 afterEach(() => { kept.flush(); kept.reset(); });
 
 function shown(key = 'log-a', counted = true) {
-  const doc = log([], { tokens: counted ? [{
-    host: 'claude-code', session: 's1', firstEnded: '2026-01-01T10:00:00Z', lastEnded: '2026-01-01T10:01:00Z',
-    tokens: { input: 10, cacheRead: 100, cacheWrite: 1, output: 2, partial: ['input'] },
-  }] : [], activity: [{ host: 'claude-code', session: 's1' }] });
+  const tokens = { input: 10, cacheRead: 100, cacheWrite: 1, output: 2, partial: ['input'] };
+  const tokenSums = counted
+    ? {
+      all: tokens, noStage: {}, stages: [], submissions: [], agents: [],
+      sessions: [{ host: 'claude-code', session: 's1', firstEnded: '2026-01-01T10:00:00Z', lastEnded: '2026-01-01T10:01:00Z', tokens }],
+      partial: true, counted: true,
+    }
+    : undefined;
+  const doc = log([], { tokenSums, activity: [{ host: 'claude-code', session: 's1' }] });
   doc.yardLog.key = key;
   return doc;
 }
@@ -57,7 +62,7 @@ test('the no tokens summary stays outside closed token details', () => {
 test('the token fold choice survives usage redraws and reloads independently for each log', () => {
   const doc = shown();
   toggle(draw(doc).querySelector('details.token-details'));
-  doc.tokens[0].tokens.input = 25;
+  doc.tokenSums.all.input = 25;
   let view = draw(doc);
   assert.equal(view.querySelector('details.token-details').open, true);
   assert.equal(view.querySelector('.token-totals dd').title, '25');
@@ -76,7 +81,7 @@ test('the token fold choice survives usage redraws and reloads independently for
 test('the token fold stays open when an empty summary receives its first counts', () => {
   const doc = shown('first', false);
   toggle(draw(doc).querySelector('details.token-details'));
-  doc.tokens = shown().tokens;
+  doc.tokenSums = shown().tokenSums;
   const view = draw(doc);
   assert.equal(view.querySelector('details.token-details').open, true);
   assert.ok(!view.querySelector('.empty'));

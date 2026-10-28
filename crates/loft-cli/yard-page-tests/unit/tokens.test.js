@@ -5,7 +5,6 @@ import { forget } from './dom.js';
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
-import { summarize } from '../../yard-page/model/tokens.js';
 import { tokensView } from '../../yard-page/views/tokens.js';
 import { act, log, stage } from './fixtures.js';
 
@@ -13,45 +12,27 @@ beforeEach(forget);
 
 const counts = (input, cacheRead, cacheWrite, output) => ({ input, cacheRead, cacheWrite, output });
 
-/** Two sessions' totals files over the stage `shaping`. */
+/** The sums the page server gives of two sessions' totals files over the stage `shaping`. */
 function shown() {
   const shaping = stage('shape', 'Shaping', 'active', []);
-  const files = [
-    {
-      host: 'claude-code',
-      session: 's1',
-      firstEnded: '2026-01-01T10:00:00Z',
-      lastEnded: '2026-01-01T10:30:00Z',
-      tokens: counts(100, 1000, 10, 50),
-      noStage: counts(20, 0, 0, 5),
-      stages: [
-        {
-          stage: shaping.key,
-          ...counts(80, 1000, 10, 45),
-          agents: [
-            { agent: 'main', ...counts(50, 900, 10, 35) },
-            { agent: 'a1', type: 'Explore', ...counts(30, 100, 0, 10) },
-          ],
-        },
-      ],
-      agents: [
-        { agent: 'main', model: 'opus', ...counts(70, 900, 10, 40) },
-        { agent: 'a1', type: 'Explore', model: 'haiku', ...counts(30, 100, 0, 10) },
-      ],
-      submissions: [{ submission: 'sub', ...counts(10, 0, 0, 1) }],
-    },
-    {
-      host: 'claude-code',
-      session: 's2',
-      firstEnded: '2026-01-01T09:00:00Z',
-      lastEnded: '2026-01-01T09:10:00Z',
-      tokens: counts(1, 2, 3, 4),
-      stages: [{ stage: shaping.key, ...counts(1, 2, 3, 4) }],
-      agents: [{ agent: 'main', model: 'opus', ...counts(1, 2, 3, 4) }],
-    },
-  ];
+  const tokenSums = {
+    all: counts(101, 1002, 13, 54),
+    noStage: counts(20, 0, 0, 5),
+    stages: [{ stage: shaping.key, tokens: counts(81, 1002, 13, 49), agents: [{ type: 'Explore', tokens: counts(30, 100, 0, 10) }] }],
+    submissions: [{ submission: 'sub', tokens: counts(10, 0, 0, 1) }],
+    agents: [
+      { who: 'main agent', model: 'opus', tokens: counts(71, 902, 13, 44) },
+      { who: 'Explore', model: 'haiku', tokens: counts(30, 100, 0, 10) },
+    ],
+    sessions: [
+      { host: 'claude-code', session: 's2', firstEnded: '2026-01-01T09:00:00Z', lastEnded: '2026-01-01T09:10:00Z', tokens: counts(1, 2, 3, 4) },
+      { host: 'claude-code', session: 's1', firstEnded: '2026-01-01T10:00:00Z', lastEnded: '2026-01-01T10:30:00Z', tokens: counts(100, 1000, 10, 50) },
+    ],
+    partial: false,
+    counted: true,
+  };
   const sent = [{ key: 'sub', blocks: [], state: 'answered', changes: [{ what: 'sent', act: act('2026-01-01T10:10:00Z', 2) }] }];
-  return log([shaping], { tokens: files, sent });
+  return log([shaping], { tokenSums, sent });
 }
 
 /** The rows of one breakdown, under its group row. @param {string} by */
@@ -60,7 +41,6 @@ function body(by) {
 }
 
 test('the four counts in all are summed over every totals file', () => {
-  assert.deepEqual(summarize(shown().tokens).all, counts(101, 1002, 13, 54));
   const totals = [...tokensView(shown()).querySelectorAll('.token-totals dd')].map((cell) => cell.getAttribute('title'));
   assert.deepEqual(totals, ['101', '1002', '13', '54']);
 });
@@ -99,7 +79,7 @@ test('the page explains that host-internal requests may be outside reported usag
 });
 
 test('where no request has been counted, the page says that no tokens have been counted yet', () => {
-  const view = tokensView(log([], { tokens: [] }));
+  const view = tokensView(log([]));
   assert.equal(view.querySelector('.empty').textContent, 'No tokens have been counted yet.');
   assert.ok(!view.querySelector('table'));
 });
@@ -131,75 +111,46 @@ test('each measured breakdown count shows its share of the recorded log subtotal
 });
 
 test('beside a stage that subagents counted toward, each type of subagent’s counts are shown within the stage’s', () => {
-  const view = shown();
-  const summary = summarize(view.tokens);
-  const [shaping] = view.stages;
-  assert.deepEqual([...(summary.stageAgents.get(shaping.key) ?? new Map())], [['Explore', counts(30, 100, 0, 10)]]);
   const rows = body('stage');
   const within = rows.filter((row) => row.classList.contains('within'));
   assert.deepEqual(within.map((row) => [...row.cells].map((cell) => cell.textContent)), [['Explore subagent', '30', '100', '0', '10']]);
   assert.equal(rows.indexOf(within[0]), 1, 'the subagent’s row follows its stage’s');
 });
 
+/** The sums the page server gives of a Codex totals file whose zero cache writes it holds unavailable. */
 function legacyCodex(shaping) {
+  const tokens = { input: 10, cacheRead: 100, output: 2 };
   return {
-    host: 'codex', session: 'legacy', tokens: counts(10, 100, 0, 2),
-    noStage: counts(0, 0, 0, 0),
-    stages: [{ stage: shaping.key, ...counts(10, 100, 0, 2), agents: [{ agent: 'child', type: 'review', ...counts(10, 100, 0, 2) }] }],
-    agents: [{ agent: 'child', type: 'review', model: 'fixture', ...counts(10, 100, 0, 2) }],
-    submissions: [{ submission: 'sub', ...counts(10, 100, 0, 2) }],
+    all: { ...tokens, partial: ['cacheWrite'] },
+    noStage: { input: 0, cacheRead: 0, output: 0 },
+    stages: [{ stage: shaping.key, tokens, agents: [{ type: 'review', tokens }] }],
+    submissions: [{ submission: 'sub', tokens }],
+    agents: [{ who: 'codex review', model: 'fixture', tokens }],
+    sessions: [{ host: 'codex', session: 'legacy', tokens }],
+    partial: true,
+    counted: true,
   };
 }
 
-test('historical Codex zero writes are unavailable in every breakdown without mutating source data', () => {
+test('cache writes the page server holds unavailable are shown unavailable in every breakdown', () => {
   const shaping = stage('shape', 'Shaping', 'active', []);
-  const file = legacyCodex(shaping);
-  const original = structuredClone(file);
-  const summary = summarize([file]);
-  const values = [summary.all, summary.noStage, summary.stages.get(shaping.key), summary.stageAgents.get(shaping.key).get('review'), summary.agents[0].tokens, summary.sessions[0].tokens, summary.submissions.get('sub')];
-  for (const counts of values) assert.equal(counts.cacheWrite, undefined);
-  assert.equal(summary.all.input, 10);
-  assert.equal(summary.all.cacheRead, 100);
-  assert.equal(summary.all.output, 2);
-  assert.equal(summary.partial, true);
-  const view = tokensView(log([shaping], { tokens: [file] }));
+  const sent = [{ key: 'sub', blocks: [], state: 'answered', changes: [{ what: 'sent', act: act('2026-01-01T10:10:00Z', 2) }] }];
+  const view = tokensView(log([shaping], { tokenSums: legacyCodex(shaping), sent }));
   assert.equal(view.querySelectorAll('.token-totals dd')[2].textContent, 'Unavailable');
-  for (const row of view.querySelectorAll('tbody tr:not(.group)')) {
+  const rows = [...view.querySelectorAll('tbody tr:not(.group)')];
+  assert.equal(rows.length, 5);
+  for (const row of rows) {
     assert.equal(row.cells[3].textContent, 'Unavailable');
     assert.equal(row.cells[3].querySelector('.share'), null);
   }
-  assert.deepEqual(file, original);
-});
-
-test('positive legacy writes and classified or Claude measured zeros retain their meaning', () => {
-  const shaping = stage('shape', 'Shaping', 'active', []);
-  for (const host of ['codex', 'claude-code']) {
-    for (const classified of [undefined, false, true]) {
-      for (const write of [0, 7]) {
-        const file = { ...legacyCodex(shaping), host, tokens: counts(10, 100, write, 2), ...(classified === undefined ? {} : { cacheWriteClassified: classified }) };
-        assert.equal(summarize([file]).all.cacheWrite, host === 'codex' && classified !== true && write === 0 ? undefined : write);
-      }
-    }
-  }
-});
-
-test('mixed historical Codex and Claude totals preserve measured subtotals and partial coverage', () => {
-  const shaping = stage('shape', 'Shaping', 'active', []);
-  const codex = legacyCodex(shaping);
-  const claude = { ...legacyCodex(shaping), host: 'claude-code', session: 'claude', tokens: counts(20, 200, 7, 3) };
-  const summary = summarize([codex, claude]);
-  assert.equal(summary.all.cacheWrite, 7);
-  assert.equal(summary.all.input, 30);
-  assert.ok(summary.all.partial.includes('cacheWrite'));
-  assert.equal(summary.partial, true);
-  assert.equal(summary.sessions.find((s) => s.host === 'codex').tokens.cacheWrite, undefined);
 });
 
 test('an empty stage uses classified session coverage rather than historical raw zero fields', () => {
   const shaping = stage('shape', 'Unstarted', 'planned', [], { owner: { host: 'codex', session: 'legacy' } });
   for (const classified of [false, true]) {
-    const file = { ...legacyCodex(shaping), stages: [], cacheWriteClassified: classified };
-    const view = tokensView(log([shaping], { tokens: [file] }));
+    const tokenSums = { ...legacyCodex(shaping), stages: [] };
+    if (classified) tokenSums.sessions = [{ host: 'codex', session: 'legacy', tokens: counts(10, 100, 0, 2) }];
+    const view = tokensView(log([shaping], { tokenSums }));
     const row = view.querySelector('tbody[data-by="stage"] tr:not(.group)');
     assert.equal(row.cells[1].textContent, '0');
     assert.equal(row.cells[3].textContent, classified ? '0' : 'Unavailable');
