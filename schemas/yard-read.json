@@ -697,6 +697,9 @@
                 "regular",
                 "fix"
               ]
+            },
+            "assignee": {
+              "$ref": "#/$defs/assignee"
             }
           }
         },
@@ -987,6 +990,28 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/block"
+          }
+        },
+        "executions": {
+          "description": "Execution attempts derived from task versions, closed on pause, completion or reassignment.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "started"
+            ],
+            "properties": {
+              "started": {
+                "type": "string"
+              },
+              "ended": {
+                "type": "string"
+              },
+              "assignee": {
+                "$ref": "#/$defs/assignee"
+              }
+            }
           }
         }
       }
@@ -1428,6 +1453,40 @@
             }
           }
         }
+      }
+    },
+    "assignee": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "session"
+      ],
+      "properties": {
+        "host": {
+          "type": "string",
+          "minLength": 1
+        },
+        "session": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agentType": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "dependentRequired": {
+        "agent": [
+          "agentType"
+        ],
+        "agentType": [
+          "agent"
+        ]
       }
     }
   }

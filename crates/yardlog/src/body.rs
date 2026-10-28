@@ -183,6 +183,8 @@ pub struct Task {
     pub state: TaskState,
     /// Its type, written `type`: a fix the person asked for, or regular work.
     pub kind: TaskType,
+    /// Execution assignment, independent of the stage's owner.
+    pub assignee: Option<crate::Agent>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

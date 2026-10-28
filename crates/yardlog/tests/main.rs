@@ -7,6 +7,7 @@ mod adapter;
 mod answers;
 mod block_kinds;
 mod boundaries;
+mod delegation;
 mod files;
 mod identity;
 mod merge;

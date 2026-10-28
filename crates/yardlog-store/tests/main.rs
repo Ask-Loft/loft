@@ -7,6 +7,7 @@ mod common;
 mod addressing;
 mod boundary;
 mod concurrent_writes;
+mod delegation;
 mod files;
 mod git_contract;
 mod home;

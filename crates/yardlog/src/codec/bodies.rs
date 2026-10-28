@@ -52,6 +52,12 @@ pub(super) fn write_body(body: &Body) -> Vec<Field> {
             }
         }
         Body::Task(task) => {
+            if let Some(agent) = &task.assignee {
+                fields.push((
+                    "assignee",
+                    super::acts::write_actor(&crate::Actor::Agent(agent.clone())),
+                ));
+            }
             fields.push(("title", text(&task.title)));
             optional(&mut fields, "detail", task.detail.as_ref());
             fields.push(("state", token(&task.state.as_str())));
@@ -148,6 +154,25 @@ pub(super) fn read_body(kind: Kind, fields: &mut Fields<'_>) -> Read<Body> {
             },
         }),
         Kind::Task => Body::Task(Task {
+            assignee: fields
+                .get("assignee")
+                .map(|node| match super::acts::read_actor(node)? {
+                    crate::Actor::Agent(agent)
+                        if crate::identity::is_host_id(&agent.host)
+                            && crate::identity::is_session_id(&agent.session)
+                            && agent.subagent.as_ref().is_none_or(|sub| {
+                                crate::identity::is_session_id(&sub.id)
+                                    && !sub.kind.trim().is_empty()
+                            }) =>
+                    {
+                        Ok(agent)
+                    }
+                    _ => Err(super::reader::at(
+                        node.position,
+                        "assignee needs a valid agent identity",
+                    )),
+                })
+                .transpose()?,
             title: fields.text("title")?,
             detail: fields.optional_text("detail")?,
             state: fields.word("state", TaskState::parse)?,

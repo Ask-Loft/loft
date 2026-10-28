@@ -19744,7 +19744,7 @@ links:
         name: "renaming_a_codex_step_drops_its_unfinished_task_and_preserves_completed_tasks_and_fixes"
         body: 7fe5350798262b1b89b30f8a788ed1f235a61c26a69477f2d03557334731a516
   - node: 01a1787c-f803-70b1-b946-b7099cf2b7ad
-    reviewed: 98538867776ad946f235ca1e7477e661d460b18282953cada2a10c8a7798310f
+    reviewed: d3c48ceb3b1a92c46dee393a882e4f68c51a9ed23d949d7c7659632dcbbd7408
     tests:
       - file: "crates/loft-cli/tests/yard_codex_tasks.rs"
         name: "failed_malformed_and_unowned_codex_plans_create_no_task_write"
@@ -21105,6 +21105,30 @@ links:
       - file: "crates/yardlog/tests/block_kinds.rs"
         name: "a_task_of_a_type_other_than_regular_or_fix_is_refused"
         body: 21d4bce0065dbb4867c41d3cfefd3d9da2057e2d6f3afbc027e739a582f370a4
+  - node: 01a18053-9e08-72a7-ab94-f3d744431518
+    reviewed: 58d051e5daf8bd0172629d63082b63e940dcd035707e29c0abbabd4a41834b7c
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
+        body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+  - node: 01a18053-9e08-72a7-ab94-f3d8256f6eb2
+    reviewed: 10c19902b3a44c3f1d8be635dcb71cf07f43932ed8e5ffb71c189e1d15e24702
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "assignment_identity_ignores_the_descriptive_agent_type"
+        body: b97c79a8fac1a925db98fb029a20677288a5b3105607f3f9867ed433e5503eaf
+  - node: 01a18053-9e08-72a7-ab94-f3d970c0a032
+    reviewed: cef2eae896a95b03f70b795e980f12634f61e66769b6d16002e4827c995c6a7f
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "malformed_assignments_are_refused_before_a_batch_is_applied"
+        body: c57c75252478034229cdf05870268dfa8e157bbef08ca18e91a62f606749e9e5
+  - node: 01a18053-9e08-72a7-ab94-f3da5a38f738
+    reviewed: 49eadd86d0fa4c99f5850422fe3da9ac5c604d03c06247a815ca8797b19270f9
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "unassigned_tasks_keep_the_legacy_canonical_shape"
+        body: ec37d9a7cb3c20dab4dd3fed5f791d52b85c9304027e8530965779ddc61a19ee
   - node: 01a169a9-33b8-738f-a30d-b206873dcb5c
     reviewed: 48eddd06aa43bcd66b5efc013d727766736366991ffd2b6bbccde212c0fd6855
     tests:
@@ -22926,6 +22950,90 @@ links:
       - file: "crates/loft-cli/tests/yard_continue.rs"
         name: "loft_yard_continue_without_session_or_from_exits_2_and_names_the_one_missing"
         body: 848bf4f3c71b575a97956edfdb33f7a3fc61a217cf508d264cc9bce8bddd79c1
+  - node: 01a18053-9e08-72a7-ab94-f3aee9e26501
+    reviewed: b1360156389db29827f8f281fed0ce9c108048c98624c1b4b1ecdd9a9e1a80e7
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
+        body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+  - node: 01a18053-9e08-72a7-ab94-f3afd216b408
+    reviewed: a7ceaea1d99361a569938f29dd7c47b4157d0ffab8aa6bb72460c5d551fcd71d
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
+        body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "merging_parallel_assignments_keeps_both_tasks_and_their_histories"
+        body: a266e88b4f87b2d2c4aeff30b291a99ce2ebff2bab2b266d1967e9ce952a69e3
+      - file: "crates/yardlog-store/tests/delegation.rs"
+        name: "delegated_tasks_keep_identity_and_reassignment_guards_in_memory_and_files"
+        body: 368baa1cb56392e4a7ae841a81b890e4c76fe838e65d924958da0cf27f40115c
+  - node: 01a18053-9e08-72a7-ab94-f3b0addcc9a7
+    reviewed: 2ceee3e3fc778a028987bccedfeb8697c19cd646bc09abf2dd79da1027cf531f
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
+        body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+  - node: 01a18053-9e08-72a7-ab94-f3b195e2959f
+    reviewed: 8965a1cd8002102872eba60c328a9dc2a76ce8c053aa7811644fc6b853176aef
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
+        body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+  - node: 01a18053-9e08-72a7-ab94-f3b28937123c
+    reviewed: 37ea37e956a9bc8bfc8596337afcbcce4ef19285afaf11710223a633a45f466f
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "workers_claim_and_run_parallel_tasks_without_taking_the_stage"
+        body: 2239e38161db5a09c303df3f359d5fb94d21f41398a0d1c42ff1726f3187aacc
+  - node: 01a18053-9e08-72a7-ab94-f3b414175ea2
+    reviewed: ee98edacb021a56e52de2eca20a546448667940a17eecff3de07f888b934e6d9
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "malformed_assignments_are_refused_before_a_batch_is_applied"
+        body: c57c75252478034229cdf05870268dfa8e157bbef08ca18e91a62f606749e9e5
+  - node: 01a18053-9e08-72a7-ab94-f3b5d4be2049
+    reviewed: 4ce4c61bd433bd5501ff5842be30f91ab5c3a1f54d1c7108b74bb1d0341eed84
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "releasing_an_assignment_keeps_protection_and_allows_a_new_self_claim"
+        body: 95936670556fbd95e5f97cf1297b8033fe86765a69863bbd138a17c34c0b06f7
+  - node: 01a18054-bf15-7113-9ce0-7fab6fdd8c58
+    reviewed: da8488f690f1264c29d5172f274a84f275cada26cb849b085e33556321d02481
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "releasing_an_assignment_keeps_protection_and_allows_a_new_self_claim"
+        body: 95936670556fbd95e5f97cf1297b8033fe86765a69863bbd138a17c34c0b06f7
+  - node: 01a18053-9e08-72a7-ab94-f3b672906341
+    reviewed: 737a38a60397584de15bd118fe62e04650bd303cf99b3f499f281def84953e65
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "releasing_an_assignment_keeps_protection_and_allows_a_new_self_claim"
+        body: 95936670556fbd95e5f97cf1297b8033fe86765a69863bbd138a17c34c0b06f7
+  - node: 01a18053-9e08-72a7-ab94-f3b73fbe4a9f
+    reviewed: a72334d69ae2c4b1bcc2eca8706bf76bd25308f1802738d7f9c7db26f4ef17c0
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "releasing_an_assignment_keeps_protection_and_allows_a_new_self_claim"
+        body: 95936670556fbd95e5f97cf1297b8033fe86765a69863bbd138a17c34c0b06f7
+  - node: 01a18053-9e08-72a7-ab94-f3b84e95736a
+    reviewed: b692a2a455454b5404a807a8a93130d34b08a170ffab5dd97abee0e3383b8375
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "reassignment_rejects_stale_and_fresh_updates_from_the_former_worker_atomically"
+        body: 69741d374b3f0c549a0f539b944fdaf660115ae321fada7d9e773499c3ff3797
+  - node: 01a18053-9e08-72a7-ab94-f3b9b9de8e38
+    reviewed: 23af95545896b3a8b492ac76831318d618ae59e9b35c170948920185a2be2344
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "reassignment_rejects_stale_and_fresh_updates_from_the_former_worker_atomically"
+        body: 69741d374b3f0c549a0f539b944fdaf660115ae321fada7d9e773499c3ff3797
+  - node: 01a18053-9e08-72a7-ab94-f3ba1405ce1b
+    reviewed: f119e6e269bd274ea7732a73e528b1883c84da0b34995cab0af87ea3ee97fa8e
+    tests:
+      - file: "crates/yardlog/tests/delegation.rs"
+        name: "releasing_an_assignment_keeps_protection_and_allows_a_new_self_claim"
+        body: 95936670556fbd95e5f97cf1297b8033fe86765a69863bbd138a17c34c0b06f7
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:
@@ -25543,13 +25651,13 @@ links:
         name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
         body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
   - node: 01a16995-313c-7343-8413-b54f3d6c820f
-    reviewed: da6d87e897fab3ee91212812643044b787bd78d9f5eb1c299a7ca3a7be9a8f1c
+    reviewed: 85da716583e0ac6f75b058c84b45a58baad26efdc105b7e03be83122c88b9697
     tests:
       - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
         name: "once_a_subagent_opens_a_stage_of_its_own_its_requests_count_toward_that_stage_alone"
         body: c1e34b351b3b3d97d568c1e1894d4e94d0d38d389edea0050269b32a27b5b0b2
   - node: 01a16995-313c-7343-8413-b550557e1ea2
-    reviewed: 066f2739d21670bb68bab1eb274d4ce13ace55cd58f41a2fa9953a2cfa6b8b76
+    reviewed: cd09e3bcefea0d8818c358b8b794ff99f86ad30cd1f0f0cee3232e6695b4726b
     tests:
       - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
         name: "a_stageless_subagent_s_request_counts_toward_the_stage_active_for_its_session_s_main_agent"
@@ -25690,7 +25798,7 @@ links:
         name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
         body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
   - node: 01a16995-313c-7343-8413-b55299748fdd
-    reviewed: 83f289f6c08bd9f44e54f458c6975fdbd809f9e95afde39c8aed7bf60ec1d991
+    reviewed: 31501e9e2ef74e6137f2ffd5daaf867a01b21a019c7caf413a5cbbc81735964f
     tests:
       - file: "crates/loft-cli/tests/yard_serve_subagents.rs"
         name: "a_subagent_s_run_is_kept_with_the_stage_its_session_s_main_agent_had_active_as_it_started"
@@ -26683,7 +26791,7 @@ links:
         name: "task creation keeps the stage selected before its native tool runs"
         body: 9a884a8a0ea00606a902bc022d8f64520f9da61e206c7396b2cb53ff00ea148a
   - node: 01a1646f-546c-7521-9643-bc56c4873439
-    reviewed: d413264a68c3dfd55e9beb5deb8f56ccffbf19e369cc89f1db52e8092609ea90
+    reviewed: e3e36e5192ea2e0253a982d308e4f5b4e6c7880db8b95df98186cd633f0674d6
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "an agent with no active stage has no task mirrored, and a failed task call mirrors nothing"
@@ -26876,13 +26984,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_open_a_stage_for_each_step_and_end_it"
-        body: 19ade9a527359c6f4f5b29038f207cc983a6e3e48d6c533b026b11b949174489
+        body: 3523c2db16979c3bc0302f52293803ae280120fef90a48ff3769d6d354c9af5c
   - node: 01a1646f-546c-7521-9643-bc82fcce2ab4
-    reviewed: ba6acfeb2de8963d37eba95b3f356ee40880132b3364b4ab09c5cd51f463ea24
+    reviewed: 128b754925ceb2bac86ae349fa0d2fbeea7cc065d757d356b980e646bafa5c5a
     tests:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_open_a_stage_for_each_step_and_end_it"
-        body: 19ade9a527359c6f4f5b29038f207cc983a6e3e48d6c533b026b11b949174489
+        body: 3523c2db16979c3bc0302f52293803ae280120fef90a48ff3769d6d354c9af5c
   - node: 01a1646f-546c-7521-9643-bc84f5266332
     reviewed: b8609f0b2217298079f1ddb6dae75832693bf8a751a570cc0872b0720c660659
     tests:
@@ -26948,19 +27056,37 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
-        body: af4352dc0376582e84a9ff47753ddc509b826650e3810c95e36597e1f7be2cf1
+        body: 612c88f61b84ed8ed9d10ef8e1f4b5e15ca4c83eb38e0fcf52b6c52d85501f70
   - node: 01a1646f-546c-7521-9643-bc89c5da80bc
-    reviewed: 580ac8c509a5c316f4774b1b8e4185dc3d6bce7b4ea24deb4b38c412ddb68ce0
+    reviewed: 920b6f0dc041be151050ae3b1efcdc664735275bd236a9745273eee6718644ba
     tests:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
-        body: af4352dc0376582e84a9ff47753ddc509b826650e3810c95e36597e1f7be2cf1
+        body: 612c88f61b84ed8ed9d10ef8e1f4b5e15ca4c83eb38e0fcf52b6c52d85501f70
   - node: 01a1646f-546c-7521-9643-bc8a0a4ac1b9
     reviewed: c7bd6b0f07a5caa9e0166ccda37b1b64d24ba4ebfb0f594aca72a01ec7aed8d9
     tests:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
-        body: af4352dc0376582e84a9ff47753ddc509b826650e3810c95e36597e1f7be2cf1
+        body: 612c88f61b84ed8ed9d10ef8e1f4b5e15ca4c83eb38e0fcf52b6c52d85501f70
+  - node: 01a18053-9e08-72a7-ab94-f3a964c9ed6b
+    reviewed: e61d88a920adc91f1335fd6d373538511d68cb948ee865edc6a72d80859c4e26
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
+        body: 612c88f61b84ed8ed9d10ef8e1f4b5e15ca4c83eb38e0fcf52b6c52d85501f70
+  - node: 01a18053-9e08-72a7-ab94-f3aac12732f2
+    reviewed: 8e66fe031a185709db083dfcb03ae5f54eeb0769fe45828ac16d6720f0a9f0c7
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
+        body: 612c88f61b84ed8ed9d10ef8e1f4b5e15ca4c83eb38e0fcf52b6c52d85501f70
+  - node: 01a18053-9e08-72a7-ab94-f3ab07cae130
+    reviewed: 8853d248ec49f137378be4c8bf09448c38c3aa5f675cc35f252ae9feefc721ad
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts_and_ends"
+        body: 612c88f61b84ed8ed9d10ef8e1f4b5e15ca4c83eb38e0fcf52b6c52d85501f70
   - node: 01a16a04-3f8b-71a9-baa3-95e262698f8b
     reviewed: 224e233431513bd319b01f44504e469f518d2f62128bc95a41d0ea09bf4642c3
     tests:

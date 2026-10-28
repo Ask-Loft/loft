@@ -34,7 +34,8 @@ Yard Log.
 - `plan`: `title`, `markdown` and, for a plan file within the tree, its `path` relative to the tree.
 - `decision`: `title`, `consequence`, and the `question` it settles, by the question's id.
 - `task`: `title`, `state` (`open`, `active`, `done` or `dropped`), `detail` and `type`
-  (`regular`, the default, or `fix`).
+  (`regular`, the default, or `fix`), with optional `assignee`: an agent's `host` and `session`,
+  plus `agent` and `agentType` for a subagent.
 - `loft`: a `view` of the branch's Loft specification (`spec-change`, `decision`, `trace`,
   `findings` or `publish`) and an optional `note`. `loft` runs the view and keeps its report; see
   below.
@@ -70,10 +71,19 @@ leaves done ("The store reads and writes Yard Log as YAML", not "Work on the sto
 step ends, mark the stage `done`, or `dropped` with a note on why, before you open the next. Write
 the stages you foresee as `planned`, so the person sees the road ahead.
 
-Each agent has its own active stage. A subagent you start writes to the same Yard Log as you when
-it works in your worktree, and opens a stage of its own for its work rather than writing into
-yours. A subagent that works in a worktree of its own, on a branch of its own, keeps that branch's
-Yard Log.
+Each agent can own one active stage. A subagent executing an assigned task keeps that task in
+its recorded stage, without taking ownership of the stage or opening a stage just to execute it.
+For independent work, it opens a stage of its own. A subagent that works on another branch keeps
+that branch's Yard Log.
+
+Delegate by naming the existing task's id and stage explicitly. Record its assignment, or have
+the worker claim the unassigned unfinished task for itself, before execution. Give the worker
+the recorded task id, stage and instructions to read Yard Log under its own caller identity.
+Keep the same task through handoff: never create a second task for the delegated work. The stage
+owner or current assignee can reassign or release it; other agents cannot overwrite its
+assignment or execution state. Use the host adaptation's explicit binding where supported, or
+write the existing task directly. A newly continued session needs an explicit assignment or
+stage handoff; never infer identity from an agent's display name.
 
 ## Plan, then wait to be asked to build
 
@@ -104,7 +114,12 @@ as the moment it is written. Write `task` blocks yourself, or use the task mirro
 by the host adaptation where it is available.
 
 Either way, mark a task `active` in a write before its work starts. As soon as its work ends, mark
-it `done`, or `dropped` with a reason in its `detail`, before the next task is marked `active`.
+it `done`, or `dropped` with a reason in its `detail`. Different tasks can be active in parallel,
+including tasks executed by different agents within one stage. Update each task when its own
+work ends, independently of the others. An agent's end alone does not prove its task complete:
+unfinished execution returns to `open`, retaining its assignee for review or reassignment.
+After a stale refusal, reread the task and preserve the latest assignment and unrelated fields
+before retrying; stop if the task was reassigned to someone else.
 Never mark the tasks of a stage `done` in one write at its end: the ones not marked as they ran
 show no time of their own on the page's Gantt chart.
 

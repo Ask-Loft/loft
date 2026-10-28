@@ -197,8 +197,9 @@ fn the_yard_skill_tells_the_agent_to_open_a_stage_for_each_step_and_end_it() {
     says(&[
         "Before each step of the work, write a stage for it, `active`, with a goal that names what the step leaves done",
         "mark the stage `done`, or `dropped`",
-        "Each agent has its own active stage",
-        "opens a stage of its own for its work",
+        "Each agent can own one active stage",
+        "A subagent executing an assigned task keeps that task in its recorded stage",
+        "For independent work, it opens a stage of its own",
     ]);
 }
 
@@ -248,7 +249,12 @@ fn the_yard_skill_tells_the_agent_to_change_each_task_s_state_as_its_work_starts
     says(&[
         "mark a task `active` in a write before its work starts",
         "As soon as its work ends, mark it `done`, or `dropped`",
-        "before the next task is marked `active`",
+        "Different tasks can be active in parallel",
+        "independently of the others",
+        "Delegate by naming the existing task's id and stage explicitly",
+        "before execution",
+        "After a stale refusal, reread the task",
+        "An agent's end alone does not prove its task complete",
         "Never mark the tasks of a stage `done` in one write at its end",
     ]);
 }
