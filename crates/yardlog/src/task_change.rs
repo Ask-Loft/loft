@@ -62,7 +62,7 @@ impl YardLog {
             return Ok(TaskChange::Unchanged);
         }
         let input = input(id, stage, task);
-        self.change(vec![input], context)
+        self.change_tasks(vec![input], context)
     }
 
     /// Returns each active task assigned to `agent` to `open`, keeping its assignee, in one
@@ -83,13 +83,23 @@ impl YardLog {
                 input(&block.id, &file.stage.id, open)
             })
             .collect();
+        self.change_tasks(inputs, context)
+    }
+
+    /// Writes the tasks `inputs` give in one write, with no revision to base it on, under the
+    /// same rules as any batch; with none, writes nothing.
+    ///
+    /// # Errors
+    ///
+    /// The write is refused.
+    pub fn change_tasks(
+        &mut self,
+        inputs: Vec<Input>,
+        context: &Context,
+    ) -> Result<TaskChange, Refusal> {
         if inputs.is_empty() {
             return Ok(TaskChange::Unchanged);
         }
-        self.change(inputs, context)
-    }
-
-    fn change(&mut self, inputs: Vec<Input>, context: &Context) -> Result<TaskChange, Refusal> {
         let context = Context {
             base: None,
             send: false,
@@ -114,7 +124,9 @@ impl YardLog {
     }
 }
 
-fn input(id: &Handle, stage: &Handle, task: Task) -> Input {
+/// The input that writes `task` as the block `id` of the stage `stage`.
+#[must_use]
+pub fn input(id: &Handle, stage: &Handle, task: Task) -> Input {
     Input {
         id: id.clone(),
         stage: Some(stage.clone()),

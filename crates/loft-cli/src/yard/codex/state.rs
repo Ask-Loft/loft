@@ -24,6 +24,10 @@ pub struct State {
     pub stopped: bool,
     pub subagents: BTreeMap<String, String>,
     pub ended_tasks: BTreeSet<String>,
+    /// The agents, by actor key, that may hold tasks assigned to them, whose end releases them.
+    pub holding: BTreeSet<String>,
+    /// Whether an event of the session carried the adapter's descriptor yet.
+    pub described: bool,
     pub usage: super::usage::Usage,
     pub notifications: super::notification_state::Ledger,
 }

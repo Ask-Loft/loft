@@ -260,9 +260,11 @@ or through an input file; use argument arrays or correct shell quoting for value
 from the new revision. Read with `--since REVISION` for changes since your last read, and add
 `--reports` only when you need a Loft report in full.
 
-The startup context is an adapter peek; it does not mark a read for you. Read with `--mark-read`
-before your first write, then base your write on that result's revision. Run the commands in the
-worktree whose branch you are recording. Each result reports the page's address and whether git
+The startup context is your briefing, from `loft yard read --context --mark-read`: its read is
+recorded as your last, so a later read with `--since` starts from what it showed. A later prompt's
+context says only whether decision notifications reach you. Read with `--mark-read` before your
+first write, then base your write on that result's revision. Run the commands in the worktree
+whose branch you are recording. Each result reports the page's address and whether git
 ignores `.yard/`; where it is ignored, leave it out of commits.
 
 ### Questions and plan approval use the Yard page
@@ -386,16 +388,19 @@ presentation does not synchronize a native approval with the Yard page.
 
 ### Plan steps and reporting limits
 
-Open your active stage before using `update_plan`. The adapter mirrors successful calls into
-that stage, mapping pending steps to open tasks, in_progress to active, and completed to done.
+The adapter mirrors successful `update_plan` calls into your working stage, the one your briefing
+names: the stage of your active assigned tasks, else your own active stage, else your session's
+main agent's active stage. Open your active stage before using `update_plan` where you have none
+of these. It maps pending steps to open tasks, in_progress to active, and completed to done.
 It identifies steps by exact text and duplicate occurrence: reordering retains their identities;
 renaming creates a new task and drops the old unfinished task. Removed completed tasks stay done.
 Do not duplicate these tasks in explicit writes.
 
 When Codex does not offer `update_plan`, write Yard task blocks yourself. For a fix, read the
 mirrored task and write its whole block with `type: fix`; later mirrors retain that classification.
-Unbound steps need an active stage belonging to their caller. Keep stages, notes, decisions
-and Loft reports yourself.
+Unbound steps need a working stage: none is mirrored while your active assigned tasks lie in more
+than one stage. A step mirrored into a stage you do not own is assigned to you. Keep stages,
+notes, decisions and Loft reports yourself.
 
 For delegated work, claim or assign the existing task through a normal Yard write first. Use
 its exact ID as the prefix of every bound native step: `[yard:TASK-ID] Local checklist wording`.

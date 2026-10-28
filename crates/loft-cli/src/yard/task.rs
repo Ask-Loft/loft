@@ -9,7 +9,8 @@ use serde_json::{Value, json};
 use yardlog::body::{TaskState, TaskType};
 use yardlog::task_change::{TaskChange, TaskPatch};
 use yardlog::write::{Context, Refusal};
-use yardlog::{Actor, Handle, YardLog};
+use yardlog::{Actor, Agent, Handle, YardLog};
+use yardlog_store::Held;
 
 use super::args::TaskArgs;
 use super::branch::{self, Branch, Unapplied};
@@ -34,11 +35,50 @@ struct Done {
     released: Option<Vec<Handle>>,
 }
 
-/// Why a change wrote nothing: refused, or with nothing to change.
-enum Stop {
+/// Why a change wrote nothing: refused, with no Yard Log to change, or with nothing to change.
+pub(super) enum Stop<T> {
     Refused(Refusal),
     Absent,
-    Unchanged(Done),
+    Unchanged(T),
+}
+
+/// What a change applied to Yard Log as it stands: the value it gives, with whether it wrote.
+pub(super) type Change<T> = Result<(bool, T), Refusal>;
+
+/// What a change under the lock left: Yard Log as it was held before, and the change's value or
+/// why it wrote nothing.
+pub(super) type Locked<T> = (Held, Result<T, Stop<T>>);
+
+/// Applies `change` as `agent` to the branch's Yard Log as it stands under its lock, with no
+/// revision to base it on: Yard Log as it was held before, and the value the change gave, or why
+/// it wrote nothing. The `loft yard task` command and the adapters that change tasks in-process
+/// share it.
+pub(super) fn under_lock<T>(
+    branch: &Branch,
+    agent: &Agent,
+    change: impl FnOnce(&mut YardLog, &Context) -> Change<T>,
+) -> Result<Locked<T>, Failure> {
+    let settler = agent.clone();
+    let held = branch.open(super::now()?, || Ok(Actor::Agent(settler)))?;
+    branch.refuse_if_merged(&held)?;
+    let applied = branch.update(|current| {
+        let Some(mut log) = current else {
+            return Err(Unapplied::Refused(Stop::Absent));
+        };
+        let context = Context {
+            at: super::now().map_err(Unapplied::Failed)?,
+            agent: agent.clone(),
+            base: None,
+            send: false,
+        };
+        log.upgrade_format();
+        match change(&mut log, &context) {
+            Ok((true, value)) => Ok((log, value)),
+            Ok((false, value)) => Err(Unapplied::Refused(Stop::Unchanged(value))),
+            Err(refusal) => Err(Unapplied::Refused(Stop::Refused(refusal))),
+        }
+    })?;
+    Ok((held, applied))
 }
 
 pub fn run(root: &Path, args: TaskArgs) -> Finished {
@@ -69,23 +109,20 @@ fn attempt(dir: &Path, args: TaskArgs) -> Result<(&'static str, Value), Failure>
     let target = target(&args)?;
     let caller = Caller::new(&args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
-    let at = super::now()?;
-    let agent = caller.agent().clone();
-    let settler = agent.clone();
-    let held = branch.open(at, || Ok(Actor::Agent(settler)))?;
-    branch.refuse_if_merged(&held)?;
-    let applied = branch.update(|current| {
-        let context = Context {
-            at: super::now().map_err(Unapplied::Failed)?,
-            agent,
-            base: None,
-            send: false,
-        };
-        apply(current, &target, &context).map_err(Unapplied::Refused)
+    let (held, applied) = under_lock(&branch, caller.agent(), |log, context| {
+        apply(log, &target, context)
     })?;
     let (outcome, done) = match applied {
         Ok(done) => (outcome(&target), done),
         Err(Stop::Unchanged(done)) => ("unchanged", done),
+        Err(Stop::Absent) if matches!(target, Target::Release) => (
+            "unchanged",
+            Done {
+                revision: 0,
+                task: None,
+                released: Some(Vec::new()),
+            },
+        ),
         Err(Stop::Absent) => return Err(branch.refused(&held, vec![branch::absent()])),
         Err(Stop::Refused(refusal)) => {
             return Err(super::write::refusal_of(
@@ -128,29 +165,12 @@ fn target(args: &TaskArgs) -> Result<Target, Failure> {
     Ok(Target::Task(id, patch))
 }
 
-/// Applies the change under Yard Log's lock to Yard Log as it is: what it wrote, or why it
-/// wrote nothing.
-fn apply(
-    current: Option<YardLog>,
-    target: &Target,
-    context: &Context,
-) -> Result<(YardLog, Done), Stop> {
-    let Some(mut log) = current else {
-        return match target {
-            Target::Task(..) => Err(Stop::Absent),
-            Target::Release => Err(Stop::Unchanged(Done {
-                revision: 0,
-                task: None,
-                released: Some(Vec::new()),
-            })),
-        };
-    };
-    log.upgrade_format();
+/// Applies the change to Yard Log as it is under its lock: what it did, and whether it wrote.
+fn apply(log: &mut YardLog, target: &Target, context: &Context) -> Change<Done> {
     let change = match target {
         Target::Task(id, patch) => log.change_task(id, patch, context),
         Target::Release => log.release(&context.agent, context),
-    }
-    .map_err(Stop::Refused)?;
+    }?;
     let (changed, tasks) = match change {
         TaskChange::Changed { tasks, .. } => (true, tasks),
         TaskChange::Unchanged => (false, Vec::new()),
@@ -158,16 +178,12 @@ fn apply(
     let done = Done {
         revision: log.root.revision,
         task: match target {
-            Target::Task(id, _) => Some((id.clone(), state_of(&log, id))),
+            Target::Task(id, _) => Some((id.clone(), state_of(log, id))),
             Target::Release => None,
         },
         released: matches!(target, Target::Release).then_some(tasks),
     };
-    if changed {
-        Ok((log, done))
-    } else {
-        Err(Stop::Unchanged(done))
-    }
+    Ok((changed, done))
 }
 
 fn state_of(log: &YardLog, id: &Handle) -> TaskState {

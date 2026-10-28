@@ -78,9 +78,13 @@ fn answer(yard: &Yard) {
 fn an_answer_before_the_first_scan_wakes_its_caller_despite_another_readers_fallback() {
     let yard = Yard::new();
     let sent = yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
+    // The session's briefing marks its read before the answer, which it does not show.
+    hook(&yard, &event(&yard, "SessionStart"));
+    let marked =
+        yard.read("codex-session", &["--host", "codex", "--submissions"])["ownLastRead"].clone();
+    assert!(marked.is_u64(), "the briefing marks the read");
     answer(&yard);
     yard.read("another-session", &["--host", "codex", "--mark-read"]);
-    hook(&yard, &event(&yard, "SessionStart"));
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
     let _worker = worker(&yard, &page, &peer);
@@ -113,8 +117,9 @@ fn an_answer_before_the_first_scan_wakes_its_caller_despite_another_readers_fall
     assert_eq!(metadata["revision"], read["revision"]);
     assert!(!text.contains("Which shelf?"));
     assert!(!text.contains("Top"));
-    assert!(
-        yard.read("codex-session", &["--host", "codex", "--submissions"])["ownLastRead"].is_null()
+    assert_eq!(
+        yard.read("codex-session", &["--host", "codex", "--submissions"])["ownLastRead"],
+        marked
     );
     assert!(!state(&yard).to_string().contains("Which shelf?"));
     assert_eq!(
@@ -166,8 +171,9 @@ fn a_decision_after_normal_turn_end_wakes_an_idle_caller_without_an_agent_wait_l
 fn a_lost_acknowledgement_is_checked_against_native_receipts_before_retrying_input() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
-    answer(&yard);
+    // The session's briefing marks its read before the answer, which it does not show.
     hook(&yard, &event(&yard, "SessionStart"));
+    answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = CodexAppServer::start(Scenario {
         loaded: vec!["codex-session".into()],
@@ -200,8 +206,9 @@ fn a_lost_acknowledgement_is_checked_against_native_receipts_before_retrying_inp
 fn acknowledged_delivery_survives_a_worker_restart_without_another_model_input() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
-    answer(&yard);
+    // The session's briefing marks its read before the answer, which it does not show.
     hook(&yard, &event(&yard, "SessionStart"));
+    answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
     let mut first = worker(&yard, &page, &peer);
@@ -223,8 +230,9 @@ fn acknowledged_delivery_survives_a_worker_restart_without_another_model_input()
 fn an_unloaded_thread_keeps_its_decision_queued_without_reopening_codex() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
-    answer(&yard);
+    // The session's briefing marks its read before the answer, which it does not show.
     hook(&yard, &event(&yard, "SessionStart"));
+    answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = CodexAppServer::start(Scenario::default());
     let _worker = worker(&yard, &page, &peer);
@@ -274,8 +282,9 @@ fn an_already_read_resolution_is_not_sent_back_to_its_caller() {
 fn an_active_native_turn_receives_a_steer_without_any_configuration_overrides() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
-    answer(&yard);
+    // The session's briefing marks its read before the answer, which it does not show.
     hook(&yard, &event(&yard, "SessionStart"));
+    answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = CodexAppServer::start(Scenario {
         loaded: vec!["codex-session".into()],
@@ -319,8 +328,9 @@ fn an_active_native_turn_receives_a_steer_without_any_configuration_overrides() 
 fn context_reports_delivery_status_and_late_cancelled_prompts_cannot_rearm_the_worker() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
-    answer(&yard);
+    // The session's briefing marks its read before the answer, which it does not show.
     hook(&yard, &event(&yard, "SessionStart"));
+    answer(&yard);
     let page = Served::start(&yard, &[]);
     let peer = peer(&yard);
     let mut running = worker(&yard, &page, &peer);
@@ -392,8 +402,9 @@ fn context_reports_delivery_status_and_late_cancelled_prompts_cannot_rearm_the_w
 fn an_unavailable_worker_recovers_its_queued_identity_when_the_endpoint_returns() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
-    answer(&yard);
+    // The session's briefing marks its read before the answer, which it does not show.
     hook(&yard, &event(&yard, "SessionStart"));
+    answer(&yard);
     let page = Served::start(&yard, &[]);
     let unavailable = CodexAppServer::start(Scenario::default());
     let mut first = worker(&yard, &page, &unavailable);

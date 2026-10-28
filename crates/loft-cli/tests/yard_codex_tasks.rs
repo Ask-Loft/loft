@@ -137,6 +137,11 @@ fn failed_malformed_and_unowned_codex_plans_create_no_task_write() {
 fn codex_hooks_that_release_tasks_outside_a_git_repository_still_answer() {
     let mut yard = Yard::new();
     yard.git = software_plant::GitScenario::outside_repository();
+    // Each agent is known to hold assigned tasks, so that each end releases them.
+    let folder = yard.scratch.home().join(".yard/codex/codex-session");
+    std::fs::create_dir_all(&folder).unwrap();
+    let holding = json!({"holding": [r#"["codex-session",null]"#, r#"["codex-session","child"]"#]});
+    std::fs::write(folder.join("state.json"), holding.to_string()).unwrap();
     for name in ["Stop", "Interrupt", "SubagentStop", "SessionEnd"] {
         let mut input = event(&yard, name);
         if name == "SubagentStop" {

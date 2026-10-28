@@ -5,14 +5,17 @@ use std::path::Path;
 use std::process::{Command, Stdio};
 
 use serde_json::Value;
-use yardlog::Agent;
+use yardlog::write::Context;
+use yardlog::{Agent, YardLog};
 
 use super::{Result, message};
 use crate::cli::{Format, Output};
 use crate::json;
-use crate::yard::args::{Beyond, ReadArgs, ReadDetails, Runner, WriteArgs, Writer};
+use crate::yard::args::{Beyond, ReadArgs, ReadDetails, Runner};
+use crate::yard::branch::Branch;
 use crate::yard::failure::Failure;
-use crate::yard::{read as yard_read, write as yard_write};
+use crate::yard::read as yard_read;
+use crate::yard::task::{self, Change, Stop};
 
 /// The host Codex's agents are named under.
 pub const HOST: &str = "codex";
@@ -71,15 +74,6 @@ impl Caller {
             agent_type: self.agent.as_ref().map(|(_, kind)| kind.clone()),
         }
     }
-
-    fn writer(&self) -> Writer {
-        Writer {
-            host: HOST.to_owned(),
-            session: self.session.clone(),
-            agent: self.agent.as_ref().map(|(id, _)| id.clone()),
-            agent_type: self.agent.as_ref().map(|(_, kind)| kind.clone()),
-        }
-    }
 }
 
 /// The `loft yard` command of `args`, run in `dir` against the page server at `port`.
@@ -117,16 +111,22 @@ fn document(
     }
 }
 
-fn read_with(dir: &str, caller: &Caller, port: u16, submissions: bool) -> Result<Value> {
+/// What a read gives the caller, as `loft yard read` does with these details.
+struct Details {
+    submissions: bool,
+    context: bool,
+}
+
+fn read_with(dir: &str, caller: &Caller, port: u16, details: &Details) -> Result<Value> {
     let args = ReadArgs {
         since: None,
         versions: false,
         details: ReadDetails {
             reports: false,
-            submissions,
+            submissions: details.submissions,
         },
-        mark_read: false,
-        context: false,
+        mark_read: details.context,
+        context: details.context,
         agent: caller.runner(),
         beyond: Beyond { port },
         output: json_output(),
@@ -135,34 +135,39 @@ fn read_with(dir: &str, caller: &Caller, port: u16, submissions: bool) -> Result
     document(yard_read::SCHEMA, "read", done)
 }
 
-/// Yard Log as `loft yard read` gives it to the caller.
-pub fn read(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
-    read_with(dir, caller, port, false)
+/// The caller's briefing, as `loft yard read --context --mark-read` gives it: the read it shows
+/// is recorded as the caller's last.
+pub fn briefing(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
+    let details = Details {
+        submissions: false,
+        context: true,
+    };
+    read_with(dir, caller, port, &details)
 }
 
 /// Yard Log with every submission's lifecycle, as `loft yard read --submissions` gives it.
 pub fn history(dir: &str, caller: &Caller, port: u16) -> Result<Value> {
-    read_with(dir, caller, port, true)
-}
-
-/// Writes `batch` as the caller, as `loft yard write --based-on <revision>` does.
-pub fn write(dir: &str, caller: &Caller, port: u16, revision: u64, batch: &Value) -> Result<Value> {
-    let args = WriteArgs {
-        input: "-".into(),
-        send: false,
-        based_on: Some(revision),
-        base: None,
-        default_base: None,
-        writer: caller.writer(),
-        beyond: Beyond { port },
-        output: json_output(),
+    let details = Details {
+        submissions: true,
+        context: false,
     };
-    let done = yard_write::document(Path::new(dir), args, || Ok(batch.clone()));
-    document(yard_write::SCHEMA, "written", done)
+    read_with(dir, caller, port, &details)
 }
 
-pub fn active<'a>(doc: &'a Value, caller: &Caller) -> Option<&'a Value> {
-    doc["stages"].as_array()?.iter().find(|stage| {
-        stage["version"]["body"]["status"] == "active" && caller.owns(&stage["owner"])
-    })
+/// Changes the caller's tasks as `loft yard task` does: `change` applied to Yard Log as it
+/// stands under its lock, with no read before it and no retry. A branch with no Yard Log
+/// changes nothing and gives no value.
+pub fn change_tasks<T>(
+    dir: &str,
+    caller: &Caller,
+    port: u16,
+    change: impl FnOnce(&mut YardLog, &Context) -> Change<T>,
+) -> Result<Option<T>> {
+    let changed = Branch::locate(Path::new(dir), Beyond { port })
+        .and_then(|branch| task::under_lock(&branch, &caller.agent(), change));
+    match changed.map_err(message)? {
+        (_, Ok(value) | Err(Stop::Unchanged(value))) => Ok(Some(value)),
+        (_, Err(Stop::Absent)) => Ok(None),
+        (_, Err(Stop::Refused(refusal))) => Err(format!("Yard refused a task change: {refusal}")),
+    }
 }

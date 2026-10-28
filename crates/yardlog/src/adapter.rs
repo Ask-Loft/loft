@@ -5,6 +5,9 @@ use serde_json::{Value, json};
 
 use crate::usage::COUNTERS;
 
+/// The format of the descriptor an adapter sends.
+pub const FORMAT: &str = "yard-adapter/1";
+
 /// The normalized activity kinds understood by the core.
 pub const EVENTS: &[&str] = &[
     "turn.start",
@@ -40,7 +43,7 @@ impl Descriptor {
         {
             return Err("adapter holds an unknown field");
         }
-        if value["format"] != "yard-adapter/1" {
+        if value["format"] != FORMAT {
             return Err("unsupported adapter format; expected yard-adapter/1");
         }
         let version = value["version"]
@@ -76,7 +79,7 @@ impl Descriptor {
     /// The normalized descriptor that a caller reads, including empty capability lists.
     #[must_use]
     pub fn json(&self) -> Value {
-        json!({"format":"yard-adapter/1", "version":self.version, "capabilities":{
+        json!({"format":FORMAT, "version":self.version, "capabilities":{
             "events":self.events, "usage":self.usage, "nativeQuestions":self.native_questions,
             "nativePlans":self.native_plans, "taskMirroring":self.task_mirroring
         }})
@@ -102,7 +105,7 @@ impl Descriptor {
             }
         }
         Out::Mapping(vec![
-            ("format", Out::Token("yard-adapter/1".to_owned())),
+            ("format", Out::Token(FORMAT.to_owned())),
             ("version", Out::Text(self.version.clone())),
             ("capabilities", Out::Mapping(capabilities)),
         ])

@@ -7,7 +7,7 @@ use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 
 use super::state::State;
-use super::translate::{Hook, descriptor};
+use super::translate::{Hook, envelope};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -143,10 +143,15 @@ pub fn native(hook: &Hook, state: &mut State) {
 }
 
 fn event(turn: &Active, at: &str, id: &str) -> Value {
-    let mut event = json!({"kind":"request","eventId":id,"host":"codex","session":turn.session,"dir":turn.dir,"turn":turn.turn,"model":turn.model,"at":at,"adapter":descriptor()});
-    if let Some((id, kind)) = &turn.agent {
-        event["agent"] = json!({"id":id,"type":kind});
-    }
+    let mut event = envelope(
+        "request",
+        (&turn.session, &turn.dir),
+        turn.agent.as_ref(),
+        Some(&turn.turn),
+        at,
+    );
+    event["eventId"] = json!(id);
+    event["model"] = json!(turn.model);
     event
 }
 

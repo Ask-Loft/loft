@@ -2,7 +2,7 @@
 
 use serde_json::{Value, json};
 
-use crate::yard::{Yard, block};
+use crate::yard::{Yard, block, document};
 use crate::yard_codex::{event, hook};
 
 fn setup() -> Yard {
@@ -50,7 +50,8 @@ fn bound_codex_steps_update_the_existing_task_without_owning_its_stage() {
     );
     let after = read(&yard);
     assert_eq!(after["stages"].as_array().unwrap().len(), 1);
-    assert_eq!(after["stages"][0]["blocks"].as_array().unwrap().len(), 1);
+    // The plain step is mirrored beside the bound task, and no second task is made for it.
+    assert_eq!(after["stages"][0]["blocks"].as_array().unwrap().len(), 2);
     let task = block(&after, "shared");
     assert_eq!(task["key"], block(&before, "shared")["key"]);
     assert_eq!(task["version"]["body"]["title"], "Original scope");
@@ -61,7 +62,13 @@ fn bound_codex_steps_update_the_existing_task_without_owning_its_stage() {
     assert_eq!(after["stages"][0]["owner"], before["stages"][0]["owner"]);
     hook(
         &yard,
-        &plan(&yard, &[("[yard:shared] Another wording", "in_progress")]),
+        &plan(
+            &yard,
+            &[
+                ("[yard:shared] Another wording", "in_progress"),
+                ("Local checklist", "pending"),
+            ],
+        ),
     );
     assert_eq!(read(&yard)["revision"], after["revision"]);
     hook(&yard, &plan(&yard, &[("[yard:shared] Done", "completed")]));
@@ -160,6 +167,10 @@ fn worker_end_and_automatic_mirrors_preserve_finished_or_reassigned_tasks() {
         &["--host", "codex"],
     ));
     let reassigned = read(&yard)["revision"].clone();
+    // The former assignee's mirror, applied to the task as it now stands, changes nothing.
+    hook(&yard, &worker(&yard, "SubagentStart"));
+    hook(&yard, &plan(&yard, &[("[yard:shared] Mine", "completed")]));
+    assert_eq!(read(&yard)["revision"], reassigned);
     hook(&yard, &worker(&yard, "SubagentStop"));
     assert_eq!(read(&yard)["revision"], reassigned);
 }
@@ -209,7 +220,7 @@ fn an_ambiguous_end_cannot_open_another_actors_active_assignment() {
 }
 
 #[test]
-fn assignment_context_reports_omitted_tasks_and_keeps_the_read_instruction() {
+fn assignment_context_reports_omitted_tasks_and_directs_the_agent_to_read_yard_log() {
     let yard = setup();
     let tasks: Vec<_> = (0..35).map(|n|json!({"id":format!("task-{n}-{}", "long".repeat(8)),"kind":"task","stage":"build","title":"Work","state":"open","assignee":{"host":"codex","session":"codex-session","agent":"worker","agentType":"builder"}})).collect();
     read(&yard);
@@ -222,20 +233,13 @@ fn assignment_context_reports_omitted_tasks_and_keeps_the_read_instruction() {
     let text = output["hookOutput"]["hookSpecificOutput"]["additionalContext"]
         .as_str()
         .unwrap();
-    assert!(text.contains("Tasks assigned to you: 36"), "{text}");
     assert!(
-        text.contains("more assigned tasks; read Yard Log"),
+        text.contains("Unfinished tasks assigned to you (36):"),
         "{text}"
     );
-    assert!(
-        text.contains("Read with --mark-read before writing"),
-        "{text}"
-    );
-    assert!(
-        text.contains("native Codex mode and permissions still apply"),
-        "{text}"
-    );
-    assert!(text.chars().count() <= 2000);
+    assert!(text.contains("more: read Yard Log for them"), "{text}");
+    let briefing = text.split("\nYard caller:").next().unwrap();
+    assert!(briefing.chars().count() <= 2000);
 }
 
 #[test]
@@ -278,4 +282,114 @@ fn a_parent_unbound_plan_preserves_the_native_task_after_delegation_and_removal(
 
 fn assert_written(doc: &Value) {
     assert_eq!(doc["outcome"], "written", "{doc}");
+}
+
+#[test]
+fn a_worker_s_plain_steps_mirror_into_its_working_stage_assigned_to_it() {
+    let yard = setup();
+    hook(&yard, &plan(&yard, &[("Local checklist", "pending")]));
+    let doc = read(&yard);
+    let mirrored = doc["stages"][0]["blocks"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|b| b["id"] != "shared")
+        .unwrap();
+    let body = &mirrored["version"]["body"];
+    assert_eq!(body["title"], "Local checklist");
+    assert_eq!(body["state"], "open");
+    assert_eq!(
+        body["assignee"],
+        json!({"host":"codex","session":"codex-session","agent":"worker","agentType":"builder"})
+    );
+    assert_eq!(doc["stages"][0]["owner"]["agent"], Value::Null);
+}
+
+#[test]
+fn a_worker_whose_assigned_tasks_lie_in_two_stages_mirrors_no_plain_step() {
+    let yard = setup();
+    assert_written(&yard.write(
+        "codex-session",
+        r#"[{"id":"check","kind":"stage","title":"Check","status":"planned"},
+       {"id":"other","kind":"task","stage":"check","title":"Other scope","state":"open"}]"#,
+        &["--host", "codex"],
+    ));
+    // The worker claims the second stage's task for itself.
+    assert_written(&yard.write(
+        "codex-session",
+        r#"[{"id":"other","kind":"task","stage":"check","title":"Other scope","state":"active",
+       "assignee":{"host":"codex","session":"codex-session","agent":"worker","agentType":"builder"}}]"#,
+        &["--host", "codex", "--agent", "worker", "--agent-type", "builder"],
+    ));
+    hook(
+        &yard,
+        &plan(&yard, &[("[yard:shared] Work", "in_progress")]),
+    );
+    let before = read(&yard)["revision"].clone();
+    hook(
+        &yard,
+        &plan(
+            &yard,
+            &[("[yard:shared] Work", "in_progress"), ("Local", "pending")],
+        ),
+    );
+    assert_eq!(read(&yard)["revision"], before);
+}
+
+#[test]
+fn a_bound_change_applies_to_the_task_as_it_stands_without_a_read_first() {
+    let yard = setup();
+    hook(
+        &yard,
+        &plan(&yard, &[("[yard:shared] Work", "in_progress")]),
+    );
+    // A change made since, which the mirror never read, is kept beside its own.
+    let changed = yard.run(&[
+        "task",
+        "shared",
+        "--detail",
+        "Changed meanwhile",
+        "--host",
+        "codex",
+        "--session",
+        "codex-session",
+    ]);
+    assert_eq!(document("task", &changed)["outcome"], "changed");
+    hook(&yard, &plan(&yard, &[("[yard:shared] Work", "completed")]));
+    let after = read(&yard);
+    let task = block(&after, "shared");
+    assert_eq!(task["version"]["body"]["detail"], "Changed meanwhile");
+    assert_eq!(task["version"]["body"]["state"], "done");
+}
+
+#[test]
+fn a_worker_s_end_returns_all_its_active_tasks_to_open_in_one_write() {
+    let yard = setup();
+    assert_written(&yard.write(
+        "codex-session",
+        r#"[
+      {"id":"second","kind":"task","stage":"build","title":"Second scope","state":"open",
+       "assignee":{"host":"codex","session":"codex-session","agent":"worker","agentType":"builder"}}
+    ]"#,
+        &["--host", "codex"],
+    ));
+    hook(
+        &yard,
+        &plan(
+            &yard,
+            &[
+                ("[yard:shared] Work", "in_progress"),
+                ("[yard:second] More", "in_progress"),
+            ],
+        ),
+    );
+    let before = read(&yard)["revision"].as_u64().unwrap();
+    hook(&yard, &worker(&yard, "SubagentStop"));
+    let ended = read(&yard);
+    assert_eq!(ended["revision"], before + 1);
+    for id in ["shared", "second"] {
+        let body = &block(&ended, id)["version"]["body"];
+        assert_eq!(body["state"], "open", "{id}");
+        assert_eq!(body["assignee"]["agent"], "worker", "{id}");
+    }
 }

@@ -1,12 +1,13 @@
 //! Whitelisted native fields; raw hook input never reaches an event or adapter state.
 
 use std::path::Path;
+use std::sync::OnceLock;
 
 use serde_json::{Value, json};
 use yardlog::identity::is_session_id;
 
 use super::Result;
-use super::commands::Caller;
+use super::commands::{Caller, HOST};
 use super::state::State;
 
 pub struct Hook(pub Value);
@@ -98,15 +99,55 @@ impl Hook {
     }
 }
 
-/// Supported counters remain distinct from whether a usage source is currently available.
-pub fn descriptor() -> Value {
-    json!({"format":"yard-adapter/1", "version":crate::version::VERSION, "capabilities":{
-        "events":["turn.start","turn.end","request","tool.start","tool.end","subagent.start","subagent.end","compaction","plan.start","plan.end"],
-        "nativeQuestions":false,"nativePlans":false,"taskMirroring":true,"usage":["input","cacheRead","cacheWrite","output"]
-    }})
+/// The adapter's descriptor, built once: every normalized event kind and every counter. Supported
+/// counters remain distinct from whether a usage source is currently available.
+pub fn descriptor() -> &'static Value {
+    static DESCRIPTOR: OnceLock<Value> = OnceLock::new();
+    DESCRIPTOR.get_or_init(|| {
+        json!({"format":yardlog::adapter::FORMAT, "version":crate::version::VERSION, "capabilities":{
+            "events":yardlog::adapter::EVENTS, "usage":yardlog::usage::COUNTERS,
+            "nativeQuestions":false, "nativePlans":false, "taskMirroring":true
+        }})
+    })
 }
 
+/// An event of `kind` of the session's agent `agent` in `dir` at `at`, during `turn` where
+/// there is one: the fields every event the adapter posts holds.
+pub fn envelope(
+    kind: &str,
+    (session, dir): (&str, &str),
+    agent: Option<&(String, String)>,
+    turn: Option<&str>,
+    at: &str,
+) -> Value {
+    let mut event = json!({"kind":kind,"host":HOST,"session":session,"dir":dir,"at":at});
+    if let Some((id, kind)) = agent {
+        event["agent"] = json!({"id":id,"type":kind});
+    }
+    if let Some(turn) = turn {
+        event["turn"] = json!(turn);
+    }
+    event
+}
+
+/// Gives `event` the adapter's descriptor where it is the session's first or a turn's start.
+fn describe(event: &mut Value, state: &mut State) {
+    if event["kind"] == "turn.start" || !state.described {
+        event["adapter"] = descriptor().clone();
+        state.described = true;
+    }
+}
+
+/// The events a hook posts, the session's first and each turn's start with the descriptor.
 pub fn events(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
+    let mut events = translated(hook, state)?;
+    for event in &mut events {
+        describe(event, state);
+    }
+    Ok(events)
+}
+
+fn translated(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
     if hook.name() == "SubagentStart"
         && let (Some(id), Some(kind)) = (hook.0["agent_id"].as_str(), hook.0["agent_type"].as_str())
     {
@@ -124,14 +165,13 @@ pub fn events(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
     };
     let at = crate::yard::now().map_err(super::message)?.to_string();
     let base = |kind: &str| {
-        let mut event = json!({"kind":kind,"host":"codex","session":hook.session(),"dir":hook.dir(),"at":at,"adapter":descriptor()});
-        if let Some((id, kind)) = &caller.agent {
-            event["agent"] = json!({"id":id,"type":kind});
-        }
-        if let Some(turn) = hook.0["turn_id"].as_str() {
-            event["turn"] = json!(turn);
-        }
-        event
+        envelope(
+            kind,
+            (hook.session(), hook.dir()),
+            caller.agent.as_ref(),
+            hook.0["turn_id"].as_str(),
+            &at,
+        )
     };
     let mut events = vec![];
     if caller.agent.is_none()

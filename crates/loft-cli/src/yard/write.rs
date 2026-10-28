@@ -19,14 +19,12 @@ use super::render;
 use super::views::Views;
 use crate::finish::Finished;
 
-pub const SCHEMA: &str = "loft-yard-write/1";
+const SCHEMA: &str = "loft-yard-write/1";
 const OUTCOME: &str = "written";
 
 pub fn run(root: &Path, args: WriteArgs) -> Finished {
     let as_json = args.output.json();
-    let input = args.input.clone();
-    let written =
-        document(root, args, || super::input::json(&input)).map(|fields| (OUTCOME, fields));
+    let written = attempt(root, args).map(|fields| (OUTCOME, fields));
     failure::end(SCHEMA, as_json, written, |_, fields| {
         format!(
             "Yard Log of {} at revision {}; {}",
@@ -43,15 +41,10 @@ struct Applied {
     upgraded_from: Option<Format>,
 }
 
-/// The result of writing the batch `batch` gives, as `args` ask; `args.input` is not read.
-pub fn document(
-    dir: &Path,
-    args: WriteArgs,
-    batch: impl FnOnce() -> Result<Value, Failure>,
-) -> Result<Value, Failure> {
+fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
     let caller = Caller::new(&args.writer.into());
     let branch = Branch::locate(dir, args.beyond)?;
-    let batch = batch()?;
+    let batch = super::input::json(&args.input)?;
     let at = super::now()?;
     let agent = caller.agent().clone();
     let held = branch.open(at, || Ok(yardlog::Actor::Agent(agent.clone())))?;

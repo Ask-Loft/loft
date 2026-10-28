@@ -259,7 +259,7 @@ fn codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback
 }
 
 #[test]
-fn codex_cache_write_guidance_distinguishes_raw_reports_from_measured_counts() {
+fn codex_cache_write_guidance_lies_in_the_skill_and_not_in_the_session_context() {
     let text = adaptation();
     let yard = crate::yard::Yard::new();
     let reply = crate::yard_codex::hook(&yard, &crate::yard_codex::event(&yard, "SessionStart"));
@@ -272,7 +272,7 @@ fn codex_cache_write_guidance_distinguishes_raw_reports_from_measured_counts() {
         "Raw source values are preserved",
     ] {
         assert!(text.contains(phrase), "{phrase}");
-        assert!(context.contains(phrase), "{phrase}");
+        assert!(!context.contains(phrase), "{phrase}");
     }
-    assert!(context.chars().count() <= 2000);
+    assert!(!context.contains("usage"), "{context}");
 }

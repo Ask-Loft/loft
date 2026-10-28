@@ -70,24 +70,25 @@ fn codex_activity_declares_coverage_without_retaining_native_words() {
     assert_eq!(events[1]["call"], "call-one");
     assert_eq!(events[2]["kind"], "tool.end");
     assert!(events[2].get("failed").is_none());
+    let adapter = &events[0]["adapter"];
+    assert_eq!(
+        adapter["capabilities"]["usage"],
+        json!(["input", "cacheRead", "cacheWrite", "output"])
+    );
+    assert!(
+        adapter["capabilities"]["events"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("request"))
+    );
+    assert_eq!(adapter["capabilities"]["nativeQuestions"], false);
+    assert_eq!(adapter["capabilities"]["nativePlans"], false);
+    assert_eq!(adapter["capabilities"]["taskMirroring"], true);
     for event in events {
         assert_eq!(event["host"], "codex");
         assert_eq!(event["session"], "codex-session");
         assert_eq!(event["dir"], json!(yard.scratch.0.canonicalize().unwrap()));
         assert_eq!(event["at"], "2026-01-01T00:00:00Z");
-        assert_eq!(
-            event["adapter"]["capabilities"]["usage"],
-            json!(["input", "cacheRead", "cacheWrite", "output"])
-        );
-        assert!(
-            event["adapter"]["capabilities"]["events"]
-                .as_array()
-                .unwrap()
-                .contains(&json!("request"))
-        );
-        assert_eq!(event["adapter"]["capabilities"]["nativeQuestions"], false);
-        assert_eq!(event["adapter"]["capabilities"]["nativePlans"], false);
-        assert_eq!(event["adapter"]["capabilities"]["taskMirroring"], true);
         assert!(event.get("tokens").is_none());
     }
     assert!(!kept.to_string().contains("PRIVATE"));
@@ -134,8 +135,17 @@ fn codex_hooks_record_observed_modes_compaction_and_subagent_lifetimes() {
     assert!(kept["events"][4].get("before").is_none());
 }
 
+/// The context a hook gives, as text.
+fn context(output: &Value) -> &str {
+    output["hookOutput"]["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap()
+}
+
+const UNAVAILABLE: &str = "Yard decision notifications are unavailable; use explicit Yard waiting while a decision is needed.";
+
 #[test]
-fn codex_session_context_is_a_peek_with_explicit_caller_arguments() {
+fn codex_session_context_is_the_briefing_marked_read_with_the_caller_arguments_and_notifications() {
     let yard = Yard::new();
     yard.write(
         "codex-session",
@@ -148,35 +158,29 @@ fn codex_session_context_is_a_peek_with_explicit_caller_arguments() {
         r#"[{"id":"later","kind":"question","stage":"build","prompt":"Continue?","header":"Next","options":[{"label":"Yes"},{"label":"No"}]}]"#,
         &["--host", "codex", "--send"],
     );
-    let read_before = fs::read(yard.scratch.home().join(".yard/last-read.json")).ok();
-    let context = hook(&yard, &event(&yard, "SessionStart"));
-    let text = context["hookOutput"]["hookSpecificOutput"]["additionalContext"]
+    let briefing = yard.read("codex-session", &["--host", "codex", "--context"])["context"]["text"]
         .as_str()
-        .unwrap();
+        .unwrap()
+        .to_owned();
     assert!(
-        text.contains("--host codex --session codex-session"),
-        "{text}"
-    );
-    assert!(text.contains("build"), "{text}");
-    assert!(text.contains("Revision: 2; last read: 1"), "{text}");
-    assert!(text.contains("Pending submissions:"), "{text}");
-    assert!(
-        text.contains(sent["submission"].as_str().unwrap()),
-        "{text}"
-    );
-    assert!(text.contains("Page:"), "{text}");
-    assert!(
-        text.contains("Native hooks carry no usage counters"),
-        "{text}"
+        briefing.contains("Your working stage: `build`"),
+        "{briefing}"
     );
     assert!(
-        text.contains("App-server usage is currently unavailable"),
-        "{text}"
+        briefing.contains(sent["submission"].as_str().unwrap()),
+        "{briefing}"
     );
-    assert!(text.chars().count() <= 2000);
+    let output = hook(&yard, &event(&yard, "SessionStart"));
     assert_eq!(
-        fs::read(yard.scratch.home().join(".yard/last-read.json")).ok(),
-        read_before
+        context(&output),
+        format!(
+            "{briefing}\nYard caller: --host codex --session codex-session. Use these arguments for Yard commands.\n{UNAVAILABLE}"
+        )
+    );
+    assert_eq!(
+        yard.read("codex-session", &["--host", "codex"])["lastRead"],
+        2,
+        "the briefing's read is the agent's last"
     );
     let mut other = event(&yard, "SessionStart");
     other["session_id"] = json!("a-distinct-session");
@@ -187,6 +191,64 @@ fn codex_session_context_is_a_peek_with_explicit_caller_arguments() {
             .home()
             .join(".yard/continuations.json")
             .exists()
+    );
+}
+
+#[test]
+fn a_later_prompt_s_context_holds_only_whether_decision_notifications_reach_the_agent() {
+    let yard = Yard::new();
+    yard.write(
+        "codex-session",
+        r#"[{"id":"build","kind":"stage","title":"Build","status":"active"}]"#,
+        &["--host", "codex"],
+    );
+    hook(&yard, &event(&yard, "SessionStart"));
+    yard.write(
+        "codex-session",
+        r#"[{"id":"note","kind":"note","stage":"build","markdown":"Later"}]"#,
+        &["--host", "codex"],
+    );
+    let output = hook(&yard, &event(&yard, "UserPromptSubmit"));
+    assert_eq!(context(&output), UNAVAILABLE);
+    assert_eq!(
+        yard.read("codex-session", &["--host", "codex"])["lastRead"],
+        1,
+        "a prompt reads no briefing"
+    );
+}
+
+#[test]
+fn codex_sends_its_descriptor_with_a_session_s_first_event_and_each_turn_start_only() {
+    let yard = Yard::new();
+    let mut tool = event(&yard, "PreToolUse");
+    tool["tool_name"] = json!("Bash");
+    tool["tool_use_id"] = json!("call-one");
+    hook(&yard, &tool);
+    hook(&yard, &event(&yard, "UserPromptSubmit"));
+    hook(&yard, &tool);
+    hook(&yard, &event(&yard, "Stop"));
+    hook(&yard, &event(&yard, "UserPromptSubmit"));
+    let kept = state(&yard);
+    let described: Vec<_> = kept["events"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|event| {
+            (
+                event["kind"].as_str().unwrap(),
+                event.get("adapter").is_some(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        described,
+        [
+            ("tool.start", true),
+            ("turn.start", true),
+            ("tool.start", false),
+            ("turn.end", false),
+            ("turn.start", true),
+        ]
     );
 }
 
@@ -221,7 +283,7 @@ fn codex_context_distinguishes_absent_closed_and_ignored_logs_and_supplies_subag
     );
     yard.git = yard.git.clone().ignoring(":/.yard/");
     let ignored = hook(&yard, &event(&yard, "SessionStart"));
-    assert!(ignored.to_string().contains("Git ignores .yard/"));
+    assert!(ignored.to_string().contains("git ignores `.yard/`"));
     let mut child = event(&yard, "SubagentStart");
     child["agent_id"] = json!("child");
     child["agent_type"] = json!("reviewer");
