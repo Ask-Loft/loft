@@ -4,10 +4,9 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use sha2::{Digest, Sha256};
 
 use super::state::State;
-use super::translate::{Hook, envelope};
+use super::translate::{Hook, HookKind, envelope};
 
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
@@ -96,13 +95,16 @@ pub enum Source {
 
 pub fn native(hook: &Hook, state: &mut State) {
     let thread = hook.thread();
-    if hook.name() == "SessionEnd" {
+    if hook.kind() == HookKind::SessionEnd {
         for turn in state.usage.active.values_mut() {
             turn.ended = true;
         }
         return;
     }
-    if matches!(hook.name(), "Stop" | "Interrupt" | "SubagentStop") {
+    if matches!(
+        hook.kind(),
+        HookKind::Stop | HookKind::Interrupt | HookKind::SubagentStop
+    ) {
         if let Some(turn) = state.usage.active.get_mut(thread)
             && hook.0["turn_id"].as_str().is_none_or(|id| id == turn.turn)
         {
@@ -110,7 +112,7 @@ pub fn native(hook: &Hook, state: &mut State) {
         }
         return;
     }
-    if hook.name() != "UserPromptSubmit" {
+    if hook.kind() != HookKind::UserPromptSubmit {
         return;
     }
     let Some(caller) = hook.caller(state) else {
@@ -156,10 +158,7 @@ fn event(turn: &Active, at: &str, id: &str) -> Value {
 }
 
 fn identity(value: &Value) -> String {
-    format!(
-        "codex-usage-{:x}",
-        Sha256::digest(value.to_string().as_bytes())
-    )
+    format!("codex-usage-{}", crate::yard::digest::json_hex(value))
 }
 
 pub fn gap(state: &mut State, thread: &str, at: &str) {

@@ -121,15 +121,9 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         let events = translate::events(hook, state)?;
         let key = caller.as_ref().map(task_writes::actor_key);
         if let Some(key) = &key {
-            if matches!(
-                hook.name(),
-                "SessionStart" | "SubagentStart" | "UserPromptSubmit"
-            ) {
+            if hook.kind().starts() {
                 state.ended_tasks.remove(key);
-            } else if matches!(
-                hook.name(),
-                "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
-            ) {
+            } else if hook.kind().ends() {
                 state.ended_tasks.insert(key.clone());
             }
         }
@@ -148,10 +142,7 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     // kept.
     // Every end releases: an agent with no active assigned task writes nothing.
     if let Some(caller) = &caller {
-        if matches!(
-            hook.name(),
-            "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
-        ) {
+        if hook.kind().ends() {
             let _ = task_writes::release(hook, caller, port);
         } else if !ended {
             let _ = tasks::mirror(hook, caller, port);
@@ -163,12 +154,12 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     let Some(caller) = caller else {
         return Ok(json!({}));
     };
-    match hook.name() {
-        "SessionStart" | "SubagentStart" => {
+    match hook.kind() {
+        translate::HookKind::SessionStart | translate::HookKind::SubagentStart => {
             let briefing = commands::briefing(hook.dir(), &caller, port);
             Ok(context::start(hook, &caller, &briefing))
         }
-        "UserPromptSubmit" => Ok(context::prompt(hook, &caller)),
+        translate::HookKind::UserPromptSubmit => Ok(context::prompt(hook, &caller)),
         _ => Ok(json!({})),
     }
 }

@@ -11,7 +11,7 @@ use yardlog_store::lock;
 use super::Result;
 use super::commands;
 use super::state::Files;
-use super::translate::Hook;
+use super::translate::{Hook, HookKind};
 
 const BEAT: Duration = Duration::from_secs(5);
 const LIFETIME: Duration = Duration::from_hours(24);
@@ -95,7 +95,10 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
 // Concurrent background startup may precede the ordinary prompt handler. A cancelled nudge
 // cannot clear a previous session end, even when Codex launches both handlers at once.
 fn resume(files: &Files, hook: &Hook) -> Result<()> {
-    if matches!(hook.name(), "SessionStart" | "UserPromptSubmit") {
+    if matches!(
+        hook.kind(),
+        HookKind::SessionStart | HookKind::UserPromptSubmit
+    ) {
         files.update(|state| {
             let generated = state
                 .notifications

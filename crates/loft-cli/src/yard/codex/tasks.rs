@@ -4,7 +4,6 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::{Value, json};
-use sha2::{Digest as _, Sha256};
 use yardlog::body::{Body, Task, TaskState, TaskType};
 use yardlog::input::Input;
 use yardlog::log::{Block, StageFile};
@@ -15,7 +14,7 @@ use super::Result;
 use super::commands::{self, Caller};
 use super::task_bindings::{self, Reference};
 use super::task_writes::wrote;
-use super::translate::Hook;
+use super::translate::{Hook, HookKind};
 
 fn successful(response: &Value) -> bool {
     response
@@ -26,7 +25,7 @@ fn successful(response: &Value) -> bool {
 }
 
 fn steps(hook: &Hook) -> Option<Vec<(&str, TaskState)>> {
-    if hook.name() != "PostToolUse"
+    if hook.kind() != HookKind::PostToolUse
         || hook.0["tool_name"] != "update_plan"
         || !successful(&hook.0["tool_response"])
     {
@@ -60,7 +59,9 @@ fn steps(hook: &Hook) -> Option<Vec<(&str, TaskState)>> {
 }
 
 fn digest(value: &Value) -> String {
-    format!("{:x}", Sha256::digest(value.to_string().as_bytes()))[..24].to_owned()
+    let mut hex = crate::yard::digest::json_hex(value);
+    hex.truncate(24);
+    hex
 }
 
 /// The task block of `block`, where it is one.

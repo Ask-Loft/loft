@@ -20516,7 +20516,7 @@ links:
         body: 43e2d5e24030b8db365c09601ca8ac98fd4ae579d508b3f6074680ff9e0d9303
       - file: "crates/loft-cli/src/yard/codex/watch_tests.rs"
         name: "a_background_handler_for_a_cancelled_nudge_cannot_resume_an_ended_session"
-        body: b71fadf664dd57739e66d99c20aa3cbf04df67bf9575ecef3017ad702602c768
+        body: 26e56a4e0438ff9344ff98b9649ea22109be79d15ddacfbc8c6edd4b4bb5047a
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "a_late_native_prompt_does_not_revive_a_cancelled_or_superseded_attempt"
         body: 795e2e7e51170b5f09a47c2225a7416c90ef0995688dc9ad285539f9758b5c2a

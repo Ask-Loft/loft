@@ -10,7 +10,58 @@ use super::Result;
 use super::commands::{Caller, HOST};
 use super::state::State;
 
-pub struct Hook(pub Value);
+/// A native hook's input, with its event's name parsed once.
+pub struct Hook(pub Value, HookKind);
+
+/// The native hook events the adapter handles; `Other` is any it does not.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum HookKind {
+    SessionStart,
+    SubagentStart,
+    UserPromptSubmit,
+    PreToolUse,
+    PostToolUse,
+    PostCompact,
+    Stop,
+    Interrupt,
+    SubagentStop,
+    SessionEnd,
+    Other,
+}
+
+impl HookKind {
+    fn of(name: &str) -> Self {
+        match name {
+            "SessionStart" => Self::SessionStart,
+            "SubagentStart" => Self::SubagentStart,
+            "UserPromptSubmit" => Self::UserPromptSubmit,
+            "PreToolUse" => Self::PreToolUse,
+            "PostToolUse" => Self::PostToolUse,
+            "PostCompact" => Self::PostCompact,
+            "Stop" => Self::Stop,
+            "Interrupt" => Self::Interrupt,
+            "SubagentStop" => Self::SubagentStop,
+            "SessionEnd" => Self::SessionEnd,
+            _ => Self::Other,
+        }
+    }
+
+    /// A session's, a subagent's or a turn's start.
+    pub fn starts(self) -> bool {
+        matches!(
+            self,
+            Self::SessionStart | Self::SubagentStart | Self::UserPromptSubmit
+        )
+    }
+
+    /// A turn's, a subagent's or a session's end.
+    pub fn ends(self) -> bool {
+        matches!(
+            self,
+            Self::Stop | Self::Interrupt | Self::SubagentStop | Self::SessionEnd
+        )
+    }
+}
 
 impl Hook {
     pub fn read(value: Value) -> Result<Self> {
@@ -31,7 +82,8 @@ impl Hook {
         {
             return Err("a hook names an invalid agent_id".to_owned());
         }
-        Ok(Self(value))
+        let kind = HookKind::of(value["hook_event_name"].as_str().unwrap_or_default());
+        Ok(Self(value, kind))
     }
 
     pub fn session(&self) -> &str {
@@ -46,24 +98,16 @@ impl Hook {
     pub fn dir(&self) -> &str {
         self.0["cwd"].as_str().unwrap_or_default()
     }
+    /// The native event's name, as Codex gave it.
     pub fn name(&self) -> &str {
         self.0["hook_event_name"].as_str().unwrap_or_default()
     }
+    pub fn kind(&self) -> HookKind {
+        self.1
+    }
 
     pub fn supported(&self) -> bool {
-        matches!(
-            self.name(),
-            "SessionStart"
-                | "SessionEnd"
-                | "UserPromptSubmit"
-                | "PreToolUse"
-                | "PostToolUse"
-                | "SubagentStart"
-                | "SubagentStop"
-                | "PostCompact"
-                | "Stop"
-                | "Interrupt"
-        )
+        self.1 != HookKind::Other
     }
 
     pub fn caller(&self, state: &State) -> Option<Caller> {
@@ -73,13 +117,17 @@ impl Hook {
         if agent.is_none()
             && !state.subagents.is_empty()
             && matches!(
-                self.name(),
-                "PreToolUse" | "PostToolUse" | "PostCompact" | "Stop" | "Interrupt"
+                self.1,
+                HookKind::PreToolUse
+                    | HookKind::PostToolUse
+                    | HookKind::PostCompact
+                    | HookKind::Stop
+                    | HookKind::Interrupt
             )
         {
             return None;
         }
-        if agent.is_none() && matches!(self.name(), "SubagentStart" | "SubagentStop") {
+        if agent.is_none() && matches!(self.1, HookKind::SubagentStart | HookKind::SubagentStop) {
             return None;
         }
         let kind = agent.and_then(|id| {
@@ -148,15 +196,18 @@ pub fn events(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
 }
 
 fn translated(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
-    if hook.name() == "SubagentStart"
+    if hook.kind() == HookKind::SubagentStart
         && let (Some(id), Some(kind)) = (hook.0["agent_id"].as_str(), hook.0["agent_type"].as_str())
     {
         state.subagents.insert(id.to_owned(), kind.to_owned());
     }
-    if matches!(hook.name(), "SessionStart" | "UserPromptSubmit") {
+    if matches!(
+        hook.kind(),
+        HookKind::SessionStart | HookKind::UserPromptSubmit
+    ) {
         state.stopped = false;
     }
-    if hook.name() == "SessionEnd" {
+    if hook.kind() == HookKind::SessionEnd {
         state.stopped = true;
         state.subagents.clear();
     }
@@ -184,14 +235,14 @@ fn translated(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
         }
         state.planning = Some(planning);
     }
-    let kind = match hook.name() {
-        "UserPromptSubmit" => "turn.start",
-        "Stop" | "Interrupt" => "turn.end",
-        "SubagentStart" if caller.agent.is_some() => "subagent.start",
-        "SubagentStop" if caller.agent.is_some() => "subagent.end",
-        "PostCompact" => "compaction",
-        "PreToolUse" => "tool.start",
-        "PostToolUse" => "tool.end",
+    let kind = match hook.kind() {
+        HookKind::UserPromptSubmit => "turn.start",
+        HookKind::Stop | HookKind::Interrupt => "turn.end",
+        HookKind::SubagentStart if caller.agent.is_some() => "subagent.start",
+        HookKind::SubagentStop if caller.agent.is_some() => "subagent.end",
+        HookKind::PostCompact => "compaction",
+        HookKind::PreToolUse => "tool.start",
+        HookKind::PostToolUse => "tool.end",
         _ => return Ok(events),
     };
     let mut event = base(kind);
@@ -212,7 +263,7 @@ fn translated(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
         }
     }
     events.push(event);
-    if hook.name() == "SubagentStop"
+    if hook.kind() == HookKind::SubagentStop
         && let Some(id) = hook.0["agent_id"].as_str()
     {
         state.subagents.remove(id);

@@ -173,7 +173,7 @@ const READINESS_BOUND: Duration = Duration::from_millis(500);
 
 /// The prompt hook never waits for delivery, and never waits while holding the state lock.
 pub fn readiness(files: &Files, hook: &super::translate::Hook) {
-    if hook.name() != "UserPromptSubmit" {
+    if hook.kind() != super::translate::HookKind::UserPromptSubmit {
         return;
     }
     let thread = hook.thread();

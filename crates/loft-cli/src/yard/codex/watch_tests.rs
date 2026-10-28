@@ -154,9 +154,10 @@ fn a_background_handler_for_a_cancelled_nudge_cannot_resume_an_ended_session() {
     state.notifications.observe(route, Lifecycle::EndSession);
     state.stopped = true;
     files.write(&state).unwrap();
-    let mut hook = Hook(
+    let mut hook = Hook::read(
         json!({"session_id":"session","cwd":"/work","hook_event_name":"UserPromptSubmit","prompt":marker}),
-    );
+    )
+    .unwrap();
     super::resume(&files, &hook).unwrap();
     assert!(files.read().unwrap().stopped);
     hook.0["prompt"] = json!("Continue");

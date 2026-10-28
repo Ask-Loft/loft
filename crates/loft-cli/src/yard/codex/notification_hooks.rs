@@ -2,7 +2,7 @@
 
 use super::commands::Caller;
 use super::notification_state::{Ledger, Lifecycle, Route};
-use super::translate::Hook;
+use super::translate::{Hook, HookKind};
 
 #[derive(PartialEq, Eq)]
 pub enum Disposition {
@@ -21,9 +21,9 @@ pub fn record(hook: &Hook, caller: Option<&Caller>, ledger: &mut Ledger) -> Disp
         thread: thread.into(),
         directory: hook.dir().into(),
     };
-    let event = match hook.name() {
-        "SessionStart" | "SubagentStart" => Lifecycle::Start,
-        "UserPromptSubmit" => {
+    let event = match hook.kind() {
+        HookKind::SessionStart | HookKind::SubagentStart => Lifecycle::Start,
+        HookKind::UserPromptSubmit => {
             let prompt = hook.0["prompt"].as_str().unwrap_or_default();
             match ledger.receive_prompt(thread, prompt) {
                 Some(true) => return Disposition::Notification,
@@ -31,8 +31,8 @@ pub fn record(hook: &Hook, caller: Option<&Caller>, ledger: &mut Ledger) -> Disp
                 None => Lifecycle::UserPrompt,
             }
         }
-        "Interrupt" | "SubagentStop" => Lifecycle::Disarm,
-        "SessionEnd" => Lifecycle::EndSession,
+        HookKind::Interrupt | HookKind::SubagentStop => Lifecycle::Disarm,
+        HookKind::SessionEnd => Lifecycle::EndSession,
         _ => Lifecycle::Other,
     };
     ledger.observe(route, event);

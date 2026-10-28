@@ -3,7 +3,6 @@
 use std::collections::BTreeMap;
 
 use serde_json::Value;
-use sha2::{Digest, Sha256};
 
 const DIGEST: &str = "eventDigest";
 
@@ -24,7 +23,7 @@ impl Receipt {
             .ok_or("eventId must be a nonempty string")?;
         Ok(Some(Self {
             id: id.to_owned(),
-            digest: format!("{:x}", Sha256::digest(posted.to_string().as_bytes())),
+            digest: crate::yard::digest::json_hex(posted),
         }))
     }
 

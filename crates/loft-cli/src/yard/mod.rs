@@ -14,6 +14,7 @@ mod change;
 mod close;
 pub mod codex;
 mod continuation;
+mod digest;
 mod failure;
 pub(crate) mod home_json;
 mod input;
