@@ -6,6 +6,7 @@
 //! `cacheWriteClassified` marker are classified, unless a page server runs (`totals`). The
 //! person runs it, so it takes no `--session`.
 
+mod events;
 mod totals;
 
 use std::path::Path;

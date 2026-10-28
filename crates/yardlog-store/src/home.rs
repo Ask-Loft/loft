@@ -130,6 +130,17 @@ impl Home {
         Ok(read_if_present(&self.events(session))?)
     }
 
+    /// Replaces a session's event log with `bytes`, through a temporary file beside it renamed
+    /// into place. Only a command that knows no page server runs may call it, since a page
+    /// server appends to the log without a lock.
+    ///
+    /// # Errors
+    ///
+    /// The log cannot be written.
+    pub fn replace_events(&self, session: &str, bytes: &[u8]) -> Result<(), YardStoreError> {
+        Ok(replace_synced(&self.events(session), bytes, false)?)
+    }
+
     /// Appends `line` and a line break to a session's event log, creating the log where it is
     /// not there.
     ///

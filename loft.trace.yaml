@@ -23778,6 +23778,21 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
         name: "while_a_page_server_runs_totals_files_are_left_and_the_page_server_is_named"
         body: 021975fc026df1cb349742ec7f2b2d8520bc06f4c254808e9d00d7a4c62e58b3
+  - node: 01a1835b-a222-7677-8e34-d52f17634aa3
+    reviewed: b2531498f0908e13b863eb697e51cd5b1871d778402f3d10ef5e8b8415b0932a
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "replaying_the_session_after_the_upgrade_gives_the_totals_it_wrote"
+        body: fc0458b870b383cd414347782d3c121ce29770c43b40882288f2d116df4e8cbb
+  - node: 01a1835b-a222-7677-8e34-d530298dfd95
+    reviewed: 6568c6304ffb8cb0721958088342f5960bb01feac0d40ebd97b6715f22fe2a33
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "a_retry_of_an_original_event_is_still_recognized_after_the_upgrade"
+        body: a2b08e5aab708e4f3f6ddf05a5075d1b95c4ab3c469f2438b178754a2d88d372
+      - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
+        name: "each_unverified_zero_moves_under_its_source_and_keeps_its_event_identity"
+        body: d71ec9eaeed6e3e845acc64491d53049bcd29e77b3b545d5b8ef3dad2350e4d1
   - node: 01a168d9-f2df-7350-8964-7ecb58ac5bcb
     reviewed: 986b16aee741106e6c2b49bc4e18fa5b80896ee9f68dc263c4c94742bcaf122a
     tests:

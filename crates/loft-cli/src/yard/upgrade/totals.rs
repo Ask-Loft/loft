@@ -5,6 +5,8 @@
 //! runs, nothing is written: it appends to the event logs and would write its own counts over
 //! the files.
 
+use std::collections::BTreeSet;
+
 use serde_json::{Value, json};
 use yardlog_store::YardStore;
 use yardlog_store::home::Home;
@@ -59,9 +61,14 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
         return Ok(Classifying::Left { port: server.port });
     }
     let mut classified = Vec::new();
+    let mut settled = BTreeSet::new();
     for (branch, store, key, mut file) in unmarked {
         let host = file["host"].as_str().unwrap_or_default().to_owned();
         if host == "codex" {
+            // The events first: a run stopped after them settles the file on the next.
+            if settled.insert(key.clone()) {
+                super::events::settle(&home, &key)?;
+            }
             classify_codex(&mut file);
         }
         let text = Totals::read(&file).text();
