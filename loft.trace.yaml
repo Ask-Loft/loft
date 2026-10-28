@@ -19391,7 +19391,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/host-identity.test.js"
         name: "agents with identical native ids in different hosts have distinct page identities"
-        body: 7849fea419b287cbbb69ba17f56545a025ecada0626c2455ea38fe1937f22cf2
+        body: 86061c919a47c41a7301bfe2ed755be3b447a2e4761dfb5b09f3cf5a069a6303
   - node: 01a177f9-8294-77e4-aa6e-706aca6d6e2c
     reviewed: 720e8e2fd44db4ed653e08bbb808cdeb4a1cf4a9d91e2ee72bbf9812a55694d3
     tests:
@@ -26245,11 +26245,17 @@ links:
         name: "no_other_session_s_activity_file_is_written_for_a_session_s_events"
         body: 0aada059c3348173d6ae6a95f73e64b67c33359d77c4bd5fa502205e69f9f175
   - node: 01a1652c-8a87-75c3-a415-c00b3be4bc74
-    reviewed: e78c63499a80ee993cd30678222a19464742ce5eda8dbc01b444638f1232639b
+    reviewed: 125f7a7651c228a7455100207f39e00409aaaff00ac91d4d84f1eb1726f5e21e
     tests:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "turns_runs_plan_and_spec_mode_and_loft_runs_are_kept_with_when_they_started_and_ended"
         body: b09173021bd3bac0c6c75d56cc71e80088572f76ed820a1c2dca584f0b3d5d43
+  - node: 01a182b6-3c58-7235-ad04-392a7e9e9217
+    reviewed: 64ab9cf3f7623bba7148e2e18869ee6ad3414a59c0d5411b8f24ae4f4fb7aab4
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "an_activity_file_that_names_no_host_reaches_the_page_as_a_claude_code_session_s"
+        body: 02146a804787eb2e5591a030c1b92f52230731a831468f66c0a284022c5a7f31
   - node: 01a1646f-546d-7042-befd-eaf221179a3a
     reviewed: 254f3819d1e11afc4debffa2a977d7db1eb3ef6dd1ce3ac024d647777280f997
     tests:

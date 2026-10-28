@@ -18,6 +18,7 @@ function shown() {
   const shaping = stage('shape', 'Shaping', 'active', []);
   const files = [
     {
+      host: 'claude-code',
       session: 's1',
       firstEnded: '2026-01-01T10:00:00Z',
       lastEnded: '2026-01-01T10:30:00Z',
@@ -40,6 +41,7 @@ function shown() {
       submissions: [{ submission: 'sub', ...counts(10, 0, 0, 1) }],
     },
     {
+      host: 'claude-code',
       session: 's2',
       firstEnded: '2026-01-01T09:00:00Z',
       lastEnded: '2026-01-01T09:10:00Z',

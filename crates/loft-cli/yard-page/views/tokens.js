@@ -137,7 +137,7 @@ export function tokensView(log) {
 
 /** Recorded zero only for counters this session actually reports. @param {any[]} sessions @param {any} owner */
 function zeroFor(sessions, owner) {
-  const file = sessions.find((file) => file.session === owner?.session && (file.host ?? 'claude-code') === (owner?.host ?? 'claude-code'));
+  const file = sessions.find((file) => file.session === owner?.session && file.host === owner?.host);
   return Object.fromEntries(KEYS.filter((key) => file?.tokens?.[key] !== undefined).map((key) => [key, 0]));
 }
 
@@ -145,7 +145,7 @@ function zeroFor(sessions, owner) {
 function reportingOf(activities) {
   if (!activities.length) return null;
   return h('div', { class: 'reporting-coverage' }, h('h4', {}, 'Reporting coverage'), h('ul', {}, activities.map((activity) => {
-    const host = activity.host ?? 'claude-code';
+    const host = activity.host;
     const descriptor = activity.adapter;
     if (!descriptor) return h('li', {}, `${host} · ${activity.session}: reporting coverage unknown.`);
     const caps = descriptor.capabilities ?? {};

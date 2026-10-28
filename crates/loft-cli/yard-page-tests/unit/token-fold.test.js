@@ -11,9 +11,9 @@ afterEach(() => { kept.flush(); kept.reset(); });
 
 function shown(key = 'log-a', counted = true) {
   const doc = log([], { tokens: counted ? [{
-    session: 's1', firstEnded: '2026-01-01T10:00:00Z', lastEnded: '2026-01-01T10:01:00Z',
+    host: 'claude-code', session: 's1', firstEnded: '2026-01-01T10:00:00Z', lastEnded: '2026-01-01T10:01:00Z',
     tokens: { input: 10, cacheRead: 100, cacheWrite: 1, output: 2, partial: ['input'] },
-  }] : [], activity: [{ session: 's1' }] });
+  }] : [], activity: [{ host: 'claude-code', session: 's1' }] });
   doc.yardLog.key = key;
   return doc;
 }

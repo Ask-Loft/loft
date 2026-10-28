@@ -108,7 +108,7 @@ export function summarize(files, activities = []) {
     for (const agent of file.agents ?? []) {
       const who = agent.agent === 'main' ? 'main agent' : agent.type ?? 'subagent';
       const model = agent.model ?? 'unknown';
-      const host = file.host ?? 'claude-code';
+      const host = file.host;
       const key = `${host}\u0000${who}\u0000${model}`;
       const label = host === 'claude-code' ? who : `${host} ${who}`;
       const held = agents.get(key);
@@ -116,7 +116,7 @@ export function summarize(files, activities = []) {
       agents.set(key, { ...named, tokens: add(held?.tokens, agent) });
     }
     sessions.push({
-      host: file.host ?? 'claude-code',
+      host: file.host,
       session: file.session,
       firstEnded: file.firstEnded,
       lastEnded: file.lastEnded,
@@ -124,8 +124,7 @@ export function summarize(files, activities = []) {
     });
   }
   for (const activity of activities) {
-    const host = activity.host ?? 'claude-code';
-    if (!sessions.some((session) => session.host === host && session.session === activity.session)) all = add(all, {});
+    if (!sessions.some((session) => session.host === activity.host && session.session === activity.session)) all = add(all, {});
   }
   sessions.sort((a, b) => String(a.firstEnded).localeCompare(String(b.firstEnded)));
   const byAgent = [...agents.values()].sort(

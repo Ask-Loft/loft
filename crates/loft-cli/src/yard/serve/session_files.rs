@@ -30,6 +30,11 @@ pub fn read(folder: &Path, kind: SessionFile) -> Vec<Value> {
         .filter_map(|bytes| yaml::read(&bytes).ok().flatten())
         .filter_map(|node| {
             let mut value = json(&node);
+            // A file written before files named their host is a Claude Code session's.
+            if let Some(file) = value.as_object_mut() {
+                file.entry("host")
+                    .or_insert_with(|| Value::String(yardlog::act::CLAUDE_CODE.to_owned()));
+            }
             if let Some(adapter) = value.get("adapter") {
                 let descriptor = yardlog::adapter::Descriptor::read(adapter).ok()?;
                 value["adapter"] = descriptor.json();

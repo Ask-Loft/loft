@@ -69,7 +69,7 @@ export function who(by) {
  * @param {Actor} by
  */
 export function assignee(by) {
-  const identity = [by.host ?? 'claude-code', by.session, by.agent ?? 'main'].join(' / ');
+  const identity = [by.host, by.session, by.agent ?? 'main'].join(' / ');
   return by.agentType ? `${identity} (${by.agentType})` : identity;
 }
 
@@ -79,7 +79,7 @@ export function assignee(by) {
  */
 export function agentKey(by) {
   if (!by) return '';
-  const session = by.host && by.host !== 'claude-code' ? `${by.host}~${by.session ?? ''}` : String(by.session ?? '');
+  const session = by.host === 'claude-code' ? String(by.session ?? '') : `${by.host}~${by.session ?? ''}`;
   return by.agent ? `${session}/${by.agent}` : session;
 }
 

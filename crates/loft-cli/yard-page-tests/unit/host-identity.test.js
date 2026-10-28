@@ -6,7 +6,6 @@ test('agents with identical native ids in different hosts have distinct page ide
   const claude = { host: 'claude-code', session: 'same', agent: 'sub' };
   const other = { ...claude, host: 'other-agent' };
   assert.equal(agentKey(claude), 'same/sub');
-  assert.equal(agentKey({ session: 'same', agent: 'sub' }), 'same/sub');
   assert.equal(agentKey(other), 'other-agent~same/sub');
   assert.notEqual(agentKey(claude), agentKey(other));
 });

@@ -217,9 +217,7 @@ impl Activity {
     /// The activity file's text.
     pub fn text(&self) -> String {
         let mut fields = vec![("session", Out::Token(self.session.clone()))];
-        if (self.adapter.is_some() || self.host != yardlog::act::CLAUDE_CODE)
-            && !self.host.is_empty()
-        {
+        if !self.host.is_empty() {
             fields.push(("host", Out::Token(self.host.clone())));
         }
         if let Some(adapter) = &self.adapter {
