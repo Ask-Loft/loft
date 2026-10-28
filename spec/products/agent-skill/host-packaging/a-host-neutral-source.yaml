@@ -15,6 +15,8 @@ requirements:
         name: "The Codex adaptation is `agents/openai.yaml`."
       - key: 01a13654-6e11-74fa-a359-2579b05343e8
         name: "The Claude Code adaptation is the directory `agents/claude/`, holding a frontmatter fragment, a route bullet and a host reference."
+      - key: 01a18475-9e91-722a-a3e4-1cee46f180fb
+        name: "The Claude Code frontmatter fragment pre-approves the `loft` commands that write nothing, `--version`, `check`, `fmt --check`, `verify`, `find`, `terms`, `status` and `review`, and no command that writes."
       - key: 01a13654-6e11-74fa-a359-257ad4b67436
         name: "The guard fails on a host's name in `SKILL.md` or in a reference."
   - key: 01a154c3-a606-7743-88db-27e3ba6c1a69
