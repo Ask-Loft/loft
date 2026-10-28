@@ -10,9 +10,10 @@ use std::collections::BTreeMap;
 use loft_ports::journal::Journal;
 use yardlog::codec::{FileError, Partial, ROOT};
 use yardlog::log::Root;
-use yardlog::{Format, YardLog};
+use yardlog::{Format, Lineage, YardLog};
 
 use crate::files::{Folder, YARD};
+use crate::home::{Home, HomeFile};
 use crate::lock;
 use crate::{Place, YardStoreError};
 
@@ -39,6 +40,9 @@ pub struct YardStore {
     place: Place,
     branch: String,
     folder: Folder,
+    /// The machine's `~/.yard/`, whose chains of continuations each log read carries; with
+    /// none, a log compares sessions as they are.
+    home: Option<Home>,
 }
 
 impl YardStore {
@@ -54,7 +58,14 @@ impl YardStore {
             place,
             branch,
             folder,
+            home: Home::from_env(),
         })
+    }
+
+    /// The store, reading the chains of continuations from `home` in place of `~/.yard/`.
+    #[must_use]
+    pub fn with_home(self, home: Option<Home>) -> Self {
+        Self { home, ..self }
     }
 
     #[must_use]
@@ -224,9 +235,23 @@ impl YardStore {
         };
         let (held, mut read) = self.with_files(|stage| YardLog::read_or_newer(&root, stage))?;
         read.insert(ROOT.to_owned(), root);
-        Ok((
-            held.map_or_else(Held::Newer, |log| Held::Log(Box::new(log))),
-            read,
+        let held = match held {
+            Ok(mut log) => {
+                log.lineage = self.lineage()?;
+                Held::Log(Box::new(log))
+            }
+            Err(found) => Held::Newer(found),
+        };
+        Ok((held, read))
+    }
+
+    /// The chains of continuations the machine records.
+    fn lineage(&self) -> Result<Lineage, YardStoreError> {
+        let Some(home) = &self.home else {
+            return Ok(Lineage::default());
+        };
+        Ok(Lineage::read(
+            home.read(HomeFile::Continuations)?.as_deref(),
         ))
     }
 

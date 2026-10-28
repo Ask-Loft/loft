@@ -119,7 +119,7 @@ fn batch(log: &YardLog, caller: &Caller, steps: &[(&str, TaskState)]) -> Vec<Inp
         }
         let change = match existing.get(id.as_str()) {
             Some((handle, _)) => task_bindings::mirror(log, &agent, handle, *state),
-            None => created(file, &agent, &id, text, *state),
+            None => created(log, file, &agent, &id, text, *state),
         };
         batch.extend(change);
     }
@@ -138,13 +138,17 @@ fn batch(log: &YardLog, caller: &Caller, steps: &[(&str, TaskState)]) -> Vec<Inp
 
 /// The task a new plain step makes, assigned to the agent where it does not own the stage.
 fn created(
+    log: &YardLog,
     file: &StageFile,
     agent: &Agent,
     id: &str,
     text: &str,
     state: TaskState,
 ) -> Option<Input> {
-    let owns = file.stage.owner().is_some_and(|owner| owner.same(agent));
+    let owns = file
+        .stage
+        .owner()
+        .is_some_and(|owner| log.lineage.same(owner, agent));
     let task = Task {
         title: text.to_owned(),
         detail: None,
