@@ -33,6 +33,26 @@ requirements:
         name: "The page explains that requests an agent host makes inside its own tools may be outside the reported usage."
       - key: 01a1646f-546d-7042-befd-eb1e1e831c2e
         name: "Where Yard Log has no counted request, the page shows that no tokens have been counted yet."
+  - key: 01a18002-11df-7502-aae7-e830cb39ad31
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "keep token details in a fold that starts closed, with the token summary visible outside it."
+    criteria:
+      - key: 01a18002-11df-7502-aae7-e831ca8ffed0
+        name: "With no saved choice for Yard Log, the token details fold is closed."
+      - key: 01a18002-11df-7502-aae7-e832a623c32e
+        name: "The four summary totals and any partial-accounting indicator remain visible while the details are closed."
+      - key: 01a18002-11df-7502-aae7-e833332abdbc
+        name: "The breakdown table, reporting coverage and explanatory note are hidden until the details are opened."
+      - key: 01a18002-11df-7502-aae7-e8341610973a
+        name: "The person can open and close the token details by keyboard."
+      - key: 01a18002-11df-7502-aae7-e8354f47bc75
+        name: "Live usage updates retain the person's chosen fold state."
+      - key: 01a18002-11df-7502-aae7-e836fa6d271e
+        name: "The browser restores the token fold choice for each Yard Log independently after a reload."
+      - key: 01a18002-11df-7502-aae7-e837eeed49fc
+        name: "With no counted request, the empty summary remains visible without opening the token details."
   - key: 01a1646f-546d-7042-befd-eb1fa3e702b8
     statement:
       form: event_driven
