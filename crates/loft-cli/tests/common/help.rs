@@ -17,9 +17,9 @@ pub fn yard_commands() -> Vec<String> {
     listed(&["yard"])
 }
 
-/// The leaf commands of the native Codex adapter.
-pub fn yard_codex_commands() -> Vec<String> {
-    listed(&["yard", "codex"])
+/// The leaf commands of a host's native adapter, `claude` or `codex`.
+pub fn yard_host_commands(host: &str) -> Vec<String> {
+    listed(&["yard", host])
 }
 
 /// The commands `loft skill` lists.

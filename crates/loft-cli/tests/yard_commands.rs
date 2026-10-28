@@ -32,22 +32,24 @@ fn every_yard_command_has_one_entry_in_the_commands() {
     entries.sort_unstable();
     entries.dedup();
     assert_eq!(listed, entries);
-    let mut native = help::yard_codex_commands();
-    native.sort();
-    let mut leaves: Vec<&str> = yard_entries()
-        .iter()
-        .filter(|(_, args, ..)| args[1] == "codex")
-        .map(|(_, args, ..)| args[2])
-        .collect();
-    leaves.sort_unstable();
-    assert_eq!(native, leaves);
+    for host in ["claude", "codex"] {
+        let mut native = help::yard_host_commands(host);
+        native.sort();
+        let mut leaves: Vec<&str> = yard_entries()
+            .iter()
+            .filter(|(_, args, ..)| args[1] == host)
+            .map(|(_, args, ..)| args[2])
+            .collect();
+        leaves.sort_unstable();
+        assert_eq!(native, leaves, "{host}");
+    }
 }
 
 #[test]
 fn each_yard_command_prints_one_document_its_own_schema_holds() {
     for (slug, args, kind, schema) in yard_entries() {
-        let command = if args[1] == "codex" {
-            format!("codex-{}", args[2])
+        let command = if ["claude", "codex"].contains(&args[1]) {
+            format!("{}-{}", args[1], args[2])
         } else {
             args[1].to_owned()
         };
@@ -142,7 +144,7 @@ fn each_yard_command_has_a_feature_that_lists_yard_command() {
 fn each_yard_command_but_serve_protocol_and_continue_lists_needs_repository() {
     let needing = tagged("needs-repository");
     for (slug, args, ..) in yard_entries() {
-        let needs = !["serve", "protocol", "continue", "codex"].contains(&args[1]);
+        let needs = !["serve", "protocol", "continue", "claude", "codex"].contains(&args[1]);
         assert_eq!(needing.contains(&slug.to_owned()), needs, "{slug}");
     }
 }

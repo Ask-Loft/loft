@@ -11,6 +11,7 @@ mod branch;
 mod briefing;
 mod caller;
 mod change;
+pub mod claude;
 mod close;
 pub mod codex;
 mod continuation;
@@ -54,6 +55,7 @@ use failure::Failure;
 /// Runs a `loft yard` command in `root`.
 pub fn run(root: &Path, action: YardAction) -> Finished {
     match action {
+        YardAction::Claude { action } => claude::run(action),
         YardAction::Codex { action } => codex::run(action),
         YardAction::Read(args) => read::run(root, args),
         YardAction::Write(args) => write::run(root, args),

@@ -20015,7 +20015,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 0e9c9b631d3f443fbf3d185360ca45903005399c2415db0ef1f382afc37ea7da
+        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
   - node: 01a17989-a8b9-74b1-9049-07443fdd010e
     reviewed: cb64361c8ed7d4ba1bd954c0cc5d7aab4b7c55d5609cb4e989cf4d1bc260b592
     tests:
@@ -20754,6 +20754,99 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "codex_decision_guidance_uses_automatic_monitoring_with_explicit_wait_fallback"
         body: cfa7b8b1285527a5becf573061d95400437698cb33025baee04d9350855ba4d3
+  - node: 01a183e9-dfd2-74b1-a45a-149c4a9d8161
+    reviewed: 3cc674d554c5301a243e3c43705ed8e3a7c7ce20324eb65d5fcee625a573b9be
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_gives_the_main_agent_its_briefing_and_the_line_that_tells_it_to_read"
+        body: 4432f197368e03fbdaa3fc5bd2384850dba15abb12e3d9f396be78dcd95defc5
+  - node: 01a183e9-dfd2-74b1-a45a-149d1538005e
+    reviewed: bc7d299e2d40567b502751f60df245d989cfa6af0b7e5069e7e58d36dbd19797
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_gives_the_main_agent_its_briefing_and_the_line_that_tells_it_to_read"
+        body: 4432f197368e03fbdaa3fc5bd2384850dba15abb12e3d9f396be78dcd95defc5
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_of_each_other_source_gives_the_context"
+        body: b4bd1a67115d4ab259a69a3f3f1479d0c99c2a2f8a08277dc2c3b3b426aa2885
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "natively_the_hook_prints_claude_code_s_output_alone_and_nothing_for_no_answer"
+        body: ca86e170e6a8425474f7e90c8c94efaf09c2ce3d1c1bfd08fd0c0eb002ab3051
+  - node: 01a183e9-dfd2-74b1-a45a-149eee7934bd
+    reviewed: 650b53f616a5c5badc96ab00f059b2d6d3164f9b9fb0a03d9857b38a6917502b
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_briefing_s_read_is_recorded_as_the_main_agent_s_last"
+        body: ec5db1a298f6491c75c0c3b7d070e34e545f77867db0d4c9e945e3d5fffc9c04
+  - node: 01a183e9-dfd2-74b1-a45a-149fef294391
+    reviewed: fd6dbefba586a8518f057da8f3a05c4a3803d5f915b539d57843a964854c7757
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_after_a_compaction_gives_no_context"
+        body: a9128c4178390dee70098ff874f0a77d39eaefb1293e447132126c87ea825ee6
+  - node: 01a183e9-dfd2-74b1-a45a-14a1de16e202
+    reviewed: 7e0d04812d9ea717f8f30f7c439cceade512e49dc855e7e793f9a994f0846f48
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_subagent_s_briefing_names_its_assigned_tasks_and_is_read_in_its_own_name"
+        body: 2075286f1c4c520ce73b8670f6ff1e2a5d8f88980494292fe456778570ee6289
+  - node: 01a183e9-dfd2-74b1-a45a-14a2bb2ea2f0
+    reviewed: 64052ce07919fe5f1ce362d0435bb1d25853de910a3d61455a036ba390ea973b
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_subagent_s_briefing_names_its_assigned_tasks_and_is_read_in_its_own_name"
+        body: 2075286f1c4c520ce73b8670f6ff1e2a5d8f88980494292fe456778570ee6289
+  - node: 01a183e9-dfd2-74b1-a45a-14a88aecc4ac
+    reviewed: cdc73a3b92f2a84b5c48d2107e0c311fd629461410e3ff820c6ae557f334d779
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_hook_given_no_claude_code_process_leaves_and_takes_no_hand_off"
+        body: 0f486ee5d6049f218de2de50811ba4b1fb8159dbb719d1ba584070c2068e3404
+  - node: 01a183e9-dfd2-74b1-a45a-14a9d1a810a1
+    reviewed: bc1f46706db74da2fdf272d9e62e71128ac9e934a01eba9c2608fa3d931eaf57
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "hand_offs_are_kept_in_the_yard_home_and_never_in_the_tree"
+        body: 2040021f5e01298e843861821c4af8fe3aa9d40c041889066ec18f0b84ff54f5
+  - node: 01a183e9-dfd2-74b1-a45a-14a4b6b293f6
+    reviewed: ad639651cdbf58c121795b20db120205f0243e4fc27abf9d302faf052a58c325
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "the_session_after_clear_is_briefed_as_continuing_the_one_that_ended"
+        body: f6063fd08c744a4d2645601b6c65693c59ab9ab308c1fda48421773d0c51e2e2
+  - node: 01a183e9-dfd2-74b1-a45a-14a5a774a93b
+    reviewed: 3f85e0881a9aff57a0c313c64340599c6d30e771ccf030bb4dff70ed0c8a351c
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_hand_off_is_taken_once_and_only_in_the_process_that_left_it"
+        body: 7cac4efe7bdd8383d66181764de6e6110174f0430e8594f18b2916cd040e163c
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_of_a_new_session_takes_no_hand_off"
+        body: 6a445268826cc4051954d8acc8a92427b00815e43fb71e782ba1d39bffe4c6c5
+  - node: 01a183e9-dfd2-74b1-a45a-14a6e790a4d7
+    reviewed: 186b538340a9330dcda27f7008ed16d242cf7dc3a2c68e67e9ef448d4e161c56
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_hand_off_is_taken_once_and_only_in_the_process_that_left_it"
+        body: 7cac4efe7bdd8383d66181764de6e6110174f0430e8594f18b2916cd040e163c
+  - node: 01a183e9-dfd2-74b1-a45a-14a7d69ca7a1
+    reviewed: 389ddfac74fd98ad32e618c6f21628d372999fab0428a61a37bcce4bd03818eb
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_hand_off_left_more_than_a_minute_before_is_discarded"
+        body: 359f3ad04609031d6400c69ea465a31f7f2d04a2012d754f9dd7625c68a7c3a9
+  - node: 01a183ea-67e8-75e0-b6d0-97780378a270
+    reviewed: ba6ff2194e29ddb07181bfa26ab2c5d1d98e72f468d8f9c2374ea9391830c70e
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_hook_given_no_claude_code_process_leaves_and_takes_no_hand_off"
+        body: 0f486ee5d6049f218de2de50811ba4b1fb8159dbb719d1ba584070c2068e3404
+  - node: 01a183e9-dfd2-74b1-a45a-14bbe6224c9c
+    reviewed: 1137f5c47ffed92997321d22b65d85d2822bdba38cff5154170c8e73760dc598
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_outside_a_git_repository_answers_nothing_and_exits_0"
+        body: eec002de7dda23e6e21a1414a62a4f1b6e5296e911e22d0146200fbc817955da
   - node: 01a1646f-546e-76cb-8b4f-f2273651a416
     reviewed: 4851a48ce032bda3e7ebcb5725e47ec4ec29d88bef0962ca96578f8be563c5f9
     tests:
@@ -26763,12 +26856,6 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a turn's end carries its tokens, and a compaction the tokens before and after"
         body: 4ffa315a2ad38616e594d658792f385569d6304efa1190aeeb4285f7b25db304
-  - node: 01a16475-7fbc-7732-a78c-bc5234423864
-    reviewed: c57d58071a2147f3b4c6fab4fc3c97c89ce58acc2b96e8acace28ea34ca2eb07
-    tests:
-      - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "a turn's end carries its tokens, and a compaction the tokens before and after"
-        body: 4ffa315a2ad38616e594d658792f385569d6304efa1190aeeb4285f7b25db304
   - node: 01a1646f-546d-7042-befd-eb05c5d3d538
     reviewed: 1d4dede35a26114c4362dd932b5370730ffe5aec563d8877a8f080dffa119fe2
     tests:
@@ -28325,13 +28412,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 0e9c9b631d3f443fbf3d185360ca45903005399c2415db0ef1f382afc37ea7da
+        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
   - node: 01a1646f-546d-7042-befd-ea4d859a6f03
     reviewed: e3639f6455b24eed94333fa4a304d289dad64e278b5fe2a3600e553338402675
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 0e9c9b631d3f443fbf3d185360ca45903005399c2415db0ef1f382afc37ea7da
+        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
   - node: 01a1646f-546d-7042-befd-ea4ee183f9f9
     reviewed: 4f39839ca98658c67ed14e7fda627fafe4db01d0e8edd9c689870b33d4b509f4
     tests:
@@ -28469,7 +28556,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_but_serve_protocol_and_continue_lists_needs_repository"
-        body: 915daab6cdca4caff902d96bd2dfe6408f54c05947612a0f47d33fac29400982
+        body: 0a2e02a975d6ef28966c92c0e6dc1cb7a65498ef932dac1bab54bd2a98b2193c
   - node: 01a182b6-3c58-7235-ad04-3918a33b8514
     reviewed: 0676bf94426ed7746485bd87e02ef190addf0a7798e9044361dc7d71301114be
     tests:
