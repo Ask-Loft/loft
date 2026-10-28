@@ -1,7 +1,7 @@
 key: 01a1646f-546c-7521-9643-bc52a38e2bbd
 slug: mirror-the-agent-s-tasks
 name: "Mirror the agent's tasks"
-body: "An agent's own task list shows in Yard Log as `task` blocks, so that progress through a stage shows without extra writes. An unbound native task belongs to the stage active for its caller. Explicit bindings let subagents update existing assigned tasks in another agent's stage."
+body: "An agent's own task list shows in Yard Log as `task` blocks, so that progress through a stage shows without extra writes. An unbound native task belongs to its caller's working stage. Explicit bindings let subagents update existing assigned tasks in another agent's stage."
 realizes:
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
 requirements:
@@ -10,7 +10,7 @@ requirements:
       form: event_driven
       when: "an agent creates an unbound task with `TaskCreate`"
       system: "the Loft mod"
-      shall: "write it as a `task` block of the stage active for that agent."
+      shall: "write it as a `task` block of that agent's working stage."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc54b796807b
         name: "The block's id is made from the task's id and the agent, the session for the main agent, so that each later update finds it and a session started after `/clear` writes blocks of its own."
@@ -21,7 +21,7 @@ requirements:
       - key: 01a17f75-05db-72d1-b940-2d49f24fff4a
         name: "The task belongs to the stage selected before its native creation runs, even if another caller changes Yard Log while the native creation runs."
       - key: 01a1646f-546c-7521-9643-bc56c4873439
-        name: "Where no stage is active for the agent, an unbound native task is not mirrored."
+        name: "Where the agent has no working stage, an unbound native task is not mirrored."
       - key: 01a16a04-3f8b-71a9-baa3-95dcb14f98d9
         name: "A task created with the type `fix` in its metadata is written as a task of the type `fix`."
       - key: 01a16a04-3f8b-71a9-baa3-95dd701e7321

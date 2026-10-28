@@ -123,6 +123,7 @@ featureGroups:
       - 01a1646f-546d-7042-befd-ea3326dff377
       - 01a1646f-546d-7042-befd-ea405aeffb3b
       - 01a1646f-546d-7042-befd-ea4a4433bbd3
+      - 01a182b6-3c58-7235-ad04-3916200a0c81
 constraints:
   - key: 01a16469-55a3-716f-a42c-3a407e6d0d19
     name: "Yard Client shall change the working tree only under `.yard/`."

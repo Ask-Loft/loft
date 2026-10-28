@@ -66,8 +66,8 @@ requirements:
     statement:
       form: optional
       where: "a Codex totals file has no cacheWriteClassified marker"
-      system: "the page"
-      shall: "treat its zero cache-write counts as unavailable without rewriting the stored totals."
+      system: "the page server"
+      shall: "treat its zero cache-write counts as unavailable in the sums it gives the page, without rewriting the stored totals."
     criteria:
       - key: 01a17d58-a535-7258-91b4-bc9b36d959eb
         name: "The availability rule applies to the session total, stages, stage agents, no-stage counts, agent and model counts, and submissions."
@@ -81,3 +81,16 @@ requirements:
         name: "Displaying a legacy total leaves its source fields unchanged."
       - key: 01a17d58-a535-7258-91b4-bca03221cedc
         name: "A mixed-host subtotal contains only measured cache-write counts, with incomplete coverage retained."
+  - key: 01a182b6-3c58-7235-ad04-392b2c2f7490
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "give the page Yard Log's token sums, in all and by stage, by session, by agent and model and by submission, summed from every totals file of Yard Log."
+    body: "The totals files and their sums are counted by one set of rules, in Yard Log's model, so that what the page shows never disagrees with what the totals files hold."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-392c4702ab33
+        name: "The page shows the sums the page server gives, and sums no counts itself."
+      - key: 01a182b6-3c58-7235-ad04-392d1d37f8f9
+        name: "A counter that a contributing totals file is missing makes the sum's accounting partial, as it makes a totals file's."
+      - key: 01a182b6-3c58-7235-ad04-392e5cf3c77f
+        name: "A counter missing from every contributing totals file is unavailable in the sum."

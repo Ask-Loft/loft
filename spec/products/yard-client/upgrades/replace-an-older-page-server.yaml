@@ -46,6 +46,8 @@ requirements:
         name: "The page server exits within one second of the request."
       - key: 01a16517-45f6-7370-99ab-21fd6c061b36
         name: "A request made by a `loft` of the same or an older version leaves the page server serving."
+      - key: 01a182b6-3c58-7235-ad04-3933e99e6693
+        name: "A request that `loft yard serve --replace` made stops the page server whatever version made it."
       - key: 01a16517-45f6-7370-99ab-21feeb0b2d3e
         name: "The page server that replaced it removes the request once it serves the port."
   - key: 01a16517-45f6-7370-99ab-21ff5e62cfd9
@@ -78,3 +80,17 @@ requirements:
         name: "The page names the format of that Yard Log and says a newer `loft` is needed to show it."
       - key: 01a1646f-546e-76cb-8b4f-f21bb474774c
         name: "No file of that Yard Log is changed."
+  - key: 01a182b6-3c58-7235-ad04-39347d94528a
+    statement:
+      form: event_driven
+      when: "`loft yard serve --replace` finds in `~/.yard/server.json` a running page server of any version"
+      system: "`loft yard serve`"
+      shall: "ask that page server to stop through `~/.yard/stop.json`, and serve the port in its place once the page server has stopped."
+    body: "A person working on `loft` itself rebuilds it without changing its version, and wants the page served by the build they just made."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-3935b21edbc8
+        name: "The request says that it replaces the page server whatever its version."
+      - key: 01a182b6-3c58-7235-ad04-3936eb832f40
+        name: "Every tree the replaced page server served is served by the new one."
+      - key: 01a182b6-3c58-7235-ad04-3937ea31de75
+        name: "Where no page server runs, `loft yard serve --replace` serves as `loft yard serve` does."

@@ -49,11 +49,13 @@ requirements:
       shall: "provide the caller's Yard context through native additionalContext."
     criteria:
       - key: 01a1787c-f803-70b1-b946-b6fde6757eda
-        name: "Context names the page, caller arguments, active stage, pending submissions and last-read revision within 2,000 characters."
+        name: "Context holds the caller's briefing from `loft yard read --context --mark-read`, followed only by the caller arguments and whether decision notifications reach the agent."
+      - key: 01a182c1-1fae-70a9-96eb-ffe3241b44ba
+        name: "With each later prompt, the context holds only whether decision notifications reach the agent."
       - key: 01a1787c-f803-70b1-b946-b6fefbffd736
         name: "Context states whether Yard Log is absent, closed or ignored by git."
       - key: 01a1787c-f803-70b1-b946-b6ff99d0ee70
-        name: "A context read does not advance the agent's last-read revision."
+        name: "The context read records the revision the briefing showed as the agent's last read, as the Claude mod's does."
       - key: 01a1787c-f803-70b1-b946-b70058309a97
         name: "Subagent context uses its supplied parent session and subagent identity."
       - key: 01a1787c-f803-70b1-b946-b7014ffa12d6
@@ -63,7 +65,7 @@ requirements:
       form: event_driven
       when: "a successful update_plan hook supplies unbound plan steps for an identified agent"
       system: "the Codex Yard adapter"
-      shall: "mirror the steps as tasks in that agent's active stage through Yard commands."
+      shall: "mirror the steps as tasks in that agent's working stage through Yard commands."
     criteria:
       - key: 01a1787c-f803-70b1-b946-b70398628515
         name: "Pending, in_progress and completed steps become open, active and done tasks respectively."
@@ -78,8 +80,19 @@ requirements:
       - key: 01a1787c-f803-70b1-b946-b708e98ffd86
         name: "A mirrored task preserves an explicitly written fix classification."
       - key: 01a1787c-f803-70b1-b946-b7099cf2b7ad
-        name: "A failed call, malformed step or missing active stage produces no unbound task write."
+        name: "A failed call, malformed step or missing working stage produces no unbound task write."
       - key: 01a1787c-f803-70b1-b946-b70a6477a613
         name: "Repeating an unchanged plan creates no task versions."
       - key: 01a1787c-f803-70b1-b946-b70b5d8c32a4
         name: "Adapter peeks do not mark the Yard revision as read by the agent."
+  - key: 01a182b6-62b5-70ae-a9a2-260f80bf529d
+    statement:
+      form: unwanted
+      if: "Yard Log cannot be read or written, or refuses a change, while a native Codex hook mirrors or releases the agent's tasks"
+      system: "the Codex Yard adapter"
+      shall: "answer the hook as it would without Yard."
+    criteria:
+      - key: 01a182b6-62b5-70ae-a9a2-261041cfe4ec
+        name: "A Stop, Interrupt, SubagentStop or SessionEnd hook outside a git repository exits 0."
+      - key: 01a182b6-62b5-70ae-a9a2-26117bfcbc6b
+        name: "A PostToolUse hook for `update_plan` whose task change Yard Log refuses exits 0 with the native response unchanged."

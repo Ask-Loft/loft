@@ -104,7 +104,7 @@ requirements:
       - key: 01a17989-a8b9-74b1-9049-0765cae065cb
         name: "Usage connection failure does not stop queued native activity from being delivered."
       - key: 01a17989-a8b9-74b1-9049-0766236c5ab6
-        name: "Session context and the Yard skill describe app-server usage availability separately from native-hook coverage."
+        name: "The Yard skill describes app-server usage availability separately from native-hook coverage."
   - key: 01a17d58-a534-746d-9e9d-03f9e8d5a838
     statement:
       form: ubiquitous

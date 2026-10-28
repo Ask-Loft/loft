@@ -32,6 +32,8 @@ requirements:
     criteria:
       - key: 01a177f9-8294-77e4-aa6e-707df5aba626
         name: "An absent counter is not stored or displayed as a measured zero."
+      - key: 01a182b6-62b5-70ae-a9a2-26121c1b8193
+        name: "A counter posted as null, or as anything but a whole number, is unreported, and its event is still recorded."
       - key: 01a177f9-8294-77e4-aa6e-707e68eb827c
         name: "Measured zero is displayed as zero even when no positive count was recorded."
       - key: 01a177f9-8294-77e4-aa6e-707f3b171f93
@@ -58,3 +60,26 @@ requirements:
         name: "Session and usage views identify the host and explain unknown or unavailable reporting coverage."
       - key: 01a177f9-8294-77e4-aa6e-70846d43994b
         name: "The empty page describes the Yard workflow without requiring one named agent host."
+  - key: 01a182b6-3c57-749f-95d3-aa287dde38b3
+    statement:
+      form: ubiquitous
+      system: "A Yard adapter"
+      shall: "send its descriptor with the first event it posts for a session and with each turn's start, and with no other event."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-3910ed80f427
+        name: "The Claude and Codex adapters each post their descriptor with a session's first event and with each `turn.start`."
+      - key: 01a182b6-3c58-7235-ad04-39111bdbea4a
+        name: "An event between two turn starts carries no descriptor."
+  - key: 01a182b6-3c58-7235-ad04-391267b19e77
+    statement:
+      form: event_driven
+      when: "the page server records an event that carries no descriptor"
+      system: "the page server"
+      shall: "keep that event under the last descriptor its session posted."
+    criteria:
+      - key: 01a182b6-3c58-7235-ad04-3913b96391cb
+        name: "The session's activity keeps the last descriptor its session posted."
+      - key: 01a182b6-3c58-7235-ad04-391493273b63
+        name: "Replaying a session's events after a restart applies each descriptor to the events after it."
+      - key: 01a182b6-3c58-7235-ad04-39157bf8284b
+        name: "A session that has posted no descriptor keeps unknown coverage."

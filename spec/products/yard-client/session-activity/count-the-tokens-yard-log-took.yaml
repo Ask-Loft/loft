@@ -38,6 +38,10 @@ requirements:
         name: "The totals file holds the four counts of the requests that ended while each submission was open, by the submission's key, so that a request made while two submissions were open counts under both."
       - key: 01a1646f-546d-7042-befd-eaeb0ac9321e
         name: "The request that a compaction makes counts as the main agent's."
+      - key: 01a182b6-3c58-7235-ad04-3928beff72b2
+        name: "A compaction whose event holds no tokens adds nothing to the totals and leaves their accounting complete."
+      - key: 01a182b6-3c58-7235-ad04-3929b884eac9
+        name: "A model request whose event holds no tokens makes the totals' accounting partial."
       - key: 01a1646f-546d-7042-befd-eaec64de00c6
         name: "The totals file of a session that made no counted request is not written."
       - key: 01a1646f-546d-7042-befd-eaeda64b3661
