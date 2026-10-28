@@ -5,7 +5,7 @@ use std::process::{Child, Stdio};
 use std::time::Duration;
 
 use serde_json::{Value, json};
-use yardlog_store::home::{Home, HomeFile};
+use yardlog_store::home::Home;
 use yardlog_store::lock;
 
 use super::Result;
@@ -13,6 +13,7 @@ use super::classify_event;
 use super::commands;
 use super::state::Files;
 use super::translate::{Hook, HookKind};
+use crate::yard::post::post;
 
 const BEAT: Duration = Duration::from_secs(5);
 const LIFETIME: Duration = Duration::from_hours(24);
@@ -182,14 +183,6 @@ fn deliver(files: &Files, home: &Home, page_port: &mut Option<u16>) -> Result<()
         *page_port = None;
     }
     Ok(())
-}
-
-fn post(home: &Home, port: u16, path: &str, body: &Value) -> bool {
-    let Ok(Some(token)) = home.read(HomeFile::Token) else {
-        return false;
-    };
-    let token = String::from_utf8_lossy(&token);
-    crate::network::post_local_json(port, path, token.trim(), body.to_string().as_bytes())
 }
 
 /// Detaches a persisted batch while posting, so new hooks append to a separate queue. A crash
