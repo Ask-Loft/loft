@@ -25971,6 +25971,18 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open_submission"
         body: f6f4cb1dbbc6d328f946913efb47c0490ff05fa7f540ebf43a6e7e2db46432b8
+  - node: 01a182b6-3c58-7235-ad04-3928beff72b2
+    reviewed: f4a913c40e5b46194cb94da23d6c86bda3f1fdab393dc35939d51ce6d87194e2
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_usage.rs"
+        name: "a_compaction_that_reports_no_tokens_adds_nothing_and_leaves_the_totals_complete"
+        body: 399cea9818997cf7ba530f29a5f451811c7f4942ec6ce3da6ee1b6f76cc8adce
+  - node: 01a182b6-3c58-7235-ad04-3929b884eac9
+    reviewed: bc76e56dbbdc11051f2df1f20ba333090404ee435b0e44b6bb727d4eade882c7
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_usage.rs"
+        name: "a_request_that_reports_no_tokens_makes_the_totals_partial"
+        body: 50ed704126ca25249f98acf386ab669d0dece2240b4c1aacb2f8acd98a816b89
   - node: 01a1646f-546d-7042-befd-eaec64de00c6
     reviewed: 9127c2b320c5a0a698d7dda9bdff09bdcc51b8035363205c772aabdbeafc6532
     tests:

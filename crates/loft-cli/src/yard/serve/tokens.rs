@@ -52,7 +52,13 @@ impl Totals {
             "compaction" => Who::Main,
             _ => return false,
         };
-        let tokens = event.tokens().unwrap_or_else(Tokens::unreported);
+        // A request always costs tokens, so one that reports none leaves the totals partial; a
+        // compaction that reports none may have made no request of its own.
+        let tokens = match event.tokens() {
+            Some(tokens) => tokens,
+            None if event.kind == "compaction" => return false,
+            None => Tokens::unreported(),
+        };
         if self.host.is_empty() {
             self.host.clone_from(&event.host);
         }
