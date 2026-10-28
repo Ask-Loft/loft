@@ -31,11 +31,11 @@ impl Failure {
         Self::Stopped(Stop::one(kind, message.into()))
     }
 
+    /// Why a command that needs `~/.yard/` could not reach it.
+    pub const NO_HOME: &str = "no home directory is known, so `~/.yard/` cannot be reached";
+
     pub fn no_home() -> Self {
-        Self::one(
-            "home",
-            "no home directory is known, so `~/.yard/` cannot be reached",
-        )
+        Self::one("home", Self::NO_HOME)
     }
 
     /// Ends the command: the document `--format json` asked for, the lines on standard error,

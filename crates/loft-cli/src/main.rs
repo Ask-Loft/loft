@@ -95,6 +95,18 @@ fn import(root: &Path, source: ImportSource) -> Finished {
     }
 }
 
+/// Runs `loft skill <action>` in `root`.
+fn skill(root: &Path, action: SkillAction) -> Finished {
+    match action {
+        SkillAction::Install {
+            host,
+            no_plugin,
+            output,
+        } => skill::run(root, host, plugin(no_plugin), output.json()),
+        SkillAction::Package { check, output } => skill::package::run(root, check, output.json()),
+    }
+}
+
 /// Runs `loft merge-driver` with `args` in `root`.
 fn merge_driver(root: &Path, args: MergeDriverArgs) -> Finished {
     match args {
@@ -196,14 +208,7 @@ fn dispatch(command: Command) -> Finished {
             },
             output.json(),
         ),
-        Command::Skill {
-            action:
-                SkillAction::Install {
-                    host,
-                    no_plugin,
-                    output,
-                },
-        } => skill::run(root, host, plugin(no_plugin), output.json()),
+        Command::Skill { action } => skill(root, action),
         Command::RecordInstall { way, output } => record_install::run(way, output.json()),
         Command::Telemetry { action } => {
             let (action, as_json) = action.split();

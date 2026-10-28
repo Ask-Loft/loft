@@ -9,6 +9,7 @@ use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::lock;
 
 use super::Result;
+use super::classify_event;
 use super::commands;
 use super::state::Files;
 use super::translate::{Hook, HookKind};
@@ -193,8 +194,15 @@ fn post(home: &Home, port: u16, path: &str, body: &Value) -> bool {
 
 /// Detaches a persisted batch while posting, so new hooks append to a separate queue. A crash
 /// leaves that batch available for replay; a failed post restores it ahead of newer events.
+/// Each queued request is classified by the adapter's rule as the batch is detached, so that one
+/// queued before cache writes were classified is posted as the adapter now gives it, and the
+/// stored batch is posted again byte for byte. Where the page server holds one in its earlier
+/// form, it rejects the classified one and counts it once.
 fn flush(files: &Files, post: impl FnOnce(&Value) -> bool) -> Result<()> {
     let detached = files.update(|state| {
+        for event in state.in_flight.iter_mut().chain(&mut state.events) {
+            classify_event(event);
+        }
         if state.in_flight.is_empty() {
             if state.events.is_empty() {
                 return Ok(None);

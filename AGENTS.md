@@ -151,15 +151,17 @@ text goes to standard error only.
 ## The agent skill
 
 - Change the skill only in its source, then run `scripts/package-skill.sh` to rewrite the plugin
-  packages. Never edit a package under `plugins/` by hand: `crates/loft-cli/tests/plugins.rs`
-  fails while a package differs from the composition, or a manifest's version from the version
-  of `loft`.
+  packages; it runs the hidden `loft skill package`, which composes every package from the
+  sources `loft` embeds, and `loft skill package --check` names each file that differs. Never
+  edit a package under `plugins/` by hand: `crates/loft-cli/tests/plugins.rs` fails while a
+  package differs from the composition, or a manifest's version from the version of `loft`.
 - This repository exposes that source to Codex through the relative link
   `.agents/skills/loft-spec` to `../../crates/loft-cli/skill/loft-spec`. Keep the link; never
   replace it with a copy. Before editing `spec/`, load the source skill's router and the
   references it selects. The installer preserves this link and the packager checks it.
 - `SKILL.md` and the references name no host; whatever is particular to a host lies under
-  `agents/`. A new source file is also listed in `SOURCE` in `crates/loft-cli/src/skill/mod.rs`.
+  `agents/`. A new source file is also listed in `SOURCE` in `crates/loft-cli/src/skill/mod.rs`,
+  or in `YARD_SOURCE` for the `yard` skill.
 - Every YAML block of a reference is marked: `path=` blocks form the reference's example tree,
   which passes `loft check --fail-on warning`; a `rule=` block is a wrong example that raises its
   rule and no other warning; a `fragment` is shown and not run. The lint guide describes every
@@ -168,8 +170,8 @@ text goes to standard error only.
 - The `yard` skill has its shared workflow at `crates/loft-cli/skill/yard/SKILL.md`, with no
   host or native tool names, and its adaptations at `agents/claude.md` and `agents/codex.md` beside it. Change
   those sources and run `scripts/package-skill.sh`; never edit the plugin package by hand.
-  Composition appends the selected adaptation to the shared source, making each plugin's single
-  `skills/yard/SKILL.md`. `crates/loft-cli/tests/yard_skill.rs` and `yard_codex_skill.rs` hold it to that composition,
+  `loft skill package` composes it: it appends the selected adaptation to the shared source,
+  making each plugin's single `skills/yard/SKILL.md`. `crates/loft-cli/tests/yard_skill.rs` and `yard_codex_skill.rs` hold it to that composition,
   to at most 500 lines, to naming exactly the adapter's tools and to each habit its Feature
   states. Only hosts with a Yard adapter receive a Yard package; `loft skill install` continues
   to install the specification skill alone.

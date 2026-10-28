@@ -1,11 +1,13 @@
 //! The `loft-spec` skill (the Agent Skill Product): its host-neutral source, embedded in `loft`,
 //! composed for each agent host and written into a project by `loft skill install` and
 //! `loft init`, which also enable the Claude Code plugin `loft@ask-loft` beside it unless
-//! `--no-plugin` is given.
+//! `--no-plugin` is given. `loft skill package` writes the plugins' packages from it, and from
+//! the `yard` skill's source beside it.
 
 mod compose;
 mod discovery;
 mod hosts;
+pub mod package;
 mod settings;
 mod write;
 
@@ -27,14 +29,15 @@ use settings::SETTINGS;
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-skill/1";
 
-/// The skill's source, each file by its path under `skill/loft-spec/`, embedded in the binary.
+/// A skill's source, each file by its path under `skill/<skill>/`, embedded in the binary.
 macro_rules! source {
-    ($($path:literal),* $(,)?) => {
-        &[$(($path, include_str!(concat!("../../skill/loft-spec/", $path)))),*]
+    ($skill:literal: $($path:literal),* $(,)?) => {
+        &[$(($path, include_str!(concat!("../../skill/", $skill, "/", $path)))),*]
     };
 }
 
 const SOURCE: &[(&str, &str)] = source![
+    "loft-spec":
     "SKILL.md",
     "agents/claude/claude-host.md",
     "agents/claude/frontmatter.yaml",
@@ -52,6 +55,10 @@ const SOURCE: &[(&str, &str)] = source![
     "references/the-loop.md",
     "references/writing-rules.md",
 ];
+
+/// The `yard` skill's source: its shared workflow and each host's adaptation.
+const YARD_SOURCE: &[(&str, &str)] =
+    source!["yard": "SKILL.md", "agents/claude.md", "agents/codex.md"];
 
 /// A skill directory that could not be written.
 #[derive(Debug)]

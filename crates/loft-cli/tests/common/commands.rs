@@ -98,7 +98,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 32] = [
+pub const COMMANDS: [Entry; 33] = [
     (
         "codex-yard-hook",
         &["yard", "codex", "hook"],
@@ -151,6 +151,14 @@ pub const COMMANDS: [Entry; 32] = [
         &["skill", "install"],
         Fixture::Empty,
         "skill",
+    ),
+    // Outside the repository of `loft` there is no Codex discovery entry, so packaging is
+    // refused and writes nothing.
+    (
+        "loft-skill-package",
+        &["skill", "package"],
+        Fixture::Empty,
+        "skill-package",
     ),
     // The driver reads the three files git hands it, never the tree, so inputs that do not
     // exist report against the path they name and write nothing.

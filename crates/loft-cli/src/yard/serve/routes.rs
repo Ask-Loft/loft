@@ -20,13 +20,13 @@ use serde_json::{Value, json};
 
 use super::Server;
 use super::assets;
-use super::event::host_in;
 use super::guard::{Access, admit};
 use super::http::{self, Request, Response};
 use super::listener::Connection;
 use super::logs;
 use super::stream::stream;
 use super::trees;
+use crate::yard::event::host_in;
 use crate::yard::failure::Failure;
 use crate::yard::{protocol, sessions};
 use yardlog::identity::is_session_id;

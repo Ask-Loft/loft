@@ -1,5 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
+import { PLUGIN_VERSION } from '../hooks/adapter'
 import { activeStage, isAsker } from '../hooks/adapter/log'
 import { flagOf, readDoc, SESSION, stage, start, world, yardRuns } from './yard-world'
 
@@ -29,7 +30,7 @@ test('the Claude adapter names its host on protocol two commands, events and hea
   expect(w.state.posts.flatMap(post => post.events).find(event => event.kind === 'turn.start')).toMatchObject({
     host: 'claude-code',
     adapter: {
-      format: 'yard-adapter/1', version: '2.2.1',
+      format: 'yard-adapter/1', version: PLUGIN_VERSION,
       capabilities: {
         events: ['turn.start', 'turn.end', 'request', 'tool.start', 'tool.end', 'subagent.start', 'subagent.end', 'compaction', 'plan.start', 'plan.end'],
         nativeQuestions: true, nativePlans: true, taskMirroring: true,

@@ -6,7 +6,7 @@
 //! it back holds the directory's lock while it does.
 
 use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
 use loft_ports::io_error;
@@ -121,6 +121,33 @@ impl Home {
         Ok(remove_if_present(&self.path(file))?)
     }
 
+    /// The sessions whose event logs `events/` holds, by their ids, in order.
+    ///
+    /// # Errors
+    ///
+    /// The folder is there and cannot be read.
+    pub fn event_sessions(&self) -> Result<Vec<String>, YardStoreError> {
+        let dir = self.dir.join("events");
+        let entries = match fs::read_dir(&dir) {
+            Ok(entries) => entries,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(error) => return Err(io_error(&dir)(error).into()),
+        };
+        let mut sessions = Vec::new();
+        for entry in entries {
+            let path = entry.map_err(io_error(&dir))?.path();
+            if path
+                .extension()
+                .is_some_and(|extension| extension == "jsonl")
+                && let Some(session) = path.file_stem().and_then(|stem| stem.to_str())
+            {
+                sessions.push(session.to_owned());
+            }
+        }
+        sessions.sort();
+        Ok(sessions)
+    }
+
     /// A session's event log, or none where it has none.
     ///
     /// # Errors
@@ -128,6 +155,22 @@ impl Home {
     /// The log is there and cannot be read.
     pub fn read_events(&self, session: &str) -> Result<Option<Vec<u8>>, YardStoreError> {
         Ok(read_if_present(&self.events(session))?)
+    }
+
+    /// Replaces a session's event log with `bytes`, through a temporary file beside it renamed
+    /// into place. A page server appends to the log without a lock, so the caller holds the page
+    /// server's lock, `_server`, which keeps any page server from starting meanwhile.
+    ///
+    /// # Errors
+    ///
+    /// The log cannot be written.
+    pub fn replace_events(
+        &self,
+        _server: &lock::Locked,
+        session: &str,
+        bytes: &[u8],
+    ) -> Result<(), YardStoreError> {
+        Ok(replace_synced(&self.events(session), bytes, false)?)
     }
 
     /// Appends `line` and a line break to a session's event log, creating the log where it is

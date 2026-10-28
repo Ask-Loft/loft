@@ -59,7 +59,7 @@ pub(crate) fn session_file(yard: &Yard, folder: &str, session: &str) -> Option<S
 }
 
 /// Session `session`'s event log, a line to an event.
-fn log(yard: &Yard, session: &str) -> Vec<Value> {
+pub(crate) fn log(yard: &Yard, session: &str) -> Vec<Value> {
     let path: PathBuf = yard
         .scratch
         .home()
@@ -195,7 +195,8 @@ fn a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open
 /// `submission` was open.
 fn totals_of_three_requests(stage: &str, submission: &str) -> String {
     format!(
-        "session: s1
+        "format: yardtokens/2
+session: s1
 host: claude-code
 firstEnded: 2026-01-01T10:00:05Z
 lastEnded: 2026-01-01T10:00:12Z

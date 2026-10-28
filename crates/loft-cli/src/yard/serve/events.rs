@@ -3,7 +3,8 @@
 //! branch its agent's directory is on as it arrives, the stage it counts toward and the
 //! submissions open; and what it starts or ends, or counts, is kept in the session's activity
 //! and token totals in that Yard Log's folder. The page server rebuilds a session's activity and
-//! totals from its event log the first time it hears of the session.
+//! totals from its event log the first time it hears of the session. A totals file of a newer
+//! totals format is left as it is, and the session's requests are counted into no file.
 
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
@@ -17,12 +18,15 @@ use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
+use yardlog::totals::{Totals, TotalsFormat};
+
 use super::activity::Activity;
-use super::event::{Event, Who, strings};
-use super::event_ids::{Receipt, Receipts};
 use super::http::Response;
 use super::newest::Newest;
-use super::tokens::Totals;
+use crate::yard::event::{Event, Who};
+use crate::yard::event_ids::Receipts;
+use crate::yard::session_files;
+use crate::yard::totals;
 
 /// What one session keeps in one branch's Yard Log.
 #[derive(Default)]
@@ -200,7 +204,7 @@ impl Kept {
         let totals = self
             .totals
             .get_or_insert_with(|| Totals::new(&event.session));
-        if totals.apply(event, stage, open) && totals.counted() {
+        if totals::count(totals, event, stage, open) && totals.counted() {
             changed.push((SessionFile::Tokens, totals.text()));
         }
         changed
@@ -222,45 +226,20 @@ impl Kept {
     }
 }
 
-/// The open submissions an event's line in the log names.
-fn named_open(line: &Value) -> Vec<String> {
-    strings(&line["submissions"])
-}
-
 /// What a session kept before the page server heard of it, rebuilt from its event log.
 fn replay(home: &Home, session: &str) -> SessionKept {
     let mut kept = SessionKept::default();
-    let Ok(Some(bytes)) = home.read_events(session) else {
-        return kept;
-    };
-    for line in bytes.split(|byte| *byte == b'\n') {
-        let Ok(line) = serde_json::from_slice::<Value>(line) else {
-            continue;
-        };
-        let (Ok(event), Some(tree), Some(branch)) = (
-            Event::read(&line),
-            line["tree"].as_str(),
-            line["branch"].as_str(),
-        ) else {
-            continue;
-        };
-        let Ok(receipt) = Receipt::replay(&line) else {
-            continue;
-        };
-        if kept.receipts.contains(receipt.as_ref()) != Ok(false) {
-            continue;
-        }
-        kept.receipts.keep(receipt.as_ref());
-        kept.describe(&event);
+    kept.receipts = totals::replay(home, session, |logged| {
+        kept.describe(&logged.event);
         kept.logs
-            .entry((tree.to_owned(), branch.to_owned()))
+            .entry((logged.tree.to_owned(), logged.branch.to_owned()))
             .or_default()
             .apply(
-                &event,
-                (line["stage"].as_str(), &named_open(&line)),
+                &logged.event,
+                (logged.stage, logged.open),
                 kept.adapter.as_ref(),
             );
-    }
+    });
     kept
 }
 
@@ -317,6 +296,9 @@ impl Sessions {
         // a post that writes after a later one leaves that one's newer text in place.
         drop(kept);
         for (path, ((index, generation), store, file, session, text)) in changed {
+            if file == SessionFile::Tokens && newer_totals(&store, &session) {
+                continue;
+            }
             let wrote = self.written.write(&path, generation, || {
                 store.write_session(file, &session, text.as_bytes())
             });
@@ -329,6 +311,13 @@ impl Sessions {
             &json!({ "recorded": recorded, "skipped": skipped, "rejected": rejected }),
         )
     }
+}
+
+/// Whether session `session`'s totals file in the Yard Log of `store` is of a totals format newer
+/// than this `loft`'s, or one it does not know.
+fn newer_totals(store: &YardStore, session: &str) -> bool {
+    session_files::one(store, SessionFile::Tokens, session)
+        .is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
 }
 
 /// A session's file a batch changed: the index of the event that last changed it with the

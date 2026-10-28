@@ -55,6 +55,17 @@ impl Counts {
         }
     }
 
+    /// These counts with a zero cache-write count made unavailable, as a counter no
+    /// contribution gave; every other count kept.
+    #[must_use]
+    pub const fn without_zero_write(mut self) -> Self {
+        if matches!(self.values[2], Some(0)) {
+            self.values[2] = None;
+            self.missing |= 1 << 2;
+        }
+        self
+    }
+
     /// Whether any counter was actually measured, including a measured zero.
     #[must_use]
     pub fn measured(self) -> bool {

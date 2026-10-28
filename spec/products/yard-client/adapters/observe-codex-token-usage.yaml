@@ -109,7 +109,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The Codex usage observer"
-      shall: "classify cache-write availability from the source count and the account type reported by its app-server connection."
+      shall: "classify cache-write availability from the source count and the account type reported by its app-server connection, and give a request's tokens a cache-write count only where it is measured."
     criteria:
       - key: 01a17d58-a534-746d-9e9d-03faace608a9
         name: "A reported zero cache-write count from a ChatGPT account is unavailable for accounting."
@@ -119,8 +119,10 @@ requirements:
         name: "A reported zero cache-write count from a verified API-key account remains measured."
       - key: 01a17d58-a534-746d-9e9d-03fd5b60ece0
         name: "An absent cache-write count remains unavailable even for a verified API-key account."
+      - key: 01a1835b-a222-7677-8e34-d5261370ae59
+        name: "A request whose cache-write count is unavailable for accounting carries no `cacheWrite` in its tokens."
       - key: 01a17d58-a534-746d-9e9d-03fe586bb77d
-        name: "The raw latest-request cache-write count is retained in the machine event log even when it is unavailable for accounting."
+        name: "The raw latest-request cache-write count is retained under `usageSource.reported` in the machine event log, even when it is unavailable for accounting."
       - key: 01a17d58-a534-746d-9e9d-03ff056b0671
         name: "Each reported request retains only the account classification apiKey, chatgpt or unknown in usageSource.account beside its source counters."
       - key: 01a17d58-a534-746d-9e9d-0400724a00e6
@@ -135,3 +137,17 @@ requirements:
         name: "The accounting checkpoint retains the raw cumulative cache-write count."
       - key: 01a17d59-37d3-7407-b1b0-e84595ee6fd4
         name: "Account identifiers, email addresses, access tokens and refresh tokens are not retained in adapter state or events."
+      - key: 01a1839e-0cd8-73ef-8531-db3db3d4e5bb
+        name: "The Codex adapter states the rule of a measured cache-write count once, and every part of `loft` that classifies a Codex count applies it."
+  - key: 01a1839e-0cd8-73ef-8531-db3efd452631
+    statement:
+      form: event_driven
+      when: "the Codex adapter delivers a queued model request whose tokens hold a zero cache-write count that no verified API-key account reported"
+      system: "the Codex adapter"
+      shall: "move that count under the request's `usageSource.reported` before it posts the request."
+    body: "Requests queued by an adapter that did not yet classify cache writes are delivered after an upgrade, wherever the adapter keeps its queue."
+    criteria:
+      - key: 01a1839e-0cd8-73ef-8531-db3fb8986e3d
+        name: "A request queued before the upgrade reaches the page server with no unverified zero in its tokens."
+      - key: 01a1839e-0cd8-73ef-8531-db40c33411a9
+        name: "A queued request the page server already holds is not counted twice."

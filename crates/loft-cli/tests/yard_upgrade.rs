@@ -4,13 +4,26 @@
 //! changes nothing.
 
 use std::fs;
+use std::process::Output;
 
+use serde_json::Value;
+
+use crate::common::workspace;
+use crate::schema;
 use crate::snapshot::snapshot;
 use crate::yard::{ASK, BRANCH, Yard, document};
 
-fn upgrade(yard: &Yard) -> (Option<i32>, serde_json::Value) {
-    let output = yard.run(&["upgrade"]);
-    (output.status.code(), document("upgrade", &output))
+/// Runs `loft yard upgrade`, giving its exit code and its JSON document, which conforms to the
+/// command's schema.
+pub(crate) fn upgrade(yard: &Yard) -> (Option<i32>, Value) {
+    conforming(&yard.run(&["upgrade"]))
+}
+
+pub(crate) fn conforming(output: &Output) -> (Option<i32>, Value) {
+    let doc = document("upgrade", output);
+    let schema = fs::read_to_string(workspace().join("schemas/yard-upgrade.json")).unwrap();
+    let text = serde_json::to_vec(&doc).unwrap();
+    (output.status.code(), schema::conforming(&text, &schema))
 }
 
 #[test]

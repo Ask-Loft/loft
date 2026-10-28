@@ -1,5 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
+import { PLUGIN_VERSION } from '../hooks/adapter'
 import { briefingOf, flagOf, HOME, readDoc, SESSION, start, stage, TREE, world, yardRuns } from './yard-world'
 
 test('a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start', async ($, on) => {
@@ -16,7 +17,7 @@ test('a loft with no yard commands leaves Yard Client off, registers no tool and
   await $.classic.SessionStart({ source: 'clear' })
   expect(w.state.tools).toEqual([])
   expect(w.state.toasts).toHaveLength(1)
-  expect(w.state.toasts[0]).toMatch(/Yard Client is off: the loft plugin 2\.2\.1 speaks the yard protocol 1–2, and `loft` runs loft .*, which has no yard commands\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\./)
+  expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–2, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
   const denied = await $.tool.call({ tool: 'mcp__loft__yard_read' })
   expect(denied.deny ?? denied.text).toMatch(/Yard Client is off/)
 })

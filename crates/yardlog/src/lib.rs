@@ -21,6 +21,7 @@ pub mod respond;
 mod rules;
 pub mod settle;
 pub mod task_change;
+pub mod totals;
 pub mod usage;
 mod working;
 pub mod write;

@@ -1,12 +1,13 @@
 //! Yard Log's token sums as the page shows them, summed from every session's totals file by the
 //! rules of Yard Log's model: in all, by stage and within each stage by type of subagent, under
-//! no stage, by session, by agent and model, and by submission. A Codex totals file written
-//! before its zero cache writes were classified counts those zeros as unavailable here, and its
-//! file is left as it is.
+//! no stage, by session, by agent and model, and by submission. Each totals file is summed as it
+//! gives its counts, whatever its host; one of a newer totals format is left out, and makes the
+//! sums partial.
 
 use std::cmp::Reverse;
 
 use serde_json::{Value, json};
+use yardlog::totals::TotalsFormat;
 use yardlog::usage::Counts;
 
 /// The sums of `files`, the totals files as JSON, with `activities` the activity files: a session
@@ -14,7 +15,11 @@ use yardlog::usage::Counts;
 pub fn sums(files: &[Value], activities: &[Value]) -> Value {
     let mut sums = Sums::default();
     for file in files {
-        sums.add(file);
+        if TotalsFormat::of(file).is_some_and(TotalsFormat::is_known) {
+            sums.add(file);
+        } else {
+            sums.all.get_or_insert_default().add(Counts::unreported());
+        }
     }
     for activity in activities {
         let counted = sums.sessions.iter().any(|session| {
@@ -63,14 +68,12 @@ struct Session {
 impl Sums {
     fn add(&mut self, file: &Value) {
         let host = file["host"].as_str().unwrap_or_default();
-        let legacy = host == "codex" && file["cacheWriteClassified"] != Value::Bool(true);
-        let counts = |value: &Value| read(value, legacy);
-        let tokens = counts(&file["tokens"]);
+        let tokens = Counts::from_fields(&file["tokens"]);
         self.all.get_or_insert_default().add(tokens);
         // A file that keeps no counts under no stage counted nothing there: a measured zero
         // of each counter it reports.
         let no_stage = match file.get("noStage") {
-            Some(value) => counts(value),
+            Some(value) => Counts::from_fields(value),
             None => Counts::from_fields(&zeros(&tokens.json())),
         };
         self.no_stage.get_or_insert_default().add(no_stage);
@@ -79,16 +82,16 @@ impl Sums {
                 continue;
             };
             let at = self.stage(key);
-            at.tokens.add(counts(stage));
+            at.tokens.add(Counts::from_fields(stage));
             let subagents = array(stage, "agents").filter(|agent| agent["agent"] != "main");
             for agent in subagents {
                 let kind = agent["type"].as_str().unwrap_or("subagent");
-                add_to(&mut at.agents, kind, counts(agent));
+                add_to(&mut at.agents, kind, Counts::from_fields(agent));
             }
         }
         for submission in array(file, "submissions") {
             if let Some(key) = submission["submission"].as_str() {
-                add_to(&mut self.submissions, key, counts(submission));
+                add_to(&mut self.submissions, key, Counts::from_fields(submission));
             }
         }
         for agent in array(file, "agents") {
@@ -98,7 +101,9 @@ impl Sums {
                 agent["type"].as_str().unwrap_or("subagent")
             };
             let model = agent["model"].as_str().unwrap_or("unknown");
-            self.agent(host, who, model).tokens.add(counts(agent));
+            self.agent(host, who, model)
+                .tokens
+                .add(Counts::from_fields(agent));
         }
         let text = |name: &str| file[name].as_str().map(ToOwned::to_owned);
         self.sessions.push(Session {
@@ -214,19 +219,6 @@ impl Session {
         }
         session
     }
-}
-
-/// The counts a totals file keeps in `value`, with a zero cache write unavailable where the
-/// file is `legacy`.
-fn read(value: &Value, legacy: bool) -> Counts {
-    if legacy && value["cacheWrite"] == 0 {
-        let mut shown = value.clone();
-        if let Some(fields) = shown.as_object_mut() {
-            fields.remove("cacheWrite");
-        }
-        return Counts::from_fields(&shown);
-    }
-    Counts::from_fields(value)
 }
 
 /// A measured zero of each counter `counts` holds.

@@ -5,6 +5,7 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 
+use super::account::Account;
 use super::state::State;
 use super::translate::{Hook, HookKind, envelope};
 
@@ -75,14 +76,58 @@ impl Counters {
         self.input.saturating_sub(previous.input) > last.input
             || self.output.saturating_sub(previous.output) > last.output
     }
-    fn tokens(&self) -> Value {
+    /// The tokens and their source, classified by [`classify`].
+    fn tokens(&self, account: Account) -> (Value, Value) {
         let mut tokens =
             json!({"input":self.input-self.cached,"cacheRead":self.cached,"output":self.output});
+        let mut source = json!({"account":account});
         if let Some(write) = self.write {
             tokens["cacheWrite"] = json!(write);
         }
-        tokens
+        classify(&mut tokens, &mut source, account);
+        (tokens, source)
     }
+}
+
+/// The rule of a measured cache-write count, and the only one `loft` keeps: a count is measured
+/// when positive, or when a verified API-key `account` reports zero. Any other zero leaves
+/// `tokens` for `source`'s `reported`; gives whether it moved one.
+pub fn classify(tokens: &mut Value, source: &mut Value, account: Account) -> bool {
+    if account == Account::ApiKey || tokens["cacheWrite"] != 0 {
+        return false;
+    }
+    let Some(write) = tokens.as_object_mut().and_then(|t| t.remove("cacheWrite")) else {
+        return false;
+    };
+    if !source.is_object() {
+        *source = json!({});
+    }
+    source["reported"] = json!({ "cacheWrite": write });
+    true
+}
+
+/// [`classify`] applied to a request or compaction `event`, by the account its own
+/// `usageSource` names; every other field is kept. Gives whether it moved a count.
+pub fn classify_event(event: &mut Value) -> bool {
+    if !matches!(event["kind"].as_str(), Some("request" | "compaction")) {
+        return false;
+    }
+    let account = Account::source(&event["usageSource"]["account"]);
+    let Some(fields) = event.as_object_mut() else {
+        return false;
+    };
+    let (Some(mut tokens), mut source) = (
+        fields.get("tokens").cloned(),
+        fields.get("usageSource").cloned().unwrap_or(Value::Null),
+    ) else {
+        return false;
+    };
+    if !classify(&mut tokens, &mut source, account) {
+        return false;
+    }
+    fields.insert("tokens".to_owned(), tokens);
+    fields.insert("usageSource".to_owned(), source);
+    true
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
@@ -199,8 +244,7 @@ pub fn observe(state: &mut State, thread: &str, turn: &str, usage: &Value, at: &
     let skipped = !reset && previous.is_some_and(|p| total.skips(&p.snapshot, &last));
     let id = identity(&json!([thread, turn, generation, total]));
     let mut request = event(active, at, &id);
-    request["tokens"] = last.tokens();
-    request["usageSource"] = json!({"account":super::account::Account::source(&usage["account"])});
+    (request["tokens"], request["usageSource"]) = last.tokens(Account::source(&usage["account"]));
     if skipped {
         gap(state, thread, at);
     }

@@ -62,25 +62,6 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb20639f67b6
         name: "An open page shows a counted request's tokens within 2 seconds of the request's end, without being reloaded."
-  - key: 01a17d58-a535-7258-91b4-bc9a93c842d0
-    statement:
-      form: optional
-      where: "a Codex totals file has no cacheWriteClassified marker"
-      system: "the page server"
-      shall: "treat its zero cache-write counts as unavailable in the sums it gives the page, without rewriting the stored totals."
-    criteria:
-      - key: 01a17d58-a535-7258-91b4-bc9b36d959eb
-        name: "The availability rule applies to the session total, stages, stage agents, no-stage counts, agent and model counts, and submissions."
-      - key: 01a17d58-a535-7258-91b4-bc9cd648fbe7
-        name: "Positive legacy Codex cache-write counts remain displayed."
-      - key: 01a17d58-a535-7258-91b4-bc9d7c0151d4
-        name: "Classified Codex totals retain their measured zeros."
-      - key: 01a17d58-a535-7258-91b4-bc9e51136b47
-        name: "Claude totals retain measured zeros regardless of the Codex classification marker."
-      - key: 01a17d58-a535-7258-91b4-bc9f647372f4
-        name: "Displaying a legacy total leaves its source fields unchanged."
-      - key: 01a17d58-a535-7258-91b4-bca03221cedc
-        name: "A mixed-host subtotal contains only measured cache-write counts, with incomplete coverage retained."
   - key: 01a182b6-3c58-7235-ad04-392b2c2f7490
     statement:
       form: ubiquitous

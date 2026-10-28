@@ -7,10 +7,10 @@
 //! emulator.
 
 use std::fs;
+use std::process::Command;
 
-use crate::common::{Scratch, workspace};
-use crate::skill_install::{CLAUDE, CODEX, installed};
-use crate::snapshot::snapshot;
+use crate::common::{Scratch, isolate, stderr, workspace};
+use crate::schema;
 use crate::workflow::job;
 use serde_json::{Value, json};
 
@@ -49,16 +49,62 @@ fn the_repository_codex_skill_is_a_relative_link_to_the_shared_source() {
     }
 }
 
+/// The JSON document of `loft skill package --check` run at the repository's root, which
+/// compares every committed package with the composition `loft` writes and writes nothing.
+fn package_check() -> Value {
+    let home = Scratch::empty();
+    let mut command = Command::new(env!("CARGO_BIN_EXE_loft"));
+    isolate(&mut command, &home.home());
+    let output = command
+        .current_dir(workspace())
+        .args(["skill", "package", "--check", "--format", "json"])
+        .output()
+        .unwrap();
+    assert!(
+        [Some(0), Some(1)].contains(&output.status.code()),
+        "{}",
+        stderr(&output)
+    );
+    schema::conforming(
+        &output.stdout,
+        include_str!("../../../schemas/skill-package.json"),
+    )
+}
+
 #[test]
 fn each_committed_package_equals_the_composition_for_its_host() {
-    let composed = installed();
-    for (root, package) in [(CLAUDE_ROOT, CLAUDE), (CODEX_ROOT, CODEX)] {
-        assert_eq!(
-            snapshot(&workspace().join(root).join("skills/loft-spec")),
-            snapshot(&composed.0.join(package)),
-            "{root}: run scripts/package-skill.sh"
-        );
-    }
+    let check = package_check();
+    assert_eq!(
+        check["outcome"], "current",
+        "{check}: run scripts/package-skill.sh"
+    );
+    assert_eq!(
+        check["packages"],
+        json!([
+            "plugins/claude/loft/skills/loft-spec",
+            "plugins/claude/loft/skills/yard",
+            "plugins/codex/loft/skills/loft-spec",
+            "plugins/codex/loft/skills/yard",
+        ])
+    );
+}
+
+#[test]
+fn the_packaging_script_runs_loft_skill_package_and_composes_nothing_itself() {
+    let script = fs::read_to_string(workspace().join("scripts/package-skill.sh")).unwrap();
+    let commands: Vec<&str> = script
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .collect();
+    assert_eq!(
+        commands,
+        [
+            "set -eu",
+            "cd \"$(dirname \"$0\")/..\"",
+            "exec cargo run -q -p loft-cli -- skill package",
+        ]
+    );
 }
 
 /// The skills a plugin's package holds, by their folder names.

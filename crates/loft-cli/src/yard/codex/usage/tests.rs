@@ -106,18 +106,122 @@ fn skipped_observations_record_one_unavailable_request_without_guessing_counts()
     assert_eq!(state.events.len(), 3);
 }
 
-#[test]
-fn source_account_classification_is_preserved_without_losing_raw_zero_counters() {
-    for account in ["apiKey", "chatgpt", "unknown"] {
-        let mut state = state();
-        let mut counters = usage(100, 30, 5);
+/// The state after one request is observed for `account`, where one is given, with `write`
+/// cache writes in its latest and cumulative counts, where given.
+fn observed(account: Option<&str>, write: Option<u64>) -> State {
+    let mut state = state();
+    let mut counters = usage(100, 30, 5);
+    if let Some(account) = account {
         counters["account"] = json!(account);
-        counters["last"]["cacheWriteInputTokens"] = json!(0);
-        counters["total"]["cacheWriteInputTokens"] = json!(0);
-        assert!(observe(&mut state, "thread", "turn", &counters, "now"));
-        assert_eq!(state.events[0]["usageSource"]["account"], account);
-        assert_eq!(state.events[0]["tokens"]["cacheWrite"], 0);
-        let kept = serde_json::to_value(&state.usage.cursors["thread"]).unwrap();
-        assert_eq!(kept["snapshot"]["write"], 0);
     }
+    if let Some(write) = write {
+        counters["last"]["cacheWriteInputTokens"] = json!(write);
+        counters["total"]["cacheWriteInputTokens"] = json!(write);
+    }
+    assert!(observe(&mut state, "thread", "turn", &counters, "now"));
+    if let Some(write) = write {
+        let kept = serde_json::to_value(&state.usage.cursors["thread"]).unwrap();
+        assert_eq!(kept["snapshot"]["write"], write);
+    }
+    state
+}
+
+#[test]
+fn a_zero_cache_write_from_a_verified_api_key_account_is_measured_in_the_tokens() {
+    let state = observed(Some("apiKey"), Some(0));
+    assert_eq!(state.events[0]["tokens"]["cacheWrite"], 0);
+    assert_eq!(state.events[0]["usageSource"], json!({"account":"apiKey"}));
+}
+
+#[test]
+fn an_unverified_zero_cache_write_leaves_the_tokens_and_is_reported_under_its_source() {
+    for (account, kept) in [
+        (Some("chatgpt"), "chatgpt"),
+        (Some("unknown"), "unknown"),
+        (None, "unknown"),
+    ] {
+        let state = observed(account, Some(0));
+        let tokens = &state.events[0]["tokens"];
+        assert!(tokens.get("cacheWrite").is_none(), "{tokens}");
+        assert_eq!(tokens["input"], 70);
+        assert_eq!(
+            state.events[0]["usageSource"],
+            json!({"account":kept,"reported":{"cacheWrite":0}})
+        );
+    }
+}
+
+#[test]
+fn a_positive_cache_write_is_measured_for_every_account() {
+    for account in ["apiKey", "chatgpt", "unknown"] {
+        let state = observed(Some(account), Some(4));
+        assert_eq!(state.events[0]["tokens"]["cacheWrite"], 4);
+        assert_eq!(state.events[0]["usageSource"], json!({"account":account}));
+    }
+}
+
+#[test]
+fn an_absent_cache_write_is_neither_measured_nor_reported_even_for_an_api_key_account() {
+    let state = observed(Some("apiKey"), None);
+    assert!(state.events[0]["tokens"].get("cacheWrite").is_none());
+    assert_eq!(state.events[0]["usageSource"], json!({"account":"apiKey"}));
+}
+
+fn queued(account: Option<&str>, write: u64) -> Value {
+    let mut event = json!({"kind":"request","eventId":"id","tokens":{"input":70,"cacheRead":30,"cacheWrite":write,"output":5}});
+    if let Some(account) = account {
+        event["usageSource"] = json!({"account":account});
+    }
+    event
+}
+
+#[test]
+fn the_rule_keeps_a_zero_cache_write_in_an_events_tokens_only_for_a_verified_api_key_account() {
+    let mut event = queued(Some("apiKey"), 0);
+    assert!(!super::classify_event(&mut event));
+    assert_eq!(event, queued(Some("apiKey"), 0));
+}
+
+#[test]
+fn the_rule_moves_an_unverified_zero_cache_write_of_an_event_under_its_source() {
+    for (account, kept) in [
+        (
+            Some("chatgpt"),
+            json!({"account":"chatgpt","reported":{"cacheWrite":0}}),
+        ),
+        (
+            Some("unknown"),
+            json!({"account":"unknown","reported":{"cacheWrite":0}}),
+        ),
+        (None, json!({"reported":{"cacheWrite":0}})),
+    ] {
+        let mut event = queued(account, 0);
+        assert!(super::classify_event(&mut event));
+        assert_eq!(
+            event["tokens"],
+            json!({"input":70,"cacheRead":30,"output":5})
+        );
+        assert_eq!(event["usageSource"], kept);
+        assert_eq!(event["eventId"], "id");
+        assert!(
+            !super::classify_event(&mut event),
+            "a second pass moves nothing"
+        );
+    }
+}
+
+#[test]
+fn the_rule_keeps_a_positive_cache_write_of_an_event_and_leaves_other_kinds_alone() {
+    for account in [Some("apiKey"), Some("chatgpt"), None] {
+        let mut event = queued(account, 4);
+        assert!(!super::classify_event(&mut event));
+        assert_eq!(event, queued(account, 4));
+    }
+    let mut prompt = queued(None, 0);
+    prompt["kind"] = json!("prompt");
+    assert!(!super::classify_event(&mut prompt));
+    assert!(prompt.get("usageSource").is_none());
+    let mut compaction = queued(Some("chatgpt"), 0);
+    compaction["kind"] = json!("compaction");
+    assert!(super::classify_event(&mut compaction));
 }

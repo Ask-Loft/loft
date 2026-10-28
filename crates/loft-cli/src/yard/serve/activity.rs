@@ -8,7 +8,7 @@ use std::collections::BTreeMap;
 use loftspec::yaml::{Out, write};
 use yardlog::Time;
 
-use super::event::{Event, Who};
+use crate::yard::event::{Event, Who};
 
 /// A stretch of time, still going on where it has not ended.
 #[derive(Debug, Clone, PartialEq, Eq)]

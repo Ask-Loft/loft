@@ -3,32 +3,43 @@
 //! file that does not read is left out, since only its own session's events change it and the
 //! next event writes it whole again.
 
-use std::fs;
-use std::path::Path;
-
 use loftspec::yaml::{self, Node, Style, Value as Yaml};
 use serde_json::{Map, Number, Value};
+use yardlog_store::YardStore;
 use yardlog_store::session::SessionFile;
 
-/// Every file of `kind` in Yard Log's folder `folder`, as JSON.
-pub fn read(folder: &Path, kind: SessionFile) -> Vec<Value> {
-    let Ok(entries) = fs::read_dir(folder.join(kind.folder())) else {
-        return Vec::new();
-    };
-    let mut paths: Vec<_> = entries
-        .filter_map(Result::ok)
-        .map(|entry| entry.path())
-        .filter(|path| {
-            path.extension()
-                .is_some_and(|extension| extension == "yaml")
-        })
-        .collect();
-    paths.sort();
-    paths
-        .iter()
-        .filter_map(|path| fs::read(path).ok())
-        .filter_map(|bytes| yaml::read(&bytes).ok().flatten())
-        .filter_map(|node| {
+/// Every file of `kind` in the Yard Log of `store`, as JSON.
+pub fn read(store: &YardStore, kind: SessionFile) -> Vec<Value> {
+    entries(store, kind)
+        .into_iter()
+        .map(|(_, value)| value)
+        .collect()
+}
+
+/// Session `session`'s file of `kind` in the Yard Log of `store`, as JSON; none where it does not
+/// read.
+pub fn one(store: &YardStore, kind: SessionFile, session: &str) -> Option<Value> {
+    parsed(&store.session_file(kind, session)?)
+}
+
+/// A file's bytes as JSON; none where they do not read.
+fn parsed(bytes: &[u8]) -> Option<Value> {
+    Some(json(&yaml::read(bytes).ok().flatten()?))
+}
+
+/// A file's text as the page reads it, for the tests of what writes it.
+#[cfg(test)]
+pub fn as_read(text: &str) -> Value {
+    parsed(text.as_bytes()).expect("the file reads")
+}
+
+/// Every file of `kind` in the Yard Log of `store`, by the session key that names it, as JSON.
+pub fn entries(store: &YardStore, kind: SessionFile) -> Vec<(String, Value)> {
+    store
+        .session_files(kind)
+        .into_iter()
+        .filter_map(|(key, bytes)| Some((key, yaml::read(&bytes).ok().flatten()?)))
+        .filter_map(|(key, node)| {
             let mut value = json(&node);
             // A file written before files named their host is a Claude Code session's.
             if let Some(file) = value.as_object_mut() {
@@ -39,7 +50,7 @@ pub fn read(folder: &Path, kind: SessionFile) -> Vec<Value> {
                 let descriptor = yardlog::adapter::Descriptor::read(adapter).ok()?;
                 value["adapter"] = descriptor.json();
             }
-            Some(value)
+            Some((key, value))
         })
         .collect()
 }

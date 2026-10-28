@@ -317,7 +317,7 @@ this:
 {
   "schema": "loft-telemetry-event/2",
   "eventId": "0b9a3c0e-7f4d-4a43-9a52-3f3f2c4b8d11",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "os": "macos",
   "arch": "aarch64",
   "installedBy": "npm",

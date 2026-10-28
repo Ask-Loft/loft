@@ -1,0 +1,56 @@
+key: 01a1835b-defe-736c-aa9f-0f3e09cc8a10
+slug: loft-skill-package
+name: "`loft skill package`"
+body: "A maintainer's command, not listed in `loft --help`: it writes every plugin package under `plugins/` from the skill sources `loft` embeds, the `loft-spec` package for each host and the `yard` package for each host with a Yard adapter, so that one composer in Rust writes what the plugins publish and what the guards check."
+realizes:
+  - 01a13653-3ec0-76e7-bf76-fc7478b3d9fd
+  - 01a16469-559e-73c4-85f2-71b7852c58c8
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+requirements:
+  - key: 01a1835b-defe-736c-aa9f-0f3ff974fd70
+    statement:
+      form: event_driven
+      when: "a maintainer runs `loft skill package` in the repository of `loft`"
+      system: "`loft skill package`"
+      shall: "write each host's `loft-spec` package and, for each host with a Yard adapter, its `yard` package under `plugins/<host>/loft/skills/` from the sources `loft` embeds."
+    criteria:
+      - key: 01a1835b-defe-736c-aa9f-0f404d3d62ba
+        name: "After it runs, each committed package equals its composition."
+      - key: 01a1835b-defe-736c-aa9f-0f41ec3e6b18
+        name: "A host without a Yard adapter gets no `yard` package."
+      - key: 01a1835b-defe-736c-aa9f-0f425c3d1d76
+        name: "It sends no command event and asks for no update."
+      - key: 01a1835b-defe-736c-aa9f-0f43b7b11425
+        name: "`loft --help` does not list it."
+  - key: 01a1835b-defe-736c-aa9f-0f4481632a33
+    statement:
+      form: optional
+      where: "`--check` is given"
+      system: "`loft skill package`"
+      shall: "write nothing, and exit 1 naming each package file that differs from its composition."
+    criteria:
+      - key: 01a1835b-defe-736c-aa9f-0f455b8c4f0c
+        name: "A committed package that equals its composition exits 0."
+      - key: 01a1835b-defe-736c-aa9f-0f466e14b4a0
+        name: "A changed, missing or extra file of a committed package is named and exits 1."
+  - key: 01a1835b-defe-736c-aa9f-0f47655d0c98
+    statement:
+      form: unwanted
+      if: "the repository's Codex discovery entry is missing, copied or points elsewhere than the canonical skill source"
+      system: "`loft skill package`"
+      shall: "refuse to write and name the entry."
+    criteria:
+      - key: 01a1835b-defe-736c-aa9f-0f48d7979372
+        name: "No package file is changed."
+  - key: 01a1839e-0cd6-73b2-a193-4ffbaa5479e0
+    statement:
+      form: unwanted
+      if: "a skill source that `loft` embeds differs from its file under `crates/loft-cli/skill/` in the repository"
+      system: "`loft skill package`"
+      shall: "refuse to write or check, and name each source file that differs."
+    body: "A `loft` built from other sources, such as an installed release, would otherwise write its own copy over the packages, or call stale packages current."
+    criteria:
+      - key: 01a1839e-0cd6-73b2-a193-4ffccbfe1f90
+        name: "No package file is changed."
+      - key: 01a1839e-0cd6-73b2-a193-4ffd235245ba
+        name: "`--check` does not report `current` while a source differs."

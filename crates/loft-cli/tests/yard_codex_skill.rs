@@ -21,11 +21,11 @@ fn adaptation() -> String {
 }
 
 #[test]
-fn the_codex_yard_package_equals_the_shared_source_with_only_its_codex_adaptation() {
+fn the_codex_yard_package_opens_with_the_shared_source_and_ends_with_its_codex_adaptation() {
     let shared = read(&format!("{SOURCE}/SKILL.md"));
     let adapted = read(&format!("{SOURCE}/agents/codex.md"));
     let package = read(&format!("{PACKAGE}/SKILL.md"));
-    assert_eq!(package, format!("{shared}\n{adapted}"));
+    assert!(package.starts_with(&shared) && package.ends_with(&adapted));
     assert!(package.lines().count() <= 500);
     assert!(!adapted.starts_with("---"));
     assert!(!package.contains("Claude"));

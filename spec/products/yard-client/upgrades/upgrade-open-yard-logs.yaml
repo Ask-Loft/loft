@@ -35,3 +35,66 @@ requirements:
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f22405232a43
         name: "The result names each branch whose Yard Log it left, with the reason."
+  - key: 01a1835b-a222-7677-8e34-d5285ff3f54d
+    statement:
+      form: event_driven
+      when: "`loft yard upgrade` finds in an open Yard Log a totals file of an older totals format whose session's events this machine does not keep"
+      system: "`loft yard upgrade`"
+      shall: "write that file in its own totals format, with its zero cache-write counts unavailable where its host is Codex."
+    body: "Codex totals written before the adapter classified cache writes at the source hold zeros that may not be measured. No release carries them, so the upgrade settles them once, and the page server keeps no rule for them. Where this machine keeps the session's events, the totals are counted again from them instead."
+    criteria:
+      - key: 01a1835b-a222-7677-8e34-d5298ccf7576
+        name: "The rewrite makes a Codex zero cache-write count unavailable in the session total, stages, stage agents, no-stage counts, agent and model counts and submissions."
+      - key: 01a1835b-a222-7677-8e34-d52ae113612e
+        name: "Positive cache-write counts are kept."
+      - key: 01a1835b-a222-7677-8e34-d52bc84f5349
+        name: "A Claude Code totals file keeps its counts and gains its format."
+      - key: 01a1835b-a222-7677-8e34-d52c0920576b
+        name: "A totals file already in the current totals format is left as it was, so a second run changes nothing."
+      - key: 01a1835b-a222-7677-8e34-d52d413fb73b
+        name: "Totals files of a closed Yard Log are left as they were written."
+      - key: 01a18368-8abb-774b-ad89-b2abe250e47c
+        name: "While a page server runs, `loft yard upgrade` leaves totals files and event logs as they were and names the page server, so that a run after it stops settles them."
+      - key: 01a1839e-0cd9-75bc-b853-1fefb3d37734
+        name: "`loft yard upgrade` holds the page server's lock from the moment it finds none running until it has written the last totals file and event log, so that no page server starts meanwhile."
+  - key: 01a1839e-0cd9-75bc-b853-1ff0ce81be18
+    statement:
+      form: event_driven
+      when: "`loft yard upgrade` finds in an open Yard Log a Codex session's totals file whose session's events this machine keeps"
+      system: "`loft yard upgrade`"
+      shall: "write that file again as replaying the session's moved events counts it, whatever the file's totals format."
+    body: "Replaying the events is what the page server does when the session goes on, so the totals agree with their events whichever `loft` wrote them first, a page server that counted unmoved events included."
+    criteria:
+      - key: 01a1835b-a222-7677-8e34-d52f17634aa3
+        name: "Replaying the session's events after the upgrade gives the totals the upgrade wrote."
+      - key: 01a1839e-0cd9-75bc-b853-1ff103f78b92
+        name: "A totals file in the current format that counted an unverified zero as measured is written again without it."
+      - key: 01a1839e-0cd9-75bc-b853-1ff209c46c09
+        name: "A totals file that replaying gives byte for byte is not written, so a second run changes nothing."
+  - key: 01a1835b-a222-7677-8e34-d52ea28fec32
+    statement:
+      form: event_driven
+      when: "`loft yard upgrade` finds in `~/.yard/events/` a Codex model request whose tokens hold a zero cache-write count that no verified API-key account reported"
+      system: "`loft yard upgrade`"
+      shall: "move that count under the event's `usageSource.reported`."
+    body: "The Codex adapter no longer posts such a count in a request's tokens, so an event that holds one was posted before it classified cache writes at the source, and moving it once leaves nothing to move on a second run. The event logs belong to the machine, so every Codex session's log is settled, whichever tree's Yard Log it counts toward."
+    criteria:
+      - key: 01a1835b-a222-7677-8e34-d530298dfd95
+        name: "Each rewritten event keeps its event identity, so a retry of it is still recognized."
+      - key: 01a1838b-6fc9-778b-82be-c3b09a65599b
+        name: "The events of a Codex session are moved whatever its totals file's format, and whichever Yard Log they count toward."
+      - key: 01a1838b-6fc9-778b-82be-c3b15f337a17
+        name: "A second run moves no event."
+      - key: 01a1839e-0cd9-75bc-b853-1ff3e60d801e
+        name: "The move applies the Codex adapter's rule of a measured cache-write count."
+  - key: 01a1839e-0cd9-75bc-b853-1ff4b2db882f
+    statement:
+      form: unwanted
+      if: "`loft yard upgrade` fails to settle a totals file or an event log"
+      system: "`loft yard upgrade`"
+      shall: "still report what became of each branch's Yard Log, name the file it failed on, and exit 1."
+    criteria:
+      - key: 01a1839e-0cd9-75bc-b853-1ff548163d29
+        name: "The result lists the upgraded, current and left Yard Logs beside the failure."
+      - key: 01a1839e-0cd9-75bc-b853-1ff6ac1d60c4
+        name: "With no machine home and no totals file to settle, the upgrade does not fail."

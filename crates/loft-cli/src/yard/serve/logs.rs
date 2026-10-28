@@ -16,7 +16,7 @@ use yardlog_store::session::SessionFile;
 
 use super::http::Response;
 use super::trees::is_served;
-use super::{markdown, session_files, token_sums};
+use super::{markdown, token_sums};
 use crate::json;
 use crate::yard::answer::{OUTCOME, PARTLY, record};
 use crate::yard::answer_input;
@@ -26,6 +26,7 @@ use crate::yard::caller::{Caller, Continuations};
 use crate::yard::failure::Failure;
 use crate::yard::read::{SCHEMA as READ_SCHEMA, settler, shown};
 use crate::yard::render_log::Selection;
+use crate::yard::session_files;
 
 const ANSWER_SCHEMA: &str = "loft-yard-answer/1";
 
@@ -117,9 +118,8 @@ fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<V
     let continuations = Continuations::read(Home::from_env().as_ref())?;
     let mut fields = shown(branch, held, &selection, &continuations)?.0;
     markdown::render_document(&mut fields);
-    let folder = branch.store.folder();
-    let activity = session_files::read(&folder, SessionFile::Activity);
-    let totals = session_files::read(&folder, SessionFile::Tokens);
+    let activity = session_files::read(&branch.store, SessionFile::Activity);
+    let totals = session_files::read(&branch.store, SessionFile::Tokens);
     fields["tokenSums"] = token_sums::sums(&totals, &activity);
     fields["activity"] = Value::Array(activity);
     fields["inherited"] = json!(inherited);

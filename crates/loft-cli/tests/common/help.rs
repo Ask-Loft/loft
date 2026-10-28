@@ -22,6 +22,11 @@ pub fn yard_codex_commands() -> Vec<String> {
     listed(&["yard", "codex"])
 }
 
+/// The commands `loft skill` lists.
+pub fn skill_commands() -> Vec<String> {
+    listed(&["skill"])
+}
+
 fn listed(command: &[&str]) -> Vec<String> {
     let output = Command::new(env!("CARGO_BIN_EXE_loft"))
         .args(command)
