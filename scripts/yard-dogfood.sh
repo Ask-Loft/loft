@@ -1,9 +1,12 @@
 #!/bin/zsh
 # Start Claude Code or Codex with this worktree's Loft binary and Yard plugin.
-# Both start in the caller's working directory. Claude is the default.
+# Each launch builds Loft and restarts the one shared Yard server on port 7412.
+# Existing sessions reconnect; refresh open pages after a same-version UI rebuild.
+# Both start in the caller's working directory. Requires Python 3, ps and lsof.
+# Claude is the default.
 #   ./scripts/yard-dogfood.sh claude                    start Claude Code
 #   ./scripts/yard-dogfood.sh claude resume <session-id> resume Claude Code
-#   ./scripts/yard-dogfood.sh codex                     start Codex (requires Python 3)
+#   ./scripts/yard-dogfood.sh codex                     start Codex
 #   ./scripts/yard-dogfood.sh codex resume <session-id>  resume Codex
 set -euo pipefail
 
@@ -27,12 +30,7 @@ if [[ ${1-} == resume ]]; then
   fi
 fi
 
-echo "Building loft (release) in $TREE ..."
-(
-  cd "$TREE"
-  cargo build --release --quiet --package loft-cli --target-dir "$TREE/target"
-)
-LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off "$LOFT" --version
+python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT"
 
 echo "Yard page: http://127.0.0.1:$PORT/"
 if [[ $AGENT_COMMAND == codex ]]; then
