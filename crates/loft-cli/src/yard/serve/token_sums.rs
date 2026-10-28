@@ -1,8 +1,7 @@
 //! Yard Log's token sums as the page shows them, summed from every session's totals file by the
 //! rules of Yard Log's model: in all, by stage and within each stage by type of subagent, under
-//! no stage, by session, by agent and model, and by submission. A Codex totals file written
-//! before its zero cache writes were classified counts those zeros as unavailable here, and its
-//! file is left as it is.
+//! no stage, by session, by agent and model, and by submission. Each totals file is summed as it
+//! gives its counts, whatever its host.
 
 use std::cmp::Reverse;
 
@@ -63,8 +62,7 @@ struct Session {
 impl Sums {
     fn add(&mut self, file: &Value) {
         let host = file["host"].as_str().unwrap_or_default();
-        let legacy = host == "codex" && file["cacheWriteClassified"] != Value::Bool(true);
-        let counts = |value: &Value| read(value, legacy);
+        let counts = Counts::from_fields;
         let tokens = counts(&file["tokens"]);
         self.all.get_or_insert_default().add(tokens);
         // A file that keeps no counts under no stage counted nothing there: a measured zero
@@ -214,19 +212,6 @@ impl Session {
         }
         session
     }
-}
-
-/// The counts a totals file keeps in `value`, with a zero cache write unavailable where the
-/// file is `legacy`.
-fn read(value: &Value, legacy: bool) -> Counts {
-    if legacy && value["cacheWrite"] == 0 {
-        let mut shown = value.clone();
-        if let Some(fields) = shown.as_object_mut() {
-            fields.remove("cacheWrite");
-        }
-        return Counts::from_fields(&shown);
-    }
-    Counts::from_fields(value)
 }
 
 /// A measured zero of each counter `counts` holds.

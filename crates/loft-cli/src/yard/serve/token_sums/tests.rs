@@ -52,12 +52,12 @@ fn two_sessions() -> Vec<Value> {
     ]
 }
 
-/// A Codex totals file written before its zero cache writes were classified.
-fn legacy_codex() -> Value {
+/// A Codex totals file whose requests each wrote nothing to the cache.
+fn codex_totals() -> Value {
     let tokens = counts(10, 100, 0, 2);
     json!({
         "host": "codex",
-        "session": "legacy",
+        "session": "codex",
         "tokens": tokens,
         "noStage": counts(0, 0, 0, 0),
         "stages": [with(tokens.clone(), json!({
@@ -166,67 +166,21 @@ fn with_no_totals_file_nothing_is_counted() {
 }
 
 #[test]
-fn historical_codex_zero_writes_are_unavailable_in_every_sum_and_the_file_is_unchanged() {
-    let file = legacy_codex();
-    let original = file.clone();
-    let sums = sums(std::slice::from_ref(&file), &[]);
-    for counts in every_sum(&sums) {
-        assert!(counts.get("cacheWrite").is_none(), "{counts}");
+fn a_zero_cache_write_is_summed_as_its_totals_file_gives_it_whatever_the_host_or_marker() {
+    for host in ["codex", "claude-code"] {
+        for classified in [None, Some(false), Some(true)] {
+            let mut file = codex_totals();
+            file["host"] = json!(host);
+            if let Some(classified) = classified {
+                file["cacheWriteClassified"] = json!(classified);
+            }
+            let sums = sums(&[file], &[]);
+            for counts in every_sum(&sums) {
+                assert_eq!(counts["cacheWrite"], 0, "{host} {classified:?}: {counts}");
+            }
+            assert_eq!(sums["partial"], false, "{host} {classified:?}");
+        }
     }
-    assert_eq!(sums["all"]["input"], 10);
-    assert_eq!(sums["all"]["cacheRead"], 100);
-    assert_eq!(sums["all"]["output"], 2);
-    assert_eq!(sums["partial"], true);
-    assert_eq!(file, original);
-}
-
-/// The cache write the sums give of a totals file of `host` with `write` cache writes, marked
-/// `classified` or not at all.
-fn cache_write(host: &str, classified: Option<bool>, write: u64) -> Value {
-    let mut file = legacy_codex();
-    file["host"] = json!(host);
-    file["tokens"] = counts(10, 100, write, 2);
-    if let Some(classified) = classified {
-        file["cacheWriteClassified"] = json!(classified);
-    }
-    sums(&[file], &[])["all"]["cacheWrite"].clone()
-}
-
-#[test]
-fn positive_legacy_writes_and_classified_or_claude_measured_zeros_keep_their_meaning() {
-    let markers = [None, Some(false), Some(true)];
-    let cases = ["codex", "claude-code"].into_iter().flat_map(|host| {
-        markers
-            .into_iter()
-            .flat_map(move |classified| [0, 7].map(|write| (host, classified, write)))
-    });
-    for (host, classified, write) in cases {
-        let unavailable = host == "codex" && classified != Some(true) && write == 0;
-        let expected = if unavailable {
-            Value::Null
-        } else {
-            json!(write)
-        };
-        let shown = cache_write(host, classified, write);
-        assert_eq!(shown, expected, "{host} {classified:?} {write}");
-    }
-}
-
-#[test]
-fn mixed_historical_codex_and_claude_totals_keep_measured_subtotals_and_partial_coverage() {
-    let codex = legacy_codex();
-    let mut claude = legacy_codex();
-    claude["host"] = json!("claude-code");
-    claude["session"] = json!("claude");
-    claude["tokens"] = counts(20, 200, 7, 3);
-    let sums = sums(&[codex, claude], &[]);
-    assert_eq!(sums["all"]["cacheWrite"], 7);
-    assert_eq!(sums["all"]["input"], 30);
-    assert_eq!(sums["all"]["partial"], json!(["cacheWrite"]));
-    assert_eq!(sums["partial"], true);
-    let sessions = sums["sessions"].as_array().unwrap();
-    let codex = sessions.iter().find(|session| session["host"] == "codex");
-    assert!(codex.unwrap()["tokens"].get("cacheWrite").is_none());
 }
 
 #[test]

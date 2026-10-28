@@ -7,29 +7,25 @@ fn source(host: &str, account: &str, write: &Value) -> Value {
 }
 
 #[test]
-fn only_verified_api_key_zeros_are_measured_in_codex_cache_write_accounting() {
-    for account in ["chatgpt", "unknown", "future", "apiKey"] {
-        let posted = source("codex", account, &json!(0));
-        let read = Event::read(&posted).unwrap();
-        let fields = read.tokens().unwrap().fields();
-        assert_eq!(
-            fields.iter().any(|(key, _)| *key == "cacheWrite"),
-            account == "apiKey"
-        );
-        assert_eq!(read.posted, posted);
-        assert_eq!(read.posted["tokens"]["cacheWrite"], 0);
+fn a_zero_cache_write_is_counted_as_given_whatever_the_host_or_account() {
+    for host in ["codex", "claude-code"] {
+        for account in [
+            Some("chatgpt"),
+            Some("unknown"),
+            Some("future"),
+            Some("apiKey"),
+            None,
+        ] {
+            let mut posted = source(host, account.unwrap_or_default(), &json!(0));
+            if account.is_none() {
+                posted.as_object_mut().unwrap().remove("usageSource");
+            }
+            let read = Event::read(&posted).unwrap();
+            let tokens = read.tokens().unwrap().json();
+            assert_eq!(tokens["cacheWrite"], 0, "{host} {account:?}: {tokens}");
+            assert_eq!(read.posted, posted);
+        }
     }
-    let mut legacy = source("codex", "unknown", &json!(0));
-    legacy.as_object_mut().unwrap().remove("usageSource");
-    assert!(
-        !Event::read(&legacy)
-            .unwrap()
-            .tokens()
-            .unwrap()
-            .fields()
-            .iter()
-            .any(|(key, _)| *key == "cacheWrite")
-    );
 }
 
 #[test]

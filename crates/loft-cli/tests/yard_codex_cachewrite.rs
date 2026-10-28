@@ -1,4 +1,5 @@
-//! Source reports survive while ambiguous writes stay out of measured totals, including replay.
+//! The page server counts each request's tokens as the adapter gives them, including on replay,
+//! and keeps the source report in the raw event.
 use crate::common::workspace;
 use crate::schema;
 use crate::served::Served;
@@ -7,16 +8,21 @@ use crate::yard_serve_events::{event, post, session_file};
 use serde_json::{Value, json};
 use std::fs;
 
-fn request(yard: &Yard, second: u32, account: Option<&str>, write: u64) -> Value {
+/// A Codex request as the adapter posts it: `write` in its tokens where it is measured, and
+/// `source` as its `usageSource`.
+fn request(yard: &Yard, second: u32, source: Option<Value>, write: Option<u64>) -> Value {
+    let mut tokens = json!({"input":70,"cacheRead":30,"output":5});
+    if let Some(write) = write {
+        tokens["cacheWrite"] = json!(write);
+    }
     let mut row = event(
         yard,
         "request",
         second,
-        &json!({"host":"codex","model":"fixture",
-        "tokens":{"input":70,"cacheRead":30,"cacheWrite":write,"output":5}}),
+        &json!({"host":"codex","model":"fixture","tokens":tokens}),
     );
-    if let Some(account) = account {
-        row["usageSource"] = json!({"account":account});
+    if let Some(source) = source {
+        row["usageSource"] = source;
     }
     row
 }
@@ -38,7 +44,8 @@ fn start() -> (Yard, Served) {
 #[test]
 fn subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_breakdown() {
     let (yard, served) = start();
-    let mut row = request(&yard, 1, Some("chatgpt"), 0);
+    let reported = json!({"account":"chatgpt","reported":{"cacheWrite":0}});
+    let mut row = request(&yard, 1, Some(reported.clone()), None);
     row["agent"] = json!({"id":"reviewer","type":"review"});
     post(&served, &[row]);
     let doc = read(&yard, &served);
@@ -60,22 +67,34 @@ fn subscription_zeros_stay_in_raw_events_but_are_absent_from_every_measured_brea
     }
     let raw = fs::read_to_string(yard.scratch.home().join(".yard/events/codex~s1.jsonl")).unwrap();
     let kept: Value = serde_json::from_str(raw.lines().next().unwrap()).unwrap();
-    assert_eq!(kept["tokens"]["cacheWrite"], 0);
-    assert_eq!(kept["usageSource"]["account"], "chatgpt");
+    assert!(kept["tokens"].get("cacheWrite").is_none(), "{kept}");
+    assert_eq!(kept["usageSource"], reported);
     assert_eq!(doc["revision"], 1);
 }
 
 #[test]
-fn replay_preserves_known_api_zeros_and_positive_counts_without_counting_legacy_zeros() {
+fn replay_counts_each_request_s_tokens_as_given_whatever_its_source() {
     let (yard, served) = start();
-    post(&served, &[request(&yard, 1, None, 0)]);
+    post(&served, &[request(&yard, 1, None, Some(0))]);
     drop(served);
     let again = Served::start(&yard, &[]);
-    post(&again, &[request(&yard, 2, Some("apiKey"), 0)]);
+    let doc = read(&yard, &again);
+    assert_eq!(doc["tokenSums"]["all"]["cacheWrite"], 0);
+    assert!(doc["tokenSums"]["all"].get("partial").is_none());
+    let reported = json!({"account":"chatgpt","reported":{"cacheWrite":0}});
+    post(&again, &[request(&yard, 2, Some(reported), None)]);
     let doc = read(&yard, &again);
     assert_eq!(doc["tokenSums"]["all"]["cacheWrite"], 0);
     assert_eq!(doc["tokenSums"]["all"]["partial"], json!(["cacheWrite"]));
-    post(&again, &[request(&yard, 3, Some("chatgpt"), 7)]);
+    post(
+        &again,
+        &[request(
+            &yard,
+            3,
+            Some(json!({"account":"chatgpt"})),
+            Some(7),
+        )],
+    );
     let doc = read(&yard, &again);
     assert_eq!(doc["tokenSums"]["all"]["cacheWrite"], 7);
     assert_eq!(doc["tokenSums"]["all"]["input"], 210);

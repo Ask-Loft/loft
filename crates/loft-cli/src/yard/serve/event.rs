@@ -93,20 +93,6 @@ fn time(text: &str) -> Option<Time> {
     whole.parse().ok()
 }
 
-// Source values remain in `posted`; only measured contributions enter the aggregates.
-fn measured_tokens(posted: &Value, host: &str, tokens: &Value) -> Tokens {
-    let reported = Tokens::read(tokens);
-    if host != "codex"
-        || tokens["cacheWrite"].as_u64() != Some(0)
-        || posted["usageSource"]["account"] == "apiKey"
-    {
-        return reported;
-    }
-    let mut measured = tokens.clone();
-    measured.as_object_mut().unwrap().remove("cacheWrite");
-    Tokens::read(&measured)
-}
-
 impl Event {
     /// Reads `posted` as an event.
     ///
@@ -136,9 +122,7 @@ impl Event {
             .map(yardlog::adapter::Descriptor::read)
             .transpose()
             .map_err(str::to_owned)?;
-        let tokens = posted
-            .get("tokens")
-            .map(|tokens| measured_tokens(posted, host, tokens));
+        let tokens = posted.get("tokens").map(Tokens::read);
         Ok(Self {
             session: session.to_owned(),
             dir: dir.to_owned(),
