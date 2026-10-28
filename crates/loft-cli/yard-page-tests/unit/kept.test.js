@@ -1,6 +1,6 @@
 // What the page keeps of each Yard Log in this browser: its folds and its Gantt chart's scroll.
 
-import { forget } from './dom.js';
+import { forget, root } from './dom.js';
 
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
@@ -35,6 +35,32 @@ function toggle(details) {
   details.open = !details.open;
   details.dispatchEvent(new Event('toggle'));
 }
+
+test('a connected fold is saved before its deferred native toggle event arrives', () => {
+  kept.begin(log('log-a'));
+  const fold = kept.details({ path: 'log-a/tokens', open: false }, {});
+  root().append(fold);
+  fold.open = true;
+  assert.equal(stored()['log-a'].folds['log-a/tokens']?.value, true);
+  kept.reset();
+  kept.begin(log('log-a'));
+  assert.equal(kept.details({ path: 'log-a/tokens', open: false }, {}).open, true);
+});
+
+test('a redraw captures the current fold state and ignores a replaced elements late toggle', () => {
+  kept.begin(log('log-a'));
+  const fold = kept.details({ path: 'log-a/tokens', open: false }, {});
+  root().append(fold);
+  toggle(fold);
+  fold.open = false;
+  kept.begin(log('log-a'));
+  const next = kept.details({ path: 'log-a/tokens', open: false }, {});
+  root().replaceChildren(next);
+  assert.equal(next.open, false);
+  fold.open = true;
+  fold.dispatchEvent(new Event('toggle'));
+  assert.equal(kept.get('log-a/tokens', false), false);
+});
 
 test('a fold the person toggled is drawn so again, by a fresh draw and after the page loads again', () => {
   kept.begin(log('log-a'));

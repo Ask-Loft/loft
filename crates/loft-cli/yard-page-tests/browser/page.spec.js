@@ -1176,3 +1176,41 @@ test('free form checkboxes combine with named choices and keep selection indepen
   expect((await sending).postDataJSON().answers).toEqual([{ block, labels: ['Red', 'Blue'], words: 'Amber' }]);
   await expect(panel).toBeHidden({ timeout: LIVE });
 });
+
+test('token details start closed and keyboard choices survive live counts and reloads', async ({ page }) => {
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  const section = page.locator('#tokens');
+  const details = section.locator('details.token-details');
+  const summary = details.locator(':scope > summary');
+  const totals = section.locator('.token-totals');
+  await expect(totals).toBeVisible();
+  await expect(details).not.toHaveAttribute('open', '');
+  await expect(section.locator('.tokens-table')).toBeHidden();
+  await expect(section.locator('.reporting-coverage')).toBeHidden();
+  await expect(section.locator('.tokens-note')).toBeHidden();
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(details).toHaveAttribute('open', '');
+  await expect(section.locator('.tokens-table')).toBeVisible();
+  await expect(section.locator('.reporting-coverage')).toBeVisible();
+  await expect(section.locator('.tokens-note')).toBeVisible();
+  const before = Number(await totals.locator('dd').first().getAttribute('title'));
+  const posted = await postAsMod('/api/events', [{
+    session: 's1', dir: setup.tree, at: since(0), kind: 'request', model: 'claude-opus-5-5',
+    tokens: { input: 1, cacheRead: 0, cacheWrite: 0, output: 1 },
+  }]);
+  expect(posted.status).toBe(200);
+  await expect(totals.locator('dd').first()).toHaveAttribute('title', String(before + 1), { timeout: LIVE });
+  await expect(details).toHaveAttribute('open', '');
+  await page.reload();
+  await expect(details).toHaveAttribute('open', '');
+  await expect(totals).toBeVisible();
+  await summary.focus();
+  await page.keyboard.press('Space');
+  await expect(details).not.toHaveAttribute('open', '');
+  await page.reload();
+  await expect(totals).toBeVisible();
+  await expect(details).not.toHaveAttribute('open', '');
+  await expect(section.locator('.tokens-table')).toBeHidden();
+});

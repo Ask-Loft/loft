@@ -5,6 +5,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard's token details start collapsed while summary totals stay visible, with the fold choice
+  remembered separately for each Yard Log through live updates and reloads.
 - Yard's free-form answers have explicit radio buttons or checkboxes. Typing selects the
   option, clearing text keeps it selected, and switching away retains text without sending it.
 - Yard's waiting panel preserves mixed question, plan and approval order, and same-second

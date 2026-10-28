@@ -1,5 +1,5 @@
 // What the page keeps of each Yard Log in this browser: each fold the person opened or closed, by
-// its block's key and a name (`<block key>/<name>`), the Feature Group open in each spec-change
+// a record's key and a name (`<record key>/<name>`), the Feature Group open in each spec-change
 // view, and where its Gantt chart was scrolled. A fold is kept only while it differs from its
 // default, and a stage's only while its status is the one it was set under; what a Yard Log no
 // longer holds is forgotten as it is drawn, and so are all but the 30 Yard Logs opened last. A
@@ -30,7 +30,8 @@ let loose = { at: 0, folds: {} };
 const dirty = new Set();
 /** @type {ReturnType<typeof setTimeout> | null} */
 let pending = null;
-let listening = false;
+/** The folds of the current draw. @type {Map<HTMLDetailsElement, { path: string, open: boolean, basis: string }>} */
+const drawn = new Map();
 
 /** @returns {Record<string, Kept>} */
 function store() {
@@ -58,15 +59,21 @@ function bound(logs) {
 function save() {
   if (!current) return;
   dirty.add(current);
-  if (!listening && typeof globalThis.addEventListener === 'function') {
-    listening = true;
-    globalThis.addEventListener('pagehide', flush);
-  }
   if (!pending) pending = setTimeout(flush, WAIT);
+}
+
+// Native toggle events are deferred: navigation or another draw can arrive before them.
+function captureFolds() {
+  for (const [node, fold] of drawn) {
+    if (node.isConnected && get(fold.path, fold.open, fold.basis) !== node.open) {
+      set(fold.path, node.open, fold.open, fold.basis);
+    }
+  }
 }
 
 /** Writes what changed now, over what another tab wrote of the other Yard Logs. */
 export function flush() {
+  captureFolds();
   if (pending) clearTimeout(pending);
   pending = null;
   if (!dirty.size || !all) return;
@@ -90,6 +97,7 @@ export function reset() {
   current = '';
   loose = { at: 0, folds: {} };
   dirty.clear();
+  drawn.clear();
 }
 
 /**
@@ -97,6 +105,8 @@ export function reset() {
  * @param {any} log
  */
 export function begin(log) {
+  captureFolds();
+  drawn.clear();
   current = log?.yardLog?.key ?? '';
   if (!current) {
     loose = { at: 0, folds: {} };
@@ -112,7 +122,8 @@ export function begin(log) {
     kept.at = newest + 1;
     changed = true;
   }
-  const keys = new Set();
+  // A section's folds belong to Yard Log itself; block folds still expire with their blocks.
+  const keys = new Set([current]);
   for (const stage of log.stages ?? []) {
     keys.add(stage.key);
     for (const block of stage.blocks ?? []) keys.add(block.key);
@@ -165,17 +176,22 @@ export function set(path, value, fallback, basis = '') {
  */
 export function details(fold, attributes, ...children) {
   const { path, open, basis = '' } = fold;
-  return h(
+  const node = /** @type {HTMLDetailsElement} */ (h(
     'details',
     {
       ...attributes,
       open: path ? get(path, open, basis) : open,
       ontoggle: path
-        ? (/** @type {Event} */ event) => set(path, /** @type {HTMLDetailsElement} */ (event.currentTarget).open, open, basis)
+        ? (/** @type {Event} */ event) => {
+            const node = /** @type {HTMLDetailsElement} */ (event.currentTarget);
+            if (drawn.has(node)) set(path, node.open, open, basis);
+          }
         : null,
     },
     ...children,
-  );
+  ));
+  if (path) drawn.set(node, { path, open, basis });
+  return node;
 }
 
 /** The folds of the trace view, each folded unless the person opened it. */
@@ -198,3 +214,6 @@ export function setScroll(value) {
   mine().gantt = value;
   save();
 }
+
+// Navigation can precede the first deferred toggle event, so saving is ready from the start.
+if (typeof globalThis.addEventListener === 'function') globalThis.addEventListener('pagehide', flush);

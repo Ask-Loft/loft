@@ -26019,6 +26019,72 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
         name: "where no request has been counted, the page says that no tokens have been counted yet"
         body: 51928a5b132496ae06d6673b3584a357efdef3d94edef11f62cff503370513ca
+  - node: 01a18002-11df-7502-aae7-e831ca8ffed0
+    reviewed: b75dd9212ff609463a9b2195a15c1b1ce415678e66154fd2fee7f6aca1e43991
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
+        name: "token details start closed with the totals and partial notice outside the fold"
+        body: c6ee018a40e29df25aa76e31c6d7054dd3689dae8e4891624a6aef2a2affba82
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "token details start closed and keyboard choices survive live counts and reloads"
+        body: 5122195c937c8227fc2d295cd8d5f4876eb3c90f6a3d02caf99e5dfc4c72f3b1
+  - node: 01a18002-11df-7502-aae7-e832a623c32e
+    reviewed: 282db9cc159ccdf16def7ed09327fc8a3f15dca0260536baf5bf2dbe196aeaf3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
+        name: "token details start closed with the totals and partial notice outside the fold"
+        body: c6ee018a40e29df25aa76e31c6d7054dd3689dae8e4891624a6aef2a2affba82
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "token details start closed and keyboard choices survive live counts and reloads"
+        body: 5122195c937c8227fc2d295cd8d5f4876eb3c90f6a3d02caf99e5dfc4c72f3b1
+  - node: 01a18002-11df-7502-aae7-e833332abdbc
+    reviewed: 23fc7535d6f828b9bde22d9c9350afe6d69fb52be8ea9f5fe7c1f984a0a9653a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
+        name: "token details start closed with the totals and partial notice outside the fold"
+        body: c6ee018a40e29df25aa76e31c6d7054dd3689dae8e4891624a6aef2a2affba82
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "token details start closed and keyboard choices survive live counts and reloads"
+        body: 5122195c937c8227fc2d295cd8d5f4876eb3c90f6a3d02caf99e5dfc4c72f3b1
+  - node: 01a18002-11df-7502-aae7-e8341610973a
+    reviewed: 4055f9489f45a091153753c1d3c5e0bb7ad9d143bdeec3f2334904f6d75f41bf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "token details start closed and keyboard choices survive live counts and reloads"
+        body: 5122195c937c8227fc2d295cd8d5f4876eb3c90f6a3d02caf99e5dfc4c72f3b1
+  - node: 01a18002-11df-7502-aae7-e8354f47bc75
+    reviewed: 1bc26516870a34160dacfda2e6a9eb3220c23ee110eaa8e1ea6f36e14f8181a4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
+        name: "the token fold choice survives usage redraws and reloads independently for each log"
+        body: db73fba56f36b6a6ad03ca6cfb195c54f57311cd8fc4f54d1140b09308749385
+      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
+        name: "the token fold stays open when an empty summary receives its first counts"
+        body: 298915da9ecc054550a7a8e3b5519669ad270c08fc9abe42c694d82577840b81
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "token details start closed and keyboard choices survive live counts and reloads"
+        body: 5122195c937c8227fc2d295cd8d5f4876eb3c90f6a3d02caf99e5dfc4c72f3b1
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a redraw captures the current fold state and ignores a replaced elements late toggle"
+        body: dc8839962a19dda605efa2652f14b8bab412031ee97485db4f0c80b7f8f073a9
+  - node: 01a18002-11df-7502-aae7-e836fa6d271e
+    reviewed: e86b93d03439e8acd0766cef42604508c8ba5b43d021a67a41c8e6397fba16b4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
+        name: "the token fold choice survives usage redraws and reloads independently for each log"
+        body: db73fba56f36b6a6ad03ca6cfb195c54f57311cd8fc4f54d1140b09308749385
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "token details start closed and keyboard choices survive live counts and reloads"
+        body: 5122195c937c8227fc2d295cd8d5f4876eb3c90f6a3d02caf99e5dfc4c72f3b1
+      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
+        name: "a connected fold is saved before its deferred native toggle event arrives"
+        body: 1f806956f0a98fe140746ad8d64e1b99b2492a13a0126fea9479a99793055a32
+  - node: 01a18002-11df-7502-aae7-e837eeed49fc
+    reviewed: 5729c52bd243ca6556fa321262af90811468cce66867aa04b7ba8df7d956fb89
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
+        name: "the no tokens summary stays outside closed token details"
+        body: a553eb42d51926cdaf49a72589504803843ae8a156d0a10b45778b9cdfa1c69b
   - node: 01a1646f-546d-7042-befd-eb20639f67b6
     reviewed: 14077e1497c0a31d58af4534ec3b3699b39617d027d3d1eeaa33f079629e697a
     tests:

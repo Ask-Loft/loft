@@ -3,6 +3,7 @@
 
 import { add, h } from '../lib/dom.js';
 import { tokens as amount, when } from '../lib/format.js';
+import * as kept from '../lib/kept.js';
 import { COUNTERS as KEYS, summarize, total } from '../model/tokens.js';
 
 const COUNTS = [
@@ -77,6 +78,17 @@ function agentName(agent) {
   return [agent.who.charAt(0).toUpperCase() + agent.who.slice(1), h('span', { class: 'model' }, agent.model)];
 }
 
+/** Detailed token information is closed by default, remembered for this Yard Log.
+ * @param {any} log
+ * @param {...any} content
+ */
+function tokenDetails(log, ...content) {
+  const path = log.yardLog?.key ? `${log.yardLog.key}/tokens` : null;
+  return kept.details({ path, open: false }, { class: 'token-details' },
+    h('summary', {}, 'Token details'),
+    h('div', { class: 'token-details-content' }, ...content));
+}
+
 /**
  * The tokens section of a Yard Log.
  * @param {any} log
@@ -92,7 +104,7 @@ export function tokensView(log) {
   const reporting = reportingOf(log.activity ?? []);
   if (summary.partial) add(section, h('p', { class: 'token-coverage', role: 'status' }, 'Token accounting: partial. Percentages show shares of recorded usage.'));
   if (!summary.counted) {
-    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), reporting, note);
+    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), tokenDetails(log, reporting, note));
     return section;
   }
   const stages = (log.stages ?? []).flatMap((stage) => [
@@ -118,9 +130,7 @@ export function tokensView(log) {
   add(
     section,
     h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: summary.all[name] === undefined ? 'Unavailable' : String(summary.all[name]) }, summary.all[name] === undefined ? 'Unavailable' : amount(summary.all[name]))))),
-    breakdowns(groups, summary.all),
-    reporting,
-    note,
+    tokenDetails(log, breakdowns(groups, summary.all), reporting, note),
   );
   return section;
 }

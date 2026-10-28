@@ -785,6 +785,8 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .tokens { background: var(--surface); border: 1px solid var(--ink); padding: 16px; display: grid; gap: 12px; }
 .tokens h3 { font-size: 18px; font-weight: 700; }
 .tokens h4 { font-size: 14px; color: var(--muted); }
+.token-details > summary { cursor: pointer; font-size: 14px; }
+.token-details-content { display: grid; gap: 12px; margin-top: 12px; }
 .token-totals { display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 0; }
 .token-totals dt { color: var(--muted); font-size: 12px; }
 .token-totals dd { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
