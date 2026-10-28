@@ -1,10 +1,13 @@
 name: Release
 
-# A tag `vX.Y.Z` pushed on main releases that version: the checks run, `loft` is built for each
-# platform and the npm packages are assembled; then, once the maintainer approves the `release`
-# environment, the crates go to crates.io, the npm packages to npm, and the tag gets a GitHub
-# release with the binaries. Both registries trust this workflow directly (Trusted Publishing),
-# so no registry token is stored in the repository.
+# A tag `vX.Y.Z` pushed on main releases that version, and a tag `vX.Y.Z-alpha.N`, `-beta.N` or
+# `-rc.N` pushed on develop or main releases that prerelease: the checks run, `loft` is built for
+# each platform and the npm packages are assembled; then, once the maintainer approves the
+# `release` environment, the crates go to crates.io, the npm packages to npm, and the tag gets a
+# GitHub release with the binaries. A prerelease goes to npm under the dist-tag of its
+# identifier, and its GitHub release is marked a prerelease, so that only those who ask for it
+# get it. Both registries trust this workflow directly (Trusted Publishing), so no registry
+# token is stored in the repository.
 
 on:
   push:
@@ -16,6 +19,8 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    outputs:
+      channel: ${{ steps.release.outputs.channel }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -26,8 +31,10 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest@0.9.146
-      # The tag names the crates' version, its commit is on main, and the changelog dates it.
+      # The tag names the crates' version, as a release on main or a prerelease on develop or
+      # main, and the changelog dates it; the check names the npm channel to publish under.
       - run: scripts/release-check.sh "$GITHUB_REF_NAME"
+        id: release
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq python3 zsh
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
@@ -35,7 +42,9 @@ jobs:
       - run: cargo run -q -p loft-cli -- fmt --check
       - run: cargo run -q -p loft-cli -- check --fail-on warning
       - run: cargo run -q -p loft-cli -- reconcile --fail-on warning
+      # A prerelease's specification is published by the release that follows it.
       - run: cargo run -q -p loft-cli -- verify
+        if: steps.release.outputs.channel == 'latest'
       - run: scripts/publish-crates.sh --dry-run
 
   build:
@@ -43,8 +52,10 @@ jobs:
     uses: ./.github/workflows/build.yml
 
   package:
-    needs: build
+    needs: [build, check]
     runs-on: ubuntu-latest
+    env:
+      CHANNEL: ${{ needs.check.outputs.channel }}
     steps:
       - uses: actions/checkout@v7
       - run: rustup toolchain install
@@ -57,7 +68,7 @@ jobs:
       # tarball's file modes, never a plain file's. Then `loft` is run from them.
       - run: scripts/npm-packages.sh binaries release/npm
       - run: scripts/npm-smoke.sh release/npm
-      - run: scripts/publish-npm.sh release/npm --dry-run
+      - run: scripts/publish-npm.sh release/npm --tag "$CHANNEL" --dry-run
       # An archive of each binary for the GitHub release.
       - run: |
           version=${GITHUB_REF_NAME#v}
@@ -77,13 +88,15 @@ jobs:
           path: release
 
   publish:
-    needs: package
+    needs: [package, check]
     runs-on: ubuntu-latest
     # Waits for the maintainer's approval; only `v*` tags may deploy to it.
     environment: release
     permissions:
       contents: write
       id-token: write
+    env:
+      CHANNEL: ${{ needs.check.outputs.channel }}
     steps:
       - uses: actions/checkout@v7
       - run: rustup toolchain install
@@ -107,9 +120,11 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
       # npm exchanges this run's identity for a short-lived token itself. Publishes the platform
-      # packages, then `@ask-loft/loft`, skipping any version npm already holds.
-      - run: scripts/publish-npm.sh release/npm
-      # The release notes are the version's entry in the changelog; the binaries are attached.
+      # packages, then `@ask-loft/loft`, skipping any version npm already holds, under the
+      # channel: `latest` for a release, leaving `latest` as it was for a prerelease.
+      - run: scripts/publish-npm.sh release/npm --tag "$CHANNEL"
+      # The release notes are the version's entry in the changelog; the binaries are attached. A
+      # prerelease is marked one, and is not the repository's latest release.
       - name: GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -117,7 +132,9 @@ jobs:
           version=${GITHUB_REF_NAME#v}
           awk -v head="## $version " 'index($0, head) == 1 {on = 1; next} /^## / {on = 0} on' \
             CHANGELOG.md | sed '/./,$!d' > notes.md
+          kind=
+          [ "$CHANNEL" = latest ] || kind="--prerelease --latest=false"
           gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
             gh release create "$GITHUB_REF_NAME" --verify-tag --title "Loft $version" \
-              --notes-file notes.md
+              --notes-file notes.md $kind
           gh release upload "$GITHUB_REF_NAME" release/archives/* --clobber

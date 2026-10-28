@@ -15499,8 +15499,8 @@ links:
     reviewed: eda8b464ca845678b50895b898c7675d9875b029545dff3837dc162d96d526ce
     tests:
       - file: "crates/loft-cli/tests/release_workflow.rs"
-        name: "the_check_job_runs_the_gate_and_verify_and_the_build_waits_for_it"
-        body: ddd6440eb4f15d7ebeae52904a4aacf839cbfddfe1122ed56126a72d100afcf6
+        name: "the_check_job_runs_the_gate_and_the_build_waits_for_it"
+        body: 79e380c4d8aaca86b6d0cb0eaf50790556848f632c8b96bb7d0aad86f2c61a2e
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "a_version_tag_runs_the_release_check_on_the_tag_s_commit_first"
         body: 3b108934637478eb14816aecb44facbb785c8581b6721a62889329f33b9f879c
@@ -15519,6 +15519,12 @@ links:
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "a_version_tag_runs_the_release_check_on_the_tag_s_commit_first"
         body: 3b108934637478eb14816aecb44facbb785c8581b6721a62889329f33b9f879c
+  - node: 01a183e8-7f64-7529-8822-369ca1a3330a
+    reviewed: 39c8c96124b0dd13355b6837d3239273e537b18e7d0ff260b1d0e80882c44f29
+    tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "loft_verify_runs_on_the_tag_s_commit_for_a_release_and_not_for_a_prerelease"
+        body: 959e02c0ac2779a2e62556eb47183999305cd473ac9a5a9c8bb82edac5d2e88c
   - node: 01a183e8-7f64-7529-8822-369ef44f59a2
     reviewed: 0478c5b3da5abb3a564ccabd4ce21f9b1c4a7778e5e2befc3f82674b3dbbfb74
     tests:
@@ -15531,6 +15537,12 @@ links:
       - file: "crates/loft-cli/tests/release_check.rs"
         name: "a_prerelease_tag_on_neither_develop_nor_main_is_refused"
         body: a95f44b4208a79f90de7a63b5f657fe9d9d850d39f59d84d0d96da294d516c05
+  - node: 01a183e8-7f64-7529-8822-36a09db88ebb
+    reviewed: f56dab8159eacb9720ea59413e47c811371bef5ef3b26575089b59b72155d348
+    tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "loft_verify_runs_on_the_tag_s_commit_for_a_release_and_not_for_a_prerelease"
+        body: 959e02c0ac2779a2e62556eb47183999305cd473ac9a5a9c8bb82edac5d2e88c
   - node: 01a183e8-7f64-7529-8822-36a28ba195f4
     reviewed: 61e955fe08018b606fe607d0f81a866f9cf1d99c0f441c5721e9fbf3f35ea933
     tests:
@@ -15558,9 +15570,18 @@ links:
   - node: 01a183e8-7f64-7529-8822-36a40bf19ad0
     reviewed: 51c48736b1dc2a51d9fa71767653530f3428e719c8bb227decea9b44f40e0728
     tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "each_npm_package_is_published_under_the_channel_the_release_check_names"
+        body: 3b62a63f712acc3912dad17980aebd812d863c5f16df99a1eb0658749645c6ea
       - file: "crates/loft-cli/tests/release_check.rs"
         name: "the_check_reports_the_npm_channel_of_a_release_and_of_each_prerelease"
         body: 28cd5971aebf1e4ff7a31fc1525583af370a8ade416eee4d6e747fbf7cd5484f
+  - node: 01a183e8-7f64-7529-8822-36a5bbafc01b
+    reviewed: cc656f15ff92146a383ad7e6eaff599e532fdbf14acd4c2e5b6f6f89182f0c29
+    tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "the_github_release_of_a_prerelease_is_marked_one_and_not_the_latest"
+        body: b1ba97b326fe9bd3f3a7f3344795566083fea8e3108acacce4dde4ae763f4709
   - node: 01a13804-d7aa-7131-91ff-bee5623be056
     reviewed: 7717a08fc52dd0ac7789bedf0d41d0b18730f90e8f8f8040cf38214d70205afb
     tests:
@@ -15587,7 +15608,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "the_publishing_job_runs_the_tarballs_it_downloaded_before_it_publishes"
-        body: 4de786d26fb0c3085123a813574440c0228ced4a529f331facc00544b4e95e31
+        body: 25f5d162c9e4aec5653db4543f3295470712bd70131892de636b2200bb3121c2
       - file: "crates/loft-cli/tests/npm.rs"
         name: "the_smoke_check_runs_loft_from_the_tarballs_and_reports_its_version"
         body: b173295be80d34bce88476f1459570fa253950ead4ebf06743e6d6b21c05b97c
