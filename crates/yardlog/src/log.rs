@@ -6,6 +6,7 @@ use crate::act::{Act, Channel};
 use crate::body::{Body, Kind, Verdict};
 use crate::format::Format;
 use crate::keys::{BlockKey, Handle, ResponseKey, StageKey, SubmissionKey, VersionKey, YardLogKey};
+use crate::lineage::Lineage;
 
 /// One branch's Yard Log.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -13,6 +14,10 @@ pub struct YardLog {
     pub root: Root,
     /// Each stage's file, in the order of [`Root::stages`].
     pub stages: Vec<StageFile>,
+    /// The machine's chains of continuations, by which every comparison of agents counts a
+    /// session as the first of its chain. It is the machine's, not the branch's: no file of
+    /// Yard Log holds it, and a log read without one compares sessions as they are.
+    pub lineage: Lineage,
 }
 
 /// What `yardlog.yaml` holds.

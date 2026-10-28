@@ -21,6 +21,7 @@ pub use reader::ReadError;
 
 use crate::format::Format;
 use crate::keys::{Key, StageKey};
+use crate::lineage::Lineage;
 use crate::log::{StageFile, YardLog};
 
 /// The root's file name in Yard Log's folder.
@@ -211,7 +212,11 @@ impl YardLog {
             stages.push(file);
             nodes.push((name, node));
         }
-        let log = Self { root, stages };
+        let log = Self {
+            root,
+            stages,
+            lineage: Lineage::default(),
+        };
         log.references(root_node, &nodes)?;
         Ok(log)
     }

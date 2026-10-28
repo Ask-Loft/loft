@@ -8,6 +8,7 @@ use super::reader::{leave_out, leniently};
 use super::{FileError, ROOT, parse, root, stage, stage_file};
 use crate::body::Body;
 use crate::keys::{Key, StageKey};
+use crate::lineage::Lineage;
 use crate::log::{StageEntry, StageFile, YardLog};
 
 /// What a lenient read gave: Yard Log as far as this `loft` reads it, and the number of its
@@ -37,7 +38,11 @@ impl YardLog {
                 error,
             })?;
             let stages = keep_readable(&mut root.stages, &mut stage_bytes);
-            Ok(Self { root, stages })
+            Ok(Self {
+                root,
+                stages,
+                lineage: Lineage::default(),
+            })
         });
         let mut log = read?;
         log.drop_dangling();

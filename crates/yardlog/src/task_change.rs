@@ -6,6 +6,7 @@ use crate::act::Agent;
 use crate::body::{Body, Task, TaskState, TaskType};
 use crate::input::{Fault, Input, Request};
 use crate::keys::Handle;
+use crate::lineage::Lineage;
 use crate::log::{StageFile, YardLog};
 use crate::write::{Context, Refusal, Reports, Written};
 
@@ -68,7 +69,7 @@ impl YardLog {
         agent: &Agent,
     ) -> Result<Option<Input>, Refusal> {
         let (file, current) = self.task(id).ok_or_else(|| no_task(id))?;
-        if patch.mirror && !mirrored(file, current, agent) {
+        if patch.mirror && !mirrored(&self.lineage, file, current, agent) {
             return Ok(None);
         }
         let finished = matches!(current.state, TaskState::Done | TaskState::Dropped);
@@ -148,11 +149,14 @@ impl YardLog {
 }
 
 /// Whether a mirror by `agent` may change `task` of the stage `file`: no other agent is
-/// assigned it, and an unassigned task lies in a stage `agent` owns.
-fn mirrored(file: &StageFile, task: &Task, agent: &Agent) -> bool {
+/// assigned it, and an unassigned task lies in a stage `agent` owns, each by `lineage`.
+fn mirrored(lineage: &Lineage, file: &StageFile, task: &Task, agent: &Agent) -> bool {
     match &task.assignee {
-        Some(assignee) => assignee.same(agent),
-        None => file.stage.owner().is_some_and(|owner| owner.same(agent)),
+        Some(assignee) => lineage.same(assignee, agent),
+        None => file
+            .stage
+            .owner()
+            .is_some_and(|owner| lineage.same(owner, agent)),
     }
 }
 

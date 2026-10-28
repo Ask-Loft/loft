@@ -10,6 +10,7 @@ mod boundaries;
 mod delegation;
 mod files;
 mod identity;
+mod lineage;
 mod merge;
 mod session_files;
 mod task_change;

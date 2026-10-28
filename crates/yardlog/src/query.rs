@@ -181,12 +181,15 @@ impl Block {
 }
 
 impl YardLog {
-    /// The stages `active` for `agent`: those it made `active` last, whatever type it names.
+    /// The stages `active` for `agent`: those it, or a session of its chain, made `active` last,
+    /// whatever type it names.
     pub fn active_stages_of<'a>(&'a self, agent: &'a Agent) -> impl Iterator<Item = &'a Block> {
-        self.stages
-            .iter()
-            .map(|file| &file.stage)
-            .filter(|stage| stage.is_active() && stage.owner().is_some_and(|o| o.same(agent)))
+        self.stages.iter().map(|file| &file.stage).filter(|stage| {
+            stage.is_active()
+                && stage
+                    .owner()
+                    .is_some_and(|owner| self.lineage.same(owner, agent))
+        })
     }
 }
 
