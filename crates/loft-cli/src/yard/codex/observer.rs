@@ -9,6 +9,12 @@ use super::state::{Files, State};
 use super::usage::{Active, Source};
 use super::{Result, usage};
 
+/// What a step's connection attempt and poll found, outside the state lock.
+struct Outcome {
+    attempted: Option<bool>,
+    polled: Option<Result<Vec<Notice>>>,
+}
+
 #[derive(Default)]
 pub struct Observer {
     connections: BTreeMap<String, (String, Connection)>,
@@ -16,23 +22,23 @@ pub struct Observer {
 }
 
 impl Observer {
+    /// Steps each active turn of the state the tick read, and tells whether a step changed the
+    /// accounting.
     pub fn tick(
         &mut self,
         files: &Files,
+        active: &BTreeMap<String, Active>,
         path: Option<&Path>,
         clock: &impl loft_ports::clock::Clock,
-    ) -> Result<()> {
-        let active = {
-            let _locked = files.lock()?;
-            files.read()?.usage.active
-        };
+    ) -> Result<bool> {
         self.connections
             .retain(|thread, (turn, _)| active.get(thread).is_some_and(|a| a.turn == *turn));
         self.retry.retain(|thread, _| active.contains_key(thread));
+        let mut changed = false;
         for (thread, turn) in active {
-            self.step(files, &thread, &turn, path, clock.elapsed())?;
+            changed |= self.step(files, thread, turn, path, clock.elapsed())?;
         }
-        Ok(())
+        Ok(changed)
     }
 
     fn attempt(
@@ -66,49 +72,63 @@ impl Observer {
         turn: &Active,
         path: Option<&Path>,
         now: Duration,
-    ) -> Result<()> {
+    ) -> Result<bool> {
         let at = crate::yard::now().map_err(super::message)?.to_string();
         let attempted = self.attempt(thread, turn, path, now);
         let polled = self.connections.get_mut(thread).map(|(_, c)| c.poll());
-        let _locked = files.lock()?;
-        let mut state = files.read()?;
+        if attempted.is_none() && polled.is_none() && !turn.ended {
+            return Ok(false);
+        }
+        files.update(|state| {
+            Ok(self.settle(state, thread, turn, Outcome { attempted, polled }, &at))
+        })
+    }
+
+    /// Applies one turn's connection outcome to the state, and tells whether the accounting
+    /// changed.
+    fn settle(
+        &mut self,
+        state: &mut State,
+        thread: &str,
+        turn: &Active,
+        outcome: Outcome,
+        at: &str,
+    ) -> bool {
         if state
             .usage
             .active
             .get(thread)
             .is_none_or(|a| a.turn != turn.turn)
         {
-            return Ok(());
+            return false;
         }
         let before = state.usage.clone();
-        if let Some(ready) = attempted {
-            source(&mut state, thread, turn.source, ready, &at);
+        if let Some(ready) = outcome.attempted {
+            source(state, thread, turn.source, ready, at);
         }
-        if let Some(result) = polled {
-            if let Ok(notices) = result {
-                apply(&mut state, thread, &turn.turn, notices, &at);
-            } else {
+        match outcome.polled {
+            Some(Ok(notices)) => apply(state, thread, &turn.turn, notices, at),
+            Some(Err(_)) => {
                 self.connections.remove(thread);
-                source(&mut state, thread, turn.source, false, &at);
+                source(state, thread, turn.source, false, at);
             }
+            None => {}
         }
-        if state.usage.active.get(thread).is_some_and(|a| a.ended) {
-            if state
-                .usage
-                .active
-                .get(thread)
-                .is_some_and(|a| a.source == Source::Pending)
-            {
-                usage::gap(&mut state, thread, &at);
+        if let Some(source) = state
+            .usage
+            .active
+            .get(thread)
+            .filter(|a| a.ended)
+            .map(|a| a.source)
+        {
+            if source == Source::Pending {
+                usage::gap(state, thread, at);
             }
             state.usage.active.remove(thread);
             self.connections.remove(thread);
             self.retry.remove(thread);
         }
-        if state.usage != before {
-            files.write(&state)?;
-        }
-        Ok(())
+        state.usage != before
     }
 }
 

@@ -49,7 +49,7 @@ pub enum Progress {
     Cancelled,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Watcher {
     pub route: Route,
     pub armed: bool,
@@ -57,7 +57,7 @@ pub struct Watcher {
     pub availability: Availability,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Ticket {
     pub resolution: Resolution,
     pub generation: u64,
@@ -85,7 +85,7 @@ pub enum Lifecycle {
     EndSession,
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Ledger {
     pub callers: BTreeMap<String, Watcher>,

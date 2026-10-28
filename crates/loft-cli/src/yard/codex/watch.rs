@@ -39,18 +39,30 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
     let mut server = ServerChild(None);
     let mut observer = super::observer::Observer::default();
     let mut notifications = super::notification_worker::Monitor::default();
+    // Learned on each beat; looked up between beats only while no page server is known or
+    // the known one refused a post.
+    let mut page_port = None;
     drive(clock, |beat| {
-        observer.tick(&files, socket.map(PathBuf::as_path), clock)?;
-        let stopped = {
-            let _locked = files.lock()?;
-            files.read()?.stopped
-        };
-        if !stopped {
-            notifications.tick(&files, socket.map(PathBuf::as_path), port, clock)?;
+        let state = files.peek(|state| state)?;
+        let accounted = observer.tick(
+            &files,
+            &state.usage.active,
+            socket.map(PathBuf::as_path),
+            clock,
+        )?;
+        if !state.stopped {
+            notifications.tick(
+                &files,
+                &state.notifications,
+                socket.map(PathBuf::as_path),
+                port,
+                clock,
+            )?;
         }
-        if beat && !stopped {
+        if beat && !state.stopped {
             let running = crate::yard::page::running(&home).map_err(|e| e.to_string())?;
-            let current_port = running.as_ref().map_or(port, |running| running.port);
+            page_port = running.as_ref().map(|running| running.port);
+            let current_port = page_port.unwrap_or(port);
             let live = running.as_ref().is_some_and(|running| {
                 crate::update_check::parse(&running.version)
                     >= crate::update_check::parse(crate::version::VERSION)
@@ -71,12 +83,11 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
                 &json!({"tree":hook.dir()}),
             );
         }
-        if let Ok(Some(running)) = crate::yard::page::running(&home) {
-            flush(&files, |body| {
-                post(&home, running.port, "/api/events", body)
-            })?;
+        let queued = !state.events.is_empty() || !state.in_flight.is_empty();
+        if queued || accounted || state.stopped {
+            deliver(&files, &home, &mut page_port)?;
         }
-        Ok(!stopped)
+        Ok(!state.stopped)
     })?;
     Ok(json!({}))
 }
@@ -85,16 +96,15 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
 // cannot clear a previous session end, even when Codex launches both handlers at once.
 fn resume(files: &Files, hook: &Hook) -> Result<()> {
     if matches!(hook.name(), "SessionStart" | "UserPromptSubmit") {
-        let _locked = files.lock()?;
-        let mut state = files.read()?;
-        let thread = hook.thread();
-        let generated = state
-            .notifications
-            .is_notification(thread, hook.0["prompt"].as_str().unwrap_or_default());
-        if state.stopped && !generated {
-            state.stopped = false;
-            files.write(&state)?;
-        }
+        files.update(|state| {
+            let generated = state
+                .notifications
+                .is_notification(hook.thread(), hook.0["prompt"].as_str().unwrap_or_default());
+            if !generated {
+                state.stopped = false;
+            }
+            Ok(())
+        })?;
     }
     Ok(())
 }
@@ -148,6 +158,29 @@ fn start_server(hook: &Hook, port: u16, child: &mut ServerChild) -> Result<()> {
     Ok(())
 }
 
+/// Flushes the outbox to the known page server, looking it up first where none is known.
+fn deliver(files: &Files, home: &Home, page_port: &mut Option<u16>) -> Result<()> {
+    if page_port.is_none() {
+        *page_port = crate::yard::page::running(home)
+            .ok()
+            .flatten()
+            .map(|running| running.port);
+    }
+    let Some(known) = *page_port else {
+        return Ok(());
+    };
+    let mut accepted = true;
+    flush(files, |body| {
+        accepted = post(home, known, "/api/events", body);
+        accepted
+    })?;
+    // A refused post looks the server up again on the next tick.
+    if !accepted {
+        *page_port = None;
+    }
+    Ok(())
+}
+
 fn post(home: &Home, port: u16, path: &str, body: &Value) -> bool {
     let Ok(Some(token)) = home.read(HomeFile::Token) else {
         return false;
@@ -159,47 +192,46 @@ fn post(home: &Home, port: u16, path: &str, body: &Value) -> bool {
 /// Detaches a persisted batch while posting, so new hooks append to a separate queue. A crash
 /// leaves that batch available for replay; a failed post restores it ahead of newer events.
 fn flush(files: &Files, post: impl FnOnce(&Value) -> bool) -> Result<()> {
-    let (sent, dropped) = {
-        let _locked = files.lock()?;
-        let mut state = files.read()?;
+    let detached = files.update(|state| {
         if state.in_flight.is_empty() {
             if state.events.is_empty() {
-                return Ok(());
+                return Ok(None);
             }
             state.in_flight = std::mem::take(&mut state.events);
             state.in_flight_dropped = std::mem::take(&mut state.dropped);
             if state.in_flight_dropped > 0 {
                 state.in_flight[0]["dropped"] = json!(state.in_flight_dropped);
             }
-            files.write(&state)?;
         }
-        (state.in_flight, state.in_flight_dropped)
+        Ok(Some((state.in_flight.clone(), state.in_flight_dropped)))
+    })?;
+    let Some((mut body, dropped)) = detached else {
+        return Ok(());
     };
-    let mut body = sent;
     if dropped > 0 && body[0].get("dropped").is_none() {
         body[0]["dropped"] = json!(dropped);
     }
     let accepted = post(&json!(body));
-    let _locked = files.lock()?;
-    let mut state = files.read()?;
-    // Identified payloads must survive a lost acknowledgement byte-for-byte, including
-    // their drop report. Later hooks keep appending to the separate pending queue.
-    if !accepted
-        && state
-            .in_flight
-            .iter()
-            .any(|event| event.get("eventId").is_some())
-    {
-        return Ok(());
-    }
-    if !accepted {
-        let mut restored = std::mem::take(&mut state.in_flight);
-        restored.append(&mut state.events);
-        state.events = restored;
-        state.dropped += state.in_flight_dropped;
-        state.trim();
-    }
-    state.in_flight.clear();
-    state.in_flight_dropped = 0;
-    files.write(&state)
+    files.update(|state| {
+        // Identified payloads must survive a lost acknowledgement byte-for-byte, including
+        // their drop report. Later hooks keep appending to the separate pending queue.
+        if !accepted
+            && state
+                .in_flight
+                .iter()
+                .any(|event| event.get("eventId").is_some())
+        {
+            return Ok(());
+        }
+        if !accepted {
+            let mut restored = std::mem::take(&mut state.in_flight);
+            restored.append(&mut state.events);
+            state.events = restored;
+            state.dropped += state.in_flight_dropped;
+            state.trim();
+        }
+        state.in_flight.clear();
+        state.in_flight_dropped = 0;
+        Ok(())
+    })
 }

@@ -13,7 +13,7 @@ use yardlog_store::lock::{self, Locked};
 use super::Result;
 use super::translate::Hook;
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct State {
     pub events: Vec<Value>,
@@ -71,6 +71,25 @@ impl Files {
             )
     }
 
+    /// Looks at the state under the session lock.
+    pub fn peek<R>(&self, look: impl FnOnce(State) -> R) -> Result<R> {
+        let _locked = self.lock()?;
+        Ok(look(self.read()?))
+    }
+
+    /// Changes the state under the session lock, and writes it only where the change left it
+    /// different. A change that fails writes nothing.
+    pub fn update<R>(&self, change: impl FnOnce(&mut State) -> Result<R>) -> Result<R> {
+        let _locked = self.lock()?;
+        let mut state = self.read()?;
+        let before = state.clone();
+        let result = change(&mut state)?;
+        if state != before {
+            self.write(&state)?;
+        }
+        Ok(result)
+    }
+
     pub fn write(&self, state: &State) -> Result<()> {
         fs::create_dir_all(&self.0).map_err(|e| e.to_string())?;
         let bytes = serde_json::to_vec(state).map_err(|e| e.to_string())?;
@@ -80,8 +99,25 @@ impl Files {
 
 #[cfg(test)]
 mod tests {
-    use super::State;
+    use super::{Files, State};
     use serde_json::json;
+
+    #[test]
+    fn a_codex_state_update_writes_only_a_changed_state() {
+        let root = std::env::temp_dir().join(format!("codex-update-{}", uuid::Uuid::new_v4()));
+        let files = Files(root.clone());
+        assert!(!files.update(|state| Ok(state.stopped)).unwrap());
+        assert!(!root.join("state.json").exists());
+        files
+            .update(|state| {
+                state.stopped = true;
+                Ok(())
+            })
+            .unwrap();
+        assert!(files.peek(|state| state.stopped).unwrap());
+        assert!(root.join("state.json").exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     #[test]
     fn the_codex_outbox_drops_the_oldest_events_past_its_limit() {

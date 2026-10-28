@@ -11,7 +11,7 @@ use super::Result;
 use super::app_server::{CallFailure, notifications::Client};
 use super::commands;
 use super::notification_discovery::Snapshot;
-use super::notification_state::{Attempt, Availability, Progress, Watcher};
+use super::notification_state::{Attempt, Availability, Ledger, Progress, Watcher};
 use super::state::Files;
 
 #[derive(Default)]
@@ -20,24 +20,16 @@ pub struct Monitor {
 }
 
 impl Monitor {
+    /// Refreshes each armed caller of the ledger the tick read.
     pub fn tick(
         &mut self,
         files: &Files,
+        ledger: &Ledger,
         socket: Option<&Path>,
         port: u16,
         clock: &impl Clock,
     ) -> Result<()> {
-        let watchers: Vec<_> = {
-            let _locked = files.lock()?;
-            files
-                .read()?
-                .notifications
-                .callers
-                .into_values()
-                .filter(|w| w.armed)
-                .collect()
-        };
-        for watcher in watchers {
+        for watcher in ledger.callers.values().filter(|w| w.armed) {
             let thread = &watcher.route.thread;
             if watcher.availability != Availability::Pending
                 && self
@@ -50,7 +42,7 @@ impl Monitor {
             self.next
                 .insert(thread.clone(), clock.elapsed() + Duration::from_secs(5));
             let now = clock.now().map_err(|e| e.to_string())?;
-            refresh(files, &watcher, socket, port, now)?;
+            refresh(files, watcher, socket, port, now)?;
         }
         Ok(())
     }
@@ -88,16 +80,8 @@ fn refresh(
     }
     report(files, watcher, Availability::Available)?;
     for marker in candidates {
-        let attempt = {
-            let _locked = files.lock()?;
-            let mut state = files.read()?;
-            let attempt = state.notifications.claim(&marker, now);
-            // The uncertainty checkpoint reaches disk before any model input is attempted.
-            if attempt.is_some() {
-                files.write(&state)?;
-            }
-            attempt
-        };
+        // The uncertainty checkpoint reaches disk before any model input is attempted.
+        let attempt = files.update(|state| Ok(state.notifications.claim(&marker, now)))?;
         if let Some(attempt) = attempt {
             dispatch(files, &mut client, &attempt, port)?;
         }
@@ -106,58 +90,48 @@ fn refresh(
 }
 
 fn discover(files: &Files, watcher: &Watcher, snapshot: Option<&Snapshot>) -> Result<Vec<String>> {
-    let _locked = files.lock()?;
-    let mut state = files.read()?;
-    if !live(&state.notifications, watcher) {
-        return Ok(vec![]);
-    }
-    let Some(snapshot) = snapshot else {
-        return Ok(vec![]);
-    };
-    if snapshot.closed {
-        state.notifications.cancel_log(&snapshot.log);
-        files.write(&state)?;
-        return Ok(vec![]);
-    }
-    for marker in &snapshot.withdrawn {
-        state.notifications.cancel_marker(marker);
-    }
-    let candidates = snapshot
-        .resolved
-        .iter()
-        .filter_map(|resolution| {
-            state
-                .notifications
-                .offer(resolution.clone(), snapshot.own_read)
-        })
-        .collect();
-    files.write(&state)?;
-    Ok(candidates)
+    files.update(|state| {
+        let ledger = &mut state.notifications;
+        if !live(ledger, watcher) {
+            return Ok(vec![]);
+        }
+        let Some(snapshot) = snapshot else {
+            return Ok(vec![]);
+        };
+        if snapshot.closed {
+            ledger.cancel_log(&snapshot.log);
+            return Ok(vec![]);
+        }
+        for marker in &snapshot.withdrawn {
+            ledger.cancel_marker(marker);
+        }
+        Ok(snapshot
+            .resolved
+            .iter()
+            .filter_map(|resolution| ledger.offer(resolution.clone(), snapshot.own_read))
+            .collect())
+    })
 }
 
 fn dispatch(files: &Files, client: &mut Client, attempt: &Attempt, port: u16) -> Result<()> {
     let Some(snapshot) = current_snapshot(attempt, port) else {
         return finish(files, attempt, Err(CallFailure::Unavailable));
     };
-    {
-        let _locked = files.lock()?;
-        let mut state = files.read()?;
+    let current = files.update(|state| {
+        let ledger = &mut state.notifications;
         if snapshot.contains(&attempt.resolution) {
-            state
-                .notifications
-                .offer(attempt.resolution.clone(), snapshot.own_read);
+            ledger.offer(attempt.resolution.clone(), snapshot.own_read);
         } else if snapshot.log == attempt.resolution.log
             && (snapshot.closed || snapshot.withdrawn.contains(&attempt.marker))
         {
-            state.notifications.cancel_marker(&attempt.marker);
+            ledger.cancel_marker(&attempt.marker);
         } else {
-            state.notifications.refuse(attempt);
+            ledger.refuse(attempt);
         }
-        let current = state.notifications.current(attempt);
-        files.write(&state)?;
-        if !current {
-            return Ok(());
-        }
+        Ok(ledger.current(attempt))
+    })?;
+    if !current {
+        return Ok(());
     }
     if attempt.needs_receipt {
         match client.received(&attempt.marker) {
@@ -171,10 +145,7 @@ fn dispatch(files: &Files, client: &mut Client, attempt: &Attempt, port: u16) ->
         Err(error) => return finish(files, attempt, Err(error)),
     };
     // Cancellation may have arrived during a native metadata or receipt request.
-    let current = {
-        let _locked = files.lock()?;
-        files.read()?.notifications.current(attempt)
-    };
+    let current = files.peek(|state| state.notifications.current(attempt))?;
     if !current {
         return Ok(());
     }
@@ -192,47 +163,46 @@ fn finish(
     attempt: &Attempt,
     result: std::result::Result<(), CallFailure>,
 ) -> Result<()> {
-    let _locked = files.lock()?;
-    let mut state = files.read()?;
-    let availability = match result {
-        Ok(()) => {
-            state.notifications.confirm(attempt);
-            Availability::Available
-        }
-        Err(CallFailure::Refused) => {
-            state.notifications.refuse(attempt);
-            Availability::Available
-        }
-        Err(CallFailure::Unavailable) => Availability::Unavailable,
-    };
-    let accepted = state
-        .notifications
-        .deliveries
-        .get(&attempt.marker)
-        .is_some_and(|t| matches!(t.progress, Progress::Accepted | Progress::Read));
-    if state
-        .notifications
-        .callers
-        .get(&attempt.route.thread)
-        .is_some_and(|watcher| {
-            watcher.armed
-                && watcher.generation == attempt.generation
-                && watcher.route == attempt.route
-        })
-    {
-        state.notifications.report(
-            &attempt.route.thread,
-            if accepted {
+    files.update(|state| {
+        let ledger = &mut state.notifications;
+        let availability = match result {
+            Ok(()) => {
+                ledger.confirm(attempt);
                 Availability::Available
-            } else {
-                availability
-            },
-        );
-    }
-    files.write(&state)
+            }
+            Err(CallFailure::Refused) => {
+                ledger.refuse(attempt);
+                Availability::Available
+            }
+            Err(CallFailure::Unavailable) => Availability::Unavailable,
+        };
+        let accepted = ledger
+            .deliveries
+            .get(&attempt.marker)
+            .is_some_and(|t| matches!(t.progress, Progress::Accepted | Progress::Read));
+        if ledger
+            .callers
+            .get(&attempt.route.thread)
+            .is_some_and(|watcher| {
+                watcher.armed
+                    && watcher.generation == attempt.generation
+                    && watcher.route == attempt.route
+            })
+        {
+            ledger.report(
+                &attempt.route.thread,
+                if accepted {
+                    Availability::Available
+                } else {
+                    availability
+                },
+            );
+        }
+        Ok(())
+    })
 }
 
-fn live(ledger: &super::notification_state::Ledger, watcher: &Watcher) -> bool {
+fn live(ledger: &Ledger, watcher: &Watcher) -> bool {
     ledger
         .callers
         .get(&watcher.route.thread)
@@ -244,15 +214,14 @@ fn live(ledger: &super::notification_state::Ledger, watcher: &Watcher) -> bool {
 }
 
 fn report(files: &Files, watcher: &Watcher, availability: Availability) -> Result<()> {
-    let _locked = files.lock()?;
-    let mut state = files.read()?;
-    if live(&state.notifications, watcher) {
-        state
-            .notifications
-            .report(&watcher.route.thread, availability);
-        files.write(&state)?;
-    }
-    Ok(())
+    files.update(|state| {
+        if live(&state.notifications, watcher) {
+            state
+                .notifications
+                .report(&watcher.route.thread, availability);
+        }
+        Ok(())
+    })
 }
 
 fn message(attempt: &Attempt) -> String {

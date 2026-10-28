@@ -111,35 +111,38 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
     let files = state::Files::of(hook)?;
     // Serializes hooks and task mirrors for this session; the worker never holds this lock
     // while posting, so an unavailable page cannot delay a native tool.
-    let locked = files.lock()?;
-    let mut state = files.read()?;
-    let caller = hook.caller(&state);
-    let disposition = notification_hooks::record(hook, caller.as_ref(), &mut state.notifications);
+    let (caller, disposition, ended) = files.update(|state| {
+        let caller = hook.caller(state);
+        let disposition =
+            notification_hooks::record(hook, caller.as_ref(), &mut state.notifications);
+        if disposition == notification_hooks::Disposition::Cancelled {
+            return Ok((caller, disposition, false));
+        }
+        let events = translate::events(hook, state)?;
+        let key = caller.as_ref().map(task_writes::actor_key);
+        if let Some(key) = &key {
+            if matches!(
+                hook.name(),
+                "SessionStart" | "SubagentStart" | "UserPromptSubmit"
+            ) {
+                state.ended_tasks.remove(key);
+            } else if matches!(
+                hook.name(),
+                "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
+            ) {
+                state.ended_tasks.insert(key.clone());
+            }
+        }
+        usage::native(hook, state);
+        state.keep(events);
+        let ended = key.is_some_and(|key| state.ended_tasks.contains(&key));
+        Ok((caller, disposition, ended))
+    })?;
     if disposition == notification_hooks::Disposition::Cancelled {
-        files.write(&state)?;
         return Ok(
             json!({"decision":"block","reason":"This Yard notification was cancelled after native interruption or session end."}),
         );
     }
-    let events = translate::events(hook, &mut state)?;
-    if let Some(caller) = &caller {
-        let key = task_writes::actor_key(caller);
-        if matches!(
-            hook.name(),
-            "SessionStart" | "SubagentStart" | "UserPromptSubmit"
-        ) {
-            state.ended_tasks.remove(&key);
-        } else if matches!(
-            hook.name(),
-            "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
-        ) {
-            state.ended_tasks.insert(key);
-        }
-    }
-    usage::native(hook, &mut state);
-    state.keep(events);
-    files.write(&state)?;
-    drop(locked);
     // Yard Log takes the task changes under its own lock. A change Yard cannot take leaves the
     // hook answered as it would be without Yard: the native call already ran and its events are
     // kept.
@@ -150,7 +153,7 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
             "Stop" | "Interrupt" | "SubagentStop" | "SessionEnd"
         ) {
             let _ = task_writes::release(hook, caller, port);
-        } else if !state.ended_tasks.contains(&task_writes::actor_key(caller)) {
+        } else if !ended {
             let _ = tasks::mirror(hook, caller, port);
         }
     }
