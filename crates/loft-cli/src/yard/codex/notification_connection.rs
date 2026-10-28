@@ -10,20 +10,23 @@ type Result<T> = std::result::Result<T, CallFailure>;
 
 pub struct Client {
     connection: Connection,
-    thread: String,
 }
 
 impl Client {
     pub fn connect(path: &Path, thread: &str) -> Result<Self> {
         Ok(Self {
-            connection: Connection::connect(path, thread).map_err(|_| CallFailure::Unavailable)?,
-            thread: thread.into(),
+            connection: Connection::subscribe(path, thread)
+                .map_err(|_| CallFailure::Unavailable)?,
         })
+    }
+
+    fn thread(&self) -> &str {
+        self.connection.thread()
     }
 
     /// Only runtime metadata and a turn identifier escape the protocol boundary.
     pub fn inspect(&mut self, directory: &Path) -> Result<Option<String>> {
-        let read = self.request("thread/read", &json!({"threadId":self.thread}))?;
+        let read = self.request("thread/read", &json!({"threadId":self.thread()}))?;
         let thread = &read["thread"];
         let cwd = thread["cwd"].as_str().ok_or(CallFailure::Unavailable)?;
         if !same_directory(Path::new(cwd), directory) {
@@ -32,7 +35,7 @@ impl Client {
         match thread["status"]["type"].as_str() {
             Some("idle") => Ok(None),
             Some("active") => {
-                let turns = self.request("thread/turns/list", &json!({"threadId":self.thread,"limit":1,"sortDirection":"desc","itemsView":"notLoaded"}))?;
+                let turns = self.request("thread/turns/list", &json!({"threadId":self.thread(),"limit":1,"sortDirection":"desc","itemsView":"notLoaded"}))?;
                 turns["data"]
                     .as_array()
                     .into_iter()
@@ -52,7 +55,7 @@ impl Client {
         for _ in 0..4 {
             let page = self.request(
                 "thread/items/list",
-                &json!({"threadId":self.thread,"limit":32,"sortDirection":"desc","cursor":cursor}),
+                &json!({"threadId":self.thread(),"limit":32,"sortDirection":"desc","cursor":cursor}),
             )?;
             let items = page["data"].as_array().ok_or(CallFailure::Unavailable)?;
             if items.iter().any(|entry| is_receipt(&entry["item"], marker)) {
@@ -70,7 +73,7 @@ impl Client {
     }
 
     pub fn deliver(&mut self, marker: &str, text: &str, active: Option<&str>) -> Result<String> {
-        let mut params = json!({"threadId":self.thread,"clientUserMessageId":marker,"input":[{"type":"text","text":text}]});
+        let mut params = json!({"threadId":self.thread(),"clientUserMessageId":marker,"input":[{"type":"text","text":text}]});
         let (method, result) = if let Some(turn) = active {
             params["expectedTurnId"] = json!(turn);
             ("turn/steer", "turnId")

@@ -167,3 +167,18 @@ fn an_explicit_native_refusal_is_distinct_from_an_uncertain_transport_failure() 
     );
     assert!(!client.received("yard-refused").unwrap());
 }
+
+#[test]
+fn a_delivery_connection_subscribes_without_reading_the_account() {
+    let usage = json!({"method":"thread/tokenUsage/updated","params":{"threadId":"thread","turnId":"turn","tokenUsage":{"last":{"inputTokens":1},"total":{"inputTokens":1}}}});
+    let peer = CodexAppServer::start(Scenario {
+        loaded: vec!["thread".into()],
+        on_subscribe: vec![usage; 8],
+        ..Scenario::default()
+    });
+    let mut client = Client::connect(peer.path(), "thread").unwrap();
+    assert_eq!(client.inspect(Path::new("/work")).unwrap(), None);
+    let requests = peer.requests();
+    assert!(requests.iter().any(|r| r["method"] == "thread/resume"));
+    assert!(requests.iter().all(|r| r["method"] != "account/read"));
+}

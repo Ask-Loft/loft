@@ -203,14 +203,11 @@ fn flush(files: &Files, post: impl FnOnce(&Value) -> bool) -> Result<()> {
                 state.in_flight[0]["dropped"] = json!(state.in_flight_dropped);
             }
         }
-        Ok(Some((state.in_flight.clone(), state.in_flight_dropped)))
+        Ok(Some(state.in_flight.clone()))
     })?;
-    let Some((mut body, dropped)) = detached else {
+    let Some(body) = detached else {
         return Ok(());
     };
-    if dropped > 0 && body[0].get("dropped").is_none() {
-        body[0]["dropped"] = json!(dropped);
-    }
     let accepted = post(&json!(body));
     files.update(|state| {
         // Identified payloads must survive a lost acknowledgement byte-for-byte, including

@@ -180,15 +180,7 @@ fn finish(
             .deliveries
             .get(&attempt.marker)
             .is_some_and(|t| matches!(t.progress, Progress::Accepted | Progress::Read));
-        if ledger
-            .callers
-            .get(&attempt.route.thread)
-            .is_some_and(|watcher| {
-                watcher.armed
-                    && watcher.generation == attempt.generation
-                    && watcher.route == attempt.route
-            })
-        {
+        if ledger.live(&attempt.route.thread, attempt.generation, &attempt.route) {
             ledger.report(
                 &attempt.route.thread,
                 if accepted {
@@ -203,14 +195,7 @@ fn finish(
 }
 
 fn live(ledger: &Ledger, watcher: &Watcher) -> bool {
-    ledger
-        .callers
-        .get(&watcher.route.thread)
-        .is_some_and(|current| {
-            current.armed
-                && current.generation == watcher.generation
-                && current.route == watcher.route
-        })
+    ledger.live(&watcher.route.thread, watcher.generation, &watcher.route)
 }
 
 fn report(files: &Files, watcher: &Watcher, availability: Availability) -> Result<()> {

@@ -20450,7 +20450,7 @@ links:
         body: 8af79a2d2e6813a40f8247ea2394c9d9383f01166b07e4cc54f7e86716358da5
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "a_native_prompt_receipt_confirms_only_a_current_armed_delivery"
-        body: 9f75e17bb992d6e87430b5a58187340a1ccd274adddceb8feb434dd0de6e83d6
+        body: f1a39df1ade55d908436af50e1ea200a1f300dac8d518c0310d165888334e735
   - node: 01a17afd-c25e-744a-84c1-087a28217197
     reviewed: e7b2c59122303ff4abfdd47455522128138b8583c61f49371ddc2d0e1d6fa710
     tests:
@@ -20477,7 +20477,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "interruption_cancels_pending_work_and_a_late_result_cannot_rearm_it"
-        body: 0f532573e3bca8a1c08769dc7aa59ea8e62bc80a81f346ff2ee45c17bb4ab70a
+        body: e72e4f072e0304326ae2a240e40b567222198baf893a7f83c710542e01524512
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "changing_the_native_route_invalidates_an_in_flight_result"
         body: 84b8c0f447d3e8d76b914846e750d259f4f82ae67105afd1c93f3ef506ec0bbc
@@ -20492,13 +20492,13 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "interruption_cancels_pending_work_and_a_late_result_cannot_rearm_it"
-        body: 0f532573e3bca8a1c08769dc7aa59ea8e62bc80a81f346ff2ee45c17bb4ab70a
+        body: e72e4f072e0304326ae2a240e40b567222198baf893a7f83c710542e01524512
   - node: 01a17afd-c25e-744a-84c1-0880026bf8d4
     reviewed: 2839865868fd513b385e0569ee3275517669502d569e839d587b9d07ba741419
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "interruption_cancels_pending_work_and_a_late_result_cannot_rearm_it"
-        body: 0f532573e3bca8a1c08769dc7aa59ea8e62bc80a81f346ff2ee45c17bb4ab70a
+        body: e72e4f072e0304326ae2a240e40b567222198baf893a7f83c710542e01524512
       - file: "crates/loft-cli/tests/yard_codex_notifications.rs"
         name: "context_reports_delivery_status_and_late_cancelled_prompts_cannot_rearm_the_worker"
         body: 43e2d5e24030b8db365c09601ca8ac98fd4ae579d508b3f6074680ff9e0d9303
@@ -20507,7 +20507,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "interruption_cancels_pending_work_and_a_late_result_cannot_rearm_it"
-        body: 0f532573e3bca8a1c08769dc7aa59ea8e62bc80a81f346ff2ee45c17bb4ab70a
+        body: e72e4f072e0304326ae2a240e40b567222198baf893a7f83c710542e01524512
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "generated_prompts_are_identified_by_their_persisted_marker_and_target"
         body: 8cffba396f4d5ff41bb1180ed5f0c1dcfba5f24c84bbc60f80ad031b02c35cc3
@@ -20519,13 +20519,13 @@ links:
         body: b71fadf664dd57739e66d99c20aa3cbf04df67bf9575ecef3017ad702602c768
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "a_late_native_prompt_does_not_revive_a_cancelled_or_superseded_attempt"
-        body: 89cba1082416d7170222817d5bc35bcc14fa657e9fcf0b159511a156cb9e9317
+        body: 795e2e7e51170b5f09a47c2225a7416c90ef0995688dc9ad285539f9758b5c2a
   - node: 01a17afd-c25e-744a-84c1-0882262fbba8
     reviewed: d0dc9f2d9e80823c81a527d662a5764f4edcca15e46c1bec06e264492fb254fb
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "normal_turn_end_keeps_monitoring_but_agent_end_does_not_disarm_another_caller"
-        body: beeb27a77486a2340f4d8b16077d34ef848e99f410d9d678448223d8a6533fd3
+        body: 20bc194333592090dbb4025c4d9bb517d3549d51c6ebf17a515632c062e07d03
       - file: "crates/loft-cli/tests/yard_codex_notifications.rs"
         name: "a_decision_after_normal_turn_end_wakes_an_idle_caller_without_an_agent_wait_lease"
         body: 67d0fb44456610f962e15e234bd7443af4c75f59e222ee4df6a2417e477e4ecc
@@ -20534,7 +20534,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/codex/notification_state_tests.rs"
         name: "normal_turn_end_keeps_monitoring_but_agent_end_does_not_disarm_another_caller"
-        body: beeb27a77486a2340f4d8b16077d34ef848e99f410d9d678448223d8a6533fd3
+        body: 20bc194333592090dbb4025c4d9bb517d3549d51c6ebf17a515632c062e07d03
   - node: 01a17afd-c25e-744a-84c1-0884a3927916
     reviewed: bb7d2feb9c6f2a2e3f5a22ef8c120d5d03ff95747005a8a617571119e5218024
     tests:

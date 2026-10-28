@@ -100,7 +100,7 @@ fn interruption_cancels_pending_work_and_a_late_result_cannot_rearm_it() {
     ledger.observe(route("thread"), Lifecycle::Start);
     let marker = ledger.offer(resolution("thread"), None).unwrap();
     let attempt = ledger.claim(&marker, clock.now().unwrap()).unwrap();
-    ledger.observe(route("thread"), Lifecycle::Interrupt);
+    ledger.observe(route("thread"), Lifecycle::Disarm);
     ledger.confirm(&attempt);
     ledger.refuse(&attempt);
     assert!(!ledger.current(&attempt));
@@ -108,7 +108,7 @@ fn interruption_cancels_pending_work_and_a_late_result_cannot_rearm_it() {
     let mut restarted: Ledger =
         serde_json::from_slice(&serde_json::to_vec(&ledger).unwrap()).unwrap();
     restarted.observe(route("thread"), Lifecycle::Start);
-    restarted.observe(route("thread"), Lifecycle::Notification);
+    restarted.observe(route("thread"), Lifecycle::Other);
     assert!(restarted.offer(resolution("thread"), None).is_none());
     clock.wait(std::time::Duration::from_secs(60));
     assert!(restarted.claim(&marker, clock.now().unwrap()).is_none());
@@ -128,8 +128,8 @@ fn normal_turn_end_keeps_monitoring_but_agent_end_does_not_disarm_another_caller
     let mut sub = route("sub");
     sub.caller.agent = Some(("sub".into(), "review".into()));
     ledger.observe(sub.clone(), Lifecycle::Start);
-    ledger.observe(route("main"), Lifecycle::TurnEnd);
-    ledger.observe(sub, Lifecycle::EndAgent);
+    ledger.observe(route("main"), Lifecycle::Other);
+    ledger.observe(sub, Lifecycle::Disarm);
     assert!(ledger.offer(resolution("sub"), None).is_none());
     let marker = ledger.offer(resolution("main"), None).unwrap();
     assert!(ledger.claim(&marker, clock.now().unwrap()).is_some());
@@ -233,13 +233,13 @@ fn a_native_prompt_receipt_confirms_only_a_current_armed_delivery() {
     ledger.observe(route("thread"), Lifecycle::Start);
     let marker = ledger.offer(resolution("thread"), None).unwrap();
     let attempt = ledger.claim(&marker, clock.now().unwrap()).unwrap();
-    assert!(!ledger.receive_prompt("other", &marker));
-    assert!(ledger.receive_prompt("thread", &marker));
+    assert_eq!(ledger.receive_prompt("other", &marker), None);
+    assert_eq!(ledger.receive_prompt("thread", &marker), Some(true));
     assert_eq!(ledger.deliveries[&marker].progress, Progress::Accepted);
     assert!(!ledger.current(&attempt));
     assert_eq!(ledger.availability("thread"), Availability::Available);
-    ledger.observe(route("thread"), Lifecycle::Interrupt);
-    assert!(!ledger.receive_prompt("thread", &marker));
+    ledger.observe(route("thread"), Lifecycle::Disarm);
+    assert_eq!(ledger.receive_prompt("thread", &marker), Some(false));
     assert!(!ledger.callers["thread"].armed);
 }
 
@@ -249,13 +249,13 @@ fn a_late_native_prompt_does_not_revive_a_cancelled_or_superseded_attempt() {
     ledger.observe(route("thread"), Lifecycle::Start);
     let marker = ledger.offer(resolution("thread"), None).unwrap();
     ledger.cancel_marker(&marker);
-    assert!(!ledger.receive_prompt("thread", &marker));
-    ledger.observe(route("thread"), Lifecycle::Interrupt);
+    assert_eq!(ledger.receive_prompt("thread", &marker), Some(false));
+    ledger.observe(route("thread"), Lifecycle::Disarm);
     ledger.observe(route("thread"), Lifecycle::UserPrompt);
-    assert!(!ledger.receive_prompt("thread", &marker));
+    assert_eq!(ledger.receive_prompt("thread", &marker), Some(false));
     ledger.offer(resolution("thread"), None);
-    assert!(ledger.receive_prompt("thread", &marker));
+    assert_eq!(ledger.receive_prompt("thread", &marker), Some(true));
     ledger.offer(resolution("thread"), Some(2));
-    assert!(ledger.receive_prompt("thread", &marker));
+    assert_eq!(ledger.receive_prompt("thread", &marker), Some(true));
     assert_eq!(ledger.deliveries[&marker].progress, Progress::Read);
 }

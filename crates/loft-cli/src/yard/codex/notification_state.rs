@@ -74,15 +74,19 @@ pub struct Attempt {
     pub needs_receipt: bool,
 }
 
+/// What a native hook means for decision monitoring.
 #[derive(Clone, Copy)]
 pub enum Lifecycle {
+    /// A session or subagent starts, armed.
     Start,
+    /// A genuine user prompt, which rearms its caller.
     UserPrompt,
-    Notification,
-    TurnEnd,
-    Interrupt,
-    EndAgent,
+    /// An interruption or a subagent's end, which disarms its caller.
+    Disarm,
+    /// A session's end, which disarms every caller of the session.
     EndSession,
+    /// Any other hook, a normal turn end among them, which leaves monitoring as it is.
+    Other,
 }
 
 #[derive(Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -102,7 +106,7 @@ impl Ledger {
             availability: Availability::Pending,
         });
         match event {
-            Lifecycle::Interrupt | Lifecycle::EndAgent => self.disarm(&thread),
+            Lifecycle::Disarm => self.disarm(&thread),
             Lifecycle::EndSession => self.end_session(&route.caller.session),
             Lifecycle::UserPrompt => {
                 if self
@@ -117,7 +121,7 @@ impl Ledger {
                 watcher.armed = true;
                 watcher.availability = Availability::Pending;
             }
-            Lifecycle::Start | Lifecycle::Notification | Lifecycle::TurnEnd => {}
+            Lifecycle::Start | Lifecycle::Other => {}
         }
     }
 
@@ -176,10 +180,16 @@ impl Ledger {
         })
     }
 
-    pub fn current(&self, attempt: &Attempt) -> bool {
+    /// Whether the thread's caller is still armed in the generation, on the route given. A route
+    /// changes only with a new generation, so a matching generation implies a matching route.
+    pub fn live(&self, thread: &str, generation: u64, route: &Route) -> bool {
         self.callers
-            .get(&attempt.route.thread)
-            .is_some_and(|w| w.armed && w.generation == attempt.generation)
+            .get(thread)
+            .is_some_and(|w| w.armed && w.generation == generation && w.route == *route)
+    }
+
+    pub fn current(&self, attempt: &Attempt) -> bool {
+        self.live(&attempt.route.thread, attempt.generation, &attempt.route)
             && self.deliveries.get(&attempt.marker).is_some_and(|t| {
                 t.generation == attempt.generation && t.progress == Progress::Uncertain
             })
@@ -213,34 +223,39 @@ impl Ledger {
         }
     }
 
-    pub fn is_notification(&self, thread: &str, prompt: &str) -> bool {
-        prompt.lines().next().is_some_and(|marker| {
+    /// The marker of the adapter's own notification that the prompt carries, for the thread.
+    fn notification<'a>(&self, thread: &str, prompt: &'a str) -> Option<&'a str> {
+        prompt.lines().next().filter(|marker| {
             self.deliveries
-                .get(marker)
+                .get(*marker)
                 .is_some_and(|ticket| ticket.resolution.thread == thread)
         })
     }
 
-    /// A native prompt hook is a receipt too, even if the RPC acknowledgment is still in flight.
-    pub fn receive_prompt(&mut self, thread: &str, prompt: &str) -> bool {
-        let Some(marker) = prompt.lines().next() else {
-            return false;
-        };
+    pub fn is_notification(&self, thread: &str, prompt: &str) -> bool {
+        self.notification(thread, prompt).is_some()
+    }
+
+    /// Receives a prompt: `None` where it is not one of the adapter's notifications, and otherwise
+    /// whether it is a receipt of a current delivery. A native prompt hook is a receipt too, even
+    /// if the RPC acknowledgment is still in flight.
+    pub fn receive_prompt(&mut self, thread: &str, prompt: &str) -> Option<bool> {
+        let marker = self.notification(thread, prompt)?;
         let Some(watcher) = self.callers.get_mut(thread).filter(|w| w.armed) else {
-            return false;
+            return Some(false);
         };
-        let Some(ticket) = self.deliveries.get_mut(marker).filter(|t| {
-            t.resolution.thread == thread
-                && t.generation == watcher.generation
-                && t.progress != Progress::Cancelled
-        }) else {
-            return false;
+        let Some(ticket) = self
+            .deliveries
+            .get_mut(marker)
+            .filter(|t| t.generation == watcher.generation && t.progress != Progress::Cancelled)
+        else {
+            return Some(false);
         };
         if ticket.progress != Progress::Read {
             ticket.progress = Progress::Accepted;
         }
         watcher.availability = Availability::Available;
-        true
+        Some(true)
     }
 
     pub fn cancel_marker(&mut self, marker: &str) {

@@ -29,13 +29,39 @@ pub struct Connection {
     next: u64,
     pending: VecDeque<Notice>,
     subscribed: bool,
+    /// Whether the connection keeps the notices that arrive while it waits for an answer.
+    observing: bool,
     failed: bool,
     account: Provenance,
 }
 
 impl Connection {
+    /// A connection that observes the thread's token usage: it reads the account, subscribes to
+    /// the thread and keeps the notices that arrive while it waits for an answer.
     pub fn connect(path: &Path, thread: &str) -> Result<Self> {
         let deadline = after(Duration::from_millis(300));
+        let mut connection = Self::open(path, thread, deadline)?;
+        connection.observing = true;
+        connection.identify_account(deadline);
+        connection.resume(deadline)?;
+        Ok(connection)
+    }
+
+    /// A connection that delivers to the thread: it subscribes to the thread, but neither reads
+    /// the account nor keeps the notices that arrive, which only the observer accounts for.
+    pub fn subscribe(path: &Path, thread: &str) -> Result<Self> {
+        let deadline = after(Duration::from_millis(300));
+        let mut connection = Self::open(path, thread, deadline)?;
+        connection.resume(deadline)?;
+        Ok(connection)
+    }
+
+    pub fn thread(&self) -> &str {
+        &self.thread
+    }
+
+    /// Opens the transport, initializes the protocol and finds the thread among the loaded ones.
+    fn open(path: &Path, thread: &str, deadline: Duration) -> Result<Self> {
         let stream = socket::connect(path).map_err(failed)?;
         let config = WebSocketConfig::default()
             .read_buffer_size(4096)
@@ -60,6 +86,7 @@ impl Connection {
             next: 0,
             pending: VecDeque::new(),
             subscribed: false,
+            observing: false,
             failed: false,
             account: Provenance::default(),
         };
@@ -72,14 +99,18 @@ impl Connection {
         {
             return Err(FAILURE.into());
         }
-        connection.identify_account(deadline);
-        connection.call(
+        Ok(connection)
+    }
+
+    fn resume(&mut self, deadline: Duration) -> Result<()> {
+        let thread = self.thread.clone();
+        self.call(
             "thread/resume",
             &json!({"threadId":thread,"excludeTurns":true}),
             deadline,
         )?;
-        connection.subscribed = true;
-        Ok(connection)
+        self.subscribed = true;
+        Ok(())
     }
 
     pub fn poll(&mut self) -> Result<Vec<Notice>> {
@@ -160,14 +191,24 @@ impl Connection {
             if value["id"].as_u64() == Some(self.next) {
                 return response(&value);
             }
-            if self.pending.len() >= 128 {
-                return Err(CallFailure::Unavailable);
-            }
-            if let Some(notice) = self.observed(&value) {
-                self.pending.push_back(notice);
-            }
+            self.keep(&value)?;
             pause(deadline).map_err(|_| CallFailure::Unavailable)?;
         }
+    }
+
+    /// Keeps a notice that arrived before an answer, where the connection observes; a bounded
+    /// number of them.
+    fn keep(&mut self, value: &Value) -> std::result::Result<(), CallFailure> {
+        if !self.observing {
+            return Ok(());
+        }
+        if self.pending.len() >= 128 {
+            return Err(CallFailure::Unavailable);
+        }
+        if let Some(notice) = self.observed(value) {
+            self.pending.push_back(notice);
+        }
+        Ok(())
     }
 
     fn read(&mut self) -> Result<Option<Value>> {

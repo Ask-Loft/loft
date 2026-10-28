@@ -25,20 +25,15 @@ pub fn record(hook: &Hook, caller: Option<&Caller>, ledger: &mut Ledger) -> Disp
         "SessionStart" | "SubagentStart" => Lifecycle::Start,
         "UserPromptSubmit" => {
             let prompt = hook.0["prompt"].as_str().unwrap_or_default();
-            if ledger.is_notification(thread, prompt) {
-                return if ledger.receive_prompt(thread, prompt) {
-                    Disposition::Notification
-                } else {
-                    Disposition::Cancelled
-                };
+            match ledger.receive_prompt(thread, prompt) {
+                Some(true) => return Disposition::Notification,
+                Some(false) => return Disposition::Cancelled,
+                None => Lifecycle::UserPrompt,
             }
-            Lifecycle::UserPrompt
         }
-        "Interrupt" => Lifecycle::Interrupt,
+        "Interrupt" | "SubagentStop" => Lifecycle::Disarm,
         "SessionEnd" => Lifecycle::EndSession,
-        "SubagentStop" => Lifecycle::EndAgent,
-        "Stop" => Lifecycle::TurnEnd,
-        _ => Lifecycle::Notification,
+        _ => Lifecycle::Other,
     };
     ledger.observe(route, event);
     Disposition::Ordinary
