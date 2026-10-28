@@ -6,12 +6,11 @@
 //! retry of the original event is still recognized; every other line keeps its bytes.
 
 use serde_json::{Value, json};
+use yardlog_store::YardStoreError;
 use yardlog_store::home::Home;
 
-use crate::yard::failure::Failure;
-
 /// Whether session `key`'s event log holds a count to move.
-pub fn pending(home: &Home, key: &str) -> Result<bool, Failure> {
+pub fn pending(home: &Home, key: &str) -> Result<bool, YardStoreError> {
     let Some(bytes) = home.read_events(key)? else {
         return Ok(false);
     };
@@ -21,7 +20,7 @@ pub fn pending(home: &Home, key: &str) -> Result<bool, Failure> {
 }
 
 /// Rewrites session `key`'s event log, where it holds a count to move.
-pub fn settle(home: &Home, key: &str) -> Result<(), Failure> {
+pub fn settle(home: &Home, key: &str) -> Result<(), YardStoreError> {
     let Some(bytes) = home.read_events(key)? else {
         return Ok(());
     };

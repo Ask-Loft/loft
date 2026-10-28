@@ -3,8 +3,9 @@
 //! under its own lock, whole or not at all. Closed Yard Log and Yard Log already in this
 //! format are left as they are; one of a newer format, or one that does not read, is left and
 //! named, and the command exits 1. Then each open Yard Log's totals files of an older totals
-//! format are written in the current one, unless a page server runs (`totals`). The person runs
-//! it, so it takes no `--session`.
+//! format are written in the current one, unless a page server runs (`totals`); where that step
+//! fails to settle a file, the command still reports each Yard Log's fate, names the file, and
+//! exits 1. The person runs it, so it takes no `--session`.
 
 mod events;
 mod totals;
@@ -30,6 +31,8 @@ const SCHEMA: &str = "loft-yard-upgrade/1";
 const OUTCOME: &str = "upgraded";
 /// Some Yard Log was left for a newer `loft`, or did not read.
 const LEFT: &str = "left some";
+/// The totals step failed to settle a file.
+const FAILED: &str = "failed";
 
 /// What became of each branch's Yard Log, by its branch, and of the totals files.
 type Ran = (Vec<(String, Fate)>, Classifying);
@@ -58,12 +61,17 @@ pub fn run(root: &Path, args: &UpgradeArgs) -> Finished {
     };
     let (mut fields, errors) = result(&fates);
     classifying.add_to(&mut fields);
-    let failed = !errors.is_empty();
-    let outcome = if failed { LEFT } else { OUTCOME };
-    let code = if failed {
-        ExitCode::FAILURE
+    let outcome = if classifying.failed() {
+        FAILED
+    } else if !errors.is_empty() {
+        LEFT
     } else {
+        OUTCOME
+    };
+    let code = if outcome == OUTCOME {
         ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
     };
     let finished = Finished::with(code, outcome, &errors);
     if as_json {
@@ -78,6 +86,12 @@ pub fn run(root: &Path, args: &UpgradeArgs) -> Finished {
         );
         if let Some(reason) = fields["totalsLeft"]["reason"].as_str() {
             outln!("Totals files left: {reason}");
+        }
+        let unsettled = &fields["totalsFailed"];
+        if let (Some(path), Some(message)) =
+            (unsettled["path"].as_str(), unsettled["message"].as_str())
+        {
+            outln!("Totals not settled: {path}: {message}");
         }
     }
     finished
@@ -95,7 +109,7 @@ fn attempt(dir: &Path, args: &UpgradeArgs) -> Result<Ran, Failure> {
         }
         fates.push((name, fate));
     }
-    Ok((fates, totals::classify(&open)?))
+    Ok((fates, totals::classify(&open)))
 }
 
 fn fate(branch: &Branch) -> Result<Fate, Failure> {

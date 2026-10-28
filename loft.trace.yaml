@@ -23889,6 +23889,21 @@ links:
       - file: "crates/loft-cli/tests/yard_upgrade_events.rs"
         name: "a_second_run_moves_no_event"
         body: 83702c428c03cc8815bcb4ddad4d5f6c23a799c4e9308e2a29c0e7e14ffb4b30
+  - node: 01a1839e-0cd9-75bc-b853-1ff548163d29
+    reviewed: c6d606e9e1beb4beedeac1550833f13bd6db1fccc306ab5434b49fe1ab4d2b76
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "a_totals_file_it_fails_to_write_is_named_beside_what_became_of_each_yard_log"
+        body: 35435974e467fa80bdd85d736fb8589f0c828b776c138e6db0834415bc95a8ce
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "with_no_home_an_older_totals_file_is_named_as_the_one_it_failed_on"
+        body: 0c4964253113fd11f6bc975a9fe814cfa104a3af060b9f8f361eb0575a6e64a9
+  - node: 01a1839e-0cd9-75bc-b853-1ff6ac1d60c4
+    reviewed: 58c8cc88afb95810ebc82b392bb6cb94e8e75e91b8258ec4395b126e19b759f1
+    tests:
+      - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
+        name: "with_no_home_and_no_totals_file_to_settle_the_upgrade_does_not_fail"
+        body: c08a84f9e84e200286367348df2ac7ea3674a15052128e34123a73a137c3c0a1
   - node: 01a168d9-f2df-7350-8964-7ecb58ac5bcb
     reviewed: 986b16aee741106e6c2b49bc4e18fa5b80896ee9f68dc263c4c94742bcaf122a
     tests:

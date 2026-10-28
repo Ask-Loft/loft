@@ -1,9 +1,12 @@
 //! `loft yard upgrade` over the totals files of open Yard Logs: a Codex file of an older totals
 //! format has its zero cache-write counts made unavailable, every such file gains the current
-//! format, a file already in it, and every file of a closed Yard Log, is left as it was, and
-//! nothing is touched while a page server runs.
+//! format, a file already in it, and every file of a closed Yard Log, is left as it was, nothing
+//! is touched while a page server runs, and a file it fails to settle is named beside what became
+//! of each Yard Log.
 
 use std::fs;
+use std::os::unix::fs::PermissionsExt;
+use std::process::Output;
 
 use serde_json::{Value, json};
 
@@ -161,8 +164,23 @@ pub(crate) fn with_totals(files: &[(&str, &str)]) -> Yard {
 }
 
 pub(crate) fn upgrade(yard: &Yard) -> (Option<i32>, Value) {
-    let output = yard.run(&["upgrade"]);
-    let doc = document("upgrade", &output);
+    conforming(&yard.run(&["upgrade"]))
+}
+
+/// Runs `loft yard upgrade` where no home directory is known.
+fn upgrade_without_home(yard: &Yard) -> (Option<i32>, Value) {
+    let output = yard
+        .scratch
+        .command(Some(&yard.git), &yard.clock)
+        .args(["yard", "upgrade", "--format", "json"])
+        .env("HOME", "no-home")
+        .output()
+        .unwrap();
+    conforming(&output)
+}
+
+fn conforming(output: &Output) -> (Option<i32>, Value) {
+    let doc = document("upgrade", output);
     let schema = fs::read_to_string(workspace().join("schemas/yard-upgrade.json")).unwrap();
     let text = serde_json::to_vec(&doc).unwrap();
     (output.status.code(), schema::conforming(&text, &schema))
@@ -248,4 +266,48 @@ fn while_a_page_server_runs_totals_files_are_left_and_the_page_server_is_named()
     drop(served);
     upgrade(&yard);
     assert_eq!(text(&yard, "codex~s1"), CODEX_CLASSIFIED);
+}
+
+#[test]
+fn a_totals_file_it_fails_to_write_is_named_beside_what_became_of_each_yard_log() {
+    let yard = with_totals(&[("s2", CLAUDE)]);
+    let folder = yard.folder(BRANCH).join("tokens");
+    fs::set_permissions(&folder, fs::Permissions::from_mode(0o555)).unwrap();
+    let (code, result) = upgrade(&yard);
+    fs::set_permissions(&folder, fs::Permissions::from_mode(0o755)).unwrap();
+    assert_eq!(code, Some(1));
+    assert_eq!(result["outcome"], "failed");
+    assert_eq!(result["current"][0]["branch"], BRANCH);
+    assert_eq!(result["upgraded"], json!([]));
+    assert_eq!(result["left"], json!([]));
+    let path = result["totalsFailed"]["path"].as_str().unwrap();
+    assert!(path.ends_with("tokens/s2.yaml"), "{path}");
+    assert!(
+        result["totalsFailed"]["message"]
+            .as_str()
+            .is_some_and(|message| !message.is_empty())
+    );
+    assert_eq!(text(&yard, "s2"), CLAUDE);
+}
+
+#[test]
+fn with_no_home_an_older_totals_file_is_named_as_the_one_it_failed_on() {
+    let yard = with_totals(&[("s2", CLAUDE)]);
+    let (code, result) = upgrade_without_home(&yard);
+    assert_eq!(code, Some(1));
+    assert_eq!(result["outcome"], "failed");
+    assert_eq!(result["current"][0]["branch"], BRANCH);
+    let path = result["totalsFailed"]["path"].as_str().unwrap();
+    assert!(path.ends_with("tokens/s2.yaml"), "{path}");
+}
+
+#[test]
+fn with_no_home_and_no_totals_file_to_settle_the_upgrade_does_not_fail() {
+    let current = format!("format: yardtokens/2\n{CLAUDE}");
+    let yard = with_totals(&[("s2", &current)]);
+    let (code, result) = upgrade_without_home(&yard);
+    assert_eq!(code, Some(0));
+    assert_eq!(result["outcome"], "upgraded");
+    assert!(result.get("totalsFailed").is_none(), "{result}");
+    assert_eq!(text(&yard, "s2"), current);
 }

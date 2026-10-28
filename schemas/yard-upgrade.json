@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-yard-upgrade-1.json",
-  "title": "The result of `loft yard upgrade --format json`, version 1: each branch's Yard Log under the tree, upgraded, current or left, and the totals files whose cache writes it classified",
+  "title": "The result of `loft yard upgrade --format json`, version 1: each branch's Yard Log under the tree, upgraded, current or left, the totals files it wrote in the current totals format, and the file it failed to settle, if any",
   "oneOf": [
     {
       "type": "object",
@@ -121,6 +121,22 @@
             }
           }
         },
+        "totalsFailed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "message"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
         "schema": {
           "const": "loft-yard-upgrade/1"
         },
@@ -128,7 +144,8 @@
           "type": "string",
           "enum": [
             "upgraded",
-            "left some"
+            "left some",
+            "failed"
           ]
         },
         "errors": {

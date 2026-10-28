@@ -9,6 +9,7 @@
 //! over the files.
 
 use std::collections::BTreeSet;
+use std::path::PathBuf;
 
 use serde_json::{Value, json};
 use yardlog::totals::{Totals, TotalsFormat};
@@ -27,9 +28,34 @@ pub enum Classifying {
     Done(Vec<Value>),
     /// Every file left as it was, because the page server on `port` runs.
     Left { port: u16 },
+    /// The step stopped on a file it failed to settle, after writing `classified`.
+    Failed {
+        classified: Vec<Value>,
+        unsettled: Unsettled,
+    },
+}
+
+/// The file the totals step failed to settle, and why.
+pub struct Unsettled {
+    path: PathBuf,
+    message: String,
+}
+
+impl Unsettled {
+    fn at(path: PathBuf, error: &impl ToString) -> Self {
+        Self {
+            path,
+            message: error.to_string(),
+        }
+    }
 }
 
 impl Classifying {
+    /// Whether the step failed to settle a file.
+    pub const fn failed(&self) -> bool {
+        matches!(self, Self::Failed { .. })
+    }
+
     /// Adds what this step did to the command's result `fields`.
     pub fn add_to(&self, fields: &mut Value) {
         match self {
@@ -41,14 +67,39 @@ impl Classifying {
                 );
                 fields["totalsLeft"] = json!({ "port": port, "reason": reason });
             }
+            Self::Failed {
+                classified,
+                unsettled,
+            } => {
+                fields["classified"] = json!(classified);
+                let path = unsettled.path.display().to_string();
+                fields["totalsFailed"] = json!({ "path": path, "message": unsettled.message });
+            }
         }
     }
 }
 
 /// Moves the unverified zeros of each Codex session's events, whatever its totals file's format,
 /// then writes each totals file of an older totals format of the Yard Logs `open`, each by its
-/// branch.
-pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
+/// branch; stops on the first file it fails to settle.
+pub fn classify(open: &[(String, YardStore)]) -> Classifying {
+    let mut classified = Vec::new();
+    match settle(open, &mut classified) {
+        Ok(None) => Classifying::Done(classified),
+        Ok(Some(port)) => Classifying::Left { port },
+        Err(unsettled) => Classifying::Failed {
+            classified,
+            unsettled,
+        },
+    }
+}
+
+/// [`classify`]'s work: each file it writes added to `classified`; gives the port of a page
+/// server that runs, where one does.
+fn settle(
+    open: &[(String, YardStore)],
+    classified: &mut Vec<Value>,
+) -> Result<Option<u16>, Unsettled> {
     let files: Vec<_> = open
         .iter()
         .flat_map(|(branch, store)| {
@@ -59,13 +110,14 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
         })
         .collect();
     let older = |file: &Value| TotalsFormat::of(file).is_some_and(|f| f < TotalsFormat::CURRENT);
-    let home = if files.iter().any(|(.., file)| older(file)) {
-        Some(Home::from_env().ok_or_else(Failure::no_home)?)
-    } else {
-        Home::from_env()
-    };
-    let Some(home) = home else {
-        return Ok(Classifying::Done(Vec::new()));
+    let first_older = files.iter().find(|(.., file)| older(file));
+    let home = match (Home::from_env(), first_older) {
+        (Some(home), _) => home,
+        (None, None) => return Ok(None),
+        (None, Some((_, store, key, _))) => {
+            let path = store.session_path(SessionFile::Tokens, key);
+            return Err(Unsettled::at(path, &Failure::NO_HOME));
+        }
     };
     let codex: BTreeSet<_> = files
         .iter()
@@ -74,21 +126,24 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
         .collect();
     let mut pending = Vec::new();
     for key in &codex {
-        if super::events::pending(&home, key)? {
+        let found = super::events::pending(&home, key);
+        if found.map_err(|error| Unsettled::at(home.events(key), &error))? {
             pending.push(key);
         }
     }
-    if pending.is_empty() && !files.iter().any(|(.., file)| older(file)) {
-        return Ok(Classifying::Done(Vec::new()));
+    if pending.is_empty() && first_older.is_none() {
+        return Ok(None);
     }
-    if let Some(server) = page::running(&home)? {
-        return Ok(Classifying::Left { port: server.port });
+    let running = page::running(&home);
+    let lock = || home.dir().join(page::SERVER_LOCK);
+    if let Some(server) = running.map_err(|error| Unsettled::at(lock(), &error))? {
+        return Ok(Some(server.port));
     }
     // The events first: a run stopped after them settles the totals files on the next.
     for key in pending {
-        super::events::settle(&home, key)?;
+        let settled = super::events::settle(&home, key);
+        settled.map_err(|error| Unsettled::at(home.events(key), &error))?;
     }
-    let mut classified = Vec::new();
     for (branch, store, key, file) in files.into_iter().filter(|(.., file)| older(file)) {
         let host = file["host"].as_str().unwrap_or_default().to_owned();
         let text = if host == "codex" {
@@ -96,10 +151,12 @@ pub fn classify(open: &[(String, YardStore)]) -> Result<Classifying, Failure> {
         } else {
             Totals::read(&file).text()
         };
-        store.write_session(SessionFile::Tokens, &key, text.as_bytes())?;
+        let path = store.session_path(SessionFile::Tokens, &key);
+        let written = store.write_session(SessionFile::Tokens, &key, text.as_bytes());
+        written.map_err(|error| Unsettled::at(path, &error))?;
         classified.push(json!({ "branch": branch, "host": host, "session": file["session"] }));
     }
-    Ok(Classifying::Done(classified))
+    Ok(None)
 }
 
 /// A Codex session's totals, counted as the page server counts them from the session's moved
