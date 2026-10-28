@@ -3,8 +3,9 @@
 use std::io::{BufRead as _, BufReader, Write as _};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
+use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::{Value, json};
 use software_plant::codex::{CodexAppServer, Scenario};
 
@@ -99,9 +100,9 @@ struct Native(Child);
 impl Drop for Native {
     fn drop(&mut self) {
         self.0.stdin.take();
-        let deadline = Instant::now() + Duration::from_secs(7);
-        while self.0.try_wait().unwrap().is_none() && Instant::now() < deadline {
-            std::thread::sleep(Duration::from_millis(20));
+        let timer = SystemClock::default();
+        while self.0.try_wait().unwrap().is_none() && timer.elapsed() < Duration::from_secs(7) {
+            timer.wait(Duration::from_millis(20));
         }
         let _ = self.0.kill();
         let _ = self.0.wait();

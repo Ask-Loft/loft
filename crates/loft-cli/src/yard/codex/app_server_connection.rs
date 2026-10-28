@@ -3,7 +3,10 @@
 use std::collections::VecDeque;
 use std::io::ErrorKind;
 use std::path::Path;
-use std::time::{Duration, Instant};
+use std::sync::OnceLock;
+use std::time::Duration;
+
+use loft_ports::clock::{Clock as _, SystemClock};
 
 use serde_json::{Value, json};
 use tungstenite::client::client_with_config;
@@ -32,7 +35,7 @@ pub struct Connection {
 
 impl Connection {
     pub fn connect(path: &Path, thread: &str) -> Result<Self> {
-        let deadline = Instant::now() + Duration::from_millis(300);
+        let deadline = after(Duration::from_millis(300));
         let stream = socket::connect(path).map_err(failed)?;
         let config = WebSocketConfig::default()
             .read_buffer_size(4096)
@@ -102,12 +105,12 @@ impl Connection {
         Ok(result)
     }
 
-    fn identify_account(&mut self, deadline: Instant) {
+    fn identify_account(&mut self, deadline: Duration) {
         let response = self
             .request_until(
                 "account/read",
                 &json!({"refreshToken":false}),
-                deadline.min(Instant::now() + Duration::from_millis(60)),
+                deadline.min(after(Duration::from_millis(60))),
             )
             .ok();
         self.account.initial(response.as_ref());
@@ -127,7 +130,7 @@ impl Connection {
             .map_err(failed)
     }
 
-    fn call(&mut self, method: &str, params: &Value, deadline: Instant) -> Result<Value> {
+    fn call(&mut self, method: &str, params: &Value, deadline: Duration) -> Result<Value> {
         self.request_until(method, params, deadline)
             .map_err(|_| FAILURE.to_owned())
     }
@@ -137,14 +140,14 @@ impl Connection {
         method: &str,
         params: &Value,
     ) -> std::result::Result<Value, CallFailure> {
-        self.request_until(method, params, Instant::now() + Duration::from_millis(300))
+        self.request_until(method, params, after(Duration::from_millis(300)))
     }
 
     fn request_until(
         &mut self,
         method: &str,
         params: &Value,
-        deadline: Instant,
+        deadline: Duration,
     ) -> std::result::Result<Value, CallFailure> {
         self.next += 1;
         self.send(&json!({"id":self.next,"method":method,"params":params}))
@@ -202,11 +205,24 @@ fn failed(_: impl std::fmt::Display) -> String {
     FAILURE.into()
 }
 
-fn pause(deadline: Instant) -> Result<()> {
-    if Instant::now() >= deadline {
+/// The local app server, and the Software Plant's simulator of it, answer in real time, which no
+/// simulated time may shorten: the transport bounds each call by a clock whose time passes on its
+/// own, whatever clock the run was given.
+fn clock() -> &'static SystemClock {
+    static CLOCK: OnceLock<SystemClock> = OnceLock::new();
+    CLOCK.get_or_init(SystemClock::default)
+}
+
+/// The reading of the transport's clock `length` from now: a call's deadline.
+fn after(length: Duration) -> Duration {
+    clock().elapsed() + length
+}
+
+fn pause(deadline: Duration) -> Result<()> {
+    if clock().elapsed() >= deadline {
         return Err(FAILURE.into());
     }
-    std::thread::sleep(Duration::from_millis(2));
+    clock().wait(Duration::from_millis(2));
     Ok(())
 }
 

@@ -3,8 +3,9 @@
 use std::io::{BufRead as _, BufReader, Write as _};
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
+use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::{Value, json};
 use software_plant::codex::{CodexAppServer, Scenario};
 
@@ -14,13 +15,13 @@ fn contract(path: &Path, thread: &str, mut start: impl FnMut(u64)) {
     for count in 2..=3 {
         let mut connection = Connection::connect(path, thread).unwrap();
         // Reconnecting imports no prior request, even though the thread remains loaded.
-        let until = Instant::now() + Duration::from_millis(100);
-        while Instant::now() < until {
+        let quiet = SystemClock::default();
+        while quiet.elapsed() < Duration::from_millis(100) {
             assert_eq!(connection.poll().unwrap(), []);
-            std::thread::sleep(Duration::from_millis(5));
+            quiet.wait(Duration::from_millis(5));
         }
         start(count);
-        let began = Instant::now();
+        let timer = SystemClock::default();
         let mut observed = false;
         let mut ended = false;
         while !ended {
@@ -30,8 +31,8 @@ fn contract(path: &Path, thread: &str, mut start: impl FnMut(u64)) {
                 ended |= end;
             }
 
-            assert!(began.elapsed() < Duration::from_secs(10));
-            std::thread::sleep(Duration::from_millis(5));
+            assert!(timer.elapsed() < Duration::from_secs(10));
+            timer.wait(Duration::from_millis(5));
         }
         assert!(observed);
     }
@@ -85,9 +86,9 @@ struct Native(Child);
 impl Drop for Native {
     fn drop(&mut self) {
         self.0.stdin.take();
-        let deadline = Instant::now() + Duration::from_secs(7);
-        while self.0.try_wait().unwrap().is_none() && Instant::now() < deadline {
-            std::thread::sleep(Duration::from_millis(20));
+        let timer = SystemClock::default();
+        while self.0.try_wait().unwrap().is_none() && timer.elapsed() < Duration::from_secs(7) {
+            timer.wait(Duration::from_millis(20));
         }
         let _ = self.0.kill();
         let _ = self.0.wait();

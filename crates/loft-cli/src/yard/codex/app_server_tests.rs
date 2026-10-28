@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
+use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::json;
 use software_plant::codex::{CodexAppServer, Scenario};
 
@@ -39,7 +40,7 @@ fn a_loaded_thread_is_observed_without_configuration_or_turn_mutations() {
     let server = server();
     let connection = Connection::connect(server.path(), "native-thread").unwrap();
     drop(connection);
-    std::thread::sleep(Duration::from_millis(60));
+    SystemClock::default().wait(Duration::from_millis(60));
     let requests = server.requests();
     let methods: Vec<_> = requests
         .iter()
@@ -89,9 +90,9 @@ fn silent_and_refused_connections_are_bounded() {
         },
     ] {
         let server = CodexAppServer::start(scenario);
-        let began = Instant::now();
+        let timer = SystemClock::default();
         assert!(Connection::connect(server.path(), "native-thread").is_err());
-        assert!(began.elapsed() < Duration::from_millis(450));
+        assert!(timer.elapsed() < Duration::from_millis(450));
     }
     assert!(
         Connection::connect(
@@ -108,14 +109,14 @@ fn only_accounting_fields_are_retained_from_notifications() {
     let mut connection = Connection::connect(server.path(), "native-thread").unwrap();
     server.emit(&json!({"method":"item/started","params":{"text":"PRIVATE PROMPT"}}));
     server.emit(&json!({"method":"thread/tokenUsage/updated","params":{"threadId":"native-thread","turnId":"turn","tokenUsage":{"last":{"inputTokens":100,"outputTokens":5,"private":"PRIVATE"},"total":{"inputTokens":100},"private":"PRIVATE"}}}));
-    let began = Instant::now();
+    let timer = SystemClock::default();
     let notices = loop {
         let notices = connection.poll().unwrap();
         if !notices.is_empty() {
             break notices;
         }
-        assert!(began.elapsed() < Duration::from_secs(1));
-        std::thread::sleep(Duration::from_millis(5));
+        assert!(timer.elapsed() < Duration::from_secs(1));
+        timer.wait(Duration::from_millis(5));
     };
     assert_eq!(
         notices,
@@ -141,14 +142,14 @@ fn malformed_oversized_and_disconnected_peers_are_unavailable_without_accounting
         } else {
             server.disconnect();
         }
-        let began = Instant::now();
+        let timer = SystemClock::default();
         loop {
             match connection.poll() {
                 Err(_) => break,
                 Ok(notices) => assert_eq!(notices, []),
             }
-            assert!(began.elapsed() < Duration::from_secs(1));
-            std::thread::sleep(Duration::from_millis(5));
+            assert!(timer.elapsed() < Duration::from_secs(1));
+            timer.wait(Duration::from_millis(5));
         }
     }
 }
@@ -168,12 +169,12 @@ fn scripted_snapshots_preserve_duplicates_resets_and_absent_optional_counters() 
         ..Scenario::default()
     });
     let mut connection = Connection::connect(peer.path(), "native-thread").unwrap();
-    let began = Instant::now();
+    let timer = SystemClock::default();
     let mut notices = vec![];
     while notices.len() < 4 {
         notices.extend(connection.poll().unwrap());
-        assert!(began.elapsed() < Duration::from_secs(1));
-        std::thread::sleep(Duration::from_millis(5));
+        assert!(timer.elapsed() < Duration::from_secs(1));
+        timer.wait(Duration::from_millis(5));
     }
     assert_eq!(notices[0], notices[1]);
     for (notice, input) in notices.iter().zip([100, 100, 0, 10]) {

@@ -2,7 +2,9 @@
 
 use std::collections::BTreeMap;
 use std::path::Path;
-use std::time::{Duration, Instant};
+use std::time::Duration;
+
+use loft_ports::clock::Clock as _;
 
 use super::app_server::{Connection, Notice};
 use super::state::{Files, State};
@@ -165,6 +167,10 @@ fn apply(state: &mut State, subscribed: &str, active_turn: &str, notices: Vec<No
     }
 }
 
+/// How often the prompt hook looks for the worker's readiness, and how long it looks.
+const READINESS_POLL: Duration = Duration::from_millis(50);
+const READINESS_BOUND: Duration = Duration::from_millis(500);
+
 /// The prompt hook never waits for delivery, and never waits while holding the state lock.
 pub fn readiness(files: &Files, hook: &super::translate::Hook) {
     if hook.name() != "UserPromptSubmit" {
@@ -172,8 +178,9 @@ pub fn readiness(files: &Files, hook: &super::translate::Hook) {
     }
     let thread = hook.thread();
     let turn = hook.0["turn_id"].as_str();
-    let deadline = Instant::now() + Duration::from_millis(500);
-    while Instant::now() < deadline {
+    let clock = crate::yard::clock();
+    let deadline = clock.elapsed() + READINESS_BOUND;
+    while clock.elapsed() < deadline {
         if files.read().is_ok_and(|s| {
             let usage_ready = s
                 .usage
@@ -187,15 +194,13 @@ pub fn readiness(files: &Files, hook: &super::translate::Hook) {
         }) {
             break;
         }
-        std::thread::sleep(
-            Duration::from_millis(5).min(deadline.saturating_duration_since(Instant::now())),
-        );
+        clock.wait(READINESS_POLL.min(deadline.saturating_sub(clock.elapsed())));
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use loft_ports::clock::{Clock as _, SystemClock};
+    use loft_ports::clock::SystemClock;
     use serde_json::json;
 
     use super::*;
