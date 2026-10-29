@@ -15,6 +15,10 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- Every question on the Yard page ends with a free-form option, "In your own words": a radio
+  button in the group for a question that takes one option, and a checkbox sent together with the
+  chosen options for one that takes more. Yard Log takes the person's own words for any question;
+  an `ownWords` flag an agent writes is kept and no longer needed.
 - The Yard page draws the diagrams of the blocks that wait on you in the panel of what waits,
   as it does in the timeline; a `mermaid` block of a waiting plan or question showed as code.
 - `loft init` and `loft skill install` end with a setup report, as `next:` lines and as `setup`

@@ -31,7 +31,7 @@ block that an open submission holds cannot change: withdraw the submission first
 - `question`: `prompt`, a short `header`, an optional `context` in Markdown, and two or more
   `options`, each with a `label`, a `detail` and `recommended`. Labels are unique, and a
   question with one answer recommends at most one option. `multiple` lets the person choose more
-  than one option; `ownWords` lets them answer in their own words.
+  than one option. The person can always answer in their own words as well, after the options.
 - `approval`: `title` and `markdown`: something the person approves, or rejects with a reason.
 - `plan`: `title`, `markdown` and, for a plan file within the tree, its `path` relative to the tree.
   Never set `planMode`: the adapter sets it on a plan presented through the host's plan mode.
