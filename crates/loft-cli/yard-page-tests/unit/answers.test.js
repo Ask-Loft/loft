@@ -35,7 +35,7 @@ test('a question that takes one option lets the person choose one', () => {
   draft = choose(draft, asked, 'Bottom');
   assert.deepEqual(draft[asked.key].labels, ['Bottom']);
   const panel = submissionPanel({ key: 's', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
-  assert.deepEqual([...panel.querySelectorAll('input')].map((input) => input.type), ['radio', 'radio']);
+  assert.deepEqual([...panel.querySelectorAll('input:not([id$="-words"])')].map((input) => input.type), ['radio', 'radio']);
 });
 
 test('a question that takes more than one option lets the person choose one or more', () => {
@@ -46,15 +46,17 @@ test('a question that takes more than one option lets the person choose one or m
   draft = choose(draft, asked, 'Top');
   assert.deepEqual(draft[asked.key].labels, ['Bottom']);
   const panel = submissionPanel({ key: 's', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
-  assert.equal(panel.querySelectorAll('input[type=checkbox]').length, 3);
+  assert.equal(panel.querySelectorAll('input[type=checkbox]:not([id$="-words"])').length, 3);
 });
 
-test('a question that allows own words offers a selectable option with a text field', () => {
-  const asked = question('shelf', ['Top', 'Bottom'], { ownWords: true });
+test('every question offers its own-words option with a text field after its named options', () => {
+  const asked = question('shelf', ['Top', 'Bottom']);
   const panel = submissionPanel({ key: 's', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
   assert.ok(panel.querySelector(`#words-${asked.id}`));
   assert.equal(panel.querySelector(`#answer-${asked.id}-words`).type, 'radio');
-  assert.equal(panel.querySelectorAll('input[type=radio]').length, 3);
+  const radios = [...panel.querySelectorAll('input[type=radio]')];
+  assert.equal(radios.length, 3);
+  assert.equal(radios.at(-1).id, `answer-${asked.id}-words`);
   const draft = say({}, asked, 'The window sill');
   assert.ok(readyToSend(draft, [asked]));
   assert.deepEqual(toSend(draft, [asked]), [{ block: asked.key, labels: [], words: 'The window sill' }]);
@@ -63,7 +65,7 @@ test('a question that allows own words offers a selectable option with a text fi
 test('each option shows its detail and each recommended option is marked', () => {
   const asked = question('shelf', ['Top', 'Bottom']);
   const panel = submissionPanel({ key: 's', state: 'open', blocks: [asked.key], sent: { at: '', revision: 1, by: {} } }, [asked], where);
-  const choices = [...panel.querySelectorAll('.choice')];
+  const choices = [...panel.querySelectorAll('.choice')].filter((choice) => choice.querySelector('.choice-detail'));
   assert.deepEqual(choices.map((choice) => choice.querySelector('.choice-detail').textContent), ['About Top', 'About Bottom']);
   assert.deepEqual(choices.map((choice) => Boolean(choice.querySelector('.badge--recommended'))), [true, false]);
 });

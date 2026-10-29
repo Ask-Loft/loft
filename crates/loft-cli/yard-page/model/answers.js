@@ -37,8 +37,7 @@ export function choose(draft, block, label) {
   } else {
     labels = [label];
   }
-  const selected = !block.version.body.multiple && block.version.body.ownWords
-    ? { ownWordsSelected: false } : {};
+  const selected = block.version.body.multiple ? {} : { ownWordsSelected: false };
   return { ...draft, [block.key]: { ...answer, labels, ...selected } };
 }
 
@@ -49,7 +48,6 @@ export function choose(draft, block, label) {
  * @returns {Draft}
  */
 export function chooseOwnWords(draft, block) {
-  if (!block.version.body.ownWords) return draft;
   const answer = answerOf(draft, block.key);
   const multiple = block.version.body.multiple;
   return { ...draft, [block.key]: { ...answer,
@@ -67,8 +65,7 @@ export function chooseOwnWords(draft, block) {
  */
 export function say(draft, block, words) {
   const answer = answerOf(draft, block.key);
-  const selected = block.version.body.ownWords
-    ? { ownWordsSelected: true, labels: block.version.body.multiple ? answer.labels : [] } : {};
+  const selected = { ownWordsSelected: true, labels: block.version.body.multiple ? answer.labels : [] };
   return { ...draft, [block.key]: { ...answer, words, ...selected } };
 }
 
@@ -84,7 +81,7 @@ export function acceptRecommendations(draft, questions) {
   for (const block of questions) {
     if (block.kind !== 'question') continue;
     const answer = answerOf(next, block.key);
-    if (answer.labels.length || (block.version.body.ownWords && answer.ownWordsSelected === true)) continue;
+    if (answer.labels.length || answer.ownWordsSelected === true) continue;
     const recommended = block.version.body.options
       .filter((option) => option.recommended)
       .map((option) => option.label);
@@ -102,7 +99,7 @@ export function acceptRecommendations(draft, questions) {
  */
 export function isAnswered(draft, block) {
   const answer = answerOf(draft, block.key);
-  if (block.version.body.ownWords && answer.ownWordsSelected === true) return (answer.words ?? '').trim() !== '';
+  if (answer.ownWordsSelected === true) return (answer.words ?? '').trim() !== '';
   return answer.labels.length > 0;
 }
 
@@ -128,7 +125,7 @@ export function toSend(draft, questions) {
       const answer = answerOf(draft, block.key);
       const sent = { block: block.key, labels: answer.labels };
       const words = (answer.words ?? '').trim();
-      return block.version.body.ownWords && answer.ownWordsSelected === true && words ? { ...sent, words } : sent;
+      return answer.ownWordsSelected === true && words ? { ...sent, words } : sent;
     });
 }
 

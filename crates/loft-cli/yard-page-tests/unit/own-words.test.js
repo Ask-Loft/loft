@@ -24,7 +24,7 @@ function edit(panel, q, value) {
 }
 
 test('typing selects the own words radio and clears named choices without replacing the text field', () => {
-  const q = question('shelf', ['Red', 'Blue'], { ownWords: true });
+  const q = question('shelf', ['Red', 'Blue']);
   const panel = draw(q);
   panel.querySelector('input[value="Red"]').click();
   const input = panel.querySelector(words(q));
@@ -44,7 +44,7 @@ test('typing selects the own words radio and clears named choices without replac
 });
 
 test('a named radio deselects own words while preserving text that is excluded from sending', () => {
-  const q = question('shelf', ['Red', 'Blue'], { ownWords: true });
+  const q = question('shelf', ['Red', 'Blue']);
   const draft = choose(say({}, q, 'Teal'), q, 'Blue');
   assert.equal(draft[q.key].ownWordsSelected, false);
   assert.equal(draft[q.key].words, 'Teal');
@@ -60,7 +60,7 @@ test('a named radio deselects own words while preserving text that is excluded f
 });
 
 test('the own words checkbox combines with named choices and can be unchecked without losing text', () => {
-  const q = question('shelf', ['Red', 'Blue'], { ownWords: true, multiple: true });
+  const q = question('shelf', ['Red', 'Blue'], { multiple: true });
   const panel = draw(q);
   panel.querySelector('input[value="Red"]').click();
   edit(panel, q, 'Teal');
@@ -80,7 +80,7 @@ test('the own words checkbox combines with named choices and can be unchecked wi
 
 test('clearing text keeps the explicit choice selected and prevents sending even alongside named checkboxes', () => {
   for (const multiple of [false, true]) {
-    const q = question('shelf', ['Red', 'Blue'], { ownWords: true, multiple });
+    const q = question('shelf', ['Red', 'Blue'], { multiple });
     const panel = draw(q);
     if (multiple) panel.querySelector('input[value="Red"]').click();
     panel.querySelector(own(q))?.click();
@@ -95,7 +95,7 @@ test('clearing text keeps the explicit choice selected and prevents sending even
 });
 
 test('recommendations preserve a selected empty own words option but ignore unselected draft text', () => {
-  const q = question('shelf', ['Red', 'Blue'], { ownWords: true });
+  const q = question('shelf', ['Red', 'Blue']);
   const selected = { [q.key]: { labels: [], words: '', ownWordsSelected: true } };
   assert.deepEqual(acceptRecommendations(selected, [q]), selected);
   const legacy = { [q.key]: { labels: [], words: 'Teal' } };
@@ -107,7 +107,7 @@ test('recommendations preserve a selected empty own words option but ignore unse
 
 test('restoring a draft uses explicit selection independently of retained text including legacy drafts', () => {
   for (const multiple of [false, true]) {
-    const q = question('shelf', ['Red', 'Blue'], { ownWords: true, multiple });
+    const q = question('shelf', ['Red', 'Blue'], { multiple });
     for (const selected of [undefined, false, true, 'legacy']) {
       for (const text of ['', 'Teal']) {
         const draft = { [q.key]: { labels: [], words: text, ...(selected === undefined ? {} : { ownWordsSelected: selected }) } };
@@ -121,7 +121,7 @@ test('restoring a draft uses explicit selection independently of retained text i
 });
 
 test('editing restored unselected text selects the option and sends only the existing answer wire fields', () => {
-  const q = question('shelf', ['Red', 'Blue'], { ownWords: true });
+  const q = question('shelf', ['Red', 'Blue']);
   const panel = draw(q, { [q.key]: { labels: ['Red'], words: 'Teal', ownWordsSelected: false } });
   edit(panel, q, ' Green ');
   assert.equal(panel.querySelector(own(q))?.checked, true);
