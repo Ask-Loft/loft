@@ -9,7 +9,7 @@ import * as prefs from '../../yard-page/lib/prefs.js';
 import { blocksByKey, changedSince, decisionsByQuestion, grouped, ordered, stretches } from '../../yard-page/model/log.js';
 import { chart } from '../../yard-page/model/gantt.js';
 import { card } from '../../yard-page/views/blocks.js';
-import { logView, unreadable } from '../../yard-page/views/log.js';
+import { failedLog, logView, unreadable } from '../../yard-page/views/log.js';
 import { timeline } from '../../yard-page/views/timeline.js';
 import { EXPLORE, PERSON, act, answer, block, log, open, question, stage } from './fixtures.js';
 
@@ -331,6 +331,19 @@ test('Yard Log that does not read shows its errors, with their files and lines, 
   assert.match(drawn.querySelector('h2').textContent, /does not read/);
   assert.match(drawn.querySelector('li').textContent, /A stage file is not YAML\..*\.yard\/feat\/shelf\/s\.yaml:4/);
   assert.ok(!drawn.querySelector('.timeline'));
+});
+
+test('an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files', () => {
+  const tree = '/work/shelf/.claude/worktrees/calm-oak';
+  const refused = { errors: [{ kind: 'tree', message: `the page server serves no tree ${tree}`, sites: [] }] };
+  const drawn = failedLog(404, refused, tree);
+  assert.match(drawn.querySelector('h2').textContent, /does not serve this tree/);
+  assert.equal(drawn.querySelector('code.tree').textContent, tree);
+  assert.match(drawn.textContent, /No session has registered it with the page server/);
+  assert.equal(drawn.querySelector('code.command').textContent, `loft yard serve --tree ${tree}`);
+  assert.doesNotMatch(drawn.textContent, /cannot be read|does not read/);
+  const broken = failedLog(409, { errors: [{ kind: 'unreadable', message: 'A stage file is not YAML.', sites: [] }] }, tree);
+  assert.match(broken.querySelector('h2').textContent, /does not read/);
 });
 
 test('Yard Log of a newer format names its format, says a newer loft is needed, and offers nothing to answer', () => {

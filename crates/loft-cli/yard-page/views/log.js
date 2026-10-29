@@ -28,6 +28,33 @@ import { waitingIn } from './waiting.js';
  */
 
 /**
+ * What the page shows in place of a Yard Log the page server did not give: that it does not
+ * serve the address's tree, where it refused it as such, or else the errors of a Yard Log that
+ * does not read.
+ * @param {number} status
+ * @param {any} body
+ * @param {string} tree
+ */
+export function failedLog(status, body, tree) {
+  return status === 404 && body?.errors?.[0]?.kind === 'tree' ? unserved(tree) : unreadable(body);
+}
+
+/**
+ * That the page server does not serve `tree`, and how to add it.
+ * @param {string} tree
+ */
+function unserved(tree) {
+  return h(
+    'section',
+    { class: 'unreadable', role: 'alert' },
+    h('h2', {}, 'The page server does not serve this tree'),
+    h('p', {}, h('code', { class: 'tree' }, tree)),
+    h('p', {}, 'No session has registered it with the page server yet. A session with the Loft mod, or a loft yard command run in the tree, adds it. To add it now, run on this machine:'),
+    h('p', {}, h('code', { class: 'command' }, `loft yard serve --tree ${tree}`)),
+  );
+}
+
+/**
  * The error a Yard Log that does not read gives, in place of its stages.
  * @param {any} body
  */

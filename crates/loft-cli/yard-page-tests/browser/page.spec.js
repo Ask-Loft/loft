@@ -4,7 +4,7 @@
 
 import { expect, test } from '@playwright/test';
 
-import { atEpoch, address, answerInTerminal, unmeasuredCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, writeOther } from './yard.js';
+import { atEpoch, address, answerInTerminal, unmeasuredCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, unservedAddress, writeOther, writeUnserved } from './yard.js';
 
 /** Live changes reach an open page within this many milliseconds. */
 const LIVE = 2000;
@@ -594,6 +594,20 @@ test('a Yard Log opened in another tree the page server serves shows in the list
   await expect(other).toHaveCount(0);
   writeOther([{ id: 'docs', kind: 'stage', title: 'Write the docs', status: 'active' }]);
   await expect(other).toHaveCount(1, { timeout: LIVE });
+});
+
+test('an address whose tree the page server does not serve says so, and an agent\'s command there brings its Yard Log without a reload', async ({ page }) => {
+  await page.goto(unservedAddress());
+  const alert = page.locator('#log [role="alert"]');
+  await expect(alert.locator('h2')).toHaveText('The page server does not serve this tree');
+  await expect(alert.locator('code.tree')).toHaveText(setup.unserved.cwd);
+  await expect(alert.locator('code.command')).toHaveText(`loft yard serve --tree ${setup.unserved.cwd}`);
+  await expect(alert).not.toContainText('cannot be read');
+  const loaded = await page.evaluate(() => performance.timeOrigin);
+  writeUnserved([{ id: 'lamp', kind: 'stage', title: 'Fit the lamp', status: 'active' }]);
+  await expect(page.locator('#log-title')).toBeVisible({ timeout: LIVE });
+  await expect(page.locator('#log')).toContainText('Fit the lamp');
+  expect(await page.evaluate(() => performance.timeOrigin)).toBe(loaded);
 });
 
 test('the revision of the last visit is kept in the browser, and what changed since is marked and counted', async ({ page }) => {

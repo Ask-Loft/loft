@@ -24780,6 +24780,39 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "with no Yard Log served, the page links adapter installation instructions"
         body: ae3cfda45f74e980c439e9721cea8065764d56a77fd04c3153be9fa84fb89d28
+  - node: 01a1877b-6de6-72d5-a7d7-a99b2ec84e15
+    reviewed: b546c0e33662da7047236638ccddab7261b718d16c8f8eac78718f3829e6d322
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
+        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+  - node: 01a1877b-6de6-72d5-a7d7-a99cc522b333
+    reviewed: 60b68f98ec2796f1906d6985e61b0824e40965e498b688c05736335563f8db7b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
+        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+  - node: 01a1877b-6de6-72d5-a7d7-a99d4765ea18
+    reviewed: e8c5886f7f12d6e4dc7f8d7928cdc2cab02078d982eb8523a0b516f308b1dd7d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
+        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+  - node: 01a1877b-6de6-72d5-a7d7-a99e4cab6125
+    reviewed: 5a7aacb1a3dc9b160acbbc4497990d66296a536a9887cbae6ccab8b824afe109
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
   - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
     reviewed: 3a2d7afe1a244fce40772757ece7d21948a477048b99a102e3e40e2118772728
     tests:

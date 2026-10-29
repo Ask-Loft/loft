@@ -10,7 +10,7 @@ import { join } from 'node:path';
 const file = process.env.YARD_BROWSER_SETUP;
 if (!file) throw new Error('YARD_BROWSER_SETUP names no file: run the suite through tests/yard_page_browser.rs');
 
-/** @type {{ url: string, token: string, tree: string, branch: string, driver: Driver, other: Driver }} */
+/** @type {{ url: string, token: string, tree: string, branch: string, driver: Driver, other: Driver, unserved: Driver }} */
 export const setup = JSON.parse(readFileSync(file, 'utf8'));
 
 /** @typedef {{ program: string, cwd: string, env: Record<string, string | null> }} Driver */
@@ -64,6 +64,20 @@ export function sendAs(session, batch, epoch) {
  */
 export function writeOther(batch) {
   return yard(setup.other, ['write', '--session', 's9'], batch);
+}
+
+/**
+ * Writes `batch` in the tree no session registers, through the page server's home, as an agent
+ * without the mod does.
+ * @param {object[]} batch
+ */
+export function writeUnserved(batch) {
+  return yard(setup.unserved, ['write', '--session', 's8'], batch);
+}
+
+/** The page's address of the unserved tree's Yard Log. */
+export function unservedAddress() {
+  return `${setup.url}#${new URLSearchParams({ tree: setup.unserved.cwd, branch: setup.branch })}`;
 }
 
 /**

@@ -69,6 +69,11 @@ fn the_page_meets_its_criteria_in_a_headless_browser() {
     yard.git = own;
     yard.write("s1", OPENING, &["--send"]);
     let other = at_the_system_time(Yard::new());
+    // A tree no session registers, whose `loft yard` shares the page server's home, as a session
+    // without the mod in another worktree of the machine does.
+    let unserved = at_the_system_time(Yard::new());
+    let mut unserved_driver = driver(&unserved);
+    unserved_driver["env"]["HOME"] = json!(yard.scratch.home());
     let tree = yard.scratch.0.display().to_string();
     let served = Served::start(&yard, &["--tree", &tree]);
     let setup = json!({
@@ -78,6 +83,7 @@ fn the_page_meets_its_criteria_in_a_headless_browser() {
         "branch": crate::yard::BRANCH,
         "driver": driver(&yard),
         "other": driver(&other),
+        "unserved": unserved_driver,
     });
     let file = yard.scratch.home().join("browser-setup.json");
     fs::write(&file, setup.to_string()).unwrap();
