@@ -202,6 +202,40 @@ fn where_no_running_page_server_is_named_the_result_says_the_page_is_unavailable
 }
 
 #[test]
+fn where_a_page_server_runs_a_command_adds_its_tree_to_the_trees_served() {
+    let yard = Yard::new();
+    let trees = yard.scratch.home().join(".yard/trees.json");
+    let written = yard.write("s1", ASK, &[]);
+    assert_eq!(written["page"]["available"], false);
+    assert!(!trees.exists(), "no page server runs, so no tree is added");
+    name_server(&yard, 7500);
+    let held = lock::lock(&yard.scratch.home().join(".yard/server.lock")).unwrap();
+    let read = yard.read("s1", &[]);
+    let listed: Value = serde_json::from_slice(&fs::read(&trees).unwrap()).unwrap();
+    assert_eq!(listed["trees"], json!([read["tree"]]));
+    let before = fs::read(&trees).unwrap();
+    yard.read("s1", &[]);
+    drop(held);
+    assert_eq!(
+        fs::read(&trees).unwrap(),
+        before,
+        "a tree served is not added twice"
+    );
+}
+
+#[test]
+fn a_command_that_cannot_add_its_tree_still_does_its_work_and_says_the_page_is_unavailable() {
+    let yard = Yard::new();
+    name_server(&yard, 7500);
+    fs::create_dir_all(yard.scratch.home().join(".yard/trees.json")).unwrap();
+    let held = lock::lock(&yard.scratch.home().join(".yard/server.lock")).unwrap();
+    let written = yard.write("s1", ASK, &[]);
+    drop(held);
+    assert_eq!(written["outcome"], "written");
+    assert_eq!(written["page"], json!({ "available": false, "port": 7411 }));
+}
+
+#[test]
 fn a_command_learns_whether_a_page_server_runs_without_opening_a_connection() {
     let page = fs::read_to_string(workspace().join("crates/loft-cli/src/yard/page.rs")).unwrap();
     for connection in ["TcpStream", "std::net", "ureq", "http::"] {

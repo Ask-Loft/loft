@@ -86,6 +86,21 @@ requirements:
         name: "With no Yard Log served, the page asks for a session rather than a choice from the list."
       - key: 01a16827-8a6d-74e8-a5d2-6fa4147c7a28
         name: "With no Yard Log served, the page links to installation instructions for agent adapters."
+  - key: 01a1877b-6de6-72d5-a7d7-a99aeed2ab88
+    statement:
+      form: unwanted
+      if: "the address the page opens names a tree that the page server does not serve"
+      system: "the page"
+      shall: "say, in place of the Yard Log, that the page server does not serve the tree and how to add it."
+    criteria:
+      - key: 01a1877b-6de6-72d5-a7d7-a99b2ec84e15
+        name: "The page names the tree and says that no session has registered it with the page server."
+      - key: 01a1877b-6de6-72d5-a7d7-a99cc522b333
+        name: "The page names `loft yard serve --tree <tree>`, run on the machine, as the way to add the tree."
+      - key: 01a1877b-6de6-72d5-a7d7-a99d4765ea18
+        name: "The page does not say that the Yard Log's files cannot be read."
+      - key: 01a1877b-6de6-72d5-a7d7-a99e4cab6125
+        name: "Once the tree is added, the page shows its Yard Log without being reloaded."
   - key: 01a1649f-62ef-71e6-98de-e10df45e19aa
     statement:
       form: event_driven

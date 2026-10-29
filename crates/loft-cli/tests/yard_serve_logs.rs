@@ -90,6 +90,27 @@ fn trees_of_different_repositories_are_served_by_one_page_server() {
 }
 
 #[test]
+fn a_tree_a_yard_command_added_is_served_without_registering_it() {
+    let first = Yard::new();
+    let served = Served::start(&first, &["--tree", &first.scratch.0.display().to_string()]);
+    // A session without the mod, in another worktree of the same machine: its `loft yard`
+    // shares the page server's home and nothing registers its tree.
+    let second = Yard::new();
+    let input = second.scratch.home().join("ask.json");
+    fs::write(&input, ASK).unwrap();
+    let mut write = second.scratch.command(Some(&second.git), &second.clock);
+    write
+        .env("HOME", first.scratch.home())
+        .args(["yard", "write", "--session", "s1"]);
+    let output = write.arg("--input").arg(&input).args(["--format", "json"]);
+    let written: Value = serde_json::from_slice(&output.output().unwrap().stdout).unwrap();
+    assert_eq!(written["page"]["available"], true, "{written}");
+    let read = served.get(&format!("/api/log?tree={}", tree(&second.scratch)));
+    assert_eq!(read.status, 200, "{}", read.json());
+    assert_eq!(read.json()["yardLog"]["branch"], BRANCH);
+}
+
+#[test]
 fn a_tree_that_no_longer_exists_is_dropped_from_those_served() {
     let yard = Yard::new();
     let gone = Scratch::empty();

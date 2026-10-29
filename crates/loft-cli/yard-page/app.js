@@ -9,7 +9,7 @@ import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
-import { logChrome, logView, unreadable } from './views/log.js';
+import { failedLog, logChrome, logView } from './views/log.js';
 import { menu, title, welcome } from './views/trees.js';
 import { openWaiting, waitingModal } from './views/waiting.js';
 
@@ -117,7 +117,7 @@ function render() {
     waitingModal(null, { tree: '', branch: '', refresh, notify });
   } else if (state.logStatus !== 200) {
     replace(chrome);
-    replace(main, unreadable(state.log));
+    replace(main, failedLog(state.logStatus, state.log, route.tree));
     waitingModal(null, { tree: route.tree, branch: route.branch, refresh, notify });
   } else {
     /** @type {import('./views/log.js').LogContext} */

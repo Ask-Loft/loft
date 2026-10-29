@@ -24780,6 +24780,39 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "with no Yard Log served, the page links adapter installation instructions"
         body: ae3cfda45f74e980c439e9721cea8065764d56a77fd04c3153be9fa84fb89d28
+  - node: 01a1877b-6de6-72d5-a7d7-a99b2ec84e15
+    reviewed: b546c0e33662da7047236638ccddab7261b718d16c8f8eac78718f3829e6d322
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
+        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+  - node: 01a1877b-6de6-72d5-a7d7-a99cc522b333
+    reviewed: 60b68f98ec2796f1906d6985e61b0824e40965e498b688c05736335563f8db7b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
+        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+  - node: 01a1877b-6de6-72d5-a7d7-a99d4765ea18
+    reviewed: e8c5886f7f12d6e4dc7f8d7928cdc2cab02078d982eb8523a0b516f308b1dd7d
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
+        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+  - node: 01a1877b-6de6-72d5-a7d7-a99e4cab6125
+    reviewed: 5a7aacb1a3dc9b160acbbc4497990d66296a536a9887cbae6ccab8b824afe109
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
+        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
   - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
     reviewed: 3a2d7afe1a244fce40772757ece7d21948a477048b99a102e3e40e2118772728
     tests:
@@ -29175,6 +29208,21 @@ links:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "a_command_whose_port_another_program_holds_still_does_its_work"
         body: 365d55eae5c39ffcdbdfe0ff40b855ccbdcf385e998ef63817501710679d77b0
+  - node: 01a1877b-6de6-72d5-a7d7-a998b33958b7
+    reviewed: 6099dbacd736493db17a0d5126a1688e7cec4d95e8463cc055fb2d43f1d40aa4
+    tests:
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "where_a_page_server_runs_a_command_adds_its_tree_to_the_trees_served"
+        body: a455157bd6cc285fc11d0fdfffd82f4479d592acd25d078b0d153578cf22b3cd
+      - file: "crates/loft-cli/tests/yard_serve_logs.rs"
+        name: "a_tree_a_yard_command_added_is_served_without_registering_it"
+        body: ab7563c222d0682c01276427251f18b42ff001a1d7256aa8f8120735b52dcc42
+  - node: 01a1877b-6de6-72d5-a7d7-a999103546c3
+    reviewed: 997bfc7e593738b55f1f9dd41f7f751a61a8d60f83486efa2458b8b06db12dcf
+    tests:
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "a_command_that_cannot_add_its_tree_still_does_its_work_and_says_the_page_is_unavailable"
+        body: b73f3e3007f37a476ce9c5779eee0cee635388ae5c3b9cf5f538819317697f71
   - node: 01a1649f-62ef-71e6-98de-e1066ae8d263
     reviewed: 10417a925491ee609ce6c74f43ceb52cc25e74b7f8a6e83ebf966b734ca2541a
     tests:
