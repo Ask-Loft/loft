@@ -1,6 +1,6 @@
 [package]
 name = "yardlog"
-version = "2.3.0-alpha.1"
+version = "2.3.0-alpha.2"
 description = "The yardlog format: the model of Yard Log, its records and keys, the rules a write is held to, its canonical YAML and the merge of two copies"
 edition.workspace = true
 rust-version.workspace = true

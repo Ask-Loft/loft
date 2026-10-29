@@ -3,6 +3,16 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.3.0-alpha.2 (2026-10-29)
+
+The second prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.2`. Since 2.3.0-alpha.1 it lets you try
+sessions that run `loft` without the mod on the Yard page, such as those Claude Code Desktop
+starts in worktrees of their own; a free-form answer to every question on the page; the
+diagrams of what waits on you drawn in its panel; and the setup report that `loft init` and
+`loft skill install` end with, with the marketplace pinned to the running `loft`'s release. The
+entries under Unreleased below list everything 2.3.0 will hold.
+
 ## 2.3.0-alpha.1 (2026-10-28)
 
 A prerelease of 2.3.0, for trying what `develop` holds before the release:

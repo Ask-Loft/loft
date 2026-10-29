@@ -1,6 +1,6 @@
 [package]
 name = "yardlog-store"
-version = "2.3.0-alpha.1"
+version = "2.3.0-alpha.2"
 description = "The store of Yard Log: a branch's Yard Log under `.yard/`, written one write at a time through a journal in git's own directory, and the machine's state in `~/.yard/`"
 edition.workspace = true
 rust-version.workspace = true

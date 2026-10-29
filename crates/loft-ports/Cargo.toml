@@ -1,6 +1,6 @@
 [package]
 name = "loft-ports"
-version = "2.3.0-alpha.1"
+version = "2.3.0-alpha.2"
 description = "The ports Loft's stores share: a journaled save, the git command runner and the clock"
 edition.workspace = true
 rust-version.workspace = true
