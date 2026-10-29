@@ -3,6 +3,7 @@
 // this visit, stays closed once they close it until another is sent, opens again at their asking
 // and closes by itself once nothing in it waits.
 
+import { drawAll } from '../lib/diagrams.js';
 import { count } from '../lib/format.js';
 import * as modal from '../lib/modal.js';
 import { answerable, blocksByKey, openSubmissions, waitingBlocks } from '../model/log.js';
@@ -58,6 +59,13 @@ function redraw() {
   if (!current.items.length || !current.where) return;
   current.drawn = signature(current.items);
   modal.update(NAME, shown());
+  drawDiagrams();
+}
+
+/** Draws the diagrams of the blocks in the panel, which lies outside what the page draws them in. */
+function drawDiagrams() {
+  const body = modal.body(NAME);
+  if (body) drawAll(body);
 }
 
 /**
@@ -96,6 +104,7 @@ export function openWaiting(blockKey) {
   if (!current.items.length || !current.where) return;
   current.drawn = signature(current.items);
   modal.show(NAME, shown());
+  drawDiagrams();
   if (!blockKey) return;
   const form = modal.body(NAME)?.querySelector(`.question-form[data-key="${blockKey}"], .decision-form[data-key="${blockKey}"]`);
   if (!form) return;

@@ -25272,6 +25272,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a diagram is drawn from the vendored Mermaid, and one that does not parse shows its source"
         body: d8a1732f0056daeeb34a8625831db8cf812b0ed34127594e1cd5e174420162d5
+  - node: 01a1851a-2557-7721-ba02-488bef757a57
+    reviewed: 4f91f73ee125247917112a4f1799016f9a611869c942b8aed299960240c14ff0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "a diagram in a waiting block is drawn in the panel, as it is in the timeline"
+        body: 79a460223597a290dc744f06afa5a57767aefe7e579ee3d977474204d0c65d01
   - node: 01a1646f-546d-7042-befd-eb4b0653b23d
     reviewed: b3065eac059925fa66c3d4992230182e1708cad803af938a863a98a7c5e0e7e5
     tests:
