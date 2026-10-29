@@ -21,12 +21,20 @@ repository. It creates `spec/` with a manifest, label counters and empty registr
 where `spec/` already exists.
 
 The specification lives in git. If the directory is not in a git repository, ask the user before
-running `git init`; never create a repository unasked. Once the project is under git, run
-`loft merge-driver --install`, so that git merges `spec/` by key, and commit the `.gitattributes`
-it writes, as `publishing-and-merging.md` says, together with the skill directories and the
-agent settings that `loft init` names, so that every clone's coding agents have the skill
-and are offered the plugin. The last line of `loft init` says what the merge driver still needs: the
-install, or putting the project under git first.
+running `git init`; never create a repository unasked. Commit the skill directories and the agent
+settings that `loft init` names, so that every clone's coding agents have the skill and are
+offered the plugin.
+
+`loft init` ends with the setup report: `setup` in its JSON document, and a `next:` line for each
+step in its text. It says whether the git repository, Loft's merge driver, the `loft` that the
+agents' hooks run and the plugin are in place. Act on each entry whose state is not `ok`:
+
+- `git`: ask the user before running `git init`, as above.
+- `merge-driver`: run `loft merge-driver --install` as the step says, and commit the
+  `.gitattributes` it writes, as `publishing-and-merging.md` says.
+- `hooks-loft` and `plugin`: these change the user's machine, not the project. Give the user the
+  step as it reads, and check what you can, such as the plugin version that your host reports
+  installed.
 
 ## Draft from a conversation
 

@@ -15,6 +15,16 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- `loft init` and `loft skill install` end with a setup report, as `next:` lines and as `setup`
+  in their JSON documents (`loft-init/2`, `loft-skill/2`): whether the project is in a git
+  repository, whether Loft's merge driver is registered, whether the `loft` that Claude Code's and
+  Codex's hooks find on the search path is the running version, with how to install it or which
+  `loftCommand` to set, and how to bring an installed Claude Code plugin to that version. The
+  `loft-spec` skill tells the agent to act on it. The merge-driver suggestion that `loft init`
+  printed is now part of this report.
+- The marketplace that `loft init` and `loft skill install` write into `.claude/settings.json`
+  is pinned to the running `loft`'s release (`ref: v<version>`), so a fresh machine installs the
+  plugin of the same version; a rerun after an upgrade moves the pin.
 - Yard Client works in Claude Code sessions signed in with a Team or Enterprise account, and on
   machines with managed settings, where Claude Code's built-in guard skips a user's mod hooks on
   its settings hook events. The session's and each subagent's Yard context, plan mode,
