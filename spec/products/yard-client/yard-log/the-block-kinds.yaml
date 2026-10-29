@@ -59,13 +59,15 @@ requirements:
       - key: 01a1646f-546e-76cb-8b4f-f272d3dbf550
         name: "A question that takes one option and marks more than one as recommended is refused."
       - key: 01a1646f-546e-76cb-8b4f-f273336e30a0
-        name: "A question may allow an answer in the person's own words beside its options."
+        name: "Every question takes an answer in the person's own words beside its options."
+      - key: 01a18557-79f8-7168-9794-0ce734d3422b
+        name: "An `ownWords` field written on a question is kept as written and changes nothing of how the question is answered."
       - key: 01a1646f-546e-76cb-8b4f-f27448a8483a
         name: "A question with fewer than two options is refused."
       - key: 01a1646f-546e-76cb-8b4f-f27527c987e0
         name: "A question whose options repeat a label is refused."
       - key: 01a1646f-546e-76cb-8b4f-f27644ca8154
-        name: "An answer holds the chosen labels or the person's own words, the person's notes, its Act and its channel, `page` or `terminal`."
+        name: "An answer holds the chosen labels, the person's own words or both, the person's notes, its Act and its channel, `page` or `terminal`."
   - key: 01a1646f-546e-76cb-8b4f-f277f1c5565b
     statement:
       form: ubiquitous

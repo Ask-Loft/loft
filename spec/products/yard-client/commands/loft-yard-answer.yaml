@@ -18,7 +18,7 @@ requirements:
       shall: "record each of them with the person's Act and the channel `terminal`."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea352a11cc41
-        name: "An answer to a question records the chosen labels, or the person's own words, and the person's notes."
+        name: "An answer to a question records the chosen labels, the person's own words or both, and the person's notes."
       - key: 01a1646f-546d-7042-befd-ea36cd0087ca
         name: "A decision of an `approval` or a `plan` block records `approved`, or `rejected` with the person's reason where they gave one."
       - key: 01a1646f-546d-7042-befd-ea37505961d9
