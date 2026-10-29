@@ -16,6 +16,14 @@ import { EXPLORE, act, block, log, open, question, stage } from './fixtures.js';
 
 const window = /** @type {any} */ (globalThis.window);
 
+/** @type {any} */ (globalThis).mermaid = {
+  initialize() {},
+  async render(_id, text) {
+    const escaped = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+    return { svg: `<svg viewBox="0 0 400 200"><text>${escaped}</text></svg>` };
+  },
+};
+
 /** @type {string[]} */
 let notices = [];
 const fetched = globalThis.fetch;
@@ -212,4 +220,16 @@ test('the panel closes by itself once nothing in it waits on the person, and the
   assert.deepEqual(notices, ['Sent.']);
   waitingModal(later(shown, []), where);
   assert.ok(!dialog().open);
+});
+
+test('a diagram in a waiting block is drawn in the panel, as it is in the timeline', async () => {
+  const asked = question('colour', ['Red', 'Blue'], {
+    contextHtml: '<pre><code class="language-mermaid">flowchart LR\n  A --&gt; B</code></pre>',
+  });
+  const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
+  page(shown);
+  for (let turn = 0; turn < 5; turn += 1) await new Promise((done) => setTimeout(done, 0));
+  const body = dialog().querySelector('.modal-body');
+  assert.ok(!body.querySelector('pre > code.language-mermaid'), 'the diagram is still a code block');
+  assert.equal(body.querySelector('.diagram svg text')?.textContent, 'flowchart LR\n  A --> B');
 });

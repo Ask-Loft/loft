@@ -312,6 +312,8 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb49f9b1a9a6
         name: "A diagram that does not parse shows its source, with a line saying that it could not be drawn."
+      - key: 01a1851a-2557-7721-ba02-488bef757a57
+        name: "A diagram in a block that waits on the person is drawn in the panel of what waits, as it is in the timeline."
   - key: 01a1646f-546d-7042-befd-eb4a816d5c07
     statement:
       form: state_driven

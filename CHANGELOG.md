@@ -15,6 +15,8 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- The Yard page draws the diagrams of the blocks that wait on you in the panel of what waits,
+  as it does in the timeline; a `mermaid` block of a waiting plan or question showed as code.
 - `loft init` and `loft skill install` end with a setup report, as `next:` lines and as `setup`
   in their JSON documents (`loft-init/2`, `loft-skill/2`): whether the project is in a git
   repository, whether Loft's merge driver is registered, whether the `loft` that Claude Code's and
