@@ -28,12 +28,17 @@ takes `--help`.
 
 `loft init` writes the `loft-spec` skill for Claude Code to `.claude/skills/loft-spec/` and for
 Codex to `.agents/skills/loft-spec/`, and enables the Claude Code plugin `loft@ask-loft` in
-`.claude/settings.json`, keeping every other entry of that file; `--no-skill` leaves all three
-out. After an upgrade of `loft`, `loft skill install` brings the skill to the new version.
+`.claude/settings.json`, from the marketplace pinned to the same release as `loft`, keeping every
+other entry of that file; `--no-skill` leaves all three out. After an upgrade of `loft`, `loft skill install` brings the skill to the new version.
 `--host codex` or `--host claude-code` installs for one host only, and `--no-plugin` leaves
 plugin settings alone. Commit both directories and `.claude/settings.json`, so that everyone
 working on the project has the skill and is offered the plugin. The `yard` skill ships with each
 host's plugin, not through `loft skill install`.
+
+Both commands end with a setup report, as `next:` lines and as `setup` in their JSON document: the
+git repository, Loft's merge driver, whether the `loft` that the hosts' hooks find on the search
+path is the same version, and how to bring an installed Claude Code plugin to that version. The
+report changes nothing; the steps it names are for you or your agent to take.
 
 ## Exit codes and JSON
 

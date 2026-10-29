@@ -154,6 +154,20 @@ impl Scratch {
         real_git::isolate(&mut command).args(args).output().unwrap()
     }
 
+    /// Runs `loft` at [`EPOCH`] under real git, as [`Self::loft_under_real_git`] does, with
+    /// `first` ahead of the search path it would have.
+    pub fn loft_under_real_git_with_path_first(&self, args: &[&str], first: &[PathBuf]) -> Output {
+        let mut command = self.bare(&Clock::fixed(EPOCH));
+        real_git::isolate(&mut command);
+        let path = command
+            .get_envs()
+            .find(|(name, _)| *name == "PATH")
+            .and_then(|(_, value)| value.map(ToOwned::to_owned))
+            .unwrap_or_default();
+        let path = env::join_paths(first.iter().cloned().chain(env::split_paths(&path))).unwrap();
+        command.env("PATH", path).args(args).output().unwrap()
+    }
+
     /// The `loft` command in the scratch tree: the git simulator answering from `git` first on
     /// its search path, or no `git` at all, and the time `clock` gives.
     pub fn command(&self, git: Option<&GitScenario>, clock: &Clock) -> Command {

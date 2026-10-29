@@ -12021,72 +12021,30 @@ links:
       - file: "crates/loft-cli/tests/init.rs"
         name: "init_refuses_no_skill_with_no_plugin_as_a_usage_error_naming_both_and_writes_nothing"
         body: 81bc0f7bb6849ec838bbc11389e7026602eb21c4c3aa307a6360e16e5cdbd217
-  - node: 01a13711-d7d2-7100-8424-b96531bdfd6e
-    reviewed: de04bbf2f2c5f22759fe462eb901d10bb5c6a7f6acfcf5594d052b093d145490
+  - node: 01a18504-d7d0-7236-a143-084c8fe0b055
+    reviewed: 1efd8ba2f2e28baf6cbabfbc1a0bf5ed24dd6a01dd5490b414645b819fd5945c
     tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "in_a_repository_without_the_driver_init_suggests_installing_it"
-        body: 50d6a4caee878584bd0d00fa300aaba7265c4adb638778eae0b954b503de94d3
-  - node: 01a13711-d7d2-7100-8424-b966024561d0
-    reviewed: 40753cde27eee10faa5faa19f7dcf574e06525de4720eccbbcc183f5fbcf27b7
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_text_output_ends_with_a_next_line_for_each_step"
+        body: 2e369a00c9f546b5f09ba3283c9d57bf54369a5cd9f70a2d8f2b9979cac755aa
+  - node: 01a18504-d7d0-7236-a143-084d63ae0d5b
+    reviewed: 7207f8cf7488679b1c14e40e496ed1642aa30519309f7f7fdccb7673d050b66a
     tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "in_a_repository_without_the_driver_init_suggests_installing_it"
-        body: 50d6a4caee878584bd0d00fa300aaba7265c4adb638778eae0b954b503de94d3
-  - node: 01a13711-d7d2-7100-8424-b967b32a99da
-    reviewed: 275db54e0cda8da4f42baa379ac82370f9d0a6977bd484ec5ef0a7c1db8e2fbc
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+  - node: 01a18504-d7d0-7236-a143-084e54581ba4
+    reviewed: bbac4750df26728fbe0ce08739631923c1ff91ff706f7f22f0b4ef71bf007393
     tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "init_suggests_nothing_where_the_repository_names_the_driver"
-        body: eb838d7caff92e3175419d4812b679b0d9e4261288e72b87109b897f7599607d
-  - node: 01a13711-d7d2-7100-8424-b969ba2fe385
-    reviewed: 0a5e41a259e736b83f6b98739970f663d4b4e179d6b8c72249a80e7ca2b74f4d
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_plugin_is_listed_only_where_the_claude_code_skill_is_written_with_the_plugin"
+        body: 2fde90254d2790e05647fd5fa02f04961e7498981e187aa4ca12ff0a81114b8f
+  - node: 01a18504-d7d0-7236-a143-084f9374a2d3
+    reviewed: 0ea5ba3c197ac21f5635909a935f7fdbd1a7d872f18dba360bd26914a6a2c9b5
     tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "init_succeeds_and_suggests_nothing_where_git_fails_or_cannot_be_run"
-        body: a17d4dd66db35d318a4d6be1d08434bc9fa6b21eec97b95cb68ec78b64d312b4
-  - node: 01a13711-d7d2-7100-8424-b96ac01e705d
-    reviewed: 28824517f2fefa5a7485f6d428fa511f6a9e64b6b5a8cb9d546d4221f64a7cfa
-    tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "init_succeeds_and_suggests_nothing_where_git_fails_or_cannot_be_run"
-        body: a17d4dd66db35d318a4d6be1d08434bc9fa6b21eec97b95cb68ec78b64d312b4
-  - node: 01a13711-d7d2-7100-8424-b96b4610ef38
-    reviewed: 09bc08bb0dbf2b26f66deab6fa5215b52dda6c4e76c38f560ebeca465f33a32c
-    tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "the_json_document_carries_no_suggestion"
-        body: bc55cd4ec67110853f0592317f787f49c753f88465dbcdd67624b9a5c972b198
-  - node: 01a13711-d7d2-7100-8424-b96c875c37d4
-    reviewed: 4b0fa33b42f3c1ea90017f7f34eb1c7cbfe4af8a500f9f161682677253c7a99e
-    tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "the_suggestion_writes_nothing_to_the_repository"
-        body: c26740a5d5df4593b1086a9d6e3b9927250397f33e953d4a44651211d4ebf018
-  - node: 01a13751-027d-754b-af03-8650be5fa1d7
-    reviewed: 0782a7c12902baf8bc3163dae57cb769644111a434745fd0d37ccc4ef316648a
-    tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "outside_a_repository_init_suggests_git_and_then_the_driver"
-        body: ec39cef8acc0e94ccc1048adcda9cd5ea7284ee6ade0a13094de6d8f8aeae882
-  - node: 01a13751-027d-754b-af03-86512495c3c6
-    reviewed: de04bbf2f2c5f22759fe462eb901d10bb5c6a7f6acfcf5594d052b093d145490
-    tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "outside_a_repository_init_suggests_git_and_then_the_driver"
-        body: ec39cef8acc0e94ccc1048adcda9cd5ea7284ee6ade0a13094de6d8f8aeae882
-  - node: 01a13751-027d-754b-af03-8652a9415fa5
-    reviewed: 09bc08bb0dbf2b26f66deab6fa5215b52dda6c4e76c38f560ebeca465f33a32c
-    tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "outside_a_repository_init_suggests_git_and_then_the_driver"
-        body: ec39cef8acc0e94ccc1048adcda9cd5ea7284ee6ade0a13094de6d8f8aeae882
-  - node: 01a13751-027d-754b-af03-86532d3be47e
-    reviewed: 5ce9ca53e3eff3d26477ad55cc7129d0e1e489569f2c379969a19b4199a06e75
-    tests:
-      - file: "crates/loft-cli/tests/init.rs"
-        name: "outside_a_repository_init_creates_no_git_repository_with_real_git"
-        body: 713d8e0c3c464390f27e58605c10e3c8f23b33dfc8b8394a7212815aa6f4c3c0
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "a_refusal_gives_no_report"
+        body: 052e780881b3a28b7b99076f0d0c94b714d495c9f53c75bba7761bd3427680e0
   - node: 5a70d86e-e021-47bb-9bab-c808cd0b5059
     reviewed: 7200e9c0d4ff1eba1b89d858a47c40bf291d69cde71f389941ad022fde32c691
     tests:
@@ -13410,6 +13368,30 @@ links:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "the_json_of_a_failed_skill_install_lists_the_error"
         body: 113512a2d329af3f3de9f21b504b0e493206b5c9c7400e5a4e3dde268a24f0d9
+  - node: 01a18504-d7d1-7279-8543-2528430afba3
+    reviewed: 1efd8ba2f2e28baf6cbabfbc1a0bf5ed24dd6a01dd5490b414645b819fd5945c
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_text_output_ends_with_a_next_line_for_each_step"
+        body: 2e369a00c9f546b5f09ba3283c9d57bf54369a5cd9f70a2d8f2b9979cac755aa
+  - node: 01a18504-d7d1-7279-8543-25294bdf7824
+    reviewed: 7207f8cf7488679b1c14e40e496ed1642aa30519309f7f7fdccb7673d050b66a
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+  - node: 01a18504-d7d1-7279-8543-252ae874f867
+    reviewed: a10d8b9386c68d8a3f5730734637c127c4381e6e3ef463027a90b1ba0f90df9a
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_plugin_is_listed_only_where_the_claude_code_skill_is_written_with_the_plugin"
+        body: 2fde90254d2790e05647fd5fa02f04961e7498981e187aa4ca12ff0a81114b8f
+  - node: 01a18504-d7d1-7279-8543-252c81e11295
+    reviewed: 0ea5ba3c197ac21f5635909a935f7fdbd1a7d872f18dba360bd26914a6a2c9b5
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "a_refusal_gives_no_report"
+        body: 052e780881b3a28b7b99076f0d0c94b714d495c9f53c75bba7761bd3427680e0
   - node: 01a17844-cbcb-77bf-af93-ba96b26094e4
     reviewed: 44d3d9150507708a3aa364087aab815ec25684fd9ab7deb8f08f744872bcaba5
     tests:
@@ -15304,35 +15286,41 @@ links:
         name: "each_command_that_writes_a_skill_directory_lists_writes_skill"
         body: 4aa7f21b2efb0539d98ae6ab8c690fb9794e65dbafbe90b401c5ef1e5b32711a
   - node: 01a14545-579b-7242-998f-2f3b46cfe99b
-    reviewed: 65bdb1e7812b680214c23d325109dd653bf520c102fa44a63ca3aeb4ed31db42
+    reviewed: 647fddac5c84cad3303739179de09b04d475a2e3bd885e557447c502a1edfbb9
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "a_project_without_settings_gets_the_marketplace_and_the_plugin_alone"
-        body: 010c9d54592751dd6b8a4351cfc57518c98900c977ecb49fb4b26bd05c967bf7
+        body: c1b722b4ea5ee664fce3e336b4419437a43a12a8b759dab2a6ebd3c049b8bd7e
   - node: 01a14545-579b-7242-998f-2f3cf4e8c25d
     reviewed: a553b500a8abaf62db0c175ea22833ef26f453f59511c360aba6861e4bd1179d
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "a_project_without_settings_gets_the_marketplace_and_the_plugin_alone"
-        body: 010c9d54592751dd6b8a4351cfc57518c98900c977ecb49fb4b26bd05c967bf7
+        body: c1b722b4ea5ee664fce3e336b4419437a43a12a8b759dab2a6ebd3c049b8bd7e
   - node: 01a14545-579b-7242-998f-2f3d805266c4
     reviewed: 5ac3df78de4d42067809fe122bae71146b0d8f59eb8069e9fa5dc52164fd0b2e
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "a_project_without_settings_gets_the_marketplace_and_the_plugin_alone"
-        body: 010c9d54592751dd6b8a4351cfc57518c98900c977ecb49fb4b26bd05c967bf7
+        body: c1b722b4ea5ee664fce3e336b4419437a43a12a8b759dab2a6ebd3c049b8bd7e
   - node: 01a14545-579b-7242-998f-2f3e0dc7c685
     reviewed: 67d69227db4cb37475c6a8ee0980bc42db3ca93f07cc77795d5846108d163222
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "every_other_entry_of_the_settings_is_kept_in_its_order"
-        body: 69592c5e13f2f4a086ce6088fb67b65c13ffb6571774fcdf0298becd6ffe52af
+        body: 5bd868adac80319c52751b2b8f036147e3533bec1502f61322ec18fca4e2cdd7
   - node: 01a14545-579b-7242-998f-2f3f4ddd7ec6
-    reviewed: 86696be80651b5550f4f9be79df4817628d9a6f51ae0f411f8fc7acb78e42834
+    reviewed: 4a5dd80cc525f98c5bdd371afa39f413e698a06b911e9b922110ced323f94862
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
-        name: "a_marketplace_ask_loft_the_settings_already_name_is_kept_as_it_is"
-        body: 56a6068df347d87a0f7c922352f2facc48d49bb7aac97ea67f6c1e9220d9cb9b
+        name: "a_marketplace_ask_loft_from_another_source_is_kept_as_it_is"
+        body: e223e31944bb06af9e136b8e71c45187e9f527372783da7f45ea024619f4f387
+  - node: 01a18504-d7d1-7279-8543-254618d987b2
+    reviewed: 75f86f4812b1594dbf91ea481525cd36b80f9041518c60e9def9bbd1c5a58020
+    tests:
+      - file: "crates/loft-cli/tests/writes_skill_settings.rs"
+        name: "a_marketplace_ask_loft_from_the_repository_is_moved_to_the_running_release"
+        body: 196918e57e16d6f62805372e815c4ed8d691c5f10126056bf7d4b9f9cb1916d0
   - node: 01a14545-579b-7242-998f-2f405a1edf81
     reviewed: e58efe54bf9ffaa7eada4a097dfd8b14de03a7e3bf05eb23af80ac67f891d4a7
     tests:
@@ -15340,11 +15328,11 @@ links:
         name: "a_plugin_entry_the_settings_already_hold_is_kept_false_included"
         body: 765fb4fbb05a78213946f232936160753b32ede685ae30232f8bf27d984a89f5
   - node: 01a14545-579b-7242-998f-2f4124a177d4
-    reviewed: 24c9b9ed3fa9d7f04345cbbb3949c486a59bef414e4f727e05a15a8fcd8242e7
+    reviewed: a834919175c4847de0816e615b8f88ee52f5a37ede30ae8c9786815f6b417ff6
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "settings_that_hold_both_entries_are_not_written_and_not_asked_to_be_committed"
-        body: 5b44bf57a7a1439a76163faba7eda67ae5ae56452fb854579c778c831bbae479
+        body: e419b09432fb0d7f92c1e136a9b43db4f90b9cbcde3e44f33c78903aa97a1365
   - node: 01a14545-579b-7242-998f-2f4249089083
     reviewed: 14bd6cd16177ad759f3f42cd1a407ba111918061d6f361c96d2a191a382f200c
     tests:
@@ -15353,25 +15341,25 @@ links:
         body: 9493c1ed337ddfd98e6f6cb1ff34c3d39dabc1c125c770e4cc1a6d2bf9c01c47
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "settings_that_hold_both_entries_are_not_written_and_not_asked_to_be_committed"
-        body: 5b44bf57a7a1439a76163faba7eda67ae5ae56452fb854579c778c831bbae479
+        body: e419b09432fb0d7f92c1e136a9b43db4f90b9cbcde3e44f33c78903aa97a1365
   - node: 01a14545-579b-7242-998f-2f44e95f8ddb
     reviewed: 2fad5f60f46ffff750366a18bc1442e42e5a21c4ee2b60891f34e98d766d5ccd
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by_hand"
-        body: e073f08b0aa44fc52f8de60a4251533adb9807a514de8bed85f12ff7d17b93f8
+        body: 4baf8d3ba71fb917443761200317529febac063a9e9dbca966017bbd47d1fed7
   - node: 01a14545-579b-7242-998f-2f45dbfa8231
     reviewed: fbec2fd6cea4237c58941972cc609d96e5880b07efb71dcbefebf818e8461256
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by_hand"
-        body: e073f08b0aa44fc52f8de60a4251533adb9807a514de8bed85f12ff7d17b93f8
+        body: 4baf8d3ba71fb917443761200317529febac063a9e9dbca966017bbd47d1fed7
   - node: 01a14545-579b-7242-998f-2f467423ed95
     reviewed: 77a47e2810caec6e0ce438aac25b2a439841237e854d92849ad4d3726bd3a95d
     tests:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by_hand"
-        body: e073f08b0aa44fc52f8de60a4251533adb9807a514de8bed85f12ff7d17b93f8
+        body: 4baf8d3ba71fb917443761200317529febac063a9e9dbca966017bbd47d1fed7
   - node: 01a1549d-6654-707a-b9b6-7420f871de8d
     reviewed: 006aa0215cf6b9b14b62a025877ee6c4ba6da53fe4c7935bf5dbe84a1dc30f87
     tests:
@@ -15402,6 +15390,225 @@ links:
       - file: "crates/loft-cli/tests/writes_skill_settings.rs"
         name: "with_no_plugin_the_skill_directories_are_written_as_without_it"
         body: a99602de8f33098395e9db4aa949addf87abf75452447ee158b9835ec2e89509
+  - node: 01a18504-d7d1-7279-8543-252f2e758033
+    reviewed: 21cb40f3c2463a1abe78a16e416d48183115e97a6ef98b80cb650bcc655d0353
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+  - node: 01a18504-d7d1-7279-8543-253035f86774
+    reviewed: 732f402e77499ebaec73764e92c5e98bafc96381df6a90bff7055f87babf351f
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+  - node: 01a18504-d7d1-7279-8543-253105ede627
+    reviewed: 1fbc99c82ebd7cdfd934dc06342e2243c7ddf6cd6bba928f40b28ec099fd4d73
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "without_the_merge_driver_the_report_steps_to_installing_it"
+        body: 9f9777b26f8cd46270147b99ed0ebf9a6b2dcd4d3964fd631adda84733e65f35
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_cannot_be_run_the_checks_are_unchecked_and_the_command_succeeds"
+        body: 0a56bd23afcd94d046d6b76fbbb7284831f24eab8b74dd3d84fbdf6336f17971
+  - node: 01a18504-d7d1-7279-8543-2532682b4171
+    reviewed: 3f0d56460ca1b5d32f6fdf33b625fed7bff02ed8a34c7215c86c5764a4d319ff
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+  - node: 01a18504-d7d1-7279-8543-25330d28d124
+    reviewed: c8cd3496649b041bd55d32de0497e2976475a8ba3ca37760f3cd91bded4c525c
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_text_output_ends_with_a_next_line_for_each_step"
+        body: 2e369a00c9f546b5f09ba3283c9d57bf54369a5cd9f70a2d8f2b9979cac755aa
+  - node: 01a18504-d7d1-7279-8543-2534a3b1cf57
+    reviewed: ec3de3b4b4f52765bdf488fa1d487f6004175ce886c2f0df60b773a88d022dc0
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "without_the_merge_driver_the_report_steps_to_installing_it"
+        body: 9f9777b26f8cd46270147b99ed0ebf9a6b2dcd4d3964fd631adda84733e65f35
+  - node: 01a18504-d7d1-7279-8543-25355b64de6e
+    reviewed: a3c9867e963da393bd33b2dce355d1eb2f822943846008ea20e1b4c31013a57a
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_cannot_be_run_the_checks_are_unchecked_and_the_command_succeeds"
+        body: 0a56bd23afcd94d046d6b76fbbb7284831f24eab8b74dd3d84fbdf6336f17971
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_fails_the_merge_driver_is_unchecked_and_the_command_succeeds"
+        body: dd92fe960a5a32d7a55ccfcd777526bfb9889cbf4a637e434b81d31c19725bd6
+  - node: 01a18504-d7d1-7279-8543-2536ce5fdcf8
+    reviewed: 85f95d333601fdea64c608422aecc3b0991a3e0220f480addaaa4b57d0ee8979
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_writes_nothing_to_the_repository"
+        body: e5813209d58f1c2f2c3682a07a94259df54b6007aeef1fa8cb8050a0cf43c855
+  - node: 01a13711-d7d2-7100-8424-b96531bdfd6e
+    reviewed: 9d92161eae420f8f5ddb36533ee5f0a23871c9d175266beb4ff23f26e727aca4
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "without_the_merge_driver_the_report_steps_to_installing_it"
+        body: 9f9777b26f8cd46270147b99ed0ebf9a6b2dcd4d3964fd631adda84733e65f35
+  - node: 01a13711-d7d2-7100-8424-b966024561d0
+    reviewed: 6a435e7b81afd922f844e176a36fbe36ed8ca73823050ab842fdc8b6fe4e602d
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "without_the_merge_driver_the_report_steps_to_installing_it"
+        body: 9f9777b26f8cd46270147b99ed0ebf9a6b2dcd4d3964fd631adda84733e65f35
+  - node: 01a13711-d7d2-7100-8424-b967b32a99da
+    reviewed: 7fa44c46cc73ceb1bec4dc213358a52245b22c1c5935806aba8e5037899802a2
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "a_registered_merge_driver_is_ok"
+        body: 88977eeccd13671de0c70091c3727194a975ef2ad431115a3c57e79a74052338
+  - node: 01a13711-d7d2-7100-8424-b969ba2fe385
+    reviewed: 89131cbccfb201677e54c146f1ce02c114bd5d8100c6b9ffe9da541abd4c29f3
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_fails_the_merge_driver_is_unchecked_and_the_command_succeeds"
+        body: dd92fe960a5a32d7a55ccfcd777526bfb9889cbf4a637e434b81d31c19725bd6
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_cannot_be_run_the_checks_are_unchecked_and_the_command_succeeds"
+        body: 0a56bd23afcd94d046d6b76fbbb7284831f24eab8b74dd3d84fbdf6336f17971
+  - node: 01a13711-d7d2-7100-8424-b96ac01e705d
+    reviewed: 2776c975d56e58572a4976f7ad91d387334541572a3a46fcdbc16105d15a0868
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_fails_the_merge_driver_is_unchecked_and_the_command_succeeds"
+        body: dd92fe960a5a32d7a55ccfcd777526bfb9889cbf4a637e434b81d31c19725bd6
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_cannot_be_run_the_checks_are_unchecked_and_the_command_succeeds"
+        body: 0a56bd23afcd94d046d6b76fbbb7284831f24eab8b74dd3d84fbdf6336f17971
+  - node: 01a13711-d7d2-7100-8424-b96b4610ef38
+    reviewed: 55278952294e3446a62013b72d38fa111d0cc6a48adbdcba11d9d2f10ab23baa
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "without_the_merge_driver_the_report_steps_to_installing_it"
+        body: 9f9777b26f8cd46270147b99ed0ebf9a6b2dcd4d3964fd631adda84733e65f35
+  - node: 01a13711-d7d2-7100-8424-b96c875c37d4
+    reviewed: 4b0fa33b42f3c1ea90017f7f34eb1c7cbfe4af8a500f9f161682677253c7a99e
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_writes_nothing_to_the_repository"
+        body: e5813209d58f1c2f2c3682a07a94259df54b6007aeef1fa8cb8050a0cf43c855
+  - node: 01a13751-027d-754b-af03-8650be5fa1d7
+    reviewed: f3c1dbaeda2999f96e6779f360cabef88169678d62840ea4b8d71b7d28f79ee0
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "outside_a_repository_git_steps_to_a_repository_and_the_rest_is_unchecked"
+        body: 9e6732bf4253acab5c9173c8c9c14490ff1f5ed13d7a01c990df2a06fcddd370
+  - node: 01a13751-027d-754b-af03-86512495c3c6
+    reviewed: 9d92161eae420f8f5ddb36533ee5f0a23871c9d175266beb4ff23f26e727aca4
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "outside_a_repository_git_steps_to_a_repository_and_the_rest_is_unchecked"
+        body: 9e6732bf4253acab5c9173c8c9c14490ff1f5ed13d7a01c990df2a06fcddd370
+  - node: 01a13751-027d-754b-af03-8652a9415fa5
+    reviewed: 82012f8534857d8f3572fb1fda38df15a903641f0d99cce4aed14fcc3e46be75
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "outside_a_repository_git_steps_to_a_repository_and_the_rest_is_unchecked"
+        body: 9e6732bf4253acab5c9173c8c9c14490ff1f5ed13d7a01c990df2a06fcddd370
+  - node: 01a13751-027d-754b-af03-86532d3be47e
+    reviewed: 5ce9ca53e3eff3d26477ad55cc7129d0e1e489569f2c379969a19b4199a06e75
+    tests:
+      - file: "crates/loft-cli/tests/init.rs"
+        name: "outside_a_repository_init_creates_no_git_repository_with_real_git"
+        body: 713d8e0c3c464390f27e58605c10e3c8f23b33dfc8b8394a7212815aa6f4c3c0
+  - node: 01a18504-d7d1-7279-8543-25387740d9f6
+    reviewed: 1c8a02629e49c0dbdf219fc68e54d2a37c20b5cff1c6d47e74e6a980eacc38d0
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_hooks_loft_is_found_on_the_search_path_without_node_modules_bin_under_real_git"
+        body: 51a4b83c0fcc1859a9f883f399b4440889e35078169e5d82f9ced74d4fc86b0b
+      - file: "crates/loft-cli/src/setup.rs"
+        name: "the_hooks_search_path_leaves_out_every_node_modules_bin"
+        body: 44309a7bbbafb6e7975bf695af330e1bbb66198d6d5f2859293b0695ad444d06
+  - node: 01a18504-d7d1-7279-8543-2539ae4b756a
+    reviewed: c4138b78488dd8d01b2026177e73f23ab13b465873d6e23455e1861ae4b1fb92
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "hooks_that_find_this_loft_are_ok_through_git"
+        body: 0f912eac908652775324d732e2ce1e0f03975e6095b255ced813805b078634ba
+  - node: 01a18504-d7d1-7279-8543-253a9cb5f160
+    reviewed: 2e0341dd899b5b63414f99691ba1e5d802ab6dcba7dbe3c9e03c7aa97b0bd365
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "hooks_that_find_this_loft_are_ok_through_git"
+        body: 0f912eac908652775324d732e2ce1e0f03975e6095b255ced813805b078634ba
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_report_gives_each_check_in_order_with_its_state_and_no_step_where_it_passed"
+        body: e6250bc0a48dfb352446ef46ceb65d050a4697e6c9ded7cb1f5ee83a48335d06
+  - node: 01a18504-d7d1-7279-8543-253b8934737e
+    reviewed: e54a9fd640b37b00eb31bb4c0eaeae6cae9b8eca8a32c91b85c12fbcdb8cb12e
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "hooks_that_find_another_loft_name_both_versions_and_how_to_install_this_one"
+        body: 686979dd4cb3b2d06369b847b90f55095493f1ad1fc08d3ccc7f7b030ff06c3c
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "hooks_that_find_no_loft_say_so"
+        body: f711af832372247dcd740c7de65d98b7ef8a8707bff48432bda8bf6037eaa291
+  - node: 01a18504-d7d1-7279-8543-253cdc150f24
+    reviewed: 33e90c689b2114be47e5c0b21b3b3000501e8045626f659e7a92c6221d682d43
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "hooks_that_find_another_loft_name_both_versions_and_how_to_install_this_one"
+        body: 686979dd4cb3b2d06369b847b90f55095493f1ad1fc08d3ccc7f7b030ff06c3c
+  - node: 01a18504-d7d1-7279-8543-253d6b65a0fb
+    reviewed: 50ea272e1a579f398bdfff4d80f2fc447e3e1236f254d0d1f21941d090b983ac
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "a_project_s_lockfile_names_the_runner_for_the_plugin_s_loft_command"
+        body: bc9b138ccfca10ffcb6453f501396cf816c51988d6b5a7b919c9efde62931138
+  - node: 01a18504-d7d1-7279-8543-253e4b6c03bf
+    reviewed: c488a3d00df8e9982989b0d2edfa9a0228942f80ba8a63ecab292c3ed6d4e17d
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "hooks_that_find_another_loft_name_both_versions_and_how_to_install_this_one"
+        body: 686979dd4cb3b2d06369b847b90f55095493f1ad1fc08d3ccc7f7b030ff06c3c
+  - node: 01a18504-d7d1-7279-8543-253f58818f39
+    reviewed: 7f8bad6fd1d6dc73e25de703d6c4ca0bd138b89fb7193d7cebb540b3ce25fac6
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "where_git_cannot_be_run_the_checks_are_unchecked_and_the_command_succeeds"
+        body: 0a56bd23afcd94d046d6b76fbbb7284831f24eab8b74dd3d84fbdf6336f17971
+  - node: 01a18504-d7d1-7279-8543-2541d45fa710
+    reviewed: c50cda1e8e740594f675ce4e75e455d8565c81a3ff83a07edc4b5b5c5adec788
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_plugin_is_listed_only_where_the_claude_code_skill_is_written_with_the_plugin"
+        body: 2fde90254d2790e05647fd5fa02f04961e7498981e187aa4ca12ff0a81114b8f
+  - node: 01a18504-d7d1-7279-8543-25423e4fdb37
+    reviewed: a7f82f062bf139baed49fc73396ee63c13be36c46689aa7ca71bac9565537633
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_plugin_step_brings_an_installed_plugin_to_this_version"
+        body: e48aa3cd9d1a425d20dc01c542c4f49babbf08adcdd9a441d64a982838e1b53e
+  - node: 01a18504-d7d1-7279-8543-2543107375b3
+    reviewed: bd6587c514e43fe768b7f0dd369c1d7c9ee6a146edf9f53ee84845d129552385
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_plugin_step_brings_an_installed_plugin_to_this_version"
+        body: e48aa3cd9d1a425d20dc01c542c4f49babbf08adcdd9a441d64a982838e1b53e
+  - node: 01a18504-d7d1-7279-8543-2544719f9b2f
+    reviewed: 3f2330124e8ed69b28d981a558370cb914aaf3ba018d11d2ef04479d93338558
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_plugin_step_brings_an_installed_plugin_to_this_version"
+        body: e48aa3cd9d1a425d20dc01c542c4f49babbf08adcdd9a441d64a982838e1b53e
+  - node: 01a18504-d7d1-7279-8543-25451c05bdf8
+    reviewed: ec1e0bc5c7434601af3c507f941e3056b5e4f164feefd110988a6be453634fdd
+    tests:
+      - file: "crates/loft-cli/tests/setup_report.rs"
+        name: "the_plugin_step_brings_an_installed_plugin_to_this_version"
+        body: e48aa3cd9d1a425d20dc01c542c4f49babbf08adcdd9a441d64a982838e1b53e
   - node: 01a12e66-85dc-70ec-b5ed-93e254c4d234
     reviewed: 66cc6c26ad69647b264578f3a3c80a5c1ccc711c9704d65b25e8d83484bec700
     tests:

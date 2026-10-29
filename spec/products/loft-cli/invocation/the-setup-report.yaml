@@ -1,0 +1,109 @@
+key: 01a18504-d7d1-7279-8543-252dc8c7d6dc
+slug: the-setup-report
+name: "The setup report"
+body: "What a command that sets a project up for its coding agents reports at its end: whether each piece that the agents' hosts need beside `spec/` and the skill is in place, and the step that remains where it is not. Four checks make it, in this order: `git`, the git repository; `merge-driver`, Loft's merge driver; `hooks-loft`, the `loft` that the hosts' hooks run; and `plugin`, the version of the Claude Code plugin. The report changes nothing. It says what remains, and the `loft-spec` skill tells the agent to carry out what it may and to relay the rest to the person."
+realizes:
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a12ff0-f5e5-7095-8fa8-24b80bc83d86
+  - 01a136db-1a3c-76b9-8641-d09cf460849a
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+requirements:
+  - key: 01a18504-d7d1-7279-8543-252ee873e9ca
+    statement:
+      form: ubiquitous
+      system: "the setup report"
+      shall: "give each check that applies with its state and the step that remains."
+    criteria:
+      - key: 01a18504-d7d1-7279-8543-252f2e758033
+        name: "The JSON document carries the report as `setup`, a list of entries in the order `git`, `merge-driver`, `hooks-loft`, `plugin`."
+      - key: 01a18504-d7d1-7279-8543-253035f86774
+        name: "Each entry holds the check's name as `check` and its `state`."
+      - key: 01a18504-d7d1-7279-8543-253105ede627
+        name: "`state` is `ok` where the check passed, `action` where a step remains and `unchecked` where `loft` cannot tell."
+      - key: 01a18504-d7d1-7279-8543-2532682b4171
+        name: "An entry whose state is `ok` holds no `step`."
+      - key: 01a18504-d7d1-7279-8543-25330d28d124
+        name: "The text output prints a line beginning `next:` for each entry that holds a `step`, with the step."
+      - key: 01a18504-d7d1-7279-8543-2534a3b1cf57
+        name: "`git` has the state `ok` inside a git repository."
+      - key: 01a18504-d7d1-7279-8543-25355b64de6e
+        name: "A check that cannot be made leaves the command's exit code as it is."
+      - key: 01a18504-d7d1-7279-8543-2536ce5fdcf8
+        name: "The report writes no file and no configuration."
+  - key: 01a13711-d7d2-7100-8424-b9644093d3f8
+    statement:
+      form: state_driven
+      while: "the current directory lies in a git repository whose local configuration names no Loft merge driver"
+      system: "the setup report"
+      shall: "give `merge-driver` the state `action` and a step that names `loft merge-driver --install`."
+    criteria:
+      - key: 01a13711-d7d2-7100-8424-b96531bdfd6e
+        name: "The step names `loft merge-driver --install`."
+      - key: 01a13711-d7d2-7100-8424-b966024561d0
+        name: "The step names `--command` for a project that runs `loft` through npm."
+      - key: 01a13711-d7d2-7100-8424-b967b32a99da
+        name: "`merge-driver` has the state `ok` where the repository's configuration names the merge driver."
+      - key: 01a13711-d7d2-7100-8424-b969ba2fe385
+        name: "`merge-driver` has the state `unchecked` and no step where git cannot be run or fails."
+      - key: 01a13711-d7d2-7100-8424-b96ac01e705d
+        name: "The command exits 0 where git cannot be run or fails."
+      - key: 01a13711-d7d2-7100-8424-b96b4610ef38
+        name: "The JSON document carries the step as the entry's `step`."
+      - key: 01a13711-d7d2-7100-8424-b96c875c37d4
+        name: "Nothing is written to the repository's configuration or to `.gitattributes`."
+  - key: 01a13751-027d-754b-af03-864f1d975787
+    statement:
+      form: state_driven
+      while: "the current directory lies outside any git repository"
+      system: "the setup report"
+      shall: "give `git` the state `action` and a step that puts the project under git and then runs `loft merge-driver --install`."
+    criteria:
+      - key: 01a13751-027d-754b-af03-8650be5fa1d7
+        name: "The step says that the merge driver and Yard Log need a git repository."
+      - key: 01a13751-027d-754b-af03-86512495c3c6
+        name: "The step names `loft merge-driver --install`."
+      - key: 01a13751-027d-754b-af03-8652a9415fa5
+        name: "`merge-driver` and `hooks-loft` have the state `unchecked` and no step."
+      - key: 01a13751-027d-754b-af03-86532d3be47e
+        name: "No git repository is created."
+  - key: 01a18504-d7d1-7279-8543-253765c10446
+    statement:
+      form: unwanted
+      if: "the `loft` that the hosts' hooks run is missing or reports another version than the running `loft`"
+      system: "the setup report"
+      shall: "give `hooks-loft` the state `action` and a step that names both versions and how the hooks can run this one."
+    criteria:
+      - key: 01a18504-d7d1-7279-8543-25387740d9f6
+        name: "The hooks' `loft` is the first `loft` on the search path with every `node_modules/.bin` directory left out, as a host started outside a package runner finds it."
+      - key: 01a18504-d7d1-7279-8543-2539ae4b756a
+        name: "The running `loft` asks it for `loft --version` through git, from the top of the working tree, as it asks a merge driver's launcher."
+      - key: 01a18504-d7d1-7279-8543-253a9cb5f160
+        name: "`hooks-loft` has the state `ok` where the hooks' `loft` reports the running version."
+      - key: 01a18504-d7d1-7279-8543-253b8934737e
+        name: "The step names the version found, or that no `loft` was found, and the running version."
+      - key: 01a18504-d7d1-7279-8543-253cdc150f24
+        name: "The step names installing the running version with `npm install --global @ask-loft/loft@<version>` or `cargo install --locked loft-cli --version <version>`."
+      - key: 01a18504-d7d1-7279-8543-253d6b65a0fb
+        name: "Where the project holds `pnpm-lock.yaml`, `yarn.lock` or `package-lock.json`, the step names setting the Claude Code plugin's `loftCommand` to `pnpm exec loft`, `yarn loft` or `npx --no-install loft`."
+      - key: 01a18504-d7d1-7279-8543-253e4b6c03bf
+        name: "The step says that Codex's hooks run `loft` from the search path alone."
+      - key: 01a18504-d7d1-7279-8543-253f58818f39
+        name: "`hooks-loft` has the state `unchecked` and no step where git cannot be run."
+  - key: 01a18504-d7d1-7279-8543-2540256f7be0
+    statement:
+      form: optional
+      where: "the command enables the Claude Code plugin in `.claude/settings.json`"
+      system: "the setup report"
+      shall: "give `plugin` the state `unchecked` and a step that brings an installed plugin to the running version."
+    criteria:
+      - key: 01a18504-d7d1-7279-8543-2541d45fa710
+        name: "`plugin` is listed only where the command writes the Claude Code skill without `--no-plugin`."
+      - key: 01a18504-d7d1-7279-8543-25423e4fdb37
+        name: "The step names the running version as the version that the project pins."
+      - key: 01a18504-d7d1-7279-8543-2543107375b3
+        name: "The step says that a machine which added the marketplace `ask-loft` before keeps its own entry until the marketplace is added again."
+      - key: 01a18504-d7d1-7279-8543-2544719f9b2f
+        name: "The step names `claude plugin marketplace remove ask-loft`, `claude plugin marketplace add Ask-Loft/loft@v<version>` and `claude plugin install loft@ask-loft`."
+      - key: 01a18504-d7d1-7279-8543-25451c05bdf8
+        name: "The step names `claude plugin list` as the way to see the installed version."

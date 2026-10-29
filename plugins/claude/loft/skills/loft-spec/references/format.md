@@ -54,7 +54,7 @@ citation of a label it withdrew, in the prose of the node or decision that cites
 the main specs of an OpenSpec project; each writes its sidecar beside the tree.
 `loft skill install` writes this skill beside `spec/`, in a directory for each agent, as
 `loft init` does unless given `--no-skill`; run it again after upgrading `loft`, to bring the
-skill to the new version. `--host` installs for one agent only, and `--no-plugin` leaves the
+skill to the new version, and act on the setup report it ends with, as for `loft init`. `--host` installs for one agent only, and `--no-plugin` leaves the
 agent settings as they are.
 
 A file's name is its slug: lowercase letters, digits and hyphens. No other path under `spec/` is

@@ -58,7 +58,9 @@ own modes and permissions still govern what the agent may run.
 ### Claude Code
 
 Install the plugin (`/plugin marketplace add Ask-Loft/loft`, then `/plugin install loft@ask-loft`)
-and have `loft` on the path. The plugin's settings:
+and have `loft` on the path. The plugin and `loft` should be the same version: `loft init` and
+`loft skill install` end with a report that says whether the `loft` the hooks find is, and how to
+move an installed plugin to that version. The plugin's settings:
 
 | Setting | Default | What it is |
 | --- | --- | --- |

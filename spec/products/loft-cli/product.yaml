@@ -46,6 +46,7 @@ featureGroups:
       - 01a12e66-85dc-70ec-b5ed-93d53cc4b7ea
       - 01a137be-5962-73e4-9623-5116cf275d6d
       - 01a1380a-9f4b-741a-83a5-973429a1c475
+      - 01a18504-d7d1-7279-8543-252dc8c7d6dc
   - key: 01a12e66-85dc-70ec-b5ed-93dfdc785d95
     slug: storage
     name: "Storage"

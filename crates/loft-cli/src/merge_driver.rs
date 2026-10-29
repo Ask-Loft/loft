@@ -25,14 +25,19 @@ use crate::yard;
 /// The command that starts `loft` where a project has it as an npm dev dependency.
 pub const NPM_COMMAND: &str = "npx --no-install loft";
 
+/// The step that registers the driver in a repository that has not.
+pub fn install_step() -> String {
+    format!(
+        "run `loft merge-driver --install` once in each clone, so git merges spec/ by key; where \
+         loft runs through npm, add --command \"{NPM_COMMAND}\""
+    )
+}
+
 /// What to do about the merge driver after a command that writes `spec/`: register it where the repository has not, or put the
 /// project under git first; nothing where it is registered or git cannot answer.
 pub fn suggestion(git: &GitCommand, root: &Path) -> Option<String> {
     match git.config_get(root, merge_driver::DRIVER) {
-        Ok(None) => Some(format!(
-            "next: run `loft merge-driver --install` once in each clone, so git merges spec/ by \
-             key; where loft runs through npm, add --command \"{NPM_COMMAND}\""
-        )),
+        Ok(None) => Some(format!("next: {}", install_step())),
         Ok(Some(_)) => None,
         // Outside a repository git refuses the read of its local configuration.
         Err(_) => matches!(git.prefix(root), Err(StoreError::NotARepository(_))).then(|| {

@@ -1,7 +1,7 @@
 key: 01a1380a-9f4b-741a-83a5-973429a1c475
 slug: writing-the-skill
 name: "Writing the skill"
-body: "What a command that writes the `loft-spec` skill into a project does beside it and says once it has: when the command writes a Claude Code package, it enables the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`, so that Claude Code offers the plugin's `yard` skill and Yard Client to everyone who trusts the project, and it asks for the skill directories and that file to be committed, so that every clone's coding agents find them. With `--no-plugin`, it writes the skill alone and leaves `.claude/settings.json` as it is, for a project that runs a skill built from source rather than the released plugin. A command opts in by listing the tag `writes-skill` on its Feature, and each tagged command is tested against these rules."
+body: "What a command that writes the `loft-spec` skill into a project does beside it and says once it has: when the command writes a Claude Code package, it enables the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`, from the marketplace pinned to the release of the running `loft`, so that the plugin and `loft` are of one version, so that Claude Code offers the plugin's `yard` skill and Yard Client to everyone who trusts the project, and it asks for the skill directories and that file to be committed, so that every clone's coding agents find them. With `--no-plugin`, it writes the skill alone and leaves `.claude/settings.json` as it is, for a project that runs a skill built from source rather than the released plugin. A command opts in by listing the tag `writes-skill` on its Feature, and each tagged command is tested against these rules."
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 requirements:
@@ -40,7 +40,7 @@ requirements:
       shall: "enable the Claude Code plugin `loft@ask-loft` in the project's `.claude/settings.json`."
     criteria:
       - key: 01a14545-579b-7242-998f-2f3b46cfe99b
-        name: "`extraKnownMarketplaces` names the marketplace `ask-loft` with the GitHub source `Ask-Loft/loft`."
+        name: "`extraKnownMarketplaces` names the marketplace `ask-loft` with the GitHub source `Ask-Loft/loft` and the `ref` `v<version>`, the running `loft`'s version."
       - key: 01a14545-579b-7242-998f-2f3cf4e8c25d
         name: "`enabledPlugins` sets `loft@ask-loft` to `true`."
       - key: 01a14545-579b-7242-998f-2f3d805266c4
@@ -48,11 +48,13 @@ requirements:
       - key: 01a14545-579b-7242-998f-2f3e0dc7c685
         name: "Every other entry of the file is kept, in the order the file gives it."
       - key: 01a14545-579b-7242-998f-2f3f4ddd7ec6
-        name: "A marketplace `ask-loft` that the file already names is kept as it is."
+        name: "A marketplace `ask-loft` whose source is not the GitHub repository `Ask-Loft/loft` is kept as it is."
+      - key: 01a18504-d7d1-7279-8543-254618d987b2
+        name: "A marketplace `ask-loft` with the GitHub source `Ask-Loft/loft` is given the running version's `ref`, with its other fields kept."
       - key: 01a14545-579b-7242-998f-2f405a1edf81
         name: "A `loft@ask-loft` entry that the file already holds is kept as it is, `false` included."
       - key: 01a14545-579b-7242-998f-2f4124a177d4
-        name: "A file that already holds both entries is not written."
+        name: "A file that already holds both entries, its marketplace at the running version's `ref` or from another source, is not written."
       - key: 01a14545-579b-7242-998f-2f4249089083
         name: "The request to commit names `.claude/settings.json` where the command wrote it."
   - key: 01a14545-579b-7242-998f-2f430611cb07

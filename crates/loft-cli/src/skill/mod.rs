@@ -18,8 +18,8 @@ use std::path::Path;
 use serde_json::json;
 
 use crate::finish::Finished;
-use crate::json;
 use crate::out::outln;
+use crate::{json, setup};
 
 use compose::Host;
 pub use hosts::Hosts;
@@ -27,7 +27,7 @@ pub use settings::Enabled;
 use settings::SETTINGS;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-skill/1";
+const SCHEMA: &str = "loft-skill/2";
 
 /// A skill's source, each file by its path under `skill/<skill>/`, embedded in the binary.
 macro_rules! source {
@@ -197,11 +197,13 @@ pub fn report(installed: &Installed) {
 pub fn run(root: &Path, hosts: Hosts, plugin: Plugin, as_json: bool) -> Finished {
     match install_for(root, hosts, plugin) {
         Ok(installed) => {
+            let setup = setup::report(root, installed.settings.is_some());
             if as_json {
-                let fields = json!({ "skills": installed.skills });
+                let fields = json!({ "skills": installed.skills, "setup": setup::json(&setup) });
                 json::print(&json::result(SCHEMA, "installed", fields, Vec::new()));
             } else {
                 report(&installed);
+                setup::print(&setup);
             }
             Finished::success("installed")
         }

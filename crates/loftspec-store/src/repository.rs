@@ -3,6 +3,7 @@
 //! the merge driver, through the `git` command (the accepted decision "Git is an external
 //! component reached through the `git` command"). Nothing else in this crate runs git.
 
+use std::ffi::OsString;
 use std::path::Path;
 use std::process::{Command, Output};
 use std::{fs, io};
@@ -78,6 +79,17 @@ impl Default for GitCommand {
 }
 
 impl GitCommand {
+    /// Runs the `git` that `path` finds, with `path` as the search path of git and of every
+    /// command it runs through the shell.
+    #[must_use]
+    pub fn on_search_path(path: OsString) -> Self {
+        Self::from_command(move || {
+            let mut command = Command::new("git");
+            command.env("PATH", &path);
+            command
+        })
+    }
+
     /// Runs the git command that `command` starts, with the arguments of each call added.
     pub fn from_command(command: impl Fn() -> Command + 'static) -> Self {
         Self {

@@ -27,6 +27,7 @@ mod record_install;
 mod render;
 mod review;
 mod settings;
+mod setup;
 mod skill;
 mod status;
 mod stop;
