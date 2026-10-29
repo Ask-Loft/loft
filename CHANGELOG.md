@@ -15,6 +15,11 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- A `loft yard` command adds its worktree to those the page server serves before it gives the
+  page's address, so the link it gives always opens. Sessions that run `loft` without the mod,
+  such as those Claude Code Desktop starts in worktrees of their own, are on the page; their
+  links answered "the page server serves no tree". The page now says that it does not serve a
+  worktree and how to add it, where it said that the Yard Log's files could not be read.
 - Every question on the Yard page ends with a free-form option, "In your own words": a radio
   button in the group for a question that takes one option, and a checkbox sent together with the
   chosen options for one that takes more. Yard Log takes the person's own words for any question;

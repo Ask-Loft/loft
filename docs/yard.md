@@ -28,7 +28,10 @@ what the agent does through the host's own tools.
 
 The plugin keeps one page server running for the machine, on the loopback interface only, at
 <http://127.0.0.1:7411/>. Every session on the machine shares it, whatever its repository or
-worktree.
+worktree. A `loft yard` command run in a worktree adds that worktree to the page too, so a
+session that runs `loft` without the plugin's mod, such as one an agent host starts in a worktree
+of its own, is on the page. If the page says that it does not serve a worktree, run
+`loft yard serve --tree <worktree>` on the machine to add it.
 
 - **What waits on you** comes first, across every branch. Inside a branch's Yard Log it opens in
   a panel along the bottom, over a page that stays live, so you can read the log while you
