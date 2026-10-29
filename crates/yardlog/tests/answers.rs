@@ -115,13 +115,44 @@ fn an_answer_must_fit_its_question() {
     for reply in [
         given(&["C"], None),
         given(&["A", "B"], None),
-        given(&[], Some("mine")),
         given(&[], None),
     ] {
         let refused = log.answer(&[reply], &person(Channel::Page, 3)).unwrap_err();
         assert!(matches!(refused, Refused::Invalid { .. }), "{refused:?}");
     }
     assert_eq!(log.find(&handle("q1")).unwrap().responses, []);
+}
+
+#[test]
+fn every_question_takes_the_person_s_own_words_whatever_its_own_words_field() {
+    let mut log = planned();
+    let mut several = question("q2");
+    several["multiple"] = json!(true);
+    sent(&mut log, &json!([question("q1"), several]), 2);
+    let reply = |id: &str, chosen: &[&str], words: &str| Reply {
+        block: log.find(&handle(id)).unwrap().key,
+        given: Given::Answer {
+            chosen: chosen.iter().map(|label| (*label).to_owned()).collect(),
+            words: Some(words.to_owned()),
+            notes: None,
+        },
+    };
+    let replies = [reply("q1", &[], "mine"), reply("q2", &["A", "B"], "and C")];
+    log.answer(&replies, &person(Channel::Page, 3)).unwrap();
+    let given = |id: &str| {
+        log.find(&handle(id))
+            .unwrap()
+            .counted(&log)
+            .unwrap()
+            .given
+            .clone()
+    };
+    assert!(
+        matches!(given("q1"), Given::Answer { chosen, words: Some(words), .. } if chosen.is_empty() && words == "mine")
+    );
+    assert!(
+        matches!(given("q2"), Given::Answer { chosen, words: Some(words), .. } if chosen == ["A", "B"] && words == "and C")
+    );
 }
 
 #[test]

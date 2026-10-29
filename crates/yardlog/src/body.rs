@@ -149,7 +149,8 @@ pub struct Question {
     pub options: Vec<Choice>,
     /// Whether more than one option may be chosen.
     pub multiple: bool,
-    /// Whether the person may answer in their own words beside the options.
+    /// The `ownWords` flag as the agent wrote it, kept as written; every question takes the
+    /// person's own words beside its options whatever it says.
     pub own_words: bool,
 }
 
