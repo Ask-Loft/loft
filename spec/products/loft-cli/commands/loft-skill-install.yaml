@@ -1,7 +1,7 @@
 key: 01a13654-bf86-77e9-8fd5-8dc0ba996254
 slug: loft-skill-install
 name: "`loft skill install`"
-body: "Writes the `loft-spec` skill into a project, or brings it to the version of the installed `loft`. With `--server <origin>`, it installs instead the skill package that a server publishes, such as a connected document's remote, into a skill directory of its own beside `loft-spec`, after checking the package against the server's manifest."
+body: "Writes the `loft-spec` skill into a project, or brings it to the version of the installed `loft`, and ends with the setup report, so that a rerun after an upgrade says what the machine still needs for that version. With `--server <origin>`, it installs instead the skill package that a server publishes, such as a connected document's remote, into a skill directory of its own beside `loft-spec`, after checking the package against the server's manifest."
 tags:
   - checks-for-updates
   - sends-telemetry
@@ -71,6 +71,23 @@ requirements:
         name: "The outcome is `installed` when the selected hosts have their skills available."
       - key: 01a13654-bf86-77e9-8fd5-8dd2a7db3828
         name: "An error is listed among the document's errors."
+  - key: 01a18504-d7d1-7279-8543-2527a587216e
+    statement:
+      form: optional
+      where: "`--server` is not given"
+      system: "`loft skill install`"
+      shall: "end with the setup report."
+    criteria:
+      - key: 01a18504-d7d1-7279-8543-2528430afba3
+        name: "The text output ends with the report's steps."
+      - key: 01a18504-d7d1-7279-8543-25294bdf7824
+        name: "The JSON document carries the report as `setup`."
+      - key: 01a18504-d7d1-7279-8543-252ae874f867
+        name: "Where the Claude Code skill is not selected, the report is given without `plugin`."
+      - key: 01a18504-d7d1-7279-8543-252bdbfb26b2
+        name: "With `--server`, no report is given."
+      - key: 01a18504-d7d1-7279-8543-252c81e11295
+        name: "A refusal gives no report."
   - key: 01a156af-5306-73ab-a0e4-ce9ba1b99a5f
     statement:
       form: optional

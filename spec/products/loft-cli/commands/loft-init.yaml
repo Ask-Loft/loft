@@ -1,7 +1,7 @@
 key: fd3d21c7-76fa-4f82-abe0-a2266a7e39d8
 slug: loft-init
 name: "`loft init`"
-body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries, and the `loft-spec` skill beside it for the project's coding agents. In a git repository that has not registered Loft's merge driver yet, it suggests registering it."
+body: "Starts a new document: a `spec/` tree with a manifest, label counters at their first values and empty registries, and the `loft-spec` skill beside it for the project's coding agents. It ends with the setup report: what the project and the machine still need for the agents' hosts, such as Loft's merge driver, a `loft` of the same version for the hooks, and the plugin of that version."
 tags:
   - checks-for-updates
   - sends-telemetry
@@ -100,39 +100,18 @@ requirements:
         name: "Nothing is written."
       - key: 01a1549d-6653-72d3-930f-ce5c1574c82f
         name: "The error names both options."
-  - key: 01a13711-d7d2-7100-8424-b9644093d3f8
+  - key: 01a18504-d7d0-7236-a143-084bcc855836
     statement:
-      form: state_driven
-      while: "the current directory lies in a git repository whose local configuration names no Loft merge driver"
+      form: event_driven
+      when: "`loft init` has created the tree"
       system: "`loft init`"
-      shall: "suggest `loft merge-driver --install` in its text output."
+      shall: "end with the setup report."
     criteria:
-      - key: 01a13711-d7d2-7100-8424-b96531bdfd6e
-        name: "The suggestion names `loft merge-driver --install`."
-      - key: 01a13711-d7d2-7100-8424-b966024561d0
-        name: "The suggestion names `--command` for a project that runs `loft` through npm."
-      - key: 01a13711-d7d2-7100-8424-b967b32a99da
-        name: "No suggestion is printed where the repository's configuration names the merge driver."
-      - key: 01a13711-d7d2-7100-8424-b969ba2fe385
-        name: "No suggestion is printed where git cannot be run or fails."
-      - key: 01a13711-d7d2-7100-8424-b96ac01e705d
-        name: "`loft init` exits 0 where git cannot be run or fails."
-      - key: 01a13711-d7d2-7100-8424-b96b4610ef38
-        name: "The JSON document carries no suggestion."
-      - key: 01a13711-d7d2-7100-8424-b96c875c37d4
-        name: "Nothing is written to the repository's configuration or to `.gitattributes`."
-  - key: 01a13751-027d-754b-af03-864f1d975787
-    statement:
-      form: state_driven
-      while: "the current directory lies outside any git repository"
-      system: "`loft init`"
-      shall: "suggest putting the project under git and then running `loft merge-driver --install` in its text output."
-    criteria:
-      - key: 01a13751-027d-754b-af03-8650be5fa1d7
-        name: "The suggestion says that the merge driver needs a git repository."
-      - key: 01a13751-027d-754b-af03-86512495c3c6
-        name: "The suggestion names `loft merge-driver --install`."
-      - key: 01a13751-027d-754b-af03-8652a9415fa5
-        name: "The JSON document carries no suggestion."
-      - key: 01a13751-027d-754b-af03-86532d3be47e
-        name: "No git repository is created."
+      - key: 01a18504-d7d0-7236-a143-084c8fe0b055
+        name: "The text output ends with the report's steps."
+      - key: 01a18504-d7d0-7236-a143-084d63ae0d5b
+        name: "The JSON document carries the report as `setup`."
+      - key: 01a18504-d7d0-7236-a143-084e54581ba4
+        name: "With `--no-skill`, the report is given without `plugin`."
+      - key: 01a18504-d7d0-7236-a143-084f9374a2d3
+        name: "A refusal gives no report."
