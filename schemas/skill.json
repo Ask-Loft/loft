@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-skill-1.json",
-  "title": "The result of `loft skill install --format json`, version 1",
+  "$id": "loft-skill-2.json",
+  "title": "The result of `loft skill install --format json`, version 2",
   "oneOf": [
     {
       "type": "object",
@@ -10,11 +10,12 @@
         "schema",
         "outcome",
         "skills",
+        "setup",
         "errors"
       ],
       "properties": {
         "schema": {
-          "const": "loft-skill/1"
+          "const": "loft-skill/2"
         },
         "outcome": {
           "const": "installed"
@@ -27,6 +28,9 @@
               ".agents/skills/loft-spec"
             ]
           }
+        },
+        "setup": {
+          "$ref": "#/$defs/setup"
         },
         "errors": {
           "type": "array",
@@ -46,7 +50,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-skill/1"
+          "const": "loft-skill/2"
         },
         "outcome": {
           "const": "error"
@@ -122,6 +126,37 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/site"
+          }
+        }
+      }
+    },
+    "setup": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "check",
+          "state"
+        ],
+        "properties": {
+          "check": {
+            "enum": [
+              "git",
+              "merge-driver",
+              "hooks-loft",
+              "plugin"
+            ]
+          },
+          "state": {
+            "enum": [
+              "ok",
+              "action",
+              "unchecked"
+            ]
+          },
+          "step": {
+            "type": "string"
           }
         }
       }

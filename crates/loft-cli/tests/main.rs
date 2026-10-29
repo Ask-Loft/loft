@@ -61,6 +61,7 @@ mod render_openspec;
 mod review;
 mod schemas;
 mod sends_telemetry;
+mod setup_report;
 mod shipped_binary;
 mod skill;
 mod skill_files;

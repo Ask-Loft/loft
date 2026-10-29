@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-init-1.json",
-  "title": "The result of `loft init --format json`, version 1",
+  "$id": "loft-init-2.json",
+  "title": "The result of `loft init --format json`, version 2",
   "oneOf": [
     {
       "type": "object",
@@ -12,11 +12,12 @@
         "created",
         "documentKey",
         "skills",
+        "setup",
         "errors"
       ],
       "properties": {
         "schema": {
-          "const": "loft-init/1"
+          "const": "loft-init/2"
         },
         "outcome": {
           "const": "created"
@@ -36,6 +37,9 @@
             ]
           }
         },
+        "setup": {
+          "$ref": "#/$defs/setup"
+        },
         "errors": {
           "type": "array",
           "items": {
@@ -54,7 +58,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-init/1"
+          "const": "loft-init/2"
         },
         "outcome": {
           "const": "error"
@@ -131,6 +135,37 @@
           "type": "array",
           "items": {
             "$ref": "#/$defs/site"
+          }
+        }
+      }
+    },
+    "setup": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "check",
+          "state"
+        ],
+        "properties": {
+          "check": {
+            "enum": [
+              "git",
+              "merge-driver",
+              "hooks-loft",
+              "plugin"
+            ]
+          },
+          "state": {
+            "enum": [
+              "ok",
+              "action",
+              "unchecked"
+            ]
+          },
+          "step": {
+            "type": "string"
           }
         }
       }
