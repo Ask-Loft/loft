@@ -2,7 +2,8 @@
 //! `~/.yard/server.json`, which the running server writes, and from the lock the server holds
 //! on `~/.yard/server.lock` for as long as its process runs: the operating system frees the
 //! lock when the process ends, however it ends, so a file left by a server that stopped names
-//! no running one. The command opens no connection.
+//! no running one. The command opens no connection: it adds its tree to `~/.yard/trees.json`,
+//! which the page server reads, so that the address it gives names a tree the server serves.
 
 use std::fmt::Write as _;
 use std::path::Path;
@@ -12,6 +13,8 @@ use serde_json::{Value, json};
 use yardlog_store::YardStoreError;
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::lock::{self, Locked};
+
+use super::serve::trees;
 
 /// The lock a running page server holds, in `~/.yard/`.
 pub const SERVER_LOCK: &str = "server.lock";
@@ -77,11 +80,15 @@ pub fn quiet(home: &Home) -> Result<Result<Locked, Option<Running>>, YardStoreEr
 }
 
 /// The address of `branch`'s Yard Log in `tree` on the page, or, where no page server runs, that
-/// the page is unavailable, with the port it would listen on.
+/// the page is unavailable, with the port it would listen on. Where a page server runs, `tree`
+/// is first added to the trees it serves, so that the address names a tree it serves; a tree
+/// that cannot be added leaves the page unavailable.
 pub fn address(tree: &Path, branch: &str, port: u16) -> Value {
     let running = SERVING.get().copied().or_else(|| {
         let home = Home::from_env()?;
-        running(&home).ok().flatten().map(|server| server.port)
+        let server = running(&home).ok().flatten()?;
+        trees::add(&home, tree).ok()?;
+        Some(server.port)
     });
     match running {
         Some(port) => json!({

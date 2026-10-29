@@ -21,7 +21,7 @@ mod newest;
 mod routes;
 mod stream;
 mod token_sums;
-mod trees;
+pub(super) mod trees;
 mod watch;
 
 use std::cmp::Ordering as Compared;

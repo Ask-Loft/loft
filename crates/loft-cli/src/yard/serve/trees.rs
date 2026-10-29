@@ -55,6 +55,13 @@ impl Registry {
 pub fn register(home: &Home, dir: &Path) -> Result<PathBuf, Failure> {
     let dir = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
     let tree = YardGit::default().top_level(&dir)?;
+    add(home, &tree)?;
+    Ok(tree)
+}
+
+/// Adds the top of a worktree, `tree`, to the trees served, once; drops the trees that no longer
+/// exist; writes nothing where that changes nothing.
+pub fn add(home: &Home, tree: &Path) -> Result<(), Failure> {
     let shown = tree.display().to_string();
     home.update(HomeFile::Trees, |bytes| {
         let mut registry = Registry::read(bytes.as_deref());
@@ -67,7 +74,7 @@ pub fn register(home: &Home, dir: &Path) -> Result<PathBuf, Failure> {
         let after = registry.bytes();
         (after != before).then_some(after)
     })?;
-    Ok(tree)
+    Ok(())
 }
 
 /// The trees served that still exist. The file is read without its lock: it is only ever
