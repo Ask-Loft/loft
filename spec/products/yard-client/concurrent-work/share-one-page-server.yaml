@@ -2,7 +2,7 @@ key: 01a1646f-546d-7042-befd-ea8ce9a4adcc
 slug: share-one-page-server
 name: "Share one page server"
 body: |
-  One page server on the machine serves the page for every tree whose sessions use Yard Client, in every repository. The first mod that needs it starts it, every other mod registers its tree with it, and when the session that started it ends, a live mod starts another. The person keeps one address for every branch's Yard Log on the machine.
+  One page server on the machine serves the page for every tree whose sessions use Yard Client, in every repository. The first mod that needs it starts it, every other mod registers its tree with it, and when the session that started it ends, a live mod starts another. A `loft yard` command that gives the page's address adds its tree to those served as well, so that a session that runs `loft` without the mod, such as one an agent host starts in a worktree of its own, is on the page too. The person keeps one address for every branch's Yard Log on the machine.
 
   A mod starts the page server as a child that lives as long as the mod does, or until a newer `loft yard serve` replaces it, so the page is up while any session with the Loft plugin runs. Each mod tells the page server every 5 seconds that its session is live, and runs `loft yard serve`, which reads `~/.yard/server.json`, only where no page server answers.
 realizes:

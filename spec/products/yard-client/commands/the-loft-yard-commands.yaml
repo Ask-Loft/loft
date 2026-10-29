@@ -76,6 +76,10 @@ requirements:
         name: "A command learns whether a page server runs without opening a connection."
       - key: 01a1646f-546d-7042-befd-ea9efc9e224f
         name: "A command whose port another program holds still does its work."
+      - key: 01a1877b-6de6-72d5-a7d7-a998b33958b7
+        name: "Where a page server runs and `~/.yard/trees.json` does not list the command's tree, the command adds the tree there before it gives the address, so that the page server serves the address it gives."
+      - key: 01a1877b-6de6-72d5-a7d7-a999103546c3
+        name: "A command that cannot add its tree to `~/.yard/trees.json` still does its work, and its result says that the page is unavailable and names the port."
   - key: 01a1649f-62ef-71e6-98de-e1058abe2d03
     statement:
       form: ubiquitous
