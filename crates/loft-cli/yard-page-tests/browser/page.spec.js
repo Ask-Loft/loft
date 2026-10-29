@@ -4,7 +4,7 @@
 
 import { expect, test } from '@playwright/test';
 
-import { atEpoch, address, answerInTerminal, historicalCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, writeOther } from './yard.js';
+import { atEpoch, address, answerInTerminal, unmeasuredCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, writeOther } from './yard.js';
 
 /** Live changes reach an open page within this many milliseconds. */
 const LIVE = 2000;
@@ -1000,10 +1000,10 @@ test('Claude and Codex plans use the same Plan mode bands and approval explanati
 });
 
 
-test('historical Codex cache-write zeros display as unavailable while their source file stays intact', async ({ page }) => {
-  const source = historicalCodexTotals();
+test('a Codex session whose cache writes were not measured shows them as unavailable, and its totals file stays as written', async ({ page }) => {
+  const source = unmeasuredCodexTotals();
   await page.goto(address());
-  const row = page.locator('tbody[data-by="session"] tr').filter({ has: page.locator('code[title="historical-cache-write"]') });
+  const row = page.locator('tbody[data-by="session"] tr').filter({ has: page.locator('code[title="unmeasured-cache-write"]') });
   await expect(row).toHaveCount(1);
   await expect(row.locator('td').nth(2)).toHaveText('Unavailable');
   await expect(row.locator('td').nth(2).locator('.share')).toHaveCount(0);
