@@ -14,21 +14,29 @@ use crate::snapshot::snapshot;
 const TAG: &str = "writes-skill";
 const SETTINGS: &str = ".claude/settings.json";
 
+/// The release tag the marketplace is pinned to: the running `loft`'s version.
+const REF: &str = concat!("v", env!("CARGO_PKG_VERSION"));
+
 /// What the command writes into a project that has no settings file.
-const CREATED: &str = r#"{
-  "extraKnownMarketplaces": {
-    "ask-loft": {
-      "source": {
+fn created() -> String {
+    format!(
+        r#"{{
+  "extraKnownMarketplaces": {{
+    "ask-loft": {{
+      "source": {{
         "source": "github",
-        "repo": "Ask-Loft/loft"
-      }
-    }
-  },
-  "enabledPlugins": {
+        "repo": "Ask-Loft/loft",
+        "ref": "{REF}"
+      }}
+    }}
+  }},
+  "enabledPlugins": {{
     "loft@ask-loft": true
-  }
+  }}
+}}
+"#
+    )
 }
-"#;
 
 /// Runs each tagged command over a fresh fixture whose settings file holds `settings`, or none,
 /// and gives each command's slug, its output and the settings file it left.
@@ -79,7 +87,7 @@ fn request(output: &Output) -> String {
 #[test]
 fn a_project_without_settings_gets_the_marketplace_and_the_plugin_alone() {
     for (slug, _, left) in each_with(None) {
-        assert_eq!(left.as_deref(), Some(CREATED), "{slug}");
+        assert_eq!(left, Some(created()), "{slug}");
     }
 }
 
@@ -97,38 +105,41 @@ fn every_other_entry_of_the_settings_is_kept_in_its_order() {
   }
 }
 "#;
-    let expected = r#"{
+    let expected = format!(
+        r#"{{
   "model": "sonnet",
-  "permissions": {
+  "permissions": {{
     "deny": [
       "Bash(rm:*)"
     ],
     "allow": [
       "Bash(ls:*)"
     ]
-  },
-  "enabledPlugins": {
+  }},
+  "enabledPlugins": {{
     "zeta@other": true,
     "alpha@other": false,
     "loft@ask-loft": true
-  },
-  "extraKnownMarketplaces": {
-    "ask-loft": {
-      "source": {
+  }},
+  "extraKnownMarketplaces": {{
+    "ask-loft": {{
+      "source": {{
         "source": "github",
-        "repo": "Ask-Loft/loft"
-      }
-    }
-  }
-}
-"#;
+        "repo": "Ask-Loft/loft",
+        "ref": "{REF}"
+      }}
+    }}
+  }}
+}}
+"#
+    );
     for (slug, _, left) in each_with(Some(settings)) {
-        assert_eq!(left.as_deref(), Some(expected), "{slug}");
+        assert_eq!(left, Some(expected.clone()), "{slug}");
     }
 }
 
 #[test]
-fn a_marketplace_ask_loft_the_settings_already_name_is_kept_as_it_is() {
+fn a_marketplace_ask_loft_from_another_source_is_kept_as_it_is() {
     let settings = r#"{
   "extraKnownMarketplaces": {
     "ask-loft": {
@@ -145,6 +156,36 @@ fn a_marketplace_ask_loft_the_settings_already_name_is_kept_as_it_is() {
         assert!(left.contains(r#""path": "../loft""#), "{slug}: {left}");
         assert!(!left.contains("Ask-Loft/loft"), "{slug}: {left}");
         assert!(left.contains(r#""loft@ask-loft": true"#), "{slug}: {left}");
+        assert!(!left.contains(r#""ref""#), "{slug}: {left}");
+    }
+}
+
+#[test]
+fn a_marketplace_ask_loft_from_the_repository_is_moved_to_the_running_release() {
+    let settings = r#"{
+  "extraKnownMarketplaces": {
+    "ask-loft": {
+      "source": {
+        "source": "github",
+        "repo": "Ask-Loft/loft",
+        "ref": "v0.0.1"
+      },
+      "autoUpdate": true
+    }
+  },
+  "enabledPlugins": {
+    "loft@ask-loft": true
+  }
+}
+"#;
+    let expected = settings.replace("v0.0.1", REF);
+    for (slug, output, left) in each_with(Some(settings)) {
+        assert_eq!(left.as_deref(), Some(expected.as_str()), "{slug}");
+        assert!(
+            request(&output).contains(SETTINGS),
+            "{slug}: {}",
+            stdout(&output)
+        );
     }
 }
 
@@ -160,9 +201,17 @@ fn a_plugin_entry_the_settings_already_hold_is_kept_false_included() {
 
 #[test]
 fn settings_that_hold_both_entries_are_not_written_and_not_asked_to_be_committed() {
-    let settings = CREATED.replace("  ", "    ");
-    for (slug, output, left) in each_with(Some(&settings)) {
-        assert_eq!(left.as_deref(), Some(settings.as_str()), "{slug}");
+    let elsewhere = r#"{"extraKnownMarketplaces": {"ask-loft": {"source": {"source": "directory", "path": "../loft"}}}, "enabledPlugins": {"loft@ask-loft": true}}"#;
+    for settings in [created().replace("  ", "    "), elsewhere.to_owned()] {
+        unchanged(&settings);
+    }
+}
+
+/// Runs each tagged command over `settings` and checks that it neither writes them nor asks for
+/// them to be committed.
+fn unchanged(settings: &str) {
+    for (slug, output, left) in each_with(Some(settings)) {
+        assert_eq!(left.as_deref(), Some(settings), "{slug}");
         assert!(
             !request(&output).contains(SETTINGS),
             "{slug}: {}",
@@ -202,6 +251,10 @@ fn settings_that_are_not_a_json_object_are_left_alone_with_the_entries_to_add_by
                 .find(|line| line.starts_with(SETTINGS))
                 .unwrap_or_else(|| panic!("{slug}: {text}"));
             assert!(line.contains("extraKnownMarketplaces"), "{slug}: {line}");
+            assert!(
+                line.contains(&format!(r#""ref": "{REF}""#)),
+                "{slug}: {line}"
+            );
             assert!(
                 line.contains(r#""enabledPlugins": {"loft@ask-loft": true}"#),
                 "{slug}: {line}"

@@ -1,8 +1,10 @@
 //! Enabling the Claude Code plugin `loft@ask-loft` beside the skill (Writing the skill): the
-//! marketplace `ask-loft` and the plugin go into the project's `.claude/settings.json`, so that
-//! Claude Code offers the plugin's `yard` skill and Yard Client to everyone who trusts the
-//! project. Every other entry is kept in the file's own order, an entry the file already sets is
-//! kept as it is, and a file that is not a JSON object is left alone.
+//! marketplace `ask-loft`, pinned to the release of the running `loft`, and the plugin go into
+//! the project's `.claude/settings.json`, so that Claude Code offers the plugin's `yard` skill and
+//! Yard Client of that version to everyone who trusts the project. Every other entry is kept in
+//! the file's own order; a marketplace from this repository is moved to the running release, any
+//! other entry the file already sets is kept as it is, and a file that is not a JSON object is
+//! left alone.
 
 use std::fmt;
 use std::fs;
@@ -14,12 +16,19 @@ use serde::de::{self, Deserialize, Deserializer, MapAccess, SeqAccess, Visitor};
 use serde::ser::{Serialize, SerializeMap, SerializeSeq, Serializer};
 use serde_json::Number;
 
+use crate::version::VERSION;
+
 /// The file, from the project's directory.
 pub const SETTINGS: &str = ".claude/settings.json";
 /// The marketplace and the plugin the file enables.
 pub const MARKETPLACE: &str = "ask-loft";
 pub const PLUGIN: &str = "loft@ask-loft";
 const REPOSITORY: &str = "Ask-Loft/loft";
+
+/// The release tag the marketplace is pinned to, so that the plugin is of the running version.
+fn release() -> String {
+    format!("v{VERSION}")
+}
 
 /// What enabling the plugin did to the file.
 #[derive(Debug, PartialEq, Eq)]
@@ -53,15 +62,11 @@ pub fn enable(root: &Path) -> io::Result<Enabled> {
         Ordered::Object(vec![
             ("source".to_owned(), Ordered::String("github".to_owned())),
             ("repo".to_owned(), Ordered::String(REPOSITORY.to_owned())),
+            ("ref".to_owned(), Ordered::String(release())),
         ]),
     )]);
     let added = [
-        add(
-            &mut settings,
-            "extraKnownMarketplaces",
-            MARKETPLACE,
-            marketplace,
-        ),
+        pin(&mut settings, marketplace),
         add(&mut settings, "enabledPlugins", PLUGIN, Ordered::Bool(true)),
     ];
     match added {
@@ -82,7 +87,8 @@ pub fn by_hand() -> String {
     format!(
         "{SETTINGS} does not hold a JSON object these entries fit in, so it was left as it is; \
          to enable the Loft plugin, add \"extraKnownMarketplaces\": {{\"{MARKETPLACE}\": {{\"source\": {{\"source\": \
-         \"github\", \"repo\": \"{REPOSITORY}\"}}}}}} and \"enabledPlugins\": {{\"{PLUGIN}\": true}}"
+         \"github\", \"repo\": \"{REPOSITORY}\", \"ref\": \"{}\"}}}}}} and \"enabledPlugins\": {{\"{PLUGIN}\": true}}",
+        release()
     )
 }
 
@@ -90,6 +96,59 @@ enum Added {
     Yes,
     No,
     NotAnObject,
+}
+
+/// Puts the marketplace into `extraKnownMarketplaces` where it is missing, and moves a marketplace
+/// `ask-loft` from this repository to the running release, keeping its other fields; one from any
+/// other source is kept as it is.
+fn pin(settings: &mut Vec<(String, Ordered)>, marketplace: Ordered) -> Added {
+    let added = add(settings, "extraKnownMarketplaces", MARKETPLACE, marketplace);
+    if !matches!(added, Added::No) {
+        return added;
+    }
+    let Some(source) = ours(settings) else {
+        return Added::No;
+    };
+    let release = Ordered::String(release());
+    match source.iter_mut().find(|(name, _)| name == "ref") {
+        Some((_, current)) if *current == release => Added::No,
+        Some((_, current)) => {
+            *current = release;
+            Added::Yes
+        }
+        None => {
+            source.push(("ref".to_owned(), release));
+            Added::Yes
+        }
+    }
+}
+
+/// The `source` of the marketplace `ask-loft` where it is this repository on GitHub.
+fn ours(settings: &mut [(String, Ordered)]) -> Option<&mut Vec<(String, Ordered)>> {
+    let (_, Ordered::Object(marketplaces)) = settings
+        .iter_mut()
+        .find(|(name, _)| name == "extraKnownMarketplaces")?
+    else {
+        return None;
+    };
+    let (_, Ordered::Object(entry)) = marketplaces
+        .iter_mut()
+        .find(|(name, _)| name == MARKETPLACE)?
+    else {
+        return None;
+    };
+    let (_, Ordered::Object(source)) = entry.iter_mut().find(|(name, _)| name == "source")? else {
+        return None;
+    };
+    let field = |name: &str| {
+        source
+            .iter()
+            .find(|(field, _)| field == name)
+            .map(|(_, value)| value.clone())
+    };
+    let github = field("source") == Some(Ordered::String("github".to_owned()));
+    let repository = field("repo") == Some(Ordered::String(REPOSITORY.to_owned()));
+    (github && repository).then_some(source)
 }
 
 /// Puts `key: value` into the object `settings[section]`, creating it last where it is missing,
