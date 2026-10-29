@@ -115,12 +115,15 @@ export function since(seconds) {
   return new Date(Date.now() + seconds * 1000).toISOString().replace(/\.\d+Z$/, 'Z');
 }
 
-/** A synthetic totals file written before account provenance was recorded. */
-export function historicalCodexTotals() {
+/**
+ * A Codex session's totals whose cache writes were not measured, as `loft yard upgrade` writes a
+ * file of an older totals format: its zero cache-write count left out.
+ */
+export function unmeasuredCodexTotals() {
   const folder = join(setup.tree, '.yard', setup.branch, 'tokens');
   mkdirSync(folder, { recursive: true });
-  const path = join(folder, 'codex~historical-cache-write.yaml');
-  const text = 'session: historical-cache-write\nhost: codex\ntokens:\n  input: 10\n  cacheRead: 100\n  cacheWrite: 0\n  output: 2\n';
+  const path = join(folder, 'codex~unmeasured-cache-write.yaml');
+  const text = 'format: yardtokens/2\nsession: unmeasured-cache-write\nhost: codex\ntokens:\n  input: 10\n  cacheRead: 100\n  output: 2\n';
   writeFileSync(path, text);
   return { path, text, read: () => readFileSync(path, 'utf8') };
 }
