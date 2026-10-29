@@ -177,15 +177,13 @@ function questionForm(block, key, update) {
         markdown(option.detailHtml, option.detail, 'choice-detail'),
       ),
     ),
-    body.ownWords
-      ? ownWordsForm(block, answer, () => {
-          keep(key, chooseOwnWords(draftOf(key), block));
-          sync();
-        }, (event) => {
-          keep(key, say(draftOf(key), block, event.target.value));
-          sync();
-        })
-      : null,
+    ownWordsForm(block, answer, () => {
+      keep(key, chooseOwnWords(draftOf(key), block));
+      sync();
+    }, (event) => {
+      keep(key, say(draftOf(key), block, event.target.value));
+      sync();
+    }),
   );
   const words = /** @type {HTMLTextAreaElement | null} */ (fieldset.querySelector('textarea'));
   if (words) words.value = answer.words ?? '';

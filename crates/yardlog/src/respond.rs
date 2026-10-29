@@ -193,11 +193,6 @@ impl YardLog {
                 if chosen.len() > 1 && !question.multiple {
                     return Err(invalid("the question takes one option"));
                 }
-                if words.is_some() && !question.own_words {
-                    return Err(invalid(
-                        "the question takes no answer in the person's own words",
-                    ));
-                }
                 if chosen.is_empty() && words.is_none() {
                     return Err(invalid(
                         "an answer chooses an option or gives the person's own words",

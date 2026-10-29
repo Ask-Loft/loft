@@ -178,6 +178,24 @@ fn a_question_needs_two_options_with_distinct_labels() {
 }
 
 #[test]
+fn an_own_words_field_written_on_a_question_is_kept_as_written() {
+    let mut log = planned();
+    let mut flagged = question("q2");
+    flagged["ownWords"] = json!(true);
+    write(
+        &mut log,
+        &json!([question("q1"), flagged]),
+        &context(&main_agent(), 2),
+    );
+    let own_words = |id: &str| match &log.find(&crate::common::handle(id)).unwrap().current().body {
+        Body::Question(question) => question.own_words,
+        body => panic!("{body:?}"),
+    };
+    assert!(!own_words("q1"));
+    assert!(own_words("q2"));
+}
+
+#[test]
 fn a_question_that_takes_one_option_recommends_at_most_one() {
     let options = json!([
         {"label": "A", "recommended": true},

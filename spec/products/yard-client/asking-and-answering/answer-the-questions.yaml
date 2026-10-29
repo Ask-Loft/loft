@@ -17,7 +17,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bbca52bc4f23
         name: "A question that takes more than one option lets the person choose one or more."
       - key: 01a1646f-546c-7521-9643-bbcb591fde24
-        name: "A question that allows the person's own words offers them as a selectable option with a text field."
+        name: "Every question offers the person's own words as a selectable option with a text field, after its named options."
       - key: 01a17fef-700e-72d2-a706-77312594a4f4
         name: "The own-words option of a question that takes one option has a radio button in the same group as its named options."
       - key: 01a17fef-700e-72d2-a706-7732f76e866c
@@ -26,6 +26,8 @@ requirements:
         name: "Selecting a named radio button deselects the own-words option."
       - key: 01a17fef-700e-72d2-a706-77347331ddf4
         name: "The own-words option of a question that takes more than one option has a checkbox independent of its named options."
+      - key: 01a18557-79f6-71c4-8179-37bb8a61815d
+        name: "In a question that takes more than one option, the person's own words are sent together with the options chosen beside them."
       - key: 01a17fef-700e-72d2-a706-77352f54f423
         name: "Editing text selects the own-words option."
       - key: 01a17ff3-c7f0-721f-a3ab-a9b0128f8739

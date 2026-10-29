@@ -21811,11 +21811,17 @@ links:
         name: "a_question_that_takes_one_option_recommends_at_most_one"
         body: de5c3dc88eea771d18234daca23570a6231975e6da67f42697448d0c5620addb
   - node: 01a1646f-546e-76cb-8b4f-f273336e30a0
-    reviewed: ce15fd996c6fcda1e76d8475b0ffea36ad7dbd0d45534c2c97820952d8e6ba09
+    reviewed: 59f03f706134c8004c0fc7e7e3eeb46c396162f004a3c0ee3be84aabf6a91a56
+    tests:
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "every_question_takes_the_person_s_own_words_whatever_its_own_words_field"
+        body: 9608a63321b1738215f8f65b81a411d380f0495961f90a77727dedaa4cf4e5e7
+  - node: 01a18557-79f8-7168-9794-0ce734d3422b
+    reviewed: 8bf76335b643b138a69ccbcf998f32e224a88295fb9bbbeb87631f68221ca432
     tests:
       - file: "crates/yardlog/tests/block_kinds.rs"
-        name: "a_question_that_takes_one_option_recommends_at_most_one"
-        body: de5c3dc88eea771d18234daca23570a6231975e6da67f42697448d0c5620addb
+        name: "an_own_words_field_written_on_a_question_is_kept_as_written"
+        body: fb727437c9a49017d42c25cacb68980992cf115f8968126dc1e8cd38b85e56de
   - node: 01a1646f-546e-76cb-8b4f-f27448a8483a
     reviewed: a2e59ed2f12f8290ec7a94877562b3273febc351d52af7a723b820e4bde7ee4d
     tests:
@@ -21829,11 +21835,14 @@ links:
         name: "a_question_needs_two_options_with_distinct_labels"
         body: 5c93b937d45fa3fce335bc64646ab3cc1265bbb7f66c1e3742269abca62b4eb4
   - node: 01a1646f-546e-76cb-8b4f-f27644ca8154
-    reviewed: c8d5ffb60b7ec31568eeba6575c2a4c99b3be68b132fc5a7bdad25d8888a7ec9
+    reviewed: c038a5a0b72a0c2a4e35a35d932faef4162091860a09f91bbe0cf298d74fa014
     tests:
       - file: "crates/yardlog/tests/answers.rs"
         name: "an_answer_records_the_person_its_act_and_its_channel"
         body: 4cea22928f3ef840ee47ddfb664c8491fe234a0daa08b3b814cc5d55dbabf15a
+      - file: "crates/yardlog/tests/answers.rs"
+        name: "every_question_takes_the_person_s_own_words_whatever_its_own_words_field"
+        body: 9608a63321b1738215f8f65b81a411d380f0495961f90a77727dedaa4cf4e5e7
   - node: 01a1646f-546e-76cb-8b4f-f2780c5a73b7
     reviewed: a12ee3d2817bc565094c4c39e8261e9963353891de23196fad166d78a748e801
     tests:
@@ -22673,76 +22682,82 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "a question that takes one option lets the person choose one"
-        body: f38d2336c3e19c46ab415ae0fc0220a21bf82d162d82d0386a1148e6b005fc08
+        body: 8cd147f002f6f32a05d6f5720865d4eb117a1e026c79433779d47c30ed231f4f
   - node: 01a1646f-546c-7521-9643-bbca52bc4f23
     reviewed: c226af8e2eb7d792f915d20e871ea94cdd7cfdda130c26bb75a09cef082697d9
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "a question that takes more than one option lets the person choose one or more"
-        body: 56886731a6477a5c430042f6a4ebf99f22c62748f9d31f364ecf7ab10790414a
+        body: 1e7f2cfb69e58f8c6966f952cb363313a4b105694b480b0a4ecf717e4503c442
   - node: 01a1646f-546c-7521-9643-bbcb591fde24
-    reviewed: 326504f445d1f359e57ecb0be6052b10ed6d53901df2da0ace1f2ed8564c25c3
+    reviewed: deddf3815054d81d33615a6e1869aef7d9620291fcd0bdf7c950d4d077bd2802
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
-        name: "a question that allows own words offers a selectable option with a text field"
-        body: 6518f5482d934853973685a2c4a92974198c50730f7c7eb5caa6a00e34453e41
+        name: "every question offers its own-words option with a text field after its named options"
+        body: f4090fcb8e125bd63eef12b6c7de7879b8e17e8e58165aced3fed67e56277c65
   - node: 01a17fef-700e-72d2-a706-77312594a4f4
     reviewed: 8e8d2348d7f6247fea9df5f30ece6abd091a617bea9097f89375f11fa58a15b9
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "typing selects the own words radio and clears named choices without replacing the text field"
-        body: 63f10b9884f6cfee8601c1cd63c439f6012f5f95d23f1f52e934f43f1eb492b7
+        body: 8d9df032024f83ab75f770c6eedd7644883f337341584c164141423c66fdd33c
   - node: 01a17fef-700e-72d2-a706-7732f76e866c
     reviewed: 5cd0bd4805a136c639519d75a4e9398b466b693f6289a2d57a9a981531c6b05d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "typing selects the own words radio and clears named choices without replacing the text field"
-        body: 63f10b9884f6cfee8601c1cd63c439f6012f5f95d23f1f52e934f43f1eb492b7
+        body: 8d9df032024f83ab75f770c6eedd7644883f337341584c164141423c66fdd33c
   - node: 01a17fef-700e-72d2-a706-773322142336
     reviewed: 1ae9d273dbab085e1ca0415a7d230444a7ee37c4e7c1fe770736734df34d0593
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "a named radio deselects own words while preserving text that is excluded from sending"
-        body: effe4556afc36c7e05fa3303b290cb14a74db2f0e75e320ac4649fe114692080
+        body: 7a1d36d452e0da6f51999c104cd0020eafb7ae741ed89fee45f2daaa396e1c49
   - node: 01a17fef-700e-72d2-a706-77347331ddf4
     reviewed: 865de136e5b365e27bb2b55c93de827ed39a685e6bb2876bf04672db11dcfc75
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "the own words checkbox combines with named choices and can be unchecked without losing text"
-        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+        body: 00b4a42c32f96f5af98673b855dea6b7ed21540b86315d5c03e3797048249f18
+  - node: 01a18557-79f6-71c4-8179-37bb8a61815d
+    reviewed: 44929418233e9cc10c166134ea2dcd58427b883d8c6f47b1fa728b18d0fc9210
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
+        name: "the own words checkbox combines with named choices and can be unchecked without losing text"
+        body: 00b4a42c32f96f5af98673b855dea6b7ed21540b86315d5c03e3797048249f18
   - node: 01a17fef-700e-72d2-a706-77352f54f423
     reviewed: 115f02beaf81dfd088c7952cff8f96a08045e7170f80749de7e0d90fb7f44ff1
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "typing selects the own words radio and clears named choices without replacing the text field"
-        body: 63f10b9884f6cfee8601c1cd63c439f6012f5f95d23f1f52e934f43f1eb492b7
+        body: 8d9df032024f83ab75f770c6eedd7644883f337341584c164141423c66fdd33c
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "the own words checkbox combines with named choices and can be unchecked without losing text"
-        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+        body: 00b4a42c32f96f5af98673b855dea6b7ed21540b86315d5c03e3797048249f18
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "editing restored unselected text selects the option and sends only the existing answer wire fields"
-        body: b39afe87da9a431bccb59c5bc7a73f26345a207bfb3085180b24b485568e6111
+        body: 8bc2e649389bae71a7799a4971e427af95ec5448bd45ac7c37d1013b1233c3d5
   - node: 01a17ff3-c7f0-721f-a3ab-a9b0128f8739
     reviewed: 638067e92ca89ee95bcc9c71b7ebfd1a5a4c7bf82b4e71b1e847e4f69af3c621
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "clearing text keeps the explicit choice selected and prevents sending even alongside named checkboxes"
-        body: a925e05ea0ddc9c3ad21f95f8ffe32e63b8d296fab2f5f4310fcde4864615e9c
+        body: 525faaf6931dac08e52339646ebec67b0b30fc4b0c1d8db822b7acf1929669d8
   - node: 01a17fef-700e-72d2-a706-7736415b6f0f
     reviewed: 3c8c2d91652a7d87399f7e458b22e2490b0e69805908f024f5c98721a7566a9d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "a named radio deselects own words while preserving text that is excluded from sending"
-        body: effe4556afc36c7e05fa3303b290cb14a74db2f0e75e320ac4649fe114692080
+        body: 7a1d36d452e0da6f51999c104cd0020eafb7ae741ed89fee45f2daaa396e1c49
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "the own words checkbox combines with named choices and can be unchecked without losing text"
-        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+        body: 00b4a42c32f96f5af98673b855dea6b7ed21540b86315d5c03e3797048249f18
   - node: 01a17fef-700e-72d2-a706-7737c25c629c
     reviewed: c5d8a28c7dfc40919e5388ba35cf1ecb200f0a76c5fae309d64d41ad1a77c7e0
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "restoring a draft uses explicit selection independently of retained text including legacy drafts"
-        body: 6156677c73706705fa051d93dbb462d16b983540f5ecb367604331781b686ce4
+        body: 1b2de906c33cf840e17a856dee6314b27ebcb4f13053c57cd2ee1de49c198528
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "legacy text stays unselected until editing and explicit free form selection survives reload"
         body: 2719b680ece731d51b8eb2f5b1c5b8b6f17acf5d3441341a48b48058e131505e
@@ -22754,7 +22769,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "restoring a draft uses explicit selection independently of retained text including legacy drafts"
-        body: 6156677c73706705fa051d93dbb462d16b983540f5ecb367604331781b686ce4
+        body: 1b2de906c33cf840e17a856dee6314b27ebcb4f13053c57cd2ee1de49c198528
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "legacy text stays unselected until editing and explicit free form selection survives reload"
         body: 2719b680ece731d51b8eb2f5b1c5b8b6f17acf5d3441341a48b48058e131505e
@@ -22763,7 +22778,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "each option shows its detail and each recommended option is marked"
-        body: ed8e273e663200f7bb3a2df679616afc94c338c9a4eb56b0ae240c72e184ff7b
+        body: 9182016a161ee10de40f99d5e7811693de93b74ed91f1587c4cc0e50ff184ea9
   - node: 01a1646f-546c-7521-9643-bbce40187173
     reviewed: 0bc801b7ff85ad473c2af44ef14802b74923ebef0a4e387a6cc199a78954ca8f
     tests:
@@ -22787,13 +22802,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "recommendations preserve a selected empty own words option but ignore unselected draft text"
-        body: 35e270d0af5670b83c3740683f518d17cfdff645756d5ecc3d752976b123b49b
+        body: 4f8a13e67124862ab46ff8681ff1e76ddd11c1bf6d5eaf423c0cc27030de3e16
   - node: 01a17fef-700e-72d2-a706-773a1b1b20fa
     reviewed: 152f29a0c6d036706e58f1f48d7c9bfdac91016cff0cb335b6f8898e1f5d2e19
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "recommendations preserve a selected empty own words option but ignore unselected draft text"
-        body: 35e270d0af5670b83c3740683f518d17cfdff645756d5ecc3d752976b123b49b
+        body: 4f8a13e67124862ab46ff8681ff1e76ddd11c1bf6d5eaf423c0cc27030de3e16
   - node: 01a1646f-546c-7521-9643-bbd2658be8dc
     reviewed: e6f716082e83653be40d23c9cc0d83f77b1174241897e3ba09a232af54124852
     tests:
@@ -22826,10 +22841,10 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "a named radio deselects own words while preserving text that is excluded from sending"
-        body: effe4556afc36c7e05fa3303b290cb14a74db2f0e75e320ac4649fe114692080
+        body: 7a1d36d452e0da6f51999c104cd0020eafb7ae741ed89fee45f2daaa396e1c49
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "the own words checkbox combines with named choices and can be unchecked without losing text"
-        body: d6c6ce00fc6704dd4143d2f27717db21e4dae72e5390308486b5bf85ddafd135
+        body: 00b4a42c32f96f5af98673b855dea6b7ed21540b86315d5c03e3797048249f18
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "typing selects the free form radio while a later named choice sends no retained text"
         body: 1f52385efb3bcead738fd17f5c4828fb5f4524e57ec2e6148918172ad3d09cd0
@@ -22841,7 +22856,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/own-words.test.js"
         name: "clearing text keeps the explicit choice selected and prevents sending even alongside named checkboxes"
-        body: a925e05ea0ddc9c3ad21f95f8ffe32e63b8d296fab2f5f4310fcde4864615e9c
+        body: 525faaf6931dac08e52339646ebec67b0b30fc4b0c1d8db822b7acf1929669d8
   - node: 01a1646f-546c-7521-9643-bbd62c68dd85
     reviewed: 3fc05ad6fbe036a44dc564d8714bfc8af1ac25166fb92134e3536863f68df4ee
     tests:
@@ -28912,11 +28927,14 @@ links:
         name: "output cut short is never read as a document, even where the bytes kept would read as one"
         body: 8c5509be9a614d07cb3e5ad721a6d7173519c12355c2bb91d8b811d8c599942d
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
-    reviewed: 9bfb0c16bc1c637e10f46372da282715472bc706a8162fa7b4ec52a2323a6bc2
+    reviewed: dfff3712569ee5acbd91eb8568e09a5d008e81f0cc1694a7c5838530827e3236
     tests:
       - file: "crates/loft-cli/tests/yard_answer.rs"
         name: "an_answer_records_the_labels_or_the_person_s_own_words_and_the_person_s_notes"
         body: 040deb656b2fc8b8872ba2190ad381654870ec566d184736201ba4b3f1ee6ae5
+      - file: "crates/loft-cli/tests/yard_answer.rs"
+        name: "own_words_are_recorded_for_a_question_that_names_no_own_words_field"
+        body: 6997a7ac5aa9ebaa7b84902e4a89f9beadad8d2d155daedd2df29605bb82489f
   - node: 01a1646f-546d-7042-befd-ea36cd0087ca
     reviewed: f961c2b501f77f7ec811ff4a71502a3aa60eef249a0361d2077eea78369f52af
     tests:

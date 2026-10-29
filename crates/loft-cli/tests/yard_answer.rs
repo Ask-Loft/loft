@@ -41,6 +41,19 @@ fn an_answer_records_the_labels_or_the_person_s_own_words_and_the_person_s_notes
 }
 
 #[test]
+fn own_words_are_recorded_for_a_question_that_names_no_own_words_field() {
+    let yard = asked();
+    yard.answer(
+        "s1",
+        r#"[{"block": "q2", "labels": ["Red"], "words": "With a gold band"}]"#,
+    );
+    let read = yard.read("s1", &[]);
+    let q2 = &block(&read, "q2")["answer"];
+    assert_eq!(q2["labels"], json!(["Red"]));
+    assert_eq!(q2["words"], "With a gold band");
+}
+
+#[test]
 fn a_decision_records_approved_or_rejected_with_the_person_s_reason() {
     let yard = asked();
     yard.answer(
