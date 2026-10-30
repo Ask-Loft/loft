@@ -2,7 +2,9 @@
 // answers does it run `loft yard serve`, which records the session as heard, registers its tree
 // and exits where a page server of its version or a newer one serves the port, and where none
 // does becomes the page server and lives as long as the mod (the Feature "Share one page
-// server"). A tree a tool call reaches is registered through `loft yard serve` too.
+// server"). The mod then reaches the page server on the port the command reports, which is not
+// the plugin's `yardPort` where another `loft` started it elsewhere. A tree a tool call reaches is
+// registered through `loft yard serve` too.
 
 import type { EngineInterface } from 'claude-code'
 
@@ -22,11 +24,19 @@ export function serverOf(): Server {
   return { isServing: false, isBeating: false, trees: new Set() }
 }
 
+/** The port a `loft yard serve` document reports for the page server that serves or runs, if any. */
+function portOf(doc: Record<string, unknown>): number | undefined {
+  const { outcome, port } = doc
+  if (outcome !== 'serving' && outcome !== 'running') return undefined
+  return typeof port === 'number' && Number.isInteger(port) && port > 0 && port < 65536 ? port : undefined
+}
+
 /**
- * Runs `loft yard serve` for the session and the tree; resolves with its first document. Where it
- * says it serves, its loop runs on after this resolves, and ends with the child.
+ * Runs `loft yard serve` for the session and the tree; resolves with its first document's outcome,
+ * and points `box` at the port it reports. Where it says it serves, its loop runs on after this
+ * resolves, and ends with the child.
  */
-export function serve($: EngineInterface, settings: Settings, server: Server, session: string, tree: string) {
+export function serve($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
   const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree], true)
   const stream = $.process.spawn({ argv, cwd: tree, env: QUIET })
   return new Promise<string | undefined>(settled => {
@@ -43,6 +53,7 @@ export function serve($: EngineInterface, settings: Settings, server: Server, se
           if (!doc) continue
           isFirst = false
           outcome = String(doc.outcome)
+          box.port = portOf(doc) ?? box.port
           if (outcome === 'serving') server.isServing = true
           settled(outcome)
         }
@@ -74,7 +85,7 @@ export async function beat($: EngineInterface, settings: Settings, server: Serve
   if (server.isBeating || server.isServing) return
   server.isBeating = true
   try {
-    const outcome = await serve($, settings, server, session, tree)
+    const outcome = await serve($, settings, server, box, session, tree)
     if (outcome === 'serving' || outcome === 'running') server.trees.add(tree)
   } finally {
     server.isBeating = false
@@ -82,8 +93,8 @@ export async function beat($: EngineInterface, settings: Settings, server: Serve
 }
 
 /** Registers a tree that a tool call reached and the page server does not serve yet. */
-export async function register($: EngineInterface, settings: Settings, server: Server, session: string, tree: string) {
+export async function register($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
   if (server.trees.has(tree)) return
   server.trees.add(tree)
-  await serve($, settings, server, session, tree)
+  await serve($, settings, server, box, session, tree)
 }

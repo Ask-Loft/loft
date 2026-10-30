@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { PLUGIN_VERSION } from '../hooks/adapter'
-import { flagOf, HOME, readDoc, SESSION, spawn, start, stage, TREE, world, yardRuns } from './yard-world'
+import { flagOf, HOME, readDoc, SESSION, spawn, start, stage, TREE, world, yardRuns, type On } from './yard-world'
 
 test('a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start', async ($, on) => {
   const w = world(on)
@@ -239,6 +239,58 @@ test("the session whose mod's child is the page server is heard every five secon
   await w.clock.advance(10000)
   expect(w.state.heard).toEqual([SESSION, SESSION, SESSION])
   expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
+})
+
+/** A world whose one page server runs on 7412, as `loft yard serve` reports, while the plugin's port is 7411. */
+function runningElsewhere(on: On) {
+  const w = world(on, { serve: 'running' })
+  w.state.servedPort = 7412
+  w.state.reportedPort = 7412
+  w.state.answersBeat = true
+  return w
+}
+
+test('where loft yard serve reports a page server running on another port, the mod tells that page server the session is live', async ($, on) => {
+  const w = runningElsewhere(on)
+  await start($)
+  await w.clock.advance(10000)
+  expect(w.state.heardAt.length).toBeGreaterThan(0)
+  expect(new Set(w.state.heardAt)).toEqual(new Set(['http://127.0.0.1:7412/api/heard']))
+})
+
+test('where loft yard serve reports a page server running on another port, it registers the tree there, and a tree the session moves into is registered with that page server', async ($, on) => {
+  const w = runningElsewhere(on)
+  await start($)
+  await w.clock.advance(5000)
+  expect(flagOf(w.state.runs.find(run => run.argv.includes('serve'))!.argv, '--tree')).toBe(TREE)
+  w.state.cwd = '/work/other'
+  await w.clock.advance(5000)
+  expect(registers(w).map(post => post.url)).toEqual(['http://127.0.0.1:7412/api/register'])
+  expect(registers(w).map(post => post.events)).toEqual([{ tree: '/work/other' }])
+})
+
+test('while the page server on the reported port answers, the mod starts no more loft yard serve', async ($, on) => {
+  const w = runningElsewhere(on)
+  await start($)
+  await w.clock.advance(15000)
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
+})
+
+test('once no page server answers on the reported port, the next loft yard serve asks for the yardPort setting and the mod follows what it reports', async ($, on) => {
+  const w = runningElsewhere(on)
+  await start($)
+  await w.clock.advance(5000)
+  expect(w.state.heardAt.at(-1)).toBe('http://127.0.0.1:7412/api/heard')
+  w.state.servedPort = 7411
+  w.state.reportedPort = 7411
+  w.state.serve = 'serving'
+  await w.clock.advance(5000)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves).toHaveLength(2)
+  expect(flagOf(serves[1]!.argv, '--port')).toBe('7411')
+  await w.clock.advance(5000)
+  expect(w.state.heardAt.at(-1)).toBe('http://127.0.0.1:7411/api/heard')
+  w.state.serverStops.resolve()
 })
 
 test('a tree a tool call reaches is registered with the page server once', async ($, on) => {

@@ -114,7 +114,7 @@ export async function run($: EngineInterface, cwd: string, args: readonly string
   if (url) await update($, page, () => url)
   const tree = ran.doc?.tree
   if (state.isOn && typeof tree === 'string' && !state.server.trees.has(tree)) {
-    void registerTree($, state.settings, state.server, state.sessions[0] ?? '', tree)
+    void registerTree($, state.settings, state.server, state.box, state.sessions[0] ?? '', tree)
   }
   return ran
 }
