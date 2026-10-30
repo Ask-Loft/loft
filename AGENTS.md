@@ -126,8 +126,10 @@ change, or v1 reverts it.
   repository ignores `.yard/`, as this one does. What belongs to the machine, not the branch,
   lies in `~/.yard/`: the page server's `server.json`, its lock and stop request, the trees it
   serves, each session's events, when each session was last heard, the revision each agent last
-  read, the sessions that continue others, the control token, and in `claude/` the Claude
-  hook's hand-offs and each session's last permission mode.
+  read, the sessions that continue others, the worktrees each session wrote Yard Log in and its
+  main agent's directory, by which an agent's work follows its working stage into another
+  worktree, the control token, and in `claude/` the Claude hook's hand-offs and each session's
+  last permission mode.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
   of the platform it is installed on. A release packs it, and one package per platform, into
   tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;

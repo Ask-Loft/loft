@@ -25,6 +25,17 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- An agent's work follows its working stage into another worktree, of the same repository or
+  another. A session that worked in a worktree its host could not move it into recorded that
+  work's plan, questions, tasks and token cost in the Yard Log of the worktree it started in.
+  Now each agent works in the worktree whose Yard Log holds its working stage, else its own
+  directory: the `loft yard` commands that act for an agent act there, the page server files
+  each event there, and a submission is found where it was sent. Every Yard command takes
+  `--tree` and each of the plugin's Yard tools a `tree`, to open a stage in another worktree;
+  `close` and `published` stay with their own directory. A subagent in a worktree of its own
+  follows only its own stage there. `~/.yard/` keeps the worktrees each session wrote in and its
+  main agent's directory, and the yard skill says to open a stage in another worktree before
+  working there.
 - The Loft plugin reaches the page server on the port `loft yard serve` reports. Where another
   `loft` had started the page server on a port other than the plugin's `yardPort`, such as the
   dogfood launcher's 7412, the plugin kept posting to its own port, and Yard recorded none of the
