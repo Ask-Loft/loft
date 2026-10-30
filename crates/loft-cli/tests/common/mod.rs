@@ -6,6 +6,7 @@
 #[cfg(unix)]
 pub mod npm;
 pub mod remote;
+pub mod signed_in;
 pub mod telemetry;
 
 use std::path::{Path, PathBuf};
@@ -280,7 +281,7 @@ impl Scratch {
     }
 
     /// The directory beside the scratch tree that holds the simulators' scenarios.
-    fn plant(&self) -> PathBuf {
+    pub fn plant(&self) -> PathBuf {
         self.beside(".plant")
     }
 
@@ -302,7 +303,12 @@ impl Drop for Scratch {
 
 /// The variables that would let a test run reach the user's own settings, or tell `loft` that
 /// an agent or CI started it.
-const OUTSIDE: [&str; 24] = [
+const OUTSIDE: [&str; 29] = [
+    "BROWSER",
+    "LOFT_REMOTE_ENDPOINT",
+    "LOFT_REMOTE_TOKEN",
+    "LOFT_REMOTE_TIMEOUT",
+    "LOFT_REMOTE_WAIT",
     "PLUGIN_DATA",
     "PLUGIN_ROOT",
     "CLAUDE_PLUGIN_DATA",

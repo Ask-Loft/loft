@@ -534,6 +534,7 @@ version = "2.3.0-alpha.3"
 dependencies = [
  "clap",
  "flate2",
+ "getrandom 0.4.3",
  "hmac",
  "httparse",
  "loft-ports",

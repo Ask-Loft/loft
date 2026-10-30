@@ -1,7 +1,8 @@
 //! The network client, the only part of `loft` that opens a network connection. It runs the
 //! work a command leaves for the network after the command's own work is done, all of it within
 //! one time limit, and never writes to standard error: a service that refuses, fails or stays
-//! silent changes nothing a person sees.
+//! silent changes nothing a person sees. It also makes the calls to a connected document's
+//! remote that a command exists to make, each under the time limit its caller gives.
 
 use std::net::IpAddr;
 use std::sync::mpsc;
@@ -86,6 +87,67 @@ pub fn get_json(url: &str, left: Duration) -> Option<(u16, Vec<u8>)> {
     Some((status, body))
 }
 
+/// The most a body read from a remote may hold.
+const BODY_LIMIT: u64 = 256 << 20;
+
+/// An answer as it came: its status, the headers a caller reads, and its body.
+#[derive(Debug, Clone)]
+pub struct Reply {
+    pub status: u16,
+    pub retry_after: Option<String>,
+    pub www_authenticate: Option<String>,
+    pub body: Vec<u8>,
+}
+
+/// `method` of `url` with `headers` and `body`, within `timeout`, following no redirect, for a
+/// call a command exists to make: its answer read whole, or why none came.
+///
+/// # Errors
+///
+/// `url` may not be contacted, or no answer came in full within `timeout`.
+pub fn call(
+    method: &str,
+    url: &str,
+    headers: &[(&str, &str)],
+    body: Option<&[u8]>,
+    timeout: Duration,
+) -> Result<Reply, String> {
+    let uri = allowed(url).ok_or_else(|| {
+        format!("{url}: an address is `https`, or `http` on the loopback interface")
+    })?;
+    let mut request = ureq::http::Request::builder().method(method).uri(uri);
+    for (name, value) in headers {
+        request = request.header(*name, *value);
+    }
+    let agent = agent(timeout, &format!("loft/{VERSION}"));
+    let response = match body {
+        Some(body) => agent.run(request.body(body.to_vec()).map_err(|e| e.to_string())?),
+        None => agent.run(request.body(()).map_err(|e| e.to_string())?),
+    };
+    let mut response = response.map_err(|error| error.to_string())?;
+    let header = |name: &str| {
+        response
+            .headers()
+            .get(name)
+            .and_then(|value| value.to_str().ok())
+            .map(str::to_owned)
+    };
+    let (retry_after, www_authenticate) = (header("retry-after"), header("www-authenticate"));
+    let status = response.status().as_u16();
+    let body = response
+        .body_mut()
+        .with_config()
+        .limit(BODY_LIMIT)
+        .read_to_vec()
+        .map_err(|error| error.to_string())?;
+    Ok(Reply {
+        status,
+        retry_after,
+        www_authenticate,
+        body,
+    })
+}
+
 /// A client that gives up after `left`, follows no redirect, since a redirect could lead off
 /// the loopback interface over plain `http`, and names itself `user_agent`.
 fn agent(left: Duration, user_agent: &str) -> Agent {
@@ -101,7 +163,7 @@ fn agent(left: Duration, user_agent: &str) -> Agent {
 /// `url` as the address the request goes to, if it may be contacted: any `https` address, and
 /// an `http` one only on the loopback interface, where nothing crosses a network. The address
 /// is parsed once, by the parser the request uses, so the host checked is the host contacted.
-fn allowed(url: &str) -> Option<Uri> {
+pub fn allowed(url: &str) -> Option<Uri> {
     let uri: Uri = url.parse().ok()?;
     let host = uri.host()?.trim_start_matches('[').trim_end_matches(']');
     let loopback = host == "localhost"

@@ -14781,6 +14781,291 @@ links:
       - file: "crates/loft-cli/tests/review.rs"
         name: "a_base_tree_that_does_not_read_is_refused_naming_the_commit_and_the_place"
         body: 6f9a0b882564c715d3df029685e87b17ab74b945da28ea0642c09eb259ba832c
+  - node: 01a156c0-0b79-7756-9d01-b05b5e8cb50f
+    reviewed: 4f3c5afe346a0a5d65e6b9bcb26413b7b2b75e6e9e2a0d706eb1bd98905254b9
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a156c0-0b79-7756-9d01-b060c46ee20a
+    reviewed: a4b924b62edf6dd38a24972c99c584314ddf18d97e512f567abb7513b9ab0cd2
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_connect_says_to_commit_the_manifest_and_holds_no_token"
+        body: 8ce9920e6ce24d15b4df129f8caec18b34bdcb32b7a00b7956be104d2ac4fd42
+  - node: 01a156c0-0b7a-76b6-9a6a-6829d9039cda
+    reviewed: fc4c97f9eed13b8b1f436ba97426db0e1e6fe61eb99aa657e96b0aba94721cb6
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_requests"
+        body: b8138f1a31cfef31e248f7a5396be404c0c019850d0dffd4cc397ab821f199ff
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_kept_sign_in_that_expires_soon_is_refreshed_and_one_that_lapsed_is_made_anew"
+        body: 83300b6f70d9faccb0c5927e8f3e47e19e7d573fc66016a939c19dd21a42e991
+  - node: 01a156c0-0b79-7756-9d01-b05dc452f7e6
+    reviewed: 95b15b3122a4079511db8ef45ca7930f3c7bf9f88a164722cb5fc958a8da14a9
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a156c0-0b79-7756-9d01-b05e9aa3a9d7
+    reviewed: 646f62b779f31c709afc44adf44cc1de699a3389bd5938d7d058455684536503
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_requests"
+        body: b8138f1a31cfef31e248f7a5396be404c0c019850d0dffd4cc397ab821f199ff
+  - node: 01a156c0-0b7a-76b6-9a6a-682bc8baea7d
+    reviewed: fe4bbcee53c5bc5093f427113df77ab47957a4f4b83c2f479c618dbd2bfede63
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a156c0-0b7a-76b6-9a6a-682cca21e406
+    reviewed: ee81517d4fca89f5b7a83be9604026ac454dc461b1b11360da6ebc3185be0c6e
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_connect_says_to_commit_the_manifest_and_holds_no_token"
+        body: 8ce9920e6ce24d15b4df129f8caec18b34bdcb32b7a00b7956be104d2ac4fd42
+  - node: 01a18e1f-8daa-7674-9603-5ac3a4a5cee5
+    reviewed: 533a1550b18d310c7b65687c5e19b9a96987cf0584e0800c44486cde005bae34
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5ac4d13f6c33
+    reviewed: 5722cd525b59c2781f6d825ea25acca16d754e2ec369e7c8bc7c64b47aa286c5
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_replaces_the_sign_in_for_its_address_and_keeps_every_other"
+        body: ae8ba727da1813f87b49506226617d3581469309902039d483c371f2605914e0
+  - node: 01a18e1f-8daa-7674-9603-5ac54e2b6c32
+    reviewed: d013ad2eadeca16351bbd73a97e9c4287ff5e68cfc8b0b6147998663f2677365
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_replaces_the_sign_in_for_its_address_and_keeps_every_other"
+        body: ae8ba727da1813f87b49506226617d3581469309902039d483c371f2605914e0
+  - node: 01a18e1f-8daa-7674-9603-5ac682cb6c21
+    reviewed: 20343e300b9329acfa46e32b786453ae889a4327af4ea01f9b4b6a7a1d67627b
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_replaces_the_sign_in_for_its_address_and_keeps_every_other"
+        body: ae8ba727da1813f87b49506226617d3581469309902039d483c371f2605914e0
+  - node: 01a18e1f-8daa-7674-9603-5ac7c37817e3
+    reviewed: f4661b2262bb40c357301494ef46e09cb87ad7abb2d77534d38cba3d46fb9d32
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5ac8a2d3e61d
+    reviewed: 0c1cc9906754d6857b0a7945a86fbb4846d4b85b7c0fc8659de06fbb83daa467
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5ac960bce9e5
+    reviewed: ee81517d4fca89f5b7a83be9604026ac454dc461b1b11360da6ebc3185be0c6e
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5acbea4e6037
+    reviewed: 7471663b8c04faa22bb15dea4f0112ce74bba6ecc144cdf67c0d8aae35586527
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_without_a_remote_in_the_manifest_is_refused_naming_remote_set"
+        body: ed7f2f6cea704bd551a56fc77ad13ab069f88aa36b61630a7e4f39395c31bf4a
+  - node: 01a18e1f-8daa-7674-9603-5acca48cc0cb
+    reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_without_a_remote_in_the_manifest_is_refused_naming_remote_set"
+        body: ed7f2f6cea704bd551a56fc77ad13ab069f88aa36b61630a7e4f39395c31bf4a
+  - node: 01a18e1f-8daa-7674-9603-5acd7163a1f3
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_without_a_remote_in_the_manifest_is_refused_naming_remote_set"
+        body: ed7f2f6cea704bd551a56fc77ad13ab069f88aa36b61630a7e4f39395c31bf4a
+  - node: 01a1587a-dee2-7262-8c7b-893f8d0d729c
+    reviewed: fac277aaa5c46c0a0fa07055c66da9bf334f2bacfd7c8f9b5023f0c3b1074965
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a18e1f-8daa-7674-9603-5ace73174cc1
+    reviewed: 4876bf4b68e7806906c770e2f99a261b28aac49aff16494fd494b0027856d475
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a18e1f-8daa-7674-9603-5acfae1b7757
+    reviewed: 78b2b34ee2cb29802a004fa948a6772daa22ea45fc120fdf500cc86d32d20abd
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_leaves_an_unconnected_manifest_and_the_sign_in_file_as_they_were"
+        body: aa06cd1536caa5a783c38cbe395d696d3d53a0fcf4a17075a3b3cc31fd1ec60c
+  - node: 01a18e1f-8daa-7674-9603-5ad028d5e220
+    reviewed: 2dc7fddd6bc314ef1e119f373947b385df59b1e7392f59779b4f6221fabca066
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a156c0-0b7a-76b6-9a6a-682e4f4634b9
+    reviewed: 20343e300b9329acfa46e32b786453ae889a4327af4ea01f9b4b6a7a1d67627b
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a156c0-0b7a-76b6-9a6a-682f83ff48dd
+    reviewed: e2ccda76732c233725e86d504c4716c0b9bf3373e0505209e95d0c12e046c792
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a156c0-0b7a-76b6-9a6a-6831248a8f73
+    reviewed: db611849745bfc8eb09e31badf373174c1e17e22ef11faa2e22bc8036906beee
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_leaves_an_unconnected_manifest_and_the_sign_in_file_as_they_were"
+        body: aa06cd1536caa5a783c38cbe395d696d3d53a0fcf4a17075a3b3cc31fd1ec60c
+  - node: 01a156c0-0b7a-76b6-9a6a-68321248b588
+    reviewed: 4007f1bcaffc0ca2e8298763a91c63238826eb1c98f0c97e415396e23b7a41bf
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "a_disconnect_says_to_commit_the_manifest"
+        body: 19be3405d418bb2650399390b9a995aa2c41997ccbb4ba72aca2e8d20152e322
+  - node: 01a18e1f-8daa-7674-9603-5ad144a8bfa6
+    reviewed: d669b9bc22b1f1a809aab6c83444d0d636e0d1292ba2f0d50e77fa37567980c4
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "a_disconnect_says_to_commit_the_manifest"
+        body: 19be3405d418bb2650399390b9a995aa2c41997ccbb4ba72aca2e8d20152e322
+  - node: 01a156c0-0b7a-76b6-9a6a-6834aa682276
+    reviewed: a014e6bc35ca2a0b480435d13ac39d9489e1633d43df5ffaddf20ef6609a9f53
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a1587a-dee2-7262-8c7b-89405469cf59
+    reviewed: 32b5f8a4d75f46e302d31b97d70458e88e2ccdba0ce2d993b6d4be38f700b7c8
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_requests"
+        body: b8138f1a31cfef31e248f7a5396be404c0c019850d0dffd4cc397ab821f199ff
+  - node: 01a156c0-0b7a-76b6-9a6a-6835e981a488
+    reviewed: 5a86394aa4b511d5eb454c60319b82d3066f4bff6c3cc8a24c6d9e7650f4518b
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a1587a-dee2-7262-8c7b-8941d30b3661
+    reviewed: 99bc03a141b1a03aa9599ac8e984d7c7e346097212ed64390228208034482c64
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a1587a-dee2-7262-8c7b-894281a3e011
+    reviewed: a650f962370539517ad7e0d2fab95c00562487c1420a19badd6ffcc6341de52e
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a156c0-0b7a-76b6-9a6a-6838b170019a
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "an_address_that_may_not_be_contacted_is_refused_before_anything"
+        body: 80edaa294c81c7041b126ed33d0be1ee2e74c462ea5d692cc4c70704617a5537
+  - node: 01a1587a-dee2-7262-8c7b-89437126fee2
+    reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "an_address_that_may_not_be_contacted_is_refused_before_anything"
+        body: 80edaa294c81c7041b126ed33d0be1ee2e74c462ea5d692cc4c70704617a5537
+  - node: 01a156c0-0b7a-76b6-9a6a-683f82d16c8a
+    reviewed: f3c0b07ad1f61cd5cb569f9eb971caf34207a3e31f999772873467bf0f27d240
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "an_address_that_may_not_be_contacted_is_refused_before_anything"
+        body: 80edaa294c81c7041b126ed33d0be1ee2e74c462ea5d692cc4c70704617a5537
+  - node: 01a156c0-0b7a-76b6-9a6a-6841b88ae3a8
+    reviewed: 34fd9530246c6862c516af455ac270b3887e3930af82b0ed4bfb807c8201fdaa
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "every_subcommand_refuses_a_directory_without_a_manifest_naming_its_path"
+        body: a1fb05115ffaf9211159932e0cc3fe13aab5afc98c3bc392122750fc7a0201c2
+  - node: 01a156c0-0b7a-76b6-9a6a-68424473b56c
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "every_subcommand_refuses_a_directory_without_a_manifest_naming_its_path"
+        body: a1fb05115ffaf9211159932e0cc3fe13aab5afc98c3bc392122750fc7a0201c2
+  - node: 01a1587a-dee2-7262-8c7b-894647091530
+    reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "every_subcommand_refuses_a_directory_without_a_manifest_naming_its_path"
+        body: a1fb05115ffaf9211159932e0cc3fe13aab5afc98c3bc392122750fc7a0201c2
+  - node: 01a156c0-0b7a-76b6-9a6a-68445e67a1a5
+    reviewed: acd63a0019bdf587229376e97ab0d59b485a003a7fc9a0007281358618b8e0fc
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_requests"
+        body: b8138f1a31cfef31e248f7a5396be404c0c019850d0dffd4cc397ab821f199ff
+  - node: 01a1587a-dee2-7262-8c7b-894754a95f9a
+    reviewed: 0ba21e78f6a3eeb6332748c8fe200bb3200f0fbfe903af5ec79b7ab5a517d6fa
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a18e1f-8daa-7674-9603-5ad25c4e69da
+    reviewed: 1e23d681e9677295a54346a0004bc689bab1fabd1e093a6a42fb504d33478b5b
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a156c0-0b7a-76b6-9a6a-684562209106
+    reviewed: b6d7a116942954c864dd83ad23a4b8138fc35d968ab8a5c63bd7b2968f682f2d
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+  - node: 01a156c0-0b7a-76b6-9a6a-684673407366
+    reviewed: 4d0683de549beea17cfea1cdfc96ee161afed54fe7cea052bf0aa7e603905154
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_leaves_an_unconnected_manifest_and_the_sign_in_file_as_they_were"
+        body: aa06cd1536caa5a783c38cbe395d696d3d53a0fcf4a17075a3b3cc31fd1ec60c
+  - node: 01a156c0-0b7a-76b6-9a6a-6847bf3c1c6e
+    reviewed: f83ccbda6349625e5a91d2368e02059f25b4d3b722b5b0bdafd30ceb3181b349
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_disconnects_the_document_and_forgets_its_sign_in_alone"
+        body: fe462531c7a7ea2632da04210f1ab7765131100bb10d70f9ad22efad1bbbb6d2
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-89480fb5e133
+    reviewed: 9a712ea1bf5497514db7544a16b44c82e2f8923a9d42e58a773c4b5c1dfc4ecd
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a156c0-0b7a-76b6-9a6a-6848de1e913a
+    reviewed: 98ce1445c6aaca54c9d228723025c3c1e300f8ebae2a725da15ecf311fd56cd1
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_connect_says_to_commit_the_manifest_and_holds_no_token"
+        body: 8ce9920e6ce24d15b4df129f8caec18b34bdcb32b7a00b7956be104d2ac4fd42
+  - node: 01a156c0-0b7a-76b6-9a6a-68493a5b9580
+    reviewed: dac4c67e5543c8fb8c1a08b841063046f00eb3c6390b1c19c11e048e4af9388c
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_refused_create_or_import_names_the_call_its_status_and_code_and_writes_nothing"
+        body: f304c9eeb505e0a0c0e00a1f23515afe1cc03c9bdf488a978dd0aa189ecb4573
   - node: 01a1835b-defe-736c-aa9f-0f404d3d62ba
     reviewed: 5a8a5fd124915d785a352924aaf7341b669eb6978c9ba623949fc056b75e0b7f
     tests:
@@ -17736,6 +18021,441 @@ links:
   - node: 01a15fd6-c6de-7041-8c7b-2ee906393715
     reviewed: e414e29d7e15493240ea096f48e956c794f7b77c29d370267a923bea97f1e2b0
     unverified: "A cost, read from the code: the records the writer builds are checked and resolved as they are, and only a document whose records the strict reader would refuse has its files parsed."
+  - node: 01a156aa-d531-70a7-88e0-0bedf3069d9e
+    reviewed: 7167b12dc52a4056db21fb863e333b4345a03b3d97675b2f9909a05d18e7765a
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a156aa-d531-70a7-88e0-0bee8609fdec
+    reviewed: aece78eb8ba7a2286ac77e0bd38268cfbe294cad02b2bd79325dbaff6ead3684
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a156aa-d531-70a7-88e0-0bfefa81f2c4
+    reviewed: 8af2c7e5fc226829f47bcc8817868e228ebbd4bc8ced8f0829ce3e34ddb53ef1
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "an_address_that_may_not_be_contacted_is_refused_before_anything"
+        body: 80edaa294c81c7041b126ed33d0be1ee2e74c462ea5d692cc4c70704617a5537
+  - node: 01a156aa-d531-70a7-88e0-0bffbc9b38d9
+    reviewed: a956a62802ace4ed3c7e722dc0dcdda137b74946416e1a18220595ab03f65602
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "an_address_that_may_not_be_contacted_is_refused_before_anything"
+        body: 80edaa294c81c7041b126ed33d0be1ee2e74c462ea5d692cc4c70704617a5537
+  - node: 01a156aa-d531-70a7-88e0-0c071fca5250
+    reviewed: fccb021b533a211c3be7e5190176835fed82ad3abb24e44a0562c589db08ea17
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a1587a-dee2-7262-8c7b-894b0f327e5a
+    reviewed: cfb020ecacdd332598b1d7714fad7d565d2023e5a222b93a32a03d27cec48e26
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-894cd6ebbf44
+    reviewed: 02e0396957af42d28d8c7b139bb73e2a07bc629ea76b76996dde87f1c9e60b0c
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-894d6812bbee
+    reviewed: ad5d5df5e78b3f79e9c8961d98776b4877a7b6a159dc71e8d8a6e99e36d7124f
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-894ecc301971
+    reviewed: 22bdded9f0bba5e323235a45405bdd65f956012e132f12da85e0c50a736a747e
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-894fde643c53
+    reviewed: a4b93b71fba9cf3bada3022059e3414a3828e17291be48d953bac2876843dc97
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-8952a0933c30
+    reviewed: 22b5e6fda70b0c32adaeb95af9d601aba16741d4a1a9afc163c04681ac17755e
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587e-87ac-73f3-b49f-67749717142d
+    reviewed: a23d8e5cf57982daf4feacab5ca99298f551221a7d3199039ce2411175de6e09
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_connect_says_to_commit_the_manifest_and_holds_no_token"
+        body: 8ce9920e6ce24d15b4df129f8caec18b34bdcb32b7a00b7956be104d2ac4fd42
+  - node: 01a1587a-dee2-7262-8c7b-895446eb275e
+    reviewed: 42e7fa17a61e123cfaae7e6d042210e94a8d0e6dc581ff8bd719941e983227cd
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-89553eaa6db9
+    reviewed: 1959b7aa22ae622729f2312331b9abdd050c8b8c66b8a04e669549ab7f1678b3
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-8956cd201cfe
+    reviewed: 308bab09a82d37747cc4f28f97e5fac75ece363cae56f8fa77429330a9288fe5
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587a-dee2-7262-8c7b-8957bdbf34a7
+    reviewed: 4d4b315982bdfc71937852ae70f2fe4b4c70e07a1d55c209c0151b4084f8a36e
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587e-87ac-73f3-b49f-6775c31091f4
+    reviewed: 1555dddf14871cc0825483e37d7c9dbfdb66db942d328caf2451ae970dc7d463
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_creates_the_document_and_imports_every_published_state_before_naming_the_remote"
+        body: f958d9139f0ede8b088d430af046e2dc70e5e4e89223e0bc56ac149940d33931
+  - node: 01a1587e-87ac-73f3-b49f-67766fe6bc05
+    reviewed: 98efe5bb5154edf371e7a86b0c71e5b56e6f92ee590a62da71ecfbad1bf64b25
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_that_holds_the_document_empty_is_imported_into"
+        body: 1444d0927aa52e032f1089420ae4aba21cc9cb9d8888a736ff2551c3ffe6bf45
+  - node: 01a1587a-dee2-7262-8c7b-8959302356ef
+    reviewed: 73521944f148524b70a737fd02440163f82e6e969536ad567d05f9e5b4a1d05e
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_document_never_published_is_created_and_nothing_is_imported"
+        body: ddecb4abd2d4cbcd0e3a9b05d9f539b565787055641ccf83da68d406d357031b
+  - node: 01a1587a-dee2-7262-8c7b-895a8c4cc255
+    reviewed: a5c494e8409b88081955b8e3db115c837210ed2ab0144d8eb2738425c0a70dd8
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_document_never_published_is_created_and_nothing_is_imported"
+        body: ddecb4abd2d4cbcd0e3a9b05d9f539b565787055641ccf83da68d406d357031b
+  - node: 01a1587a-dee2-7262-8c7b-895d46943611
+    reviewed: e81e45d587d20e93d0ba60361d9af4e737325414657c6aa980b8b3ce784d62bb
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_that_holds_the_lock_s_head_already_is_connected_without_an_import"
+        body: f4d1b6dfcb34f709707e6d1248320eefafdcd85b194825cbd2baf7a8a5b5d452
+  - node: 01a15896-4080-7475-b51a-3c3819a265aa
+    reviewed: 6192c7c95386e4f1dd17cc47b8537845ed5c0d772acc2029898295b1e1aec7fc
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_that_holds_the_lock_s_head_already_is_connected_without_an_import"
+        body: f4d1b6dfcb34f709707e6d1248320eefafdcd85b194825cbd2baf7a8a5b5d452
+  - node: 01a1587a-dee2-7262-8c7b-895e23847314
+    reviewed: 1af921fa1730c7f3526e57bc0a1ac16c6f5e797b11c2675431200cb1e247336d
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_document_never_published_is_created_and_nothing_is_imported"
+        body: ddecb4abd2d4cbcd0e3a9b05d9f539b565787055641ccf83da68d406d357031b
+  - node: 01a1587a-dee2-7262-8c7b-895f0c899c76
+    reviewed: a5c494e8409b88081955b8e3db115c837210ed2ab0144d8eb2738425c0a70dd8
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_that_holds_the_lock_s_head_already_is_connected_without_an_import"
+        body: f4d1b6dfcb34f709707e6d1248320eefafdcd85b194825cbd2baf7a8a5b5d452
+  - node: 01a1587a-dee2-7262-8c7b-8960890043f7
+    reviewed: 98f2285e645d59d45cae43b65e294ae2902e55eb95b1b6787864bba2cdb39096
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_that_holds_the_lock_s_head_already_is_connected_without_an_import"
+        body: f4d1b6dfcb34f709707e6d1248320eefafdcd85b194825cbd2baf7a8a5b5d452
+  - node: 01a1587a-dee2-7262-8c7b-8962dec3d01e
+    reviewed: 289e3d85c33055b6e8f36a0e17a6164f233866ed281d19c85361414c44c24ac1
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_at_another_head_is_refused_naming_both_heads_and_nothing_is_written"
+        body: 648a721d7155345b5c35a57ba74933a6531941d4feac224f8d04a8de5d5572e1
+  - node: 01a1587a-dee2-7262-8c7b-8963a91182ad
+    reviewed: a5c494e8409b88081955b8e3db115c837210ed2ab0144d8eb2738425c0a70dd8
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_at_another_head_is_refused_naming_both_heads_and_nothing_is_written"
+        body: 648a721d7155345b5c35a57ba74933a6531941d4feac224f8d04a8de5d5572e1
+  - node: 01a1587a-dee2-7262-8c7b-8964fde8c8ee
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_remote_at_another_head_is_refused_naming_both_heads_and_nothing_is_written"
+        body: 648a721d7155345b5c35a57ba74933a6531941d4feac224f8d04a8de5d5572e1
+  - node: 01a1587a-dee2-7262-8c7b-8966c39b960f
+    reviewed: 20f5b5203dc1622ae2b340003233a5a06e7546741c80981f2ca0ad083e4ba4b2
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_published_document_outside_a_repository_is_refused_before_any_request"
+        body: 76e08146bf0e20678e595146a6fa00322309f5b53c8cadb2b333f20947011332
+  - node: 01a1587a-dee2-7262-8c7b-896740e810f5
+    reviewed: 54471b39a74a5550346ac80a402172bdc37ad87de29ca617ce2d5acd7c4f047a
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_history_missing_a_publish_is_refused_before_any_request"
+        body: 3f9b2bc8e19c3736a17e3fd565bd34852482b00e95607b712c70b7fe7f5a209c
+  - node: 01a1587a-dee2-7262-8c7b-896831f228ef
+    reviewed: 3387bd5f137812b2318bc09ac24e4fcd4983f401468825fed4df5043baeddd33
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_state_whose_files_do_not_verify_is_refused_naming_its_sequence"
+        body: 0ba1f66195df12fb2166575e2739d4c34e606586db534cdeafab80222fcb900e
+  - node: 01a1587a-dee2-7262-8c7b-8969dcb4a49b
+    reviewed: 3076804822be93ee2ee513b9986c869ec7db21d73cf9c43eabe103c5e10caf23
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_history_missing_a_publish_is_refused_before_any_request"
+        body: 3f9b2bc8e19c3736a17e3fd565bd34852482b00e95607b712c70b7fe7f5a209c
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_state_whose_files_do_not_verify_is_refused_naming_its_sequence"
+        body: 0ba1f66195df12fb2166575e2739d4c34e606586db534cdeafab80222fcb900e
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_published_document_outside_a_repository_is_refused_before_any_request"
+        body: 76e08146bf0e20678e595146a6fa00322309f5b53c8cadb2b333f20947011332
+  - node: 01a1587a-dee2-7262-8c7b-896ca45d4a6c
+    reviewed: d72ec621e2c744eae84056d3e0a16707e1e6a4ff29ea1135fe0f6a968fb6e563
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_refused_create_or_import_names_the_call_its_status_and_code_and_writes_nothing"
+        body: f304c9eeb505e0a0c0e00a1f23515afe1cc03c9bdf488a978dd0aa189ecb4573
+  - node: 01a1587a-dee2-7262-8c7b-896dd9fd6611
+    reviewed: 0881a915451c6d7b512349c750d8b4afa3a3449a52ab9e1ecdf9caa5c436f0ab
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_refused_create_or_import_names_the_call_its_status_and_code_and_writes_nothing"
+        body: f304c9eeb505e0a0c0e00a1f23515afe1cc03c9bdf488a978dd0aa189ecb4573
+  - node: 01a1587a-dee2-7262-8c7b-896ec3692b8d
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "a_refused_create_or_import_names_the_call_its_status_and_code_and_writes_nothing"
+        body: f304c9eeb505e0a0c0e00a1f23515afe1cc03c9bdf488a978dd0aa189ecb4573
+  - node: 01a1587a-dee2-7262-8c7b-8973b5580080
+    reviewed: 3076804822be93ee2ee513b9986c869ec7db21d73cf9c43eabe103c5e10caf23
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect.rs"
+        name: "set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_requests"
+        body: b8138f1a31cfef31e248f7a5396be404c0c019850d0dffd4cc397ab821f199ff
+  - node: 01a18e1f-8daa-7674-9603-5ad8de76adc2
+    reviewed: c5c6535edcbb675977161c29a617bc0cafe04f70228669b20ab432fed631c55a
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5ad923207ac3
+    reviewed: a44e14a28698f214f091d80df9624343693833af6103288af85f311f2a71b5ba
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5adaaad6f201
+    reviewed: 558c0967b2cf20ecb3f6494f41319b438aa55fbe85c8785fd8aa25b53772ce59
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5adb32b2b46e
+    reviewed: f4a048443fedc8f576b5e355a3ec8659a39114b2c338a44fc29baa6c91e2b547
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+      - file: "crates/loft-cli/src/remote/signin/discovery.rs"
+        name: "the_server_metadata_lies_at_the_issuer_s_origin_before_its_path"
+        body: 6151364ff8f729844a1a60d708a8df447ebaab53a8af0be4b096031ee20a9f83
+  - node: 01a18e1f-8daa-7674-9603-5adf5decc59d
+    reviewed: f6271a49b0098ccbae38456b8c183d028f93fbbf21728d95211d0b5f8e93e3f2
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
+        body: ff3022f344d4de385ef4a8fbf0911cdb7fb1ddfd7979cf724ed659906243628a
+  - node: 01a18e1f-8daa-7674-9603-5ae2c1ed7a4a
+    reviewed: 7d85d1661b7ead4bc3d55ab41926e1af14f30aeb6be86878c28ddbb5d7bc69ef
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
+        body: ff3022f344d4de385ef4a8fbf0911cdb7fb1ddfd7979cf724ed659906243628a
+  - node: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
+        body: ff3022f344d4de385ef4a8fbf0911cdb7fb1ddfd7979cf724ed659906243628a
+  - node: 01a18e1f-8daa-7674-9603-5ae5c87d9c4b
+    reviewed: 98b07311ee6e2786cc816b756e5779e8956656bed6522f29bd3cc23206db923c
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5ae6786f2fb4
+    reviewed: ad7e6a7ba73e9ffad11c939301bc321970a87520fd5b3a216e28c5c3fc57ac54
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5ae74b2e08e6
+    reviewed: 69eedd015fcd780c1c0cf38386a3facac73bc2ef2cef4272add85a2c57e38d13
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5aeb283172fc
+    reviewed: b1a1cd8ab1636495e7f9856c07b5b623252e4a908b591db86811c1d9021deda2
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5aec2bf515d2
+    reviewed: 418920b27aae262004980da00f0a602bf811dad6af0ebc4543f0d0e852b5ecd3
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5aeda5fdb831
+    reviewed: 7b09a306272c1e24d407d69f8c0eb98c2d9f5e1069a9504d7931d0cbe6df83f0
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5aee0cc4bed2
+    reviewed: 987ff799feeb32cd1f8fd3408b8074747270eedebc1b310099efcb1f266982a3
+    tests:
+      - file: "crates/loft-cli/src/remote/signin/mod.rs"
+        name: "the_pkce_example_of_rfc_7636_gives_its_challenge"
+        body: 40672aada6a2f12f22f6792fd4410683cdd525352ea5d9591761ed68c210a57e
+      - file: "crates/loft-cli/src/remote/signin/mod.rs"
+        name: "a_verifier_is_43_unreserved_characters_drawn_anew_each_time"
+        body: a1e4128ac4034005784de5848ad1b9edff2b4afa543398e27341d417fc4ad983
+  - node: 01a18e1f-8daa-7674-9603-5aef03e5d7eb
+    reviewed: dce4c0d2b2248707715876bac04d6756ac5ee127342dd954d269cf16d4281e17
+    tests:
+      - file: "crates/loft-cli/src/remote/signin/mod.rs"
+        name: "a_verifier_is_43_unreserved_characters_drawn_anew_each_time"
+        body: a1e4128ac4034005784de5848ad1b9edff2b4afa543398e27341d417fc4ad983
+  - node: 01a18e1f-8daa-7674-9603-5af09243df5d
+    reviewed: 03155b5a3a53e793762a279570486b64dc2c8a9702b70c3cdb35ab6823f4d164
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "with_no_browser_the_address_is_printed_and_a_wrong_state_does_not_end_the_wait"
+        body: 84f855be9f9ebbec78fcc1f0159eb5bb1926f4faabf093c2391dae058608ad80
+  - node: 01a18e1f-8daa-7674-9603-5af1987711d1
+    reviewed: f1680053dcfba092d7e1d658e1b4bfc4eb5e0c2419080f2f37349784c740216a
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "with_no_browser_the_address_is_printed_and_a_wrong_state_does_not_end_the_wait"
+        body: 84f855be9f9ebbec78fcc1f0159eb5bb1926f4faabf093c2391dae058608ad80
+  - node: 01a18e1f-8daa-7674-9603-5af25f34d873
+    reviewed: c98dd1691f93297b486eb6f391c76c85f877c016b3913ae601162d9e4ced84e0
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5af390892503
+    reviewed: 81cbb598bf2916a3b21c82b73c8ace6e302ca2d3686bb9955e7c3864a2ebe408
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_browser_that_cannot_be_opened_is_reported_and_the_wait_goes_on"
+        body: 13cfcc8d33eba5ed69c380c788a7b73e22130c5c6bfd87df18a5dabf63b3ad05
+  - node: 01a18e1f-8daa-7674-9603-5af429fdc45c
+    reviewed: 1a8e13bdc7fca933bbf71581eafc45499f725068c9e6c7fd71e7cde175b994f3
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "with_no_browser_the_address_is_printed_and_a_wrong_state_does_not_end_the_wait"
+        body: 84f855be9f9ebbec78fcc1f0159eb5bb1926f4faabf093c2391dae058608ad80
+      - file: "crates/loft-cli/src/remote/signin/listener.rs"
+        name: "only_the_callback_with_the_state_asked_for_ends_the_wait"
+        body: 34ef7f88bd26ca22b26000eb4c5c73b88ae08fe9c6ab3b72ec180ed72245152e
+  - node: 01a18e1f-8daa-7674-9603-5af5e1e23ced
+    reviewed: b58629f11ce9bfdc969a224cb202f1e5d7acfec8843beef09a56909065253b09
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "with_no_browser_the_address_is_printed_and_a_wrong_state_does_not_end_the_wait"
+        body: 84f855be9f9ebbec78fcc1f0159eb5bb1926f4faabf093c2391dae058608ad80
+      - file: "crates/loft-cli/src/remote/signin/listener.rs"
+        name: "only_the_callback_with_the_state_asked_for_ends_the_wait"
+        body: 34ef7f88bd26ca22b26000eb4c5c73b88ae08fe9c6ab3b72ec180ed72245152e
+  - node: 01a18e1f-8daa-7674-9603-5af623dfa26f
+    reviewed: 6bc9a2fe09ce6ccd74c43bf7d32cad0d9ff117e10632e1b9aacefd69c657741c
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+      - file: "crates/loft-cli/src/remote/signin/listener.rs"
+        name: "only_the_callback_with_the_state_asked_for_ends_the_wait"
+        body: 34ef7f88bd26ca22b26000eb4c5c73b88ae08fe9c6ab3b72ec180ed72245152e
+  - node: 01a18e1f-8daa-7674-9603-5af86a68299e
+    reviewed: 518e2244f7470508a751de728eab290cc2c406f7ab59ddae0145486ebcfea941
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_refused_consent_ends_the_sign_in_naming_the_error_and_writes_nothing"
+        body: d4f4a2f93a0fc598f5ee7a45410bca1295728db46509e247e7d801627c626419
+  - node: 01a18e1f-8daa-7674-9603-5af9c7ef66a8
+    reviewed: c067763eee99392027550f242a34bf1c18a977839a78f36e765d3203a684ddd4
+    tests:
+      - file: "crates/loft-cli/src/remote/signin/listener.rs"
+        name: "a_wait_without_a_callback_ends_at_its_limit"
+        body: e050aa937931ce22619d0d399811f53638a9c54762f50362e606f9dda0dfd19c
+  - node: 01a18e1f-8daa-7674-9603-5afb4a395050
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_refused_consent_ends_the_sign_in_naming_the_error_and_writes_nothing"
+        body: d4f4a2f93a0fc598f5ee7a45410bca1295728db46509e247e7d801627c626419
+  - node: 01a18e1f-8daa-7674-9603-5afd2401b0f6
+    reviewed: 586a1652271b811b07cc874d834d85f20c82311fd4322b03158909bbb67ee218
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
+        body: 49d543578bc9820765c1b0eab4009029fd401ce764db477198a874ab6c6bc137
+  - node: 01a18e1f-8daa-7674-9603-5afe198788d1
+    reviewed: 5ef08617157e9ea80a6fee0a6d3b2d3054dd69e001519d260bcae3d66642c2c5
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5affb3db95a4
+    reviewed: ee4d620dc56febaffbcc7f393e2c2e189afe2da65c63e5af634cde03ba8786bb
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5b0098bd58c2
+    reviewed: c78c56b473dfc9bc6b34d6ad2e67e745ed8b7443034a898c77b0c691fe5afadd
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_replaces_the_sign_in_for_its_address_and_keeps_every_other"
+        body: ae8ba727da1813f87b49506226617d3581469309902039d483c371f2605914e0
+  - node: 01a18e1f-8daa-7674-9603-5b0182f48baa
+    reviewed: 20343e300b9329acfa46e32b786453ae889a4327af4ea01f9b4b6a7a1d67627b
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_replaces_the_sign_in_for_its_address_and_keeps_every_other"
+        body: ae8ba727da1813f87b49506226617d3581469309902039d483c371f2605914e0
+  - node: 01a18e1f-8daa-7674-9603-5b02b522f091
+    reviewed: af2195c3aace994202fe1358565c506c05eac58922bddd68eda94df7beaf9df5
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
+        body: 136d3b0447d85bf0b63837703cd52783cdac7f0447835b182c21c20366ae031b
+  - node: 01a18e1f-8daa-7674-9603-5b0311acba32
+    reviewed: d4915f2562d1ddb433b95844eab61cc482c62332356a87e0664ae46fa691a814
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "the_sign_in_file_is_written_for_its_owner_alone_through_a_rename"
+        body: 36c41d0babd4d00afbe988a6467f3029fb5b151d2a0fdb17417622768b80a6b9
   - node: 01a12ff0-f5e5-7095-8fa8-24edcc9b44db
     reviewed: c9ede49992a2253856d8f616d48fe2158f53e2cde7efc752806243cecfbc79e6
     tests:
@@ -30407,7 +31127,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/network_client.rs"
         name: "only_the_network_client_opens_a_connection"
-        body: 37023d51c965cb34fc6bd62f5911e15c84cd3337b707241d4d586f5627b1de89
+        body: 6ec85ddc14a815c544698916129b7ef93ab164d891e39c964c0ddfdcb7e9e9ec
       - file: "crates/loftspec/tests/package.rs"
         name: "the_library_uses_no_file_network_process_or_environment"
         body: 01c3f9239a31f5c3d2d4e8797b2b9d124428147885a803b5118c1c1a94b46577

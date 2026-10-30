@@ -51,7 +51,7 @@ fn plant(scratch: &Scratch, fixture: Fixture, committed: bool) {
             b"planted\n".to_vec(),
         ),
         Fixture::Clean => (RootPath::beside(LOCK), planted_lock()),
-        Fixture::Unkeyed => {
+        Fixture::Unkeyed | Fixture::Connected => {
             let text = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
             let planted = text.replacen("Keeps the books a reader means to read.", PLANTED_BODY, 1);
             assert_ne!(planted, text);
@@ -77,7 +77,7 @@ fn planted(scratch: &Scratch, fixture: Fixture) -> bool {
             let lock = Lock::read(&fs::read(scratch.0.join(LOCK)).unwrap()).unwrap();
             lock.publish_sequence.get() == 8
         }
-        Fixture::Unkeyed => fs::read_to_string(scratch.file(PRODUCT))
+        Fixture::Unkeyed | Fixture::Connected => fs::read_to_string(scratch.file(PRODUCT))
             .unwrap()
             .contains(PLANTED_BODY),
     }

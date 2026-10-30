@@ -24,6 +24,8 @@ mod out;
 mod publish;
 mod reconcile;
 mod record_install;
+mod remote;
+mod remote_command;
 mod render;
 mod review;
 mod settings;
@@ -211,6 +213,10 @@ fn dispatch(command: Command) -> Finished {
         ),
         Command::Skill { action } => skill(root, action),
         Command::RecordInstall { way, output } => record_install::run(way, output.json()),
+        Command::Remote { action } => {
+            let (action, as_json) = action.split();
+            remote_command::run(root, &action, as_json)
+        }
         Command::Telemetry { action } => {
             let (action, as_json) = action.split();
             switch_command::telemetry(action, as_json)

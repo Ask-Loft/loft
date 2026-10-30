@@ -1,7 +1,7 @@
 //! The network client is the only part of `loft` that opens a network connection: no other
 //! source file of the command line names the HTTP library or a socket, but the page server's
-//! listener, which listens on the loopback interface alone, takes only connections received there
-//! and opens none. The client goes through the proxy the environment names.
+//! listener and a sign-in's, which listen on the loopback interface alone, take only connections
+//! received there and open none. The client goes through the proxy the environment names.
 
 use std::fs;
 use std::path::Path;
@@ -30,13 +30,19 @@ fn only_the_network_client_opens_a_connection() {
         sources(&crates.join(built_in).join("src"), &mut found);
     }
     assert!(found.len() > 10);
-    let listener = Path::new("yard").join("serve").join("listener.rs");
+    let listeners = [
+        Path::new("yard").join("serve").join("listener.rs"),
+        Path::new("remote").join("signin").join("listener.rs"),
+    ];
     for (path, text) in found {
         if path.ends_with("network.rs") {
             assert!(text.contains("ureq::"), "{path}");
             continue;
         }
-        if Path::new(&path).ends_with(&listener) {
+        if listeners
+            .iter()
+            .any(|listener| Path::new(&path).ends_with(listener))
+        {
             continue;
         }
         for name in ["ureq", "TcpStream", "UdpSocket", "std::net::"] {

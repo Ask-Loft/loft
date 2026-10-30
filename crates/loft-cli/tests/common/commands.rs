@@ -5,7 +5,8 @@
 use std::fs;
 use std::process::Command;
 
-use crate::common::{EPOCH, Scratch};
+use crate::common::{EPOCH, Scratch, tree};
+use loftspec::codec::{self, SpecPath};
 use software_plant::{Clock, GitScenario};
 
 /// The Product's file, from which the unkeyed fixture leaves a key out.
@@ -43,6 +44,9 @@ pub enum Fixture {
     Unkeyed,
     /// The Reading List as converted, in a clean repository on `main`.
     Clean,
+    /// The clean fixture with its manifest marking it connected to a remote at a closed
+    /// loopback port.
+    Connected,
     /// An empty directory, on a machine where a page server of this `loft`'s version already
     /// runs: `loft yard serve` leaves it serving and exits, as every command here exits.
     Served,
@@ -59,6 +63,17 @@ pub fn fixture(fixture: Fixture) -> Scratch {
             "      - name:",
         ),
         Fixture::Clean => {}
+        Fixture::Connected => {
+            let mut document = codec::read(&tree(&scratch.0)).unwrap();
+            document.connected = true;
+            document.remote = Some("http://127.0.0.1:9/documents/reading-list".to_owned());
+            let manifest = SpecPath::new("loftspec.yaml");
+            fs::write(
+                scratch.file(manifest.as_str()),
+                &codec::write(&document)[&manifest],
+            )
+            .unwrap();
+        }
     }
     prepare(&scratch, fixture);
     scratch
@@ -88,7 +103,8 @@ pub fn prepare(scratch: &Scratch, fixture: Fixture) {
 /// The `loft` command over `fixture` at [`EPOCH`]: in a clean repository on `main` for the
 /// clean fixture, with no `git` otherwise.
 pub fn command(scratch: &Scratch, fixture: Fixture) -> Command {
-    let git = (fixture == Fixture::Clean).then(|| GitScenario::clean_on("main"));
+    let git = matches!(fixture, Fixture::Clean | Fixture::Connected)
+        .then(|| GitScenario::clean_on("main"));
     scratch.command(git.as_ref(), &Clock::fixed(EPOCH))
 }
 
@@ -98,7 +114,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 34] = [
+pub const COMMANDS: [Entry; 35] = [
     (
         "claude-yard-hook",
         &["yard", "claude", "hook"],
@@ -186,6 +202,13 @@ pub const COMMANDS: [Entry; 34] = [
         &["record-install", "release-binary"],
         Fixture::Empty,
         "record-install",
+    ),
+    // `loft remote remove` disconnects the document without reaching its remote.
+    (
+        "loft-remote",
+        &["remote", "remove"],
+        Fixture::Connected,
+        "remote",
     ),
     (
         "loft-telemetry",

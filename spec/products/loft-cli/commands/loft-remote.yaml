@@ -2,6 +2,9 @@ key: 01a156c0-0b79-7756-9d01-b059f21d61c7
 slug: loft-remote
 name: "`loft remote`"
 body: "Names, signs in to and removes the current document's remote. The remote's address is the manifest's `remote`, committed with the repository and shared by everyone who clones it; the person's sign-in to that address is kept in `loft/remotes.json`, private to the user, so that a token reaches neither a command line nor a file of the repository. `loft remote set <address>` signs the person in where they hold no sign-in for the address, connects a document that is not yet connected, as the Feature \"Connecting a document to a remote\" states, and only then names the remote and marks the manifest `connected: true`. `loft remote login` signs in again to the remote that the manifest names, once a sign-in has lapsed or in a fresh clone. `loft remote remove` disconnects the document: it removes `remote` and `connected` from the manifest and forgets the sign-in, after which the document allocates its own labels again. The address it is given and the privacy of `loft/remotes.json` are held to the shared rules of reaching a remote. Like `loft telemetry`, it sends no command event and asks for no update. It reads the tree and writes the manifest, and its Feature lists the tags `reads-tree` and `writes-tree` once the command exists, since the suites that the tags bring run every tagged command."
+tags:
+  - reads-tree
+  - writes-tree
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 mentions:

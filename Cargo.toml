@@ -28,6 +28,7 @@ loftspec-store = { path = "crates/loftspec-store", version = "2.3.0-alpha.3" }
 yardlog = { path = "crates/yardlog", version = "2.3.0-alpha.3" }
 yardlog-store = { path = "crates/yardlog-store", version = "2.3.0-alpha.3" }
 clap = { version = "4", features = ["derive"] }
+getrandom = "0.4"
 hmac = "0.12"
 # The page server reads each request it is sent with it; it is already in the lock through ureq.
 httparse = "1.10"

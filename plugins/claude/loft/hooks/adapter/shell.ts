@@ -18,6 +18,7 @@ export const LOFT_SUBCOMMANDS: readonly string[] = [
   'merge-driver',
   'skill',
   'record-install',
+  'remote',
   'telemetry',
   'update-check',
   'yard',
