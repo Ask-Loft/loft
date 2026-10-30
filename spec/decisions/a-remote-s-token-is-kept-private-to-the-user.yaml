@@ -5,7 +5,7 @@ context: "A connected document's remote admits a request by a bearer token, whic
 state:
   kind: accepted
   selectedOption: 01a156c0-e478-7517-a896-162499954686
-  outcome: "`loft remote set` and `loft remote login` sign the person in through the remote's authorization server, with the authorization code grant and PKCE on a loopback redirect, and write the sign-in, under the remote's address, to `loft/remotes.json` in the user's configuration directory with permission for its owner alone; every connected command refreshes it there, one process at a time, and refuses with a call to `loft remote login` once it has lapsed. `loft` refuses to read that file when it is not private to the user, as SSH refuses a key, and environment variables override it for one run."
+  outcome: "`loft remote set` and `loft remote login` sign the person in through the remote's authorization server, with the authorization code grant and PKCE on a loopback redirect, and write the sign-in, under the remote's address, to `loft/remotes.json` in the user's configuration directory with permission for its owner alone; every connected command refreshes it there, one process at a time, and refuses with a call to `loft remote login` once it has lapsed. `loft` writes that file with permission for its owner alone every time, and reads it as it finds it; environment variables override it for one run."
 drivers:
   - key: 01a156c0-e478-7517-a896-1621e4c9388a
     kind: local
@@ -69,7 +69,7 @@ assessments:
 consequences:
   - key: 01a156c0-e478-7517-a896-1628a1fb8b28
     kind: risk
-    statement: "On a file system without POSIX permissions the file is not checked."
+    statement: "On a file system without POSIX permissions the file is not restricted to its owner, and a file whose permissions were loosened later is read as it is."
   - key: 01a18e1f-8da6-74da-a22a-316230171f79
     kind: risk
     statement: "A sign-in left unused for long enough lapses, and the person signs in again with `loft remote login`."
@@ -81,5 +81,3 @@ subjects:
     node: 01a13a90-3554-7631-bb13-097e6805bffe
   - role: outcome
     node: 01a156c0-0b79-7756-9d01-b05aa4e3f82b
-  - role: outcome
-    node: 01a156c0-0b7a-76b6-9a6a-68511699e4cb

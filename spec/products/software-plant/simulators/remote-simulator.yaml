@@ -292,14 +292,14 @@ requirements:
   - key: 01a18e1f-8dac-71f7-847a-724579503551
     statement:
       form: event_driven
-      when: "an accepting remote simulator receives `GET <origin>/.well-known/oauth-protected-resource` followed by the address's path"
+      when: "an accepting remote simulator receives `GET <origin>/.well-known/oauth-protected-resource` followed by the path of its protected resource"
       system: "The remote simulator"
       shall: "answer `200 OK` with the protected resource metadata of the document's address."
     criteria:
       - key: 01a18e1f-8dac-71f7-847a-7246f96b2289
         name: "The body is a JSON object holding `resource`, `authorization_servers` and `scopes_supported`."
       - key: 01a18e1f-8dac-71f7-847a-72475d6abcc6
-        name: "`resource` is the protected resource that the scenario names."
+        name: "`resource` is the protected resource whose path follows `/.well-known/oauth-protected-resource` in the request, as RFC 9728 requires."
       - key: 01a18e1f-8dac-71f7-847a-72480d1d7ed9
         name: "`authorization_servers` lists one issuer, an address on the simulator's origin."
   - key: 01a18e1f-8dac-71f7-847a-724917ee9379

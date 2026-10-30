@@ -258,26 +258,3 @@ requirements:
         name: "The error names the variable at fault and its value."
       - key: 01a156c0-0b7a-76b6-9a6a-6850232f9215
         name: "No connection is opened."
-  - key: 01a156c0-0b7a-76b6-9a6a-68511699e4cb
-    statement:
-      form: unwanted
-      if: "on a file system with POSIX permissions, `loft/remotes.json` is not private to the user who runs `loft`"
-      system: "Loft"
-      shall: "refuse to read the file and exit 1."
-    criteria:
-      - key: 01a156c0-0b7a-76b6-9a6a-6852f98e7ded
-        name: "A private file is one the user owns whose mode grants no permission beyond its owner's, such as `0600`."
-      - key: 01a156c0-4060-74c3-86cb-6040ddd32bd4
-        name: "A private file is read."
-      - key: 01a156c0-0b7a-76b6-9a6a-685397cefc68
-        name: "A file that its group or others can read is refused."
-      - key: 01a156c0-0b7a-76b6-9a6a-68545876cfd2
-        name: "A file that its group or others can write is refused."
-      - key: 01a156c0-0b7a-76b6-9a6a-68559ffa043a
-        name: "A file owned by another user is refused."
-      - key: 01a156c0-0b7a-76b6-9a6a-685610a05fa3
-        name: "The error names the file and says that only its owner may read or write it."
-      - key: 01a156c0-0b7a-76b6-9a6a-685754512764
-        name: "No connection is opened."
-      - key: 01a156c0-0b7a-76b6-9a6a-685848cc3cf2
-        name: "On a file system without POSIX permissions the file is read without this check."

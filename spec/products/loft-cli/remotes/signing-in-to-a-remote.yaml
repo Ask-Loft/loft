@@ -36,6 +36,8 @@ requirements:
     criteria:
       - key: 01a18e1f-8daa-7674-9603-5adf5decc59d
         name: "An answer to the unauthenticated request other than a `401` with a `Bearer` challenge that names `resource_metadata` is refused."
+      - key: 01a18e3a-7c03-7381-95d8-6009f68d4fc7
+        name: "Protected resource metadata whose `resource` is not its own address with `/.well-known/oauth-protected-resource` taken out, as RFC 9728 requires, is refused."
       - key: 01a18e1f-8daa-7674-9603-5ae099541c19
         name: "Authorization server metadata whose `issuer` differs from the issuer that the protected resource metadata names is refused."
       - key: 01a18e1f-8daa-7674-9603-5ae1c38c59a0

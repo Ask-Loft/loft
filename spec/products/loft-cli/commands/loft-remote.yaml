@@ -7,7 +7,6 @@ realizes:
 mentions:
   - 01a156aa-d52e-75b0-9a73-cb9538029bb3
   - 01a156aa-d531-70a7-88e0-0bfbf98318c6
-  - 01a156c0-0b7a-76b6-9a6a-68511699e4cb
   - 01a1587a-dee2-7262-8c7b-89499e59ce55
 requirements:
   - key: 01a156c0-0b79-7756-9d01-b05aa4e3f82b
@@ -117,7 +116,7 @@ requirements:
   - key: 01a156c0-0b7a-76b6-9a6a-6836111cfa3a
     statement:
       form: unwanted
-      if: "a shared rule of reaching a remote refuses the address or the `loft/remotes.json` that `loft remote` meets"
+      if: "a shared rule of reaching a remote refuses the address that `loft remote set` is given"
       system: "`loft remote`"
       shall: "refuse and exit 1."
     criteria:
