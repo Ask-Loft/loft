@@ -1,6 +1,6 @@
 [package]
 name = "loft-common"
-version = "2.3.0-alpha.2"
+version = "2.3.0-alpha.3"
 description = "What Loft's formats share: the reader and writer of their strict YAML subset, the key type and the UTC time"
 edition.workspace = true
 rust-version.workspace = true
