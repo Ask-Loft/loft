@@ -256,7 +256,7 @@
           }
         },
         "ownLastRead": {
-          "description": "With --submissions: the caller\u2019s own recorded read revision, excluding fallback reads",
+          "description": "With --submissions: the caller’s own recorded read revision, excluding fallback reads",
           "type": [
             "integer",
             "null"
@@ -1435,6 +1435,10 @@
         "text"
       ],
       "properties": {
+        "tree": {
+          "description": "The worktree the briefing describes: the agent's working tree, or the one `--tree` names",
+          "type": "string"
+        },
         "page": {
           "description": "The page's address, or null where no page server serves it",
           "type": [

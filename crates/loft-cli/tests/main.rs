@@ -141,4 +141,5 @@ mod yard_upgrade_totals;
 mod yard_view_reports;
 mod yard_views;
 mod yard_wait;
+mod yard_working_tree;
 mod yard_write;

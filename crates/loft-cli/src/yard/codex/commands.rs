@@ -16,6 +16,7 @@ use crate::yard::branch::Branch;
 use crate::yard::failure::Failure;
 use crate::yard::read as yard_read;
 use crate::yard::task::{self, Change, Stop};
+use crate::yard::working_tree::{Follows, target};
 
 /// The host Codex's agents are named under.
 pub const HOST: &str = "codex";
@@ -72,6 +73,7 @@ impl Caller {
             session: Some(self.session.clone()),
             agent: self.agent.as_ref().map(|(id, _)| id.clone()),
             agent_type: self.agent.as_ref().map(|(_, kind)| kind.clone()),
+            tree: None,
         }
     }
 }
@@ -146,8 +148,10 @@ pub fn change_tasks<T>(
     port: u16,
     change: impl FnOnce(&mut YardLog, &Context) -> Change<T>,
 ) -> Result<Option<T>> {
-    let changed = Branch::locate(Path::new(dir), Beyond { port })
-        .and_then(|branch| task::under_lock(&branch, &caller.agent(), change));
+    let agent = caller.agent();
+    let changed = target(Path::new(dir), None, Some(&agent), Follows::Work)
+        .and_then(|dir| Branch::locate(&dir, Beyond { port }))
+        .and_then(|branch| task::under_lock(&branch, &agent, change));
     match changed.map_err(message)? {
         (_, Ok(value) | Err(Stop::Unchanged(value))) => Ok(Some(value)),
         (_, Err(Stop::Absent)) => Ok(None),

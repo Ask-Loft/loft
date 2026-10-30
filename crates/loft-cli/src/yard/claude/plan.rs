@@ -18,6 +18,7 @@ use crate::yard::args::{Beyond, WaitArgs, Writer};
 use crate::yard::branch::{Branch, log_of};
 use crate::yard::caller::{Caller, Continuations};
 use crate::yard::wait::{LONGEST, attempt};
+use crate::yard::working_tree::{Follows, target};
 
 /// Claude Code's answer to the `PermissionRequest` hook for `ExitPlanMode`: the page's decision,
 /// or nothing where there is no plan to wait on or the terminal decided it.
@@ -39,12 +40,13 @@ pub fn decide(hook: &Hook, port: u16) -> Value {
 
 /// The key of the newest open submission the hook's agent sent that holds a plan-mode plan.
 fn newest(hook: &Hook, port: u16) -> Option<String> {
-    let branch = Branch::locate(hook.dir(), Beyond { port }).ok()?;
+    let caller = Caller::new(&hook.runner());
+    let dir = target(hook.dir(), None, caller.agent.as_ref(), Follows::Work).ok()?;
+    let branch = Branch::locate(&dir, Beyond { port }).ok()?;
     let held = branch.store.read().ok()?;
     let log = log_of(&held)?;
     let home = Home::from_env();
     let continuations = Continuations::read(home.as_ref()).ok()?;
-    let caller = Caller::new(&hook.runner());
     let mine = continuations.identity(caller.agent());
     log.root
         .submissions
@@ -77,6 +79,7 @@ fn wait_args(hook: &Hook, submission: &str, port: u16) -> WaitArgs {
             session: hook.session().to_owned(),
             agent: runner.agent,
             agent_type: runner.agent_type,
+            tree: None,
         },
         beyond: Beyond { port },
         output: Output {

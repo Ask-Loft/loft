@@ -22641,6 +22641,12 @@ links:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "a_continuation_is_kept_in_the_machine_s_home_and_never_under_yard"
         body: 39500924da6f4b233c067f6733fc6e696e4fb970196deb41d1cb91d0e9ad1cb2
+  - node: 01a18a50-2ff6-715f-af9c-709b7df9f011
+    reviewed: 6f313cba37a423be4f015816eaae45df4e13951c7c0bf4494c9326a2863a5a82
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "each_write_records_its_worktree_and_time_for_the_session_and_a_read_records_nothing"
+        body: 5d6a20cb8987c5a6da734cbc3ec8e4f1ab8686ba29e01e6052e21819945cd1af
   - node: 01a1646f-546e-76cb-8b4f-f1ec3c4ff3b2
     reviewed: d5ec9d0c54f512be8a7a61ce5c6af15ddefb5b6bc445d7137f5c22d0ace616d6
     tests:
@@ -23335,8 +23341,11 @@ links:
         name: "a subagent calls a tool in its own name: its id and its type"
         body: fdd0ec871ab390032aac2bd31b4940c5f8260eff314a1738fbcb00cefe3d054d
   - node: 01a1646f-546d-7042-befd-ea6d4a1030f6
-    reviewed: 7a876287bc4be1c4296f32322bc04700da61cf32fc3d8dd37f2921ede33e6908
+    reviewed: 72ccd10bea9fc594b964c4f1a59891c54ff5245ecf3689e44e14a34ed535f224
     tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_session_s_calls_follow_its_working_stage_into_another_worktree"
+        body: 2511642eed205226fe5009bef92b086fb2ba5723192bdc0794babd4291c14d82
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
         body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
@@ -24282,6 +24291,168 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "an unbound task mirrored into a working stage the agent does not own is assigned to that agent"
         body: 64cbe5364b6626542596391f382de9d7d009ff826b0af02f425cc50f093dcca9
+  - node: 01a18a50-2ff6-715f-af9c-707fce7cc208
+    reviewed: a321f815f5cd22569fc337c762417344e02d34983b8070ea79b26115fa610656
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_subagent_follows_its_own_working_stage_with_its_own_directory_as_the_fallback"
+        body: 7792f8c0db487e181c0406e44cacf71c0c93b171e77cfcb642337c1532f53e79
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_session_s_calls_follow_its_working_stage_into_another_worktree"
+        body: 2511642eed205226fe5009bef92b086fb2ba5723192bdc0794babd4291c14d82
+  - node: 01a18a50-2ff6-715f-af9c-70804d1b0bee
+    reviewed: bb487ce0510c6797985ccec343ea6e17043fb5bf98c6b4ff28083a892f499420
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_session_that_continues_another_searches_the_worktrees_the_ended_one_wrote_in"
+        body: 12cd78b8e5bb540ecdad999eeb34b60538101e5e50673fec821e5966a51a0c7d
+  - node: 01a18a50-2ff6-715f-af9c-7081c74a10f5
+    reviewed: 911f06349ba3fa859dda34d6d24448528175225c526aae6d98df9350e3b02076
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "of_two_worktrees_holding_a_working_stage_the_one_the_agent_wrote_in_last_wins"
+        body: 1260bfb006b806f7d8eea35c58e3887986affcc1b0127c47646b01f5617e680c
+      - file: "crates/loft-cli/src/yard/working_tree.rs"
+        name: "the_worktree_the_agent_wrote_in_last_is_chosen"
+        body: 6c3106ca46e69b78a5d9db6fe58429f0634ce9c3e03641c3be14bc47ff106487
+      - file: "crates/loft-cli/src/yard/working_tree.rs"
+        name: "a_worktree_the_agent_wrote_in_is_chosen_over_one_only_its_session_wrote_in_later"
+        body: 45f1dc730659081e49f542a941bc1296152f8e5680a79365e74b6fcfa1858f1d
+      - file: "crates/loft-cli/src/yard/working_tree.rs"
+        name: "where_the_agent_wrote_in_none_the_session_s_last_worktree_is_chosen"
+        body: 252c5f18efaf76158dd935deb11f64365667fb272bcf02a708d08ded6a5a8124
+  - node: 01a18a50-2ff6-715f-af9c-708273219aa2
+    reviewed: 546109e08efd697c3fa8a9272821bc815a567b106d2778880ca6270d6b1fbcf7
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_worktree_whose_yard_log_is_closed_is_never_a_working_tree"
+        body: 3361251f23d7e1df35d014fc72769a163108ea56f02a5f054c6adfc6124244b9
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_worktree_that_no_longer_exists_is_never_a_working_tree_and_is_dropped_from_the_record"
+        body: c86b90bba84e5b1f56539961178cbef8e834b1f70c7613b65e9f60b70eda7013
+  - node: 01a18a50-2ff6-715f-af9c-7083e56d804d
+    reviewed: 912f6080ab29c559925745e039f6b3bdc9730543f6fb37d07d477cd0eb2114d7
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "an_agent_with_no_working_stage_anywhere_works_in_its_own_directory"
+        body: 9e00dd55cbc41e3632d9924490f6430139e274b93557b5967553a524894fd5bf
+      - file: "crates/loft-cli/src/yard/working_tree.rs"
+        name: "no_candidate_chooses_no_worktree"
+        body: addd521651439f9c299008796f234b072d7ee83506080f86d8f9c829f1439047
+  - node: 01a18a50-2ff6-715f-af9c-7084776776af
+    reviewed: 99d0163ec46fa8004bf3c3fbee22888651fb9670161744ba7aaac7199069b9ce
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "an_agent_that_ends_its_working_stage_in_another_worktree_works_in_its_own_directory_again"
+        body: a3544a457df9f0f75a7c27f5e39d6da8f35708bfb8da74e81dda1a520a1dea88
+  - node: 01a18a50-2ff6-715f-af9c-7085bbce2b7f
+    reviewed: 4f590d576b95fd243770e40ac98b863079e516085cf2d6fce6c14d1adf67e947
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_subagent_follows_its_own_working_stage_with_its_own_directory_as_the_fallback"
+        body: 7792f8c0db487e181c0406e44cacf71c0c93b171e77cfcb642337c1532f53e79
+  - node: 01a18a50-2ff6-715f-af9c-708730020ed1
+    reviewed: b406fb4668c5ea38e4d96f50798462947cfdb7fa69094f1660103a8c47386c52
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_session_s_calls_follow_its_working_stage_into_another_worktree"
+        body: 2511642eed205226fe5009bef92b086fb2ba5723192bdc0794babd4291c14d82
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_task_change_acts_on_the_working_tree"
+        body: c46aef45ca98f786d6633674f3f2cc4f1e00c13a43f969e663329cb848be9a6c
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_wait_on_a_submission_sent_to_another_worktree_reads_it_there"
+        body: 76842fedd650a00bf98115ab73246173ba0aa36672b2cc188f0d5b2caf9ebb26
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "an_answer_in_the_dialog_is_recorded_in_the_yard_log_the_question_was_sent_to"
+        body: 03eead76899c843f6e7d9c0447019b746bf9a221aa826d0c73ecafd3e299dd88
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_withdrawal_reaches_the_submission_where_it_was_sent"
+        body: 3e2de4e30cbcd5024349191fb6b44b3a0b0a918d9b4ea042326e9a68a67ed42d
+  - node: 01a18a50-2ff6-715f-af9c-708893c9a812
+    reviewed: b3f213e0d324a15a184dd0efa4204fc530f76274a88db871a5c8b4da85ce479c
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "close_and_published_stay_in_their_directory_whatever_the_working_tree"
+        body: 76e49ebedb7855a8a6337e2d966e8be235c895cdf7a4155de5206159a5a6121d
+  - node: 01a18a50-2ff6-715f-af9c-70898b7122dd
+    reviewed: b8b8c0b32088ca8e20bec0eb1ec8384680714f300597150942b43bb43d858ffb
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_command_run_without_session_acts_on_its_own_directory"
+        body: 3ea708b7a6fe65eb3a72b1944612f02e09259a6462255aea790aa7b18462438e
+  - node: 01a18a50-2ff6-715f-af9c-708a77afde06
+    reviewed: aca41e134662c0404d20ade433467cc67a6c083ceee69c8422aa6c171ae4d57e
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_session_s_calls_follow_its_working_stage_into_another_worktree"
+        body: 2511642eed205226fe5009bef92b086fb2ba5723192bdc0794babd4291c14d82
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_write_given_a_tree_opens_that_worktree_s_yard_log"
+        body: 8d30d01332c034db60567b617fd5756a3037f76ff8a808e3ebb4a18f8a9c9415
+  - node: 01a18a50-2ff6-715f-af9c-708bf1e252b5
+    reviewed: 11454d7993bc56619e4d48d538173cbb9c3427e417a71c429479326a4d5527de
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "the_briefing_describes_the_working_tree_s_yard_log_and_names_it"
+        body: f3ed1c64503f9a7e7cf12101f43821db39b362b88ab3c03e3bd517d04e8e51cd
+  - node: 01a18a50-2ff6-715f-af9c-708e88fcaf5a
+    reviewed: a93f352d4489582cf3e9dfd4fc058616b7e95b8e80d753a4d72722db3c0faeb5
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_write_given_a_tree_opens_that_worktree_s_yard_log"
+        body: 8d30d01332c034db60567b617fd5756a3037f76ff8a808e3ebb4a18f8a9c9415
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_session_s_calls_follow_its_working_stage_into_another_worktree"
+        body: 2511642eed205226fe5009bef92b086fb2ba5723192bdc0794babd4291c14d82
+  - node: 01a18a50-2ff6-715f-af9c-708f178c8b1e
+    reviewed: e9fb897032da118b146a002dc829c94b90ddce7bdcbf3970ea3aae1220f16f7c
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_write_given_a_tree_opens_that_worktree_s_yard_log"
+        body: 8d30d01332c034db60567b617fd5756a3037f76ff8a808e3ebb4a18f8a9c9415
+  - node: 01a18a50-2ff6-715f-af9c-7090b2327403
+    reviewed: 418ebee4972be851c80a000c4dea8ba9de12666473967732098ab6e6ce5972e0
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_write_given_a_tree_opens_that_worktree_s_yard_log"
+        body: 8d30d01332c034db60567b617fd5756a3037f76ff8a808e3ebb4a18f8a9c9415
+  - node: 01a18a50-2ff6-715f-af9c-7092ac5d7ba0
+    reviewed: 5fcdd4d9ffdc8504f0fb6295ac82278a2b938f17a61dd492ad32dc355a19cc94
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_tree_that_is_no_directory_is_refused_naming_it_and_nothing_is_written"
+        body: 92f20a91864d7de4aa4714de7f6b91945b9f271892b82edf27d9ba73cbf431e0
+  - node: 01a18a50-2ff6-715f-af9c-70941b7a7e4e
+    reviewed: f4c50d2f09cb50216d12fa094ca3f4cfa23fad4300490fe558e74e776c1a815a
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "an_answer_in_the_dialog_is_recorded_in_the_yard_log_the_question_was_sent_to"
+        body: 03eead76899c843f6e7d9c0447019b746bf9a221aa826d0c73ecafd3e299dd88
+  - node: 01a18a50-2ff6-715f-af9c-70957bb508fe
+    reviewed: fe9d0650f3a2e11015e597100787358b419d3cb350752ba1c9b8d40084af7cef
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_wait_on_a_submission_sent_to_another_worktree_reads_it_there"
+        body: 76842fedd650a00bf98115ab73246173ba0aa36672b2cc188f0d5b2caf9ebb26
+  - node: 01a18a50-2ff6-715f-af9c-70961ae5bf08
+    reviewed: ffb5c2d1439f5c956b516da9c6153b99b1e46fbea902638a5986b06178b65a8a
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_submission_no_worktree_of_the_session_holds_is_refused_as_unknown"
+        body: 848544959526c35264c9fb4e0d3db5be0656bc4ead2f21c387f040da96fa2af2
+  - node: 01a18a50-2ff6-715f-af9c-7098c2b36d15
+    reviewed: d58a8f9fcb4a6ad180197f9c19e0a4675e1b5cc166a7f7ddbf8dbbe1f0d739a2
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "each_write_records_its_worktree_and_time_for_the_session_and_a_read_records_nothing"
+        body: 5d6a20cb8987c5a6da734cbc3ec8e4f1ab8686ba29e01e6052e21819945cd1af
+  - node: 01a18a50-2ff6-715f-af9c-70998c117d45
+    reviewed: 87f7f7b6a66a317a10235d6ebe70192b199921990da27fa550b265cfd397a720
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_worktree_that_no_longer_exists_is_never_a_working_tree_and_is_dropped_from_the_record"
+        body: c86b90bba84e5b1f56539961178cbef8e834b1f70c7613b65e9f60b70eda7013
   - node: 01a1646f-546c-7521-9643-bc5c90d3caac
     reviewed: 6cb1c02135c6a4f47b13bea80176a766dd5e457884c0a3273e191582ca4a4d66
     tests:

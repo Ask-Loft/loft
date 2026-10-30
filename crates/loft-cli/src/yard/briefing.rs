@@ -14,9 +14,10 @@ use super::caller::Continuations;
 /// The most characters the briefing's text holds.
 pub const LIMIT: usize = 2000;
 
-/// Where the briefing is given: the branch, its page's address, whether git ignores `.yard/`,
-/// whether Yard Log is closed and the revision the agent last read.
+/// Where the briefing is given: the worktree, the branch, its page's address, whether git
+/// ignores `.yard/`, whether Yard Log is closed and the revision the agent last read.
 pub struct Where<'a> {
+    pub tree: &'a str,
     pub branch: Option<&'a str>,
     pub page: Option<&'a str>,
     pub ignored: bool,
@@ -33,6 +34,7 @@ pub fn briefing(
 ) -> Value {
     let Some(log) = log else {
         return json!({
+            "tree": at.tree,
             "page": at.page,
             "revision": 0,
             "since": at.since,
@@ -53,6 +55,7 @@ pub fn briefing(
             .map(|file| json!({ "id": file.stage.id.as_str(), "title": title(&file.stage) }))
     });
     let mut fields = json!({
+        "tree": at.tree,
         "page": at.page,
         "revision": log.root.revision,
         "since": at.since,
@@ -174,7 +177,11 @@ struct Section {
 
 fn text(fields: &Value, at: &Where) -> String {
     let branch = clipped(at.branch.unwrap_or("this branch"), 120);
-    let mut head = vec![format!("Yard Log of `{branch}`."), page_line(at)];
+    let tree = clipped(at.tree, 200);
+    let mut head = vec![
+        format!("Yard Log of `{branch}` in `{tree}`."),
+        page_line(at),
+    ];
     head.push(if at.ignored {
         "git ignores `.yard/`, so Yard Log stays out of the commits.".to_owned()
     } else {

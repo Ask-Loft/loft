@@ -101,6 +101,10 @@ pub struct Runner {
     /// The type of the subagent that runs the command.
     #[arg(long, value_name = "TYPE", requires = "agent")]
     pub agent_type: Option<String>,
+    /// A directory of the worktree whose Yard Log the command acts on, in place of the agent's
+    /// working tree or the command's own directory.
+    #[arg(long, value_name = "DIR")]
+    pub tree: Option<PathBuf>,
 }
 
 /// The agent that runs a command that changes Yard Log, which must name its session.
@@ -118,6 +122,10 @@ pub struct Writer {
     /// The type of the subagent that runs the command.
     #[arg(long, value_name = "TYPE", requires = "agent")]
     pub agent_type: Option<String>,
+    /// A directory of the worktree whose Yard Log the command acts on, in place of the agent's
+    /// working tree or the command's own directory.
+    #[arg(long, value_name = "DIR")]
+    pub tree: Option<PathBuf>,
 }
 
 impl From<Writer> for Runner {
@@ -127,6 +135,7 @@ impl From<Writer> for Runner {
             session: Some(writer.session),
             agent: writer.agent,
             agent_type: writer.agent_type,
+            tree: writer.tree,
         }
     }
 }
