@@ -1,0 +1,174 @@
+key: 01a18e1f-8daa-7674-9603-5ad621016b05
+slug: signing-in-to-a-remote
+name: "Signing in to a remote"
+body: "How `loft remote set` and `loft remote login` sign the person in to a connected document's remote, and how every connected command keeps that sign-in alive. The remote admits a request by an access token that its authorization server issues through OAuth 2.0: `loft` learns where that server is from the remote's challenge (RFC 9728 and RFC 8414), registers itself as a public native client (RFC 7591), and runs the authorization code grant with PKCE (RFC 7636) on a redirect to a loopback port of its own (RFC 8252), naming the remote as the resource (RFC 8707). The sign-in is personal: it is kept under the remote's address in `loft/remotes.json`, private to the user, and never in the repository. Its refresh token rotates on every use and a refresh token used again after its successor was issued may end the whole sign-in, so each successor is saved before the access token it came with is used, one process at a time. Only `loft remote set` and `loft remote login` open a browser or wait for one, so that a publish or a pull never waits on a person."
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+mentions:
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - 01a16469-559e-73c4-85f2-71b6feef7573
+requirements:
+  - key: 01a18e1f-8daa-7674-9603-5ad7d110e1e4
+    statement:
+      form: event_driven
+      when: "`loft remote set` or `loft remote login` signs in to a remote"
+      system: "Loft"
+      shall: "learn the remote's authorization server from the challenge of an unauthenticated request."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5ad8de76adc2
+        name: "The first request of a sign-in is `GET <address>/head` without an `Authorization` header."
+      - key: 01a18e1f-8daa-7674-9603-5ad923207ac3
+        name: "The challenge is the `WWW-Authenticate` header of a `401` answer, of the scheme `Bearer`, whose `resource_metadata` names the remote's protected resource metadata."
+      - key: 01a18e1f-8daa-7674-9603-5adaaad6f201
+        name: "The protected resource metadata gives the `resource` and, first of its `authorization_servers`, the issuer of the authorization server."
+      - key: 01a18e1f-8daa-7674-9603-5adb32b2b46e
+        name: "The authorization server's metadata is read from the issuer's origin, at `/.well-known/oauth-authorization-server` followed by the issuer's path."
+      - key: 01a18e1f-8daa-7674-9603-5adc786b0bc4
+        name: "The scope asked for is the challenge's `scope`, or else the protected resource metadata's `scopes_supported` joined by spaces."
+      - key: 01a18e1f-8daa-7674-9603-5add73e735e4
+        name: "Each address that the metadata names is held to the address rules of reaching a remote."
+  - key: 01a18e1f-8daa-7674-9603-5ade1633ad81
+    statement:
+      form: unwanted
+      if: "the remote's challenge or a metadata document that a sign-in reads is not one the sign-in can follow"
+      system: "Loft"
+      shall: "refuse to sign in and exit 1."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5adf5decc59d
+        name: "An answer to the unauthenticated request other than a `401` with a `Bearer` challenge that names `resource_metadata` is refused."
+      - key: 01a18e1f-8daa-7674-9603-5ae099541c19
+        name: "Authorization server metadata whose `issuer` differs from the issuer that the protected resource metadata names is refused."
+      - key: 01a18e1f-8daa-7674-9603-5ae1c38c59a0
+        name: "Authorization server metadata without `registration_endpoint`, or whose `code_challenge_methods_supported` leaves out `S256`, is refused."
+      - key: 01a18e1f-8daa-7674-9603-5ae2c1ed7a4a
+        name: "The error names the address of the document that was refused."
+      - key: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
+        name: "Nothing is written."
+  - key: 01a18e1f-8daa-7674-9603-5ae454b39feb
+    statement:
+      form: event_driven
+      when: "a sign-in has read the authorization server's metadata"
+      system: "Loft"
+      shall: "register itself with the authorization server as a public native client."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5ae5c87d9c4b
+        name: "The registration is a `POST` of a JSON object to the metadata's `registration_endpoint`."
+      - key: 01a18e1f-8daa-7674-9603-5ae6786f2fb4
+        name: "The registration names `client_name` `loft`, `token_endpoint_auth_method` `none`, the `grant_types` `authorization_code` and `refresh_token`, the `response_types` `code`, and the one redirect URI `http://127.0.0.1/callback`."
+      - key: 01a18e1f-8daa-7674-9603-5ae74b2e08e6
+        name: "The `client_id` of the answer is the client of the sign-in."
+      - key: 01a18e1f-8daa-7674-9603-5ae8d862574c
+        name: "Each sign-in registers anew."
+      - key: 01a18e1f-8daa-7674-9603-5ae902b405f2
+        name: "A registration that the authorization server refuses ends the sign-in with an error that names the OAuth `error` it gave."
+  - key: 01a18e1f-8daa-7674-9603-5aea6ec39261
+    statement:
+      form: event_driven
+      when: "a sign-in has registered"
+      system: "Loft"
+      shall: "ask for an authorization code on a redirect to a loopback port of its own, with PKCE."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5aeb283172fc
+        name: "Loft listens on `127.0.0.1` on a port that the system gives it."
+      - key: 01a18e1f-8daa-7674-9603-5aec2bf515d2
+        name: "The redirect URI is `http://127.0.0.1:<port>/callback`, on the port Loft listens on."
+      - key: 01a18e1f-8daa-7674-9603-5aeda5fdb831
+        name: "The authorization request names `response_type` `code`, the `client_id`, the `redirect_uri`, the `scope`, the `resource`, a `state` and a `code_challenge` with `code_challenge_method` `S256`."
+      - key: 01a18e1f-8daa-7674-9603-5aee0cc4bed2
+        name: "The code verifier is 43 or more unreserved characters drawn from the system's source of random numbers, and the code challenge is the unpadded base64url SHA-256 digest of it."
+      - key: 01a18e1f-8daa-7674-9603-5aef03e5d7eb
+        name: "The `state` is drawn anew for each sign-in from the system's source of random numbers."
+      - key: 01a18e1f-8daa-7674-9603-5af09243df5d
+        name: "Loft prints the authorization request's address on standard error before it waits."
+      - key: 01a18e1f-8daa-7674-9603-5af1987711d1
+        name: "Loft opens the authorization request's address in the person's web browser, unless `--no-browser` is given."
+      - key: 01a18e1f-8daa-7674-9603-5af25f34d873
+        name: "The browser is the program that `BROWSER` names, given the address as its one argument, or else the system's own opener of addresses."
+      - key: 01a18e1f-8daa-7674-9603-5af390892503
+        name: "A browser that cannot be opened ends nothing: Loft says so and waits for the printed address to be opened."
+      - key: 01a18e1f-8daa-7674-9603-5af429fdc45c
+        name: "A request to the loopback port at a path other than `/callback` is answered `404 Not Found` and the wait goes on."
+      - key: 01a18e1f-8daa-7674-9603-5af5e1e23ced
+        name: "A callback whose `state` differs from the one asked for is answered `400 Bad Request` and the wait goes on."
+      - key: 01a18e1f-8daa-7674-9603-5af623dfa26f
+        name: "A callback with the `state` asked for is answered with a page that says the person may close it, and Loft stops listening."
+  - key: 01a18e1f-8daa-7674-9603-5af7c22607c6
+    statement:
+      form: unwanted
+      if: "no callback with the `state` asked for arrives within 5 minutes, or the callback carries an `error`"
+      system: "Loft"
+      shall: "refuse to sign in and exit 1."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5af86a68299e
+        name: "A callback that carries an `error` ends the sign-in with an error that names it."
+      - key: 01a18e1f-8daa-7674-9603-5af9c7ef66a8
+        name: "A sign-in with no callback after 5 minutes ends with an error that says the browser did not return."
+      - key: 01a18e1f-8daa-7674-9603-5afa4888dc48
+        name: "Loft stops listening on the loopback port."
+      - key: 01a18e1f-8daa-7674-9603-5afb4a395050
+        name: "Nothing is written."
+  - key: 01a18e1f-8daa-7674-9603-5afcb4e8f4e0
+    statement:
+      form: event_driven
+      when: "a callback gives an authorization code"
+      system: "Loft"
+      shall: "exchange the code for tokens and keep the sign-in under the remote's address in `loft/remotes.json`."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5afd2401b0f6
+        name: "The exchange is a form-encoded `POST` to the metadata's `token_endpoint` of `grant_type` `authorization_code`, the `code`, the `redirect_uri`, the `client_id`, the `code_verifier` and the `resource`."
+      - key: 01a18e1f-8daa-7674-9603-5afe198788d1
+        name: "An answer of `token_type` `Bearer` with an `access_token`, an `expires_in` and a `refresh_token` is a sign-in."
+      - key: 01a18e1f-8daa-7674-9603-5affb3db95a4
+        name: "The sign-in kept holds the token endpoint, the resource, the client, the access token, the refresh token and the time its access token expires, in UTC."
+      - key: 01a18e1f-8daa-7674-9603-5b0098bd58c2
+        name: "A sign-in that the file already holds for the address is replaced."
+      - key: 01a18e1f-8daa-7674-9603-5b0182f48baa
+        name: "Every entry for another address is kept."
+      - key: 01a18e1f-8daa-7674-9603-5b02b522f091
+        name: "A missing file is created, with the directory that holds it."
+      - key: 01a18e1f-8daa-7674-9603-5b0311acba32
+        name: "The file is written with read and write permission for its owner alone, through a file beside it and a rename."
+      - key: 01a18e1f-8daa-7674-9603-5b0409a20482
+        name: "An exchange that the authorization server refuses ends the sign-in with an error that names the OAuth `error` it gave, and nothing is written."
+  - key: 01a18e1f-8daa-7674-9603-5b05e1af871f
+    statement:
+      form: event_driven
+      when: "a connected command is about to call the remote with a sign-in whose access token expires within 5 minutes"
+      system: "Loft"
+      shall: "refresh the sign-in and keep its successor before it calls the remote."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5b068e59310a
+        name: "The refresh is a form-encoded `POST` to the sign-in's token endpoint of `grant_type` `refresh_token`, the `refresh_token`, the `client_id` and the `resource`."
+      - key: 01a18e1f-8daa-7674-9603-5b07dc3da22f
+        name: "The refreshed access token, refresh token and expiry replace the sign-in's in `loft/remotes.json` before the refreshed access token is sent."
+      - key: 01a18e1f-8daa-7674-9603-5b08ca689ee4
+        name: "A sign-in whose access token expires later than 5 minutes ahead is not refreshed."
+      - key: 01a18e1f-8daa-7674-9603-5b09d3876706
+        name: "Two processes that refresh one sign-in at once refresh it once: the second waits for the first, reads the file again and uses the successor that the first kept."
+      - key: 01a18e1f-8daa-7674-9603-5b0adb8b111a
+        name: "A refresh whose answer is lost leaves the file as it was, so that the next run presents the same refresh token again."
+  - key: 01a18e1f-8daa-7674-9603-5b0b328c0ca1
+    statement:
+      form: unwanted
+      if: "the authorization server refuses a refresh"
+      system: "Loft"
+      shall: "refuse the command, say that the sign-in to the remote has lapsed, and exit 1."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5b0c349d5653
+        name: "The error names the remote's address and the OAuth `error` the refresh gave."
+      - key: 01a18e1f-8daa-7674-9603-5b0d7bd2ce62
+        name: "The error says that `loft remote login` signs in again."
+      - key: 01a18e1f-8daa-7674-9603-5b0e6dc7199e
+        name: "No browser is opened and no port is listened on."
+      - key: 01a18e1f-8daa-7674-9603-5b0fa7082030
+        name: "Nothing is written."
+  - key: 01a18e1f-8daa-7674-9603-5b10c1965e85
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "open a browser or listen on a loopback port only for `loft remote set` and `loft remote login`."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5b11fefeafdf
+        name: "`loft publish` and `loft pull` open no browser and listen on no port."
+      - key: 01a18e1f-8daa-7674-9603-5b1288ffcc1e
+        name: "No output and no command event holds an authorization code, a code verifier or a refresh token."

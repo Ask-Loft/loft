@@ -1,0 +1,89 @@
+key: 01a18e1f-8da6-74da-a22a-315837cd91cd
+slug: a-connected-document-names-its-remote-in-its-manifest
+title: "A connected document names its remote in its manifest, and each person's sign-in stays with that person"
+context: "A connected document publishes through one remote, which every person who works on the repository publishes to and pulls from. Each of them reaches it under a sign-in of their own. Where the address is kept per user, every clone has to be told the address again, and two clones can name different remotes for one document."
+state:
+  kind: accepted
+  selectedOption: 01a18e1f-8da6-74da-a22a-315ca7517381
+  outcome: "The manifest names the remote's address as `remote`, beside `connected: true`, so that the address is committed and shared by every clone; it enters no root, and `loft pull` keeps the working tree's. `loft/remotes.json`, private to each user, keeps only that user's sign-in, under the address. `LOFT_REMOTE_ENDPOINT` overrides the manifest's address for one run. `loft remote remove` disconnects the document: it removes `remote` and `connected` from the manifest and forgets the sign-in."
+drivers:
+  - key: 01a18e1f-8da6-74da-a22a-3159c7c665fe
+    kind: local
+    label: "Shared remote"
+    statement: "Everyone who clones a connected repository publishes to the same remote without being told its address."
+  - key: 01a18e1f-8da6-74da-a22a-315aca426bde
+    kind: local
+    label: "Personal sign-in"
+    statement: "A person's sign-in reaches no file of the repository and no other person."
+  - key: 01a18e1f-8da6-74da-a22a-315b18dd5214
+    kind: local
+    label: "One place"
+    statement: "What makes a document connected is read from one file."
+options:
+  - key: 01a18e1f-8da6-74da-a22a-315ca7517381
+    title: "`remote` in the manifest"
+    description: "`spec/loftspec.yaml` gains the field `remote`, which `loft remote set` writes in the save that marks the document connected."
+  - key: 01a18e1f-8da6-74da-a22a-315d7dd65981
+    title: "A file beside `spec/`"
+    description: "A file at the root of the repository, beside `loft.lock.json`, holds the document key and the address."
+  - key: 01a18e1f-8da6-74da-a22a-315ec91f9a2a
+    title: "Each user's configuration"
+    description: "`loft/remotes.json` keeps the address with the sign-in, under the document key."
+assessments:
+  - option: 01a18e1f-8da6-74da-a22a-315ca7517381
+    driver: 01a18e1f-8da6-74da-a22a-3159c7c665fe
+    rating: supports
+    rationale: "the manifest is committed with the repository"
+  - option: 01a18e1f-8da6-74da-a22a-315ca7517381
+    driver: 01a18e1f-8da6-74da-a22a-315aca426bde
+    rating: supports
+    rationale: "the manifest holds the address and no token"
+  - option: 01a18e1f-8da6-74da-a22a-315ca7517381
+    driver: 01a18e1f-8da6-74da-a22a-315b18dd5214
+    rating: supports
+    rationale: "`connected` and `remote` lie side by side"
+  - option: 01a18e1f-8da6-74da-a22a-315d7dd65981
+    driver: 01a18e1f-8da6-74da-a22a-3159c7c665fe
+    rating: supports
+    rationale: "the file is committed with the repository"
+  - option: 01a18e1f-8da6-74da-a22a-315d7dd65981
+    driver: 01a18e1f-8da6-74da-a22a-315aca426bde
+    rating: supports
+    rationale: "the file holds the address and no token"
+  - option: 01a18e1f-8da6-74da-a22a-315d7dd65981
+    driver: 01a18e1f-8da6-74da-a22a-315b18dd5214
+    rating: conflicts
+    rationale: "the manifest says the document is connected and another file says where"
+  - option: 01a18e1f-8da6-74da-a22a-315ec91f9a2a
+    driver: 01a18e1f-8da6-74da-a22a-3159c7c665fe
+    rating: conflicts
+    rationale: "every clone is told the address again, and two clones may name different remotes"
+  - option: 01a18e1f-8da6-74da-a22a-315ec91f9a2a
+    driver: 01a18e1f-8da6-74da-a22a-315aca426bde
+    rating: supports
+    rationale: "the file is private to the user"
+  - option: 01a18e1f-8da6-74da-a22a-315ec91f9a2a
+    driver: 01a18e1f-8da6-74da-a22a-315b18dd5214
+    rating: conflicts
+    rationale: "the manifest says the document is connected and each user's file says where"
+consequences:
+  - key: 01a18e1f-8da6-74da-a22a-315f59336d3f
+    kind: obligation
+    statement: "The Format's manifest gains the optional field `remote`, read and written by the codec, held only beside `connected: true`."
+  - key: 01a18e1f-8da6-74da-a22a-3160d6752c28
+    kind: risk
+    statement: "A document disconnected with `loft remote remove` allocates its own labels again, apart from those its remote allocated."
+  - key: 01a18e1f-8da6-74da-a22a-3161d4d05d8b
+    kind: benefit
+    statement: "A person who clones a connected repository runs only `loft remote login` to publish."
+subjects:
+  - role: affected
+    node: 01a156aa-d531-70a7-88e0-0bebdc0a9327
+  - role: affected
+    node: 01a156c0-0b79-7756-9d01-b059f21d61c7
+  - role: affected
+    node: 6ad0f26e-00c0-48f6-8886-cd0fb742ac48
+  - role: outcome
+    node: 01a156c0-0b7a-76b6-9a6a-682d65afb139
+  - role: outcome
+    node: 01a18e1f-8dab-754b-b097-4f9ee1fc0147

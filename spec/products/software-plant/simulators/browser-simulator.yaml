@@ -1,0 +1,32 @@
+key: 01a18e1f-8dac-71f7-847a-723a5547f246
+slug: browser-simulator
+name: "Browser simulator"
+body: "A program on the test machine that stands in for the person's web browser during a sign-in. A test names it in `BROWSER`, the variable through which `loft` opens a browser, so the binary under test runs it in place of the system's own opener of addresses, and it visits the address it is given as a person who consents does, following each redirect to `loft`'s loopback port. Its contract suite opens a loopback address with the system's opener and with the simulator and requires both to request it; the real half runs only on demand. The tag `plant-simulator` and the mention of the web browser's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
+realizes:
+  - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+requirements:
+  - key: 01a18e1f-8dac-71f7-847a-723bca07aca0
+    statement:
+      form: event_driven
+      when: "the browser simulator is run with an address"
+      system: "The browser simulator"
+      shall: "request the address and follow each redirect, as its scenario names."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-723c347c2e0c
+        name: "The address is the program's one argument."
+      - key: 01a18e1f-8dac-71f7-847a-723d495d2e69
+        name: "A visiting scenario requests the address with `GET` and follows each redirect until an answer that is not a redirect, then exits 0."
+      - key: 01a18e1f-8dac-71f7-847a-723e23078ec9
+        name: "An absent scenario requests nothing and exits 1, as a browser that cannot be opened does."
+      - key: 01a18e1f-8dac-71f7-847a-723f7a50caee
+        name: "A test reads every address the simulator was given, in order."
+  - key: 01a18e1f-8dac-71f7-847a-7240c13a6b5d
+    statement:
+      form: ubiquitous
+      system: "The browser simulator"
+      shall: "reach the binary under test only through the `BROWSER` variable of its environment."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-7241394b06ba
+        name: "The binary under test runs the program that `BROWSER` names with the address as its one argument."
+      - key: 01a18e1f-8dac-71f7-847a-7242668fd69f
+        name: "Without `BROWSER`, the binary under test runs the system's own opener of addresses."

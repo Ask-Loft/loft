@@ -1,11 +1,11 @@
 key: 01a156c0-e478-7517-a896-162069fcc2ac
 slug: a-remote-s-token-is-kept-private-to-the-user
-title: "A remote's token is kept in the user's configuration, private to the user"
-context: "A connected document's remote admits a request by a bearer token, which grants whatever the remote lets its holder do. A token on a command line lands in the shell's history and in the list of running processes, and a token in the repository is shared with everyone who clones it."
+title: "A person signs in to a remote through OAuth, and the sign-in is kept private to the user"
+context: "A connected document's remote admits a request by a bearer token, which grants whatever the remote lets its holder do. The remote issues no long-lived personal token: its authorization server issues short-lived access tokens through OAuth 2.0, with a refresh token that rotates on every use. A token on a command line lands in the shell's history and in the list of running processes, and a token in the repository is shared with everyone who clones it."
 state:
   kind: accepted
   selectedOption: 01a156c0-e478-7517-a896-162499954686
-  outcome: "`loft remote set` reads the token from standard input and writes it, under the document key, to `loft/remotes.json` in the user's configuration directory with permission for its owner alone; `loft` refuses to read that file when it is not private to the user, as SSH refuses a key, and environment variables override it for one run."
+  outcome: "`loft remote set` and `loft remote login` sign the person in through the remote's authorization server, with the authorization code grant and PKCE on a loopback redirect, and write the sign-in, under the remote's address, to `loft/remotes.json` in the user's configuration directory with permission for its owner alone; every connected command refreshes it there, one process at a time, and refuses with a call to `loft remote login` once it has lapsed. `loft` refuses to read that file when it is not private to the user, as SSH refuses a key, and environment variables override it for one run."
 drivers:
   - key: 01a156c0-e478-7517-a896-1621e4c9388a
     kind: local
@@ -21,8 +21,8 @@ drivers:
     statement: "Every platform `loft` runs on keeps the token without a service beside it."
 options:
   - key: 01a156c0-e478-7517-a896-162499954686
-    title: "A private file that `loft remote` writes"
-    description: "The token is read from standard input and kept in the user's configuration directory, in a file that only its owner may read."
+    title: "An OAuth sign-in kept in a private file"
+    description: "`loft` signs in through the browser and keeps the sign-in in the user's configuration directory, in a file that only its owner may read."
   - key: 01a156c0-e478-7517-a896-1625a82fd9a8
     title: "Environment variables only"
     description: "The address and the token come from the environment of each run."
@@ -33,11 +33,11 @@ assessments:
   - option: 01a156c0-e478-7517-a896-162499954686
     driver: 01a156c0-e478-7517-a896-1621e4c9388a
     rating: supports
-    rationale: "the file outlives the shell"
+    rationale: "the file outlives the shell, and a refresh keeps the sign-in alive between runs"
   - option: 01a156c0-e478-7517-a896-162499954686
     driver: 01a156c0-e478-7517-a896-162257515a85
     rating: supports
-    rationale: "standard input in, a private file at rest, and the token printed nowhere"
+    rationale: "the browser in, a private file at rest, and no token printed anywhere"
   - option: 01a156c0-e478-7517-a896-162499954686
     driver: 01a156c0-e478-7517-a896-162354601e13
     rating: supports
@@ -70,6 +70,12 @@ consequences:
   - key: 01a156c0-e478-7517-a896-1628a1fb8b28
     kind: risk
     statement: "On a file system without POSIX permissions the file is not checked."
+  - key: 01a18e1f-8da6-74da-a22a-316230171f79
+    kind: risk
+    statement: "A sign-in left unused for long enough lapses, and the person signs in again with `loft remote login`."
+  - key: 01a18e1f-8da6-74da-a22a-31633970a608
+    kind: benefit
+    statement: "No token passes through a command line, standard input or the clipboard."
 subjects:
   - role: affected
     node: 01a13a90-3554-7631-bb13-097e6805bffe
