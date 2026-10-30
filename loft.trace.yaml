@@ -20036,13 +20036,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_capabilities.rs"
         name: "an_event_without_a_descriptor_is_kept_under_the_last_descriptor_its_session_posted"
-        body: fb7ed1cc52642168e0770d0af790a7780c033892c79075ec87a7a28b65fd4da2
+        body: 670ad4b81e290926377b43ce74f2552fb27c2e883dd62ef9609df024b7a16d93
   - node: 01a182b6-3c58-7235-ad04-391493273b63
     reviewed: f27b8ba7737be0aae3c4c2d6b798a3ba33de0b241e11d8485e5a401875ab97a1
     tests:
       - file: "crates/loft-cli/tests/yard_capabilities.rs"
         name: "replaying_a_session_after_a_restart_applies_each_descriptor_to_the_events_after_it"
-        body: 9d01de7f7d9e5f6992822a91a1b290694c58c4b9e2137e60ab84d7cc1d4ec4cd
+        body: 60c734e2b1c8095ee16809f09065165c9ae542890040d847e3381f11219b0680
   - node: 01a182b6-3c58-7235-ad04-39157bf8284b
     reviewed: 49d8b4cc83d4b51076d9c1d6f14aa72e3a5a107a07ef70db29a18a9d900a6ff4
     tests:
@@ -24360,12 +24360,18 @@ links:
   - node: 01a18a68-6812-7158-8a5a-72eb63d428ea
     reviewed: 9444a6437868ae44550246932c72daaccc8e17cce1c67499e9ca8afd41c5eb1c
     tests:
+      - file: "crates/loft-cli/tests/yard_serve_working_tree.rs"
+        name: "a_main_agent_s_event_records_its_directory_for_its_subagents"
+        body: 6d9a497132e7c53b43c81b4b9a0cc64493df9283f082148e5910f76fdde2f706
       - file: "crates/loft-cli/tests/yard_working_tree.rs"
         name: "a_main_agent_s_command_records_its_directory_and_a_subagent_s_does_not"
         body: 9f497873f9b9ba94f5ab1b0f720108fe3e3f45fb7817f0239c9f93c93b0b954f
   - node: 01a18a68-6812-7158-8a5a-72ecc9e83cb2
     reviewed: 54a868a6a5015f13e665598132bbd4d5a4d9223fba5fa85effb1ea9af4a58faa
     tests:
+      - file: "crates/loft-cli/tests/yard_serve_working_tree.rs"
+        name: "a_subagent_in_a_worktree_of_its_own_files_its_events_there_while_its_main_agent_works_elsewhere"
+        body: 865a5efd849f8670af23e0d4c62749aacb53c9bed5dadcfb06b9414959126e7c
       - file: "crates/loft-cli/tests/yard_working_tree.rs"
         name: "a_subagent_in_a_worktree_of_its_own_with_nothing_of_its_own_stays_there"
         body: 1f7fa1f3a5e5e48a12315cb016c7c4a5592f2d51e8b0f2678806260736c72de0
@@ -27795,18 +27801,27 @@ links:
   - node: 01a165fd-782b-723a-b2d7-578e4cefd187
     reviewed: 1fdad934cdad4f9604bf7c40e4ad536abfc3bcddb5811e25cd9ffbeadcb15157
     tests:
-      - file: "crates/loft-cli/src/yard/serve/events.rs"
+      - file: "crates/loft-cli/src/yard/serve/events/tests.rs"
+        name: "a_batch_finds_each_agent_s_working_tree_once_and_opens_the_yard_log_there"
+        body: 016582b3b45a25a11c803f3f774508b0c649aec7d4f28a188cc1b5ee22faafad
+      - file: "crates/loft-cli/src/yard/serve/events/tests.rs"
         name: "a_batch_opens_the_yard_log_of_each_directory_it_names_once"
-        body: 7742550d76cf5a5768d77fb2f8de11f4e58a2fc25dc0d8812f649e235490ab36
+        body: 816070ea905902e6c9d926801ec5b98afbb1b847d29b9a0f05f8cbd9141e509f
   - node: 01a1646f-546d-7042-befd-eb139c5d21b6
-    reviewed: f107aa7a336cfc3cf2062a6f334d576bccecd6ca114c35d7f7a323822acda5b5
+    reviewed: f50e8f1c4aae2756237e790491749be398f91be06bc499eae9ee1fdd76c6051c
     tests:
+      - file: "crates/loft-cli/tests/yard_serve_working_tree.rs"
+        name: "a_worktree_whose_yard_log_is_closed_never_takes_an_event"
+        body: a67333ae94abb078431336af61251ebe718b5898ef2b0364f5b53b0212c13b74
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "an_event_whose_branch_has_no_yard_log_or_a_closed_one_is_not_recorded"
         body: 2c8bd918dabff91e5d5c96d506d1714a834e69e18307ee9c66889775dc630c8e
   - node: 01a1646f-546d-7042-befd-eb14bec05c05
-    reviewed: 2af4978036cabedf5fdf27597bc95f6e9e7dfcc72c2310f6a0ea336d5fd882ad
+    reviewed: 273fe11cb6d9fb5313fe9bd973ba7354d5a2cf075b5ee49d34e0a0c20e4cf03e
     tests:
+      - file: "crates/loft-cli/tests/yard_serve_working_tree.rs"
+        name: "a_main_agent_s_event_is_filed_under_the_worktree_that_holds_its_working_stage"
+        body: 30714c0421f39cb70404b892d113418c0eb2cfdecfc95dbd032b7a43b6bf5650
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "an_event_is_kept_in_the_session_s_event_log_with_its_tree_branch_stage_and_open_submissions"
         body: 8a650e512475afbd86e4f2b9751814283b676ce1c0c8e7ead8f8fd3c9a5c7e02
@@ -27819,6 +27834,12 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "a_request_whose_agent_works_in_another_worktree_is_counted_in_that_worktree_s_yard_log"
         body: b08bcf38028d4cd4d0ab5c00eec513e7ad67e22d966e303f06d09315dcc7dcfa
+  - node: 01a18a50-2ff6-715f-af9c-709a65d54002
+    reviewed: ceb98e86554e1bb0e64bbe491bd4384323e65598f3d39950d974f4f37aff49d0
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_working_tree.rs"
+        name: "the_events_of_a_turn_whose_working_stage_moves_are_split_where_it_moved"
+        body: b76381d4a72793697ad320da1a3de924fe02383dbe519112e8a69ad72963ea46
   - node: 01a16a5b-5fc8-7605-ba92-760602622149
     reviewed: 93def04f277280a10513c7ef97f4a79cf45f6cc320fcba8264e05a59af961826
     tests:
