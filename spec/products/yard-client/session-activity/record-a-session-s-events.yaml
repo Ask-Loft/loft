@@ -96,7 +96,7 @@ requirements:
   - key: 01a1646f-546d-7042-befd-eb103c0010bb
     statement:
       form: event_driven
-      when: "the page server receives an event of a session whose agent's branch has its Yard Log open"
+      when: "the page server receives an event of a session whose agent's working tree has its Yard Log open"
       system: "the page server"
       shall: "append the event to the session's event log, with the tree, the branch, the stage that is active for the event's agent and the submissions that are open when it arrives."
     criteria:
@@ -107,10 +107,12 @@ requirements:
       - key: 01a165fd-782b-723a-b2d7-578e4cefd187
         name: "A batch of events finds and reads the Yard Log of each directory it names once, even where more than one of its events names that directory."
       - key: 01a1646f-546d-7042-befd-eb139c5d21b6
-        name: "An event whose agent's branch has no Yard Log, or a closed one, is not recorded."
+        name: "An event whose agent's working tree has no Yard Log, or a closed one, is not recorded."
       - key: 01a1646f-546d-7042-befd-eb14bec05c05
-        name: "An event names the tree and branch that its agent's directory is on when it arrives, so that an agent that changes branch or worktree records each event with the branch it happened on."
+        name: "An event names the tree and branch of its agent's working tree when it arrives, so that each event is recorded with the branch its agent's work is on."
       - key: 01a1646f-546d-7042-befd-eb15a1f51483
         name: "Events of two agents of one session that work in two worktrees are recorded each with its own tree and branch."
+      - key: 01a18a50-2ff6-715f-af9c-709a65d54002
+        name: "The events of a turn during which its agent's working tree changes are recorded each with the working tree it arrived under, so that the turn's tokens are split where its work moved."
       - key: 01a16a5b-5fc8-7605-ba92-760602622149
         name: "Of two posts of one session's events handled at once, the session's activity and token files are left as the events kept last make them, whichever post writes last."

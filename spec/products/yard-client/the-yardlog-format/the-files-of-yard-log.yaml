@@ -11,7 +11,7 @@ body: |
   .yard/<branch>/activity/<session id>.yaml
   ```
 
-  What belongs to the machine and not to the branch stays out of the working tree, in `~/.yard/` in the person's home directory: the page server's address and the lock it holds while it runs, a request that it stop, the trees it serves, each session's events, when each session was last heard, the revision each agent last read, the sessions that continue others and the control token. The lock and save journal of each branch's Yard Log, and the lease of each wait, are kept in git's own directory for the worktree.
+  What belongs to the machine and not to the branch stays out of the working tree, in `~/.yard/` in the person's home directory: the page server's address and the lock it holds while it runs, a request that it stop, the trees it serves, each session's events, when each session was last heard, the revision each agent last read, the sessions that continue others, the worktrees each session wrote Yard Log in, the directory of each session's main agent and the control token. The lock and save journal of each branch's Yard Log, and the lease of each wait, are kept in git's own directory for the worktree.
 tags:
   - git
 realizes:
@@ -69,6 +69,10 @@ requirements:
         name: "The revision each agent last read is kept in `~/.yard/last-read.json`."
       - key: 01a1647c-e680-7753-bf17-f18342ac8828
         name: "The sessions that continue others are kept in `~/.yard/continuations.json`."
+      - key: 01a18a50-2ff6-715f-af9c-709b7df9f011
+        name: "The worktrees each session wrote Yard Log in are kept in `~/.yard/session-trees.json`."
+      - key: 01a18a68-6812-7158-8a5a-72f045eb5c9b
+        name: "The directory each session's main agent last named is kept in `~/.yard/session-dirs.json`."
       - key: 01a1646f-546e-76cb-8b4f-f1ec3c4ff3b2
         name: "The page server's control token is kept in `~/.yard/token`, readable only by the person's own account."
       - key: 01a1649f-62f0-7320-902c-7d8fc94401ef

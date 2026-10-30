@@ -17,6 +17,7 @@ use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::render;
 use super::views::Views;
+use super::working_tree::{Follows, target, wrote};
 use crate::finish::Finished;
 
 const SCHEMA: &str = "loft-yard-write/1";
@@ -42,7 +43,13 @@ struct Applied {
 }
 
 fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
-    let caller = Caller::new(&args.writer.into());
+    let caller = Caller::new(&args.writer.clone().into());
+    let dir = &target(
+        dir,
+        args.writer.tree.as_deref(),
+        caller.agent.as_ref(),
+        Follows::Work,
+    )?;
     let branch = Branch::locate(dir, args.beyond)?;
     let batch = super::input::json(&args.input)?;
     let at = super::now()?;
@@ -95,7 +102,10 @@ fn attempt(dir: &Path, args: WriteArgs) -> Result<Value, Failure> {
         )
     })?;
     match applied {
-        Ok(applied) => Ok(result(&branch, &applied)),
+        Ok(applied) => {
+            wrote(&agent, &branch.place().tree, at);
+            Ok(result(&branch, &applied))
+        }
         Err(refusal) => Err(refusal_of(&branch, &branch.store.read()?, &refusal)),
     }
 }

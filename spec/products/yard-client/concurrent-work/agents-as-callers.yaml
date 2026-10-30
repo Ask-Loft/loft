@@ -2,7 +2,7 @@ key: 01a1646f-546d-7042-befd-ea61a5a3a0c9
 slug: agents-as-callers
 name: "Agents as callers"
 body: |
-  Several Claude Code sessions may work at once on one machine, each perhaps running several subagents, and a subagent may work in a worktree of its own. Each call to Yard Client is made by one agent: a session and, for a subagent, its agent id. The call reaches Yard Log of the branch in that agent's own directory, so that a subagent in its own worktree writes to that worktree's branch and never to its parent's.
+  Several Claude Code sessions may work at once on one machine, each perhaps running several subagents, and a subagent may work in a worktree of its own. Each call to Yard Client is made by one agent: a session and, for a subagent, its agent id. The call reaches Yard Log of the branch in that agent's own directory, so that a subagent in its own worktree writes to that worktree's branch and never to its parent's, unless the agent's working stage lies in another worktree, where its work then is.
 
   Yard Log is named by its tree, the top of the worktree, and its branch. Git never checks out one branch in two worktrees, so the pair names one branch's Yard Log, and git's common directory names the repository the tree belongs to.
 tags:
@@ -32,7 +32,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "A `loft yard` command that acts on a branch's Yard Log"
-      shall: "act on Yard Log of the branch that the worktree holding its working directory is on."
+      shall: "act on Yard Log of the branch that the worktree holding its working directory is on, unless the calling agent's working tree or the command's `--tree` names another worktree."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea676a927ac1
         name: "A command run in a subdirectory of a worktree acts on Yard Log at the top of that worktree."
@@ -52,7 +52,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-ea6ce4e53c57
         name: "A subagent working in a worktree of its own writes to that worktree's Yard Log."
       - key: 01a1646f-546d-7042-befd-ea6d4a1030f6
-        name: "A session that moves into another worktree reaches that worktree's Yard Log with its next call."
+        name: "A session that moves into another worktree reaches that worktree's Yard Log with its next call, where its working stage lies in no other worktree."
       - key: 01a1646f-546d-7042-befd-ea6e6f25624a
         name: "The main agent's call carries no `--agent`."
   - key: 01a1646f-546d-7042-befd-ea6f9460a2d0

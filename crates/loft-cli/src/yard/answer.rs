@@ -15,8 +15,10 @@ use yardlog::{Actor, BlockKey, Channel, Handle, Key, YardLog};
 use super::answer_input::{self, Named};
 use super::args::AnswerArgs;
 use super::branch::{self, Branch, Unapplied};
+use super::caller::Caller;
 use super::change::refusal;
 use super::failure::{self, Failure};
+use super::working_tree::{Follows, sent_to, target};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -61,8 +63,13 @@ pub fn person(branch: &Branch) -> Result<(String, String), Failure> {
 }
 
 fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure> {
-    let branch = Branch::locate(dir, args.beyond)?;
+    let caller = Caller::new(&args.writer.clone().into());
     let named = answer_input::read(&super::input::json(&args.input)?)?;
+    let dir = match &args.writer.tree {
+        Some(tree) => target(dir, Some(tree), caller.agent.as_ref(), Follows::Directory)?,
+        None => sent_to(dir, caller.agent(), |log| replies(log, &named).is_ok())?,
+    };
+    let branch = Branch::locate(&dir, args.beyond)?;
     record(&branch, &named, Channel::Terminal)
 }
 

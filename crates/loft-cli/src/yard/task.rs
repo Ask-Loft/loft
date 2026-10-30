@@ -16,6 +16,7 @@ use super::args::TaskArgs;
 use super::branch::{self, Branch, Unapplied};
 use super::caller::Caller;
 use super::failure::{self, Failure};
+use super::working_tree::{self, Follows, wrote};
 use crate::finish::Finished;
 
 const SCHEMA: &str = "loft-yard-task/1";
@@ -78,6 +79,9 @@ pub(super) fn under_lock<T>(
             Err(refusal) => Err(Unapplied::Refused(Stop::Refused(refusal))),
         }
     })?;
+    if applied.is_ok() {
+        wrote(agent, &branch.place().tree, super::now()?);
+    }
     Ok((held, applied))
 }
 
@@ -107,8 +111,14 @@ fn words(ids: &[Value]) -> String {
 
 fn attempt(dir: &Path, args: TaskArgs) -> Result<(&'static str, Value), Failure> {
     let target = target(&args)?;
-    let caller = Caller::new(&args.writer.into());
-    let branch = Branch::locate(dir, args.beyond)?;
+    let caller = Caller::new(&args.writer.clone().into());
+    let dir = working_tree::target(
+        dir,
+        args.writer.tree.as_deref(),
+        caller.agent.as_ref(),
+        Follows::Work,
+    )?;
+    let branch = Branch::locate(&dir, args.beyond)?;
     let (held, applied) = under_lock(&branch, caller.agent(), |log, context| {
         apply(log, &target, context)
     })?;

@@ -500,3 +500,37 @@ test("the agent receives Claude Code's refusal of a call the tool's schema refus
   const ran = await askWith($, [asked({ options: [{ label: 'Members' }, option('Visitors')] })])
   expect(ran).toEqual({ result: 'InputValidationError', isError: true, text: 'InputValidationError' })
 })
+
+test('yard_wait given a tree waits on the submission in that worktree', async ($, on) => {
+  const w = world(on)
+  w.state.read = sentDoc([pick('q1', 2)])
+  w.state.terminal.AskUserQuestion = () => new Promise(() => {})
+  await start($)
+  w.state.waits.push(answeredOnPage([]))
+  await $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 'sub-7', tree: '/work/press' } as never)
+  const waits = w.state.runs.filter(run => run.argv.includes('wait'))
+  expect(flagOf(waits[0]!.argv, '--tree')).toBe('/work/press')
+})
+
+test('questions whose read went to another worktree are sent, waited on and recorded there', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ tree: '/work/press', stages: [stage('there', 'active', { session: SESSION })] })
+  w.state.terminal.AskUserQuestion = () => ({ result: { questions: QUESTIONS, answers: { 'Which readers?': 'Visitors' } }, text: 'ok' })
+  await start($)
+  await ask($)
+  const sent = w.state.runs.find(run => run.argv.includes('write'))!
+  expect(flagOf(sent.argv, '--tree')).toBe('/work/press')
+  expect(writes(w).at(-1)![0]!.stage).toBe('there')
+  const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
+  expect(flagOf(recorded.argv, '--tree')).toBe('/work/press')
+})
+
+test("questions whose read stayed in the session directory's worktree name no tree", async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.cwd = `${TREE}/src`
+  w.state.terminal.AskUserQuestion = () => ({ result: { questions: QUESTIONS, answers: { 'Which readers?': 'Visitors' } }, text: 'ok' })
+  await start($)
+  await ask($)
+  for (const run of w.state.runs.filter(each => !each.argv.includes('serve'))) expect(run.argv).not.toContain('--tree')
+})

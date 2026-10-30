@@ -89,6 +89,18 @@ write the existing task directly. A new session needs an explicit assignment or 
 unless the host adaptation says it continues an earlier one. Never infer identity from an
 agent's display name.
 
+## Work in another worktree
+
+Your work is recorded in your working tree: the worktree whose Yard Log holds your working stage,
+else your own directory. Before you work in a worktree other than your own directory, of this
+repository or another, open a stage in that worktree's Yard Log by naming its tree in the write,
+with its branch cut first. From then on your reads and writes, and the questions, plans, tasks
+and events the adapter records for you, follow your working stage into the worktree that holds it.
+Ending that stage returns the work to your own directory. Closing Yard Log and recording a publish
+stay with your own directory: name the tree to close another worktree's Yard Log or to record a
+publish in it. A subagent in a worktree of its own follows only its own stage, or a task assigned
+to it, into another worktree.
+
 ## Plan, then wait to be asked to build
 
 Begin no stage that builds the change unless the person asked for the build as well as the plan.

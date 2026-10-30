@@ -25,6 +25,7 @@ use super::change::refusal;
 use super::failure::{self, Failure};
 use super::render;
 use super::standing::{Standing, standing};
+use super::working_tree::{Follows, sent_to, target};
 use crate::finish::Finished;
 
 const SCHEMA: &str = "loft-yard-wait/1";
@@ -65,8 +66,15 @@ pub(super) fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value
     let clock = super::clock();
     let started = clock.elapsed();
     let deadline = started + timeout;
+    let named = args.writer.tree.clone();
     let caller = Caller::new(&args.writer.into());
-    let branch = Branch::locate(dir, args.beyond)?;
+    let dir = match named {
+        Some(named) => target(dir, Some(&named), caller.agent.as_ref(), Follows::Directory)?,
+        None => sent_to(dir, caller.agent(), |log| {
+            log.submission(submission).is_some()
+        })?,
+    };
+    let branch = Branch::locate(&dir, args.beyond)?;
     let home = Home::from_env();
     let at = super::now()?;
     let agent = caller.agent().clone();

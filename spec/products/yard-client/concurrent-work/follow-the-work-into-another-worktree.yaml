@@ -1,0 +1,117 @@
+key: 01a18a50-2ff6-715f-af9c-707de180a6b5
+slug: follow-the-work-into-another-worktree
+name: "Follow the work into another worktree"
+body: |
+  An agent may be asked to work in a worktree other than its own directory, in another repository even, where its host cannot move it. Yard Client then follows the work rather than the directory: each agent has one working tree, the worktree whose Yard Log holds the agent's working stage, and its tool calls, the questions, plans and tasks the host records for it, and its events all go to that worktree's Yard Log. The agent moves its work into another worktree by opening a stage there, naming the tree, and moves it back by ending that stage. With no working stage in any worktree, its working tree is its own directory.
+
+  `loft` finds the working tree once, for every host: the `loft yard` commands that act for an agent resolve it, and the page server files each event by it, so that the Claude Code mod, the Claude command hooks and the Codex Yard adapter follow one rule without resolving it themselves.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+  - 01a183e9-dfcb-7796-a0a4-3ca11fc1a795
+requirements:
+  - key: 01a18a50-2ff6-715f-af9c-707e72ef29a2
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "give each agent one working tree: the worktree whose Yard Log holds the agent's working stage, among the worktrees its session has written Yard Log in, else the agent's own directory."
+    criteria:
+      - key: 01a18a50-2ff6-715f-af9c-707fce7cc208
+        name: "The working stage in each worktree is found by the one rule that gives each agent its working stage."
+      - key: 01a18a50-2ff6-715f-af9c-70804d1b0bee
+        name: "The worktrees searched are those in which any agent of the session, or of a session it continues, has written Yard Log, as `~/.yard/` records them."
+      - key: 01a18a50-2ff6-715f-af9c-7081c74a10f5
+        name: "Where more than one worktree holds a working stage of the agent, its working tree is the one the agent wrote Yard Log in last, or, where the agent wrote in none of them, the one its session wrote in last."
+      - key: 01a18a50-2ff6-715f-af9c-708273219aa2
+        name: "A worktree that no longer exists, or whose Yard Log is closed, is never an agent's working tree."
+      - key: 01a18a50-2ff6-715f-af9c-7083e56d804d
+        name: "An agent with no working stage in any of those worktrees works in its own directory."
+      - key: 01a18a50-2ff6-715f-af9c-7084776776af
+        name: "An agent that ends its working stage in another worktree works in its own directory again with its next call, where it holds no working stage elsewhere."
+      - key: 01a18a50-2ff6-715f-af9c-7085bbce2b7f
+        name: "Each subagent has its own working tree, found from its own working stage, with its own directory as the fallback."
+  - key: 01a18a68-6812-7158-8a5a-72eac342b688
+    statement:
+      form: state_driven
+      while: "a subagent's directory lies in a worktree other than its main agent's"
+      system: "Yard Client"
+      shall: "follow only the subagent's own working stage into another worktree, the stage of a task assigned to it or a stage it opened, and never its main agent's."
+    body: "Only the host knows where it started a subagent. `loft` learns it from the host's own calls: the main agent's directory is the one its latest command or event names, so that a subagent the host started in a worktree of its own is told from one that works in its main agent's directory, with no word from either adapter."
+    criteria:
+      - key: 01a18a68-6812-7158-8a5a-72eb63d428ea
+        name: "The main agent's directory is the one its session's latest command or event without a subagent named, kept in `~/.yard/session-dirs.json`."
+      - key: 01a18a68-6812-7158-8a5a-72ecc9e83cb2
+        name: "A subagent in a worktree of its own with no task and no stage of its own works in its own directory, wherever its main agent works."
+      - key: 01a18a68-6812-7158-8a5a-72ed11154f68
+        name: "A subagent in a worktree of its own that is assigned a task whose stage lies in another worktree works in that worktree."
+      - key: 01a18a68-6812-7158-8a5a-72eeb0edd476
+        name: "A subagent in its main agent's worktree with no task and no stage of its own follows its main agent's working stage into another worktree."
+      - key: 01a18a68-6812-7158-8a5a-72ef9c625698
+        name: "Where its main agent's directory is not known, a subagent is taken to work in its main agent's worktree."
+  - key: 01a18a50-2ff6-715f-af9c-70868b5926d3
+    statement:
+      form: event_driven
+      when: "a `loft yard` command acts for an agent and is given no `--tree`"
+      system: "the command"
+      shall: "act on Yard Log of the agent's working tree."
+    criteria:
+      - key: 01a18a50-2ff6-715f-af9c-708730020ed1
+        name: "`read`, `write`, `wait`, `withdraw`, `answer` and `task` act on the agent's working tree, whichever directory they run in."
+      - key: 01a18a50-2ff6-715f-af9c-708893c9a812
+        name: "`close` and `published` act on the worktree of the directory they run in, so that ending the last stage of another worktree never turns a close toward the agent's own branch."
+      - key: 01a18a50-2ff6-715f-af9c-70898b7122dd
+        name: "A command run without `--session` acts on the worktree of the directory it runs in."
+      - key: 01a18a50-2ff6-715f-af9c-708a77afde06
+        name: "The result names the tree and the branch the command acted on."
+      - key: 01a18a50-2ff6-715f-af9c-708bf1e252b5
+        name: "The briefing of `read --context` describes Yard Log of the agent's working tree, and names that tree."
+      - key: 01a18a50-2ff6-715f-af9c-708c4fce0730
+        name: "A Codex hook's task mirror and a Claude command hook's briefing reach the agent's working tree through the commands they run."
+  - key: 01a18a50-2ff6-715f-af9c-708d00b6cf38
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command that acts on a branch's Yard Log"
+      shall: "take `--tree <directory>`, and act on Yard Log of the worktree that holds that directory in place of any other."
+    criteria:
+      - key: 01a18a50-2ff6-715f-af9c-708e88fcaf5a
+        name: "`--tree` names a directory of any worktree on the machine, in the repository of the command's directory or another."
+      - key: 01a18a50-2ff6-715f-af9c-708f178c8b1e
+        name: "A command given `--tree` runs as it would run in that directory."
+      - key: 01a18a50-2ff6-715f-af9c-7090b2327403
+        name: "A write given `--tree` opens Yard Log of that worktree's branch where it has none."
+  - key: 01a18a50-2ff6-715f-af9c-70918eb3913e
+    statement:
+      form: unwanted
+      if: "`--tree` names a path that is no directory, or a directory in no git repository"
+      system: "the command"
+      shall: "refuse, naming the path."
+    criteria:
+      - key: 01a18a50-2ff6-715f-af9c-7092ac5d7ba0
+        name: "No file is written."
+  - key: 01a18a50-2ff6-715f-af9c-7093e5e391b0
+    statement:
+      form: event_driven
+      when: "a command that names a submission acts for an agent whose working tree's Yard Log does not hold that submission"
+      system: "the command"
+      shall: "act on Yard Log of the worktree, among those the agent's session has written Yard Log in, that holds the submission."
+    body: "A wait outlasts the turn that sent the submission, and the agent's working stage can end in the meantime. The submission stays where it was sent."
+    criteria:
+      - key: 01a18a50-2ff6-715f-af9c-70941b7a7e4e
+        name: "An answer given in the dialog is recorded in Yard Log the question was sent to, even where the agent's working tree changed after it was sent."
+      - key: 01a18a50-2ff6-715f-af9c-70957bb508fe
+        name: "A wait on a submission sent to another worktree's Yard Log returns the person's answers from that Yard Log."
+      - key: 01a18a50-2ff6-715f-af9c-70961ae5bf08
+        name: "A submission that none of those worktrees holds is refused as unknown."
+  - key: 01a18a50-2ff6-715f-af9c-7097787a00c9
+    statement:
+      form: event_driven
+      when: "a `loft yard` command acting for an agent writes Yard Log"
+      system: "the command"
+      shall: "record in `~/.yard/` the worktree it wrote in, for the agent and its session, with the time of the write."
+    criteria:
+      - key: 01a18a50-2ff6-715f-af9c-7098c2b36d15
+        name: "A command that reads Yard Log and writes none records nothing."
+      - key: 01a18a50-2ff6-715f-af9c-70998c117d45
+        name: "A worktree that no longer exists is dropped from the record."

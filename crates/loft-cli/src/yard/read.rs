@@ -20,6 +20,7 @@ use super::briefing::{Where, briefing};
 use super::caller::{Caller, Continuations, LastRead};
 use super::failure::{self, Failure};
 use super::render_log::{Selection, closed_by, root, stages, submissions};
+use super::working_tree::{Follows, target};
 use crate::cli::Output;
 use crate::finish::Finished;
 
@@ -83,26 +84,15 @@ pub fn briefing_of(dir: &Path, agent: Runner, port: u16) -> Result<Value, Failur
 pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     let caller = Caller::new(&args.agent);
     let git = YardGit::default();
-    let place = Place::locate(&git, dir)?;
+    let dir = target(
+        dir,
+        args.agent.tree.as_deref(),
+        caller.agent.as_ref(),
+        Follows::Work,
+    )?;
+    let place = Place::locate(&git, &dir)?;
     if place.branch.is_none() {
-        let mut fields = detached(&place, args.beyond.port);
-        if args.details.submissions {
-            fields["sent"] = json!([]);
-            fields["ownLastRead"] = Value::Null;
-        }
-        fields["ignored"] = json!(git.ignores_yard(&place.tree)?);
-        if args.context {
-            let at = Where {
-                branch: None,
-                page: None,
-                ignored: fields["ignored"] == true,
-                closed: false,
-                since: 0,
-            };
-            let continuations = Continuations::read(None)?;
-            fields["context"] = briefing(None, caller.agent(), &continuations, &at);
-        }
-        return Ok(fields);
+        return detached_document(&git, &place, &args, &caller);
     }
     let branch = Branch::at(git, place, args.beyond)?;
     let home = Home::from_env();
@@ -145,6 +135,7 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
     }
     if args.context {
         let at = Where {
+            tree: fields["tree"].as_str().unwrap_or_default(),
             branch: fields["branch"].as_str(),
             page: fields["page"]["url"].as_str(),
             ignored: fields["ignored"] == true,
@@ -154,6 +145,35 @@ pub fn document(dir: &Path, args: ReadArgs) -> Result<Value, Failure> {
             since: before.unwrap_or(0),
         };
         fields["context"] = briefing(briefed.as_ref(), caller.agent(), &continuations, &at);
+    }
+    Ok(fields)
+}
+
+/// What a read gives on a detached HEAD, with no Yard Log to read.
+fn detached_document(
+    git: &YardGit,
+    place: &Place,
+    args: &ReadArgs,
+    caller: &Caller,
+) -> Result<Value, Failure> {
+    let mut fields = detached(place, args.beyond.port);
+    if args.details.submissions {
+        fields["sent"] = json!([]);
+        fields["ownLastRead"] = Value::Null;
+    }
+    fields["ignored"] = json!(git.ignores_yard(&place.tree)?);
+    if args.context {
+        let tree = place.tree.display().to_string();
+        let at = Where {
+            tree: &tree,
+            branch: None,
+            page: None,
+            ignored: fields["ignored"] == true,
+            closed: false,
+            since: 0,
+        };
+        let continuations = Continuations::read(None)?;
+        fields["context"] = briefing(None, caller.agent(), &continuations, &at);
     }
     Ok(fields)
 }

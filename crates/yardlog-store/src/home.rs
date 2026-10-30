@@ -1,9 +1,10 @@
 //! What belongs to the machine and not to a branch, in `~/.yard/` in the person's home
 //! directory: the running page server, the trees it serves, when each session was last heard,
-//! the revision each agent last read, the sessions that continue others, the control token, and
-//! each session's events. Each file is written whole to a temporary file beside it and renamed
-//! into place, so a reader never meets one half written; a change that reads a file and writes
-//! it back holds the directory's lock while it does.
+//! the revision each agent last read, the sessions that continue others, the worktrees each
+//! session wrote Yard Log in, the directory of each session's main agent, the control token, and each session's events. Each file is written
+//! whole to a temporary file beside it and renamed into place, so a reader never meets one half
+//! written; a change that reads a file and writes it back holds the directory's lock while it
+//! does.
 
 use std::fs::{self, OpenOptions};
 use std::io::{self, Write};
@@ -30,6 +31,10 @@ pub enum HomeFile {
     LastRead,
     /// The sessions that continue others.
     Continuations,
+    /// The worktrees each session wrote Yard Log in.
+    SessionTrees,
+    /// The directory each session's main agent last named.
+    SessionDirs,
     /// The page server's control token, readable only by the person's own account.
     Token,
     /// A newer page server's request that the running one stop.
@@ -45,6 +50,8 @@ impl HomeFile {
             Self::Sessions => "sessions.json",
             Self::LastRead => "last-read.json",
             Self::Continuations => "continuations.json",
+            Self::SessionTrees => "session-trees.json",
+            Self::SessionDirs => "session-dirs.json",
             Self::Token => "token",
             Self::Stop => "stop.json",
         }

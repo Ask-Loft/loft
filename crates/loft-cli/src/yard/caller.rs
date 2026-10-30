@@ -70,6 +70,16 @@ impl Identity {
         self.subagent.is_some()
     }
 
+    /// The key of the session the agent counts as: the first of its chain.
+    pub fn session_key(&self) -> String {
+        session_key(&self.host, &self.session)
+    }
+
+    /// The agent within its session: its subagent id, or `main` for the session's main agent.
+    pub fn within(&self) -> &str {
+        self.subagent.as_deref().unwrap_or("main")
+    }
+
     /// The name under which the revision this agent last read is kept.
     fn reader(&self) -> String {
         match &self.subagent {

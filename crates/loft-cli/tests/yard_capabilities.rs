@@ -6,6 +6,10 @@ use crate::served::Served;
 use crate::yard::{ASK, Yard};
 use crate::yard_serve_events::{event, post, session_file};
 
+/// A stage planned, not active: Yard Log open, with no working stage of the session's agents.
+const PLANNED: &str =
+    r#"[{"id": "later", "kind": "stage", "title": "Later", "status": "planned"}]"#;
+
 fn descriptor(usage: &[&str]) -> Value {
     json!({"format":"yard-adapter/1", "version":"1.0.0", "capabilities": {
         "events":["turn.start", "turn.end", "request"], "usage":usage,
@@ -131,9 +135,10 @@ fn kept_version(yard: &Yard, session: &str) -> Option<String> {
 #[test]
 fn an_event_without_a_descriptor_is_kept_under_the_last_descriptor_its_session_posted() {
     let yard = Yard::new();
-    yard.write("s1", ASK, &[]);
+    // A stage of each tree planned, not active, so that each event is kept in the tree it names.
+    yard.write("s1", PLANNED, &[]);
     let other = Yard::new();
-    other.write("s1", ASK, &[]);
+    other.write("s1", PLANNED, &[]);
     let served = Served::start(&yard, &[]);
     let sent = post(
         &served,
@@ -154,9 +159,10 @@ fn an_event_without_a_descriptor_is_kept_under_the_last_descriptor_its_session_p
 #[test]
 fn replaying_a_session_after_a_restart_applies_each_descriptor_to_the_events_after_it() {
     let yard = Yard::new();
-    yard.write("s1", ASK, &[]);
+    // A stage of each tree planned, not active, so that each event is kept in the tree it names.
+    yard.write("s1", PLANNED, &[]);
     let other = Yard::new();
-    other.write("s1", ASK, &[]);
+    other.write("s1", PLANNED, &[]);
     let served = Served::start(&yard, &[]);
     post(
         &served,

@@ -1,0 +1,105 @@
+key: 01a18a50-2ff6-715f-af9c-706b9aa45d5a
+slug: an-agent-s-work-follows-its-working-stage-into-another-worktree
+title: "An agent's work follows its working stage into another worktree"
+context: "An agent is often asked to work in a worktree other than its own directory, in another repository even, and its host cannot always move it there: a host may move a session only within its own repository. Addressed by its own directory alone, the agent's questions, plans, tasks and token totals are recorded in Yard Log of the branch it started on, and the branch its work is on gets none of them."
+state:
+  kind: accepted
+  selectedOption: 01a18a50-2ff6-715f-af9c-706f1b952127
+  outcome: "Each agent has one working tree, the worktree whose Yard Log holds its working stage, else its own directory; `loft yard` resolves it for every command that acts for the agent, the page server files each event by it, and every command and tool can name another tree explicitly."
+drivers:
+  - key: 01a18a50-2ff6-715f-af9c-706c6b1d9606
+    kind: local
+    label: "Right Yard Log"
+    statement: "The branch the work is on records its plan, questions, tasks and cost, and the branch the agent started on records none of them."
+  - key: 01a18a50-2ff6-715f-af9c-706dd5659d3b
+    kind: local
+    label: "Nothing to remember"
+    statement: "The agent takes no extra step that, forgotten, records the work in the wrong Yard Log without a word."
+  - key: 01a18a50-2ff6-715f-af9c-706e8c1f5242
+    kind: local
+    label: "Every host alike"
+    statement: "Claude Code and Codex follow the work in the same way."
+options:
+  - key: 01a18a50-2ff6-715f-af9c-706f1b952127
+    title: "Follow the working stage"
+    description: "The working tree is the worktree holding the agent's working stage, found by `loft` across the worktrees its session wrote in; an optional tree on each tool and command opens the first stage there."
+  - key: 01a18a50-2ff6-715f-af9c-70704818093d
+    title: "An explicit focus"
+    description: "A tool sets the agent's working tree, which holds until the agent sets another."
+  - key: 01a18a50-2ff6-715f-af9c-7071faf6c691
+    title: "Only a tree argument"
+    description: "Each tool and command can name another tree; the host's captures and events stay with the agent's directory."
+  - key: 01a18a50-2ff6-715f-af9c-70729292560f
+    title: "A session per worktree"
+    description: "Work in another worktree is done in a session started there; nothing changes in Yard Client."
+assessments:
+  - option: 01a18a50-2ff6-715f-af9c-706f1b952127
+    driver: 01a18a50-2ff6-715f-af9c-706c6b1d9606
+    rating: supports
+    rationale: "captures and events go where the working stage is"
+  - option: 01a18a50-2ff6-715f-af9c-706f1b952127
+    driver: 01a18a50-2ff6-715f-af9c-706dd5659d3b
+    rating: supports
+    rationale: "opening a stage, which the agent does anyway, moves the work"
+  - option: 01a18a50-2ff6-715f-af9c-706f1b952127
+    driver: 01a18a50-2ff6-715f-af9c-706e8c1f5242
+    rating: supports
+    rationale: "`loft` resolves it for every adapter"
+  - option: 01a18a50-2ff6-715f-af9c-70704818093d
+    driver: 01a18a50-2ff6-715f-af9c-706c6b1d9606
+    rating: supports
+    rationale: "captures and events go to the focus"
+  - option: 01a18a50-2ff6-715f-af9c-70704818093d
+    driver: 01a18a50-2ff6-715f-af9c-706dd5659d3b
+    rating: conflicts
+    rationale: "a forgotten focus records the work in the old Yard Log silently"
+  - option: 01a18a50-2ff6-715f-af9c-70704818093d
+    driver: 01a18a50-2ff6-715f-af9c-706e8c1f5242
+    rating: neutral
+    rationale: "each host needs the focus tool"
+  - option: 01a18a50-2ff6-715f-af9c-7071faf6c691
+    driver: 01a18a50-2ff6-715f-af9c-706c6b1d9606
+    rating: conflicts
+    rationale: "questions, plans, tasks and tokens stay with the starting branch"
+  - option: 01a18a50-2ff6-715f-af9c-7071faf6c691
+    driver: 01a18a50-2ff6-715f-af9c-706dd5659d3b
+    rating: conflicts
+    rationale: "every call must name the tree"
+  - option: 01a18a50-2ff6-715f-af9c-7071faf6c691
+    driver: 01a18a50-2ff6-715f-af9c-706e8c1f5242
+    rating: supports
+    rationale: "the commands take it for every host"
+  - option: 01a18a50-2ff6-715f-af9c-70729292560f
+    driver: 01a18a50-2ff6-715f-af9c-706c6b1d9606
+    rating: supports
+    rationale: "the session's own directory is the right one"
+  - option: 01a18a50-2ff6-715f-af9c-70729292560f
+    driver: 01a18a50-2ff6-715f-af9c-706dd5659d3b
+    rating: conflicts
+    rationale: "a session that crosses anyway records the work in the wrong Yard Log"
+  - option: 01a18a50-2ff6-715f-af9c-70729292560f
+    driver: 01a18a50-2ff6-715f-af9c-706e8c1f5242
+    rating: supports
+    rationale: "nothing is particular to a host"
+consequences:
+  - key: 01a18a50-2ff6-715f-af9c-707312b95ecd
+    kind: obligation
+    statement: "`~/.yard/` records the worktrees each session wrote Yard Log in, so that `loft` and the page server can find an agent's working stage in them."
+  - key: 01a18a50-2ff6-715f-af9c-7074676be863
+    kind: benefit
+    statement: "The turns, requests and tokens of work in another worktree count against the branch that work is on."
+  - key: 01a18a50-2ff6-715f-af9c-707572d19874
+    kind: risk
+    statement: "An agent that leaves a stage active in another worktree goes on recording there until it ends that stage."
+  - key: 01a18a50-2ff6-715f-af9c-7076630838a7
+    kind: cost
+    statement: "`close` and `published` stay with the directory they run in, so the agent names the tree to close another worktree's Yard Log."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: affected
+    node: 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71a7729da1ec
+  - role: outcome
+    node: 01a18a50-2ff6-715f-af9c-707de180a6b5

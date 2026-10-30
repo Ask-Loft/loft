@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 import { capture } from '../hooks/adapter/capture'
-import { deferred, readDoc, SESSION, stage, start, world } from './yard-world'
+import { deferred, flagOf, readDoc, SESSION, stage, start, world } from './yard-world'
 
 const questions = [{ question: 'Proceed?', header: 'Next', multiSelect: false, options: [{ label: 'Yes', description: '' }, { label: 'No', description: '' }] }]
 const created = { result: { task: { id: '3' } }, text: 'native result' }
@@ -41,6 +41,18 @@ test('task creation keeps the stage selected before its native tool runs', async
   await w.clock.settle()
   expect(writes(w)[0]![0]!.stage).toBe('before')
   expect(ran.text).toBe('native result')
+})
+
+test('a task whose briefing went to another worktree is mirrored into its stage there', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ tree: '/work/press', stages: [stage('there', 'active', { session: SESSION })] })
+  w.state.terminal.TaskCreate = () => created
+  await start($)
+  await $.tool.call({ tool: 'TaskCreate', subject: 'Task', description: '' } as never)
+  await w.clock.settle()
+  const mirrored = w.state.runs.filter(run => run.argv.includes('write')).at(-1)!
+  expect(flagOf(mirrored.argv, '--tree')).toBe('/work/press')
+  expect(writes(w).at(-1)![0]!.stage).toBe('there')
 })
 
 test('a native task still runs when preparation or mirroring fails and the next capture can run', async ($, on) => {

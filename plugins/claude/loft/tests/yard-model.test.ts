@@ -227,12 +227,12 @@ test('a subcommand is never taken from quoted text, a heredoc, or a word that is
 test("each of Yard's six tools has a JSON schema of its input", () => {
   expect(TOOL_NAMES).toEqual(['yard_read', 'yard_write', 'yard_wait', 'yard_withdraw', 'yard_close', 'yard_published'])
   const schema = (name: (typeof TOOL_NAMES)[number]) => specOf(name).inputSchema as { properties: object; required: string[] }
-  expect(Object.keys(schema('yard_read').properties)).toEqual(['since', 'reports'])
-  expect(Object.keys(schema('yard_write').properties)).toEqual(['batch', 'basedOn', 'send'])
+  expect(Object.keys(schema('yard_read').properties)).toEqual(['since', 'reports', 'tree'])
+  expect(Object.keys(schema('yard_write').properties)).toEqual(['batch', 'basedOn', 'send', 'tree'])
   expect(schema('yard_wait').required).toEqual(['submission'])
   expect(schema('yard_withdraw').required).toEqual(['submission'])
-  expect(Object.keys(schema('yard_close').properties)).toEqual([])
-  expect(Object.keys(schema('yard_published').properties)).toEqual(['branch', 'note'])
+  expect(Object.keys(schema('yard_close').properties)).toEqual(['tree'])
+  expect(Object.keys(schema('yard_published').properties)).toEqual(['branch', 'note', 'tree'])
 })
 
 test('an input that does not match its schema names the field at fault', () => {

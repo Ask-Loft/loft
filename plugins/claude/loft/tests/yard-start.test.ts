@@ -350,3 +350,25 @@ test('with Yard Client off, the notice asks loftCommand alone for its version', 
   ])
   for (const run of w.state.runs) expect(run.env).toEqual({ LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' })
 })
+
+test('a tool given a tree runs its command with --tree naming it, and a tool given none names no tree', async ($, on) => {
+  const w = world(on)
+  await start($)
+  const calls: [string, Record<string, unknown>][] = [
+    ['mcp__loft__yard_read', {}],
+    ['mcp__loft__yard_write', { batch: [{ id: 'there', kind: 'stage', title: 'There', status: 'active' }] }],
+    ['mcp__loft__yard_withdraw', { submission: 'sub-7' }],
+    ['mcp__loft__yard_close', {}],
+    ['mcp__loft__yard_published', { branch: 'feat/shelf' }],
+  ]
+  for (const [tool, input] of calls) {
+    await $.tool.call({ tool, ...input, tree: '/work/press' } as never)
+    const named = w.state.runs.at(-1)!
+    expect(flagOf(named.argv, '--tree')).toBe('/work/press')
+    expect(named.cwd).toBe(TREE)
+    await $.tool.call({ tool, ...input } as never)
+    expect(w.state.runs.at(-1)!.argv).not.toContain('--tree')
+  }
+  const schemas = w.state.tools.map(each => each.inputSchema as { properties: Record<string, { type: string }> })
+  for (const schema of schemas) expect(schema.properties.tree?.type).toBe('string')
+})

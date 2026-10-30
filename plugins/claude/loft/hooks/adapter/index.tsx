@@ -91,7 +91,8 @@ async function callTool($: EngineInterface, name: ToolName, e: Record<string, un
   const agentId = typeof e.agentId === 'string' ? e.agentId : undefined
   const prepared = capture(agentId, signal, async () => {
     const cwd = await $.session.cwd()
-    const caller = await callerOf($, agentId)
+    const named = typeof checked.args.tree === 'string' ? { tree: checked.args.tree } : {}
+    const caller = { ...(await callerOf($, agentId)), ...named }
     checkCapture(signal)
     if (name === 'yard_wait') return { kind: 'wait' as const, cwd, caller }
     const command = commandOf(name, checked.args, caller)

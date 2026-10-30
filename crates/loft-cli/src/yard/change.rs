@@ -12,6 +12,7 @@ use super::args::{Beyond, Writer};
 use super::branch::{self, Branch, Unapplied};
 use super::caller::Caller;
 use super::failure::{self, Failure};
+use super::working_tree::{Follows, target, wrote};
 
 /// Applies `change` to the branch's Yard Log for the calling agent at the time the clock gives,
 /// and gives the result's fields at the revision it returns.
@@ -19,10 +20,13 @@ pub fn apply(
     dir: &Path,
     writer: Writer,
     beyond: Beyond,
+    follows: Follows,
     change: impl FnOnce(&mut YardLog, Agent, Time) -> Result<u64, Refused>,
 ) -> Result<Value, Failure> {
+    let named = writer.tree.clone();
     let caller = Caller::new(&writer.into());
-    let branch = Branch::locate(dir, beyond)?;
+    let dir = target(dir, named.as_deref(), caller.agent.as_ref(), follows)?;
+    let branch = Branch::locate(&dir, beyond)?;
     let at = super::now()?;
     let agent = caller.agent().clone();
     let settler = agent.clone();
@@ -35,7 +39,10 @@ pub fn apply(
         Ok((log, revision))
     })?;
     match applied {
-        Ok(revision) => Ok(branch.fields(revision)),
+        Ok(revision) => {
+            wrote(caller.agent(), &branch.place().tree, at);
+            Ok(branch.fields(revision))
+        }
         Err(error) => Err(branch.refused(&branch.store.read()?, vec![error])),
     }
 }

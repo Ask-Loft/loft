@@ -84,6 +84,7 @@ impl Hook {
             session: Some(self.session.clone()),
             agent,
             agent_type,
+            tree: None,
         }
     }
 

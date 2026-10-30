@@ -18,6 +18,7 @@ use super::branch::{Branch, Unapplied};
 use super::caller::Caller;
 use super::failure::{self, Failure};
 use super::views::Views;
+use super::working_tree::{Follows, target};
 use crate::finish::Finished;
 
 const SCHEMA: &str = "loft-yard-published/1";
@@ -36,9 +37,17 @@ pub fn run(root: &Path, args: PublishedArgs) -> Finished {
 }
 
 fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
+    let named_tree = args.writer.tree.clone();
     let caller = Caller::new(&args.writer.into());
     let git = YardGit::default();
-    let place = Place::locate(&git, dir)?;
+    // A publish is recorded from the base branch's worktree: it never follows the agent's work.
+    let dir = target(
+        dir,
+        named_tree.as_deref(),
+        caller.agent.as_ref(),
+        Follows::Directory,
+    )?;
+    let place = Place::locate(&git, &dir)?;
     let at = super::now()?;
     let on = place.branch()?.to_owned();
     let named = args.branch;
@@ -71,7 +80,7 @@ fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
         return Err(refused(&branch, &Held::Absent, error));
     }
     let views = Views {
-        tree: dir,
+        tree: &dir,
         base: &base,
         at,
     };

@@ -27,6 +27,7 @@ use crate::yard::event::{Event, Who};
 use crate::yard::event_ids::Receipts;
 use crate::yard::session_files;
 use crate::yard::totals;
+use crate::yard::working_tree;
 
 /// What one session keeps in one branch's Yard Log.
 #[derive(Default)]
@@ -95,9 +96,10 @@ enum Named<'a> {
 }
 
 impl<'a> StageQuery<'a> {
-    fn of(event: &'a Event) -> Self {
+    /// The query of `event`, whose agent's working tree is the directory `dir`.
+    fn of(event: &'a Event, dir: &'a str) -> Self {
         Self {
-            dir: &event.dir,
+            dir,
             host: &event.host,
             session: &event.session,
             who: &event.who,
@@ -146,23 +148,50 @@ fn open_at(dir: &str) -> Option<(YardStore, YardLog)> {
     (!log.is_closed()).then_some((store, *log))
 }
 
-/// Where each of `events` is kept, where its agent's branch has its Yard Log open: `open` finds
-/// and reads that Yard Log once for each directory the batch names, however many events name it.
+/// The directory of the working tree of `event`'s agent: the worktree its session wrote in
+/// whose Yard Log holds its working stage, else the directory the event names.
+fn working_dir(home: &Home, event: &Event) -> String {
+    let agent = agent_of(&event.host, &event.session, &event.who);
+    let dir = Path::new(&event.dir);
+    working_tree::resolve(Some(home), &agent, dir)
+        .map_or_else(|_| event.dir.clone(), |tree| tree.display().to_string())
+}
+
+/// A tree's Yard Log, with its open submissions, as a batch opens it.
+type Opened = Option<(YardStore, YardLog, Vec<String>)>;
+
+/// Where each of `events` is kept, where its agent's working tree has its Yard Log open:
+/// `working` finds that tree once for each agent and directory the batch names, and `open`
+/// finds and reads its Yard Log once for each tree, however many events name it.
 fn arrivals(
     events: &[Event],
+    mut working: impl FnMut(&Event) -> String,
     mut open: impl FnMut(&str) -> Option<(YardStore, YardLog)>,
 ) -> Vec<Option<Arrival>> {
-    // Each directory's Yard Log, with its open submissions, worked out once for the batch.
-    type Opened = Option<(YardStore, YardLog, Vec<String>)>;
+    let mut trees: HashMap<(&str, &str, &str, &Who), String> = HashMap::new();
+    let dirs: Vec<String> = events
+        .iter()
+        .map(|event| {
+            let agent = (
+                event.dir.as_str(),
+                event.host.as_str(),
+                event.session.as_str(),
+                &event.who,
+            );
+            trees.entry(agent).or_insert_with(|| working(event)).clone()
+        })
+        .collect();
+    // Each tree's Yard Log, with its open submissions, worked out once for the batch.
     let mut opened: HashMap<&str, Opened> = HashMap::new();
     let mut stages: HashMap<StageQuery, Option<String>> = HashMap::new();
     events
         .iter()
-        .map(|event| {
+        .zip(&dirs)
+        .map(|(event, dir)| {
             let (store, log, submissions) = opened
-                .entry(event.dir.as_str())
+                .entry(dir.as_str())
                 .or_insert_with(|| {
-                    let (store, log) = open(&event.dir)?;
+                    let (store, log) = open(dir)?;
                     let submissions = log
                         .open_submissions()
                         .iter()
@@ -172,7 +201,7 @@ fn arrivals(
                 })
                 .as_ref()?;
             let stage = stages
-                .entry(StageQuery::of(event))
+                .entry(StageQuery::of(event, dir))
                 .or_insert_with_key(|query| query.stage(log));
             Some(Arrival {
                 stage: stage.clone(),
@@ -269,9 +298,10 @@ impl Sessions {
         }
         let (indices, events): (Vec<usize>, Vec<Event>) = read.into_iter().unzip();
         hear(home, &events);
+        note_main_dirs(home, &events);
         // git and Yard Log are read before the sessions are locked, so that one session's batch
         // does not hold another's posts while it reads them.
-        let arrived = arrivals(&events, open_at);
+        let arrived = arrivals(&events, |event| working_dir(home, event), open_at);
         // Each session's file a batch changes is written once, as the batch leaves it.
         let mut changed: BTreeMap<PathBuf, Changed> = BTreeMap::new();
         let mut kept = self
@@ -409,30 +439,22 @@ fn hear(home: &Home, events: &[Event]) {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use serde_json::json;
-
-    use super::{Event, arrivals};
-
-    #[test]
-    fn a_batch_opens_the_yard_log_of_each_directory_it_names_once() {
-        let events: Vec<Event> = (0..1000)
-            .map(|n| {
-                let dir = if n % 2 == 0 { "/work/a" } else { "/work/b" };
-                let posted = json!({
-                    "session": "s1", "dir": dir, "at": "2026-10-22T09:30:00Z", "kind": "turn.start"
-                });
-                Event::read(&posted).unwrap()
-            })
-            .collect();
-        let mut opened = Vec::new();
-        let found = arrivals(&events, |dir| {
-            opened.push(dir.to_owned());
-            None
-        });
-        assert_eq!(found.len(), 1000);
-        opened.sort();
-        assert_eq!(opened, ["/work/a", "/work/b"]);
+/// Records, for each session whose main agent `events` name, the directory of its last event
+/// there, before the batch finds its agents' working trees, so that its subagents are compared
+/// with where the main agent is now.
+fn note_main_dirs(home: &Home, events: &[Event]) {
+    let mut last: HashMap<(&str, &str), &str> = HashMap::new();
+    for event in events.iter().filter(|event| matches!(event.who, Who::Main)) {
+        last.insert(
+            (event.host.as_str(), event.session.as_str()),
+            event.dir.as_str(),
+        );
+    }
+    for ((host, session), dir) in last {
+        // Where the main agent works is a hint for its subagents: a failed write loses no event.
+        let _ = working_tree::note_main_dir(home, &Agent::main_in(host, session), Path::new(dir));
     }
 }
+
+#[cfg(test)]
+mod tests;
