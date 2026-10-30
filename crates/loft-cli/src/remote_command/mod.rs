@@ -7,7 +7,7 @@ mod connect;
 
 use std::path::Path;
 
-use loftspec::codec::{self, Files, SpecPath};
+use loftspec::codec::{self, Files, MANIFEST, SpecPath};
 use loftspec::document::Document;
 use loftspec_store::FileStore;
 use serde_json::{Value, json};
@@ -20,9 +20,6 @@ use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
 const SCHEMA: &str = "loft-remote/1";
-
-/// The manifest, by its path under `spec/`.
-const MANIFEST: &str = "loftspec.yaml";
 
 /// What the command does.
 pub enum Action {
@@ -70,12 +67,11 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
     }
 }
 
-/// The tree's files and the document they hold.
-fn document(root: &Path) -> Result<(FileStore, Files, Document), Stop> {
+/// The tree's store and the document it holds.
+fn document(root: &Path) -> Result<(FileStore, Document), Stop> {
     let store = FileStore::open(root)?;
-    let files = store.read_files()?;
-    let document = codec::read(&files).map_err(Stop::from)?;
-    Ok((store, files, document))
+    let document = codec::read(&store.read_files()?).map_err(Stop::from)?;
+    Ok((store, document))
 }
 
 /// Writes the manifest of `document` alone, in one journaled save.
@@ -95,7 +91,7 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
     remote::checked(address)?;
     let timeout = remote::timeout()?;
     let wait = remote::seconds(remote::WAIT_ENV)?;
-    let (store, _, mut document) = document(root)?;
+    let (store, mut document) = document(root)?;
     let key = document.id.key().to_string();
     let mut fields = json!({ "documentKey": key, "address": address });
     let mut lines = Vec::new();
@@ -144,7 +140,7 @@ fn signed_in(address: &str, browser: bool, timeout: std::time::Duration) -> Resu
         Err(RemoteError::NoSignIn { .. } | RemoteError::Lapsed { .. }) => {
             let sign_in = signin::sign_in(address, browser, timeout)?;
             let token = sign_in.access_token.clone();
-            signins::save(address, sign_in)?;
+            signins::save(address, &sign_in)?;
             Ok(token)
         }
         Err(error) => Err(error.into()),
@@ -153,7 +149,7 @@ fn signed_in(address: &str, browser: bool, timeout: std::time::Duration) -> Resu
 
 /// `loft remote login`: a new sign-in to the remote the manifest names.
 fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
-    let (_, _, document) = document(root)?;
+    let (_, document) = document(root)?;
     let key = document.id.key().to_string();
     let address = document.remote.clone().ok_or_else(|| {
         Stop::one(
@@ -167,7 +163,7 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
     remote::checked(&address)?;
     let timeout = remote::timeout()?;
     let sign_in = signin::sign_in(&address, browser, timeout)?;
-    signins::save(&address, sign_in)?;
+    signins::save(&address, &sign_in)?;
     Ok(Report {
         outcome: "signed in",
         fields: json!({ "documentKey": key, "address": address }),
@@ -177,7 +173,7 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
 
 /// `loft remote remove`: disconnects the document and forgets the sign-in to its remote.
 fn remove(root: &Path) -> Result<Report, Stop> {
-    let (store, _, mut document) = document(root)?;
+    let (store, mut document) = document(root)?;
     let key = document.id.key().to_string();
     if !document.connected && document.remote.is_none() {
         return Ok(Report {
@@ -188,14 +184,12 @@ fn remove(root: &Path) -> Result<Report, Stop> {
     }
     let address = document.remote.take();
     document.connected = false;
-    write_manifest(&store, &document)?;
-    if let Some(address) = &address {
-        signins::forget(address)?;
-    }
     let mut fields = json!({ "documentKey": key });
     if let Some(address) = &address {
+        signins::forget(address)?;
         fields["address"] = json!(address);
     }
+    write_manifest(&store, &document)?;
     Ok(Report {
         outcome: "removed",
         fields,

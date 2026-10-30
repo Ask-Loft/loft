@@ -8,6 +8,8 @@ use std::io::{self, Read, Write};
 
 use serde_json::Value;
 
+use crate::percent::{decode, parameters};
+
 /// The most a request's line and headers may take.
 const HEAD_LIMIT: usize = 64 * 1024;
 /// The most a request's body may take: a mod's batch of kept events fits well within it.
@@ -131,49 +133,6 @@ fn request(parsed: &httparse::Request<'_, '_>) -> Result<Request, String> {
     })
 }
 
-fn parameters(query: &str) -> Vec<(String, String)> {
-    query
-        .split('&')
-        .filter(|pair| !pair.is_empty())
-        .map(|pair| {
-            let (name, value) = pair.split_once('=').unwrap_or((pair, ""));
-            (decode(name), decode(value))
-        })
-        .collect()
-}
-
-/// `text` with each `%XX` turned back into its byte and each `+` into a space.
-fn decode(text: &str) -> String {
-    let bytes = text.as_bytes();
-    let mut decoded = Vec::with_capacity(bytes.len());
-    let mut at = 0;
-    while at < bytes.len() {
-        match bytes[at] {
-            b'%' if at + 2 < bytes.len() => {
-                if let (Some(high), Some(low)) = (hex(bytes[at + 1]), hex(bytes[at + 2])) {
-                    decoded.push(high * 16 + low);
-                    at += 3;
-                    continue;
-                }
-                decoded.push(b'%');
-            }
-            b'+' => decoded.push(b' '),
-            byte => decoded.push(byte),
-        }
-        at += 1;
-    }
-    String::from_utf8_lossy(&decoded).into_owned()
-}
-
-const fn hex(digit: u8) -> Option<u8> {
-    match digit {
-        b'0'..=b'9' => Some(digit - b'0'),
-        b'a'..=b'f' => Some(digit - b'a' + 10),
-        b'A'..=b'F' => Some(digit - b'A' + 10),
-        _ => None,
-    }
-}
-
 /// A response: its status, its type and its body, with any further headers.
 #[derive(Debug)]
 pub struct Response {
@@ -285,18 +244,4 @@ pub fn write_event_stream_head(stream: &mut impl Write) -> io::Result<()> {
         b"HTTP/1.1 200 OK\r\ncontent-type: text/event-stream\r\ncache-control: no-cache\r\nconnection: keep-alive\r\nx-content-type-options: nosniff\r\n\r\n",
     )?;
     stream.flush()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::decode;
-
-    #[test]
-    fn a_percent_encoded_path_reads_back_as_written() {
-        assert_eq!(decode("%2FUsers%2Fada%20b"), "/Users/ada b");
-        assert_eq!(decode("feat%2Fshelf"), "feat/shelf");
-        assert_eq!(decode("a+b"), "a b");
-        assert_eq!(decode("100%"), "100%");
-        assert_eq!(decode("%zz"), "%zz");
-    }
 }

@@ -7,13 +7,14 @@ use std::process::Stdio;
 
 use loftspec::codec::Files;
 use serde_json::{Value, json};
+use software_plant::BrowserScenario;
+use software_plant::remote::wire::{pairs, value};
 use software_plant::remote::{Remote, RemoteScenario};
-use software_plant::{BrowserScenario, Clock};
 
 use crate::common::signed_in::{
-    document, granted, keep, name_remote, run, sign_ins, sign_ins_file,
+    self, document, granted, keep, name_remote, run, sign_ins, sign_ins_file,
 };
-use crate::common::{EPOCH, Scratch, tree};
+use crate::common::{Scratch, tree};
 
 /// A connected Reading List whose manifest names `remote`.
 fn connected(remote: &Remote) -> Scratch {
@@ -25,10 +26,7 @@ fn connected(remote: &Remote) -> Scratch {
 /// The value of `name` in the query of `url`.
 fn query(url: &str, name: &str) -> Option<String> {
     let (_, query) = url.split_once('?')?;
-    query.split('&').find_map(|pair| {
-        let (field, value) = pair.split_once('=')?;
-        (field == name).then(|| value.replace("%3A", ":").replace("%2F", "/"))
-    })
+    value(&pairs(query), name).map(str::to_owned)
 }
 
 /// Every token the remote's authorization server issued in `sign_in`.
@@ -193,13 +191,13 @@ fn login_replaces_the_sign_in_for_its_address_and_keeps_every_other() {
         "refreshToken": "f" });
     keep(
         &scratch,
-        &json!({ remote.address(): old, "https://other.example/doc": other }),
+        &json!({
+            remote.address(): old,
+            "https://other.example/doc": other,
+            "https://newer.example/doc": { "accessToken": "a", "kept": "by a later loft" },
+        }),
     );
-    let mut command = scratch.command(None, &Clock::fixed(EPOCH));
-    let dir = scratch.plant().join("browser");
-    std::fs::create_dir_all(&dir).unwrap();
-    let browser = BrowserScenario::Visiting.install(&dir);
-    browser.apply(&mut command);
+    let (mut command, browser) = signed_in::command(&scratch, BrowserScenario::Visiting, None);
     // Neither variable changes what a sign-in does.
     command
         .env("LOFT_REMOTE_ENDPOINT", "http://127.0.0.1:9/elsewhere")
@@ -208,6 +206,11 @@ fn login_replaces_the_sign_in_for_its_address_and_keeps_every_other() {
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     let kept = sign_ins(&scratch);
     assert_eq!(kept["https://other.example/doc"], other);
+    assert_eq!(
+        kept["https://newer.example/doc"],
+        json!({ "accessToken": "a", "kept": "by a later loft" }),
+        "an entry this loft does not read is kept as it was"
+    );
     assert_ne!(kept[remote.address()]["accessToken"], old["accessToken"]);
     assert_eq!(browser.visits().len(), 1);
     let stdout = String::from_utf8_lossy(&output.stdout);
@@ -271,19 +274,17 @@ fn a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address() {
     assert!(!sign_ins_file(&scratch).exists());
 }
 
-/// Runs `loft remote login` with `args`, reads the address it prints, and calls `visit` with
-/// it while `loft` waits; gives its output once it ends.
+/// Runs `loft remote login` with `args`, reads the address it prints and then, where `until`
+/// is given, the line holding it, and calls `visit` with the address while `loft` waits; gives
+/// its output once it ends.
 fn waiting(
     scratch: &Scratch,
     args: &[&str],
     browser: BrowserScenario,
+    until: Option<&str>,
     visit: impl FnOnce(&str),
 ) -> (std::process::Output, Vec<String>) {
-    let dir = scratch.plant().join("browser");
-    std::fs::create_dir_all(&dir).unwrap();
-    let installed = browser.install(&dir);
-    let mut command = scratch.command(None, &Clock::fixed(EPOCH));
-    installed.apply(&mut command);
+    let (mut command, installed) = signed_in::command(scratch, browser, None);
     let mut child = command
         .args(args)
         .stdout(Stdio::piped())
@@ -300,11 +301,24 @@ fn waiting(
             break format!("http{url}");
         }
     };
+    while let Some(until) = until
+        && !printed.contains(until)
+    {
+        assert!(stderr.read_line(&mut printed).unwrap() > 0, "{printed}");
+    }
     visit(&url);
     stderr.read_to_string(&mut printed).unwrap();
     let mut output = child.wait_with_output().unwrap();
     output.stderr = printed.into_bytes();
     (output, installed.visits())
+}
+
+/// Opens `url` as a person does by hand, through a browser of its own.
+fn by_hand(scratch: &Scratch, url: &str) {
+    let dir = scratch.plant().join("by-hand");
+    std::fs::create_dir_all(&dir).unwrap();
+    let _ = BrowserScenario::Visiting.install(&dir);
+    assert_eq!(software_plant::browser::run(&dir, url), 0);
 }
 
 /// A request for `target` on the loopback port of `redirect`, and the status line it answers.
@@ -327,14 +341,12 @@ fn with_no_browser_the_address_is_printed_and_a_wrong_state_does_not_end_the_wai
         &scratch,
         &["remote", "login", "--no-browser"],
         BrowserScenario::Visiting,
+        None,
         |url| {
             let redirect = query(url, "redirect_uri").unwrap();
             assert!(status_of(&redirect, "/elsewhere").contains("404"));
             assert!(status_of(&redirect, "/callback?state=wrong&code=x").contains("400"));
-            let dir = scratch.plant().join("by-hand");
-            std::fs::create_dir_all(&dir).unwrap();
-            let _ = BrowserScenario::Visiting.install(&dir);
-            assert_eq!(software_plant::browser::run(&dir, url), 0);
+            by_hand(&scratch, url);
         },
     );
     assert_eq!(output.status.code(), Some(0), "{output:?}");
@@ -350,14 +362,9 @@ fn a_browser_that_cannot_be_opened_is_reported_and_the_wait_goes_on() {
         &scratch,
         &["remote", "login"],
         BrowserScenario::Absent,
-        |url| {
-            let dir = scratch.plant().join("by-hand");
-            std::fs::create_dir_all(&dir).unwrap();
-            let _ = BrowserScenario::Visiting.install(&dir);
-            // Give loft time to see the browser end before the callback arrives.
-            std::thread::sleep(std::time::Duration::from_millis(300));
-            assert_eq!(software_plant::browser::run(&dir, url), 0);
-        },
+        // The callback arrives only once loft has seen the browser end.
+        Some("No browser could be opened"),
+        |url| by_hand(&scratch, url),
     );
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     let stderr = String::from_utf8_lossy(&output.stderr);

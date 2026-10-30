@@ -42,17 +42,21 @@ const LATER: [&str; 4] = [
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Refusal {
     pub status: u16,
-    /// The problem document's `code`, of the closed set or not.
-    pub code: Option<String>,
     /// The problem document, or `null` for an answer that is not one.
     pub problem: Value,
 }
 
 impl Refusal {
+    /// The problem document's `code`, of the closed set or not.
+    #[must_use]
+    pub fn code(&self) -> Option<&str> {
+        self.problem["code"].as_str()
+    }
+
     /// The code, where it is one of the closed set: the only refusals a command acts on.
     #[must_use]
     pub fn known(&self) -> Option<&str> {
-        self.code.as_deref().filter(|code| CODES.contains(code))
+        self.code().filter(|code| CODES.contains(code))
     }
 
     /// Whether the remote may lift the refusal, so that a person tries again later.
@@ -74,7 +78,6 @@ impl Refusal {
             .unwrap_or(Value::Null);
         Self {
             status: reply.status,
-            code: problem["code"].as_str().map(str::to_owned),
             problem,
         }
     }
@@ -83,7 +86,7 @@ impl Refusal {
 impl fmt::Display for Refusal {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(formatter, "the remote answered {}", self.status)?;
-        if let Some(code) = &self.code {
+        if let Some(code) = self.code() {
             write!(formatter, " with the code `{code}`")?;
         }
         if let Some(detail) = self.detail() {
@@ -122,27 +125,18 @@ impl Client {
         }
     }
 
-    /// The remote's address.
-    #[must_use]
-    pub fn address(&self) -> &str {
-        &self.address
-    }
-
     /// `POST <address>/<path>` of the JSON `body`, its JSON answer.
     ///
     /// # Errors
     ///
     /// The remote cannot be reached, or refuses.
     pub fn post(&self, path: &str, body: &Value) -> Result<Value, RemoteError> {
-        self.json("POST", path, Some(body))
-    }
-
-    fn json(&self, method: &str, path: &str, body: Option<&Value>) -> Result<Value, RemoteError> {
-        let reply = self.call(method, path, body)?;
+        let body = body.to_string().into_bytes();
+        let reply = self.call("POST", path, Some(&body))?;
         let reply = match self.waited(&reply) {
             Some(length) => {
                 SystemClock::from_env().wait(length);
-                self.call(method, path, body)?
+                self.call("POST", path, Some(&body))?
             }
             None => reply,
         };
@@ -177,7 +171,7 @@ impl Client {
         &self,
         method: &str,
         path: &str,
-        body: Option<&Value>,
+        body: Option<&[u8]>,
     ) -> Result<Reply, RemoteError> {
         let url = format!("{}/{path}", self.address);
         network::allowed(&url).ok_or_else(|| RemoteError::Address(url.clone()))?;
@@ -186,11 +180,10 @@ impl Client {
         if let Some(bearer) = &bearer {
             headers.push(("Authorization", bearer));
         }
-        let body = body.map(|body| {
+        if body.is_some() {
             headers.push(("Content-Type", "application/json"));
-            body.to_string().into_bytes()
-        });
-        network::call(method, &url, &headers, body.as_deref(), self.timeout).map_err(|reason| {
+        }
+        network::call(method, &url, &headers, body, self.timeout).map_err(|reason| {
             RemoteError::Unreachable {
                 address: self.address.clone(),
                 reason,
@@ -209,7 +202,7 @@ mod tests {
         Refusal::of(&Reply {
             status,
             retry_after: None,
-            www_authenticate: None,
+            www_authenticate: Vec::new(),
             body: body.to_string().into_bytes(),
         })
     }
@@ -222,13 +215,10 @@ mod tests {
         );
         assert_eq!(known.known(), Some("conflict"));
         let outside = refusal(418, &json!({ "code": "teapot" }));
-        assert_eq!(
-            (outside.known(), outside.code.as_deref()),
-            (None, Some("teapot"))
-        );
+        assert_eq!((outside.known(), outside.code()), (None, Some("teapot")));
         assert!(outside.to_string().contains("418") && outside.to_string().contains("teapot"));
         let plain = refusal(502, &json!("<html>"));
-        assert_eq!((plain.known(), plain.code.clone()), (None, None));
+        assert_eq!((plain.known(), plain.code()), (None, None));
         assert!(plain.to_string().contains("502"));
     }
 

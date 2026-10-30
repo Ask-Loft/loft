@@ -3,18 +3,17 @@
 //! whole, with permission for its owner alone, through a file beside it and a rename, and a
 //! refresh holds a lock beside it so that two processes never rotate one refresh token at once.
 
-use std::collections::BTreeMap;
-use std::fs::{self, File, OpenOptions};
-use std::io::Write as _;
+use std::ffi::OsString;
 use std::path::PathBuf;
-use std::process;
 use std::str::FromStr as _;
 use std::time::Duration;
 
+use loft_ports::clock::{Clock as _, SystemClock};
+use loft_ports::sync::replace_synced;
 use loftspec::publish::PublishedAt as Time;
-use loftspec_store::clock::{Clock as _, SystemClock};
 use serde::{Deserialize, Serialize};
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
+use yardlog_store::lock::{self, Locked};
 
 use super::{RemoteError, signin};
 use crate::settings;
@@ -47,6 +46,12 @@ impl SignIn {
     }
 }
 
+/// The time now in seconds since the Unix epoch, from the system clock alone: a token expires in
+/// real time, whatever time `SOURCE_DATE_EPOCH` gives a publish.
+fn now() -> u64 {
+    SystemClock::with_epoch(None::<OsString>).now().unwrap_or(0)
+}
+
 /// The file's path, if there is a configuration directory.
 fn path() -> Result<PathBuf, RemoteError> {
     settings::path(FILE).ok_or_else(|| {
@@ -54,62 +59,31 @@ fn path() -> Result<PathBuf, RemoteError> {
     })
 }
 
-/// Every sign-in the file holds, by address: none for a file that is missing or does not read.
-///
-/// # Errors
-///
-/// There is no configuration directory.
-pub fn read() -> Result<BTreeMap<String, SignIn>, RemoteError> {
+/// Every entry the file holds, by address, as it was written: none for a file that is missing
+/// or does not read. An entry this `loft` does not read is kept as it is when the file is
+/// written again.
+fn entries() -> Result<Map<String, Value>, RemoteError> {
     let file = settings::read_at(&path()?);
-    Ok(file["remotes"]
-        .as_object()
-        .map(|remotes| {
-            remotes
-                .iter()
-                .filter_map(|(address, entry)| {
-                    Some((address.clone(), serde_json::from_value(entry.clone()).ok()?))
-                })
-                .collect()
-        })
-        .unwrap_or_default())
+    Ok(file["remotes"].as_object().cloned().unwrap_or_default())
+}
+
+/// The sign-in an entry holds, if it reads as one.
+fn sign_in(entry: &Value) -> Option<SignIn> {
+    serde_json::from_value(entry.clone()).ok()
 }
 
 /// Writes `sign_ins` as the whole file, with permission for its owner alone, through a file
-/// beside it and a rename.
-fn write(sign_ins: &BTreeMap<String, SignIn>) -> Result<(), RemoteError> {
-    let path = path()?;
-    let fail = |error: std::io::Error| RemoteError::File(format!("{}: {error}", path.display()));
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(fail)?;
-    }
-    let value: Value = json!({ "remotes": sign_ins });
-    let bytes = serde_json::to_vec_pretty(&value).expect("a JSON value serializes");
-    let temporary = path.with_file_name(format!(".{FILE}.loft-{}", process::id()));
-    let mut options = OpenOptions::new();
-    options.write(true).create(true).truncate(true);
-    #[cfg(unix)]
-    std::os::unix::fs::OpenOptionsExt::mode(&mut options, 0o600);
-    let mut file = options.open(&temporary).map_err(fail)?;
-    file.write_all(&bytes).map_err(fail)?;
-    drop(file);
-    fs::rename(&temporary, &path).map_err(fail)
+/// beside it and a rename. The lock beside it has made the folder.
+fn write(sign_ins: &Map<String, Value>) -> Result<(), RemoteError> {
+    let bytes = serde_json::to_vec_pretty(&json!({ "remotes": sign_ins }))
+        .expect("a JSON value serializes");
+    replace_synced(&path()?, &bytes, true).map_err(|error| RemoteError::File(error.to_string()))
 }
 
 /// The lock beside the file, held while it is read and written again.
-fn lock() -> Result<File, RemoteError> {
-    let path = path()?.with_file_name(format!("{FILE}.lock"));
-    let fail = |error: std::io::Error| RemoteError::File(format!("{}: {error}", path.display()));
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent).map_err(fail)?;
-    }
-    let file = OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(false)
-        .open(&path)
-        .map_err(fail)?;
-    file.lock().map_err(fail)?;
-    Ok(file)
+fn lock() -> Result<Locked, RemoteError> {
+    lock::lock(&path()?.with_file_name(format!("{FILE}.lock")))
+        .map_err(|error| RemoteError::File(error.to_string()))
 }
 
 /// Keeps `sign_in` for `address`, in place of any the file held for it.
@@ -117,10 +91,10 @@ fn lock() -> Result<File, RemoteError> {
 /// # Errors
 ///
 /// The file cannot be written.
-pub fn save(address: &str, sign_in: SignIn) -> Result<(), RemoteError> {
+pub fn save(address: &str, sign_in: &SignIn) -> Result<(), RemoteError> {
     let _lock = lock()?;
-    let mut sign_ins = read()?;
-    sign_ins.insert(address.to_owned(), sign_in);
+    let mut sign_ins = entries()?;
+    sign_ins.insert(address.to_owned(), json!(sign_in));
     write(&sign_ins)
 }
 
@@ -131,8 +105,11 @@ pub fn save(address: &str, sign_in: SignIn) -> Result<(), RemoteError> {
 ///
 /// The file cannot be written.
 pub fn forget(address: &str) -> Result<bool, RemoteError> {
+    if !path()?.exists() {
+        return Ok(false);
+    }
     let _lock = lock()?;
-    let mut sign_ins = read()?;
+    let mut sign_ins = entries()?;
     if sign_ins.remove(address).is_none() {
         return Ok(false);
     }
@@ -148,30 +125,33 @@ pub fn forget(address: &str) -> Result<bool, RemoteError> {
 ///
 /// The file holds no sign-in for `address`, or the refresh is refused or cannot be made.
 pub fn live(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
-    let clock = SystemClock::from_env();
-    let now = || clock.now().unwrap_or(0);
     let missing = || RemoteError::NoSignIn {
         address: address.to_owned(),
     };
-    let held = read()?.remove(address).ok_or_else(missing)?;
+    let held = entries()?
+        .get(address)
+        .and_then(sign_in)
+        .ok_or_else(missing)?;
     if !held.expiring(now()) {
         return Ok(held);
     }
     let _lock = lock()?;
-    let mut sign_ins = read()?;
-    let held = sign_ins.remove(address).ok_or_else(missing)?;
+    let mut sign_ins = entries()?;
+    let held = sign_ins
+        .get(address)
+        .and_then(sign_in)
+        .ok_or_else(missing)?;
     if !held.expiring(now()) {
         return Ok(held);
     }
     let fresh = signin::refresh(address, &held, timeout)?;
-    sign_ins.insert(address.to_owned(), fresh.clone());
+    sign_ins.insert(address.to_owned(), json!(fresh));
     write(&sign_ins)?;
     Ok(fresh)
 }
 
 /// The time `expires_in` seconds from now, as a sign-in keeps it.
 pub fn expires_at(expires_in: u64) -> String {
-    let now = SystemClock::from_env().now().unwrap_or(0);
-    Time::from_unix_seconds(now.saturating_add(expires_in))
+    Time::from_unix_seconds(now().saturating_add(expires_in))
         .map_or_else(|_| String::new(), |time| time.to_string())
 }

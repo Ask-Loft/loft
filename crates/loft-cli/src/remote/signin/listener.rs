@@ -8,7 +8,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use crate::out::errln;
-use crate::remote::wire::parameter;
+use crate::percent::parameter;
 
 /// What the browser brought back.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -26,7 +26,7 @@ pub enum Waited {
 
 /// The page the browser shows once the callback arrives.
 const PAGE: &str = "<!doctype html><meta charset=\"utf-8\"><title>Loft</title>\
-                    <p>Signed in. You may close this page and return to the terminal.</p>";
+                    <p>Loft has the answer. You may close this page and return to the terminal.</p>";
 
 pub struct Listener {
     listener: TcpListener,
@@ -71,6 +71,17 @@ impl Listener {
                 Err(error) if error.kind() == io::ErrorKind::WouldBlock => {
                     watch(&mut browser);
                     thread::sleep(Duration::from_millis(20));
+                    None
+                }
+                // A connection reset or aborted before it was taken ends nothing.
+                Err(error)
+                    if matches!(
+                        error.kind(),
+                        io::ErrorKind::ConnectionAborted
+                            | io::ErrorKind::ConnectionReset
+                            | io::ErrorKind::Interrupted
+                    ) =>
+                {
                     None
                 }
                 Err(error) => return Err(Waited::Failed(error)),
@@ -137,8 +148,8 @@ mod tests {
 
     use super::*;
 
-    fn visit(listener: &Listener, target: &str) -> String {
-        let mut stream = TcpStream::connect(("127.0.0.1", listener.port)).unwrap();
+    fn visit(port: u16, target: &str) -> String {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
         write!(stream, "GET {target} HTTP/1.1\r\nHost: x\r\n\r\n").unwrap();
         let mut answer = String::new();
         let _ = stream.read_to_string(&mut answer);
@@ -159,14 +170,10 @@ mod tests {
         let listener = Listener::bind().unwrap();
         let port = listener.port;
         let visitor = thread::spawn(move || {
-            let listener = Listener {
-                listener: TcpListener::bind("127.0.0.1:0").unwrap(),
-                port,
-            };
             [
-                visit(&listener, "/elsewhere"),
-                visit(&listener, "/callback?state=other&code=x"),
-                visit(&listener, "/callback?state=s&code=c%2B1"),
+                visit(port, "/elsewhere"),
+                visit(port, "/callback?state=other&code=x"),
+                visit(port, "/callback?state=s&code=c%2B1"),
             ]
         });
         let callback = listener.wait("s", Duration::from_secs(10), None).unwrap();

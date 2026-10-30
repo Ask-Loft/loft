@@ -5,11 +5,12 @@
 //! no running one. The command opens no connection: it adds its tree to `~/.yard/trees.json`,
 //! which the page server reads, so that the address it gives names a tree the server serves.
 
-use std::fmt::Write as _;
 use std::path::Path;
 use std::sync::OnceLock;
 
 use serde_json::{Value, json};
+
+use crate::percent::encode;
 use yardlog_store::YardStoreError;
 use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::lock::{self, Locked};
@@ -107,17 +108,4 @@ pub fn url(port: u16, tree: &Path, branch: &str) -> String {
         encode(&tree.display().to_string()),
         encode(branch)
     )
-}
-
-/// `text` with every byte but the unreserved ones percent-encoded, as a URL's fragment holds it.
-fn encode(text: &str) -> String {
-    let mut encoded = String::with_capacity(text.len());
-    for byte in text.bytes() {
-        if byte.is_ascii_alphanumeric() || b"-._~".contains(&byte) {
-            encoded.push(char::from(byte));
-        } else {
-            let _ = write!(encoded, "%{byte:02X}");
-        }
-    }
-    encoded
 }

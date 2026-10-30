@@ -301,8 +301,7 @@ fn the_port_reads_the_same_lock_writer_from_the_simulator_and_real_git() {
 /// Two publishes on `feature` in `dir`, each writing the lock below `sub`, and a commit after
 /// them that leaves the lock alone; the two publish commits, oldest first.
 fn publishes(dir: &Scratch, sub: &str) -> [String; 2] {
-    let mut commits = Vec::new();
-    for sequence in 1..=2 {
+    let commits = [1, 2].map(|sequence| {
         dir.put(
             &format!("{sub}spec/products/a/product.yaml"),
             &format!("name: \"{sequence}\"\n"),
@@ -313,12 +312,12 @@ fn publishes(dir: &Scratch, sub: &str) -> [String; 2] {
         );
         git(&dir.0, &["add", "."]);
         git(&dir.0, &["commit", "--quiet", "-m", "publish"]);
-        commits.push(rev(&dir.0, "HEAD"));
-    }
+        rev(&dir.0, "HEAD")
+    });
     dir.put(&format!("{sub}spec/tags.yaml"), "later\n");
     git(&dir.0, &["add", "."]);
     git(&dir.0, &["commit", "--quiet", "-m", "later"]);
-    [commits[0].clone(), commits[1].clone()]
+    commits
 }
 
 #[test]

@@ -1,20 +1,11 @@
-//! The small pieces of HTTP and OAuth that `loft` reads and writes by hand: percent-encoding,
+//! The small pieces of HTTP and OAuth that `loft` reads and writes by hand: a query string,
 //! base64url, the parameters of a `WWW-Authenticate` challenge, and `Retry-After`.
 
-use std::fmt::Write as _;
+use std::str::FromStr as _;
 
-/// `text` percent-encoded but for the unreserved characters of RFC 3986.
-pub fn encode(text: &str) -> String {
-    let mut out = String::with_capacity(text.len());
-    for byte in text.bytes() {
-        if byte.is_ascii_alphanumeric() || b"-._~".contains(&byte) {
-            out.push(char::from(byte));
-        } else {
-            let _ = write!(out, "%{byte:02X}");
-        }
-    }
-    out
-}
+use loftspec::publish::PublishedAt;
+
+use crate::percent::encode;
 
 /// `pairs` as a query string or a form body, each value percent-encoded.
 pub fn query(pairs: &[(&str, &str)]) -> String {
@@ -23,37 +14,6 @@ pub fn query(pairs: &[(&str, &str)]) -> String {
         .map(|(name, value)| format!("{name}={}", encode(value)))
         .collect::<Vec<_>>()
         .join("&")
-}
-
-/// `text` percent-decoded, with `+` read as a space.
-pub fn decode(text: &str) -> String {
-    let bytes = text.as_bytes();
-    let mut out = Vec::with_capacity(bytes.len());
-    let mut index = 0;
-    while index < bytes.len() {
-        let hex = (bytes[index] == b'%' && index + 2 < bytes.len())
-            .then(|| std::str::from_utf8(&bytes[index + 1..index + 3]).ok())
-            .flatten()
-            .and_then(|hex| u8::from_str_radix(hex, 16).ok());
-        match (bytes[index], hex) {
-            (_, Some(byte)) => {
-                out.push(byte);
-                index += 2;
-            }
-            (b'+', None) => out.push(b' '),
-            (byte, None) => out.push(byte),
-        }
-        index += 1;
-    }
-    String::from_utf8_lossy(&out).into_owned()
-}
-
-/// The value of `name` in a query string.
-pub fn parameter(query: &str, name: &str) -> Option<String> {
-    query.split('&').find_map(|pair| {
-        let (field, value) = pair.split_once('=').unwrap_or((pair, ""));
-        (decode(field) == name).then(|| decode(value))
-    })
 }
 
 /// `bytes` in base64url without padding.
@@ -75,10 +35,7 @@ pub fn base64url(bytes: &[u8]) -> String {
 /// The parameters of a `Bearer` challenge in a `WWW-Authenticate` header, by name, or none when
 /// the header holds no `Bearer` challenge.
 pub fn bearer_parameters(header: &str) -> Option<Vec<(String, String)>> {
-    let start = header
-        .to_ascii_lowercase()
-        .find("bearer")
-        .filter(|at| header[at + 6..].starts_with([' ', '\t']) || header.len() == at + 6)?;
+    let start = challenge_start(header, "bearer")?;
     let mut rest = header[start + 6..].trim_start();
     let mut parameters = Vec::new();
     while let Some((name, after)) = rest.split_once('=') {
@@ -98,6 +55,41 @@ pub fn bearer_parameters(header: &str) -> Option<Vec<(String, String)>> {
         rest = remainder.trim_start().trim_start_matches(',');
     }
     Some(parameters)
+}
+
+/// Where a challenge of `scheme` begins in `header`: at its start or after a comma, outside a
+/// quoted string, followed by a space or the end.
+fn challenge_start(header: &str, scheme: &str) -> Option<usize> {
+    let mut quoted = false;
+    let mut escaped = false;
+    let mut at_start = true;
+    for (at, ch) in header.char_indices() {
+        if quoted {
+            match (escaped, ch) {
+                (false, '\\') => escaped = true,
+                (false, '"') => quoted = false,
+                _ => escaped = false,
+            }
+            continue;
+        }
+        if at_start && !ch.is_ascii_whitespace() {
+            let rest = &header[at..];
+            let named = rest
+                .get(..scheme.len())
+                .is_some_and(|name| name.eq_ignore_ascii_case(scheme));
+            let after = rest.get(scheme.len()..).unwrap_or_default();
+            if named && (after.is_empty() || after.starts_with([' ', '\t'])) {
+                return Some(at);
+            }
+        }
+        match ch {
+            '"' => quoted = true,
+            ',' => at_start = true,
+            ch if !ch.is_ascii_whitespace() => at_start = false,
+            _ => {}
+        }
+    }
+    None
 }
 
 /// A quoted string's value, its escapes undone, and the text after its closing quote; `rest`
@@ -135,35 +127,15 @@ fn http_date(value: &str) -> Option<u64> {
         return None;
     };
     let month = MONTHS.iter().position(|name| name == month)? + 1;
-    let (day, year): (u64, i64) = (day.parse().ok()?, year.parse().ok()?);
-    let clock: Vec<u64> = time
-        .split(':')
-        .map(str::parse)
-        .collect::<Result<_, _>>()
-        .ok()?;
-    let [hour, minute, second] = clock.as_slice() else {
-        return None;
-    };
-    let days = days_from_civil(year, u64::try_from(month).ok()?, day)?;
-    Some(days * 86_400 + hour * 3600 + minute * 60 + second)
-}
-
-/// The days from 1970-01-01 to a date of the proleptic Gregorian calendar.
-fn days_from_civil(year: i64, month: u64, day: u64) -> Option<u64> {
-    let year = if month <= 2 { year - 1 } else { year };
-    let era = year.div_euclid(400);
-    let year_of_era = year - era * 400;
-    let month = i64::try_from(month).ok()?;
-    let day_of_year = (153 * (if month > 2 { month - 3 } else { month + 9 }) + 2) / 5
-        + i64::try_from(day).ok()?
-        - 1;
-    let day_of_era = year_of_era * 365 + year_of_era / 4 - year_of_era / 100 + day_of_year;
-    u64::try_from(era * 146_097 + day_of_era - 719_468).ok()
+    let (day, year): (u8, u16) = (day.parse().ok()?, year.parse().ok()?);
+    let date = format!("{year:04}-{month:02}-{day:02}T{time}Z");
+    Some(PublishedAt::from_str(&date).ok()?.unix_seconds())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::percent::parameter;
 
     #[test]
     fn a_retry_after_is_read_as_seconds_or_an_http_date() {
@@ -191,6 +163,12 @@ mod tests {
             ]
         );
         assert!(bearer_parameters("Basic realm=\"x\"").is_none());
+        assert!(bearer_parameters("Basic realm=\"bearer x\"").is_none());
+        let after = bearer_parameters("Basic realm=\"bearerland\", Bearer scope=\"s\"").unwrap();
+        assert!(
+            after.contains(&("scope".to_owned(), "s".to_owned())),
+            "{after:?}"
+        );
     }
 
     #[test]

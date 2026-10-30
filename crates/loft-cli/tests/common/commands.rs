@@ -5,8 +5,8 @@
 use std::fs;
 use std::process::Command;
 
-use crate::common::{EPOCH, Scratch, tree};
-use loftspec::codec::{self, SpecPath};
+use crate::common::signed_in::name_remote;
+use crate::common::{EPOCH, Scratch};
 use software_plant::{Clock, GitScenario};
 
 /// The Product's file, from which the unkeyed fixture leaves a key out.
@@ -63,17 +63,11 @@ pub fn fixture(fixture: Fixture) -> Scratch {
             "      - name:",
         ),
         Fixture::Clean => {}
-        Fixture::Connected => {
-            let mut document = codec::read(&tree(&scratch.0)).unwrap();
-            document.connected = true;
-            document.remote = Some("http://127.0.0.1:9/documents/reading-list".to_owned());
-            let manifest = SpecPath::new("loftspec.yaml");
-            fs::write(
-                scratch.file(manifest.as_str()),
-                &codec::write(&document)[&manifest],
-            )
-            .unwrap();
-        }
+        Fixture::Connected => name_remote(
+            &scratch,
+            Some("http://127.0.0.1:9/documents/reading-list"),
+            true,
+        ),
     }
     prepare(&scratch, fixture);
     scratch

@@ -1,8 +1,7 @@
-//! Reaching a connected document's remote: its address, from the manifest's `remote` or
-//! `LOFT_REMOTE_ENDPOINT`; the token a request carries, from `LOFT_REMOTE_TOKEN` or the person's
-//! sign-in to that address in `loft/remotes.json`, refreshed before it expires; and the calls
-//! themselves, through [`client::Client`]. A token is sent only in the `Authorization` header of
-//! a request to the remote, and printed nowhere.
+//! Reaching a connected document's remote: its address, from the manifest's `remote`; the token
+//! a request carries, from the person's sign-in to that address in `loft/remotes.json`,
+//! refreshed before it expires; and the calls themselves, through [`client::Client`]. A token is
+//! sent only in the `Authorization` header of a request to the remote, and printed nowhere.
 
 pub mod browser;
 pub mod client;
@@ -18,7 +17,8 @@ use crate::network;
 
 pub use client::{Client, Refusal};
 
-/// The variable that names the bearer token for one run, in place of a sign-in.
+/// The variable that the refusal of a missing sign-in names as the way to give a bearer token
+/// for one run; no command reads it yet.
 pub const TOKEN_ENV: &str = "LOFT_REMOTE_TOKEN";
 /// The variable that replaces the 30 seconds a call to the remote may take.
 pub const TIMEOUT_ENV: &str = "LOFT_REMOTE_TIMEOUT";
@@ -31,7 +31,7 @@ const TIMEOUT: Duration = Duration::from_secs(30);
 /// Why the remote could not be reached, or what it refused.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RemoteError {
-    /// The address has no sign-in, and `LOFT_REMOTE_TOKEN` is not set.
+    /// The address has no sign-in.
     NoSignIn { address: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),

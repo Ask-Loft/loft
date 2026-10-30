@@ -89,6 +89,12 @@ fn a_disconnect_says_to_commit_the_manifest() {
         "{stdout}"
     );
     assert!(
+        !sign_ins_file(&scratch)
+            .with_file_name("remotes.json.lock")
+            .exists(),
+        "no lock is taken for a missing file"
+    );
+    assert!(
         !sign_ins_file(&scratch).exists(),
         "a missing file is not created"
     );

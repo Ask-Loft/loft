@@ -106,15 +106,15 @@ pub fn sign_in(
         timeout,
     )
     .map_err(|error| failed(error.to_string()))?;
-    let issued =
+    let (access_token, expires_at, refresh_token) =
         issued(&answer, None).ok_or_else(|| failed("the token answer does not read".to_owned()))?;
     Ok(SignIn {
         token_endpoint: discovered.token_endpoint,
         resource: discovered.resource,
         client_id,
-        access_token: issued.0,
-        expires_at: issued.1,
-        refresh_token: issued.2,
+        access_token,
+        expires_at,
+        refresh_token,
     })
 }
 
@@ -208,7 +208,8 @@ impl std::fmt::Display for TokenError {
     }
 }
 
-/// A form-encoded `POST` of `form` to `endpoint`, its JSON answer.
+/// A form-encoded `POST` of `form` to `endpoint`, its JSON answer; a refusal only where the
+/// answer is an OAuth error, a `400` or `401` that names its `error`.
 fn token(endpoint: &str, form: &[(&str, &str)], timeout: Duration) -> Result<Value, TokenError> {
     let reply = network::call(
         "POST",
@@ -219,12 +220,13 @@ fn token(endpoint: &str, form: &[(&str, &str)], timeout: Duration) -> Result<Val
     )
     .map_err(TokenError::Unreachable)?;
     let answer = serde_json::from_slice::<Value>(&reply.body).unwrap_or(Value::Null);
-    if (200..300).contains(&reply.status) {
-        Ok(answer)
-    } else {
-        Err(TokenError::Refused(
-            answer["error"].as_str().unwrap_or("no error").to_owned(),
-        ))
+    match (reply.status, answer["error"].as_str()) {
+        (200..=299, _) => Ok(answer),
+        // Only an OAuth error answer refuses the grant; any other failure may pass.
+        (400 | 401, Some(error)) => Err(TokenError::Refused(error.to_owned())),
+        (status, _) => Err(TokenError::Unreachable(format!(
+            "the token endpoint answered {status}"
+        ))),
     }
 }
 

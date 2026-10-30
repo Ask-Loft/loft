@@ -95,7 +95,8 @@ const BODY_LIMIT: u64 = 256 << 20;
 pub struct Reply {
     pub status: u16,
     pub retry_after: Option<String>,
-    pub www_authenticate: Option<String>,
+    /// Every `WWW-Authenticate` header, in the order given.
+    pub www_authenticate: Vec<String>,
     pub body: Vec<u8>,
 }
 
@@ -121,7 +122,7 @@ pub fn call(
     }
     let agent = agent(timeout, &format!("loft/{VERSION}"));
     let response = match body {
-        Some(body) => agent.run(request.body(body.to_vec()).map_err(|e| e.to_string())?),
+        Some(body) => agent.run(request.body(body).map_err(|e| e.to_string())?),
         None => agent.run(request.body(()).map_err(|e| e.to_string())?),
     };
     let mut response = response.map_err(|error| error.to_string())?;
@@ -132,7 +133,13 @@ pub fn call(
             .and_then(|value| value.to_str().ok())
             .map(str::to_owned)
     };
-    let (retry_after, www_authenticate) = (header("retry-after"), header("www-authenticate"));
+    let retry_after = header("retry-after");
+    let www_authenticate = response
+        .headers()
+        .get_all("www-authenticate")
+        .iter()
+        .filter_map(|value| value.to_str().ok().map(str::to_owned))
+        .collect();
     let status = response.status().as_u16();
     let body = response
         .body_mut()

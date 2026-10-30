@@ -89,7 +89,7 @@ impl std::fmt::Display for Head {
 pub fn history(root: &Path, lock: &Lock) -> Result<Vec<Published>, Stop> {
     let git = GitCommand::default();
     git.prefix(root)?;
-    let mut earliest: BTreeMap<u64, Published> = BTreeMap::new();
+    let mut earliest: BTreeMap<u64, (Lock, Published)> = BTreeMap::new();
     for commit in git.lock_history(root)? {
         let (Some(bytes), files) = git.lock_and_spec_at(root, &commit)? else {
             continue;
@@ -99,7 +99,7 @@ pub fn history(root: &Path, lock: &Lock) -> Result<Vec<Published>, Stop> {
         };
         earliest
             .entry(held.publish_sequence.get())
-            .or_insert(Published { lock: bytes, files });
+            .or_insert((held, Published { lock: bytes, files }));
     }
     let last = lock.publish_sequence.get();
     let mut states = Vec::new();
@@ -110,8 +110,7 @@ pub fn history(root: &Path, lock: &Lock) -> Result<Vec<Published>, Stop> {
                 format!("no commit of the history holds the lock of publish sequence {sequence}"),
             )
         };
-        let state = earliest.remove(&sequence).ok_or_else(unheld)?;
-        let held = Lock::read(&state.lock).map_err(|_| unheld())?;
+        let (held, state) = earliest.remove(&sequence).ok_or_else(unheld)?;
         if sequence == last && held.state_root != lock.state_root {
             return Err(unheld());
         }
@@ -155,32 +154,36 @@ pub fn connect(
     let wanted = Head::of_lock(lock);
     let found = match client.post("create", &json!({ "documentKey": key, "name": name })) {
         Ok(_) => Head::none(),
-        Err(RemoteError::Refused { refusal, .. }) if refusal.known() == Some("conflict") => {
-            Head::read(&refusal.problem["head"])
-                .ok_or_else(|| refused("create", &refusal_of(client, refusal)))?
-        }
-        Err(error) => return Err(refused("create", &error)),
+        Err(error) => match &error {
+            RemoteError::Refused { refusal, .. } if refusal.known() == Some("conflict") => {
+                Head::read(&refusal.problem["head"]).ok_or_else(|| refused("create", &error))?
+            }
+            _ => return Err(refused("create", &error)),
+        },
     };
-    if found == wanted || found.sequence != 0 || states.is_empty() {
-        if found != wanted {
-            return Err(differs(&found, &wanted));
-        }
+    if found == wanted {
         return Ok(Connected {
             head: found,
             imported: false,
         });
+    }
+    if found.sequence != 0 || states.is_empty() {
+        return Err(differs(&found, &wanted));
     }
     let body = json!({
         "documentKey": key,
         "states": states.iter().map(wire).collect::<Vec<_>>(),
     });
     let answer = client.post("import", &body).map_err(|error| {
-        let mut stop = refused("import", &error);
-        let again = "the remote holds the document with no published state: running \
-                     `loft remote set` again imports into it";
-        stop.lines.push(again.to_owned());
-        stop.errors.push(crate::json::error("remote", again, &[]));
-        stop
+        Stop::all(
+            "remote",
+            vec![
+                format!("`import`: {error}"),
+                "the remote holds the document with no published state: running \
+                 `loft remote set` again imports into it"
+                    .to_owned(),
+            ],
+        )
     })?;
     let head = Head::read(&answer["head"]).unwrap_or_else(Head::none);
     if head != wanted {
@@ -207,14 +210,6 @@ fn wire(state: &Published) -> Value {
         })
         .collect();
     json!({ "lock": lock, "files": files })
-}
-
-/// A refusal of a conflict whose head does not read, as the remote's refusal.
-fn refusal_of(client: &Client, refusal: crate::remote::Refusal) -> RemoteError {
-    RemoteError::Refused {
-        address: client.address().to_owned(),
-        refusal,
-    }
 }
 
 /// The remote's refusal of `call`.

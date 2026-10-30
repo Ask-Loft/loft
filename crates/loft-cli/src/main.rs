@@ -21,6 +21,7 @@ mod merge_driver;
 mod network;
 mod opened;
 mod out;
+mod percent;
 mod publish;
 mod reconcile;
 mod record_install;

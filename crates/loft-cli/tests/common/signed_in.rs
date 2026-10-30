@@ -2,23 +2,19 @@
 //! sign-in kept in `loft/remotes.json`, the browser simulator in `BROWSER`, and the repository
 //! whose history holds each published state.
 
-use std::fmt::Write as _;
 use std::fs;
 use std::path::PathBuf;
-use std::process::Output;
+use std::process::{Command, Output};
 
-use loftspec::codec::{self, SpecPath};
+use loftspec::codec::{self, MANIFEST, SpecPath};
 use loftspec::publish::{Lock, PublishedAt};
 use serde_json::{Value, json};
-use sha2::{Digest as _, Sha256};
+use software_plant::remote::wire::sha256_hex;
 use software_plant::remote::{Remote, StoredState};
 use software_plant::{BrowserScenario, Clock, GitScenario, InstalledBrowser};
 
 use super::remote::{History, spec};
 use super::{EPOCH, Scratch, tree};
-
-/// The manifest, by its path under `spec/`.
-pub const MANIFEST: &str = "loftspec.yaml";
 
 /// Rewrites the manifest under `scratch` to name `remote`, marked `connected` or not.
 pub fn name_remote(scratch: &Scratch, remote: Option<&str>, connected: bool) {
@@ -39,8 +35,8 @@ pub fn sign_ins(scratch: &Scratch) -> Value {
     scratch.setting("remotes.json")["remotes"].clone()
 }
 
-/// A sign-in to `remote` as `loft` keeps it, its access token expiring `seconds` after
-/// [`EPOCH`], issued by the simulator so that the remote admits it.
+/// A sign-in to `remote` as `loft` keeps it, its access token expiring `seconds` from now by
+/// the system clock, as a token does, issued by the simulator so that the remote admits it.
 pub fn granted(remote: &Remote, seconds: u64) -> Value {
     let grant = remote.grant();
     json!({
@@ -48,7 +44,7 @@ pub fn granted(remote: &Remote, seconds: u64) -> Value {
         "resource": format!("{}/documents", remote.origin()),
         "clientId": grant.client_id,
         "accessToken": grant.access_token,
-        "expiresAt": PublishedAt::from_unix_seconds(EPOCH + seconds).unwrap().to_string(),
+        "expiresAt": PublishedAt::from_unix_seconds(real_now() + seconds).unwrap().to_string(),
         "refreshToken": grant.refresh_token,
     })
 }
@@ -60,19 +56,29 @@ pub fn keep(scratch: &Scratch, sign_ins: &Value) {
     fs::write(sign_ins_file(scratch), file.to_string()).unwrap();
 }
 
-/// Runs `loft` with `args` at [`EPOCH`], the browser simulator behaving as `browser`, and the
-/// git simulator answering from `git` or no `git` at all.
+/// The `loft` command at [`EPOCH`], the browser simulator behaving as `browser`, and the git
+/// simulator answering from `git` or no `git` at all.
+pub fn command(
+    scratch: &Scratch,
+    browser: BrowserScenario,
+    git: Option<&GitScenario>,
+) -> (Command, InstalledBrowser) {
+    let dir = scratch.plant().join("browser");
+    fs::create_dir_all(&dir).unwrap();
+    let installed = browser.install(&dir);
+    let mut command = scratch.command(git, &Clock::fixed(EPOCH));
+    installed.apply(&mut command);
+    (command, installed)
+}
+
+/// Runs `loft` with `args` as [`command`] gives it.
 pub fn run(
     scratch: &Scratch,
     args: &[&str],
     browser: BrowserScenario,
     git: Option<&GitScenario>,
 ) -> (Output, InstalledBrowser) {
-    let dir = scratch.plant().join("browser");
-    fs::create_dir_all(&dir).unwrap();
-    let installed = browser.install(&dir);
-    let mut command = scratch.command(git, &Clock::fixed(EPOCH));
-    installed.apply(&mut command);
+    let (mut command, installed) = command(scratch, browser, git);
     (command.args(args).output().unwrap(), installed)
 }
 
@@ -94,12 +100,7 @@ pub fn commit(sequence: usize) -> String {
 
 /// An object id for `text`, as the scenario names it.
 fn object(text: &str) -> String {
-    let digest = Sha256::digest(text.as_bytes());
-    let mut hex = String::new();
-    for byte in &digest[..20] {
-        write!(hex, "{byte:02x}").unwrap();
-    }
-    hex
+    sha256_hex(text.as_bytes())[..40].to_owned()
 }
 
 /// The bytes of a stored state's lock, as `loft.lock.json` holds them.
@@ -135,4 +136,12 @@ pub fn repository(scratch: &Scratch, history: &History, sequences: &[usize]) -> 
         }
     }
     scenario
+}
+
+/// The time now by the system clock, in seconds since the Unix epoch.
+fn real_now() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
 }

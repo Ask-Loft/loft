@@ -38,13 +38,12 @@ pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteEr
         address: address.to_owned(),
         reason,
     };
-    checked(address)?;
     let challenged = Client::new(address, None, timeout, None).call("GET", "head", None)?;
     let parameters = challenged
         .www_authenticate
-        .as_deref()
+        .iter()
         .filter(|_| challenged.status == 401)
-        .and_then(bearer_parameters)
+        .find_map(|header| bearer_parameters(header))
         .ok_or_else(|| {
             failed(format!(
                 "the remote answered {} without a `Bearer` challenge",
