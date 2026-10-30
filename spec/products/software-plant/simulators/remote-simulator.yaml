@@ -1,9 +1,13 @@
 key: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
 slug: remote-simulator
 name: "Remote simulator"
-body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, or signs in to it as a person would, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. It also stands in for the remote's authorization server, under paths of its own on the same origin: it challenges a request without a token as a protected resource, serves both metadata documents, registers clients, consents to each authorization request as its scenario names, and issues access tokens and refresh tokens that rotate, as an OAuth 2.0 server does. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
+body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, or signs in to it as a person would, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. It also stands in for the remote's authorization server, under paths of its own on the same origin: it challenges a request without a token as a protected resource, serves both metadata documents, registers clients, consents to each authorization request as its scenario names, and issues access tokens and refresh tokens that rotate, as an OAuth 2.0 server does. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on."
+tags:
+  - plant-simulator
 realizes:
   - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+mentions:
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
 requirements:
   - key: 01a156ae-6a51-7230-a9a1-fa884a1417e2
     statement:

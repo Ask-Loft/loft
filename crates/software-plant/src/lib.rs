@@ -7,6 +7,7 @@
 //! This crate is test equipment: it is never published and never a dependency of a published
 //! crate.
 
+pub mod browser;
 pub mod clock;
 #[cfg(unix)]
 pub mod codex;
@@ -16,9 +17,12 @@ pub mod http;
 mod install;
 pub mod real_git;
 pub mod releases;
+pub mod remote;
 
+pub use browser::{BrowserScenario, InstalledBrowser};
 pub use clock::Clock;
 pub use collector::Collector;
 pub use git::GitScenario;
-pub use install::{Installed, git_executable};
+pub use install::{Installed, browser_executable, git_executable};
 pub use releases::ReleaseFeed;
+pub use remote::{Remote, RemoteScenario};

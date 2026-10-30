@@ -4,6 +4,7 @@
 
 #[path = "common/base.rs"]
 mod base;
+mod browser_contract;
 #[path = "common/commands.rs"]
 mod commands;
 mod common;
@@ -56,6 +57,9 @@ mod record_install;
 mod release_check;
 mod release_feed_contract;
 mod release_workflow;
+mod remote_contract;
+mod remote_contract_auth;
+mod remote_contract_writes;
 mod render;
 mod render_openspec;
 mod review;

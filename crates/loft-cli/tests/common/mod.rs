@@ -5,6 +5,7 @@
 
 #[cfg(unix)]
 pub mod npm;
+pub mod remote;
 pub mod telemetry;
 
 use std::path::{Path, PathBuf};

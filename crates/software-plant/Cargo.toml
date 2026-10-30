@@ -13,8 +13,12 @@ publish = false
 autotests = false
 
 [dependencies]
+# The remote simulator publishes and verifies states with the Format's own publisher, as a
+# remote does.
+loftspec.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
 
 [target.'cfg(unix)'.dependencies]
 tungstenite.workspace = true
