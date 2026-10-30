@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 
 use loftspec::codec::{Files, SpecPath};
-use loftspec::publish::{self, Made, Publication, PublishedAt, ReadTree};
+use loftspec::publish::{self, Lock, Made, Publication, PublishedAt, ReadTree};
 use serde_json::Value;
 use software_plant::remote::StoredState;
 
@@ -67,25 +67,37 @@ pub fn history(count: u64) -> History {
         if sequence > 1 {
             files = with_criterion(&files, &format!("01a18e30-0000-7000-8000-{sequence:012}"));
         }
-        let tree = ReadTree::read(&files).unwrap();
-        let at = PublishedAt::from_unix_seconds(EPOCH + 60 * sequence).unwrap();
-        let publication =
-            publish::publish(tree, None, previous.as_ref(), at, Made::NotAsRemote).unwrap();
-        let Publication::Published {
-            lock,
-            files: written,
-            ..
-        } = publication
-        else {
-            panic!("the change publishes");
-        };
-        files.extend(written);
-        states.push(StoredState {
-            lock: serde_json::from_slice::<Value>(&lock.to_bytes()).unwrap(),
-            files: wire(&files),
-        });
+        let (lock, published) = publish_at(&files, previous.as_ref(), EPOCH + 60 * sequence);
+        files = published;
+        states.push(stored(&lock, &files));
         previous = Some(lock);
     }
     let key = states[0].lock["documentKey"].as_str().unwrap().to_owned();
     History { key, states }
+}
+
+/// `files` published after `previous` at `seconds` past the Unix epoch: the publish's lock, and
+/// `files` with the labels it gave.
+pub fn publish_at(files: &Files, previous: Option<&Lock>, seconds: u64) -> (Lock, Files) {
+    let tree = ReadTree::read(files).unwrap();
+    let at = PublishedAt::from_unix_seconds(seconds).unwrap();
+    let Publication::Published {
+        lock,
+        files: written,
+        ..
+    } = publish::publish(tree, None, previous, at, Made::NotAsRemote).unwrap()
+    else {
+        panic!("the change publishes");
+    };
+    let mut files = files.clone();
+    files.extend(written);
+    (lock, files)
+}
+
+/// The state `lock` names, whose files are `files`, as a remote holds it.
+pub fn stored(lock: &Lock, files: &Files) -> StoredState {
+    StoredState {
+        lock: serde_json::from_slice::<Value>(&lock.to_bytes()).unwrap(),
+        files: wire(files),
+    }
 }

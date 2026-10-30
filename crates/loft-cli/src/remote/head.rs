@@ -3,6 +3,24 @@
 use loftspec::publish::Lock;
 use serde_json::{Value, json};
 
+use crate::remote::{Client, RemoteError};
+
+/// The remote's head of the document `key`: `null`, or its publish sequence, state root, lock
+/// and file digests.
+///
+/// # Errors
+///
+/// The remote cannot be reached, refuses, or holds no document `key`.
+pub fn fetch(client: &Client, key: &str) -> Result<Value, RemoteError> {
+    match client.get("head") {
+        Ok(mut answer) => Ok(answer["head"].take()),
+        Err(error) if error.refusal("not_found").is_some() => Err(RemoteError::NotHeld {
+            key: key.to_owned(),
+        }),
+        Err(error) => Err(error),
+    }
+}
+
 /// The head of a document by its publish sequence and state root: `0` and none for a document
 /// that holds no published state.
 #[derive(Debug, Clone, PartialEq, Eq)]

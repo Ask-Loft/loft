@@ -6,6 +6,7 @@
 
 pub mod browser;
 pub mod client;
+pub mod files;
 pub mod head;
 pub mod history;
 pub mod signin;
@@ -100,7 +101,7 @@ impl fmt::Display for RemoteError {
             } => write!(
                 formatter,
                 "the remote holds no published state of publish sequence {sequence}, state root \
-                 {state_root}: `loft pull` brings the tree to the head"
+                 {state_root}"
             ),
             Self::Variable { name, value } => write!(
                 formatter,

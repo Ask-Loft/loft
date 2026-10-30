@@ -4,11 +4,11 @@
 
 use std::fs;
 use std::process::Command;
+use std::sync::OnceLock;
 
-use crate::common::remote::{history, spec};
-use crate::common::signed_in::{lock_bytes, name_remote};
+use crate::common::remote::{History, history};
+use crate::common::signed_in::{name_remote, place};
 use crate::common::{EPOCH, Scratch};
-use loftspec::publish::LOCK;
 use software_plant::remote::{Remote, RemoteScenario, TOKEN};
 use software_plant::{Clock, GitScenario};
 
@@ -47,10 +47,13 @@ pub enum Fixture {
     Unkeyed,
     /// The Reading List as converted, in a clean repository on `main`.
     Clean,
-    /// The Reading List published once, its manifest marking it connected, and a remote that
-    /// holds that state and a second one after it, which `LOFT_REMOTE_ENDPOINT` and
-    /// `LOFT_REMOTE_TOKEN` name for each run: a pull merges the second state in.
+    /// The clean fixture with its manifest marking it connected to a remote at a closed
+    /// loopback port, which a command that never reaches its remote is run against.
     Connected,
+    /// The Reading List published once and connected, behind a remote that holds that state and
+    /// a second one after it, which `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` name for
+    /// each run: a pull merges the second state in.
+    Behind,
     /// An empty directory, on a machine where a page server of this `loft`'s version already
     /// runs: `loft yard serve` leaves it serving and exits, as every command here exits.
     Served,
@@ -67,20 +70,10 @@ pub fn fixture(fixture: Fixture) -> Scratch {
             "      - name:",
         ),
         Fixture::Clean => {}
-        Fixture::Connected => {
-            let published = history(2);
-            fs::remove_dir_all(scratch.0.join("spec")).unwrap();
-            for (path, bytes) in spec(&published.states[0].files) {
-                let target = scratch.file(path.as_str());
-                fs::create_dir_all(target.parent().unwrap()).unwrap();
-                fs::write(target, bytes).unwrap();
-            }
-            fs::write(scratch.0.join(LOCK), lock_bytes(&published.states[0])).unwrap();
-            name_remote(
-                &scratch,
-                Some("http://127.0.0.1:9/documents/reading-list"),
-                true,
-            );
+        Fixture::Connected => name_remote(&scratch, Some(CLOSED), true),
+        Fixture::Behind => {
+            place(&scratch, &behind().0.states[0]);
+            name_remote(&scratch, Some(CLOSED), true);
         }
     }
     prepare(&scratch, fixture);
@@ -111,21 +104,35 @@ pub fn prepare(scratch: &Scratch, fixture: Fixture) {
 /// The `loft` command over `fixture` at [`EPOCH`]: in a clean repository on `main` for the
 /// clean fixture, with no `git` otherwise.
 pub fn command(scratch: &Scratch, fixture: Fixture) -> Command {
-    let git = matches!(fixture, Fixture::Clean | Fixture::Connected)
-        .then(|| GitScenario::clean_on("main"));
+    let git = matches!(
+        fixture,
+        Fixture::Clean | Fixture::Connected | Fixture::Behind
+    )
+    .then(|| GitScenario::clean_on("main"));
     let mut command = scratch.command(git.as_ref(), &Clock::fixed(EPOCH));
-    if fixture == Fixture::Connected {
-        let published = history(2);
-        let remote = Remote::start(
-            RemoteScenario::accepting(&published.key).holding("Reading List", published.states),
-        );
+    if fixture == Fixture::Behind {
         command
-            .env("LOFT_REMOTE_ENDPOINT", remote.address())
+            .env("LOFT_REMOTE_ENDPOINT", behind().1.address())
             .env("LOFT_REMOTE_TOKEN", TOKEN);
-        // The remote serves the run for as long as the test does.
-        std::mem::forget(remote);
     }
     command
+}
+
+/// A closed loopback port, where no remote answers.
+const CLOSED: &str = "http://127.0.0.1:9/documents/reading-list";
+
+/// The Reading List published twice, and the remote that holds both states: one for the whole
+/// test binary, since a pull only reads from it.
+fn behind() -> &'static (History, Remote) {
+    static BEHIND: OnceLock<(History, Remote)> = OnceLock::new();
+    BEHIND.get_or_init(|| {
+        let published = history(2);
+        let remote = Remote::start(
+            RemoteScenario::accepting(&published.key)
+                .holding("Reading List", published.states.clone()),
+        );
+        (published, remote)
+    })
 }
 
 /// A command: the slug of its Feature, the arguments that run it, its fixture, and the name of
@@ -175,7 +182,7 @@ pub const COMMANDS: [Entry; 36] = [
     ),
     ("loft-publish", &["publish"], Fixture::Clean, "publish"),
     // A pull merges the remote's second state into the first, which the tree holds.
-    ("loft-pull", &["pull"], Fixture::Connected, "pull"),
+    ("loft-pull", &["pull"], Fixture::Behind, "pull"),
     ("loft-verify", &["verify"], Fixture::Clean, "verify"),
     ("loft-status", &["status"], Fixture::Clean, "status"),
     ("loft-find", &["find", "shelf"], Fixture::Clean, "find"),

@@ -127,7 +127,7 @@ impl Connected {
     }
 
     pub fn lock(&self) -> Value {
-        serde_json::from_slice(&fs::read(self.scratch.0.join("loft.lock.json")).unwrap()).unwrap()
+        written_lock(&self.scratch)
     }
 
     pub fn message(output: &Output) -> String {
@@ -136,6 +136,11 @@ impl Connected {
             .unwrap_or_default()
             .to_owned()
     }
+}
+
+/// The lock `loft.lock.json` holds under `scratch`.
+pub fn written_lock(scratch: &Scratch) -> Value {
+    serde_json::from_slice(&fs::read(scratch.0.join("loft.lock.json")).unwrap()).unwrap()
 }
 
 /// The paths of a delta's list `name`.

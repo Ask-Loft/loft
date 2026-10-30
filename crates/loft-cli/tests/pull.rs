@@ -7,25 +7,24 @@ use std::fs;
 use std::process::Output;
 
 use loftspec::codec::{Files, SpecPath};
-use loftspec::publish::{self, Made, Publication, PublishedAt, ReadTree};
-use serde_json::Value;
+use loftspec::publish::Lock;
 use software_plant::BrowserScenario;
 use software_plant::remote::{RemoteScenario, StoredState};
 
-use crate::common::connected::{Connected, connected, serve};
-use crate::common::remote::{History, history, spec, wire};
-use crate::common::signed_in::{self, document, lock_bytes, name_remote};
+use crate::common::connected::{Connected, connected, serve, written_lock};
+use crate::common::remote::{History, history, publish_at, spec, stored, wire};
+use crate::common::signed_in::{self, document, name_remote, place};
 use crate::common::{EPOCH, Scratch, tree};
 
 /// The Product's file, whose body the tests change.
-const PRODUCT: &str = "products/reading-list/product.yaml";
+pub const PRODUCT: &str = "products/reading-list/product.yaml";
 /// The Product's body as the Reading List holds it.
-const BODY: &str = "Keeps the books a reader means to read.";
+pub const BODY: &str = "Keeps the books a reader means to read.";
 /// A decision file a draft may leave out.
-const DECISION: &str = "decisions/keep-a-change-log.yaml";
+pub const DECISION: &str = "decisions/keep-a-change-log.yaml";
 
 /// Runs `loft pull` with `args` over `scratch`, as JSON.
-fn pull(scratch: &Scratch, args: &[&str]) -> Output {
+pub fn pull(scratch: &Scratch, args: &[&str]) -> Output {
     let (mut command, _) = signed_in::command(scratch, BrowserScenario::Absent, None);
     command
         .arg("pull")
@@ -35,50 +34,31 @@ fn pull(scratch: &Scratch, args: &[&str]) -> Output {
         .unwrap()
 }
 
-/// `files` with the Product's body replaced by `body`.
-fn with_body(files: &Files, body: &str) -> Files {
+/// `files` with the text `from` of the file `path` replaced by `to`.
+pub fn replaced(files: &Files, path: &str, from: &str, to: &str) -> Files {
     let mut files = files.clone();
-    let path = SpecPath::new(PRODUCT);
+    let path = SpecPath::new(path);
     let text = String::from_utf8(files[&path].clone()).unwrap();
-    assert!(text.contains(BODY));
-    files.insert(path, text.replacen(BODY, body, 1).into_bytes());
+    assert!(text.contains(from));
+    files.insert(path, text.replacen(from, to, 1).into_bytes());
     files
 }
 
+/// `files` with the Product's body replaced by `body`.
+pub fn with_body(files: &Files, body: &str) -> Files {
+    replaced(files, PRODUCT, BODY, body)
+}
+
 /// The state published from `files` after `previous`, as a remote holds it.
-fn published_after(previous: &StoredState, files: &Files) -> StoredState {
-    let lock = loftspec::publish::Lock::read(previous.lock.to_string().as_bytes()).unwrap();
-    let at = PublishedAt::from_unix_seconds(EPOCH + 3600).unwrap();
-    let tree = ReadTree::read(files).unwrap();
-    let Publication::Published {
-        lock,
-        files: written,
-        ..
-    } = publish::publish(tree, None, Some(&lock), at, Made::NotAsRemote).unwrap()
-    else {
-        panic!("the change publishes");
-    };
-    let mut files = files.clone();
-    files.extend(written);
-    StoredState {
-        lock: serde_json::from_slice(&lock.to_bytes()).unwrap(),
-        files: wire(&files),
-    }
+pub fn published_after(previous: &StoredState, files: &Files) -> StoredState {
+    let previous = Lock::read(previous.lock.to_string().as_bytes()).unwrap();
+    let (lock, files) = publish_at(files, Some(&previous), EPOCH + 3600);
+    stored(&lock, &files)
 }
 
 /// A Feature's file, whose body the conflict test changes too, and that body.
 const FEATURE: &str = "products/reading-list/shelf/add-a-book.yaml";
 const FEATURE_BODY: &str = "Books are stored by CMP-1, as ADR-1 decided; F-2 removes them.";
-
-/// `files` with the Feature's body replaced by `body`.
-fn with_feature_body(files: &Files, body: &str) -> Files {
-    let mut files = files.clone();
-    let path = SpecPath::new(FEATURE);
-    let text = String::from_utf8(files[&path].clone()).unwrap();
-    assert!(text.contains(FEATURE_BODY));
-    files.insert(path, text.replacen(FEATURE_BODY, body, 1).into_bytes());
-    files
-}
 
 /// The tree's Product body is `body`.
 fn set_body(scratch: &Scratch, body: &str) {
@@ -86,7 +66,7 @@ fn set_body(scratch: &Scratch, body: &str) {
 }
 
 /// The paths of the remote's requests, in order.
-fn calls(run: &Connected) -> Vec<String> {
+pub fn calls(run: &Connected) -> Vec<String> {
     run.remote
         .requests()
         .into_iter()
@@ -103,7 +83,7 @@ fn calls(run: &Connected) -> Vec<String> {
 }
 
 /// A repository at state 2 of the Reading List, connected to a remote whose head is state 3.
-fn behind() -> (Connected, History) {
+pub fn behind() -> (Connected, History) {
     let run = connected(2, 2, RemoteScenario::accepting);
     let ahead = history(3);
     let run = run.serving(
@@ -150,7 +130,10 @@ fn a_pull_at_the_head_writes_nothing_and_fetches_no_state() {
     let before = tree(&run.scratch.0);
     let output = pull(&run.scratch, &[]);
     assert_eq!(output.status.code(), Some(0), "{output:?}");
-    assert_eq!(document(&output)["outcome"], "unchanged");
+    let result = document(&output);
+    assert_eq!(result["outcome"], "unchanged");
+    assert_eq!(result["publishSequence"], 2);
+    assert_eq!(result["stateRoot"], run.history.states[1].lock["stateRoot"]);
     assert_eq!(calls(&run), ["/head"]);
     assert_eq!(tree(&run.scratch.0), before);
 }
@@ -170,9 +153,7 @@ fn a_document_without_a_lock_is_merged_from_an_empty_base() {
         paths.iter().all(|path| !path.ends_with("/states/0")),
         "{paths:?}"
     );
-    let lock: Value =
-        serde_json::from_slice(&fs::read(scratch.0.join("loft.lock.json")).unwrap()).unwrap();
-    assert_eq!(lock, published.states[0].lock);
+    assert_eq!(written_lock(&scratch), published.states[0].lock);
 }
 
 #[test]
@@ -181,7 +162,12 @@ fn a_conflict_is_written_reported_in_document_order_and_exits_one() {
     let first = run.history.states[0].clone();
     let theirs = published_after(
         &first,
-        &with_feature_body(&with_body(&spec(&first.files), "Theirs."), "Theirs too."),
+        &replaced(
+            &with_body(&spec(&first.files), "Theirs."),
+            FEATURE,
+            FEATURE_BODY,
+            "Theirs too.",
+        ),
     );
     let key = run.history.key.clone();
     let run = run.serving(
@@ -301,10 +287,7 @@ fn an_earlier_state_or_a_draft_is_refused_over_changes_and_writes_nothing() {
     for args in [["--sequence", "1"], ["--branch", "main"]] {
         let output = pull(&run.scratch, &args);
         assert_eq!(output.status.code(), Some(1), "{args:?}");
-        let message = document(&output)["errors"][0]["message"]
-            .as_str()
-            .unwrap()
-            .to_owned();
+        let message = Connected::message(&output);
         assert!(message.contains("would overwrite changes"), "{message}");
         assert_eq!(tree(&run.scratch.0), before);
     }
@@ -338,10 +321,7 @@ fn a_document_that_is_not_connected_is_refused_without_a_connection() {
     let before = tree(&run.scratch.0);
     let output = pull(&run.scratch, &[]);
     assert_eq!(output.status.code(), Some(1));
-    let message = document(&output)["errors"][0]["message"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let message = Connected::message(&output);
     assert!(
         message.contains("only a connected document is pulled"),
         "{message}"
@@ -360,10 +340,7 @@ fn a_sequence_or_draft_the_remote_does_not_hold_is_refused_naming_it() {
     ] {
         let output = pull(&run.scratch, &args);
         assert_eq!(output.status.code(), Some(1), "{args:?}");
-        let message = document(&output)["errors"][0]["message"]
-            .as_str()
-            .unwrap()
-            .to_owned();
+        let message = Connected::message(&output);
         assert!(message.contains(named), "{message}");
         assert_eq!(tree(&run.scratch.0), before);
     }
@@ -388,10 +365,7 @@ fn a_state_of_another_document_is_refused_naming_both_keys() {
     let before = tree(&run.scratch.0);
     let output = pull(&run.scratch, &["--branch", "other"]);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
-    let message = document(&output)["errors"][0]["message"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let message = Connected::message(&output);
     assert!(
         message.contains(other) && message.contains(&run.history.key),
         "{message}"
@@ -417,17 +391,6 @@ fn with_added_file() -> (String, StoredState, StoredState) {
     (published.key, first, second)
 }
 
-/// Writes `state` and its lock into `scratch`.
-fn place(scratch: &Scratch, state: &StoredState) {
-    fs::remove_dir_all(scratch.0.join("spec")).unwrap();
-    for (path, bytes) in spec(&state.files) {
-        let target = scratch.file(path.as_str());
-        fs::create_dir_all(target.parent().unwrap()).unwrap();
-        fs::write(target, bytes).unwrap();
-    }
-    fs::write(scratch.0.join("loft.lock.json"), lock_bytes(state)).unwrap();
-}
-
 #[test]
 fn a_sequence_removes_a_file_its_state_does_not_hold() {
     let (key, first, second) = with_added_file();
@@ -441,9 +404,7 @@ fn a_sequence_removes_a_file_its_state_does_not_hold() {
     let output = pull(&scratch, &["--sequence", "1"]);
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     assert!(!scratch.file(ADDED_DECISION).exists());
-    let lock: Value =
-        serde_json::from_slice(&fs::read(scratch.0.join("loft.lock.json")).unwrap()).unwrap();
-    assert_eq!(lock, first.lock);
+    assert_eq!(written_lock(&scratch), first.lock);
 }
 
 #[test]
@@ -462,10 +423,7 @@ fn a_lock_state_the_remote_does_not_hold_is_refused_naming_it() {
         let before = tree(&scratch.0);
         let output = pull(&scratch, &[]);
         assert_eq!(output.status.code(), Some(1), "{output:?}");
-        let message = document(&output)["errors"][0]["message"]
-            .as_str()
-            .unwrap()
-            .to_owned();
+        let message = Connected::message(&output);
         let root = second.lock["stateRoot"].as_str().unwrap();
         assert!(
             message.contains("publish sequence 2") && message.contains(root),

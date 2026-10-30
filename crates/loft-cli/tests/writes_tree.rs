@@ -51,7 +51,7 @@ fn plant(scratch: &Scratch, fixture: Fixture, committed: bool) {
             b"planted\n".to_vec(),
         ),
         Fixture::Clean => (RootPath::beside(LOCK), planted_lock()),
-        Fixture::Unkeyed | Fixture::Connected => {
+        Fixture::Unkeyed | Fixture::Connected | Fixture::Behind => {
             let text = fs::read_to_string(scratch.file(PRODUCT)).unwrap();
             let planted = text.replacen("Keeps the books a reader means to read.", PLANTED_BODY, 1);
             assert_ne!(planted, text);
@@ -77,9 +77,11 @@ fn planted(scratch: &Scratch, fixture: Fixture) -> bool {
             let lock = Lock::read(&fs::read(scratch.0.join(LOCK)).unwrap()).unwrap();
             lock.publish_sequence.get() == 8
         }
-        Fixture::Unkeyed | Fixture::Connected => fs::read_to_string(scratch.file(PRODUCT))
-            .unwrap()
-            .contains(PLANTED_BODY),
+        Fixture::Unkeyed | Fixture::Connected | Fixture::Behind => {
+            fs::read_to_string(scratch.file(PRODUCT))
+                .unwrap()
+                .contains(PLANTED_BODY)
+        }
     }
 }
 
@@ -185,15 +187,15 @@ fn no_tagged_command_changes_the_document_key_once_a_tree_is_written() {
         .into_iter()
         .partition(|(_, _, kind, _)| *kind == Fixture::Empty);
     assert!(!first.is_empty() && !later.is_empty());
-    // Each command that writes the first tree, then every other over the tree it wrote but
-    // those that need a connected document, which a first tree is not.
+    // Each command that writes the first tree, then every other over the tree it wrote but a
+    // pull, which needs a remote ahead of the tree.
     for (slug, args, kind, _) in first {
         let scratch = fixture(kind);
         assert_exit(slug, &run(&scratch, kind, args), 0);
         let key = document_key(&scratch.0);
         for (next, args, kind, _) in later
             .iter()
-            .filter(|(_, _, kind, _)| *kind != Fixture::Connected)
+            .filter(|(_, _, kind, _)| *kind != Fixture::Behind)
         {
             assert_exit(next, &run(&scratch, *kind, args), 0);
             assert_eq!(document_key(&scratch.0), key, "{next} after {slug}");

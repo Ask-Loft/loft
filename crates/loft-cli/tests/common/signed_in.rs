@@ -120,18 +120,22 @@ pub fn lock_bytes(state: &StoredState) -> Vec<u8> {
         .to_bytes()
 }
 
-/// A repository on `main` whose history published each state of `history`, one commit each,
-/// with its tree under `scratch` at the last state; the commits that published `sequences`
-/// alone are in the history.
-pub fn repository(scratch: &Scratch, history: &History, sequences: &[usize]) -> GitScenario {
-    let last = history.states.last().unwrap();
+/// Writes `state` as the tree under `scratch`, its lock as `loft.lock.json`.
+pub fn place(scratch: &Scratch, state: &StoredState) {
     fs::remove_dir_all(scratch.0.join("spec")).unwrap();
-    for (path, bytes) in spec(&last.files) {
+    for (path, bytes) in spec(&state.files) {
         let target = scratch.file(path.as_str());
         fs::create_dir_all(target.parent().unwrap()).unwrap();
         fs::write(target, bytes).unwrap();
     }
-    fs::write(scratch.0.join("loft.lock.json"), lock_bytes(last)).unwrap();
+    fs::write(scratch.0.join("loft.lock.json"), lock_bytes(state)).unwrap();
+}
+
+/// A repository on `main` whose history published each state of `history`, one commit each,
+/// with its tree under `scratch` at the last state; the commits that published `sequences`
+/// alone are in the history.
+pub fn repository(scratch: &Scratch, history: &History, sequences: &[usize]) -> GitScenario {
+    place(scratch, history.states.last().unwrap());
     let commits: Vec<String> = sequences.iter().map(|sequence| commit(*sequence)).collect();
     let listed: Vec<&str> = commits.iter().map(String::as_str).collect();
     let mut scenario = GitScenario::clean_on("main").lock_history(&listed);

@@ -9,22 +9,19 @@ use std::fmt::Display;
 use std::path::Path;
 
 use loftspec::canonical::{Digest, canonical_bytes};
-use loftspec::codec::{Files, SpecPath};
+use loftspec::codec::{Files, LABELS, SpecPath};
 use loftspec::document::Document;
 use loftspec::publish::{Lock, ReadTree, Unverified, verify};
 use loftspec_store::FileStore;
 use serde_json::{Value, json};
 use sha2::{Digest as _, Sha256};
 
-use crate::remote::head::Head;
-use crate::remote::{self, Client, RemoteError, history};
+use crate::remote::head::{self, Head};
+use crate::remote::{self, Client, RemoteError, files, history};
 
 /// What a connected document is, as every refusal to publish one names it.
 pub const CONNECTED: &str = "the document is connected: a connected document is published only \
                              through its remote, and its labels come from its remote";
-
-/// The bindings, which the remote writes and no delta carries.
-const LABELS: &str = "labels.yaml";
 
 /// What a connected publish came to.
 pub enum Outcome {
@@ -55,7 +52,7 @@ pub fn publish(
 ) -> Result<Outcome, String> {
     let key = &document.id.key().to_string();
     let client = remote::connected(document.remote.as_deref(), key).map_err(through)?;
-    let head = head(&client, key).map_err(through)?;
+    let head = head::fetch(&client, key).map_err(through)?;
     let base = Head::of_lock(previous);
     let at_head = Head::read(&head).unwrap_or_else(Head::none) == base;
     if let Some(lock) = previous
@@ -71,7 +68,12 @@ pub fn publish(
             .collect(),
         Some(lock) => match history_digests(root, lock) {
             Some(digests) => digests,
-            None => state_digests(&client, lock).map_err(through)?,
+            None => state_digests(&client, lock).map_err(|error| match error {
+                RemoteError::StateNotHeld { .. } => {
+                    through(format!("{error}: `loft pull` brings the tree to the head"))
+                }
+                error => through(error),
+            })?,
         },
     };
     let mut body = delta(&files, &base_files);
@@ -100,17 +102,6 @@ fn pairs<'a>(
         .into_iter()
         .flatten()
         .filter_map(move |item| Some((item[a].as_str()?, item[b].as_str()?)))
-}
-
-/// The remote's head: `null`, or its publish sequence, state root, lock and file digests.
-fn head(client: &Client, key: &str) -> Result<Value, RemoteError> {
-    match client.get("head") {
-        Ok(mut answer) => Ok(answer["head"].take()),
-        Err(error) if error.refusal("not_found").is_some() => Err(RemoteError::NotHeld {
-            key: key.to_owned(),
-        }),
-        Err(error) => Err(error),
-    }
 }
 
 /// The digest of each file of the state `lock` names, as the earliest commit that holds its
@@ -241,21 +232,7 @@ fn applied(
     if answer["outcome"] == "unchanged" || Head::of_lock(Some(&lock)) == *base {
         return Ok(Outcome::Unchanged(lock));
     }
-    let mut returned = Files::new();
-    for file in answer["files"].as_array().into_iter().flatten() {
-        let (Some(path), Some(text)) = (file["path"].as_str(), file["text"].as_str()) else {
-            return Err("the remote returned a file without its path or text".to_owned());
-        };
-        let under = path
-            .strip_prefix("spec/")
-            .filter(|under| {
-                under
-                    .split('/')
-                    .all(|segment| !matches!(segment, "" | "." | ".."))
-            })
-            .ok_or_else(|| format!("the remote returned a file outside spec/: {path}"))?;
-        returned.insert(SpecPath::new(under), text.as_bytes().to_vec());
-    }
+    let returned = files::read(&answer["files"], "returned")?;
     tree.extend(returned.clone());
     let read = ReadTree::read(&tree)
         .map_err(|_| "the files the remote returned do not read with the tree".to_owned())?;

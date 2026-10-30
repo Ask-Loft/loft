@@ -20,8 +20,13 @@ pub struct Published {
 impl Published {
     /// Whether its files verify against its lock.
     pub fn verifies(&self) -> bool {
-        ReadTree::read(&self.files).is_ok_and(|tree| verify(&tree, &self.lock).is_ok())
+        verifies(&self.files, &self.lock)
     }
+}
+
+/// Whether `files` are the state that `lock` names.
+pub fn verifies(files: &Files, lock: &Lock) -> bool {
+    ReadTree::read(files).is_ok_and(|tree| verify(&tree, lock).is_ok())
 }
 
 /// Each publish sequence the history of the repository at `root` holds, as the earliest commit

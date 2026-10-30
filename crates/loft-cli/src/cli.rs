@@ -399,7 +399,6 @@ pub enum Format {
     Json,
 }
 
-/// The output a command prints, which every command takes.
 /// The arguments of `loft pull`.
 #[derive(Args)]
 pub struct PullArgs {
@@ -424,6 +423,7 @@ impl PullArgs {
     }
 }
 
+/// The output a command prints, which every command takes.
 #[derive(Args)]
 pub struct Output {
     /// Print one JSON document on standard output (RQ-155).
