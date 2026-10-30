@@ -15,7 +15,6 @@ pub const CATEGORY: &str = "category";
 pub const COMPONENTS: &str = "components";
 pub const CONFLICTS: &str = "conflicts";
 pub const CONNECTED: &str = "connected";
-pub const REMOTE: &str = "remote";
 pub const CONSEQUENCES: &str = "consequences";
 pub const CONSERVATION_KIND: &str = "conservationKind";
 pub const CONSTRAINTS: &str = "constraints";
@@ -72,6 +71,7 @@ pub const RATIONALE: &str = "rationale";
 pub const REALIZES: &str = "realizes";
 /// The pseudo-field a conflict over a record that one side deleted names.
 pub const RECORD: &str = "record";
+pub const REMOTE: &str = "remote";
 pub const REQUIRED_VALUE: &str = "requiredValue";
 pub const REQUIREMENTS: &str = "requirements";
 pub const ROLE: &str = "role";

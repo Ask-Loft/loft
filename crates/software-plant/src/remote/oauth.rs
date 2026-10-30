@@ -6,11 +6,12 @@
 //! sign-in revoked otherwise.
 
 use std::collections::HashMap;
+use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 
 use super::problem::oauth;
-use super::wire::{base64url, encode, pairs, sha256, value};
+use super::wire::{base64url, pairs, query, sha256, value};
 use super::{Consent, State};
 use crate::http::{Request, Response};
 
@@ -39,10 +40,11 @@ struct Refresh {
     rotated: Option<Value>,
 }
 
-/// One sign-in: its access tokens, and whether it was revoked.
+/// One sign-in: its access tokens, each with the moment it expires, and whether it was
+/// revoked.
 #[derive(Default)]
 struct Family {
-    access: Vec<String>,
+    access: Vec<(String, Instant)>,
     revoked: bool,
 }
 
@@ -63,11 +65,22 @@ impl Auth {
         format!("{kind}-{}", self.issued)
     }
 
-    /// Whether `token` is an access token issued by a sign-in that was not revoked.
+    /// Whether `token` is an access token, not yet expired, issued by a sign-in that was not
+    /// revoked.
     pub(super) fn admits(&self, token: &str) -> bool {
-        self.families
-            .iter()
-            .any(|family| !family.revoked && family.access.iter().any(|issued| issued == token))
+        self.families.iter().any(|family| {
+            !family.revoked
+                && family
+                    .access
+                    .iter()
+                    .any(|(issued, expires)| issued == token && Instant::now() < *expires)
+        })
+    }
+
+    /// Begins a sign-in, and gives its family.
+    fn sign_in(&mut self) -> usize {
+        self.families.push(Family::default());
+        self.families.len() - 1
     }
 
     /// Issues an access token and a refresh token in the sign-in `family`, as the answer of the
@@ -75,7 +88,8 @@ impl Auth {
     fn issue(&mut self, family: usize, client_id: &str, expires_in: u64, scope: &str) -> Value {
         let access = self.next("access");
         let refresh = self.next("refresh");
-        self.families[family].access.push(access.clone());
+        let expires = Instant::now() + Duration::from_secs(expires_in);
+        self.families[family].access.push((access.clone(), expires));
         self.refresh.insert(
             refresh.clone(),
             Refresh {
@@ -97,8 +111,7 @@ impl Auth {
     pub(super) fn grant(&mut self, expires_in: u64) -> super::Grant {
         let client_id = self.next("client");
         self.clients.insert(client_id.clone(), Vec::new());
-        self.families.push(Family::default());
-        let family = self.families.len() - 1;
+        let family = self.sign_in();
         let answer = self.issue(family, &client_id, expires_in, "");
         super::Grant {
             client_id,
@@ -121,7 +134,7 @@ impl State {
     }
 
     fn resource(&self) -> String {
-        format!("{}/documents", self.origin)
+        format!("{}{}", self.origin, super::RESOURCE)
     }
 }
 
@@ -215,22 +228,13 @@ pub(super) fn register(state: &mut State, request: &Request) -> Response {
 }
 
 fn redirect(uri: &str, parameters: &[(&str, &str)]) -> Response {
-    let query: Vec<String> = parameters
-        .iter()
-        .map(|(name, value)| format!("{name}={}", encode(value)))
-        .collect();
     let separator = if uri.contains('?') { '&' } else { '?' };
-    let mut response = Response::empty(302);
-    response.headers.push((
-        "Location".to_owned(),
-        format!("{uri}{separator}{}", query.join("&")),
-    ));
-    response
+    Response::redirect(&format!("{uri}{separator}{}", query(parameters)))
 }
 
 pub(super) fn authorize(state: &mut State, query: &str) -> Response {
-    let query = pairs(query);
-    let field = |name| value(&query, name).unwrap_or_default().to_owned();
+    let query = Form::read(query);
+    let field = |name| query.field(name);
     let (client_id, redirect_uri, state_value) =
         (field("client_id"), field("redirect_uri"), field("state"));
     let registered = state.auth.clients.get(&client_id).is_some_and(|uris| {
@@ -268,20 +272,25 @@ pub(super) fn authorize(state: &mut State, query: &str) -> Response {
     redirect(&redirect_uri, &[("code", &code), ("state", &state_value)])
 }
 
-/// A form-encoded body, read by field.
+/// A query string or a form-encoded body, read by field.
 struct Form(Vec<(String, String)>);
 
 impl Form {
+    fn read(text: &str) -> Self {
+        Self(pairs(text))
+    }
+
+    /// The value of the field `name`, or nothing.
     fn field(&self, name: &str) -> String {
         value(&self.0, name).unwrap_or_default().to_owned()
     }
 }
 
 pub(super) fn token(state: &mut State, request: &Request) -> Response {
-    let form = pairs(&String::from_utf8_lossy(&request.body));
-    match value(&form, "grant_type").unwrap_or_default() {
-        "authorization_code" => exchange(state, &Form(form)),
-        "refresh_token" => refresh(state, &Form(form)),
+    let form = Form::read(&String::from_utf8_lossy(&request.body));
+    match form.field("grant_type").as_str() {
+        "authorization_code" => exchange(state, &form),
+        "refresh_token" => refresh(state, &form),
         _ => oauth("unsupported_grant_type"),
     }
 }
@@ -304,8 +313,7 @@ fn exchange(state: &mut State, form: &Form) -> Response {
     }
     code.used = true;
     let client_id = code.client_id.clone();
-    state.auth.families.push(Family::default());
-    let family = state.auth.families.len() - 1;
+    let family = state.auth.sign_in();
     let (expires_in, scope) = (state.scenario.expires_in, state.scenario.scope.clone());
     Response::json(
         200,

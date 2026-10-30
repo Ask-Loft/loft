@@ -241,6 +241,18 @@ fn a_manifest_s_remote_is_read_and_written_as_a_string() {
     files.insert(path(MANIFEST), manifest.into_bytes());
     let errors = codec::read(&files).expect_err("a list is not a string");
     assert_eq!(errors[0].sites[0].path, path(MANIFEST));
+    let mut unconnected = small_document();
+    unconnected.remote = Some(address.to_owned());
+    let written = codec::write(&unconnected);
+    assert!(
+        !fields(&written, MANIFEST, &[])
+            .iter()
+            .any(|field| field == "remote")
+    );
+    assert!(
+        codec::read(&written).is_ok(),
+        "the writer writes what the reader reads"
+    );
 }
 
 #[test]

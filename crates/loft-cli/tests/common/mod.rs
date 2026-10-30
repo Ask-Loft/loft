@@ -28,6 +28,14 @@ pub const BESIDE: [&str; 4] = [
     loftspec::trace::TRACE,
 ];
 
+/// The Reading List's files, as the writer writes them.
+pub fn reading_list() -> codec::Files {
+    let document = convert(&Export::from_json(READING_LIST).unwrap())
+        .unwrap()
+        .document;
+    codec::write(&document)
+}
+
 /// Every file under `<root>/spec/`, by its path under `spec/`.
 pub fn tree(root: &Path) -> codec::Files {
     loftspec_store::FileStore::open(root)
@@ -100,10 +108,7 @@ impl Scratch {
     /// A fresh directory holding the Reading List's `spec/` tree.
     pub fn with_reading_list() -> Self {
         let scratch = Self::empty();
-        let document = convert(&Export::from_json(READING_LIST).unwrap())
-            .unwrap()
-            .document;
-        for (path, bytes) in codec::write(&document) {
+        for (path, bytes) in reading_list() {
             let target = scratch.0.join("spec").join(path.as_str());
             fs::create_dir_all(target.parent().unwrap()).unwrap();
             fs::write(target, bytes).unwrap();

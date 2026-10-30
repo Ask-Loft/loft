@@ -26,6 +26,10 @@ pub use oauth::Grant;
 /// The bearer token every scenario admits, as `LOFT_REMOTE_TOKEN` gives it to the binary.
 pub const TOKEN: &str = "simulator-token";
 
+/// The path of the protected resource every document lies under, which the resource metadata
+/// names and is served beside.
+const RESOURCE: &str = "/documents";
+
 /// A published state as the remote holds it: its lock record and the text of each file under
 /// `spec/`, by its path from the top of the tree.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -57,6 +61,13 @@ enum Mode {
     Silent,
 }
 
+/// A call a scenario can forbid.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Call {
+    Create,
+    Import,
+}
+
 /// The document a scenario holds: its name, its published states and its drafts.
 #[derive(Clone, Debug, Default)]
 struct Held {
@@ -72,10 +83,11 @@ pub struct RemoteScenario {
     mode: Mode,
     retry_after: Option<String>,
     held: Option<Held>,
-    /// The calls that every token is forbidden: `create`, `import` or both.
-    forbidden: Vec<&'static str>,
+    /// The calls that every token is forbidden.
+    forbidden: Vec<Call>,
     closed: Option<String>,
     import_limit: Option<usize>,
+    state_limit: Option<usize>,
     consent: Consent,
     expires_in: u64,
     grace: bool,
@@ -96,6 +108,7 @@ impl RemoteScenario {
             forbidden: Vec::new(),
             closed: None,
             import_limit: None,
+            state_limit: None,
             consent: Consent::Grant,
             expires_in: 86_400,
             grace: true,
@@ -163,14 +176,14 @@ impl RemoteScenario {
     /// Refuses every create as `forbidden`.
     #[must_use]
     pub fn forbidding_create(mut self) -> Self {
-        self.forbidden.push("create");
+        self.forbidden.push(Call::Create);
         self
     }
 
     /// Refuses every import as `forbidden`.
     #[must_use]
     pub fn forbidding_import(mut self) -> Self {
-        self.forbidden.push("import");
+        self.forbidden.push(Call::Import);
         self
     }
 
@@ -185,6 +198,14 @@ impl RemoteScenario {
     #[must_use]
     pub fn import_limit(mut self, bytes: usize) -> Self {
         self.import_limit = Some(bytes);
+        self
+    }
+
+    /// Refuses an import that holds a state whose files are longer than `bytes` together, as
+    /// `payload_too_large`.
+    #[must_use]
+    pub fn state_limit(mut self, bytes: usize) -> Self {
+        self.state_limit = Some(bytes);
         self
     }
 
@@ -251,16 +272,16 @@ impl Remote {
     /// Starts a remote simulator for `scenario` on a free port of the loopback interface, or,
     /// for a refusing scenario, names a port where nothing listens.
     #[must_use]
-    pub fn start(scenario: RemoteScenario) -> Self {
+    pub fn start(mut scenario: RemoteScenario) -> Self {
         let key = scenario.key.clone();
+        let refusing = matches!(scenario.mode, Mode::Refusing);
         let state = Arc::new(Mutex::new(State {
-            held: scenario.held.clone(),
+            held: scenario.held.take(),
             scenario,
             origin: String::new(),
             replies: HashMap::new(),
             auth: oauth::Auth::default(),
         }));
-        let refusing = matches!(lock(&state).scenario.mode, Mode::Refusing);
         let (server, origin) = if refusing {
             (None, refusing_url())
         } else {
@@ -386,29 +407,22 @@ fn route(state: &mut State, request: &Request) -> Response {
     {
         return documents::answer(state, request, rest);
     }
-    let resource_metadata = format!("/.well-known/oauth-protected-resource{document}");
+    let resource_metadata = format!("/.well-known/oauth-protected-resource{RESOURCE}");
     match path {
-        _ if path == resource_metadata => only_get(request, || oauth::resource_metadata(state)),
+        _ if path == resource_metadata => only("GET", request, || oauth::resource_metadata(state)),
         "/.well-known/oauth-authorization-server/auth" => {
-            only_get(request, || oauth::server_metadata(state))
+            only("GET", request, || oauth::server_metadata(state))
         }
-        "/auth/register" => only_post(request, || oauth::register(state, request)),
-        "/auth/authorize" => only_get(request, || oauth::authorize(state, query)),
-        "/auth/token" => only_post(request, || oauth::token(state, request)),
+        "/auth/register" => only("POST", request, || oauth::register(state, request)),
+        "/auth/authorize" => only("GET", request, || oauth::authorize(state, query)),
+        "/auth/token" => only("POST", request, || oauth::token(state, request)),
         _ => problem::refusal("not_found"),
     }
 }
 
-fn only_get(request: &Request, answer: impl FnOnce() -> Response) -> Response {
-    if request.method == "GET" {
-        answer()
-    } else {
-        problem::refusal("method_not_allowed")
-    }
-}
-
-fn only_post(request: &Request, answer: impl FnOnce() -> Response) -> Response {
-    if request.method == "POST" {
+/// The answer of `answer` to a request by `method`, and `method_not_allowed` to any other.
+fn only(method: &str, request: &Request, answer: impl FnOnce() -> Response) -> Response {
+    if request.method == method {
         answer()
     } else {
         problem::refusal("method_not_allowed")

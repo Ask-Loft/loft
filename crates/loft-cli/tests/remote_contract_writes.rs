@@ -77,17 +77,25 @@ fn a_publish_is_answered_as_published_replayed_unchanged_or_conflict() {
         (json!([]), json!([]))
     );
     assert_eq!(remote.states().len(), 2);
+    let again = post(
+        &remote,
+        "/publish",
+        &publish_body(&history.key, head, &head.files, "retry-3"),
+    );
+    assert_eq!(again.body["outcome"], "replayed");
+    let mut keyless = publish_body(&history.key, head, &head.files, "");
+    assert_problem(&post(&remote, "/publish", &keyless), 400, "invalid_request");
+    keyless.as_object_mut().unwrap().remove("retryKey");
+    assert_problem(&post(&remote, "/publish", &keyless), 400, "invalid_request");
 }
 
 #[test]
 fn a_publish_the_remote_refuses_names_its_reason_or_its_paths() {
     let history = history(1);
     let base = &history.states[0];
-    let closed = Remote::start(
-        RemoteScenario::accepting(&history.key)
-            .holding("Reading List", history.states.clone())
-            .closed("the document takes no more writes"),
-    );
+    let held =
+        || RemoteScenario::accepting(&history.key).holding("Reading List", history.states.clone());
+    let closed = Remote::start(held().closed("the document takes no more writes"));
     let answer = post(
         &closed,
         "/publish",
@@ -96,7 +104,7 @@ fn a_publish_the_remote_refuses_names_its_reason_or_its_paths() {
     assert_problem(&answer, 409, "conflict");
     assert_eq!(answer.body["head"], mark(base));
     assert_eq!(answer.body["detail"], "the document takes no more writes");
-    let (remote, _) = holding(1);
+    let remote = Remote::start(held());
     let mut body = publish_body(&history.key, base, &base.files, "r");
     body["removed"] = json!(["spec/none.yaml"]);
     let invalid = post(&remote, "/publish", &body);
@@ -196,14 +204,22 @@ fn an_import_takes_the_states_as_the_document_s_history() {
         refused.body["head"],
         json!({ "publishSequence": 0, "stateRoot": null })
     );
+    let blank =
+        Remote::start(RemoteScenario::accepting(&history.key).draft("feat/x", BTreeMap::new()));
+    let accepted = post(
+        &blank,
+        "/import",
+        &import_body(&history.key, &history.states),
+    );
+    assert_eq!(accepted.status, 200, "an empty draft holds nothing");
 }
 
 #[test]
 fn an_import_whose_states_do_not_hold_together_is_refused() {
     let history = history(2);
-    let start = || {
-        Remote::start(RemoteScenario::accepting(&history.key).holding("Reading List", Vec::new()))
-    };
+    let empty = || RemoteScenario::accepting(&history.key).holding("Reading List", Vec::new());
+    let start = || Remote::start(empty());
+    let body = import_body(&history.key, &history.states);
     let mut tampered = history.states.clone();
     tampered[0].files.insert(
         "spec/loftspec.yaml".to_owned(),
@@ -215,6 +231,14 @@ fn an_import_whose_states_do_not_hold_together_is_refused() {
     backwards[1].lock["publishedAt"] = json!("2000-01-01T00:00:00Z");
     let mut other = history.states[..1].to_vec();
     other[0].lock["documentKey"] = json!("01a18e30-0000-7000-8000-000000000004");
+    let mut outside = history.states[..1].to_vec();
+    let manifest = outside[0].files.remove("spec/loftspec.yaml").unwrap();
+    outside[0]
+        .files
+        .insert("loftspec.yaml".to_owned(), manifest);
+    let refused = post(&start(), "/import", &import_body(&history.key, &outside));
+    assert_problem(&refused, 400, "invalid_request");
+    assert_eq!(refused.body["paths"], json!(["loftspec.yaml"]));
     for states in [tampered, reversed, backwards, other] {
         assert_problem(
             &post(&start(), "/import", &import_body(&history.key, &states)),
@@ -228,32 +252,14 @@ fn an_import_whose_states_do_not_hold_together_is_refused() {
         400,
         "invalid_request",
     );
-    let limited = Remote::start(
-        RemoteScenario::accepting(&history.key)
-            .holding("Reading List", Vec::new())
-            .import_limit(10),
-    );
+    let limited = Remote::start(empty().import_limit(10));
+    assert_problem(&post(&limited, "/import", &body), 413, "payload_too_large");
+    let one_state = Remote::start(empty().state_limit(10));
     assert_problem(
-        &post(
-            &limited,
-            "/import",
-            &import_body(&history.key, &history.states),
-        ),
+        &post(&one_state, "/import", &body),
         413,
         "payload_too_large",
     );
-    let forbidden = Remote::start(
-        RemoteScenario::accepting(&history.key)
-            .holding("Reading List", Vec::new())
-            .forbidding_import(),
-    );
-    assert_problem(
-        &post(
-            &forbidden,
-            "/import",
-            &import_body(&history.key, &history.states),
-        ),
-        403,
-        "forbidden",
-    );
+    let forbidden = Remote::start(empty().forbidding_import());
+    assert_problem(&post(&forbidden, "/import", &body), 403, "forbidden");
 }

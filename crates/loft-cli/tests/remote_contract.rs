@@ -52,7 +52,11 @@ pub fn call(method: &str, url: &str, token: Option<&str>, body: Option<&Value>) 
         ),
         None => agent().run(request.body(()).unwrap()),
     };
-    let mut response = response.expect("the remote answers");
+    read(response.expect("the remote answers"))
+}
+
+/// `response` read as an answer.
+pub fn read(mut response: ureq::http::Response<ureq::Body>) -> Answer {
     let headers = response
         .headers()
         .iter()
@@ -185,6 +189,14 @@ fn a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_iss
         );
         assert!(challenge.contains("scope=\""), "{challenge}");
     }
+    let lapsed = Remote::start(
+        RemoteScenario::accepting("01a18e30-0000-7000-8000-000000000011").expiring_in(0),
+    );
+    let expired = lapsed.grant();
+    assert!(
+        !lapsed.admits(&expired.access_token),
+        "an expired access token"
+    );
     let granted = remote.grant();
     let answer = call("GET", &url, Some(&granted.access_token), None);
     assert_eq!(answer.status, 200);
@@ -242,13 +254,13 @@ fn the_head_names_the_document_s_key_lock_and_file_digests_in_path_order() {
         .iter()
         .map(|f| f["path"].as_str().unwrap())
         .collect();
-    let mut sorted = paths.clone();
-    sorted.sort_unstable();
-    assert_eq!(paths, sorted);
-    let manifest = &head["files"][paths
+    assert!(paths.is_sorted());
+    let manifest = head["files"]
+        .as_array()
+        .unwrap()
         .iter()
-        .position(|p| *p == "spec/loftspec.yaml")
-        .unwrap()];
+        .find(|f| f["path"] == "spec/loftspec.yaml")
+        .unwrap();
     let digest =
         software_plant::remote::wire::sha256_hex(last.files["spec/loftspec.yaml"].as_bytes());
     assert_eq!(manifest["sha256"], digest.as_str());
@@ -269,11 +281,7 @@ fn a_published_state_and_a_draft_are_answered_with_their_files_or_not_found() {
     assert_eq!(state.body["lock"], history.states[0].lock);
     let files = state.body["files"].as_array().unwrap();
     assert_eq!(files.len(), history.states[0].files.len());
-    assert!(
-        files
-            .windows(2)
-            .all(|pair| pair[0]["path"].as_str() < pair[1]["path"].as_str())
-    );
+    assert!(files.is_sorted_by(|a, b| a["path"].as_str() < b["path"].as_str()));
     assert_problem(&get(&remote, "/states/9"), 404, "not_found");
     let answer = get(&remote, "/drafts/feat%2Fa%20b");
     assert_eq!(
@@ -282,6 +290,9 @@ fn a_published_state_and_a_draft_are_answered_with_their_files_or_not_found() {
     );
     assert_eq!(answer.body["files"].as_array().unwrap().len(), draft.len());
     assert_problem(&get(&remote, "/drafts/none"), 404, "not_found");
+    let plus =
+        Remote::start(RemoteScenario::accepting(&history.key).draft("feat+x", draft.clone()));
+    assert_eq!(get(&plus, "/drafts/feat+x").body["branch"], "feat+x");
 }
 
 #[test]

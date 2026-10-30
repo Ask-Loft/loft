@@ -4,33 +4,51 @@
 //! `LOFT_REMOTE_CONTRACT_ADDRESS` and registers a client there, and runs only on demand.
 
 use serde_json::{Value, json};
-use software_plant::remote::wire::{base64url, encode, pairs, sha256, value};
+use software_plant::remote::wire::{base64url, pairs, query, sha256, value};
 use software_plant::remote::{Remote, RemoteScenario};
 
-use crate::remote_contract::{Answer, agent, call};
+use crate::remote_contract::{Answer, agent, call, read};
 
 const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 const KEY: &str = "01a18e30-0000-7000-8000-000000000010";
 const REDIRECT: &str = "http://127.0.0.1/callback";
 
 fn metadata(remote: &Remote) -> (Value, Value) {
-    let challenge = call("GET", &format!("{}/head", remote.address()), None, None);
-    let header = challenge.header("www-authenticate").unwrap().to_owned();
-    let resource_url = header.split('"').nth(1).unwrap();
-    let resource = call("GET", resource_url, None, None).body;
+    discover(&remote.address())
+}
+
+/// The protected resource metadata and the authorization server metadata of the document at
+/// `address`, found from the challenge of a request without a token.
+fn discover(address: &str) -> (Value, Value) {
+    let challenge = call("GET", &format!("{address}/head"), None, None);
+    let header = challenge.header("www-authenticate").expect("a challenge");
+    let metadata = header.split('"').nth(1).unwrap();
+    let resource = call("GET", metadata, None, None).body;
+    let named = metadata.replacen("/.well-known/oauth-protected-resource", "", 1);
+    assert_eq!(resource["resource"], named.as_str(), "RFC 9728 3.3");
     let issuer = resource["authorization_servers"][0].as_str().unwrap();
-    let path = issuer.strip_prefix(remote.origin()).unwrap();
+    let authority = issuer.find("://").unwrap() + 3;
+    let (origin, path) = issuer.split_at(
+        issuer[authority..]
+            .find('/')
+            .map_or(issuer.len(), |at| authority + at),
+    );
     let server = call(
         "GET",
-        &format!(
-            "{}/.well-known/oauth-authorization-server{path}",
-            remote.origin()
-        ),
+        &format!("{origin}/.well-known/oauth-authorization-server{path}"),
         None,
         None,
     )
     .body;
     (resource, server)
+}
+
+/// The id of a public client registered with `server`.
+fn registered(server: &Value) -> String {
+    register(server, &[REDIRECT], "none").body["client_id"]
+        .as_str()
+        .unwrap()
+        .to_owned()
 }
 
 fn register(server: &Value, redirects: &[&str], method: &str) -> Answer {
@@ -67,14 +85,14 @@ fn authorize(server: &Value, client: &str, resource: &str, overrides: &[(&str, &
             (*value).clone_into(&mut entry.1);
         }
     }
-    let query: Vec<String> = parameters
+    let parameters: Vec<(&str, &str)> = parameters
         .iter()
-        .map(|(name, value)| format!("{name}={}", encode(value)))
+        .map(|(name, value)| (*name, value.as_str()))
         .collect();
     let url = format!(
         "{}?{}",
         server["authorization_endpoint"].as_str().unwrap(),
-        query.join("&")
+        query(&parameters)
     );
     call("GET", &url, None, None)
 }
@@ -91,30 +109,19 @@ fn location(answer: &Answer) -> Vec<(String, String)> {
 }
 
 fn form(url: &str, fields: &[(&str, &str)]) -> Answer {
-    let body: Vec<String> = fields
-        .iter()
-        .map(|(n, v)| format!("{n}={}", encode(v)))
-        .collect();
-    let mut response = agent()
-        .post(url)
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .send(body.join("&"))
-        .unwrap();
-    let bytes = response.body_mut().read_to_vec().unwrap_or_default();
-    Answer {
-        status: response.status().as_u16(),
-        headers: std::collections::BTreeMap::new(),
-        body: serde_json::from_slice(&bytes).unwrap_or(Value::Null),
-    }
+    read(
+        agent()
+            .post(url)
+            .header("Content-Type", "application/x-www-form-urlencoded")
+            .send(query(fields))
+            .unwrap(),
+    )
 }
 
 /// A client registered on `remote` and a code it was given, with the endpoints.
 fn coded(remote: &Remote) -> (Value, String, String, String) {
     let (resource, server) = metadata(remote);
-    let client = register(&server, &[REDIRECT], "none").body["client_id"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let client = registered(&server);
     let resource = resource["resource"].as_str().unwrap().to_owned();
     let code = value(
         &location(&authorize(&server, &client, &resource, &[])),
@@ -208,10 +215,7 @@ fn an_authorization_request_is_answered_as_the_person_consents() {
     let remote = Remote::start(RemoteScenario::accepting(KEY));
     let (resource, server) = metadata(&remote);
     let resource = resource["resource"].as_str().unwrap();
-    let client = register(&server, &[REDIRECT], "none").body["client_id"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let client = registered(&server);
     let granted = location(&authorize(&server, &client, resource, &[]));
     assert!(value(&granted, "code").is_some());
     assert_eq!(value(&granted, "state"), Some("the-state"));
@@ -240,10 +244,7 @@ fn an_authorization_request_is_answered_as_the_person_consents() {
     let refusing = Remote::start(RemoteScenario::accepting(KEY).refusing_consent());
     let (resource, server) = metadata(&refusing);
     let resource = resource["resource"].as_str().unwrap();
-    let client = register(&server, &[REDIRECT], "none").body["client_id"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let client = registered(&server);
     let denied = location(&authorize(&server, &client, resource, &[]));
     assert_eq!(value(&denied, "error"), Some("access_denied"));
     assert_eq!(value(&denied, "state"), Some("the-state"));
@@ -327,27 +328,8 @@ fn a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace
 #[ignore = "reaches the remote at LOFT_REMOTE_CONTRACT_ADDRESS"]
 fn a_real_remote_s_authorization_server_answers_in_the_shape_the_simulator_does() {
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
-    let real_challenge = call("GET", &format!("{address}/head"), None, None);
-    let header = real_challenge
-        .header("www-authenticate")
-        .expect("a challenge")
-        .to_owned();
-    let real_resource = call("GET", header.split('"').nth(1).unwrap(), None, None).body;
+    let (real_resource, real_server) = discover(&address);
     let issuer = real_resource["authorization_servers"][0].as_str().unwrap();
-    let (origin, path) = issuer.split_at(
-        issuer.find("://").unwrap()
-            + 3
-            + issuer[issuer.find("://").unwrap() + 3..]
-                .find('/')
-                .unwrap_or(issuer.len()),
-    );
-    let real_server = call(
-        "GET",
-        &format!("{origin}/.well-known/oauth-authorization-server{path}"),
-        None,
-        None,
-    )
-    .body;
     let remote = Remote::start(RemoteScenario::accepting(KEY));
     let (resource, server) = metadata(&remote);
     let keys = |value: &Value, fields: &[&str]| {

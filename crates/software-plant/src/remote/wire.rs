@@ -29,12 +29,22 @@ pub fn value<'a>(pairs: &'a [(String, String)], name: &str) -> Option<&'a str> {
 /// `text` percent-decoded, with `+` read as a space as a form body writes it.
 #[must_use]
 pub fn decode(text: &str) -> String {
+    decoded(text, true)
+}
+
+/// A path segment percent-decoded, where `+` stands for itself, as RFC 3986 reads it.
+#[must_use]
+pub fn decode_segment(text: &str) -> String {
+    decoded(text, false)
+}
+
+fn decoded(text: &str, plus_is_space: bool) -> String {
     let bytes = text.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
     let mut index = 0;
     while index < bytes.len() {
         match bytes[index] {
-            b'+' => out.push(b' '),
+            b'+' if plus_is_space => out.push(b' '),
             b'%' if index + 2 < bytes.len() => {
                 let hex = std::str::from_utf8(&bytes[index + 1..index + 3])
                     .ok()
@@ -67,6 +77,16 @@ pub fn encode(text: &str) -> String {
     out
 }
 
+/// `pairs` as a query string or a form-encoded body, each value percent-encoded.
+#[must_use]
+pub fn query(pairs: &[(&str, &str)]) -> String {
+    pairs
+        .iter()
+        .map(|(name, value)| format!("{name}={}", encode(value)))
+        .collect::<Vec<_>>()
+        .join("&")
+}
+
 /// `bytes` in base64url without padding.
 #[must_use]
 pub fn base64url(bytes: &[u8]) -> String {
@@ -93,12 +113,7 @@ pub fn sha256(bytes: &[u8]) -> [u8; 32] {
 /// The SHA-256 digest of `bytes` in lowercase hexadecimal.
 #[must_use]
 pub fn sha256_hex(bytes: &[u8]) -> String {
-    sha256(bytes)
-        .iter()
-        .fold(String::with_capacity(64), |mut out, byte| {
-            let _ = write!(out, "{byte:02x}");
-            out
-        })
+    format!("{:x}", Sha256::digest(bytes))
 }
 
 #[cfg(test)]

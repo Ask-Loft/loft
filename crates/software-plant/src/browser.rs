@@ -5,7 +5,7 @@
 //! cannot be opened does. Each address it is given is recorded for the test to read.
 
 use std::fs;
-use std::io::{self, BufRead, BufReader, Read, Write};
+use std::io::{self, BufRead, BufReader, Write};
 use std::net::TcpStream;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -143,6 +143,5 @@ fn get(address: &str) -> io::Result<Option<String>> {
             location = Some(value.trim().to_owned());
         }
     }
-    let _ = reader.read_to_end(&mut Vec::new());
     Ok(if redirect { location } else { None })
 }

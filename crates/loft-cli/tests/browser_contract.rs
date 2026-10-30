@@ -4,13 +4,13 @@
 //! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/browser_contract/)'`.
 
 use std::process::Command;
-use std::thread;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use software_plant::http::{Request, Responder, Response, Server};
 use software_plant::{BrowserScenario, InstalledBrowser, browser_executable};
 
 use crate::common::Scratch;
+use crate::served::within;
 
 /// Redirects `/start` to `/landing`, and answers every other path with a page.
 struct Redirecting;
@@ -18,11 +18,7 @@ struct Redirecting;
 impl Responder for Redirecting {
     fn answer(&mut self, request: &Request) -> Option<Response> {
         if request.path == "/start" {
-            let mut response = Response::empty(302);
-            response
-                .headers
-                .push(("Location".to_owned(), "/landing".to_owned()));
-            Some(response)
+            Some(Response::redirect("/landing"))
         } else {
             Some(Response::empty(200))
         }
@@ -74,10 +70,7 @@ fn the_system_s_opener_requests_the_address_as_the_simulator_does() {
         Command::new("xdg-open").arg(&address).status()
     };
     assert!(opener.unwrap().success());
-    let deadline = Instant::now() + Duration::from_secs(30);
-    while server.requests().len() < 2 && Instant::now() < deadline {
-        thread::sleep(Duration::from_millis(100));
-    }
+    within(Duration::from_secs(30), || server.requests().len() >= 2);
     let paths: Vec<String> = server.requests().into_iter().map(|r| r.path).collect();
     assert_eq!(&paths[..2], ["/start", "/landing"]);
 }

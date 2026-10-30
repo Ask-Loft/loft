@@ -3,27 +3,17 @@
 
 use std::collections::BTreeMap;
 
-use loftspec::codec::{self, Files, SpecPath};
-use loftspec::convert::v1::convert;
-use loftspec::convert::v1::export::Export;
+use loftspec::codec::{Files, SpecPath};
 use loftspec::publish::{self, Made, Publication, PublishedAt, ReadTree};
 use serde_json::Value;
 use software_plant::remote::StoredState;
 
-use super::{EPOCH, READING_LIST};
+use super::{EPOCH, reading_list};
 
 /// A document's published history: its key and each state, from publish sequence 1.
 pub struct History {
     pub key: String,
     pub states: Vec<StoredState>,
-}
-
-/// The Reading List's files, as the writer writes them.
-pub fn reading_list() -> Files {
-    let document = convert(&Export::from_json(READING_LIST).unwrap())
-        .unwrap()
-        .document;
-    codec::write(&document)
 }
 
 /// `files` by their paths from the top of the tree, as the wire names them.

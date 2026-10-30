@@ -8,8 +8,8 @@ use loftspec::publish::{self, Lock, Made, Publication, PublishedAt, ReadTree};
 use serde_json::{Value, json};
 
 use super::problem::{self, conflict, invalid, refusal};
-use super::wire::{decode, sha256_hex};
-use super::{Held, State, StoredState, TOKEN, head_mark};
+use super::wire::{decode_segment, sha256_hex};
+use super::{Call, Held, RemoteScenario, State, StoredState, TOKEN, head_mark};
 use crate::http::{Request, Response};
 
 /// The longest name a document may have, in Unicode scalar values.
@@ -26,7 +26,7 @@ impl State {
         let metadata = format!(
             "{}/.well-known/oauth-protected-resource{}",
             self.origin,
-            self.address_path()
+            super::RESOURCE
         );
         response.headers.push((
             "WWW-Authenticate".to_owned(),
@@ -62,10 +62,10 @@ pub(super) fn answer(state: &mut State, request: &Request, rest: &str) -> Respon
     match segments.as_slice() {
         ["head"] => head(state),
         ["states", sequence] => published(state, sequence),
-        ["drafts", branch] => draft(state, &decode(branch)),
+        ["drafts", branch] => draft(state, &decode_segment(branch)),
         ["publish"] => publish(state, &body()),
         ["create"] => create(state, &body()),
-        _ => import(state, &body(), request.body.len()),
+        _ => import(state, request),
     }
 }
 
@@ -150,7 +150,7 @@ fn create(state: &mut State, body: &Value) -> Response {
     if name.trim().is_empty() || name.chars().count() > NAME_LIMIT {
         return invalid(&[], Some("`name` is blank or longer than 200 characters"));
     }
-    if state.scenario.forbidden.contains(&"create") {
+    if state.scenario.forbidden.contains(&Call::Create) {
         return refusal("forbidden");
     }
     if let Some(held) = &state.held {
@@ -191,37 +191,43 @@ fn spec_files(files: &BTreeMap<String, String>) -> Files {
         .collect()
 }
 
-/// The paths a read or validation error names, from the top of the tree.
-fn paths_of<'a>(sites: impl Iterator<Item = &'a SpecPath>) -> Vec<String> {
-    let mut paths: Vec<String> = sites
-        .map(|path| format!("spec/{}", path.as_str()))
-        .collect();
-    paths.sort();
-    paths.dedup();
-    paths
+/// The tree of `spec`, or `invalid_request` naming, from the top of the tree, each path a read
+/// error names.
+fn read_tree(spec: &Files) -> Result<ReadTree<'_>, Response> {
+    ReadTree::read(spec).map_err(|errors| {
+        let mut paths: Vec<String> = errors
+            .iter()
+            .flat_map(|error| &error.sites)
+            .map(|site| format!("spec/{}", site.path.as_str()))
+            .collect();
+        paths.sort();
+        paths.dedup();
+        invalid(&paths, None)
+    })
 }
 
-fn import(state: &mut State, body: &Value, length: usize) -> Response {
+fn import(state: &mut State, request: &Request) -> Response {
     if state
         .scenario
         .import_limit
-        .is_some_and(|limit| length > limit)
+        .is_some_and(|limit| request.body.len() > limit)
     {
         return refusal("payload_too_large");
     }
     let Some(held) = &state.held else {
         return refusal("not_found");
     };
-    if !held.states.is_empty() || !held.drafts.is_empty() {
+    if !held.states.is_empty() || held.drafts.values().any(|files| !files.is_empty()) {
         return conflict(head_mark(held), None);
     }
-    if state.scenario.forbidden.contains(&"import") {
+    if state.scenario.forbidden.contains(&Call::Import) {
         return refusal("forbidden");
     }
+    let body = serde_json::from_slice::<Value>(&request.body).unwrap_or(Value::Null);
     if body["documentKey"] != state.scenario.key.as_str() {
         return invalid(&[], None);
     }
-    match imported(&state.scenario.key, &body["states"]) {
+    match imported(&state.scenario, &body["states"]) {
         Ok(states) => {
             let held = state.held.get_or_insert_with(Held::default);
             held.states = states;
@@ -236,12 +242,25 @@ fn import(state: &mut State, body: &Value, length: usize) -> Response {
 
 /// The states of an import, each verified against its lock, from publish sequence 1 upward
 /// with publish times that never go back.
-fn imported(key: &str, states: &Value) -> Result<Vec<StoredState>, Response> {
+fn imported(scenario: &RemoteScenario, states: &Value) -> Result<Vec<StoredState>, Response> {
+    let key = scenario.key.as_str();
     let states = states.as_array().ok_or_else(|| invalid(&[], None))?;
     let mut read = Vec::with_capacity(states.len());
     let mut last_time = 0;
     for (index, state) in states.iter().enumerate() {
         let files = wire_files(&state["files"]).ok_or_else(|| invalid(&[], None))?;
+        let outside: Vec<String> = files
+            .keys()
+            .filter(|path| !path.starts_with("spec/"))
+            .cloned()
+            .collect();
+        if !outside.is_empty() {
+            return Err(invalid(&outside, None));
+        }
+        let size: usize = files.values().map(String::len).sum();
+        if scenario.state_limit.is_some_and(|limit| size > limit) {
+            return Err(refusal("payload_too_large"));
+        }
         let lock = Lock::read(state["lock"].to_string().as_bytes())
             .map_err(|error| invalid(&[], Some(&error.to_string())))?;
         let expected = u64::try_from(index + 1).unwrap_or(u64::MAX);
@@ -260,12 +279,7 @@ fn imported(key: &str, states: &Value) -> Result<Vec<StoredState>, Response> {
         }
         last_time = time;
         let spec = spec_files(&files);
-        let tree = ReadTree::read(&spec).map_err(|errors| {
-            invalid(
-                &paths_of(errors.iter().flat_map(|e| e.sites.iter().map(|s| &s.path))),
-                None,
-            )
-        })?;
+        let tree = read_tree(&spec)?;
         if publish::verify(&tree, &lock).is_err() {
             return Err(invalid(
                 &[],
@@ -281,18 +295,24 @@ fn imported(key: &str, states: &Value) -> Result<Vec<StoredState>, Response> {
 }
 
 fn publish(state: &mut State, body: &Value) -> Response {
+    let Some(held) = &state.held else {
+        return refusal("not_found");
+    };
     if body["documentKey"] != state.scenario.key.as_str() {
         return invalid(&[], None);
     }
-    let retry = body["retryKey"].as_str().unwrap_or_default().to_owned();
+    let Some(retry) = body["retryKey"]
+        .as_str()
+        .filter(|retry| !retry.is_empty())
+        .map(str::to_owned)
+    else {
+        return invalid(&[], Some("a publish names its `retryKey`"));
+    };
     if let Some(reply) = state.replies.get(&retry) {
         let mut reply = reply.clone();
         reply["outcome"] = json!("replayed");
         return Response::json(200, &reply);
     }
-    let Some(held) = &state.held else {
-        return refusal("not_found");
-    };
     let mark = head_mark(held);
     if body["base"]["publishSequence"] != mark["publishSequence"]
         || body["base"]["stateRoot"] != mark["stateRoot"]
@@ -305,14 +325,10 @@ fn publish(state: &mut State, body: &Value) -> Response {
     let at = state.scenario.publish_from + held.states.len() as u64;
     match published_from(held, body, at) {
         Ok((reply, stored)) => {
-            if let Some(stored) = stored {
-                state
-                    .held
-                    .get_or_insert_with(Held::default)
-                    .states
-                    .push(stored);
-                state.replies.insert(retry, reply.clone());
+            if let (Some(stored), Some(held)) = (stored, &mut state.held) {
+                held.states.push(stored);
             }
+            state.replies.insert(retry, reply.clone());
             Response::json(200, &reply)
         }
         Err(refused) => refused,
@@ -360,12 +376,7 @@ fn published_from(
 ) -> Result<(Value, Option<StoredState>), Response> {
     let files = applied(held, body)?;
     let spec = spec_files(&files);
-    let tree = ReadTree::read(&spec).map_err(|errors| {
-        invalid(
-            &paths_of(errors.iter().flat_map(|e| e.sites.iter().map(|s| &s.path))),
-            None,
-        )
-    })?;
+    let tree = read_tree(&spec)?;
     let previous = held
         .states
         .last()
@@ -398,16 +409,17 @@ fn published_from(
                 .chain(&allocated)
                 .map(|given| json!({ "key": given.element.key().to_string(), "label": given.label.to_string() }))
                 .collect();
+            let lock = lock_json(&lock);
             let reply = json!({
                 "outcome": "published",
-                "lock": lock_json(&lock),
+                "lock": lock,
                 "files": texts(&returned),
                 "labels": labels,
             });
             Ok((
                 reply,
                 Some(StoredState {
-                    lock: lock_json(&lock),
+                    lock,
                     files: stored,
                 }),
             ))

@@ -21,9 +21,9 @@ const ATTEMPTS: usize = 5;
 /// # Panics
 ///
 /// The executable cannot be built or copied.
+#[must_use]
 pub fn git_executable() -> &'static Path {
-    static GIT: OnceLock<PathBuf> = OnceLock::new();
-    GIT.get_or_init(|| executable("git"))
+    &executables().0
 }
 
 /// The browser simulator's executable, built and copied as [`git_executable`] is.
@@ -31,47 +31,60 @@ pub fn git_executable() -> &'static Path {
 /// # Panics
 ///
 /// The executable cannot be built or copied.
+#[must_use]
 pub fn browser_executable() -> &'static Path {
-    static BROWSER: OnceLock<PathBuf> = OnceLock::new();
-    BROWSER.get_or_init(|| executable("browser"))
+    &executables().1
 }
 
-fn executable(name: &str) -> PathBuf {
-    let mut last = None;
-    for _ in 0..ATTEMPTS {
-        match stable_copy(&build(name), name) {
-            Ok(path) => return path,
-            Err(error) => last = Some(error),
+/// The simulators' executables, `git` and `browser`, built in one run of Cargo on first use.
+fn executables() -> &'static (PathBuf, PathBuf) {
+    static BUILT: OnceLock<(PathBuf, PathBuf)> = OnceLock::new();
+    BUILT.get_or_init(|| {
+        let mut last = None;
+        for _ in 0..ATTEMPTS {
+            let [git, browser] = build(["git", "browser"]);
+            match (stable_copy(&git, "git"), stable_copy(&browser, "browser")) {
+                (Ok(git), Ok(browser)) => return (git, browser),
+                (Err(error), _) | (_, Err(error)) => last = Some(error),
+            }
         }
-    }
-    panic!("the {name} simulator cannot be copied: {last:?}")
+        panic!("the simulators cannot be copied: {last:?}")
+    })
 }
 
-fn build(name: &str) -> PathBuf {
-    let output = Command::new(env!("CARGO"))
-        .args([
-            "build",
-            "--quiet",
-            "--package",
-            "software-plant",
-            "--bin",
-            name,
-            "--message-format=json",
-        ])
+/// Builds the simulators `names` in one run of Cargo, and names each one's executable.
+fn build<const N: usize>(names: [&str; N]) -> [PathBuf; N] {
+    let mut command = Command::new(env!("CARGO"));
+    command.args([
+        "build",
+        "--quiet",
+        "--package",
+        "software-plant",
+        "--message-format=json",
+    ]);
+    for name in names {
+        command.args(["--bin", name]);
+    }
+    let output = command
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
         .expect("cargo runs");
     assert!(
         output.status.success(),
-        "the {name} simulator builds\n{}",
+        "the simulators build\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
-    String::from_utf8_lossy(&output.stdout)
+    let messages: Vec<serde_json::Value> = String::from_utf8_lossy(&output.stdout)
         .lines()
-        .filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok())
-        .find(|message| message["target"]["name"] == name && message["executable"].is_string())
-        .and_then(|message| message["executable"].as_str().map(PathBuf::from))
-        .expect("cargo names the simulator's executable")
+        .filter_map(|line| serde_json::from_str(line).ok())
+        .collect();
+    names.map(|name| {
+        messages
+            .iter()
+            .find(|message| message["target"]["name"] == name && message["executable"].is_string())
+            .and_then(|message| message["executable"].as_str().map(PathBuf::from))
+            .expect("cargo names the simulator's executable")
+    })
 }
 
 /// Copies the executable to `software-plant/<content>/<name>` beside it, unless a copy of the same

@@ -18,9 +18,9 @@ pub(super) fn manifest(document: &Document) -> Rec {
     }
     if document.connected {
         record.set_text(field::CONNECTED, "true");
-    }
-    if let Some(remote) = &document.remote {
-        record.set_text(field::REMOTE, remote.as_str());
+        if let Some(remote) = &document.remote {
+            record.set_text(field::REMOTE, remote.as_str());
+        }
     }
     let products = document.products.iter().filter_map(|product| product.id);
     record.set(
