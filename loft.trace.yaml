@@ -23569,7 +23569,7 @@ links:
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
         body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
   - node: 01a1646f-546d-7042-befd-ea8e5a514259
-    reviewed: 5b17d1cb84271dd77eabad6cc8e0527fbd2b4c949ebcb9213b3f76d035ec2e68
+    reviewed: d798997d8339ebd19712a89977b82d203b7a81efb18212be043dd99f8210bdb4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
@@ -23604,6 +23604,36 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "the tree the mod's own loft yard serve registers is not posted again"
         body: a99f5fbfa24de7244e90b97bf9dbaea631ca933f76598bb2155fd6e902e46f94
+  - node: 01a18a3a-4833-7539-a772-a644d88830c8
+    reviewed: fa0392af03f3d4e51906c9927c91c55f5638b03097400e904f2b9f4402f88d8b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where loft yard serve reports a page server running on another port, the mod tells that page server the session is live"
+        body: 1238d0982e1714debdd5a0a130b9c5b68b5e1443c565ecafade229e62e75421c
+  - node: 01a18a3a-4833-7539-a772-a6459a7809a7
+    reviewed: e54347a1748dfd8d0bdec21c37e295508eaa5c98abdffedc912f2cffed8da5f0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where loft yard serve reports a page server running on another port, it registers the tree there, and a tree the session moves into is registered with that page server"
+        body: 68d4fd1db8211910ff4a07e3b29269bb07c9e968d063e3967ef757906bea4841
+  - node: 01a18a3a-4833-7539-a772-a646e54a4320
+    reviewed: 8c379a18a942f6331c202d36673abc6b46970ae59ab065b00aa687b9c13b32ab
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "the events kept while no page server answered are posted, in order, to the page server on the port loft yard serve reports"
+        body: 588625371bb102aa510f980873ffbbaafe9f294715c3855e2e0e6a5dea625e20
+  - node: 01a18a3a-4833-7539-a772-a647df1c0223
+    reviewed: 251f5874833a53616310f317f403110d413e425b2b6ff4ed46bdb5755b002d91
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "while the page server on the reported port answers, the mod starts no more loft yard serve"
+        body: b03aeff8862a1e27686e0ee6614919584fb158b4d715ae373728be0e03a77d94
+  - node: 01a18a3a-4833-7539-a772-a648e5d3b582
+    reviewed: 8565ab1472a78517877456e6aff6bcd1d1286f138a55874e4a75f9a231617a1c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "once no page server answers on the reported port, the next loft yard serve asks for the yardPort setting and the mod follows what it reports"
+        body: 72cb99132724e78263118ea7dfec8f264d9aabe3303c848ce0dfe5300bb964f8
   - node: 01a1647b-208d-7169-85c8-9a53c278bbaf
     reviewed: c259e2d64be99b2d25359d1e588cc474cbea184a76d5b6778ce428525589172b
     tests:

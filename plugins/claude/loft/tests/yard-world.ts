@@ -133,9 +133,15 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     posts: [] as { url: string; headers: Record<string, string>; events: Doc[] }[],
     /** The sessions the mod told the page server are live, on its beat. */
     heard: [] as string[],
+    /** The address each beat a page server took was posted to. */
+    heardAt: [] as string[],
     beats: [] as Doc[],
     /** Whether a page server answers the beat; where none does, the mod runs `loft yard serve`. */
     answersBeat: false,
+    /** The one port a page server listens on, where a test names one: a post to another is refused. */
+    servedPort: undefined as number | undefined,
+    /** The port `loft yard serve` reports for the page server that serves or runs. */
+    reportedPort: 7411,
     postStatus: 200,
     /** What the page server's answer to a post waits on. */
     answering: Promise.resolve() as Promise<unknown>,
@@ -174,9 +180,13 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))
   on('fs.read', ($, e) => (state.hasToken && e.path === `${HOME}/.yard/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
   on('http.fetch', async ($, e) => {
+    if (state.servedPort !== undefined && new URL(e.url).port !== String(state.servedPort)) {
+      return { deny: `connection refused: ${e.url}` }
+    }
     if (e.url.endsWith('/api/heard')) {
       const beat = JSON.parse(String(e.init?.body ?? '{}')) as Doc
       state.heard.push(String(beat.session))
+      state.heardAt.push(e.url)
       state.beats.push(beat)
       const status = state.answersBeat ? 200 : 503
       return { value: { status, ok: state.answersBeat, headers: {}, text: '{}' } as never }
@@ -230,7 +240,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     state.runs.push({ argv: e.argv, cwd: e.cwd, env: e.env, spawned: true })
     const sub = subOf(e.argv)
     if (sub === 'serve') {
-      yield { stream: 'stdout' as const, text: `${JSON.stringify({ outcome: state.serve, errors: [] })}\n` }
+      yield { stream: 'stdout' as const, text: `${JSON.stringify({ outcome: state.serve, port: state.reportedPort, errors: [] })}\n` }
       if (state.serve === 'serving') await state.serverStops.promise
       return { value: { code: 0, signal: null } }
     }

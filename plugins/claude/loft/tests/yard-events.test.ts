@@ -109,6 +109,22 @@ test('events wait while the page server does not take them, and go in their orde
   expect(events(w).map(event => event.turn)).toEqual(['t1', 't2'])
 })
 
+test('the events kept while no page server answered are posted, in order, to the page server on the port loft yard serve reports', async ($, on) => {
+  const w = world(on, { serve: 'running' })
+  w.state.servedPort = 7412
+  w.state.answersBeat = true
+  await start($)
+  await $.turn.start({ text: '', turnId: 't1' })
+  await w.clock.advance(5000)
+  expect(w.state.posts).toEqual([])
+  w.state.reportedPort = 7412
+  await $.turn.start({ text: '', turnId: 't2' })
+  await w.clock.advance(10000)
+  expect(events(w).filter(event => event.kind === 'turn.start').map(event => event.turn)).toEqual(['t1', 't2'])
+  expect(new Set(w.state.posts.map(post => post.url))).toEqual(new Set(['http://127.0.0.1:7412/api/events']))
+  expect(events(w).some(event => 'dropped' in event)).toBe(false)
+})
+
 test('past 1,000 events kept the oldest is dropped, and the next post says how many were', async ($, on) => {
   const w = world(on)
   await start($)
