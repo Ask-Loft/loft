@@ -82,6 +82,9 @@ pub struct Repository {
     /// The commit `git log -1 --format=%H -- loft.lock.json` gives: the last to write the lock.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub lock_written: Option<String>,
+    /// The commits `git log --reverse --format=%H -- loft.lock.json` gives, oldest first.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lock_history: Vec<String>,
     /// What Yard Client's calls read.
     #[serde(default, skip_serializing_if = "Yard::is_empty")]
     pub yard: Yard,
@@ -178,6 +181,7 @@ impl GitScenario {
                 git_dir: None,
                 bases: BTreeMap::new(),
                 lock_written: None,
+                lock_history: Vec::new(),
                 yard: Yard::default(),
             }),
             failures: Vec::new(),
