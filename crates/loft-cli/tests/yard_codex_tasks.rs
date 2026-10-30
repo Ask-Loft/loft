@@ -2,7 +2,8 @@
 
 use serde_json::{Value, json};
 
-use crate::yard::Yard;
+use crate::common::Scratch;
+use crate::yard::{Yard, block};
 use crate::yard_codex::{event, hook, plan_update, read};
 
 fn stage(yard: &Yard) {
@@ -154,4 +155,22 @@ fn a_codex_plan_whose_task_change_yard_refuses_keeps_its_native_response() {
     let answer = hook(&yard, &plan(&yard, &[("Check", "pending")]));
     assert_eq!(answer["hookOutput"], json!({}));
     assert_eq!(read(&yard)["revision"], before);
+}
+
+#[test]
+fn a_codex_plan_is_mirrored_into_the_working_stage_of_another_worktree() {
+    let yard = Yard::new();
+    let there = Scratch::empty();
+    let tree = there.0.display().to_string();
+    yard.write(
+        "codex-session",
+        r#"[{"id":"there","kind":"stage","title":"There","status":"active"}]"#,
+        &["--host", "codex", "--tree", &tree],
+    );
+    hook(&yard, &plan(&yard, &[("Build", "in_progress")]));
+    let theirs = yard.read("codex-session", &["--host", "codex", "--tree", &tree]);
+    let mirrored = &block(&theirs, "there")["blocks"][0];
+    assert_eq!(mirrored["kind"], "task", "{theirs}");
+    assert_eq!(mirrored["version"]["body"]["state"], "active");
+    assert!(!yard.folder(crate::yard::BRANCH).exists());
 }

@@ -288,3 +288,20 @@ fn a_malformed_hook_object_is_refused_and_changes_nothing() {
     assert_eq!(output.status.code(), Some(1));
     assert!(!yard.scratch.home().join(".yard/claude").exists());
 }
+
+#[test]
+fn a_session_start_briefs_the_main_agent_on_its_working_tree_in_another_worktree() {
+    let yard = Yard::new();
+    let there = crate::common::Scratch::empty();
+    let tree = there.0.display().to_string();
+    yard.write(
+        "s1",
+        r#"[{"id":"there","kind":"stage","title":"There","status":"active"}]"#,
+        &["--tree", &tree],
+    );
+    let answered = hook(&yard, &start(&yard, "s1", "startup"), None);
+    let given = context(&answered).unwrap();
+    let top = there.0.canonicalize().unwrap().display().to_string();
+    assert!(given.contains(&top), "{given}");
+    assert!(given.contains("There"), "{given}");
+}

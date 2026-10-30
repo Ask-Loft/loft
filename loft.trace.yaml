@@ -24444,6 +24444,15 @@ links:
       - file: "crates/loft-cli/tests/yard_working_tree.rs"
         name: "the_briefing_describes_the_working_tree_s_yard_log_and_names_it"
         body: f3ed1c64503f9a7e7cf12101f43821db39b362b88ab3c03e3bd517d04e8e51cd
+  - node: 01a18a50-2ff6-715f-af9c-708c4fce0730
+    reviewed: 71b87ccc4048e0be3bc6762a55cd82ab93d1a81ccce70955105b33821b6e3114
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_tasks.rs"
+        name: "a_codex_plan_is_mirrored_into_the_working_stage_of_another_worktree"
+        body: 0e4ff0220150ff7a55888a6a9f28332f2eaeae00673524bca25e6ada72415b74
+      - file: "crates/loft-cli/tests/yard_claude_hook.rs"
+        name: "a_session_start_briefs_the_main_agent_on_its_working_tree_in_another_worktree"
+        body: ccf22a79586b575b75578db50a18d592037e8e07a6400d9b536c156e41052ad1
   - node: 01a18a50-2ff6-715f-af9c-708e88fcaf5a
     reviewed: a93f352d4489582cf3e9dfd4fc058616b7e95b8e80d753a4d72722db3c0faeb5
     tests:
