@@ -27,6 +27,7 @@ fn the_manifests_fields_are_written_in_the_published_order() {
         "documentKey",
         "publishBranch",
         "connected",
+        "remote",
         "products",
         "derivedFrom",
     ];
@@ -219,6 +220,40 @@ fn a_manifest_of_a_document_that_is_not_connected_omits_connected() {
         "{written:?}"
     );
     assert!(!codec::read(&small).unwrap().connected);
+}
+
+#[test]
+fn a_manifest_s_remote_is_read_and_written_as_a_string() {
+    let address = "https://remote.example/documents/one";
+    assert_eq!(scalar(&full_files(), MANIFEST, &["remote"]), address);
+    assert_eq!(
+        codec::read(&full_files()).unwrap().remote.as_deref(),
+        Some(address)
+    );
+    let small = codec::write(&small_document());
+    assert!(
+        !fields(&small, MANIFEST, &[])
+            .iter()
+            .any(|field| field == "remote")
+    );
+    let mut files = full_files();
+    let manifest = text(&files, MANIFEST).replace(&format!("remote: \"{address}\""), "remote: [1]");
+    files.insert(path(MANIFEST), manifest.into_bytes());
+    let errors = codec::read(&files).expect_err("a list is not a string");
+    assert_eq!(errors[0].sites[0].path, path(MANIFEST));
+}
+
+#[test]
+fn a_manifest_that_holds_remote_without_connected_is_refused_naming_the_file_line_and_column() {
+    let mut files = full_files();
+    let manifest = text(&files, MANIFEST).replace("connected: true\n", "");
+    files.insert(path(MANIFEST), manifest.into_bytes());
+    let errors = codec::read(&files).expect_err("remote without connected");
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(errors[0].to_string().contains("connected"), "{errors:?}");
+    assert_eq!(errors[0].sites[0].path, path(MANIFEST));
+    let at = Location::At(Position::new(5, 9));
+    assert_eq!(errors[0].sites[0].location, Some(at));
 }
 
 #[test]

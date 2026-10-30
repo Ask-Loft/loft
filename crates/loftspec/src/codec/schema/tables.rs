@@ -93,6 +93,7 @@ const MANIFEST_FIELDS: &[Field] = &[
     req(field::DOCUMENT_KEY, S::Key),
     opt(field::PUBLISH_BRANCH, S::Identifier),
     opt(field::CONNECTED, S::Flag),
+    opt(field::REMOTE, S::Text),
     scalars(field::PRODUCTS, S::Key),
     record(field::DERIVED_FROM, false, K::DerivedFrom),
 ];

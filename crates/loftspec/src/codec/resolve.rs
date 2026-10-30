@@ -191,6 +191,13 @@ impl<'t> Resolver<'t> {
     fn manifest(&mut self, manifest: &Rec) -> Result<(), ReadError> {
         self.document.publish_branch = manifest.text(field::PUBLISH_BRANCH).map(str::to_owned);
         self.document.connected = manifest.get(field::CONNECTED).is_some();
+        if let Some(remote) = manifest.get(field::REMOTE) {
+            if !self.document.connected {
+                let problem = "`remote` names a remote only beside `connected: true`".to_owned();
+                return Err(self.fail(remote.position(), problem));
+            }
+            self.document.remote = remote.text().map(str::to_owned);
+        }
         if let Some(source) = manifest.record(field::DERIVED_FROM) {
             let address = text(source, field::CONTENT_ADDRESS);
             self.document.derived_from = Some(DerivedFrom {

@@ -78,6 +78,7 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 | `documentKey` | required: the document's key | `publishSequence` | required |
 | `publishBranch` | optional: the branch publishes run on, where it is not `main` | | |
 | `connected` | optional: `true` once the document is connected to a remote, which `loft publish` then publishes through; never set it by hand | | |
+| `remote` | optional: the address of the remote, beside `connected`; `loft remote set` writes it, never set it by hand | | |
 | `products` | optional: the Products' keys, in order | | |
 | `derivedFrom` | optional: the Loft v1 Authored State an imported document derives from | | |
 

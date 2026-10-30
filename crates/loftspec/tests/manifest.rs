@@ -35,3 +35,13 @@ fn the_connected_mark_enters_no_root() {
     let hashed = |document| loftspec::hash::hash_document(document).unwrap().roots;
     assert_eq!(hashed(&connected), hashed(&plain));
 }
+
+#[test]
+fn the_remote_s_address_enters_no_root() {
+    let mut connected = crate::common::small_document();
+    connected.connected = true;
+    let mut named = connected.clone();
+    named.remote = Some("https://remote.example/documents/one".to_owned());
+    let hashed = |document| loftspec::hash::hash_document(document).unwrap().roots;
+    assert_eq!(hashed(&named), hashed(&connected));
+}

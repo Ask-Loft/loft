@@ -188,6 +188,9 @@ pub struct Document {
     pub derived_from: Option<DerivedFrom>,
     pub publish_branch: Option<String>,
     pub connected: bool,
+    /// The address of a connected document's remote, which the manifest names as `remote` and
+    /// which enters no root.
+    pub remote: Option<String>,
     /// The merge conflicts the tree holds, which the validator reports until removed (RQ-126).
     pub conflicts: Vec<Conflict>,
 }
@@ -210,6 +213,7 @@ impl Document {
             derived_from: None,
             publish_branch: None,
             connected: false,
+            remote: None,
             conflicts: Vec::new(),
         }
     }

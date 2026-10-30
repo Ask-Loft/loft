@@ -1532,7 +1532,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_manifests_fields_are_written_in_the_published_order"
-        body: 9cbf7172fa9b05d24eaee47bea8662f9727f2810a751b64c31845ee1bbf3daa4
+        body: 124567dbc28239a3ac09ca8a9eb30e6bc07590e4258011285209f4cbf5fe7b98
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_manifest_without_its_format_algorithm_or_document_key_is_refused"
         body: 2b1632a5d98e9050cbe70c9faa3587078bbdc5a019acc16eeb0b009abf43fce4
@@ -1566,6 +1566,18 @@ links:
       - file: "crates/loftspec/tests/manifest.rs"
         name: "the_connected_mark_enters_no_root"
         body: 32c75b5157af09a302c3594edb06a7a18baa9d791c4722234ebb4b150ba68cdb
+  - node: 01a18e1f-8dab-754b-b097-4f9ee1fc0147
+    reviewed: fb65c0d6d97b1e6314ca85bfa262d1f059fe0146b69badf6e53848f089254b56
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_manifest_s_remote_is_read_and_written_as_a_string"
+        body: e37b0ce1e00f36eea3789379e08bdb297303b0ea9a65c8a048b51f5a3c710878
+  - node: 01a18e1f-8dab-754b-b097-4f9f16a8b2f2
+    reviewed: f54440f896454766bb056a30ec1f001671a451d11b778bdd85f35b44a40e2dfa
+    tests:
+      - file: "crates/loftspec/tests/manifest.rs"
+        name: "the_remote_s_address_enters_no_root"
+        body: 8b25265a1df8f373930cf108c29735d014a41df1976b36dc5a86918b4b56fddd
   - node: b3eea94a-c54b-4b6a-ae7a-053fe11608ee
     reviewed: 0cba42f09e59f5023ebbd1f9110a5f1ec6941b8b428ef069d84118603d6c34fb
     tests:
@@ -2744,7 +2756,7 @@ links:
         body: ebc25140d1d3d33c85e9af6ff0da914913c00e71834427d9ef627f316b32d940
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_manifests_fields_are_written_in_the_published_order"
-        body: 9cbf7172fa9b05d24eaee47bea8662f9727f2810a751b64c31845ee1bbf3daa4
+        body: 124567dbc28239a3ac09ca8a9eb30e6bc07590e4258011285209f4cbf5fe7b98
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_labels_file_holds_the_counters_then_the_bindings"
         body: b64ae5b7833cb01c238152c5d8d2bdafb9eb8a543f656ae2d0e991b4421c7fd7
@@ -3208,11 +3220,11 @@ links:
         name: "a_subject_records_fields_are_its_role_then_its_node_and_both_are_required"
         body: ebc25140d1d3d33c85e9af6ff0da914913c00e71834427d9ef627f316b32d940
   - node: 5da704a2-97eb-429e-bd69-04d1613a7167
-    reviewed: f8e0fc5adf4f759d26d5eacef284b7cf950416753fd7b1a3dd79caac997c0423
+    reviewed: 182ed9a88f6d70db13120ac8fe8ea5ebd21da09812f6e50979e2fce6d6b876f6
     tests:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "the_manifests_fields_are_written_in_the_published_order"
-        body: 9cbf7172fa9b05d24eaee47bea8662f9727f2810a751b64c31845ee1bbf3daa4
+        body: 124567dbc28239a3ac09ca8a9eb30e6bc07590e4258011285209f4cbf5fe7b98
   - node: 4783e5ae-9990-4606-a8d1-fe92b68d5792
     reviewed: bf3a96cc28822f0ca3a9ff1e38b22909ece481be545be98ff88ac983f6d40b5b
     tests:
@@ -3225,6 +3237,18 @@ links:
       - file: "crates/loftspec/tests/codec_fields_files.rs"
         name: "a_manifest_of_a_document_that_is_not_connected_omits_connected"
         body: 82eabec8c42fbdd69b3ae61b5872a53baf96351da614a062badb7cdd8a41e579
+  - node: 01a18e1f-8dab-754b-b097-4fa07c1b8abd
+    reviewed: 7b4dd8169a985e45f5954f8e433d5cce2c628f30562817e722dbf8d817480267
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_manifest_s_remote_is_read_and_written_as_a_string"
+        body: e37b0ce1e00f36eea3789379e08bdb297303b0ea9a65c8a048b51f5a3c710878
+  - node: 01a18e1f-8dab-754b-b097-4fa1f7555cb8
+    reviewed: c36ffc6a321ae96dc441b1b451172b820afe7d67fcbeb89c4b1e64436e7318ca
+    tests:
+      - file: "crates/loftspec/tests/codec_fields_files.rs"
+        name: "a_manifest_that_holds_remote_without_connected_is_refused_naming_the_file_line_and_column"
+        body: 252f7b736ecc7bb081d960aa30f473bf18f3b9685fde237c71cc4fc0f0c17750
   - node: 01a156ac-0a95-726f-ab84-01af31c44897
     reviewed: 5dd7fe8da9d52321cb473983d0fcea21bb58e2577506d93428c921482ca62bcd
     tests:
