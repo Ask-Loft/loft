@@ -8,7 +8,7 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 
 use crate::yard::args::YardAction;
-use crate::{install, remote_command, review, switch_command};
+use crate::{install, pull, remote_command, review, switch_command};
 
 #[derive(Parser)]
 #[command(
@@ -75,6 +75,9 @@ pub enum Command {
         #[command(flatten)]
         output: Output,
     },
+    /// Bring a connected document's tree to its remote's head, or write a published state or a
+    /// branch's draft over a tree at the state its lock names.
+    Pull(PullArgs),
     /// Find the nodes and decisions a label, slug or key equals, or whose name contains the
     /// query, with the key a reference to each carries and where it is written.
     Find {
@@ -397,6 +400,30 @@ pub enum Format {
 }
 
 /// The output a command prints, which every command takes.
+/// The arguments of `loft pull`.
+#[derive(Args)]
+pub struct PullArgs {
+    /// Write the published state of this sequence instead of merging the head.
+    #[arg(long, value_name = "NUMBER", conflicts_with = "branch")]
+    pub sequence: Option<u64>,
+    /// Write the draft the remote holds under this branch name instead of merging the head.
+    #[arg(long, value_name = "NAME")]
+    pub branch: Option<String>,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+impl PullArgs {
+    /// What the pull writes.
+    pub fn source(&self) -> pull::Source {
+        match (self.sequence, &self.branch) {
+            (Some(sequence), _) => pull::Source::Sequence(sequence),
+            (None, Some(branch)) => pull::Source::Branch(branch.clone()),
+            (None, None) => pull::Source::Head,
+        }
+    }
+}
+
 #[derive(Args)]
 pub struct Output {
     /// Print one JSON document on standard output (RQ-155).
@@ -425,6 +452,7 @@ impl Command {
                 source: ImportSource::Openspec { .. },
             } => Some("import openspec"),
             Self::Publish { .. } => Some("publish"),
+            Self::Pull(..) => Some("pull"),
             Self::Reconcile { .. } => Some("reconcile"),
             Self::Terms { .. } => Some("terms"),
             Self::Find { .. } => Some("find"),

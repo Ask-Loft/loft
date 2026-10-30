@@ -9,6 +9,7 @@ export const LOFT_SUBCOMMANDS: readonly string[] = [
   'check',
   'import',
   'publish',
+  'pull',
   'find',
   'terms',
   'reconcile',

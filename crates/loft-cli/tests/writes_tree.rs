@@ -185,12 +185,16 @@ fn no_tagged_command_changes_the_document_key_once_a_tree_is_written() {
         .into_iter()
         .partition(|(_, _, kind, _)| *kind == Fixture::Empty);
     assert!(!first.is_empty() && !later.is_empty());
-    // Each command that writes the first tree, then every other over the tree it wrote.
+    // Each command that writes the first tree, then every other over the tree it wrote but
+    // those that need a connected document, which a first tree is not.
     for (slug, args, kind, _) in first {
         let scratch = fixture(kind);
         assert_exit(slug, &run(&scratch, kind, args), 0);
         let key = document_key(&scratch.0);
-        for (next, args, kind, _) in &later {
+        for (next, args, kind, _) in later
+            .iter()
+            .filter(|(_, _, kind, _)| *kind != Fixture::Connected)
+        {
             assert_exit(next, &run(&scratch, *kind, args), 0);
             assert_eq!(document_key(&scratch.0), key, "{next} after {slug}");
         }

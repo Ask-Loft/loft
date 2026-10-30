@@ -52,6 +52,7 @@ mod publish_connected_reach;
 mod publish_former;
 mod publish_meet_contract;
 mod publish_settle;
+mod pull;
 mod reads_tree;
 mod reconcile;
 mod reconcile_located;
