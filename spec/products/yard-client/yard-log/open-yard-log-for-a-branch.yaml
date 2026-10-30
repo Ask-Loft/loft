@@ -30,7 +30,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "Yard Client"
-      shall: "keep `.yard/` at the top of the worktree that holds the calling agent's current directory."
+      shall: "keep `.yard/` at the top of the worktree that a command acts on."
     criteria:
       - key: 01a1646f-546e-76cb-8b4f-f23e7f3714f6
         name: "An agent whose current directory is below the top of the worktree writes to the `.yard/` at the top of the worktree."

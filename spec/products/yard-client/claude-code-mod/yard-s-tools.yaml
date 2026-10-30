@@ -1,7 +1,7 @@
 key: 01a1646f-546c-7521-9643-bca6524c277a
 slug: yard-s-tools
 name: "Yard's tools"
-body: "The agent reaches Yard Log through six tools that the Loft mod registers with Claude Code, each served by a hook of the mod that runs the matching `loft yard` command. A tool call applies to the calling agent's own directory and names the agent to `loft`, so that a subagent in a worktree of its own reaches that worktree's Yard Log."
+body: "The agent reaches Yard Log through six tools that the Loft mod registers with Claude Code, each served by a hook of the mod that runs the matching `loft yard` command. A tool call names the agent to `loft`, which applies it to the agent's working tree: its own directory, so that a subagent in a worktree of its own reaches that worktree's Yard Log, unless its working stage lies in another worktree. A call may name another tree instead."
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
@@ -17,6 +17,8 @@ requirements:
         name: "Claude Code lists each tool as `mcp__loft__<tool>`."
       - key: 01a1646f-546c-7521-9643-bca9a47ace19
         name: "Each tool's input is described by a JSON schema."
+      - key: 01a18a50-2ff6-715f-af9c-707b4b2bc130
+        name: "Each tool takes an optional `tree`, a directory of the worktree whose Yard Log it is to reach."
       - key: 01a1646f-546c-7521-9643-bcaa2981e408
         name: "`yard_read` takes an optional revision to read since."
       - key: 01a16621-e7bc-7707-b123-2162855d3a0d
@@ -44,6 +46,8 @@ requirements:
     criteria:
       - key: 01a1646f-546c-7521-9643-bcb14b1743cb
         name: "The command runs in the directory that `$.session.cwd()` gives inside the call's hook."
+      - key: 01a18a50-2ff6-715f-af9c-707cef0d146a
+        name: "A call that gives `tree` runs its command with `--tree` naming it, and a call that gives none runs its command with no `--tree`."
       - key: 01a1646f-546c-7521-9643-bcb304796db1
         name: "The tool's result is the command's JSON document."
       - key: 01a1646f-546c-7521-9643-bcb446be66f4

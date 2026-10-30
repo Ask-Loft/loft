@@ -214,3 +214,15 @@ requirements:
         name: "The skill says that a read gives each `loft` block's report by its size, and that `reports` gives the reports themselves, best with `since`."
       - key: 01a16979-7fc7-740c-a7e4-9e31eef6017f
         name: "The skill says that a read gives the number of items of each list a report counts, and to check what a report holds by them rather than read it whole."
+  - key: 01a18a50-2ff6-715f-af9c-70775a290aad
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent, before it works in a worktree other than its own directory, to open a stage in that worktree's Yard Log by naming its tree."
+    criteria:
+      - key: 01a18a50-2ff6-715f-af9c-7078cc8ee415
+        name: "The skill says that the agent's questions, plans, tasks and events follow its working stage into the worktree that holds it."
+      - key: 01a18a50-2ff6-715f-af9c-70791ede80f9
+        name: "The skill says that ending that stage returns the work to the agent's own directory."
+      - key: 01a18a50-2ff6-715f-af9c-707adfa12f6c
+        name: "The skill says to name the tree to close another worktree's Yard Log or to record a publish in it."

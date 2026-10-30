@@ -5,7 +5,7 @@ context: "Several sessions may work at once on one machine, each perhaps running
 state:
   kind: accepted
   selectedOption: 01a1646f-5467-7025-8a88-4e858cc1209a
-  outcome: "Every `loft yard` command is called for an agent, a session and for a subagent its agent id, and addresses Yard Log of the tree and branch of that agent's own current directory; each block records the agent that wrote it, and each agent has at most one active stage."
+  outcome: "Every `loft yard` command is called for an agent, a session and for a subagent its agent id, and addresses Yard Log of the tree and branch of that agent's own current directory, unless its working stage lies in another worktree; each block records the agent that wrote it, and each agent has at most one active stage."
 drivers:
   - key: 01a1646f-5467-7025-8a88-4e8219e9091c
     kind: local
