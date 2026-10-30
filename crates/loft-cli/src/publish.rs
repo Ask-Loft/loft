@@ -19,14 +19,17 @@ use serde_json::{Value, json};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
+use crate::publish_remote::{self, CONNECTED, Outcome};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-publish/2";
 
-/// The refusal of a connected document, which `loft publish` cannot send to its remote.
-const CONNECTED: &str = "the document is connected: a connected document is published only \
-                         through its remote, and its labels come from its remote";
+/// What a publish came to: the publisher's own, or its remote's.
+enum Done {
+    Local(Publication),
+    Remote(Outcome),
+}
 
 /// Why a publish did not happen.
 enum Failure {
@@ -43,13 +46,24 @@ impl<E: ToString> From<E> for Failure {
 
 pub fn run(root: &Path, as_json: bool) -> Finished {
     match attempt(root) {
-        Ok(publication) => {
+        Ok(Done::Local(publication)) => {
             if as_json {
                 json::print(&published(&publication));
             } else {
                 print(&publication);
             }
             Finished::success(outcome(&publication))
+        }
+        Ok(Done::Remote(outcome)) => {
+            if as_json {
+                json::print(&remote_published(&outcome));
+            } else {
+                remote_print(&outcome);
+            }
+            Finished::success(match outcome {
+                Outcome::Published { .. } => "published",
+                Outcome::Unchanged { .. } => "unchanged",
+            })
         }
         Err(failure) => stop(failure).exit(SCHEMA, as_json),
     }
@@ -58,8 +72,9 @@ pub fn run(root: &Path, as_json: bool) -> Finished {
 /// Reads the tree, then the repository, the previous lock and the time, runs the publisher and
 /// writes what it gives in one save. In a stopped merge or rebase a lock that is not a lock
 /// record, such as one holding conflict markers, is read as none. The publication it gives is
-/// one that published or one that changed nothing.
-fn attempt(root: &Path) -> Result<Publication, Failure> {
+/// one that published or one that changed nothing; a connected document's goes on through its
+/// remote.
+fn attempt(root: &Path) -> Result<Done, Failure> {
     let store = FileStore::open(root)?;
     let files = store.read_files()?;
     let tree = ReadTree::read(&files).map_err(Failure::Read)?;
@@ -76,10 +91,24 @@ fn attempt(root: &Path) -> Result<Publication, Failure> {
     match &mut publication {
         Publication::Published { lock, files, .. } => store.publish(std::mem::take(files), lock)?,
         Publication::Unchanged(_) => {}
-        // Without a remote to send it to, a connected document's publish goes no further.
-        Publication::Prepared { .. } => return Err(Failure::Refused(CONNECTED.to_owned())),
+        Publication::Prepared {
+            document,
+            state_root,
+            ..
+        } => {
+            let outcome = publish_remote::publish(
+                root,
+                &store,
+                &files,
+                document,
+                &state_root.to_string(),
+                previous.as_ref(),
+            )
+            .map_err(Failure::Refused)?;
+            return Ok(Done::Remote(outcome));
+        }
     }
-    Ok(publication)
+    Ok(Done::Local(publication))
 }
 
 /// The outcome of a publish that published or changed nothing.
@@ -278,4 +307,54 @@ fn relabels(relabels: &[Relabel]) -> Vec<Value> {
             })
         })
         .collect()
+}
+
+fn remote_print(outcome: &Outcome) {
+    match outcome {
+        Outcome::Unchanged {
+            sequence,
+            state_root,
+        } => outln!(
+            "nothing to publish: nothing changed since publish sequence {sequence}, state root \
+             {state_root}"
+        ),
+        Outcome::Published { lock, labels } => {
+            for (key, label) in labels {
+                outln!("{label} {key}");
+            }
+            outln!(
+                "published sequence {}, state root {}",
+                lock.publish_sequence,
+                lock.state_root
+            );
+        }
+    }
+}
+
+fn remote_published(outcome: &Outcome) -> Value {
+    let (name, sequence, state_root, labels) = match outcome {
+        Outcome::Unchanged {
+            sequence,
+            state_root,
+        } => ("unchanged", *sequence, state_root.clone(), &[][..]),
+        Outcome::Published { lock, labels } => (
+            "published",
+            lock.publish_sequence.get(),
+            lock.state_root.to_string(),
+            &labels[..],
+        ),
+    };
+    let allocated: Vec<Value> = labels
+        .iter()
+        .map(|(key, label)| json!({ "label": label, "key": key }))
+        .collect();
+    let fields = json!({
+        "givenBack": [],
+        "allocated": allocated,
+        "rewritten": [],
+        "withdrawn": [],
+        "publishSequence": sequence,
+        "stateRoot": state_root,
+    });
+    json::result(SCHEMA, name, fields, Vec::new())
 }

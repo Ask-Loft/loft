@@ -1,6 +1,6 @@
-//! Reaching a connected document's remote: its address, from the manifest's `remote`; the token
-//! a request carries, from the person's sign-in to that address in `loft/remotes.json`,
-//! refreshed before it expires; and the calls themselves, through [`client::Client`]. A token is
+//! Reaching a connected document's remote: its address, from the manifest's `remote` or
+//! `LOFT_REMOTE_ENDPOINT`; the token a request carries, from `LOFT_REMOTE_TOKEN` or the person's
+//! sign-in to that address in `loft/remotes.json`, refreshed before it expires; and the calls themselves, through [`client::Client`]. A token is
 //! sent only in the `Authorization` header of a request to the remote, and printed nowhere.
 
 pub mod browser;
@@ -17,8 +17,9 @@ use crate::network;
 
 pub use client::{Client, Refusal};
 
-/// The variable that the refusal of a missing sign-in names as the way to give a bearer token
-/// for one run; no command reads it yet.
+/// The variable that names the remote's address for one run, in place of the manifest's.
+pub const ENDPOINT_ENV: &str = "LOFT_REMOTE_ENDPOINT";
+/// The variable that names the bearer token for one run, in place of a sign-in.
 pub const TOKEN_ENV: &str = "LOFT_REMOTE_TOKEN";
 /// The variable that replaces the 30 seconds a call to the remote may take.
 pub const TIMEOUT_ENV: &str = "LOFT_REMOTE_TIMEOUT";
@@ -31,10 +32,16 @@ const TIMEOUT: Duration = Duration::from_secs(30);
 /// Why the remote could not be reached, or what it refused.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RemoteError {
-    /// The address has no sign-in.
+    /// The document is connected but no address names its remote.
+    NoAddress { key: String },
+    /// The address has no sign-in, and `LOFT_REMOTE_TOKEN` is not set.
     NoSignIn { address: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),
+    /// The remote holds no document under the key.
+    NotHeld { key: String },
+    /// The remote holds no published state with the lock's publish sequence and state root.
+    StateNotHeld { sequence: u64, state_root: String },
     /// A variable that must be a positive whole number of seconds is not one.
     Variable { name: &'static str, value: String },
     /// The remote refused the connection, gave no answer, or one that does not read.
@@ -52,6 +59,11 @@ pub enum RemoteError {
 impl fmt::Display for RemoteError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Self::NoAddress { key } => write!(
+                formatter,
+                "the document {key} is connected but names no remote: `remote` in \
+                 spec/loftspec.yaml names it, or {ENDPOINT_ENV} for one run"
+            ),
             Self::NoSignIn { address } => write!(
                 formatter,
                 "no sign-in to {address} in loft/remotes.json: `loft remote login` signs in, \
@@ -60,6 +72,19 @@ impl fmt::Display for RemoteError {
             Self::Address(address) => write!(
                 formatter,
                 "{address}: a remote's address is `https`, or `http` on the loopback interface"
+            ),
+            Self::NotHeld { key } => write!(
+                formatter,
+                "the remote holds no document {key}: `loft remote set <address>` connects the \
+                 document to its remote"
+            ),
+            Self::StateNotHeld {
+                sequence,
+                state_root,
+            } => write!(
+                formatter,
+                "the remote holds no published state of publish sequence {sequence}, state root \
+                 {state_root}: `loft pull` brings the tree to the head"
             ),
             Self::Variable { name, value } => write!(
                 formatter,
@@ -118,4 +143,29 @@ pub fn seconds(name: &'static str) -> Result<Option<u64>, RemoteError> {
 /// `LOFT_REMOTE_TIMEOUT` is not a positive whole number of seconds.
 pub fn timeout() -> Result<Duration, RemoteError> {
     Ok(seconds(TIMEOUT_ENV)?.map_or(TIMEOUT, Duration::from_secs))
+}
+
+/// The client of a connected document's remote, whose manifest names `remote` and whose key is
+/// `key`: at `LOFT_REMOTE_ENDPOINT` or the manifest's address, with `LOFT_REMOTE_TOKEN` or the
+/// person's sign-in to that address, refreshed if it expires within five minutes. The timeout
+/// variables are read before anything else, so a bad value opens no connection.
+///
+/// # Errors
+///
+/// A variable is not a whole number of seconds, there is no address or no sign-in, the address
+/// may not be contacted, or a refresh is refused.
+pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
+    let timeout = timeout()?;
+    let wait = seconds(WAIT_ENV)?;
+    let address = environment::text(ENDPOINT_ENV)
+        .or_else(|| remote.map(str::to_owned))
+        .ok_or_else(|| RemoteError::NoAddress {
+            key: key.to_owned(),
+        })?;
+    checked(&address)?;
+    let token = match environment::text(TOKEN_ENV) {
+        Some(token) => token,
+        None => signins::live(&address, timeout)?.access_token,
+    };
+    Ok(Client::new(&address, Some(token), timeout, wait))
 }

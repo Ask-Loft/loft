@@ -47,6 +47,8 @@ mod npm;
 mod npm_install;
 mod plugins;
 mod publish;
+mod publish_connected;
+mod publish_connected_reach;
 mod publish_former;
 mod publish_meet_contract;
 mod publish_settle;

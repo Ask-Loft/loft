@@ -125,18 +125,32 @@ impl Client {
         }
     }
 
+    /// `GET <address>/<path>`, its JSON answer.
+    ///
+    /// # Errors
+    ///
+    /// The remote cannot be reached, or refuses.
+    pub fn get(&self, path: &str) -> Result<Value, RemoteError> {
+        self.json("GET", path, None)
+    }
+
     /// `POST <address>/<path>` of the JSON `body`, its JSON answer.
     ///
     /// # Errors
     ///
     /// The remote cannot be reached, or refuses.
     pub fn post(&self, path: &str, body: &Value) -> Result<Value, RemoteError> {
-        let body = body.to_string().into_bytes();
-        let reply = self.call("POST", path, Some(&body))?;
+        self.json("POST", path, Some(&body.to_string().into_bytes()))
+    }
+
+    /// `method <address>/<path>` of `body`, made once more after a refusal that the remote may
+    /// lift where `LOFT_REMOTE_WAIT` allows the wait it asks for: its JSON answer.
+    fn json(&self, method: &str, path: &str, body: Option<&[u8]>) -> Result<Value, RemoteError> {
+        let reply = self.call(method, path, body)?;
         let reply = match self.waited(&reply) {
             Some(length) => {
                 SystemClock::from_env().wait(length);
-                self.call("POST", path, Some(&body))?
+                self.call(method, path, body)?
             }
             None => reply,
         };
@@ -157,7 +171,10 @@ impl Client {
         if reply.status < 400 || !Refusal::of(reply).later() {
             return None;
         }
-        let now = SystemClock::from_env().now().ok()?;
+        // A `Retry-After` date is read against the system clock, whatever dates a publish.
+        let now = SystemClock::with_epoch(None::<std::ffi::OsString>)
+            .now()
+            .ok()?;
         let asked = wire::retry_after(reply.retry_after.as_deref()?, now)?;
         (asked <= allowed).then(|| Duration::from_secs(asked))
     }

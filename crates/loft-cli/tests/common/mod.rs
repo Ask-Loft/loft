@@ -3,6 +3,7 @@
 //! clock, and the git simulator for a command that reads the repository, with no `git` on the
 //! search path otherwise; or, for a contract suite, under real git.
 
+pub mod connected;
 #[cfg(unix)]
 pub mod npm;
 pub mod remote;

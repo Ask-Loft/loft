@@ -23,6 +23,7 @@ mod opened;
 mod out;
 mod percent;
 mod publish;
+mod publish_remote;
 mod reconcile;
 mod record_install;
 mod remote;
