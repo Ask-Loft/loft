@@ -41,7 +41,12 @@ fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {
     let caller = Caller::new(&args.writer.into());
     let git = YardGit::default();
     // A publish is recorded from the base branch's worktree: it never follows the agent's work.
-    let dir = target(dir, named_tree.as_deref(), None, Follows::Directory)?;
+    let dir = target(
+        dir,
+        named_tree.as_deref(),
+        caller.agent.as_ref(),
+        Follows::Directory,
+    )?;
     let place = Place::locate(&git, &dir)?;
     let at = super::now()?;
     let on = place.branch()?.to_owned();

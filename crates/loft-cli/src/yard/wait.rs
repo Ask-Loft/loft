@@ -69,7 +69,7 @@ pub(super) fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value
     let named = args.writer.tree.clone();
     let caller = Caller::new(&args.writer.into());
     let dir = match named {
-        Some(named) => target(dir, Some(&named), None, Follows::Directory)?,
+        Some(named) => target(dir, Some(&named), caller.agent.as_ref(), Follows::Directory)?,
         None => sent_to(dir, caller.agent(), |log| {
             log.submission(submission).is_some()
         })?,

@@ -22647,6 +22647,12 @@ links:
       - file: "crates/loft-cli/tests/yard_working_tree.rs"
         name: "each_write_records_its_worktree_and_time_for_the_session_and_a_read_records_nothing"
         body: 5d6a20cb8987c5a6da734cbc3ec8e4f1ab8686ba29e01e6052e21819945cd1af
+  - node: 01a18a68-6812-7158-8a5a-72f045eb5c9b
+    reviewed: 85f636ccf884a7b6031482a033ca2061150d94659b95eced6500cf8f5e4cee35
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_main_agent_s_command_records_its_directory_and_a_subagent_s_does_not"
+        body: 9f497873f9b9ba94f5ab1b0f720108fe3e3f45fb7817f0239c9f93c93b0b954f
   - node: 01a1646f-546e-76cb-8b4f-f1ec3c4ff3b2
     reviewed: d5ec9d0c54f512be8a7a61ce5c6af15ddefb5b6bc445d7137f5c22d0ace616d6
     tests:
@@ -24351,6 +24357,42 @@ links:
       - file: "crates/loft-cli/tests/yard_working_tree.rs"
         name: "a_subagent_follows_its_own_working_stage_with_its_own_directory_as_the_fallback"
         body: 7792f8c0db487e181c0406e44cacf71c0c93b171e77cfcb642337c1532f53e79
+  - node: 01a18a68-6812-7158-8a5a-72eb63d428ea
+    reviewed: 9444a6437868ae44550246932c72daaccc8e17cce1c67499e9ca8afd41c5eb1c
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_main_agent_s_command_records_its_directory_and_a_subagent_s_does_not"
+        body: 9f497873f9b9ba94f5ab1b0f720108fe3e3f45fb7817f0239c9f93c93b0b954f
+  - node: 01a18a68-6812-7158-8a5a-72ecc9e83cb2
+    reviewed: 54a868a6a5015f13e665598132bbd4d5a4d9223fba5fa85effb1ea9af4a58faa
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_subagent_in_a_worktree_of_its_own_with_nothing_of_its_own_stays_there"
+        body: 1f7fa1f3a5e5e48a12315cb016c7c4a5592f2d51e8b0f2678806260736c72de0
+      - file: "crates/yardlog/tests/working_stage.rs"
+        name: "an_agent_s_own_stage_is_never_its_main_agent_s"
+        body: 7dfb5c8baf3099615acd818095c50ad301f6c580fb09d32f62224a3a35309bb7
+  - node: 01a18a68-6812-7158-8a5a-72ed11154f68
+    reviewed: af35ee54eff3a78c84d1a7e069f0ddc9f39275cd0c675c364bfdeb6482e9087d
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_subagent_in_a_worktree_of_its_own_follows_a_task_assigned_to_it_elsewhere"
+        body: fd0ba2d363b521c03980b4bdf18fbd4911d96e59d828671e4101fe19f135fcc9
+      - file: "crates/yardlog/tests/working_stage.rs"
+        name: "an_agent_s_own_stage_is_its_assigned_task_s_or_the_stage_it_opened"
+        body: 11d2f38bd13a9abb670908cb98e5ccc588f13d6f86542366614c05086569ccf4
+  - node: 01a18a68-6812-7158-8a5a-72eeb0edd476
+    reviewed: 936aa6eb4c6cdd8c7f4a5872e1d51a3e13313baae06d99ed4d56e00fb28b06a3
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_subagent_follows_its_own_working_stage_with_its_own_directory_as_the_fallback"
+        body: 7792f8c0db487e181c0406e44cacf71c0c93b171e77cfcb642337c1532f53e79
+  - node: 01a18a68-6812-7158-8a5a-72ef9c625698
+    reviewed: db24c5c617a9b82ac34ffb83f3eea27f3e4d94134376cb152ba3a6d43578f1b0
+    tests:
+      - file: "crates/loft-cli/tests/yard_working_tree.rs"
+        name: "a_subagent_whose_main_agent_s_directory_is_not_known_follows_its_main_agent"
+        body: 9c66e3d4a411e5b9973422bd25d7b80d632b9606f6a86f514e1fafb1d3b2e2b2
   - node: 01a18a50-2ff6-715f-af9c-708730020ed1
     reviewed: b406fb4668c5ea38e4d96f50798462947cfdb7fa69094f1660103a8c47386c52
     tests:

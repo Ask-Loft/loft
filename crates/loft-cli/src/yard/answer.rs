@@ -66,7 +66,7 @@ fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure>
     let caller = Caller::new(&args.writer.clone().into());
     let named = answer_input::read(&super::input::json(&args.input)?)?;
     let dir = match &args.writer.tree {
-        Some(tree) => target(dir, Some(tree), None, Follows::Directory)?,
+        Some(tree) => target(dir, Some(tree), caller.agent.as_ref(), Follows::Directory)?,
         None => sent_to(dir, caller.agent(), |log| replies(log, &named).is_ok())?,
     };
     let branch = Branch::locate(&dir, args.beyond)?;

@@ -130,15 +130,57 @@ pub fn choose(candidates: impl IntoIterator<Item = (PathBuf, Last)>) -> Option<P
         .map(|(tree, _)| tree)
 }
 
+/// Records, where `agent` is a session's main agent, that it works in `dir`, so that a subagent
+/// in another worktree is told apart from one in its main agent's.
+pub fn note_main_dir(home: &Home, agent: &Agent, dir: &Path) -> Result<(), Failure> {
+    if agent.subagent.is_some() {
+        return Ok(());
+    }
+    let identity = Continuations::read(Some(home))?.identity(agent);
+    let dir = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
+    let dir = json!(dir.display().to_string());
+    home_json::set(home, HomeFile::SessionDirs, &identity.session_key(), dir)?;
+    Ok(())
+}
+
+/// Whether `agent` is a subagent whose directory `dir` lies in a worktree other than its main
+/// agent's, as its main agent last named it; not where that directory is not known.
+fn in_own_worktree(home: &Home, agent: &Agent, dir: &Path) -> Result<bool, Failure> {
+    if agent.subagent.is_none() {
+        return Ok(false);
+    }
+    let identity = Continuations::read(Some(home))?.identity(agent);
+    let dirs = home_json::object(home.read(HomeFile::SessionDirs)?.as_deref());
+    let Some(main) = dirs.get(&identity.session_key()).and_then(Value::as_str) else {
+        return Ok(false);
+    };
+    let top = |dir: &Path| {
+        Place::locate(&YardGit::default(), dir)
+            .ok()
+            .map(|place| place.tree)
+    };
+    Ok(match (top(dir), top(Path::new(main))) {
+        (Some(own), Some(main)) => own != main,
+        _ => false,
+    })
+}
+
 /// The agent's working tree: the worktree its session wrote in whose Yard Log holds its working
-/// stage, else `dir`.
+/// stage, else `dir`. A subagent in a worktree of its own follows only its own stage there.
 pub fn resolve(home: Option<&Home>, agent: &Agent, dir: &Path) -> Result<PathBuf, Failure> {
     let Some(home) = home else {
         return Ok(dir.to_owned());
     };
+    let own = in_own_worktree(home, agent, dir)?;
     let holding = written(home, agent)?
         .into_iter()
-        .filter(|each| each.log.working_stage(agent, None).is_some())
+        .filter(|each| {
+            if own {
+                each.log.own_stage(agent, None).is_some()
+            } else {
+                each.log.working_stage(agent, None).is_some()
+            }
+        })
         .map(|each| (each.tree, each.last));
     Ok(choose(holding).unwrap_or_else(|| dir.to_owned()))
 }
@@ -160,6 +202,10 @@ pub fn target(
     agent: Option<&Agent>,
     follows: Follows,
 ) -> Result<PathBuf, Failure> {
+    let home = Home::from_env();
+    if let (Some(home), Some(agent)) = (&home, agent) {
+        note_main_dir(home, agent, dir)?;
+    }
     if let Some(named) = named {
         let path = dir.join(named);
         if !path.is_dir() {
@@ -172,7 +218,7 @@ pub fn target(
         return Ok(path);
     }
     match agent {
-        Some(agent) if follows == Follows::Work => resolve(Home::from_env().as_ref(), agent, dir),
+        Some(agent) if follows == Follows::Work => resolve(home.as_ref(), agent, dir),
         _ => Ok(dir.to_owned()),
     }
 }

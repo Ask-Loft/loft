@@ -125,3 +125,29 @@ fn the_working_stage_is_the_named_task_s_then_the_assigned_one_then_its_own_then
     assert_eq!(log.starting_stage(&worker(), None), Some(build));
     assert_eq!(log.working_stage(&main_agent(), None), Some(build));
 }
+
+#[test]
+fn an_agent_s_own_stage_is_never_its_main_agent_s() {
+    let log = delegated();
+    let idle = Agent::sub("session-a", "idle-1", "worker");
+    assert_eq!(log.working_stage(&idle, None), Some(key(&log, "build")));
+    assert_eq!(log.own_stage(&idle, None), None);
+}
+
+#[test]
+fn an_agent_s_own_stage_is_its_assigned_task_s_or_the_stage_it_opened() {
+    let mut log = delegated();
+    write(
+        &mut log,
+        &json!([task("read", "review", "active", &worker())]),
+        &context(&worker(), 3),
+    );
+    assert_eq!(log.own_stage(&worker(), None), Some(key(&log, "review")));
+    let opener = Agent::sub("session-a", "opener-1", "worker");
+    write(
+        &mut log,
+        &json!([stage("mine", "active")]),
+        &context(&opener, 4),
+    );
+    assert_eq!(log.own_stage(&opener, None), Some(key(&log, "mine")));
+}

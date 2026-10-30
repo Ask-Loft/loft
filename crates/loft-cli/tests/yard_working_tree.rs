@@ -31,6 +31,21 @@ fn path(scratch: &Scratch) -> String {
     scratch.0.display().to_string()
 }
 
+const SUB: [&str; 4] = ["--agent", "a1", "--agent-type", "Explore"];
+
+/// Reads Yard Log as session s1's subagent `a1`, run from `dir`: the tree it acted on.
+fn subagent_reads_from(yard: &Yard, dir: &Scratch) -> Value {
+    let mut command = yard.scratch.command(Some(&yard.git), &yard.clock);
+    let output = command
+        .current_dir(&dir.0)
+        .args(["yard", "read", "--session", "s1"])
+        .args(SUB)
+        .args(["--format", "json"])
+        .output()
+        .unwrap();
+    document("read", &output)["tree"].clone()
+}
+
 /// The tree a read as `session` with `extra` arguments acts on.
 fn read_tree(yard: &Yard, session: &str, extra: &[&str]) -> Value {
     yard.read(session, extra)["tree"].clone()
@@ -302,4 +317,43 @@ fn a_submission_no_worktree_of_the_session_holds_is_refused_as_unknown() {
     assert_eq!(output.status.code(), Some(1));
     let refused = document("withdraw", &output);
     assert_eq!(refused["errors"][0]["kind"], "no-submission", "{refused}");
+}
+
+#[test]
+fn a_subagent_in_a_worktree_of_its_own_with_nothing_of_its_own_stays_there() {
+    let yard = Yard::new();
+    let (there, own) = (other(), other());
+    yard.write("s1", THERE, &["--tree", &path(&there)]);
+    assert_eq!(subagent_reads_from(&yard, &own), top(&own).as_str());
+}
+
+#[test]
+fn a_subagent_in_a_worktree_of_its_own_follows_a_task_assigned_to_it_elsewhere() {
+    let yard = Yard::new();
+    let (there, own) = (other(), other());
+    let batch = r#"[{"id": "there", "kind": "stage", "title": "There", "status": "active"},
+      {"id": "t1", "kind": "task", "stage": "there", "title": "One", "state": "active",
+       "assignee": {"host": "claude-code", "session": "s1", "agent": "a1", "agentType": "Explore"}}]"#;
+    yard.write("s1", batch, &["--tree", &path(&there)]);
+    assert_eq!(subagent_reads_from(&yard, &own), top(&there).as_str());
+}
+
+#[test]
+fn a_subagent_whose_main_agent_s_directory_is_not_known_follows_its_main_agent() {
+    let yard = Yard::new();
+    let (there, own) = (other(), other());
+    yard.write("s1", THERE, &["--tree", &path(&there)]);
+    fs::remove_file(yard.scratch.home().join(".yard/session-dirs.json")).unwrap();
+    assert_eq!(subagent_reads_from(&yard, &own), top(&there).as_str());
+}
+
+#[test]
+fn a_main_agent_s_command_records_its_directory_and_a_subagent_s_does_not() {
+    let yard = Yard::new();
+    let (there, own) = (other(), other());
+    yard.write("s1", THERE, &["--tree", &path(&there)]);
+    let dirs = yard.home_file("session-dirs.json");
+    assert_eq!(dirs, json!({ "s1": top(&yard.scratch) }));
+    subagent_reads_from(&yard, &own);
+    assert_eq!(yard.home_file("session-dirs.json"), dirs);
 }
