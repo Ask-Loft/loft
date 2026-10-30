@@ -151,7 +151,7 @@ requirements:
       - key: 01a1587a-dee2-7262-8c7b-894754a95f9a
         name: "The outcome of `loft remote set` is `connected` when it connected the document."
       - key: 01a18e1f-8daa-7674-9603-5ad25c4e69da
-        name: "The outcome of `loft remote login` is `signed-in`."
+        name: "The outcome of `loft remote login` is `signed in`."
       - key: 01a156c0-0b7a-76b6-9a6a-684562209106
         name: "The outcome of `loft remote remove` is `removed` when it disconnected the document."
       - key: 01a156c0-0b7a-76b6-9a6a-684673407366
