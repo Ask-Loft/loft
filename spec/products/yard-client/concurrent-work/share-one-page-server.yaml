@@ -55,13 +55,30 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc5f9317855f
         name: "A page server that the mod starts runs as long as the mod, or until a newer `loft yard serve` replaces it."
       - key: 01a1646f-546d-7042-befd-ea8e5a514259
-        name: "The port is the plugin's `yardPort` setting, 7411 by default."
+        name: "A page server that the mod starts serves the plugin's `yardPort` setting, 7411 by default."
       - key: 01a1646f-546d-7042-befd-ea8fc7b5b732
         name: "A `loft yard serve` that finds in `~/.yard/server.json` a running page server of the same or a newer version exits 0 and starts none."
       - key: 01a1646f-546d-7042-befd-ea90b3a3d660
         name: "The session starts without waiting for the page server to answer."
       - key: 01a1646f-546d-7042-befd-ea91076e0f8d
         name: "A tree that the page server already serves is not added twice."
+  - key: 01a18a3a-4833-7539-a772-a6431c57dc22
+    statement:
+      form: event_driven
+      when: "`loft yard serve` reports that a page server already runs on a port other than the one the mod reaches"
+      system: "the Loft mod"
+      shall: "reach that page server on the port the command reports."
+    criteria:
+      - key: 01a18a3a-4833-7539-a772-a644d88830c8
+        name: "The mod tells the page server on the reported port that its session is live."
+      - key: 01a18a3a-4833-7539-a772-a6459a7809a7
+        name: "The mod registers the session's tree with the page server on the reported port."
+      - key: 01a18a3a-4833-7539-a772-a646e54a4320
+        name: "The mod posts the session's events to the page server on the reported port, those it kept while no page server answered among them."
+      - key: 01a18a3a-4833-7539-a772-a647df1c0223
+        name: "While the page server on the reported port answers, the mod starts no `loft yard serve`."
+      - key: 01a18a3a-4833-7539-a772-a648e5d3b582
+        name: "Once no page server answers on the reported port, the mod's next `loft yard serve` asks for the plugin's `yardPort` setting again."
   - key: 01a1647b-208d-7169-85c8-9a52c192191e
     statement:
       form: event_driven
