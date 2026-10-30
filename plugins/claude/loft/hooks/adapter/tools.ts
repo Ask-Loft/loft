@@ -9,6 +9,13 @@ export type ToolName = 'yard_read' | 'yard_write' | 'yard_wait' | 'yard_withdraw
 
 type Field = { type: 'integer' | 'boolean' | 'string' | 'array'; description: string; isRequired?: boolean }
 
+/** The worktree a call names in place of the agent's working tree. */
+const TREE: Field = {
+  type: 'string',
+  description:
+    "A directory of the worktree whose Yard Log to reach, of this repository or another, in place of your working tree: the worktree that holds your working stage, else your own directory.",
+}
+
 const FIELDS: Record<ToolName, Record<string, Field>> = {
   yard_read: {
     since: { type: 'integer', description: 'Return only what changed after this revision.' },
@@ -16,6 +23,7 @@ const FIELDS: Record<ToolName, Record<string, Field>> = {
       type: 'boolean',
       description: "Return each loft block's report, which is otherwise given by its size in bytes and the number of items of each list it counts; best with `since`.",
     },
+    tree: TREE,
   },
   yard_write: {
     batch: {
@@ -25,13 +33,15 @@ const FIELDS: Record<ToolName, Record<string, Field>> = {
     },
     basedOn: { type: 'integer', description: 'The revision last read: a block changed since then is refused.' },
     send: { type: 'boolean', description: "Send the batch's questions, approvals and plans to the person." },
+    tree: TREE,
   },
-  yard_wait: { submission: { type: 'string', description: "The submission's key, as `yard_write` gave it.", isRequired: true } },
-  yard_withdraw: { submission: { type: 'string', description: "The submission's key.", isRequired: true } },
-  yard_close: {},
+  yard_wait: { submission: { type: 'string', description: "The submission's key, as `yard_write` gave it.", isRequired: true }, tree: TREE },
+  yard_withdraw: { submission: { type: 'string', description: "The submission's key.", isRequired: true }, tree: TREE },
+  yard_close: { tree: TREE },
   yard_published: {
     branch: { type: 'string', description: 'The branch whose Yard Log the merge brought into the base branch.', isRequired: true },
     note: { type: 'string', description: 'A note on the publish, in Markdown.' },
+    tree: TREE,
   },
 }
 
@@ -43,7 +53,8 @@ const DESCRIPTIONS: Record<ToolName, string> = {
   yard_wait:
     'Wait until the person answers a submission on the page or in the dialog, or it is withdrawn or Yard Log closed. Holds the turn until then.',
   yard_withdraw: 'Withdraw an open submission.',
-  yard_close: "Close the branch's Yard Log once its work is done; it then takes no more writes.",
+  yard_close:
+    "Close the branch's Yard Log once its work is done; it then takes no more writes. It closes your own directory's Yard Log unless `tree` names another.",
   yard_published: 'On the base branch, once `loft publish` is committed, record the publish in the Yard Log the merge brought in.',
 }
 

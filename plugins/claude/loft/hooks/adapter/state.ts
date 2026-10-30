@@ -7,6 +7,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, PluginOptions } from 'claude-code'
 
 import { settingsOf, type Ran, type Settings } from '../loft'
+import { relativeTo } from '../model'
 import { HOST, type descriptor } from './contract'
 import { outboxOf, type Outbox } from './outbox'
 import { pageOf, type Asker } from './log'
@@ -130,13 +131,19 @@ export async function peek($: EngineInterface, cwd: string, caller: Caller): Pro
 /**
  * Where the calling agent works, who it is, and Yard Log as the mod peeks at it on their behalf;
  * undefined where Yard Log cannot be read. With `briefed`, the read holds the agent's briefing
- * too, still without `--mark-read`.
+ * too, still without `--mark-read`. Where the read went to a worktree other than the agent's
+ * directory's, the agent's working tree, the caller names that worktree, so that the capture's
+ * later commands go where it chose its stage even if the working tree moves meanwhile; a `loft`
+ * that never redirects a read is never given `--tree`.
  */
 export async function prepare($: EngineInterface, agentId: string | undefined, briefed = false) {
   const cwd = await $.session.cwd()
   const caller = await callerOf($, agentId)
   const read = briefed ? await run($, cwd, ['read', '--context', ...callerArgs(caller)]) : await peek($, cwd, caller)
-  return succeeded(read) ? { cwd, caller, doc: read.doc } : undefined
+  if (!succeeded(read)) return undefined
+  const tree = typeof read.doc.tree === 'string' ? read.doc.tree : undefined
+  const isElsewhere = tree !== undefined && tree !== cwd && relativeTo(tree, cwd) === undefined
+  return { cwd, caller: isElsewhere ? { ...caller, tree } : caller, doc: read.doc }
 }
 
 /** A subagent's type, as Claude Code lists it. */

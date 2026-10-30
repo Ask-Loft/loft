@@ -24402,6 +24402,9 @@ links:
   - node: 01a18a50-2ff6-715f-af9c-708730020ed1
     reviewed: b406fb4668c5ea38e4d96f50798462947cfdb7fa69094f1660103a8c47386c52
     tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "questions whose read stayed in the session directory's worktree name no tree"
+        body: 4cb7a1885d9bd7d0250e041dc87c6cf9c28ed690c7019924f6ff52f4b1056847
       - file: "crates/loft-cli/tests/yard_working_tree.rs"
         name: "a_session_s_calls_follow_its_working_stage_into_another_worktree"
         body: 2511642eed205226fe5009bef92b086fb2ba5723192bdc0794babd4291c14d82
@@ -24483,6 +24486,9 @@ links:
   - node: 01a18a50-2ff6-715f-af9c-70941b7a7e4e
     reviewed: f4c50d2f09cb50216d12fa094ca3f4cfa23fad4300490fe558e74e776c1a815a
     tests:
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "questions whose read went to another worktree are sent, waited on and recorded there"
+        body: fe7fe391f2514afdcfe72b83cb69c9aa64562fdba25f67430c6e98a0d12afa8f
       - file: "crates/loft-cli/tests/yard_working_tree.rs"
         name: "an_answer_in_the_dialog_is_recorded_in_the_yard_log_the_question_was_sent_to"
         body: 03eead76899c843f6e7d9c0447019b746bf9a221aa826d0c73ecafd3e299dd88
@@ -28549,6 +28555,9 @@ links:
     reviewed: 61308535366cd3d6aa197d72047aedd34d9f73597de5e7bbcb7403fd7c033db8
     tests:
       - file: "plugins/claude/loft/tests/yard-capture.test.ts"
+        name: "a task whose briefing went to another worktree is mirrored into its stage there"
+        body: 2967ec4ed6f1ec38f72747b7c957f1065f1cea47be5fa860839e3fe9d9a5c958
+      - file: "plugins/claude/loft/tests/yard-capture.test.ts"
         name: "task creation keeps the stage selected before its native tool runs"
         body: 9a884a8a0ea00606a902bc022d8f64520f9da61e206c7396b2cb53ff00ea148a
   - node: 01a1646f-546c-7521-9643-bc56c4873439
@@ -29108,13 +29117,22 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
+  - node: 01a18a50-2ff6-715f-af9c-707b4b2bc130
+    reviewed: 91cea80385feff867aa6abced683ded21497f6f2362d83f931d9e4962281e767
+    tests:
+      - file: "plugins/claude/loft/tests/yard-model.test.ts"
+        name: "each of Yard's six tools has a JSON schema of its input"
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tool given a tree runs its command with --tree naming it, and a tool given none names no tree"
+        body: 3388639b1973b134570de8459d3e864eeb0e96cc554e417b3c957855740a3450
   - node: 01a1646f-546c-7521-9643-bcaa2981e408
     reviewed: 48568ba6401cdd5202b8b050189fe6e74d613d02357ead89c19b781cebf1a194
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: bb88b6334f259578f6435e6c8e10d54fd4ffae0ad2739fffda7881b453628c5d
@@ -29135,7 +29153,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: bb88b6334f259578f6435e6c8e10d54fd4ffae0ad2739fffda7881b453628c5d
@@ -29144,19 +29162,19 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
   - node: 01a1646f-546c-7521-9643-bcad38f2c75b
     reviewed: c1261dd8a60f9d3f7d9139f7ddf5783da41a8c97dd17775ded854a941b1afc87
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
   - node: 01a1647b-208c-755d-8b1a-5885062d9589
     reviewed: 520b7697d6e2e04ef9fc30a10a4c3394a4141f3c712d5dcd70299789f8aa5fe0
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "an input that does not match its schema names the field at fault"
         body: d9f321cf2c817b3baa734329f18c358c2702ddf4fa3890310e83b5fd44624477
@@ -29165,7 +29183,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each of Yard's six tools has a JSON schema of its input"
-        body: 7069e2c020fa04fdd207ba8c579f771e5f22dfc1b415327f26c71cec074ce9e8
+        body: 0e5f640a2922f18da66beacb61ad23d299ded7295399be514ec60b55b73478c1
       - file: "plugins/claude/loft/tests/yard-model.test.ts"
         name: "each tool runs its loft yard command with the caller's session and, for a subagent, its id and type"
         body: bb88b6334f259578f6435e6c8e10d54fd4ffae0ad2739fffda7881b453628c5d
@@ -29181,6 +29199,15 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
         body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
+  - node: 01a18a50-2ff6-715f-af9c-707cef0d146a
+    reviewed: c3ef76f83a430cc9ab3f2c669707341cc1e4a69edbc7382fa7507ceb6c69af2a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a tool given a tree runs its command with --tree naming it, and a tool given none names no tree"
+        body: 3388639b1973b134570de8459d3e864eeb0e96cc554e417b3c957855740a3450
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "yard_wait given a tree waits on the submission in that worktree"
+        body: 0f22be824c3e4989cc8211f0ef213fe4a5e6c3b3d2c3deba15485e70c9f11466
   - node: 01a1646f-546c-7521-9643-bcb304796db1
     reviewed: 395a72e9740f3192d1e1a57da8f82066158a1a089b9554aad7b95c214f9c993a
     tests:

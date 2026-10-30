@@ -32,15 +32,19 @@ export function failureOf(ran: Ran): string {
   return said || `exit ${ran.exitCode}`
 }
 
-/** The calling agent: its session, and for a subagent its id and type. */
-export type Caller = { session: string; agent?: { id: string; type: string } }
+/**
+ * The calling agent: its session, for a subagent its id and type, and the worktree its call
+ * names, where it names one in place of the agent's working tree.
+ */
+export type Caller = { session: string; agent?: { id: string; type: string }; tree?: string }
 
-/** The flags that name the calling agent to a command that acts for one. */
+/** The flags that name the calling agent, and the worktree it names, to a command that acts for one. */
 export function callerArgs(caller: Caller): string[] {
   return [
     '--session',
     caller.session,
     ...(caller.agent ? ['--agent', caller.agent.id, '--agent-type', caller.agent.type] : []),
+    ...(caller.tree !== undefined ? ['--tree', caller.tree] : []),
   ]
 }
 
