@@ -189,13 +189,14 @@ text goes to standard error only.
 ## Software Plant
 
 Loft depends on systems outside it: git, which tells the publisher the current branch, whether
-`spec/` has uncommitted changes and whether a merge or rebase is stopped, and the clock, which
-dates a publish. Each is a root Component with the boundary `external` in `spec/`, and Loft
+`spec/` has uncommitted changes and whether a merge or rebase is stopped; the clock, which
+dates a publish; a connected document's remote, with the authorization server that admits to it;
+and the person's web browser, which a sign-in opens. Each is a root Component with the boundary `external` in `spec/`, and Loft
 reaches it through one port with one real adapter; `loftspec-store` reaches git only through its
 repository port. Tests never reach an external system directly and never through a hook in a
 shipped binary. The only switches a shipped binary reads for a simulator are its standard and
 named environment variables (`SOURCE_DATE_EPOCH`, `LOFT_CLOCK`, `LOFT_TELEMETRY_ENDPOINT`,
-`LOFT_UPDATE_ENDPOINT`), and each changes only where its port takes its answers. Tests put a
+`LOFT_UPDATE_ENDPOINT`, `LOFT_REMOTE_ENDPOINT` with `LOFT_REMOTE_TOKEN`, and `BROWSER`), and each changes only where its port takes its answers. Tests put a
 simulator from the Software Plant in front of the unchanged binary under test:
 
 - **git**: `software_plant::GitScenario` scripts a repository: its prefix, its branch or a
@@ -218,11 +219,27 @@ simulator from the Software Plant in front of the unchanged binary under test:
 - **GitHub's releases**: `software_plant::ReleaseFeed` answers the latest-release request on a
   loopback port with a release, a draft, a prerelease, an error, a rate limit or silence, and
   counts the requests.
+- **the remote**: `software_plant::remote::Remote` serves a connected document's wire contract
+  on a loopback port from a `RemoteScenario`: the states and drafts it holds, how it answers a
+  create, an import or a publish, its problem documents and `Retry-After`, and silence or a
+  refused port. The same server is the authorization server: its metadata, registration, an
+  authorization endpoint that consents or refuses, and a token endpoint that exchanges a code
+  under PKCE and rotates, refuses or lapses a refresh. It records every request. A test reaches
+  it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, which bypass the sign-in, or signs in
+  to it as a person would; `tests/common/signed_in.rs` and `tests/common/connected.rs` hold
+  the harness.
+- **the web browser**: `software_plant::BrowserScenario` installs a program that a test names
+  in `BROWSER`. Visiting, it requests the address it is given and follows each redirect, as a
+  person who consents does; absent, it fails as a browser that cannot be opened. It records
+  each address it was given.
 
-The command event and the update check reach the network only through the network client
-(`crates/loft-cli/src/network.rs`), which accepts plain `http` only on the loopback interface,
-so `LOFT_TELEMETRY_ENDPOINT` and `LOFT_UPDATE_ENDPOINT` can point a run at a simulator and at
-nothing else unencrypted. `.cargo/config.toml` starts every process Cargo runs with both off and
+The command event, the update check and every request to a remote reach the network only
+through the network client (`crates/loft-cli/src/network.rs`), which accepts plain `http` only on
+the loopback interface, so `LOFT_TELEMETRY_ENDPOINT`, `LOFT_UPDATE_ENDPOINT` and a remote's
+address can point a run at a simulator and at nothing else unencrypted. The only sockets opened
+elsewhere are the listen-only loopback listeners of the Yard page server and of a sign-in's
+redirect, which `tests/network_client.rs` admits by name. The remote's contract suites run their
+real half on demand, against `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CONTRACT_TOKEN`. `.cargo/config.toml` starts every process Cargo runs with both off and
 both addresses at a closed loopback port; a test that exercises either switches it on through
 `tests/common/telemetry.rs` or `asking` in `tests/update_check.rs`. Run a gate's own `loft`
 through `cargo run`, never `target/debug/loft` directly, or set `LOFT_TELEMETRY=internal`.
