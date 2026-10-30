@@ -3,12 +3,10 @@
 //! whole, with permission for its owner alone, through a file beside it and a rename, and a
 //! refresh holds a lock beside it so that two processes never rotate one refresh token at once.
 
-use std::ffi::OsString;
 use std::path::PathBuf;
 use std::str::FromStr as _;
 use std::time::Duration;
 
-use loft_ports::clock::{Clock as _, SystemClock};
 use loft_ports::sync::replace_synced;
 use loftspec::publish::PublishedAt as Time;
 use serde::{Deserialize, Serialize};
@@ -46,10 +44,10 @@ impl SignIn {
     }
 }
 
-/// The time now in seconds since the Unix epoch, from the system clock alone: a token expires in
-/// real time, whatever time `SOURCE_DATE_EPOCH` gives a publish.
+/// The time now in seconds since the Unix epoch, or the epoch where the system clock does not
+/// read.
 fn now() -> u64 {
-    SystemClock::with_epoch(None::<OsString>).now().unwrap_or(0)
+    super::now().unwrap_or(0)
 }
 
 /// The file's path, if there is a configuration directory.

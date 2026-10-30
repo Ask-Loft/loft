@@ -1,16 +1,21 @@
 //! Reaching a connected document's remote: its address, from the manifest's `remote` or
 //! `LOFT_REMOTE_ENDPOINT`; the token a request carries, from `LOFT_REMOTE_TOKEN` or the person's
-//! sign-in to that address in `loft/remotes.json`, refreshed before it expires; and the calls themselves, through [`client::Client`]. A token is
-//! sent only in the `Authorization` header of a request to the remote, and printed nowhere.
+//! sign-in to that address in `loft/remotes.json`, refreshed before it expires; and the calls
+//! themselves, through [`client::Client`]. A token is sent only in the `Authorization` header of
+//! a request to the remote, and printed nowhere.
 
 pub mod browser;
 pub mod client;
+pub mod head;
+pub mod history;
 pub mod signin;
 pub mod signins;
 mod wire;
 
 use std::fmt;
 use std::time::Duration;
+
+use loft_ports::clock::{Clock as _, SystemClock};
 
 use crate::environment;
 use crate::network;
@@ -54,6 +59,17 @@ pub enum RemoteError {
     SignIn { address: String, reason: String },
     /// `loft/remotes.json` could not be read or written.
     File(String),
+}
+
+impl RemoteError {
+    /// The remote's refusal, where it refused with the known code `code`.
+    #[must_use]
+    pub fn refusal(&self, code: &str) -> Option<&Refusal> {
+        match self {
+            Self::Refused { refusal, .. } if refusal.known() == Some(code) => Some(refusal),
+            _ => None,
+        }
+    }
 }
 
 impl fmt::Display for RemoteError {
@@ -143,6 +159,12 @@ pub fn seconds(name: &'static str) -> Result<Option<u64>, RemoteError> {
 /// `LOFT_REMOTE_TIMEOUT` is not a positive whole number of seconds.
 pub fn timeout() -> Result<Duration, RemoteError> {
     Ok(seconds(TIMEOUT_ENV)?.map_or(TIMEOUT, Duration::from_secs))
+}
+
+/// The time now in seconds since the Unix epoch, from the system clock alone: a token expires and
+/// a `Retry-After` date falls in real time, whatever time `SOURCE_DATE_EPOCH` gives a publish.
+pub fn now() -> Option<u64> {
+    SystemClock::default().now().ok()
 }
 
 /// The client of a connected document's remote, whose manifest names `remote` and whose key is

@@ -5,12 +5,12 @@
 use std::fs;
 
 use serde_json::{Value, json};
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::RemoteScenario;
 use software_plant::{BrowserScenario, GitScenario};
 
-use crate::common::connected::{ADDED, Connected, connected, paths};
+use crate::common::connected::{ADDED, Connected, connected, paths, serve};
 use crate::common::remote::history;
-use crate::common::signed_in::{self, document, granted, keep, name_remote, sign_ins};
+use crate::common::signed_in::{self, document, sign_ins};
 use crate::common::{Scratch, tree};
 
 #[test]
@@ -87,10 +87,8 @@ fn a_publish_whose_answer_was_lost_is_sent_again_with_its_retry_key_and_replayed
     let output = run.publish();
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     let requests: Vec<Value> = run
-        .remote
-        .requests()
+        .publish_requests()
         .into_iter()
-        .filter(|request| request.path.ends_with("/publish"))
         .map(|request| serde_json::from_slice(&request.body).unwrap())
         .collect();
     assert_eq!(requests.len(), 2);
@@ -133,15 +131,9 @@ fn a_head_past_the_lock_takes_the_base_from_history_and_the_conflict_says_to_pul
     let run = connected(2, 2, RemoteScenario::accepting);
     // The remote moved on: it holds a third state the tree does not.
     let moved = history(3);
-    let remote = Remote::start(
-        RemoteScenario::accepting(&run.history.key).holding("Reading List", moved.states.clone()),
-    );
-    name_remote(&run.scratch, Some(&remote.address()), true);
-    keep(
-        &run.scratch,
-        &json!({ remote.address(): granted(&remote, 3600) }),
-    );
-    let run = Connected { remote, ..run };
+    let scenario =
+        RemoteScenario::accepting(&run.history.key).holding("Reading List", moved.states.clone());
+    let run = run.serving(scenario);
     run.change();
     let before = tree(&run.scratch.0);
     let output = run.publish();
@@ -168,15 +160,9 @@ fn without_the_lock_in_history_the_base_is_fetched_from_the_remote() {
     let mut run = connected(2, 2, RemoteScenario::accepting);
     run.git = GitScenario::clean_on("main");
     let moved = history(3);
-    let remote = Remote::start(
-        RemoteScenario::accepting(&run.history.key).holding("Reading List", moved.states.clone()),
-    );
-    name_remote(&run.scratch, Some(&remote.address()), true);
-    keep(
-        &run.scratch,
-        &json!({ remote.address(): granted(&remote, 3600) }),
-    );
-    let run = Connected { remote, ..run };
+    let scenario =
+        RemoteScenario::accepting(&run.history.key).holding("Reading List", moved.states.clone());
+    let run = run.serving(scenario);
     run.change();
     let output = run.publish();
     assert_eq!(output.status.code(), Some(1), "the head moved on");
@@ -211,13 +197,8 @@ fn a_lock_the_remote_does_not_hold_is_refused_naming_it_and_saying_to_pull() {
 #[test]
 fn a_remote_without_the_document_is_refused_naming_its_key_and_remote_set() {
     let run = connected(1, 1, RemoteScenario::accepting);
-    let remote = Remote::start(RemoteScenario::accepting(&run.history.key));
-    name_remote(&run.scratch, Some(&remote.address()), true);
-    keep(
-        &run.scratch,
-        &json!({ remote.address(): granted(&remote, 3600) }),
-    );
-    let run = Connected { remote, ..run };
+    let scenario = RemoteScenario::accepting(&run.history.key);
+    let run = run.serving(scenario);
     let output = run.publish();
     assert_eq!(output.status.code(), Some(1));
     let message = Connected::message(&output);
@@ -249,11 +230,9 @@ fn a_document_without_a_lock_sends_every_file_but_its_labels_from_an_empty_base(
         .id
         .key()
         .to_string();
-    let remote = Remote::start(RemoteScenario::accepting(&key).holding("Reading List", Vec::new()));
-    name_remote(&scratch, Some(&remote.address()), true);
-    keep(
+    let remote = serve(
         &scratch,
-        &json!({ remote.address(): granted(&remote, 3600) }),
+        RemoteScenario::accepting(&key).holding("Reading List", Vec::new()),
     );
     let git = GitScenario::clean_on("main");
     let (mut command, _) = signed_in::command(&scratch, BrowserScenario::Absent, Some(&git));
@@ -275,4 +254,45 @@ fn a_document_without_a_lock_sends_every_file_but_its_labels_from_an_empty_base(
     assert_eq!(added.len(), tree(&scratch.0).len() - 1, "{added:?}");
     assert!(!added.contains(&"spec/labels.yaml".to_owned()));
     assert!(added.iter().all(|path| path.starts_with("spec/")));
+}
+
+#[test]
+fn a_change_the_remote_answers_as_unchanged_writes_nothing_and_its_replay_says_so_too() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    // The tree loses one binding: its state root differs from the head's, but no file the
+    // delta carries changes, so the remote has nothing to publish.
+    let labels = run.scratch.file("labels.yaml");
+    let text = fs::read_to_string(&labels).unwrap();
+    let last = text.rfind("  - key:").unwrap();
+    fs::write(&labels, &text[..last]).unwrap();
+    let before = tree(&run.scratch.0);
+    let lock = fs::read(run.scratch.0.join("loft.lock.json")).unwrap();
+    for attempt in 0..2 {
+        let output = run.publish();
+        assert_eq!(output.status.code(), Some(0), "{attempt}: {output:?}");
+        let result = document(&output);
+        assert_eq!(result["outcome"], "unchanged", "{attempt}");
+        assert_eq!(result["allocated"], json!([]), "{attempt}");
+        assert_eq!(tree(&run.scratch.0), before, "{attempt}");
+        assert_eq!(
+            fs::read(run.scratch.0.join("loft.lock.json")).unwrap(),
+            lock
+        );
+    }
+    // Only the manifest, which now names the remote, differs, and `remote` enters no root.
+    let sent = run.sent();
+    assert_eq!(paths(&sent, "changed"), ["spec/loftspec.yaml"]);
+    for name in ["added", "removed"] {
+        assert_eq!(paths(&sent, name), Vec::<String>::new(), "{name}");
+    }
+    assert_eq!(
+        run.publish_requests().len(),
+        2,
+        "the second is answered as a replay"
+    );
+    let (mut command, _) =
+        signed_in::command(&run.scratch, BrowserScenario::Absent, Some(&run.git));
+    let output = command.arg("publish").output().unwrap();
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("nothing to publish"), "{stdout}");
 }

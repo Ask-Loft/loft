@@ -63,10 +63,20 @@ pub fn command(
     browser: BrowserScenario,
     git: Option<&GitScenario>,
 ) -> (Command, InstalledBrowser) {
+    command_at(scratch, browser, git, &Clock::fixed(EPOCH))
+}
+
+/// The `loft` command as [`command`] gives it, with its time from `clock`.
+pub fn command_at(
+    scratch: &Scratch,
+    browser: BrowserScenario,
+    git: Option<&GitScenario>,
+    clock: &Clock,
+) -> (Command, InstalledBrowser) {
     let dir = scratch.plant().join("browser");
     fs::create_dir_all(&dir).unwrap();
     let installed = browser.install(&dir);
-    let mut command = scratch.command(git, &Clock::fixed(EPOCH));
+    let mut command = scratch.command(git, clock);
     installed.apply(&mut command);
     (command, installed)
 }

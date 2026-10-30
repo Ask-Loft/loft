@@ -5,12 +5,13 @@ use std::fs;
 use std::process::Output;
 
 use serde_json::{Value, json};
+use software_plant::http::Request;
 use software_plant::remote::{Remote, RemoteScenario};
-use software_plant::{BrowserScenario, GitScenario};
+use software_plant::{BrowserScenario, Clock, GitScenario};
 
 use super::remote::{History, history, with_criterion};
 use super::signed_in::{self, document, granted, keep, name_remote, repository};
-use super::{Scratch, tree};
+use super::{EPOCH, Scratch, tree};
 
 /// The key of the criterion each change adds.
 pub const ADDED: &str = "01a18e40-0000-7000-8000-000000000001";
@@ -33,13 +34,9 @@ pub fn connected(
     let scratch = Scratch::with_reading_list();
     let sequences: Vec<usize> = (1..=history.states.len()).collect();
     let git = repository(&scratch, &history, &sequences);
-    let remote = Remote::start(
-        scenario(&history.key).holding("Reading List", history.states[..held].to_vec()),
-    );
-    name_remote(&scratch, Some(&remote.address()), true);
-    keep(
+    let remote = serve(
         &scratch,
-        &json!({ remote.address(): granted(&remote, 3600) }),
+        scenario(&history.key).holding("Reading List", history.states[..held].to_vec()),
     );
     Connected {
         scratch,
@@ -49,7 +46,26 @@ pub fn connected(
     }
 }
 
+/// Starts a remote that answers as `scenario` and names it as the document's remote, with a
+/// sign-in to it kept.
+pub fn serve(scratch: &Scratch, scenario: RemoteScenario) -> Remote {
+    let remote = Remote::start(scenario);
+    name_remote(scratch, Some(&remote.address()), true);
+    keep(
+        scratch,
+        &json!({ remote.address(): granted(&remote, 3600) }),
+    );
+    remote
+}
+
 impl Connected {
+    /// The same repository, connected instead to a remote that answers as `scenario`.
+    #[must_use]
+    pub fn serving(self, scenario: RemoteScenario) -> Self {
+        let remote = serve(&self.scratch, scenario);
+        Self { remote, ..self }
+    }
+
     /// Adds a criterion to the tree, the change the next publish sends.
     pub fn change(&self) {
         let files = tree(&self.scratch.0);
@@ -64,9 +80,14 @@ impl Connected {
         self.publish_with(&[])
     }
 
+    /// Publishes with the variables `env`, in a run whose waits pass at once.
     pub fn publish_with(&self, env: &[(&str, &str)]) -> Output {
-        let (mut command, _) =
-            signed_in::command(&self.scratch, BrowserScenario::Absent, Some(&self.git));
+        let (mut command, _) = signed_in::command_at(
+            &self.scratch,
+            BrowserScenario::Absent,
+            Some(&self.git),
+            &Clock::fixed(EPOCH).passing(),
+        );
         for (name, value) in env {
             command.env(name, value);
         }
@@ -86,13 +107,21 @@ impl Connected {
             .collect()
     }
 
-    /// The body of the one publish request.
-    pub fn sent(&self) -> Value {
-        let request = self
-            .remote
+    /// Each publish request, in order.
+    pub fn publish_requests(&self) -> Vec<Request> {
+        self.remote
             .requests()
             .into_iter()
-            .find(|request| request.path.ends_with("/publish"))
+            .filter(|request| request.path.ends_with("/publish"))
+            .collect()
+    }
+
+    /// The body of the first publish request.
+    pub fn sent(&self) -> Value {
+        let request = self
+            .publish_requests()
+            .into_iter()
+            .next()
             .expect("a publish request");
         serde_json::from_slice(&request.body).unwrap()
     }

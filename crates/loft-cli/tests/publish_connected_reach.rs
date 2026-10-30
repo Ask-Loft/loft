@@ -93,12 +93,7 @@ fn an_expiring_sign_in_is_refreshed_first_and_a_lapsed_one_names_login() {
         } else {
             assert_eq!(run.remote.refreshes(), 1);
             assert_ne!(now["refreshToken"], kept["refreshToken"]);
-            let publish = run
-                .remote
-                .requests()
-                .into_iter()
-                .find(|r| r.path.ends_with("/publish"))
-                .unwrap();
+            let publish = run.publish_requests().remove(0);
             assert_eq!(
                 publish.header("authorization"),
                 Some(format!("Bearer {}", now["accessToken"].as_str().unwrap()).as_str())

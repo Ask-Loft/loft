@@ -171,11 +171,7 @@ impl Client {
         if reply.status < 400 || !Refusal::of(reply).later() {
             return None;
         }
-        // A `Retry-After` date is read against the system clock, whatever dates a publish.
-        let now = SystemClock::with_epoch(None::<std::ffi::OsString>)
-            .now()
-            .ok()?;
-        let asked = wire::retry_after(reply.retry_after.as_deref()?, now)?;
+        let asked = wire::retry_after(reply.retry_after.as_deref()?, super::now()?)?;
         (asked <= allowed).then(|| Duration::from_secs(asked))
     }
 
