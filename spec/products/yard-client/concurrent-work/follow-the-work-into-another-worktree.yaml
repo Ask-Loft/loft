@@ -32,6 +32,24 @@ requirements:
         name: "An agent that ends its working stage in another worktree works in its own directory again with its next call, where it holds no working stage elsewhere."
       - key: 01a18a50-2ff6-715f-af9c-7085bbce2b7f
         name: "Each subagent has its own working tree, found from its own working stage, with its own directory as the fallback."
+  - key: 01a18a68-6812-7158-8a5a-72eac342b688
+    statement:
+      form: state_driven
+      while: "a subagent's directory lies in a worktree other than its main agent's"
+      system: "Yard Client"
+      shall: "follow only the subagent's own working stage into another worktree, the stage of a task assigned to it or a stage it opened, and never its main agent's."
+    body: "Only the host knows where it started a subagent. `loft` learns it from the host's own calls: the main agent's directory is the one its latest command or event names, so that a subagent the host started in a worktree of its own is told from one that works in its main agent's directory, with no word from either adapter."
+    criteria:
+      - key: 01a18a68-6812-7158-8a5a-72eb63d428ea
+        name: "The main agent's directory is the one its session's latest command or event without a subagent named, kept in `~/.yard/session-dirs.json`."
+      - key: 01a18a68-6812-7158-8a5a-72ecc9e83cb2
+        name: "A subagent in a worktree of its own with no task and no stage of its own works in its own directory, wherever its main agent works."
+      - key: 01a18a68-6812-7158-8a5a-72ed11154f68
+        name: "A subagent in a worktree of its own that is assigned a task whose stage lies in another worktree works in that worktree."
+      - key: 01a18a68-6812-7158-8a5a-72eeb0edd476
+        name: "A subagent in its main agent's worktree with no task and no stage of its own follows its main agent's working stage into another worktree."
+      - key: 01a18a68-6812-7158-8a5a-72ef9c625698
+        name: "Where its main agent's directory is not known, a subagent is taken to work in its main agent's worktree."
   - key: 01a18a50-2ff6-715f-af9c-70868b5926d3
     statement:
       form: event_driven
