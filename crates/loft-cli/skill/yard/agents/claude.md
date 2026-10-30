@@ -22,6 +22,10 @@ You reach it through six tools:
 The tools run for your host, session and optional subagent. Do not supply another agent's
 identity or write answers or outcomes on the person's behalf.
 
+Each tool takes an optional `tree`, a directory of the worktree whose Yard Log it reaches in place
+of your working tree: name it to open a stage in another worktree, and to close that worktree's
+Yard Log or record a publish in it.
+
 `yard_wait` holds the turn until the person answers on the page or in the dialog, or the
 submission is withdrawn, or Yard Log is closed.
 

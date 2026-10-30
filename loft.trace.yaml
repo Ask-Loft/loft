@@ -29103,6 +29103,24 @@ links:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_check_a_report_by_the_counts_a_read_gives"
         body: dd921b5d51273ce555064e35ea3ffc5c8cdfd9828277ffd71aba97f9367a649c
+  - node: 01a18a50-2ff6-715f-af9c-7078cc8ee415
+    reviewed: 50fbecc1d9abda0f062eace23d42148a03520c05aabe691df9059d9cc1f858ed
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_open_a_stage_in_another_worktree_before_it_works_there"
+        body: 2872a7af502eeaee3de67c9f530cff7ca07474565cbf4f5a0442922ff82bff8b
+  - node: 01a18a50-2ff6-715f-af9c-70791ede80f9
+    reviewed: 8a6c03f5fb09cf091d8d881f698178a6e5783cb0cd1d16286b79f786db2a5e4b
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_open_a_stage_in_another_worktree_before_it_works_there"
+        body: 2872a7af502eeaee3de67c9f530cff7ca07474565cbf4f5a0442922ff82bff8b
+  - node: 01a18a50-2ff6-715f-af9c-707adfa12f6c
+    reviewed: a8edcf3ba432b0560ef60ba1db084e2a19f00d42d421e9666d6a5cfbbe56650c
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_open_a_stage_in_another_worktree_before_it_works_there"
+        body: 2872a7af502eeaee3de67c9f530cff7ca07474565cbf4f5a0442922ff82bff8b
   - node: 01a1646f-546c-7521-9643-bca80176474a
     reviewed: 913de329f798b46a0229348fddc3516d31e1de1282021c565a383121f1071beb
     tests:

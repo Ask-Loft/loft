@@ -190,6 +190,17 @@ fn the_yard_skill_tells_the_agent_to_open_yard_log_as_the_work_begins() {
 }
 
 #[test]
+fn the_yard_skill_tells_the_agent_to_open_a_stage_in_another_worktree_before_it_works_there() {
+    says(&[
+        "Before you work in a worktree other than your own directory",
+        "open a stage in that worktree's Yard Log by naming its tree in the write",
+        "the questions, plans, tasks and events the adapter records for you, follow your working stage into the worktree that holds it",
+        "Ending that stage returns the work to your own directory",
+        "name the tree to close another worktree's Yard Log or to record a publish in it",
+    ]);
+}
+
+#[test]
 fn the_yard_skill_tells_the_agent_to_open_a_stage_for_each_step_and_end_it() {
     says(&[
         "Before each step of the work, write a stage for it, `active`, with a goal that names what the step leaves done",

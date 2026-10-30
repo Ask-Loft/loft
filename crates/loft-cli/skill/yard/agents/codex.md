@@ -28,9 +28,11 @@ from the new revision. Read with `--since REVISION` for changes since your last 
 The startup context is your briefing, from `loft yard read --context --mark-read`: its read is
 recorded as your last, so a later read with `--since` starts from what it showed. A later prompt's
 context says only whether decision notifications reach you. Read with `--mark-read` before your
-first write, then base your write on that result's revision. Run the commands in the worktree
-whose branch you are recording. Each result reports the page's address, and a read also
-reports whether git ignores `.yard/`; where it is ignored, leave it out of commits.
+first write, then base your write on that result's revision. Run the commands in your own
+directory: each acts on your working tree, and `--tree DIR` names another worktree in its place,
+to open a stage there or to close its Yard Log or record a publish in it. Each result reports the
+tree and the page's address, and a read also reports whether git ignores `.yard/`; where it is
+ignored, leave it out of commits.
 
 ### Questions and plan approval use the Yard page
 
