@@ -25,6 +25,11 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- The Loft plugin reaches the page server on the port `loft yard serve` reports. Where another
+  `loft` had started the page server on a port other than the plugin's `yardPort`, such as the
+  dogfood launcher's 7412, the plugin kept posting to its own port, and Yard recorded none of the
+  session's turns, requests, tool calls or tokens. The events kept meanwhile are posted once it
+  reaches the page server.
 - A `loft yard` command adds its worktree to those the page server serves before it gives the
   page's address, so the link it gives always opens. Sessions that run `loft` without the mod,
   such as those Claude Code Desktop starts in worktrees of their own, are on the page; their
