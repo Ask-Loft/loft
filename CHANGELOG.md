@@ -3,6 +3,15 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.3.0-alpha.3 (2026-10-30)
+
+The third prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.3`. Since 2.3.0-alpha.2 it lets you try an
+agent's work following its working stage into another worktree, of the same repository or
+another, so that the plan, questions, tasks and token cost of that work are recorded in that
+worktree's Yard Log; and the Loft plugin reaching a page server that another `loft` started on
+another port. The entries under Unreleased below list everything 2.3.0 will hold.
+
 ## 2.3.0-alpha.2 (2026-10-29)
 
 The second prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
