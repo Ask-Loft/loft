@@ -2,7 +2,8 @@
 //! runs with the address it would open in the person's browser. A visiting scenario requests the
 //! address and follows each redirect, as a person who consents does, so a sign-in comes back to
 //! the binary's loopback port; an absent one requests nothing and fails, as a browser that
-//! cannot be opened does. Each address it is given is recorded for the test to read.
+//! cannot be opened does. Each address it is given, and the arguments of every run, are recorded
+//! for the test to read; a run with other than one argument requests nothing and exits 2.
 
 use std::fs;
 use std::io::{self, BufRead, BufReader, Write};
@@ -19,6 +20,9 @@ pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_BROWSER";
 const BEHAVIOUR_FILE: &str = "browser-scenario";
 /// The file of the scenario's directory that lists each address the browser was given.
 const VISITS_FILE: &str = "browser-visits";
+/// The file of the scenario's directory that lists the arguments of each run, one run a line,
+/// as a JSON array.
+const ARGUMENTS_FILE: &str = "browser-arguments";
 /// The most redirects a visit follows.
 const HOPS: usize = 10;
 
@@ -47,6 +51,7 @@ impl BrowserScenario {
         };
         fs::write(dir.join(BEHAVIOUR_FILE), behaviour).expect("the browser scenario is written");
         let _ = fs::remove_file(dir.join(VISITS_FILE));
+        let _ = fs::remove_file(dir.join(ARGUMENTS_FILE));
         InstalledBrowser {
             dir: dir.to_path_buf(),
         }
@@ -61,6 +66,18 @@ impl InstalledBrowser {
             .env(SCENARIO_ENV, &self.dir)
     }
 
+    /// The arguments of each run of the browser, in order.
+    #[must_use]
+    pub fn arguments(&self) -> Vec<Vec<String>> {
+        fs::read_to_string(self.dir.join(ARGUMENTS_FILE))
+            .map(|text| {
+                text.lines()
+                    .filter_map(|line| serde_json::from_str(line).ok())
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     /// Every address the browser was given, in order.
     #[must_use]
     pub fn visits(&self) -> Vec<String> {
@@ -70,19 +87,33 @@ impl InstalledBrowser {
     }
 }
 
-/// Runs the simulator for `address`, as its scenario in `dir` says, and gives its exit code.
+/// Runs the simulator with `arguments`, as its scenario in `dir` says, and gives its exit code:
+/// 2 for other than one argument, the address.
 #[must_use]
-pub fn run(dir: &Path, address: &str) -> u8 {
-    let visits = fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(dir.join(VISITS_FILE));
-    if let Ok(mut visits) = visits {
-        let _ = writeln!(visits, "{address}");
-    }
+pub fn run(dir: &Path, arguments: &[String]) -> u8 {
+    append(
+        dir,
+        ARGUMENTS_FILE,
+        &serde_json::json!(arguments).to_string(),
+    );
+    let [address] = arguments else {
+        return 2;
+    };
+    append(dir, VISITS_FILE, address);
     match fs::read_to_string(dir.join(BEHAVIOUR_FILE)).as_deref() {
         Ok("visiting") => u8::from(visit(address).is_err()),
         _ => 1,
+    }
+}
+
+/// Adds `line` to the file `name` of the scenario's directory.
+fn append(dir: &Path, name: &str, line: &str) {
+    let file = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dir.join(name));
+    if let Ok(mut file) = file {
+        let _ = writeln!(file, "{line}");
     }
 }
 

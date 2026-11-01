@@ -21,6 +21,36 @@ pub(super) enum Mode {
     Silent,
 }
 
+/// What the two metadata documents say, as the contract states them or as a misconfigured
+/// server serves them.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Metadata {
+    /// As the contract states them.
+    Faithful,
+    /// A challenge without `scope`, and the protected resource metadata listing these scopes.
+    Unscoped(Vec<String>),
+    /// Protected resource metadata whose `resource` is not its own.
+    MisnamedResource,
+    /// Authorization server metadata whose `issuer` is not the one the resource metadata names.
+    MisnamedIssuer,
+    /// Authorization server metadata without `registration_endpoint`.
+    Unregistering,
+    /// Authorization server metadata whose `code_challenge_methods_supported` is `plain` alone.
+    Plain,
+    /// Authorization server metadata whose `authorization_endpoint` is `http` off the loopback
+    /// interface.
+    Unencrypted,
+}
+
+/// An answer a scenario misstates.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum Misstating {
+    /// An accepted publish's lock.
+    Lock,
+    /// An accepted import's head.
+    ImportHead,
+}
+
 /// A call a scenario can forbid.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Call {
@@ -55,6 +85,19 @@ pub struct RemoteScenario {
     pub(super) lapsed: bool,
     pub(super) scope: String,
     pub(super) publish_from: u64,
+    pub(super) metadata: Metadata,
+    /// The OAuth error every registration is refused with.
+    pub(super) refused_registration: Option<String>,
+    /// The OAuth error every code exchange is refused with.
+    pub(super) refused_exchange: Option<String>,
+    /// Whether the next refresh's answer is lost after the token rotates.
+    pub(super) losing_refresh: bool,
+    /// How long each refresh waits before it is answered.
+    pub(super) refresh_delay: Duration,
+    /// The paths every publish is refused as `invalid_request` naming.
+    pub(super) invalid_publish: Option<Vec<String>>,
+    /// The answer an accepted call gives that its states do not have.
+    pub(super) misstating: Option<Misstating>,
 }
 
 impl RemoteScenario {
@@ -76,6 +119,13 @@ impl RemoteScenario {
             lapsed: false,
             scope: "documents".to_owned(),
             publish_from: 1_800_000_000,
+            metadata: Metadata::Faithful,
+            refused_registration: None,
+            refused_exchange: None,
+            losing_refresh: false,
+            refresh_delay: Duration::ZERO,
+            invalid_publish: None,
+            misstating: None,
         }
     }
 
@@ -211,4 +261,72 @@ impl RemoteScenario {
         self.publish_from = seconds;
         self
     }
+
+    /// Serves the metadata documents as `metadata` says.
+    #[must_use]
+    pub fn metadata(mut self, metadata: Metadata) -> Self {
+        self.metadata = metadata;
+        self
+    }
+
+    /// Refuses every registration with the OAuth error `error`.
+    #[must_use]
+    pub fn refusing_registration(mut self, error: &str) -> Self {
+        self.refused_registration = Some(error.to_owned());
+        self
+    }
+
+    /// Refuses every code exchange with the OAuth error `error`.
+    #[must_use]
+    pub fn refusing_exchange(mut self, error: &str) -> Self {
+        self.refused_exchange = Some(error.to_owned());
+        self
+    }
+
+    /// Rotates the next refresh token presented, then closes the connection without answering.
+    #[must_use]
+    pub fn losing_a_refresh_answer(mut self) -> Self {
+        self.losing_refresh = true;
+        self
+    }
+
+    /// Answers each refresh only after `delay`.
+    #[must_use]
+    pub fn delaying_refreshes(mut self, delay: Duration) -> Self {
+        self.refresh_delay = delay;
+        self
+    }
+
+    /// Refuses every publish as `invalid_request` naming `paths`.
+    #[must_use]
+    pub fn refusing_publish_as_invalid(mut self, paths: &[&str]) -> Self {
+        self.invalid_publish = Some(paths.iter().map(|path| (*path).to_owned()).collect());
+        self
+    }
+
+    /// Answers each accepted publish with a lock whose state root its files do not have.
+    #[must_use]
+    pub fn misstating_its_lock(mut self) -> Self {
+        self.misstating = Some(Misstating::Lock);
+        self
+    }
+
+    /// Answers each accepted import with a head other than its last state.
+    #[must_use]
+    pub fn misstating_its_import_head(mut self) -> Self {
+        self.misstating = Some(Misstating::ImportHead);
+        self
+    }
+}
+
+/// `head`, whatever its fields, with a state root that is not its own: its last digit changed.
+pub(super) fn misstated(mut head: serde_json::Value) -> serde_json::Value {
+    if let Some(root) = head["stateRoot"].as_str() {
+        let mut root = root.to_owned();
+        let last = if root.ends_with('0') { '1' } else { '0' };
+        root.pop();
+        root.push(last);
+        head["stateRoot"] = serde_json::Value::String(root);
+    }
+    head
 }

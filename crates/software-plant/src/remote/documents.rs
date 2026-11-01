@@ -9,7 +9,10 @@ use serde_json::{Value, json};
 
 use super::problem::{self, conflict, invalid, refusal};
 use super::wire::{decode_segment, sha256_hex};
-use super::{Call, Held, RemoteScenario, State, StoredState, TOKEN, head_mark};
+use super::{
+    Call, Held, Metadata, Misstating, RemoteScenario, State, StoredState, TOKEN, head_mark,
+    misstated,
+};
 use crate::http::{Request, Response};
 
 /// The longest name a document may have, in Unicode scalar values.
@@ -28,12 +31,13 @@ impl State {
             self.origin,
             super::RESOURCE
         );
+        let scope = match self.scenario.metadata {
+            Metadata::Unscoped(_) => String::new(),
+            _ => format!(", scope=\"{}\"", self.scenario.scope),
+        };
         response.headers.push((
             "WWW-Authenticate".to_owned(),
-            format!(
-                "Bearer resource_metadata=\"{metadata}\", scope=\"{}\"",
-                self.scenario.scope
-            ),
+            format!("Bearer resource_metadata=\"{metadata}\"{scope}"),
         ));
         response
     }
@@ -231,9 +235,13 @@ fn import(state: &mut State, request: &Request) -> Response {
         Ok(states) => {
             let held = state.held.get_or_insert_with(Held::default);
             held.states = states;
+            let mut answered = head_of(held);
+            if state.scenario.misstating == Some(Misstating::ImportHead) {
+                answered = misstated(answered);
+            }
             Response::json(
                 200,
-                &json!({ "documentKey": state.scenario.key, "head": head_of(held) }),
+                &json!({ "documentKey": state.scenario.key, "head": answered }),
             )
         }
         Err(refused) => refused,
@@ -322,9 +330,15 @@ fn publish(state: &mut State, body: &Value) -> Response {
     if let Some(detail) = &state.scenario.closed {
         return conflict(mark, Some(detail));
     }
+    if let Some(paths) = &state.scenario.invalid_publish {
+        return invalid(paths, None);
+    }
     let at = state.scenario.publish_from + held.states.len() as u64;
     match published_from(held, body, at) {
-        Ok((reply, stored)) => {
+        Ok((mut reply, stored)) => {
+            if state.scenario.misstating == Some(Misstating::Lock) {
+                reply["lock"] = misstated(reply["lock"].take());
+            }
             if let (Some(stored), Some(held)) = (stored, &mut state.held) {
                 held.states.push(stored);
             }

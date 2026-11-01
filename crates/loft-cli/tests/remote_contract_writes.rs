@@ -11,7 +11,7 @@ use crate::common::remote::{history, spec, wire, with_criterion};
 use crate::remote_contract::{assert_problem, get, holding, mark, post};
 
 /// The body of a publish of `files` from `base`, with `retry` as its retry key.
-fn publish_body(
+pub fn publish_body(
     key: &str,
     base: &StoredState,
     files: &BTreeMap<String, String>,
@@ -156,7 +156,7 @@ fn a_create_holds_the_key_and_name_or_is_refused() {
     assert_problem(&refused, 403, "forbidden");
 }
 
-fn import_body(key: &str, states: &[StoredState]) -> Value {
+pub fn import_body(key: &str, states: &[StoredState]) -> Value {
     let states: Vec<Value> = states
         .iter()
         .map(|state| {

@@ -6,13 +6,14 @@
 //! whole sign-in revoked otherwise. Its clock runs from the machine's, moved on by the test.
 
 use std::collections::HashMap;
+use std::thread;
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 
 use super::problem::oauth;
 use super::wire::{base64url, pairs, query, sha256, value};
-use super::{Consent, State};
+use super::{Consent, Metadata, State};
 use crate::http::{Request, Response};
 
 /// A sign-in that the simulator issued: the client it was issued to and its tokens.
@@ -163,12 +164,20 @@ impl State {
 }
 
 pub(super) fn resource_metadata(state: &State) -> Response {
+    let resource = match state.scenario.metadata {
+        Metadata::MisnamedResource => format!("{}/elsewhere", state.origin),
+        _ => state.resource(),
+    };
+    let scopes = match &state.scenario.metadata {
+        Metadata::Unscoped(scopes) => json!(scopes),
+        _ => json!([state.scenario.scope]),
+    };
     Response::json(
         200,
         &json!({
-            "resource": state.resource(),
+            "resource": resource,
             "authorization_servers": [state.issuer()],
-            "scopes_supported": [state.scenario.scope],
+            "scopes_supported": scopes,
             "bearer_methods_supported": ["header"],
         }),
     )
@@ -176,20 +185,31 @@ pub(super) fn resource_metadata(state: &State) -> Response {
 
 pub(super) fn server_metadata(state: &State) -> Response {
     let issuer = state.issuer();
-    Response::json(
-        200,
-        &json!({
-            "issuer": issuer,
-            "authorization_endpoint": format!("{issuer}/authorize"),
-            "token_endpoint": format!("{issuer}/token"),
-            "registration_endpoint": format!("{issuer}/register"),
-            "response_types_supported": ["code"],
-            "grant_types_supported": ["authorization_code", "refresh_token"],
-            "code_challenge_methods_supported": ["S256"],
-            "token_endpoint_auth_methods_supported": ["none"],
-            "scopes_supported": [state.scenario.scope],
-        }),
-    )
+    let mut metadata = json!({
+        "issuer": issuer,
+        "authorization_endpoint": format!("{issuer}/authorize"),
+        "token_endpoint": format!("{issuer}/token"),
+        "registration_endpoint": format!("{issuer}/register"),
+        "response_types_supported": ["code"],
+        "grant_types_supported": ["authorization_code", "refresh_token"],
+        "code_challenge_methods_supported": ["S256"],
+        "token_endpoint_auth_methods_supported": ["none"],
+        "scopes_supported": [state.scenario.scope],
+    });
+    match state.scenario.metadata {
+        Metadata::MisnamedIssuer => metadata["issuer"] = json!(format!("{issuer}/elsewhere")),
+        Metadata::Unregistering => {
+            metadata
+                .as_object_mut()
+                .map(|fields| fields.remove("registration_endpoint"));
+        }
+        Metadata::Plain => metadata["code_challenge_methods_supported"] = json!(["plain"]),
+        Metadata::Unencrypted => {
+            metadata["authorization_endpoint"] = json!("http://auth.example/authorize");
+        }
+        _ => {}
+    }
+    Response::json(200, &metadata)
 }
 
 /// Whether `uri` is `http` on the loopback interface.
@@ -214,6 +234,9 @@ fn portless(uri: &str) -> String {
 }
 
 pub(super) fn register(state: &mut State, request: &Request) -> Response {
+    if let Some(error) = &state.scenario.refused_registration {
+        return oauth(error);
+    }
     let Ok(metadata) = serde_json::from_slice::<Value>(&request.body) else {
         return oauth("invalid_client_metadata");
     };
@@ -320,6 +343,9 @@ pub(super) fn token(state: &mut State, request: &Request) -> Response {
 }
 
 fn exchange(state: &mut State, form: &Form) -> Response {
+    if let Some(error) = &state.scenario.refused_exchange {
+        return oauth(error);
+    }
     let field = |name| form.field(name);
     let Some(code) = state.auth.codes.get_mut(&field("code")) else {
         return oauth("invalid_grant");
@@ -383,5 +409,9 @@ fn refresh(state: &mut State, form: &Form) -> Response {
         });
     }
     state.auth.refreshes += 1;
+    thread::sleep(state.scenario.refresh_delay);
+    if std::mem::take(&mut state.scenario.losing_refresh) {
+        return Response::hang_up();
+    }
     Response::json(200, &answer)
 }

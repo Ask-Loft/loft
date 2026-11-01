@@ -20001,6 +20001,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract.rs"
         name: "a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_issued"
         body: 33b691a65e63d72668f183bdf447aa66a41ae8ac39f9b7855865bd171178209b
+  - node: 01a1995a-1ff6-73c4-9f04-02266acd23bf
+    reviewed: 45886fc51d8b86fe40a838b88fab29277c860feaf79040c38e632fbcbb782c52
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "each_misconfigured_metadata_serves_what_its_scenario_names"
+        body: 0a265284e00e941b8115b8eea79ed561b35eeefd3929702f93b7b074d1104767
   - node: 01a18e1f-8dac-71f7-847a-7244ef7a794f
     reviewed: 66830bb3067ee4bdbc1fa3f2d679f8315114e485a34797be85cb7a9eb953a847
     tests:
@@ -20181,6 +20187,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_writes.rs"
         name: "a_publish_is_answered_as_published_replayed_unchanged_or_conflict"
         body: ac805e614303875a0e28442e2208e88acb6960deafcb9dff46d4e56f8f49ea0b
+  - node: 01a1995a-1ff6-73c4-9f04-02279b18aa75
+    reviewed: 309d2934b1fde9411ae577e52f5978e110719e910a5284a525c9b1a113a3fb51
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "a_misstating_scenario_answers_a_lock_or_an_import_head_its_states_do_not_have"
+        body: aa06708f5cfe5ac91e25119a14f31d504f257ad2821456a21c87d4a7003ad93f
   - node: 01a156ae-6a51-7230-a9a1-faaf2a2086bf
     reviewed: 0fcae7cd8e726deac2234399c2575806cd057c715b352af2bce7ef1735f22add
     tests:
@@ -20223,6 +20235,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_writes.rs"
         name: "a_publish_the_remote_refuses_names_its_reason_or_its_paths"
         body: 60d03dfa983d97050b06d3cb2913611151a4bad140efbb4ef15ffce7e37fc758
+  - node: 01a1995a-1ff6-73c4-9f04-0228c97fff43
+    reviewed: 7d4b2a0b68689411bd493bb4c932b83e14c64ff9f49cda0d465bb5fc8ca05876
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "a_scenario_refuses_a_publish_as_invalid_naming_the_paths_it_names"
+        body: a04537c75f851dfe847f9c559c82fb6d798f42eddf9ca239573151f871d46863
   - node: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
     reviewed: f98fc1493e3853725cb385801aedc1d927606c99a46da9ff3be0b6a19e646554
     tests:
@@ -20319,6 +20337,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_writes.rs"
         name: "an_import_takes_the_states_as_the_document_s_history"
         body: 67151d47050f0c8d22ce5d984d32fa53fb9d21db0d337c9ca5254b4e2cc75e4d
+  - node: 01a1995a-1ff6-73c4-9f04-022959a30c48
+    reviewed: 9f224f5faeaa760215283486e5250864cd7298acec6f6b15195ca8550d2a4ddb
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "a_misstating_scenario_answers_a_lock_or_an_import_head_its_states_do_not_have"
+        body: aa06708f5cfe5ac91e25119a14f31d504f257ad2821456a21c87d4a7003ad93f
   - node: 01a1587a-dee4-70f8-999e-e5614a15a9d1
     reviewed: 9044dc792fb1bad4652488be11522860cfd49f448b4cb704d457bfef8450d829
     tests:
@@ -20463,6 +20487,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "the_metadata_names_the_resource_and_an_authorization_server_that_takes_pkce_alone"
         body: b919e0d9c268d1a5d9003f39ba6a4ba7a5cdd139537bc201b0d3c6068473101d
+  - node: 01a1995a-1ff6-73c4-9f04-022a7141cacc
+    reviewed: 760a723387fb506e658371871c4905a0356c2a45f19f0963622a6c89537d2dd3
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "each_misconfigured_metadata_serves_what_its_scenario_names"
+        body: 0a265284e00e941b8115b8eea79ed561b35eeefd3929702f93b7b074d1104767
   - node: 01a18e1f-8dac-71f7-847a-724a0106e061
     reviewed: 0da41a342408aff55fcbe01ce31db5b4d465bb4037a964f38df46b179dfcd643
     tests:
@@ -20475,6 +20505,30 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "the_metadata_names_the_resource_and_an_authorization_server_that_takes_pkce_alone"
         body: b919e0d9c268d1a5d9003f39ba6a4ba7a5cdd139537bc201b0d3c6068473101d
+  - node: 01a1995a-1ff6-73c4-9f04-022bd9bfb5ba
+    reviewed: 2b51023fa61b14703df2809d4041e7a529028d2b55f90aede0c5f3135d36b12a
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "each_misconfigured_metadata_serves_what_its_scenario_names"
+        body: 0a265284e00e941b8115b8eea79ed561b35eeefd3929702f93b7b074d1104767
+  - node: 01a1995a-1ff6-73c4-9f04-022c7834f0af
+    reviewed: 8c953dc0346ee8c837c96e641fbd894e8cad57176bf315f37f0cf991900273da
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "each_misconfigured_metadata_serves_what_its_scenario_names"
+        body: 0a265284e00e941b8115b8eea79ed561b35eeefd3929702f93b7b074d1104767
+  - node: 01a1995a-1ff6-73c4-9f04-022d4e6f11fb
+    reviewed: 7c88c03ce45bb0a7c3367ba3e59b86c6aba6614de9823b519fbd0ab55ebcc27d
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "each_misconfigured_metadata_serves_what_its_scenario_names"
+        body: 0a265284e00e941b8115b8eea79ed561b35eeefd3929702f93b7b074d1104767
+  - node: 01a1995a-1ff6-73c4-9f04-022ed4979c76
+    reviewed: 0217e1a1f77fcb5725be8fae1ad0c7f92c0d4aee9cd152266b8eadee6bd370d7
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "each_misconfigured_metadata_serves_what_its_scenario_names"
+        body: 0a265284e00e941b8115b8eea79ed561b35eeefd3929702f93b7b074d1104767
   - node: 01a18e1f-8dac-71f7-847a-724ccb573384
     reviewed: 677e070d702fa4837834b6f674753757d2e4e455394a170c112cc7060f2ea326
     tests:
@@ -20499,6 +20553,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_public_client_with_loopback_redirects_is_registered_and_others_are_refused"
         body: 4fdfaad69e8982f84dda93cb7c81e19680936d10785186e3944e956fc7c6ecb9
+  - node: 01a1995a-1ff6-73c4-9f04-022f8cef789e
+    reviewed: 4e1871856f272228fafb9e16e3dbb6a73e0b81b5b5c6bb55c8d3e40efe461a33
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "a_scenario_refuses_every_registration_or_exchange_with_the_oauth_error_it_names"
+        body: b42931a5d4ecd8e9b17d58a215534f221ab15e067a18918fbfde5fcf807b8b84
   - node: 01a18e1f-8dac-71f7-847a-7252c7346fb2
     reviewed: 788d74f2a30f40519631a619d3d546a463309a3338c0a9c52f6dfe984bad95ca
     tests:
@@ -20559,6 +20619,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource"
         body: e61e1e98af6ffab8c35b46305029cd6eaa09a97a3477f53d6a1d66c3c5d1e687
+  - node: 01a1995a-1ff6-73c4-9f04-02309a866506
+    reviewed: dbde2c7350d38e24e3ac9a906f681d32572049bc51bd59b1396792c8121a933c
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "a_scenario_refuses_every_registration_or_exchange_with_the_oauth_error_it_names"
+        body: b42931a5d4ecd8e9b17d58a215534f221ab15e067a18918fbfde5fcf807b8b84
   - node: 01a18e1f-8dac-71f7-847a-725e4c95828e
     reviewed: 44c8c2d501b6510ce6d61322a01c8edb9a6f5f48ada860f5f43748ed5973117e
     tests:
@@ -20601,6 +20667,18 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
         body: 31db72cfb6c41243ec9ca2fb930e0f46ac9465b07d988538448065eabed1780d
+  - node: 01a1995a-1ff6-73c4-9f04-0231e27a1bf0
+    reviewed: 6dc1e9709b984c571277a304cfad9f2a4bda7fe2257c3bbd396ecc992319a76e
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "a_lost_refresh_answer_rotates_the_token_and_closes_the_connection_once"
+        body: 1e10e4ee0337beee8ef795a296593b05d0ac846f074a3a4e0994ae00fa34a58f
+  - node: 01a1995a-1ff6-73c4-9f04-0232d8302baa
+    reviewed: 2120af3fde43115ada980115b28baedbc0d0c04aaaeca765867802e96e785c2b
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_failures.rs"
+        name: "a_delaying_scenario_answers_each_refresh_only_after_its_delay"
+        body: 381803dc82ddaae9aa9938e44ea32a6fcc1c474834b3fce37b343c012355ae9b
   - node: 01a17989-a8b9-74b1-9049-073b0be616b1
     reviewed: 00040f13ba81c856e1fd2d2efd203c5508d1d845a0c37454fc2705600ac2e4bc
     tests:
@@ -20784,6 +20862,12 @@ links:
       - file: "crates/loft-cli/tests/browser_contract.rs"
         name: "an_absent_browser_requests_nothing_and_exits_1"
         body: 29e51aec8245c400dd8b032e47753a28c2cb70e90a747995adaa7304baacdc27
+  - node: 01a1995a-1ff5-7324-ae3a-0c45cc7a4150
+    reviewed: fab2f0ece55ae35ffcbcbcbc381e6fa1af85020bfeca558d6569a85f3ff1dfc6
+    tests:
+      - file: "crates/loft-cli/tests/browser_contract.rs"
+        name: "a_browser_run_with_other_than_one_argument_requests_nothing_and_exits_2"
+        body: 7edb20ac2c90c742e43bb9981a29406bbff9d981504e7c6a6722d1996142e676
   - node: 01a13654-6e12-74a1-ad7f-e7d4c0dc3e58
     reviewed: 3f41a2be394b6b630da9e6129a912554832b8a0f5b879b067f3c43e53b5362f0
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/changing-a-specified-product.md, read it there."

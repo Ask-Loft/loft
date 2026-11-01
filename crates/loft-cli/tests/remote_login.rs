@@ -318,7 +318,7 @@ fn by_hand(scratch: &Scratch, url: &str) {
     let dir = scratch.plant().join("by-hand");
     std::fs::create_dir_all(&dir).unwrap();
     let _ = BrowserScenario::Visiting.install(&dir);
-    assert_eq!(software_plant::browser::run(&dir, url), 0);
+    assert_eq!(software_plant::browser::run(&dir, &[url.to_owned()]), 0);
 }
 
 /// A request for `target` on the loopback port of `redirect`, and the status line it answers.

@@ -64,6 +64,7 @@ mod release_workflow;
 mod remote_connect;
 mod remote_contract;
 mod remote_contract_auth;
+mod remote_contract_failures;
 mod remote_contract_writes;
 mod remote_login;
 mod remote_remove;

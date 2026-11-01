@@ -12,10 +12,10 @@ use software_plant::remote::{Remote, RemoteScenario};
 use crate::remote_contract::{Answer, agent, call, read};
 
 const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
-const KEY: &str = "01a18e30-0000-7000-8000-000000000010";
+pub const KEY: &str = "01a18e30-0000-7000-8000-000000000010";
 const REDIRECT: &str = "http://127.0.0.1/callback";
 
-fn metadata(remote: &Remote) -> (Value, Value) {
+pub fn metadata(remote: &Remote) -> (Value, Value) {
     discover(&remote.address())
 }
 
@@ -46,14 +46,14 @@ fn discover(address: &str) -> (Value, Value) {
 }
 
 /// The id of a public client registered with `server`.
-fn registered(server: &Value) -> String {
+pub fn registered(server: &Value) -> String {
     register(server, &[REDIRECT], "none").body["client_id"]
         .as_str()
         .unwrap()
         .to_owned()
 }
 
-fn register(server: &Value, redirects: &[&str], method: &str) -> Answer {
+pub fn register(server: &Value, redirects: &[&str], method: &str) -> Answer {
     let body = json!({
         "client_name": "loft",
         "redirect_uris": redirects,
@@ -110,7 +110,7 @@ fn location(answer: &Answer) -> Vec<(String, String)> {
     pairs(location.split_once('?').unwrap().1)
 }
 
-fn form(url: &str, fields: &[(&str, &str)]) -> Answer {
+pub fn form(url: &str, fields: &[(&str, &str)]) -> Answer {
     read(
         agent()
             .post(url)
@@ -121,7 +121,7 @@ fn form(url: &str, fields: &[(&str, &str)]) -> Answer {
 }
 
 /// A client registered on `remote` and a code it was given, with the endpoints.
-fn coded(remote: &Remote) -> (Value, String, String, String) {
+pub fn coded(remote: &Remote) -> (Value, String, String, String) {
     let (resource, server) = metadata(remote);
     let client = registered(&server);
     let resource = resource["resource"].as_str().unwrap().to_owned();
@@ -134,7 +134,7 @@ fn coded(remote: &Remote) -> (Value, String, String, String) {
     (server, client, resource, code)
 }
 
-fn exchange(server: &Value, client: &str, resource: &str, code: &str) -> Answer {
+pub fn exchange(server: &Value, client: &str, resource: &str, code: &str) -> Answer {
     form(
         server["token_endpoint"].as_str().unwrap(),
         &[
@@ -148,7 +148,7 @@ fn exchange(server: &Value, client: &str, resource: &str, code: &str) -> Answer 
     )
 }
 
-fn refresh(server: &Value, client: &str, resource: &str, token: &str) -> Answer {
+pub fn refresh(server: &Value, client: &str, resource: &str, token: &str) -> Answer {
     form(
         server["token_endpoint"].as_str().unwrap(),
         &[

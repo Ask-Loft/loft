@@ -24,8 +24,9 @@ use serde_json::{Value, json};
 use crate::http::{Request, Responder, Response, Server, refusing_url};
 
 pub use oauth::Grant;
-use scenario::{Call, Held, Mode};
-pub use scenario::{Consent, RemoteScenario};
+use scenario::misstated;
+use scenario::{Call, Held, Misstating, Mode};
+pub use scenario::{Consent, Metadata, RemoteScenario};
 
 /// The bearer token every scenario admits, as `LOFT_REMOTE_TOKEN` gives it to the binary.
 pub const TOKEN: &str = "simulator-token";

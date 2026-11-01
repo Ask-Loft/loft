@@ -56,6 +56,25 @@ fn an_absent_browser_requests_nothing_and_exits_1() {
 }
 
 #[test]
+fn a_browser_run_with_other_than_one_argument_requests_nothing_and_exits_2() {
+    let scratch = Scratch::empty();
+    let server = Server::start(Redirecting);
+    let installed = BrowserScenario::Visiting.install(&scratch.0);
+    let address = format!("{}/start", server.url());
+    for arguments in [vec![], vec![address.clone(), "--new-window".to_owned()]] {
+        let mut command = Command::new(browser_executable());
+        installed.apply(&mut command);
+        assert_eq!(command.args(&arguments).status().unwrap().code(), Some(2));
+    }
+    assert!(server.requests().is_empty());
+    assert_eq!(installed.visits(), Vec::<String>::new());
+    assert_eq!(
+        installed.arguments(),
+        [vec![], vec![address, "--new-window".to_owned()]]
+    );
+}
+
+#[test]
 #[ignore = "opens the person's browser"]
 fn the_system_s_opener_requests_the_address_as_the_simulator_does() {
     let server = Server::start(Redirecting);
