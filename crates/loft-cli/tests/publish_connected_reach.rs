@@ -6,6 +6,7 @@ use std::fs;
 
 use serde_json::json;
 use software_plant::BrowserScenario;
+use software_plant::remote::wire::{pairs, value};
 use software_plant::remote::{RemoteScenario, TOKEN};
 
 use crate::common::connected::{Connected, connected};
@@ -93,6 +94,26 @@ fn an_expiring_sign_in_is_refreshed_first_and_a_lapsed_one_names_login() {
         } else {
             assert_eq!(run.remote.refreshes(), 1);
             assert_ne!(now["refreshToken"], kept["refreshToken"]);
+            let refresh = run
+                .remote
+                .requests()
+                .into_iter()
+                .find(|r| r.path == "/auth/token")
+                .unwrap();
+            assert_eq!(refresh.method, "POST");
+            assert_eq!(
+                refresh.header("content-type"),
+                Some("application/x-www-form-urlencoded")
+            );
+            let form = pairs(&String::from_utf8_lossy(&refresh.body));
+            for (field, kept) in [
+                ("grant_type", json!("refresh_token")),
+                ("refresh_token", kept["refreshToken"].clone()),
+                ("client_id", kept["clientId"].clone()),
+                ("resource", kept["resource"].clone()),
+            ] {
+                assert_eq!(value(&form, field), kept.as_str(), "{field}");
+            }
             let publish = run.publish_requests().remove(0);
             assert_eq!(
                 publish.header("authorization"),

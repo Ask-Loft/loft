@@ -152,6 +152,15 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
     ] {
         assert!(form.contains(field), "{field} in {form}");
     }
+    let form = pairs(&form);
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    for secret in ["code", "code_verifier"] {
+        let secret = value(&form, secret).unwrap();
+        assert!(
+            !printed.contains(secret) && !stdout.contains(secret),
+            "no output holds {secret}"
+        );
+    }
 }
 
 #[cfg(unix)]
@@ -212,6 +221,19 @@ fn login_replaces_the_sign_in_for_its_address_and_keeps_every_other() {
         "an entry this loft does not read is kept as it was"
     );
     assert_ne!(kept[remote.address()]["accessToken"], old["accessToken"]);
+    assert_ne!(
+        kept[remote.address()]["clientId"],
+        old["clientId"],
+        "the sign-in registers anew"
+    );
+    let registrations = remote.requests();
+    assert_eq!(
+        registrations
+            .iter()
+            .filter(|r| r.path == "/auth/register")
+            .count(),
+        1
+    );
     assert_eq!(browser.visits().len(), 1);
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains(&remote.address()), "{stdout}");
@@ -242,7 +264,7 @@ fn login_without_a_remote_in_the_manifest_is_refused_naming_remote_set() {
 fn a_refused_consent_ends_the_sign_in_naming_the_error_and_writes_nothing() {
     let remote = Remote::start(RemoteScenario::accepting("doc-deny").refusing_consent());
     let scratch = connected(&remote);
-    let (output, _) = run(
+    let (output, browser) = run(
         &scratch,
         &["remote", "login"],
         BrowserScenario::Visiting,
@@ -252,6 +274,12 @@ fn a_refused_consent_ends_the_sign_in_naming_the_error_and_writes_nothing() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("access_denied"), "{stderr}");
     assert!(!sign_ins_file(&scratch).exists());
+    let redirect = query(&browser.visits()[0], "redirect_uri").unwrap();
+    let port = redirect
+        .strip_prefix("http://")
+        .unwrap()
+        .trim_end_matches("/callback");
+    assert!(TcpStream::connect(port).is_err(), "loft stops listening");
 }
 
 #[test]
