@@ -103,6 +103,12 @@ requirements:
         name: "`package` is the path, on the same origin, of the package, a gzip-compressed tar archive."
       - key: 01a156af-5306-73ab-a0e4-ce9f412d731b
         name: "The package is written to `.claude/skills/<name>/` and to `.agents/skills/<name>/`, where `<name>` is the manifest's."
+      - key: 01a19953-8002-7761-be9c-9ad16cb8dda0
+        name: "With `--host`, the package is written only to the skill directory of each selected host."
+      - key: 01a19953-8002-7761-be9c-9ad2e535cc10
+        name: "Each entry's path is taken from the top of the skill directory, so that the entry `SKILL.md` is written to `<name>/SKILL.md`."
+      - key: 01a19953-8002-7761-be9c-9ad3d21c881b
+        name: "Each skill directory is replaced whole through a rename, so that a file that it held and the package does not hold is removed."
       - key: 01a156af-5306-73ab-a0e4-cea066dfb2d7
         name: "The `loft-spec` skill directories are left as they were."
       - key: 01a156af-5306-73ab-a0e4-cea1d0f3b1d2
@@ -137,6 +143,8 @@ requirements:
         name: "An entry whose path holds a `..` segment is refused."
       - key: 01a156af-5306-73ab-a0e4-ceab7ab49d82
         name: "A symbolic link or a hard link entry is refused."
+      - key: 01a19953-8002-7761-be9c-9ad43fec9482
+        name: "An entry that is neither a file nor a directory is refused."
       - key: 01a156af-5306-73ab-a0e4-ceacf8fcbc3d
         name: "The error names the entry."
       - key: 01a156af-5306-73ab-a0e4-cead8bd7d9ae
