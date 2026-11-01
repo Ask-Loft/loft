@@ -296,3 +296,52 @@ fn a_change_the_remote_answers_as_unchanged_writes_nothing_and_its_replay_says_s
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("nothing to publish"), "{stdout}");
 }
+
+#[test]
+fn a_file_the_base_holds_and_the_tree_does_not_is_sent_as_removed_by_its_path_alone() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    let decision = "decisions/keep-a-change-log.yaml";
+    fs::remove_file(run.scratch.file(decision)).unwrap();
+    assert_eq!(run.scratch.loft(&["fmt"]).status.code(), Some(0));
+    let output = run.publish();
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let sent = run.sent();
+    assert_eq!(sent["removed"], json!([format!("spec/{decision}")]));
+}
+
+#[test]
+fn a_returned_lock_the_returned_files_disagree_with_names_the_root_and_writes_nothing() {
+    let run = connected(1, 1, |key| {
+        RemoteScenario::accepting(key).misstating_its_lock()
+    });
+    run.change();
+    let before = tree(&run.scratch.0);
+    let lock = run.lock();
+    let output = run.publish();
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = Connected::message(&output);
+    assert!(message.contains("state root"), "{message}");
+    assert_eq!(tree(&run.scratch.0), before);
+    assert_eq!(run.lock(), lock);
+}
+
+#[test]
+fn a_publish_the_remote_answers_as_invalid_names_each_path_and_writes_nothing() {
+    let paths = [
+        "spec/products/reading-list/product.yaml",
+        "spec/loftspec.yaml",
+    ];
+    let run = connected(1, 1, |key| {
+        RemoteScenario::accepting(key).refusing_publish_as_invalid(&paths)
+    });
+    run.change();
+    let before = tree(&run.scratch.0);
+    let output = run.publish();
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = Connected::message(&output);
+    assert!(message.contains("invalid_request"), "{message}");
+    for path in paths {
+        assert!(message.contains(path), "{path}: {message}");
+    }
+    assert_eq!(tree(&run.scratch.0), before);
+}

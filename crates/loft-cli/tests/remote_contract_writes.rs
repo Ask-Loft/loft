@@ -263,3 +263,24 @@ fn an_import_whose_states_do_not_hold_together_is_refused() {
     let forbidden = Remote::start(empty().forbidding_import());
     assert_problem(&post(&forbidden, "/import", &body), 403, "forbidden");
 }
+
+#[test]
+fn a_publish_that_removes_a_node_is_answered_with_its_binding_departed() {
+    let (remote, history) = holding(1);
+    let base = &history.states[0];
+    let decision = "spec/decisions/keep-a-change-log.yaml";
+    let mut body = publish_body(&history.key, base, &base.files, "retry-1");
+    body["removed"] = json!([decision]);
+    let answer = post(&remote, "/publish", &body);
+    assert_eq!(answer.body["outcome"], "published", "{:?}", answer.body);
+    let labels = answer.body["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|file| file["path"] == "spec/labels.yaml")
+        .and_then(|file| file["text"].as_str())
+        .unwrap();
+    let binding = &labels[labels.find("00000000-0000-4000-8000-00000000008c").unwrap()..];
+    let binding = &binding[..binding.find("  - key:").unwrap_or(binding.len())];
+    assert!(binding.contains("departed: true"), "{binding}");
+}

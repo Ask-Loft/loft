@@ -3,7 +3,8 @@
 
 use std::collections::BTreeMap;
 
-use loftspec::codec::{Files, SpecPath};
+use loftspec::codec::{Files, LABELS, SpecPath};
+use loftspec::fmt::format;
 use loftspec::publish::{self, Lock, Made, Publication, PublishedAt, ReadTree};
 use serde_json::{Value, json};
 
@@ -406,7 +407,14 @@ fn published_from(
     at: u64,
 ) -> Result<(Value, Option<StoredState>), Response> {
     let files = applied(held, body)?;
-    let spec = spec_files(&files);
+    let mut spec = spec_files(&files);
+    // The remote writes the bindings: a node the delta removed keeps its binding, departed.
+    if let Ok(formatted) = format(&spec) {
+        let labels = SpecPath::new(LABELS);
+        if let Some(bytes) = formatted.changed.get(&labels) {
+            spec.insert(labels, bytes.clone());
+        }
+    }
     let tree = read_tree(&spec)?;
     let previous = held
         .states
