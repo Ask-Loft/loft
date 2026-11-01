@@ -323,3 +323,5 @@ Rust 1.97 or newer; `cargo install cargo-nextest --locked` provides the test run
 The skill's source lies in `crates/loft-cli/skill/loft-spec/`. After changing it, run
 `scripts/package-skill.sh` to rewrite the plugin packages under `plugins/`; a test fails while
 they differ.
+
+<!-- GitHub connection test by Rocco -->
