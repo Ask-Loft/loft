@@ -1,6 +1,7 @@
 //! `loft remote set <address>`: the connect of a document to its remote, its published history
 //! read from the repository and imported, under the remote, browser and git simulators.
 
+use loftspec::codec;
 use serde_json::{Value, json};
 use software_plant::remote::{Remote, RemoteScenario};
 use software_plant::{BrowserScenario, GitScenario};
@@ -291,6 +292,8 @@ fn set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_req
     let (scratch, git) = published(&history);
     let remote = Remote::start(RemoteScenario::accepting(&history.key));
     name_remote(&scratch, Some("https://old.example/documents/one"), true);
+    let mut expected = codec::read(&tree(&scratch.0)).unwrap();
+    expected.remote = Some(remote.address());
     keep(
         &scratch,
         &json!({ remote.address(): granted(&remote, 3600) }),
@@ -298,6 +301,8 @@ fn set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_req
     let (output, result) = set(&scratch, &remote, Some(&git));
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     assert_eq!(result["outcome"], "set");
+    // Only `remote` changes: `connected: true` and every other field stay as they were.
+    assert_eq!(codec::read(&tree(&scratch.0)).unwrap(), expected);
     assert!(
         remote.requests().is_empty(),
         "the kept sign-in is used as it is"

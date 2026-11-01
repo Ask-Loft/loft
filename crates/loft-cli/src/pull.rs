@@ -188,7 +188,12 @@ fn from_head(
     let at = match Head::read(head) {
         Some(at) => at,
         None if head.is_null() => Head::none(),
-        None => return Err(refused("the remote's head does not read")),
+        None => {
+            return Err(unreached(&RemoteError::Unreachable {
+                address: client.address().to_owned(),
+                reason: "its head does not read".to_owned(),
+            }));
+        }
     };
     if at == Head::of_lock(lock) {
         return Ok(None);
