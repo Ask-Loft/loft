@@ -100,14 +100,19 @@ fn head_of(held: &Held) -> Value {
     })
 }
 
-/// `head`, a head or a lock, with a state root that is not its own, its last digit changed, in
-/// the lock it holds too. A head that is `null` names no state root and stays as it is.
+/// The state root a misstating scenario gives in place of `root`: its last digit changed.
+#[must_use]
+pub fn misstated_root(root: &str) -> String {
+    let last = if root.ends_with('0') { '1' } else { '0' };
+    format!("{}{last}", &root[..root.len() - 1])
+}
+
+/// `head`, a head or a lock, with a state root that is not its own, in the lock it holds too. A
+/// head that is `null` names no state root and stays as it is.
 fn misstated(mut head: Value) -> Value {
     let other = |root: &Value| {
-        root.as_str().map(|root| {
-            let last = if root.ends_with('0') { '1' } else { '0' };
-            Value::String(format!("{}{last}", &root[..root.len() - 1]))
-        })
+        root.as_str()
+            .map(|root| Value::String(misstated_root(root)))
     };
     if let Some(root) = other(&head["stateRoot"]) {
         head["stateRoot"] = root;
@@ -408,7 +413,8 @@ fn published_from(
 ) -> Result<(Value, Option<StoredState>), Response> {
     let files = applied(held, body)?;
     let mut spec = spec_files(&files);
-    // The remote writes the bindings: a node the delta removed keeps its binding, departed.
+    // The remote writes the bindings: a node the delta removed keeps its binding, departed. A
+    // tree that does not format does not read either, and is refused as such below.
     if let Ok(formatted) = format(&spec) {
         let labels = SpecPath::new(LABELS);
         if let Some(bytes) = formatted.changed.get(&labels) {

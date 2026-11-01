@@ -7,7 +7,8 @@ use std::collections::BTreeMap;
 use serde_json::{Value, json};
 use software_plant::remote::{Remote, RemoteScenario, StoredState};
 
-use crate::common::remote::{history, spec, wire, with_criterion};
+use crate::common::remote::{DECISION_KEY, departed, history, spec, wire, with_criterion};
+use crate::pull::DECISION;
 use crate::remote_contract::{assert_problem, get, holding, mark, post};
 
 /// The body of a publish of `files` from `base`, with `retry` as its retry key.
@@ -268,9 +269,8 @@ fn an_import_whose_states_do_not_hold_together_is_refused() {
 fn a_publish_that_removes_a_node_is_answered_with_its_binding_departed() {
     let (remote, history) = holding(1);
     let base = &history.states[0];
-    let decision = "spec/decisions/keep-a-change-log.yaml";
     let mut body = publish_body(&history.key, base, &base.files, "retry-1");
-    body["removed"] = json!([decision]);
+    body["removed"] = json!([format!("spec/{DECISION}")]);
     let answer = post(&remote, "/publish", &body);
     assert_eq!(answer.body["outcome"], "published", "{:?}", answer.body);
     let labels = answer.body["files"]
@@ -280,7 +280,5 @@ fn a_publish_that_removes_a_node_is_answered_with_its_binding_departed() {
         .find(|file| file["path"] == "spec/labels.yaml")
         .and_then(|file| file["text"].as_str())
         .unwrap();
-    let binding = &labels[labels.find("00000000-0000-4000-8000-00000000008c").unwrap()..];
-    let binding = &binding[..binding.find("  - key:").unwrap_or(binding.len())];
-    assert!(binding.contains("departed: true"), "{binding}");
+    assert!(departed(labels, DECISION_KEY), "{labels}");
 }

@@ -12,7 +12,7 @@ use crate::common::signed_in::{name_remote, run, sign_ins_file};
 
 /// Runs `loft remote login` for a Reading List connected to a simulator of `scenario`, and gives
 /// the simulator, the scratch directory, the output and the addresses the browser was given.
-fn login(scenario: RemoteScenario) -> (Remote, Scratch, std::process::Output, Vec<String>) {
+pub fn login(scenario: RemoteScenario) -> (Remote, Scratch, std::process::Output, Vec<String>) {
     let remote = Remote::start(scenario);
     let scratch = Scratch::with_reading_list();
     name_remote(&scratch, Some(&remote.address()), true);

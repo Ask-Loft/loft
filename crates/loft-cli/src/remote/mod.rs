@@ -52,6 +52,8 @@ pub enum RemoteError {
     Variable { name: &'static str, value: String },
     /// The remote refused the connection, gave no answer, or one that does not read.
     Unreachable { address: String, reason: String },
+    /// The remote answered, but what it gave as `what` does not read.
+    Unreadable { address: String, what: &'static str },
     /// The remote answered with a refusal.
     Refused { address: String, refusal: Refusal },
     /// The authorization server refused to refresh the sign-in.
@@ -112,6 +114,9 @@ impl fmt::Display for RemoteError {
                     formatter,
                     "{address}: the remote cannot be reached: {reason}"
                 )
+            }
+            Self::Unreadable { address, what } => {
+                write!(formatter, "{address}: the remote's {what} does not read")
             }
             Self::Refused { address, refusal } => write!(formatter, "{address}: {refusal}"),
             Self::Lapsed { address, error } => write!(

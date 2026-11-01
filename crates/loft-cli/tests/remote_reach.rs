@@ -4,49 +4,23 @@
 //! the remote reachable. Each runs under the remote simulator with the collector or the
 //! release feed beside it.
 
-use std::process::Output;
-
 use serde_json::json;
 use software_plant::http::{Answer, Request, Responder, Response, Server};
-use software_plant::remote::{Remote, RemoteScenario, TOKEN};
+use software_plant::remote::{RemoteScenario, TOKEN};
 use software_plant::{BrowserScenario, Clock, Collector, ReleaseFeed};
 
 use crate::common::EPOCH;
-use crate::common::Scratch;
 use crate::common::connected::{Connected, connected};
-use crate::common::signed_in::{self, granted, keep, name_remote, run, sign_ins};
+use crate::common::signed_in::{self, granted, keep, sign_ins};
 use crate::common::telemetry::{seen, sending};
-
-/// Publishes a change over `run`, in a run whose waits pass at once, with `prepare` setting the
-/// command's environment.
-fn publish(run: &Connected, prepare: impl FnOnce(&mut std::process::Command)) -> Output {
-    run.change();
-    let (mut command, _) = signed_in::command_at(
-        &run.scratch,
-        BrowserScenario::Absent,
-        Some(&run.git),
-        &Clock::fixed(EPOCH).passing(),
-    );
-    prepare(&mut command);
-    command
-        .args(["publish", "--format", "json"])
-        .output()
-        .unwrap()
-}
+use crate::remote_sign_in_refusals::login;
 
 #[test]
 fn loft_reaches_the_address_as_it_is_given_changing_no_part_of_it() {
-    let remote = Remote::start(RemoteScenario::accepting("Doc%2DOne"));
-    let scratch = Scratch::with_reading_list();
-    name_remote(&scratch, Some(&remote.address()), true);
-    let (output, _) = run(
-        &scratch,
-        &["remote", "login"],
-        BrowserScenario::Visiting,
-        None,
-    );
+    // A lowercase escape, which a normaliser would put in upper case.
+    let (remote, _scratch, output, _) = login(RemoteScenario::accepting("Doc%2dOne"));
     assert_eq!(output.status.code(), Some(0), "{output:?}");
-    assert_eq!(remote.requests()[0].path, "/documents/Doc%2DOne/head");
+    assert_eq!(remote.requests()[0].path, "/documents/Doc%2dOne/head");
 }
 
 /// Redirects every request to the address it holds.
@@ -63,7 +37,8 @@ fn a_redirect_from_the_remote_is_not_followed() {
     let run = connected(1, 1, RemoteScenario::accepting);
     let redirecting = Server::start(Redirecting(format!("{}/head", run.remote.address())));
     let address = format!("{}/documents/{}", redirecting.url(), run.history.key);
-    let output = publish(&run, |command| {
+    run.change();
+    let output = run.publish_by(|command| {
         command
             .env("LOFT_REMOTE_ENDPOINT", &address)
             .env("LOFT_REMOTE_TOKEN", TOKEN);
@@ -83,7 +58,8 @@ fn the_command_event_of_a_connected_publish_holds_no_token_and_not_the_address()
     keep(&run.scratch, &json!({ run.remote.address(): kept }));
     seen(&run.scratch);
     let collector = Collector::accepting();
-    let output = publish(&run, |command| {
+    run.change();
+    let output = run.publish_by(|command| {
         sending(command, &collector.url());
     });
     assert_eq!(output.status.code(), Some(0), "{output:?}");
@@ -110,7 +86,8 @@ fn a_connected_publish_with_telemetry_and_the_update_check_off_reaches_the_remot
     seen(&run.scratch);
     let collector = Collector::accepting();
     let feed = ReleaseFeed::listing(vec![]);
-    let output = publish(&run, |command| {
+    run.change();
+    let output = run.publish_by(|command| {
         command
             .env("LOFT_TELEMETRY", "off")
             .env("LOFT_TELEMETRY_ENDPOINT", collector.url())

@@ -101,3 +101,12 @@ pub fn stored(lock: &Lock, files: &Files) -> StoredState {
         files: wire(files),
     }
 }
+
+/// The key of the decision `pull::DECISION`, which a test deletes.
+pub const DECISION_KEY: &str = "00000000-0000-4000-8000-00000000008c";
+
+/// Whether the binding of `key` in the text `labels` of `spec/labels.yaml` is marked departed.
+pub fn departed(labels: &str, key: &str) -> bool {
+    let binding = &labels[labels.find(key).expect("a binding of the key")..];
+    binding[..binding.find("  - key:").unwrap_or(binding.len())].contains("departed: true")
+}

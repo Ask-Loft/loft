@@ -140,19 +140,31 @@ fn a_head_that_does_not_read_is_refused_naming_the_remote_s_address() {
     let run = connected(1, 1, RemoteScenario::accepting);
     let garbled = Server::start(Garbled);
     let address = format!("{}/documents/{}", garbled.url(), run.history.key);
+    let env = [
+        ("LOFT_REMOTE_ENDPOINT", address.as_str()),
+        ("LOFT_REMOTE_TOKEN", TOKEN),
+    ];
+    let refused = |output: &std::process::Output| {
+        assert_eq!(output.status.code(), Some(1), "{output:?}");
+        let message = Connected::message(output);
+        assert!(
+            message.contains(&format!("{address}: the remote's head does not read")),
+            "{message}"
+        );
+    };
     let before = tree(&run.scratch.0);
     let (mut command, _) = signed_in::command(&run.scratch, BrowserScenario::Absent, None);
-    let output = command
-        .args(["pull", "--format", "json"])
-        .env("LOFT_REMOTE_ENDPOINT", &address)
-        .env("LOFT_REMOTE_TOKEN", TOKEN)
-        .output()
-        .unwrap();
-    assert_eq!(output.status.code(), Some(1), "{output:?}");
-    let message = Connected::message(&output);
-    assert!(
-        message.contains(&address) && message.contains("its head does not read"),
-        "{message}"
+    refused(
+        &command
+            .args(["pull", "--format", "json"])
+            .envs(env)
+            .output()
+            .unwrap(),
     );
     assert_eq!(tree(&run.scratch.0), before);
+    // A publish reads the same head, and refuses it the same way.
+    run.change();
+    let changed = tree(&run.scratch.0);
+    refused(&run.publish_with(&env));
+    assert_eq!(tree(&run.scratch.0), changed);
 }

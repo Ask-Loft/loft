@@ -5,17 +5,18 @@
 use std::fs;
 use std::io::Write as _;
 use std::process::Stdio;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use loftspec::codec;
 use serde_json::json;
 use software_plant::BrowserScenario;
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{Remote, RemoteScenario, misstated_root};
 
 use crate::common::remote::history;
 use crate::common::signed_in::{self, granted, keep, name_remote};
 use crate::common::tree;
 use crate::remote_connect::{head_of, published, set};
+use crate::served::within;
 
 #[test]
 fn a_set_whose_manifest_its_journal_cannot_save_changes_no_file_of_the_tree() {
@@ -75,8 +76,7 @@ fn an_import_answered_with_another_head_is_refused_naming_both_heads_and_writes_
     let message = result["errors"][0]["message"].as_str().unwrap();
     let lock = head_of(&history);
     let root = lock["stateRoot"].as_str().unwrap();
-    let last = if root.ends_with('0') { '1' } else { '0' };
-    let answered = format!("{}{last}", &root[..root.len() - 1]);
+    let answered = misstated_root(root);
     assert!(
         message.contains(root) && message.contains(&answered),
         "{message}"
@@ -112,18 +112,13 @@ fn set_takes_no_token_as_an_argument_and_never_reads_standard_input() {
         .unwrap();
     let mut stdin = child.stdin.take().unwrap();
     stdin.write_all(b"a-token\n").unwrap();
-    let started = Instant::now();
-    let status = loop {
-        if let Some(status) = child.try_wait().unwrap() {
-            break status;
-        }
-        if started.elapsed() > Duration::from_secs(30) {
-            child.kill().unwrap();
-            panic!("`loft remote set` waited on standard input");
-        }
-        std::thread::sleep(Duration::from_millis(20));
-    };
+    if !within(Duration::from_secs(30), || {
+        child.try_wait().unwrap().is_some()
+    }) {
+        child.kill().unwrap();
+        panic!("`loft remote set` waited on standard input");
+    }
     drop(stdin);
-    assert_eq!(status.code(), Some(0));
+    assert_eq!(child.wait().unwrap().code(), Some(0));
     assert!(codec::read(&tree(&scratch.0)).unwrap().connected);
 }

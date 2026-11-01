@@ -185,16 +185,8 @@ fn from_head(
     head: &Value,
     key: &str,
 ) -> Result<Option<Pulled>, Stop> {
-    let at = match Head::read(head) {
-        Some(at) => at,
-        None if head.is_null() => Head::none(),
-        None => {
-            return Err(unreached(&RemoteError::Unreachable {
-                address: client.address().to_owned(),
-                reason: "its head does not read".to_owned(),
-            }));
-        }
-    };
+    // The head was fetched through `head::fetch`, so it is `null` or one that reads.
+    let at = Head::read(head).unwrap_or_else(Head::none);
     if at == Head::of_lock(lock) {
         return Ok(None);
     }

@@ -6,14 +6,25 @@ use serde_json::{Value, json};
 use crate::remote::{Client, RemoteError};
 
 /// The remote's head of the document `key`: `null`, or its publish sequence, state root, lock
-/// and file digests.
+/// and file digests, which [`Head::read`] reads.
 ///
 /// # Errors
 ///
-/// The remote cannot be reached, refuses, or holds no document `key`.
+/// The remote cannot be reached, refuses, holds no document `key`, or gives a head that does
+/// not read.
 pub fn fetch(client: &Client, key: &str) -> Result<Value, RemoteError> {
     match client.get("head") {
-        Ok(mut answer) => Ok(answer["head"].take()),
+        Ok(mut answer) => {
+            let head = answer["head"].take();
+            if head.is_null() || Head::read(&head).is_some() {
+                Ok(head)
+            } else {
+                Err(RemoteError::Unreadable {
+                    address: client.address().to_owned(),
+                    what: "head",
+                })
+            }
+        }
         Err(error) if error.refusal("not_found").is_some() => Err(RemoteError::NotHeld {
             key: key.to_owned(),
         }),

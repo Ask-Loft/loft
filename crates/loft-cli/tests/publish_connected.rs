@@ -12,6 +12,7 @@ use crate::common::connected::{ADDED, Connected, connected, paths, serve};
 use crate::common::remote::history;
 use crate::common::signed_in::{self, document, sign_ins};
 use crate::common::{Scratch, tree};
+use crate::pull::DECISION;
 
 #[test]
 fn a_connected_publish_sends_its_delta_and_writes_the_labels_and_lock_the_remote_returns() {
@@ -300,13 +301,12 @@ fn a_change_the_remote_answers_as_unchanged_writes_nothing_and_its_replay_says_s
 #[test]
 fn a_file_the_base_holds_and_the_tree_does_not_is_sent_as_removed_by_its_path_alone() {
     let run = connected(1, 1, RemoteScenario::accepting);
-    let decision = "decisions/keep-a-change-log.yaml";
-    fs::remove_file(run.scratch.file(decision)).unwrap();
+    fs::remove_file(run.scratch.file(DECISION)).unwrap();
     assert_eq!(run.scratch.loft(&["fmt"]).status.code(), Some(0));
     let output = run.publish();
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     let sent = run.sent();
-    assert_eq!(sent["removed"], json!([format!("spec/{decision}")]));
+    assert_eq!(sent["removed"], json!([format!("spec/{DECISION}")]));
 }
 
 #[test]

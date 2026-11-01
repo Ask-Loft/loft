@@ -49,7 +49,9 @@ fn presented(run: &Connected) -> Vec<String> {
 #[test]
 fn two_processes_that_refresh_one_sign_in_at_once_refresh_it_once() {
     // A slow refresh holds the first process while the second starts, and a token presented
-    // again would revoke the sign-in, so a second refresh could not go unseen.
+    // again would revoke the sign-in, so a second refresh could not go unseen. A second process
+    // that started only after the first had refreshed would pass too, without waiting; taking
+    // the lock away makes this test fail, so the two do overlap.
     let (run, kept) = expiring(|key| {
         RemoteScenario::accepting(key)
             .delaying_refreshes(Duration::from_millis(500))

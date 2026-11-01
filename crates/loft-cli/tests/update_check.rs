@@ -289,11 +289,7 @@ struct Redirecting(String);
 
 impl Responder for Redirecting {
     fn answer(&mut self, _: &Request) -> Answer {
-        let mut response = Response::empty(302);
-        response
-            .headers
-            .push(("Location".to_owned(), self.0.clone()));
-        response.into()
+        Response::redirect(&self.0).into()
     }
 }
 

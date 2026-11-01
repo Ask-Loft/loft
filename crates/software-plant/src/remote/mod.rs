@@ -24,6 +24,7 @@ use serde_json::{Value, json};
 
 use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
 
+pub use documents::misstated_root;
 pub use oauth::Grant;
 use scenario::{Call, Held, Misstating, Mode};
 pub use scenario::{Consent, Metadata, RemoteScenario};
