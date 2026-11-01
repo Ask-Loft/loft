@@ -372,8 +372,12 @@ requirements:
       - key: 01a18e1f-8dac-71f7-847a-725e4c95828e
         name: "An accepted refresh is answered as an accepted exchange is, with a new access token and a new refresh token."
       - key: 01a18e1f-8dac-71f7-847a-725f662f9c67
-        name: "A refresh token presented again after its successor was issued, while its scenario allows that grace, is answered as it was the first time."
+        name: "A refresh token presented again after its successor was issued, within the grace window and before that successor is itself presented, is answered as it was the first time."
+      - key: 01a19951-8b23-72b2-8cb9-a4c8523130f8
+        name: "A refresh token answered as it was the first time issues no token and revokes none."
       - key: 01a18e1f-8dac-71f7-847a-72600450be32
-        name: "A refresh token presented again after its successor was issued, once its scenario allows no grace, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in."
+        name: "A refresh token presented again after its successor was issued, past the grace window or once that successor has been presented, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in."
+      - key: 01a19951-5b6c-769f-802b-1caae94627eb
+        name: "The grace window is the 120 seconds after the rotation, unless its scenario names another length, and is counted on the simulator's clock, which a test can move on without waiting."
       - key: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
         name: "A lapsing scenario refuses every refresh `400 Bad Request` with the OAuth error `invalid_grant`."
