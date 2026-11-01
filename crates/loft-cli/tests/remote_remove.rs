@@ -24,6 +24,11 @@ fn remove_disconnects_the_document_and_forgets_its_sign_in_alone() {
         &scratch,
         &json!({ remote.address(): granted(&remote, 3600), "https://other.example/doc": other }),
     );
+    #[cfg(unix)]
+    let kept_inode = {
+        use std::os::unix::fs::MetadataExt as _;
+        std::fs::metadata(sign_ins_file(&scratch)).unwrap().ino()
+    };
     let (output, _) = run(
         &scratch,
         &["remote", "remove", "--format", "json"],
@@ -45,13 +50,21 @@ fn remove_disconnects_the_document_and_forgets_its_sign_in_alone() {
     assert!(remote.requests().is_empty(), "no connection is opened");
     #[cfg(unix)]
     {
-        use std::os::unix::fs::PermissionsExt as _;
-        let mode = std::fs::metadata(sign_ins_file(&scratch))
-            .unwrap()
-            .permissions()
-            .mode();
-        assert_eq!(mode & 0o777, 0o600);
+        use std::os::unix::fs::{MetadataExt as _, PermissionsExt as _};
+        let written = std::fs::metadata(sign_ins_file(&scratch)).unwrap();
+        assert_eq!(written.permissions().mode() & 0o777, 0o600);
+        assert_ne!(
+            written.ino(),
+            kept_inode,
+            "a file beside it is renamed over it"
+        );
     }
+    let left: Vec<String> = std::fs::read_dir(scratch.config())
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .filter(|name| name.starts_with('.'))
+        .collect();
+    assert_eq!(left, Vec::<String>::new(), "no file beside it is left");
 
     let (output, _) = run(
         &scratch,

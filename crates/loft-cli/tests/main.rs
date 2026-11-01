@@ -62,6 +62,7 @@ mod release_check;
 mod release_feed_contract;
 mod release_workflow;
 mod remote_connect;
+mod remote_connect_refusals;
 mod remote_contract;
 mod remote_contract_auth;
 mod remote_contract_failures;

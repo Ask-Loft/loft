@@ -8,7 +8,7 @@ use software_plant::{BrowserScenario, GitScenario};
 
 use crate::common::remote::{History, history};
 use crate::common::signed_in::{
-    document, granted, keep, lock_bytes, name_remote, repository, run, sign_ins,
+    document, granted, keep, lock_bytes, name_remote, repository, run, sign_ins, sign_ins_file,
 };
 use crate::common::{Scratch, tree};
 
@@ -16,7 +16,7 @@ use crate::common::{Scratch, tree};
 const PRODUCT_NAME: &str = "Reading List";
 
 /// A repository that published `history`, every publish commit in its history.
-fn published(history: &History) -> (Scratch, GitScenario) {
+pub fn published(history: &History) -> (Scratch, GitScenario) {
     let scratch = Scratch::with_reading_list();
     let sequences: Vec<usize> = (1..=history.states.len()).collect();
     let git = repository(&scratch, history, &sequences);
@@ -24,7 +24,7 @@ fn published(history: &History) -> (Scratch, GitScenario) {
 }
 
 /// Runs `loft remote set <remote's address> --format json` over `scratch`.
-fn set(
+pub fn set(
     scratch: &Scratch,
     remote: &Remote,
     git: Option<&GitScenario>,
@@ -41,7 +41,7 @@ fn set(
 }
 
 /// The paths of the remote's requests that a sign-in does not make.
-fn document_calls(remote: &Remote) -> Vec<String> {
+pub fn document_calls(remote: &Remote) -> Vec<String> {
     remote
         .requests()
         .into_iter()
@@ -50,8 +50,15 @@ fn document_calls(remote: &Remote) -> Vec<String> {
         .collect()
 }
 
+/// That a refused connect left the manifest unconnected and kept no sign-in.
+pub fn assert_nothing_written(scratch: &Scratch) {
+    let document = codec::read(&tree(&scratch.0)).unwrap();
+    assert!(!document.connected && document.remote.is_none());
+    assert!(!sign_ins_file(scratch).exists(), "no sign-in is kept");
+}
+
 /// The lock's head as the output names it.
-fn head_of(history: &History) -> Value {
+pub fn head_of(history: &History) -> Value {
     let last = &history.states.last().unwrap().lock;
     json!({ "publishSequence": last["publishSequence"], "stateRoot": last["stateRoot"] })
 }
@@ -61,9 +68,13 @@ fn set_creates_the_document_and_imports_every_published_state_before_naming_the_
     let history = history(3);
     let (scratch, git) = published(&history);
     let remote = Remote::start(RemoteScenario::accepting(&history.key));
+    let mut expected = codec::read(&tree(&scratch.0)).unwrap();
+    (expected.connected, expected.remote) = (true, Some(remote.address()));
     let (output, result) = set(&scratch, &remote, Some(&git));
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     assert_eq!(result["outcome"], "connected");
+    // Only `connected` and `remote` change: every other field stays as it was.
+    assert_eq!(codec::read(&tree(&scratch.0)).unwrap(), expected);
     assert_eq!(result["address"], remote.address());
     assert_eq!(result["documentKey"], history.key);
     assert_eq!(result["head"], head_of(&history));
@@ -144,6 +155,19 @@ fn a_document_never_published_is_created_and_nothing_is_imported() {
         [format!("POST /documents/{key}/create")]
     );
     assert_eq!(remote.states().len(), 0);
+    let scratch = Scratch::with_reading_list();
+    let remote = Remote::start(RemoteScenario::accepting(&key));
+    let (output, _) = run(
+        &scratch,
+        &["remote", "set", &remote.address()],
+        BrowserScenario::Visiting,
+        None,
+    );
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(
+        stdout.contains("The remote holds no published state of the document."),
+        "{stdout}"
+    );
 }
 
 #[test]
@@ -253,6 +277,7 @@ fn a_history_missing_a_publish_is_refused_before_any_request() {
     let message = result["errors"][0]["message"].as_str().unwrap();
     assert!(message.contains("publish sequence 1"), "{message}");
     assert!(remote.requests().is_empty(), "no request is sent");
+    assert_nothing_written(&scratch);
 }
 
 #[test]
@@ -274,6 +299,7 @@ fn a_state_whose_files_do_not_verify_is_refused_naming_its_sequence() {
     let message = result["errors"][0]["message"].as_str().unwrap();
     assert!(message.contains("publish sequence 1"), "{message}");
     assert!(remote.requests().is_empty());
+    assert_nothing_written(&scratch);
 }
 
 #[test]
@@ -284,6 +310,7 @@ fn a_published_document_outside_a_repository_is_refused_before_any_request() {
     let (output, _) = set(&scratch, &remote, None);
     assert_eq!(output.status.code(), Some(1));
     assert!(remote.requests().is_empty());
+    assert_nothing_written(&scratch);
 }
 
 #[test]
