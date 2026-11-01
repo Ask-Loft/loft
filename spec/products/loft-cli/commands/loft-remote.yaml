@@ -1,13 +1,15 @@
 key: 01a156c0-0b79-7756-9d01-b059f21d61c7
 slug: loft-remote
 name: "`loft remote`"
-body: "Sets and removes the address and the token of the current document's remote in `loft/remotes.json`, the file `loft` reads them from, so that a token passes through neither a command line nor a file of the repository. It takes the document key from the manifest. `loft remote set` first connects a document that is not yet connected, as the Feature \"Connecting a document to a remote\" states, and only then records the remote and marks the manifest `connected: true`; `loft remote remove` opens no network connection and leaves the manifest alone. The address it is given and the privacy of `loft/remotes.json` are held to the shared rules of reaching a remote. Like `loft telemetry`, it sends no command event and asks for no update. It reads the tree and writes the manifest, and its Feature lists the tags `reads-tree` and `writes-tree` once the command exists, since the suites that the tags bring run every tagged command."
+body: "Names, signs in to and removes the current document's remote. The remote's address is the manifest's `remote`, committed with the repository and shared by everyone who clones it; the person's sign-in to that address is kept in `loft/remotes.json`, private to the user, so that a token reaches neither a command line nor a file of the repository. `loft remote set <address>` signs the person in where they hold no sign-in for the address, connects a document that is not yet connected, as the Feature \"Connecting a document to a remote\" states, and only then names the remote and marks the manifest `connected: true`. `loft remote login` signs in again to the remote that the manifest names, once a sign-in has lapsed or in a fresh clone. `loft remote remove` disconnects the document: it removes `remote` and `connected` from the manifest and forgets the sign-in, after which the document allocates its own labels again. The address it is given and the privacy of `loft/remotes.json` are held to the shared rules of reaching a remote. Like `loft telemetry`, it sends no command event and asks for no update. It reads the tree and writes the manifest, and its Feature lists the tags `reads-tree` and `writes-tree` once the command exists, since the suites that the tags bring run every tagged command."
+tags:
+  - reads-tree
+  - writes-tree
 realizes:
   - bcd4525c-3adf-45dd-beed-527d654d517c
 mentions:
   - 01a156aa-d52e-75b0-9a73-cb9538029bb3
   - 01a156aa-d531-70a7-88e0-0bfbf98318c6
-  - 01a156c0-0b7a-76b6-9a6a-68511699e4cb
   - 01a1587a-dee2-7262-8c7b-89499e59ce55
 requirements:
   - key: 01a156c0-0b79-7756-9d01-b05aa4e3f82b
@@ -15,67 +17,109 @@ requirements:
       form: event_driven
       when: "a person runs `loft remote set <address>`"
       system: "`loft remote`"
-      shall: "record the address and the token read from standard input under the manifest's document key in `loft/remotes.json`."
+      shall: "name the address as the manifest's `remote`, after signing the person in to it where `loft/remotes.json` holds no live sign-in for it."
     criteria:
       - key: 01a156c0-0b79-7756-9d01-b05b5e8cb50f
-        name: "The token is the first line of standard input, without its line ending."
+        name: "The address is the command's one argument."
       - key: 01a156c0-0b79-7756-9d01-b05c7b543cfe
-        name: "No argument of the command takes a token."
-      - key: 01a156c0-0b79-7756-9d01-b05dc452f7e6
-        name: "The entry for the document key holds the address and the token."
-      - key: 01a156c0-0b79-7756-9d01-b05e9aa3a9d7
-        name: "An entry that the file already holds for the document key is replaced."
-      - key: 01a156c0-0b79-7756-9d01-b05fa6da8bfe
-        name: "Every entry for another document key is kept."
+        name: "No argument of the command takes a token, and standard input is not read."
       - key: 01a156c0-0b79-7756-9d01-b060c46ee20a
-        name: "A missing file is created, with the directory that holds it."
+        name: "Where `loft/remotes.json` holds no sign-in for the address, the person is signed in to it, as the Feature \"Signing in to a remote\" states."
       - key: 01a156c0-0b7a-76b6-9a6a-6829d9039cda
-        name: "The file is written with read and write permission for its owner alone."
+        name: "A sign-in that `loft/remotes.json` holds for the address is used as it is, refreshed where it needs to be, and one whose refresh is refused is replaced by a new sign-in."
+      - key: 01a156c0-0b79-7756-9d01-b05dc452f7e6
+        name: "After the command, `spec/loftspec.yaml` carries `connected: true` and `remote` set to the address."
+      - key: 01a156c0-0b79-7756-9d01-b05e9aa3a9d7
+        name: "A `remote` that the manifest already names is replaced by the address."
+      - key: 01a156c0-0b79-7756-9d01-b05fa6da8bfe
+        name: "Every other field of the manifest is left as it was."
       - key: 01a156c0-0b7a-76b6-9a6a-682a4dcb497d
-        name: "The file is written through a file beside it and a rename."
+        name: "`spec/loftspec.yaml` is written in one journaled save."
       - key: 01a156c0-0b7a-76b6-9a6a-682bc8baea7d
         name: "The output names the document key and the address."
       - key: 01a156c0-0b7a-76b6-9a6a-682cca21e406
-        name: "No output holds the token."
+        name: "No output holds a token."
+  - key: 01a18e1f-8daa-7674-9603-5ac20aa48fe7
+    statement:
+      form: event_driven
+      when: "a person runs `loft remote login`"
+      system: "`loft remote`"
+      shall: "sign the person in to the remote that the manifest names, in place of any sign-in kept for its address."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5ac3a4a5cee5
+        name: "The address signed in to is the manifest's `remote`."
+      - key: 01a18e1f-8daa-7674-9603-5ac4d13f6c33
+        name: "`LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` change nothing that `loft remote login` does."
+      - key: 01a18e1f-8daa-7674-9603-5ac54e2b6c32
+        name: "A sign-in that `loft/remotes.json` holds for the address is replaced once the new sign-in is made."
+      - key: 01a18e1f-8daa-7674-9603-5ac682cb6c21
+        name: "Every entry for another address is kept."
+      - key: 01a18e1f-8daa-7674-9603-5ac7c37817e3
+        name: "No file of the tree is written."
+      - key: 01a18e1f-8daa-7674-9603-5ac8a2d3e61d
+        name: "The output names the address."
+      - key: 01a18e1f-8daa-7674-9603-5ac960bce9e5
+        name: "No output holds a token."
+  - key: 01a18e1f-8daa-7674-9603-5aca66ea043f
+    statement:
+      form: unwanted
+      if: "`loft remote login` finds no `remote` in the manifest"
+      system: "`loft remote`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a18e1f-8daa-7674-9603-5acbea4e6037
+        name: "The error says that `loft remote set <address>` connects the document to its remote."
+      - key: 01a18e1f-8daa-7674-9603-5acca48cc0cb
+        name: "No connection is opened."
+      - key: 01a18e1f-8daa-7674-9603-5acd7163a1f3
+        name: "Nothing is written."
   - key: 01a156c0-0b7a-76b6-9a6a-682d65afb139
     statement:
       form: event_driven
       when: "a person runs `loft remote remove`"
       system: "`loft remote`"
-      shall: "remove the manifest's document key from `loft/remotes.json`."
+      shall: "disconnect the document by removing `remote` and `connected` from the manifest, and forget the sign-in for its address."
     criteria:
+      - key: 01a1587a-dee2-7262-8c7b-893f8d0d729c
+        name: "After the command, `spec/loftspec.yaml` holds neither `remote` nor `connected`, and every other field is left as it was."
+      - key: 01a18e1f-8daa-7674-9603-5ace73174cc1
+        name: "`spec/loftspec.yaml` is written in one journaled save."
+      - key: 01a18e1f-8daa-7674-9603-5acfae1b7757
+        name: "A manifest that holds neither `remote` nor `connected` is left as it was."
+      - key: 01a18e1f-8daa-7674-9603-5ad028d5e220
+        name: "The sign-in that `loft/remotes.json` holds for the manifest's address is removed."
       - key: 01a156c0-0b7a-76b6-9a6a-682e4f4634b9
-        name: "Every entry for another document key is kept."
+        name: "Every entry for another address is kept."
       - key: 01a156c0-0b7a-76b6-9a6a-682f83ff48dd
         name: "The file keeps read and write permission for its owner alone."
       - key: 01a156c0-0b7a-76b6-9a6a-68309266d778
         name: "The file is written through a file beside it and a rename."
       - key: 01a156c0-0b7a-76b6-9a6a-6831248a8f73
-        name: "A file that holds no entry for the document key is left unchanged."
+        name: "A file that holds no sign-in for the address is left unchanged."
       - key: 01a156c0-0b7a-76b6-9a6a-68321248b588
         name: "A missing file is not created."
-      - key: 01a1587a-dee2-7262-8c7b-893f8d0d729c
-        name: "The manifest is left as it was, `connected` included."
+      - key: 01a18e1f-8daa-7674-9603-5ad144a8bfa6
+        name: "After a disconnect, the output says `Commit spec/loftspec.yaml: the document no longer publishes through its remote.`"
   - key: 01a156c0-0b7a-76b6-9a6a-6833d5e9ea55
     statement:
       form: ubiquitous
       system: "`loft remote`"
-      shall: "reach the remote and write the tree only to connect a document."
+      shall: "change nothing but the manifest's `remote` and `connected` and the person's sign-in."
     criteria:
       - key: 01a156c0-0b7a-76b6-9a6a-6834aa682276
         name: "`loft remote remove` opens no network connection."
       - key: 01a1587a-dee2-7262-8c7b-89405469cf59
-        name: "`loft remote set` for a document already connected opens no network connection."
+        name: "`loft remote set` for a document already connected sends the remote no request but those of a sign-in."
       - key: 01a156c0-0b7a-76b6-9a6a-6835e981a488
         name: "No file under `spec/` but `spec/loftspec.yaml` is written."
       - key: 01a1587a-dee2-7262-8c7b-8941d30b3661
         name: "No file beside `spec/` is written."
       - key: 01a1587a-dee2-7262-8c7b-894281a3e011
-        name: "`loft remote remove` writes no file under `spec/`."
+        name: "`loft remote login` writes no file under `spec/`."
   - key: 01a156c0-0b7a-76b6-9a6a-6836111cfa3a
     statement:
       form: unwanted
-      if: "a shared rule of reaching a remote refuses the address or the `loft/remotes.json` that `loft remote set` meets"
+      if: "a shared rule of reaching a remote refuses the address that `loft remote set` is given"
       system: "`loft remote`"
       shall: "refuse and exit 1."
     criteria:
@@ -85,21 +129,6 @@ requirements:
         name: "No connection is opened."
       - key: 01a156c0-0b7a-76b6-9a6a-683f82d16c8a
         name: "An existing `loft/remotes.json` is left as it was."
-  - key: 01a156c0-0b7a-76b6-9a6a-683918f8a7ec
-    statement:
-      form: unwanted
-      if: "standard input gives `loft remote set` no token"
-      system: "`loft remote`"
-      shall: "refuse and exit 1."
-    criteria:
-      - key: 01a156c0-0b7a-76b6-9a6a-683ab26121cc
-        name: "An empty first line of standard input gives no token."
-      - key: 01a156c0-0b7a-76b6-9a6a-683b455b422e
-        name: "The error says that the token is read from standard input."
-      - key: 01a156c0-0b7a-76b6-9a6a-683ccce78607
-        name: "Nothing is written."
-      - key: 01a1587a-dee2-7262-8c7b-8944681da017
-        name: "No connection is opened."
   - key: 01a156c0-0b7a-76b6-9a6a-6840cd066e37
     statement:
       form: unwanted
@@ -124,12 +153,14 @@ requirements:
         name: "The outcome of `loft remote set` is `set` when the manifest already marked the document connected."
       - key: 01a1587a-dee2-7262-8c7b-894754a95f9a
         name: "The outcome of `loft remote set` is `connected` when it connected the document."
+      - key: 01a18e1f-8daa-7674-9603-5ad25c4e69da
+        name: "The outcome of `loft remote login` is `signed in`."
       - key: 01a156c0-0b7a-76b6-9a6a-684562209106
-        name: "The outcome of `loft remote remove` is `removed` when it removed an entry."
+        name: "The outcome of `loft remote remove` is `removed` when it disconnected the document."
       - key: 01a156c0-0b7a-76b6-9a6a-684673407366
-        name: "The outcome of `loft remote remove` is `unchanged` when there was no entry to remove."
+        name: "The outcome of `loft remote remove` is `unchanged` when the manifest named no remote and marked the document not connected."
       - key: 01a156c0-0b7a-76b6-9a6a-6847bf3c1c6e
-        name: "The document names the document key, and the address after `loft remote set`."
+        name: "The document names the document key, and the address after `loft remote set`, `loft remote login` and a `loft remote remove` that disconnected the document."
       - key: 01a1587a-dee2-7262-8c7b-89480fb5e133
         name: "After a connect, the document names the remote's head by its publish sequence and state root."
       - key: 01a156c0-0b7a-76b6-9a6a-6848de1e913a

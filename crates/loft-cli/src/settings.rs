@@ -51,7 +51,7 @@ fn directory() -> Option<PathBuf> {
 }
 
 /// The settings file `name`, if there is a directory for it.
-fn path(name: &str) -> Option<PathBuf> {
+pub fn path(name: &str) -> Option<PathBuf> {
     directory().map(|directory| directory.join(name))
 }
 

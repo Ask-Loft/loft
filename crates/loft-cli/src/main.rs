@@ -21,9 +21,14 @@ mod merge_driver;
 mod network;
 mod opened;
 mod out;
+mod percent;
 mod publish;
+mod publish_remote;
+mod pull;
 mod reconcile;
 mod record_install;
+mod remote;
+mod remote_command;
 mod render;
 mod review;
 mod settings;
@@ -174,6 +179,7 @@ fn dispatch(command: Command) -> Finished {
         }
         Command::Import { source } => import(root, source),
         Command::Publish { output } => publish::run(root, output.json()),
+        Command::Pull(args) => pull::run(root, &args.source(), args.output.json()),
         Command::Find { query, output } => find::run(root, &query, output.json()),
         Command::Terms { output } => terms::run(root, output.json()),
         Command::Reconcile {
@@ -211,6 +217,10 @@ fn dispatch(command: Command) -> Finished {
         ),
         Command::Skill { action } => skill(root, action),
         Command::RecordInstall { way, output } => record_install::run(way, output.json()),
+        Command::Remote { action } => {
+            let (action, as_json) = action.split();
+            remote_command::run(root, &action, as_json)
+        }
         Command::Telemetry { action } => {
             let (action, as_json) = action.split();
             switch_command::telemetry(action, as_json)

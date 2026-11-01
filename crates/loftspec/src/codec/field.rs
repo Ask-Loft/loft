@@ -71,6 +71,7 @@ pub const RATIONALE: &str = "rationale";
 pub const REALIZES: &str = "realizes";
 /// The pseudo-field a conflict over a record that one side deleted names.
 pub const RECORD: &str = "record";
+pub const REMOTE: &str = "remote";
 pub const REQUIRED_VALUE: &str = "requiredValue";
 pub const REQUIREMENTS: &str = "requirements";
 pub const ROLE: &str = "role";

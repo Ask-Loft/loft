@@ -2,6 +2,11 @@ key: 01a156ad-1b9f-72a4-9f6c-30439b4be9df
 slug: loft-pull
 name: "`loft pull`"
 body: "Brings a connected document's tree to its remote's head by a three-way merge, or writes an earlier published state or a branch's draft from the remote over a clean tree. Conflicts are written as the merge engine writes them, every file in its canonical bytes and through one journaled save. The command reads and writes the tree, sends a command event and checks for updates as other commands do. A remote that holds no state that the lock names refuses a pull by the shared rule of reaching a remote. Its Feature lists the tags `reads-tree`, `writes-tree`, `sends-telemetry` and `checks-for-updates` once the command exists, since the suites that each tag brings run every tagged command."
+tags:
+  - checks-for-updates
+  - reads-tree
+  - sends-telemetry
+  - writes-tree
 realizes:
   - 01a13a90-3554-7631-bb13-097e6805bffe
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
@@ -66,12 +71,12 @@ requirements:
     statement:
       form: ubiquitous
       system: "`loft pull`"
-      shall: "keep the working tree's `connected` in `spec/loftspec.yaml`, never the pulled state's."
+      shall: "keep the working tree's `connected` and `remote` in `spec/loftspec.yaml`, never the pulled state's."
     criteria:
       - key: 01a1587e-87ab-73be-a232-8729b68331db
-        name: "In every mode, the manifest's `connected` after a pull is the working tree's."
+        name: "In every mode, the manifest's `connected` and `remote` after a pull are the working tree's."
       - key: 01a1587e-87ab-73be-a232-872cc76c518b
-        name: "A pulled manifest without `connected` leaves `connected: true` in the working tree."
+        name: "A pulled manifest without `connected` or `remote` leaves the working tree's `connected: true` and `remote` as they were."
   - key: 01a1587e-87ab-73be-a232-872d2f8b2a3d
     statement:
       form: ubiquitous

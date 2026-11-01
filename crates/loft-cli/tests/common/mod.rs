@@ -3,8 +3,11 @@
 //! clock, and the git simulator for a command that reads the repository, with no `git` on the
 //! search path otherwise; or, for a contract suite, under real git.
 
+pub mod connected;
 #[cfg(unix)]
 pub mod npm;
+pub mod remote;
+pub mod signed_in;
 pub mod telemetry;
 
 use std::path::{Path, PathBuf};
@@ -26,6 +29,14 @@ pub const BESIDE: [&str; 4] = [
     loftspec::publish::LOCK,
     loftspec::trace::TRACE,
 ];
+
+/// The Reading List's files, as the writer writes them.
+pub fn reading_list() -> codec::Files {
+    let document = convert(&Export::from_json(READING_LIST).unwrap())
+        .unwrap()
+        .document;
+    codec::write(&document)
+}
 
 /// Every file under `<root>/spec/`, by its path under `spec/`.
 pub fn tree(root: &Path) -> codec::Files {
@@ -99,10 +110,7 @@ impl Scratch {
     /// A fresh directory holding the Reading List's `spec/` tree.
     pub fn with_reading_list() -> Self {
         let scratch = Self::empty();
-        let document = convert(&Export::from_json(READING_LIST).unwrap())
-            .unwrap()
-            .document;
-        for (path, bytes) in codec::write(&document) {
+        for (path, bytes) in reading_list() {
             let target = scratch.0.join("spec").join(path.as_str());
             fs::create_dir_all(target.parent().unwrap()).unwrap();
             fs::write(target, bytes).unwrap();
@@ -274,7 +282,7 @@ impl Scratch {
     }
 
     /// The directory beside the scratch tree that holds the simulators' scenarios.
-    fn plant(&self) -> PathBuf {
+    pub fn plant(&self) -> PathBuf {
         self.beside(".plant")
     }
 
@@ -296,7 +304,12 @@ impl Drop for Scratch {
 
 /// The variables that would let a test run reach the user's own settings, or tell `loft` that
 /// an agent or CI started it.
-const OUTSIDE: [&str; 24] = [
+const OUTSIDE: [&str; 29] = [
+    "BROWSER",
+    "LOFT_REMOTE_ENDPOINT",
+    "LOFT_REMOTE_TOKEN",
+    "LOFT_REMOTE_TIMEOUT",
+    "LOFT_REMOTE_WAIT",
     "PLUGIN_DATA",
     "PLUGIN_ROOT",
     "CLAUDE_PLUGIN_DATA",

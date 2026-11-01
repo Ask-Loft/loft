@@ -16,7 +16,7 @@ use crate::fs::{SPEC, hidden};
 
 mod base;
 
-pub use base::{BATCH, LIST_TREE, LOCK_WRITTEN, MERGE_BASE, MergeBase};
+pub use base::{BATCH, LIST_TREE, LOCK_HISTORY, LOCK_WRITTEN, MERGE_BASE, MergeBase};
 
 /// The working directory's path from the repository's top level.
 pub const SHOW_PREFIX: [&str; 2] = ["rev-parse", "--show-prefix"];

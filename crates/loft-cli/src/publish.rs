@@ -9,7 +9,7 @@ use std::path::Path;
 use loftspec::check::Placed;
 use loftspec::codec::ReadError;
 use loftspec::publish::{
-    Allocated, Made, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, publish,
+    Allocated, Lock, Made, Operation, Publication, PublishedAt, ReadTree, Refusal, Relabel, publish,
 };
 use loftspec_store::clock::{Clock as _, SystemClock};
 use loftspec_store::repository::{GitCommand, Repository as _};
@@ -19,14 +19,65 @@ use serde_json::{Value, json};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
+use crate::publish_remote::{self, CONNECTED, Outcome};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
 const SCHEMA: &str = "loft-publish/2";
 
-/// The refusal of a connected document, which `loft publish` cannot send to its remote.
-const CONNECTED: &str = "the document is connected: a connected document is published only \
-                         through its remote, and its labels come from its remote";
+/// What a publish that published or changed nothing reports, the publisher's own or its
+/// remote's: its lock, the labels it gave back and allocated, each as its key and the label, the
+/// citations of withdrawn labels it rewrote, the labels it withdrew, and the git command that
+/// finishes a stopped merge or rebase.
+struct Report {
+    /// Whether nothing changed since the previous lock.
+    unchanged: bool,
+    /// Whether the publish went through the document's remote.
+    remote: bool,
+    lock: Lock,
+    given_back: Vec<(String, String)>,
+    allocated: Vec<(String, String)>,
+    rewritten: Vec<Relabel>,
+    withdrawn: Vec<Relabel>,
+    finish: Option<Operation>,
+}
+
+impl Report {
+    fn unchanged(lock: Lock, remote: bool) -> Self {
+        Self {
+            unchanged: true,
+            remote,
+            lock,
+            given_back: Vec::new(),
+            allocated: Vec::new(),
+            rewritten: Vec::new(),
+            withdrawn: Vec::new(),
+            finish: None,
+        }
+    }
+
+    /// The outcome by name.
+    const fn outcome(&self) -> &'static str {
+        if self.unchanged {
+            "unchanged"
+        } else {
+            "published"
+        }
+    }
+}
+
+impl From<Outcome> for Report {
+    fn from(outcome: Outcome) -> Self {
+        match outcome {
+            Outcome::Unchanged(lock) => Self::unchanged(lock, true),
+            Outcome::Published { lock, labels } => Self {
+                allocated: labels,
+                unchanged: false,
+                ..Self::unchanged(lock, true)
+            },
+        }
+    }
+}
 
 /// Why a publish did not happen.
 enum Failure {
@@ -43,13 +94,13 @@ impl<E: ToString> From<E> for Failure {
 
 pub fn run(root: &Path, as_json: bool) -> Finished {
     match attempt(root) {
-        Ok(publication) => {
+        Ok(report) => {
             if as_json {
-                json::print(&published(&publication));
+                json::print(&published(&report));
             } else {
-                print(&publication);
+                print(&report);
             }
-            Finished::success(outcome(&publication))
+            Finished::success(report.outcome())
         }
         Err(failure) => stop(failure).exit(SCHEMA, as_json),
     }
@@ -58,8 +109,9 @@ pub fn run(root: &Path, as_json: bool) -> Finished {
 /// Reads the tree, then the repository, the previous lock and the time, runs the publisher and
 /// writes what it gives in one save. In a stopped merge or rebase a lock that is not a lock
 /// record, such as one holding conflict markers, is read as none. The publication it gives is
-/// one that published or one that changed nothing.
-fn attempt(root: &Path) -> Result<Publication, Failure> {
+/// one that published or one that changed nothing; a connected document's goes on through its
+/// remote.
+fn attempt(root: &Path) -> Result<Report, Failure> {
     let store = FileStore::open(root)?;
     let files = store.read_files()?;
     let tree = ReadTree::read(&files).map_err(Failure::Read)?;
@@ -71,23 +123,47 @@ fn attempt(root: &Path) -> Result<Publication, Failure> {
     let at = PublishedAt::from_unix_seconds(SystemClock::from_env().now()?)
         .map_err(|error| Failure::Refused(format!("SOURCE_DATE_EPOCH: {error}")))?;
     // `loft publish` never publishes as the document's remote.
-    let mut publication =
+    let publication =
         publish(tree, Some(&repo), previous.as_ref(), at, Made::NotAsRemote).map_err(refusal)?;
-    match &mut publication {
-        Publication::Published { lock, files, .. } => store.publish(std::mem::take(files), lock)?,
-        Publication::Unchanged(_) => {}
-        // Without a remote to send it to, a connected document's publish goes no further.
-        Publication::Prepared { .. } => return Err(Failure::Refused(CONNECTED.to_owned())),
-    }
-    Ok(publication)
-}
-
-/// The outcome of a publish that published or changed nothing.
-const fn outcome(publication: &Publication) -> &'static str {
-    match publication {
-        Publication::Unchanged(_) => "unchanged",
-        Publication::Published { .. } | Publication::Prepared { .. } => "published",
-    }
+    Ok(match publication {
+        Publication::Published {
+            lock,
+            files,
+            given_back,
+            allocated,
+            rewritten,
+            withdrawn,
+            finish,
+            ..
+        } => {
+            store.publish(files, &lock)?;
+            Report {
+                unchanged: false,
+                remote: false,
+                lock,
+                given_back: keyed(&given_back),
+                allocated: keyed(&allocated),
+                rewritten,
+                withdrawn,
+                finish,
+            }
+        }
+        Publication::Unchanged(lock) => Report::unchanged(lock, false),
+        Publication::Prepared {
+            document,
+            state_root,
+            ..
+        } => publish_remote::publish(
+            root,
+            &store,
+            files,
+            &document,
+            &state_root,
+            previous.as_ref(),
+        )
+        .map_err(Failure::Refused)?
+        .into(),
+    })
 }
 
 fn refusal(refusal: Refusal) -> Failure {
@@ -137,16 +213,8 @@ fn refusal(refusal: Refusal) -> Failure {
     }
 }
 
-fn print(publication: &Publication) {
-    if let Publication::Unchanged(lock) = publication {
-        outln!(
-            "nothing changed since publish sequence {}, state root {}",
-            lock.publish_sequence,
-            lock.state_root
-        );
-        return;
-    }
-    let Publication::Published {
+fn print(report: &Report) {
+    let Report {
         lock,
         given_back,
         allocated,
@@ -154,15 +222,25 @@ fn print(publication: &Publication) {
         withdrawn,
         finish,
         ..
-    } = publication
-    else {
+    } = report;
+    if report.unchanged {
+        let lead = if report.remote {
+            "nothing to publish: "
+        } else {
+            ""
+        };
+        outln!(
+            "{lead}nothing changed since publish sequence {}, state root {}",
+            lock.publish_sequence,
+            lock.state_root
+        );
         return;
-    };
-    for given in given_back {
-        outln!("{} {} (given back)", given.label, given.element.key());
     }
-    for allocated in allocated {
-        outln!("{} {}", allocated.label, allocated.element.key());
+    for (key, label) in given_back {
+        outln!("{label} {key} (given back)");
+    }
+    for (key, label) in allocated {
+        outln!("{label} {key}");
     }
     for withdrawn in withdrawn {
         outln!(
@@ -217,51 +295,35 @@ const fn finishing(operation: Operation) -> &'static str {
     }
 }
 
-fn published(publication: &Publication) -> Value {
-    let (lock, given_back, allocated, rewritten, withdrawn, finish) = match publication {
-        Publication::Published {
-            lock,
-            given_back,
-            allocated,
-            rewritten,
-            withdrawn,
-            finish,
-            ..
-        } => (
-            lock,
-            &given_back[..],
-            &allocated[..],
-            &rewritten[..],
-            &withdrawn[..],
-            *finish,
-        ),
-        Publication::Unchanged(lock) => (lock, &[][..], &[][..], &[][..], &[][..], None),
-        Publication::Prepared { .. } => unreachable!("a connected document's publish is refused"),
-    };
+fn published(report: &Report) -> Value {
+    let lock = &report.lock;
     let mut fields = json!({
-        "givenBack": labels(given_back),
-        "allocated": labels(allocated),
-        "rewritten": relabels(rewritten),
-        "withdrawn": relabels(withdrawn),
+        "givenBack": labels(&report.given_back),
+        "allocated": labels(&report.allocated),
+        "rewritten": relabels(&report.rewritten),
+        "withdrawn": relabels(&report.withdrawn),
         "publishSequence": lock.publish_sequence.get(),
         "stateRoot": lock.state_root.to_string(),
     });
-    if let Some(operation) = finish {
+    if let Some(operation) = report.finish {
         fields["finish"] = json!(finishing(operation));
     }
-    json::result(SCHEMA, outcome(publication), fields, Vec::new())
+    json::result(SCHEMA, report.outcome(), fields, Vec::new())
+}
+
+/// Labels a publisher gave, each as its key and the label.
+fn keyed(given: &[Allocated]) -> Vec<(String, String)> {
+    given
+        .iter()
+        .map(|given| (given.element.key().to_string(), given.label.to_string()))
+        .collect()
 }
 
 /// Labels a publish gave, each with its key.
-fn labels(given: &[Allocated]) -> Vec<Value> {
+fn labels(given: &[(String, String)]) -> Vec<Value> {
     given
         .iter()
-        .map(|given| {
-            json!({
-                "label": given.label.to_string(),
-                "key": given.element.key().to_string(),
-            })
-        })
+        .map(|(key, label)| json!({ "label": label, "key": key }))
         .collect()
 }
 

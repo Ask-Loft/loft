@@ -1,7 +1,7 @@
 key: 6ad0f26e-00c0-48f6-8886-cd0fb742ac48
 slug: manifest-lock-and-derived-state
 name: "Manifest, lock and derived state"
-body: "The manifest that names the format and the algorithm, and marks a document that publishes through a remote as connected, the lock that pins the roots at publish and names the state view they were computed under, and the record of the source state for a document derived from a Loft v1 export."
+body: "The manifest that names the format and the algorithm, and marks a document that publishes through a remote as connected and names that remote's address, the lock that pins the roots at publish and names the state view they were computed under, and the record of the source state for a document derived from a Loft v1 export."
 realizes:
   - e1ab75a5-f206-4760-970f-bee0653c4f2a
 requirements:
@@ -29,6 +29,10 @@ requirements:
         name: "`spec/loftspec.yaml` carries `connected: true` once `loft remote set` has connected the document to its remote."
       - key: 01a156ac-0a94-7459-afe0-230dcc3abd51
         name: "`connected` enters no root."
+      - key: 01a18e1f-8dab-754b-b097-4f9ee1fc0147
+        name: "`spec/loftspec.yaml` carries `remote`, the address of the document's remote, once `loft remote set` has connected the document to it."
+      - key: 01a18e1f-8dab-754b-b097-4f9f16a8b2f2
+        name: "`remote` enters no root."
   - key: 1e5c52a9-c0ec-4081-a444-76999b1a73d0
     statement:
       form: unwanted

@@ -8,7 +8,7 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 
 use crate::yard::args::YardAction;
-use crate::{install, review, switch_command};
+use crate::{install, pull, remote_command, review, switch_command};
 
 #[derive(Parser)]
 #[command(
@@ -75,6 +75,9 @@ pub enum Command {
         #[command(flatten)]
         output: Output,
     },
+    /// Bring a connected document's tree to its remote's head, or write a published state or a
+    /// branch's draft over a tree at the state its lock names.
+    Pull(PullArgs),
     /// Find the nodes and decisions a label, slug or key equals, or whose name contains the
     /// query, with the key a reference to each carries and where it is written.
     Find {
@@ -136,6 +139,12 @@ pub enum Command {
         way: install::Way,
         #[command(flatten)]
         output: Output,
+    },
+    /// Name, sign in to or remove the document's remote, which a connected document publishes
+    /// through.
+    Remote {
+        #[command(subcommand)]
+        action: RemoteAction,
     },
     /// Switch telemetry on or off for you on this machine, or report its state.
     Telemetry {
@@ -260,6 +269,60 @@ pub enum SkillAction {
 }
 
 #[derive(Subcommand)]
+pub enum RemoteAction {
+    /// Connect the document to the remote at the address, signing in where needed, and name it
+    /// in the manifest.
+    Set {
+        /// The remote's address.
+        address: String,
+        /// Print the address to open, without opening a browser.
+        #[arg(long)]
+        no_browser: bool,
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Sign in again to the remote that the manifest names, once a sign-in has lapsed or in a
+    /// fresh clone.
+    Login {
+        /// Print the address to open, without opening a browser.
+        #[arg(long)]
+        no_browser: bool,
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Disconnect the document from its remote and forget the sign-in to it.
+    Remove {
+        #[command(flatten)]
+        output: Output,
+    },
+}
+
+impl RemoteAction {
+    pub fn split(&self) -> (remote_command::Action, bool) {
+        match self {
+            Self::Set {
+                address,
+                no_browser,
+                output,
+            } => (
+                remote_command::Action::Set {
+                    address: address.clone(),
+                    browser: !no_browser,
+                },
+                output.json(),
+            ),
+            Self::Login { no_browser, output } => (
+                remote_command::Action::Login {
+                    browser: !no_browser,
+                },
+                output.json(),
+            ),
+            Self::Remove { output } => (remote_command::Action::Remove, output.json()),
+        }
+    }
+}
+
+#[derive(Subcommand)]
 pub enum SwitchAction {
     /// Switch it on.
     On {
@@ -336,6 +399,30 @@ pub enum Format {
     Json,
 }
 
+/// The arguments of `loft pull`.
+#[derive(Args)]
+pub struct PullArgs {
+    /// Write the published state of this sequence instead of merging the head.
+    #[arg(long, value_name = "NUMBER", conflicts_with = "branch")]
+    pub sequence: Option<u64>,
+    /// Write the draft the remote holds under this branch name instead of merging the head.
+    #[arg(long, value_name = "NAME")]
+    pub branch: Option<String>,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+impl PullArgs {
+    /// What the pull writes.
+    pub fn source(&self) -> pull::Source {
+        match (self.sequence, &self.branch) {
+            (Some(sequence), _) => pull::Source::Sequence(sequence),
+            (None, Some(branch)) => pull::Source::Branch(branch.clone()),
+            (None, None) => pull::Source::Head,
+        }
+    }
+}
+
 /// The output a command prints, which every command takes.
 #[derive(Args)]
 pub struct Output {
@@ -365,6 +452,7 @@ impl Command {
                 source: ImportSource::Openspec { .. },
             } => Some("import openspec"),
             Self::Publish { .. } => Some("publish"),
+            Self::Pull(..) => Some("pull"),
             Self::Reconcile { .. } => Some("reconcile"),
             Self::Terms { .. } => Some("terms"),
             Self::Find { .. } => Some("find"),
@@ -380,6 +468,7 @@ impl Command {
             | Self::MergeDriver(..)
             | Self::Status { .. }
             | Self::RecordInstall { .. }
+            | Self::Remote { .. }
             | Self::Telemetry { .. }
             | Self::UpdateCheck { .. }
             | Self::Yard { .. } => None,

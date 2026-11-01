@@ -130,12 +130,14 @@ fn every_schema_describes_sites_and_errors_alike_but_for_the_error_kinds_and_pro
 
 /// The last version of each schema of a command tagged `reads-tree` that a release published
 /// without `problem`; zero for a schema no release has published.
-const PUBLISHED_WITHOUT_PROBLEM: [(&str, u32); 10] = [
+const PUBLISHED_WITHOUT_PROBLEM: [(&str, u32); 12] = [
     ("check", 1),
     ("find", 1),
     ("fmt", 1),
     ("publish", 1),
+    ("pull", 0),
     ("reconcile", 2),
+    ("remote", 0),
     ("render", 2),
     ("review", 0),
     ("status", 1),

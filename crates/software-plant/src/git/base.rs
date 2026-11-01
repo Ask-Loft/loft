@@ -21,6 +21,8 @@ pub enum BaseCall {
     Batch,
     /// `git log -1 --format=%H -- loft.lock.json`
     LockWritten,
+    /// `git log --reverse --format=%H -- loft.lock.json`
+    LockHistory,
 }
 
 /// What `git merge-base HEAD <revision>` gives a revision, and the files of that commit.
@@ -63,6 +65,15 @@ impl GitScenario {
     #[must_use]
     pub fn lock_written_at(mut self, commit: &str) -> Self {
         self.repository_mut().lock_written = Some(commit.to_owned());
+        self
+    }
+
+    /// The same repository in which `commits`, oldest first, are the commits that wrote
+    /// `loft.lock.json`.
+    #[must_use]
+    pub fn lock_history(mut self, commits: &[&str]) -> Self {
+        self.repository_mut().lock_history =
+            commits.iter().map(|commit| (*commit).to_owned()).collect();
         self
     }
 
@@ -109,6 +120,9 @@ pub(super) fn parse<'a>(rest: &[&'a str]) -> Option<(BaseCall, Vec<&'a str>)> {
         }
         ["cat-file", "--batch"] => Some((BaseCall::Batch, Vec::new())),
         ["log", "-1", "--format=%H", "--", LOCK] => Some((BaseCall::LockWritten, Vec::new())),
+        ["log", "--reverse", "--format=%H", "--", LOCK] => {
+            Some((BaseCall::LockHistory, Vec::new()))
+        }
         _ => None,
     }
 }
@@ -141,6 +155,14 @@ pub(super) fn answer(
                 .as_ref()
                 .map_or_else(String::new, |commit| format!("{commit}\n")),
         ),
+        BaseCall::LockHistory => {
+            let mut out = String::new();
+            for commit in &repository.lock_history {
+                out.push_str(commit);
+                out.push('\n');
+            }
+            Reply::ok(out)
+        }
     }
 }
 

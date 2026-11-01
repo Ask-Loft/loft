@@ -34,6 +34,26 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- A document can be connected to a remote that publishes it for everyone who works on it.
+  `loft remote set <address>` signs you in, connects the document (creating it on the remote and
+  importing the states the repository has already published), and names the address in the
+  manifest as `remote`, beside `connected: true`, for every clone to share. The sign-in is
+  standard OAuth: discovery from the remote's challenge, dynamic client registration, and PKCE
+  on a loopback redirect opened in your browser (`--no-browser` only prints the address). It is
+  yours alone, kept by address in `loft/remotes.json` in your configuration directory, written
+  `0600`, and refreshed before it expires; `loft remote login` signs in again and
+  `loft remote remove` disconnects the document and forgets the sign-in.
+- `loft publish` of a connected document publishes through its remote: it sends the change from
+  the state its lock names under a retry key, so a publish whose answer was lost is replayed,
+  and writes the labels and lock the remote returns once their roots agree with the tree. A
+  remote that has moved on is refused with a pointer to `loft pull`.
+- `loft pull` brings a connected document's tree to its remote's head by a three-way merge,
+  writing any conflict as a conflict record, or writes a published state (`--sequence`) or a
+  branch's draft (`--branch`) over a tree still at its lock.
+- `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` point a connected command at a remote with a
+  token of its own, bypassing the sign-in. `LOFT_REMOTE_TIMEOUT` sets how long a call may take
+  (30 seconds by default), and `LOFT_REMOTE_WAIT` lets a command wait up to that many seconds,
+  once, for a remote that asks it to try again later.
 - An agent's work follows its working stage into another worktree, of the same repository or
   another. A session that worked in a worktree its host could not move it into recorded that
   work's plan, questions, tasks and token cost in the Yard Log of the worktree it started in.

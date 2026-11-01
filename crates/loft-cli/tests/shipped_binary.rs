@@ -29,7 +29,7 @@ const BUILT_IN: [&str; 7] = [
 /// packager, whose discovery guard is tested before it reaches a build command; Python,
 /// which hosts the on-demand real Codex contract's loopback model fixture; and `sh`, which runs
 /// the Claude Code plugin's hook command as Claude Code does, and through it the built `loft`.
-const OTHER_PROGRAMS: [&str; 14] = [
+const OTHER_PROGRAMS: [&str; 18] = [
     "\"python3\"",
     "\"sh\"",
     "\"mkfifo\"",
@@ -44,6 +44,11 @@ const OTHER_PROGRAMS: [&str; 14] = [
     "workspace().join(\"scripts/npm-smoke.sh\")",
     "repo.join(SCRIPT)",
     "scratch.0.join(\"scripts/package-skill.sh\")",
+    // The browser simulator, and the system's openers of addresses it is compared with.
+    "browser_executable()",
+    "\"open\"",
+    "\"cmd\"",
+    "\"xdg-open\"",
 ];
 
 /// How a test starts `loft`.

@@ -1,9 +1,13 @@
 key: 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
 slug: remote-simulator
 name: "Remote simulator"
-body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on. The tag `plant-simulator` and the mention of the remote's Component are added with the simulator's code, since the guard of the Software Plant then requires its contract suite."
+body: "An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, or signs in to it as a person would, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. It also stands in for the remote's authorization server, under paths of its own on the same origin: it challenges a request without a token as a protected resource, serves both metadata documents, registers clients, consents to each authorization request as its scenario names, and issues access tokens and refresh tokens that rotate, as an OAuth 2.0 server does. Its Requirements state the remote's wire contract for each call `loft` makes, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on."
+tags:
+  - plant-simulator
 realizes:
   - 01a12ff0-f5e5-7095-8fa8-24b9ff6a761e
+mentions:
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
 requirements:
   - key: 01a156ae-6a51-7230-a9a1-fa884a1417e2
     statement:
@@ -41,10 +45,14 @@ requirements:
     statement:
       form: ubiquitous
       system: "The remote simulator"
-      shall: "admit a request under a document's address only with the bearer token its scenario names."
+      shall: "admit a request under a document's address only with the bearer token its scenario names, or an access token it issued and has not revoked."
     criteria:
       - key: 01a156ae-6a51-7230-a9a1-fa92a3b72eb7
         name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the code `unauthenticated`."
+      - key: 01a18e1f-8dac-71f7-847a-72434a1d07fd
+        name: "Each `401` answer under a document's address carries `WWW-Authenticate: Bearer` with `resource_metadata`, the address of its protected resource metadata, and the scenario's `scope`."
+      - key: 01a18e1f-8dac-71f7-847a-7244ef7a794f
+        name: "A request with an access token that the simulator issued and has not revoked is admitted."
       - key: 01a156ae-6a51-7230-a9a1-fa93388fd0b9
         name: "A request whose bearer token is not the scenario's is answered `401 Unauthorized` with the code `unauthenticated`."
       - key: 01a156ae-6a51-7230-a9a1-fa9467a2d6a1
@@ -281,3 +289,91 @@ requirements:
         name: "Each refusal's `type` is a URI other than `about:blank`."
       - key: 01a15877-f752-735c-b2ba-1709116c2e79
         name: "Each refusal holds at least one member that the contract does not name."
+  - key: 01a18e1f-8dac-71f7-847a-724579503551
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <origin>/.well-known/oauth-protected-resource` followed by the path of its protected resource"
+      system: "The remote simulator"
+      shall: "answer `200 OK` with the protected resource metadata of the document's address."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-7246f96b2289
+        name: "The body is a JSON object holding `resource`, `authorization_servers` and `scopes_supported`."
+      - key: 01a18e1f-8dac-71f7-847a-72475d6abcc6
+        name: "`resource` is the protected resource whose path follows `/.well-known/oauth-protected-resource` in the request, as RFC 9728 requires."
+      - key: 01a18e1f-8dac-71f7-847a-72480d1d7ed9
+        name: "`authorization_servers` lists one issuer, an address on the simulator's origin."
+  - key: 01a18e1f-8dac-71f7-847a-724917ee9379
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives `GET <origin>/.well-known/oauth-authorization-server` followed by the issuer's path"
+      system: "The remote simulator"
+      shall: "answer `200 OK` with the authorization server's metadata."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-724a0106e061
+        name: "The body is a JSON object holding `issuer`, `authorization_endpoint`, `token_endpoint`, `registration_endpoint`, `response_types_supported`, `grant_types_supported`, `code_challenge_methods_supported` and `token_endpoint_auth_methods_supported`."
+      - key: 01a18e1f-8dac-71f7-847a-724bb32a7aa1
+        name: "`issuer` is the issuer that the protected resource metadata names."
+      - key: 01a18e1f-8dac-71f7-847a-724ccb573384
+        name: "`code_challenge_methods_supported` is `S256` alone and `token_endpoint_auth_methods_supported` is `none` alone."
+  - key: 01a18e1f-8dac-71f7-847a-724d7b74f304
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives a `POST` of a client's metadata to its registration endpoint"
+      system: "The remote simulator"
+      shall: "register a public client and answer `201 Created` with its `client_id`."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-724e1f7dcfa7
+        name: "Each registration is given a `client_id` of its own."
+      - key: 01a18e1f-8dac-71f7-847a-724f751851ca
+        name: "A redirect URI that is `http` off the loopback interface is refused `400 Bad Request` with the OAuth error `invalid_redirect_uri`."
+      - key: 01a18e1f-8dac-71f7-847a-72500b13db60
+        name: "Metadata whose `token_endpoint_auth_method` is not `none`, or whose `grant_types` are not `authorization_code` and `refresh_token`, is refused `400 Bad Request` with the OAuth error `invalid_client_metadata`."
+  - key: 01a18e1f-8dac-71f7-847a-7251049f0d86
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives a request to its authorization endpoint"
+      system: "The remote simulator"
+      shall: "answer the request as its scenario names the person's consent."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-7252c7346fb2
+        name: "A consenting scenario redirects `302 Found` to the redirect URI with a `code` and the request's `state`."
+      - key: 01a18e1f-8dac-71f7-847a-725398a29a57
+        name: "A refusing scenario redirects `302 Found` to the redirect URI with `error` `access_denied` and the request's `state`."
+      - key: 01a18e1f-8dac-71f7-847a-7254437b1e9d
+        name: "A redirect URI on the loopback interface matches a registered one whose scheme, host and path are its own, whatever its port."
+      - key: 01a18e1f-8dac-71f7-847a-725524aa2139
+        name: "A request for a client that is not registered, or whose redirect URI matches none registered, is answered `400 Bad Request` without a redirect."
+      - key: 01a18e1f-8dac-71f7-847a-7256042cf77d
+        name: "A request without a `code_challenge` of method `S256` redirects with `error` `invalid_request`."
+      - key: 01a18e1f-8dac-71f7-847a-725794142402
+        name: "A request whose `resource` is not the scenario's protected resource redirects with `error` `invalid_target`."
+  - key: 01a18e1f-8dac-71f7-847a-7258160a723f
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives a form-encoded `POST` of the grant `authorization_code` to its token endpoint"
+      system: "The remote simulator"
+      shall: "answer with an access token and a refresh token for a code it issued, once."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-7259b5a8513a
+        name: "An accepted exchange is answered `200 OK` with a JSON object holding `access_token`, `token_type` `Bearer`, `expires_in`, `refresh_token` and `scope`."
+      - key: 01a18e1f-8dac-71f7-847a-725add9f5191
+        name: "`expires_in` is the number of seconds its scenario names."
+      - key: 01a18e1f-8dac-71f7-847a-725b26986a58
+        name: "A code presented a second time, a `redirect_uri` other than the authorization request's, or a `code_verifier` whose SHA-256 digest is not the `code_challenge`, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
+      - key: 01a18e1f-8dac-71f7-847a-725c1d59acb6
+        name: "A `resource` other than the authorization request's is refused `400 Bad Request` with the OAuth error `invalid_target`."
+  - key: 01a18e1f-8dac-71f7-847a-725db357dec4
+    statement:
+      form: event_driven
+      when: "an accepting remote simulator receives a form-encoded `POST` of the grant `refresh_token` to its token endpoint"
+      system: "The remote simulator"
+      shall: "rotate the refresh token, as its scenario names."
+    criteria:
+      - key: 01a18e1f-8dac-71f7-847a-725e4c95828e
+        name: "An accepted refresh is answered as an accepted exchange is, with a new access token and a new refresh token."
+      - key: 01a18e1f-8dac-71f7-847a-725f662f9c67
+        name: "A refresh token presented again after its successor was issued, while its scenario allows that grace, is answered as it was the first time."
+      - key: 01a18e1f-8dac-71f7-847a-72600450be32
+        name: "A refresh token presented again after its successor was issued, once its scenario allows no grace, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in."
+      - key: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
+        name: "A lapsing scenario refuses every refresh `400 Bad Request` with the OAuth error `invalid_grant`."

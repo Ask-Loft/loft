@@ -103,6 +103,7 @@
         "import v1",
         "init",
         "publish",
+        "pull",
         "reconcile",
         "render",
         "review",

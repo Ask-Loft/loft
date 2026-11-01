@@ -16,18 +16,18 @@ requirements:
       form: event_driven
       when: "a person runs `loft remote set <address>` for a document whose manifest does not mark it connected"
       system: "`loft remote set`"
-      shall: "connect the document to the remote before it records the remote."
+      shall: "connect the document to the remote before the manifest names the remote."
     criteria:
       - key: 01a1587a-dee2-7262-8c7b-894b0f327e5a
         name: "`loft remote set` asks the remote to create the document under the manifest's document key."
       - key: 01a1587a-dee2-7262-8c7b-894cd6ebbf44
         name: "The document is named as the manifest's first Product is named, or by its document key where the manifest names no Product."
       - key: 01a1587a-dee2-7262-8c7b-894d6812bbee
-        name: "The connect reaches the address given to `loft remote set` and sends the token read from standard input, whatever `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` hold."
+        name: "The connect reaches the address given to `loft remote set` and sends the access token of the person's sign-in to it, whatever `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` hold."
       - key: 01a1587a-dee2-7262-8c7b-894ecc301971
-        name: "The address and the token are recorded in `loft/remotes.json` only after the document is connected."
+        name: "The manifest names the address as `remote` only after the document is connected."
       - key: 01a1587a-dee2-7262-8c7b-894fde643c53
-        name: "`spec/loftspec.yaml` carries `connected: true` only after the document is connected."
+        name: "`spec/loftspec.yaml` carries `connected: true` only after the document is connected, in the save that names `remote`."
       - key: 01a1587a-dee2-7262-8c7b-8950b83d6d7f
         name: "`spec/loftspec.yaml` is written in one journaled save."
       - key: 01a1587a-dee2-7262-8c7b-8951abd5db23
@@ -35,7 +35,7 @@ requirements:
       - key: 01a1587a-dee2-7262-8c7b-8952a0933c30
         name: "The output names the remote's head once the document is connected, by its publish sequence and state root."
       - key: 01a1587e-87ac-73f3-b49f-67749717142d
-        name: "After a connect, the output says `Commit spec/loftspec.yaml: it now marks the document connected.`"
+        name: "After a connect, the output says `Commit spec/loftspec.yaml: it now names the document's remote.`"
   - key: 01a1587a-dee2-7262-8c7b-89533f511ebd
     statement:
       form: event_driven
@@ -84,7 +84,7 @@ requirements:
       - key: 01a1587a-dee2-7262-8c7b-895f0c899c76
         name: "No import request is sent."
       - key: 01a1587a-dee2-7262-8c7b-8960890043f7
-        name: "The remote is recorded, and the manifest marked connected, as after an import."
+        name: "The manifest names the remote and marks the document connected, as after an import."
   - key: 01a1587a-dee2-7262-8c7b-8961227227f7
     statement:
       form: unwanted

@@ -12,7 +12,7 @@ use std::thread::{self, JoinHandle};
 use std::time::Duration;
 
 /// The largest request this server reads, headers and body together.
-const LIMIT: usize = 1 << 20;
+const LIMIT: usize = 64 << 20;
 
 /// A request as the server read it.
 #[derive(Clone, Debug)]
@@ -51,6 +51,16 @@ impl Response {
         Self {
             status,
             headers: Vec::new(),
+            body: Vec::new(),
+        }
+    }
+
+    /// A `302` redirect to `location`, with an empty body.
+    #[must_use]
+    pub fn redirect(location: &str) -> Self {
+        Self {
+            status: 302,
+            headers: vec![("Location".to_owned(), location.to_owned())],
             body: Vec::new(),
         }
     }

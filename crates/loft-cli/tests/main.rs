@@ -4,6 +4,7 @@
 
 #[path = "common/base.rs"]
 mod base;
+mod browser_contract;
 #[path = "common/commands.rs"]
 mod commands;
 mod common;
@@ -46,9 +47,13 @@ mod npm;
 mod npm_install;
 mod plugins;
 mod publish;
+mod publish_connected;
+mod publish_connected_reach;
 mod publish_former;
 mod publish_meet_contract;
 mod publish_settle;
+mod pull;
+mod pull_checks;
 mod reads_tree;
 mod reconcile;
 mod reconcile_located;
@@ -56,6 +61,12 @@ mod record_install;
 mod release_check;
 mod release_feed_contract;
 mod release_workflow;
+mod remote_connect;
+mod remote_contract;
+mod remote_contract_auth;
+mod remote_contract_writes;
+mod remote_login;
+mod remote_remove;
 mod render;
 mod render_openspec;
 mod review;

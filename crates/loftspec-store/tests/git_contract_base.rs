@@ -57,10 +57,15 @@ fn history(dir: &Scratch, sub: &str) {
 /// HEAD and every file of that commit, each path from the top level.
 fn scripted(dir: &Path, prefix: &str) -> GitScenario {
     let commit = rev(dir, "develop");
-    let mut scenario = GitScenario::clean_on("feature")
-        .below(prefix)
-        .base("develop", &commit);
-    let listed = output(dir, &["ls-tree", "-r", "-z", "--full-tree", &commit]);
+    let scenario = GitScenario::clean_on("feature").below(prefix);
+    with_commit(scenario, dir, "develop", &commit)
+}
+
+/// `scenario` with `revision` naming `commit`, and every file of that commit as real git holds
+/// it in `dir`.
+fn with_commit(scenario: GitScenario, dir: &Path, revision: &str, commit: &str) -> GitScenario {
+    let mut scenario = scenario.base(revision, commit);
+    let listed = output(dir, &["ls-tree", "-r", "-z", "--full-tree", commit]);
     for record in listed
         .split(|byte| *byte == 0)
         .filter(|record| !record.is_empty())
@@ -69,7 +74,7 @@ fn scripted(dir: &Path, prefix: &str) -> GitScenario {
         let (header, path) = record.split_once('\t').unwrap();
         let object = header.split(' ').nth(2).unwrap();
         let text = String::from_utf8(output(dir, &["cat-file", "blob", object])).unwrap();
-        scenario = scenario.file_at("develop", path, object, &text);
+        scenario = scenario.file_at(revision, path, object, &text);
     }
     scenario
 }
@@ -290,5 +295,87 @@ fn the_port_reads_the_same_lock_writer_from_the_simulator_and_real_git() {
     assert_eq!(
         simulator.lock_written(&repository.0).unwrap(),
         Some(published)
+    );
+}
+
+/// Two publishes on `feature` in `dir`, each writing the lock below `sub`, and a commit after
+/// them that leaves the lock alone; the two publish commits, oldest first.
+fn publishes(dir: &Scratch, sub: &str) -> [String; 2] {
+    let commits = [1, 2].map(|sequence| {
+        dir.put(
+            &format!("{sub}spec/products/a/product.yaml"),
+            &format!("name: \"{sequence}\"\n"),
+        );
+        dir.put(
+            &format!("{sub}loft.lock.json"),
+            &format!("{{\"publishSequence\":{sequence}}}\n"),
+        );
+        git(&dir.0, &["add", "."]);
+        git(&dir.0, &["commit", "--quiet", "-m", "publish"]);
+        rev(&dir.0, "HEAD")
+    });
+    dir.put(&format!("{sub}spec/tags.yaml"), "later\n");
+    git(&dir.0, &["add", "."]);
+    git(&dir.0, &["commit", "--quiet", "-m", "later"]);
+    commits
+}
+
+#[test]
+fn the_port_reads_the_same_lock_history_and_published_files_from_the_simulator_and_real_git() {
+    for sub in ["", "sub/"] {
+        let repository = Scratch::new();
+        history(&repository, sub);
+        let commits = publishes(&repository, sub);
+        let root = root_of(&repository, sub);
+        let mut scenario = GitScenario::clean_on("feature")
+            .below(sub)
+            .lock_history(&[&commits[0], &commits[1]]);
+        for commit in &commits {
+            scenario = with_commit(scenario, &repository.0, commit, commit);
+        }
+        let plant = Scratch::new();
+        let simulator = simulated(&scenario, &plant.0);
+        let port = GitCommand::from_command(real_git);
+        let history = port.lock_history(&root).unwrap();
+        assert_eq!(history, commits, "{sub:?}");
+        assert_eq!(simulator.lock_history(&root).unwrap(), history, "{sub:?}");
+        for (sequence, commit) in (1..).zip(&commits) {
+            let read = port.lock_and_spec_at(&root, commit).unwrap();
+            let lock = format!("{{\"publishSequence\":{sequence}}}\n");
+            assert_eq!(read.0.as_deref(), Some(lock.as_bytes()), "{sub:?}");
+            let product = loftspec::codec::SpecPath::new("products/a/product.yaml");
+            let text = format!("name: \"{sequence}\"\n");
+            assert_eq!(read.1[&product], text.as_bytes(), "{sub:?}");
+            assert!(!read.1.keys().any(|path| path.as_str() == ".DS_Store"));
+            assert_eq!(
+                simulator.lock_and_spec_at(&root, commit).unwrap(),
+                read,
+                "{sub:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn a_history_without_a_lock_is_empty_for_both() {
+    let repository = Scratch::new();
+    history(&repository, "");
+    let plant = Scratch::new();
+    let simulator = simulated(&scripted(&repository.0, ""), &plant.0);
+    let port = GitCommand::from_command(real_git);
+    assert_eq!(
+        port.lock_history(&repository.0).unwrap(),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        simulator.lock_history(&repository.0).unwrap(),
+        Vec::<String>::new()
+    );
+    let develop = rev(&repository.0, "develop");
+    let read = port.lock_and_spec_at(&repository.0, &develop).unwrap();
+    assert_eq!(read.0, None);
+    assert_eq!(
+        simulator.lock_and_spec_at(&repository.0, &develop).unwrap(),
+        read
     );
 }

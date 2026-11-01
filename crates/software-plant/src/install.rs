@@ -21,50 +21,75 @@ const ATTEMPTS: usize = 5;
 /// # Panics
 ///
 /// The executable cannot be built or copied.
+#[must_use]
 pub fn git_executable() -> &'static Path {
-    static GIT: OnceLock<PathBuf> = OnceLock::new();
-    GIT.get_or_init(|| {
+    &executables().0
+}
+
+/// The browser simulator's executable, built and copied as [`git_executable`] is.
+///
+/// # Panics
+///
+/// The executable cannot be built or copied.
+#[must_use]
+pub fn browser_executable() -> &'static Path {
+    &executables().1
+}
+
+/// The simulators' executables, `git` and `browser`, built in one run of Cargo on first use.
+fn executables() -> &'static (PathBuf, PathBuf) {
+    static BUILT: OnceLock<(PathBuf, PathBuf)> = OnceLock::new();
+    BUILT.get_or_init(|| {
         let mut last = None;
         for _ in 0..ATTEMPTS {
-            match stable_copy(&build_git()) {
-                Ok(path) => return path,
-                Err(error) => last = Some(error),
+            let [git, browser] = build(["git", "browser"]);
+            match (stable_copy(&git, "git"), stable_copy(&browser, "browser")) {
+                (Ok(git), Ok(browser)) => return (git, browser),
+                (Err(error), _) | (_, Err(error)) => last = Some(error),
             }
         }
-        panic!("the git simulator cannot be copied: {last:?}")
+        panic!("the simulators cannot be copied: {last:?}")
     })
 }
 
-fn build_git() -> PathBuf {
-    let output = Command::new(env!("CARGO"))
-        .args([
-            "build",
-            "--quiet",
-            "--package",
-            "software-plant",
-            "--bin",
-            "git",
-            "--message-format=json",
-        ])
+/// Builds the simulators `names` in one run of Cargo, and names each one's executable.
+fn build<const N: usize>(names: [&str; N]) -> [PathBuf; N] {
+    let mut command = Command::new(env!("CARGO"));
+    command.args([
+        "build",
+        "--quiet",
+        "--package",
+        "software-plant",
+        "--message-format=json",
+    ]);
+    for name in names {
+        command.args(["--bin", name]);
+    }
+    let output = command
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()
         .expect("cargo runs");
     assert!(
         output.status.success(),
-        "the git simulator builds\n{}",
+        "the simulators build\n{}",
         String::from_utf8_lossy(&output.stderr)
     );
-    String::from_utf8_lossy(&output.stdout)
+    let messages: Vec<serde_json::Value> = String::from_utf8_lossy(&output.stdout)
         .lines()
-        .filter_map(|line| serde_json::from_str::<serde_json::Value>(line).ok())
-        .find(|message| message["target"]["name"] == "git" && message["executable"].is_string())
-        .and_then(|message| message["executable"].as_str().map(PathBuf::from))
-        .expect("cargo names the simulator's executable")
+        .filter_map(|line| serde_json::from_str(line).ok())
+        .collect();
+    names.map(|name| {
+        messages
+            .iter()
+            .find(|message| message["target"]["name"] == name && message["executable"].is_string())
+            .and_then(|message| message["executable"].as_str().map(PathBuf::from))
+            .expect("cargo names the simulator's executable")
+    })
 }
 
-/// Copies the executable to `software-plant/<content>/git` beside it, unless a copy of the same
+/// Copies the executable to `software-plant/<content>/<name>` beside it, unless a copy of the same
 /// content is there already, and names the copy.
-fn stable_copy(built: &Path) -> io::Result<PathBuf> {
+fn stable_copy(built: &Path, name: &str) -> io::Result<PathBuf> {
     let bytes = fs::read(built)?;
     let mut hasher = DefaultHasher::new();
     hasher.write(&bytes);
@@ -73,10 +98,10 @@ fn stable_copy(built: &Path) -> io::Result<PathBuf> {
         .expect("the executable lies in a directory")
         .join("software-plant")
         .join(format!("{:016x}", hasher.finish()));
-    let path = dir.join("git");
+    let path = dir.join(name);
     if !path.is_file() {
         fs::create_dir_all(&dir)?;
-        let partial = dir.join(format!("git.{}.partial", process::id()));
+        let partial = dir.join(format!("{name}.{}.partial", process::id()));
         fs::copy(built, &partial)?;
         fs::rename(&partial, &path)?;
     }

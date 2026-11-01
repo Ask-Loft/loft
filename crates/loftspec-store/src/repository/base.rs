@@ -20,6 +20,8 @@ pub const LIST_TREE: [&str; 3] = ["ls-tree", "-r", "-z"];
 pub const BATCH: [&str; 2] = ["cat-file", "--batch"];
 /// The last commit that wrote a path, completed by the path.
 pub const LOCK_WRITTEN: [&str; 4] = ["log", "-1", "--format=%H", "--"];
+/// Every commit that wrote a path, oldest first, completed by the path.
+pub const LOCK_HISTORY: [&str; 4] = ["log", "--reverse", "--format=%H", "--"];
 
 /// What `git merge-base HEAD <revision>` says of a revision that names a commit.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -61,7 +63,35 @@ impl GitCommand {
     ///
     /// git fails or cannot be run, or answers in a shape the port does not read.
     pub fn spec_files_at(&self, root: &Path, commit: &str) -> Result<Files, StoreError> {
-        let call: Vec<&str> = LIST_TREE.into_iter().chain([commit, "--", SPEC]).collect();
+        Ok(self.published_at(root, commit, &[SPEC])?.1)
+    }
+
+    /// The lock beside `spec/` that `commit` holds, none where it holds none, and its files under
+    /// `spec/`, as [`Self::spec_files_at`] gives them, read in one `git cat-file --batch`.
+    ///
+    /// # Errors
+    ///
+    /// git fails or cannot be run, or answers in a shape the port does not read.
+    pub fn lock_and_spec_at(
+        &self,
+        root: &Path,
+        commit: &str,
+    ) -> Result<(Option<Vec<u8>>, Files), StoreError> {
+        self.published_at(root, commit, &[SPEC, LOCK])
+    }
+
+    /// The lock and the files under `spec/` that `commit` holds, of those the pathspecs name.
+    fn published_at(
+        &self,
+        root: &Path,
+        commit: &str,
+        pathspecs: &[&str],
+    ) -> Result<(Option<Vec<u8>>, Files), StoreError> {
+        let call: Vec<&str> = LIST_TREE
+            .into_iter()
+            .chain([commit, "--"])
+            .chain(pathspecs.iter().copied())
+            .collect();
         let listed = succeeded(&call, self.run(root, &call)?)?;
         let blobs = blobs(&listed, &call)?;
         let mut input = String::new();
@@ -72,17 +102,36 @@ impl GitCommand {
         let call = BATCH;
         let output = self.run_with_input(root, &call, input.as_bytes())?;
         let answer = succeeded(&call, output)?;
-        let mut files = Files::new();
+        let (mut lock, mut files) = (None, Files::new());
         let mut at = 0;
         for (object, path) in blobs {
             let (bytes, next) = object_at(&answer, at, &object).ok_or_else(|| StoreError::Git {
                 call: call.join(" "),
-                message: format!("no object {object} for {path}"),
+                message: format!("no object {object} for {}", path.display()),
             })?;
-            files.insert(SpecPath::new(&path), bytes.to_vec());
+            match path {
+                Listed::Lock => lock = Some(bytes.to_vec()),
+                Listed::Spec(path) => {
+                    files.insert(SpecPath::new(&path), bytes.to_vec());
+                }
+            }
             at = next;
         }
-        Ok(files)
+        Ok((lock, files))
+    }
+
+    /// Every commit that wrote the lock beside `spec/`, oldest first.
+    ///
+    /// # Errors
+    ///
+    /// git fails or cannot be run.
+    pub fn lock_history(&self, root: &Path) -> Result<Vec<String>, StoreError> {
+        let call: Vec<&str> = LOCK_HISTORY.into_iter().chain([LOCK]).collect();
+        let listed = succeeded(&call, self.run(root, &call)?)?;
+        Ok(String::from_utf8_lossy(&listed)
+            .lines()
+            .map(str::to_owned)
+            .collect())
     }
 
     /// The commit that last wrote the lock beside `spec/`, the publish commit the lock pins; none
@@ -108,9 +157,24 @@ impl GitCommand {
     }
 }
 
-/// The object id and the path under `spec/` of each blob of `ls-tree -z` records, whose paths
-/// run from the working directory.
-fn blobs(listed: &[u8], call: &[&str]) -> Result<Vec<(String, String)>, StoreError> {
+/// A blob that a commit lists: the lock beside `spec/`, or a file by its path under `spec/`.
+enum Listed {
+    Lock,
+    Spec(String),
+}
+
+impl Listed {
+    fn display(&self) -> &str {
+        match self {
+            Self::Lock => LOCK,
+            Self::Spec(path) => path,
+        }
+    }
+}
+
+/// The object id of each blob of `ls-tree -z` records, whose paths run from the working
+/// directory, with the lock or its path under `spec/`.
+fn blobs(listed: &[u8], call: &[&str]) -> Result<Vec<(String, Listed)>, StoreError> {
     let unread = |record: &str| StoreError::Git {
         call: call.join(" "),
         message: format!("a record the port does not read: {record:?}"),
@@ -127,16 +191,23 @@ fn blobs(listed: &[u8], call: &[&str]) -> Result<Vec<(String, String)>, StoreErr
         else {
             return Err(unread(&record));
         };
+        if kind != "blob" {
+            continue;
+        }
+        if path == LOCK {
+            blobs.push((object.to_owned(), Listed::Lock));
+            continue;
+        }
         let Some(path) = path
             .strip_prefix(SPEC)
             .and_then(|rest| rest.strip_prefix('/'))
         else {
             return Err(unread(&record));
         };
-        if kind != "blob" || path.split('/').any(hidden) {
+        if path.split('/').any(hidden) {
             continue;
         }
-        blobs.push((object.to_owned(), path.to_owned()));
+        blobs.push((object.to_owned(), Listed::Spec(path.to_owned())));
     }
     Ok(blobs)
 }
