@@ -68,6 +68,7 @@ mod remote_contract_auth;
 mod remote_contract_failures;
 mod remote_contract_writes;
 mod remote_login;
+mod remote_reach;
 mod remote_refresh;
 mod remote_remove;
 mod remote_sign_in_refusals;

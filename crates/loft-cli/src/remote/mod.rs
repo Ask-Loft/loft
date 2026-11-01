@@ -159,7 +159,13 @@ pub fn seconds(name: &'static str) -> Result<Option<u64>, RemoteError> {
 ///
 /// `LOFT_REMOTE_TIMEOUT` is not a positive whole number of seconds.
 pub fn timeout() -> Result<Duration, RemoteError> {
-    Ok(seconds(TIMEOUT_ENV)?.map_or(TIMEOUT, Duration::from_secs))
+    Ok(time_limit(seconds(TIMEOUT_ENV)?))
+}
+
+/// How long a call may take: `seconds` where `LOFT_REMOTE_TIMEOUT` gives them, or else 30
+/// seconds.
+fn time_limit(seconds: Option<u64>) -> Duration {
+    seconds.map_or(TIMEOUT, Duration::from_secs)
 }
 
 /// The time now in seconds since the Unix epoch, from the system clock alone: a token expires and
@@ -191,4 +197,17 @@ pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError>
         None => signins::live(&address, timeout)?.access_token,
     };
     Ok(Client::new(&address, Some(token), timeout, wait))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::time_limit;
+
+    #[test]
+    fn a_call_may_take_30_seconds_unless_loft_remote_timeout_says_otherwise() {
+        assert_eq!(time_limit(None), Duration::from_secs(30));
+        assert_eq!(time_limit(Some(5)), Duration::from_secs(5));
+    }
 }

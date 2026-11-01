@@ -21,7 +21,12 @@ fn the_environment_names_the_address_and_the_token_for_one_run() {
         Some("https://elsewhere.example/documents/one"),
         true,
     );
-    fs::remove_file(signed_in::sign_ins_file(&run.scratch)).unwrap();
+    // A sign-in kept for the address, about to expire, is neither used nor refreshed.
+    keep(
+        &run.scratch,
+        &json!({ run.remote.address(): granted(&run.remote, 60) }),
+    );
+    let file = fs::read(signed_in::sign_ins_file(&run.scratch)).unwrap();
     run.change();
     let address = run.remote.address();
     let output = run.publish_with(&[
@@ -35,13 +40,21 @@ fn the_environment_names_the_address_and_the_token_for_one_run() {
             Some(format!("Bearer {TOKEN}").as_str())
         );
     }
-    assert!(!signed_in::sign_ins_file(&run.scratch).exists());
+    assert_eq!(run.remote.refreshes(), 0);
+    assert_eq!(
+        fs::read(signed_in::sign_ins_file(&run.scratch)).unwrap(),
+        file
+    );
 }
 
 #[test]
 fn without_a_sign_in_the_publish_is_refused_naming_the_address_and_login() {
     let run = connected(1, 1, RemoteScenario::accepting);
-    fs::remove_file(signed_in::sign_ins_file(&run.scratch)).unwrap();
+    // The file holds a sign-in, but for another address.
+    keep(
+        &run.scratch,
+        &json!({ "https://other.example/documents/one": granted(&run.remote, 3600) }),
+    );
     run.change();
     let output = run.publish();
     assert_eq!(output.status.code(), Some(1));
@@ -166,6 +179,13 @@ fn a_refusal_the_remote_may_lift_is_waited_out_once_where_loft_remote_wait_allow
         assert_eq!(output.status.code(), Some(1));
         assert_eq!(run.calls().len(), calls, "{wait:?}");
     }
+    // Without `Retry-After`, a refusal is reported without a wait.
+    let run = connected(1, 1, |key| {
+        RemoteScenario::failing(key, 503, Some("service_unavailable"))
+    });
+    let output = run.publish_with(&[("LOFT_REMOTE_WAIT", "5")]);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(run.calls().len(), 1);
 }
 
 #[test]
