@@ -3,6 +3,8 @@
 //! OAuth 2.0 shapes them. The real half reads the metadata of the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS` and registers a client there, and runs only on demand.
 
+use std::time::Duration;
+
 use serde_json::{Value, json};
 use software_plant::remote::wire::{base64url, pairs, query, sha256, value};
 use software_plant::remote::{Remote, RemoteScenario};
@@ -321,6 +323,52 @@ fn a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace
     assert_eq!(
         (answer.status, answer.body["error"].clone()),
         (400, json!("invalid_grant"))
+    );
+}
+
+#[test]
+fn a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented()
+{
+    let remote = Remote::start(RemoteScenario::accepting(KEY));
+    let (server, client, resource, code) = coded(&remote);
+    let first = exchange(&server, &client, &resource, &code).body;
+    let old = first["refresh_token"].as_str().unwrap();
+    let rotated = refresh(&server, &client, &resource, old).body;
+    remote.advance(Duration::from_secs(119));
+    assert_eq!(refresh(&server, &client, &resource, old).body, rotated);
+    assert_eq!(remote.refreshes(), 1);
+    assert!(remote.admits(rotated["access_token"].as_str().unwrap()));
+    remote.advance(Duration::from_secs(2));
+    assert_eq!(
+        refresh(&server, &client, &resource, old).body["error"],
+        "invalid_grant"
+    );
+    assert!(!remote.admits(rotated["access_token"].as_str().unwrap()));
+
+    // Within the window, a repeat after the successor was itself presented revokes the sign-in.
+    let remote = Remote::start(RemoteScenario::accepting(KEY));
+    let (server, client, resource, code) = coded(&remote);
+    let first = exchange(&server, &client, &resource, &code).body;
+    let old = first["refresh_token"].as_str().unwrap();
+    let rotated = refresh(&server, &client, &resource, old).body;
+    let successor = rotated["refresh_token"].as_str().unwrap();
+    let newest = refresh(&server, &client, &resource, successor).body;
+    assert_eq!(
+        refresh(&server, &client, &resource, old).body["error"],
+        "invalid_grant"
+    );
+    assert!(!remote.admits(newest["access_token"].as_str().unwrap()));
+
+    // A scenario names another length.
+    let remote = Remote::start(RemoteScenario::accepting(KEY).grace(Duration::from_secs(10)));
+    let (server, client, resource, code) = coded(&remote);
+    let first = exchange(&server, &client, &resource, &code).body;
+    let old = first["refresh_token"].as_str().unwrap();
+    refresh(&server, &client, &resource, old);
+    remote.advance(Duration::from_secs(11));
+    assert_eq!(
+        refresh(&server, &client, &resource, old).body["error"],
+        "invalid_grant"
     );
 }
 

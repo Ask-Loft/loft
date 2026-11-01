@@ -15082,11 +15082,14 @@ links:
         name: "a_conflict_is_written_reported_in_document_order_and_exits_one"
         body: 93bc67537d8d0a491af214941de0c0a3e9f500cebe2963e900e78f19a0dc13be
   - node: 01a156ad-1b9f-72a4-9f6c-304a2b0727f8
-    reviewed: 85ed7e4fb4c1cfb79ddd58bc203b5a34118ce34d1c91bedee453adebf93beabb
+    reviewed: 60941c33bc71458b357439838942dd39b4c90926448f7eaeb07062e247c9d7b6
     tests:
       - file: "crates/loft-cli/tests/pull.rs"
         name: "a_pull_merges_the_head_three_ways_and_takes_its_labels_and_lock"
         body: 92adc40b8080755e8ae46bc010a648ab97b236c563c6b6f9cff1f0a53701dd87
+      - file: "crates/loft-cli/tests/pull_checks.rs"
+        name: "a_node_the_tree_deleted_that_the_head_still_holds_stays_deleted_its_binding_departed"
+        body: 3da3576cfab0f70195c1b0a937c693c6bef7558cc73d7f058c007557f72705e5
   - node: 01a156ad-1b9f-72a4-9f6c-304bebeac6f1
     reviewed: fb7f6d0f895196bb1cece456d28cf8f20486ef8894b067f6cae46085c133616c
     tests:
@@ -20563,17 +20566,35 @@ links:
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
         body: 31db72cfb6c41243ec9ca2fb930e0f46ac9465b07d988538448065eabed1780d
   - node: 01a18e1f-8dac-71f7-847a-725f662f9c67
-    reviewed: fdf056808a72a8fd8e20a9e6071fe7e4b729ba41c47f7913845158739dce1883
+    reviewed: fa818466ea99d89631460a4f839e254dd514dadb94b1354690c700792df4011a
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
         body: 31db72cfb6c41243ec9ca2fb930e0f46ac9465b07d988538448065eabed1780d
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
+        body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
+  - node: 01a19951-8b23-72b2-8cb9-a4c8523130f8
+    reviewed: ccf54ab1a0c59f0f37a92d809cf8c7ff16eb00858a333dc042baa61ae7028c09
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
+        body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
   - node: 01a18e1f-8dac-71f7-847a-72600450be32
-    reviewed: 171621e8a8627845f2ffc33a6b8bee998852db6a0da25ac77933d6bec8cd6ea5
+    reviewed: 27b3f8548c9a6411d958d47c4c5bdce8620d19bf1862f7c82ed64d6a68ccc412
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
         body: 31db72cfb6c41243ec9ca2fb930e0f46ac9465b07d988538448065eabed1780d
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
+        body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
+  - node: 01a19951-5b6c-769f-802b-1caae94627eb
+    reviewed: 580d3723b7c6fc081b6bb0b62f488401a2183db6ef4a053a1b5bfbe28e190b14
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
+        body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
   - node: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
     reviewed: 1ee3c608d6f4b75a750abe6b5d0ed4ff3d59dfcd76df5452d842f2bb189a5795
     tests:
