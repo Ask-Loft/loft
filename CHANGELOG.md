@@ -3,6 +3,15 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.3.0-alpha.4 (2026-11-01)
+
+The fourth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.4`. Since 2.3.0-alpha.3 it lets you try
+the client side of connected documents: `loft remote set`, `login` and `remove`, a connected
+`loft publish`, and `loft pull`. It is a preview of the command line alone: no public remote
+accepts a connected document yet, so for now these commands reach only a remote you run
+yourself. The entries under Unreleased below list everything 2.3.0 will hold.
+
 ## 2.3.0-alpha.3 (2026-10-30)
 
 The third prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
