@@ -24,6 +24,8 @@ requirements:
         name: "An absent scenario requests nothing and exits 1, as a browser that cannot be opened does."
       - key: 01a18e1f-8dac-71f7-847a-723f7a50caee
         name: "A test reads every address the simulator was given, in order."
+      - key: 01a1995a-1ff5-7324-ae3a-0c45cc7a4150
+        name: "Run with other than one argument, the simulator requests nothing and exits 2, and a test reads every argument it was given."
   - key: 01a18e1f-8dac-71f7-847a-7240c13a6b5d
     statement:
       form: ubiquitous
