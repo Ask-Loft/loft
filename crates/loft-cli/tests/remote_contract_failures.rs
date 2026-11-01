@@ -6,30 +6,20 @@
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
-use software_plant::remote::wire::query;
 use software_plant::remote::{Metadata, Remote, RemoteScenario};
 
 use crate::common::remote::{spec, wire, with_criterion};
-use crate::remote_contract::{agent, assert_problem, call, holding, post};
-use crate::remote_contract_auth::{KEY, coded, exchange, metadata, refresh, register};
+use crate::remote_contract::{assert_problem, holding, post};
+use crate::remote_contract_auth::{
+    KEY, coded, exchange, fetch, metadata, refresh, register, send_refresh,
+};
 use crate::remote_contract_writes::{import_body, publish_body};
 
 /// The challenge of a request without a token, and both metadata documents, as served by a
 /// scenario of `metadata`, with no check of what they say.
 fn served(metadata: Metadata) -> (Remote, String, Value, Value) {
     let remote = Remote::start(RemoteScenario::accepting(KEY).metadata(metadata));
-    let challenge = call("GET", &format!("{}/head", remote.address()), None, None);
-    let challenge = challenge.header("www-authenticate").unwrap().to_owned();
-    let resource_url = format!(
-        "{}/.well-known/oauth-protected-resource/documents",
-        remote.origin()
-    );
-    let resource = call("GET", &resource_url, None, None).body;
-    let server_url = format!(
-        "{}/.well-known/oauth-authorization-server/auth",
-        remote.origin()
-    );
-    let server = call("GET", &server_url, None, None).body;
+    let (challenge, resource, server) = fetch(&remote.address());
     (remote, challenge, resource, server)
 }
 
@@ -94,16 +84,7 @@ fn a_lost_refresh_answer_rotates_the_token_and_closes_the_connection_once() {
     let (server, client, resource, code) = coded(&remote);
     let first = exchange(&server, &client, &resource, &code).body;
     let old = first["refresh_token"].as_str().unwrap();
-    let fields = [
-        ("grant_type", "refresh_token"),
-        ("refresh_token", old),
-        ("client_id", client.as_str()),
-        ("resource", resource.as_str()),
-    ];
-    let lost = agent()
-        .post(server["token_endpoint"].as_str().unwrap())
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .send(query(&fields));
+    let lost = send_refresh(&server, &client, &resource, old);
     assert!(lost.is_err(), "the answer is lost: {lost:?}");
     assert_eq!(remote.refreshes(), 1, "the token rotated");
     // Within the grace window, the same token gets the answer that was lost.
@@ -116,7 +97,7 @@ fn a_lost_refresh_answer_rotates_the_token_and_closes_the_connection_once() {
 
 #[test]
 fn a_delaying_scenario_answers_each_refresh_only_after_its_delay() {
-    let delay = Duration::from_millis(400);
+    let delay = Duration::from_millis(50);
     let remote = Remote::start(RemoteScenario::accepting(KEY).delaying_refreshes(delay));
     let (server, client, resource, code) = coded(&remote);
     let first = exchange(&server, &client, &resource, &code).body;

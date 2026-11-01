@@ -18,8 +18,6 @@ use crate::install::browser_executable;
 pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_BROWSER";
 /// The file of the scenario's directory that says how the browser behaves.
 const BEHAVIOUR_FILE: &str = "browser-scenario";
-/// The file of the scenario's directory that lists each address the browser was given.
-const VISITS_FILE: &str = "browser-visits";
 /// The file of the scenario's directory that lists the arguments of each run, one run a line,
 /// as a JSON array.
 const ARGUMENTS_FILE: &str = "browser-arguments";
@@ -50,7 +48,6 @@ impl BrowserScenario {
             Self::Absent => "absent",
         };
         fs::write(dir.join(BEHAVIOUR_FILE), behaviour).expect("the browser scenario is written");
-        let _ = fs::remove_file(dir.join(VISITS_FILE));
         let _ = fs::remove_file(dir.join(ARGUMENTS_FILE));
         InstalledBrowser {
             dir: dir.to_path_buf(),
@@ -67,23 +64,31 @@ impl InstalledBrowser {
     }
 
     /// The arguments of each run of the browser, in order.
+    ///
+    /// # Panics
+    ///
+    /// A run's record is not a JSON array of strings.
     #[must_use]
     pub fn arguments(&self) -> Vec<Vec<String>> {
         fs::read_to_string(self.dir.join(ARGUMENTS_FILE))
             .map(|text| {
                 text.lines()
-                    .filter_map(|line| serde_json::from_str(line).ok())
+                    .map(|line| {
+                        serde_json::from_str(line).expect("each run's arguments are a JSON array")
+                    })
                     .collect()
             })
             .unwrap_or_default()
     }
 
-    /// Every address the browser was given, in order.
+    /// Every address the browser was given, in order: the argument of each run with one.
     #[must_use]
     pub fn visits(&self) -> Vec<String> {
-        fs::read_to_string(self.dir.join(VISITS_FILE))
-            .map(|text| text.lines().map(str::to_owned).collect())
-            .unwrap_or_default()
+        self.arguments()
+            .into_iter()
+            .filter_map(|run| <[String; 1]>::try_from(run).ok())
+            .map(|[address]| address)
+            .collect()
     }
 }
 
@@ -91,29 +96,19 @@ impl InstalledBrowser {
 /// 2 for other than one argument, the address.
 #[must_use]
 pub fn run(dir: &Path, arguments: &[String]) -> u8 {
-    append(
-        dir,
-        ARGUMENTS_FILE,
-        &serde_json::json!(arguments).to_string(),
-    );
+    let runs = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dir.join(ARGUMENTS_FILE));
+    if let Ok(mut runs) = runs {
+        let _ = writeln!(runs, "{}", serde_json::json!(arguments));
+    }
     let [address] = arguments else {
         return 2;
     };
-    append(dir, VISITS_FILE, address);
     match fs::read_to_string(dir.join(BEHAVIOUR_FILE)).as_deref() {
         Ok("visiting") => u8::from(visit(address).is_err()),
         _ => 1,
-    }
-}
-
-/// Adds `line` to the file `name` of the scenario's directory.
-fn append(dir: &Path, name: &str, line: &str) {
-    let file = fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(dir.join(name));
-    if let Ok(mut file) = file {
-        let _ = writeln!(file, "{line}");
     }
 }
 

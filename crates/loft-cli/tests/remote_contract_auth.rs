@@ -1,13 +1,19 @@
 //! The contract suite of the remote simulator's authorization server: the two metadata
 //! documents, registration, consent, the code exchange and the rotation of refresh tokens, as
 //! OAuth 2.0 shapes them. The real half reads the metadata of the remote at
-//! `LOFT_REMOTE_CONTRACT_ADDRESS` and registers a client there, and runs only on demand.
+//! `LOFT_REMOTE_CONTRACT_ADDRESS` and registers a client there, and refreshes the sign-in that
+//! `loft remote login` kept for that address in the `loft/remotes.json` that
+//! `LOFT_REMOTE_CONTRACT_SIGN_IN` names, which the run spends: it ends revoked. It runs only on
+//! demand.
 
 use std::time::Duration;
 
 use serde_json::{Value, json};
 use software_plant::remote::wire::{base64url, pairs, query, sha256, value};
 use software_plant::remote::{Remote, RemoteScenario};
+
+use ureq::Body;
+use ureq::http::Response;
 
 use crate::remote_contract::{Answer, agent, call, read};
 
@@ -22,12 +28,23 @@ pub fn metadata(remote: &Remote) -> (Value, Value) {
 /// The protected resource metadata and the authorization server metadata of the document at
 /// `address`, found from the challenge of a request without a token.
 fn discover(address: &str) -> (Value, Value) {
-    let challenge = call("GET", &format!("{address}/head"), None, None);
-    let header = challenge.header("www-authenticate").expect("a challenge");
-    let metadata = header.split('"').nth(1).unwrap();
-    let resource = call("GET", metadata, None, None).body;
+    let (challenge, resource, server) = fetch(address);
+    let metadata = challenge.split('"').nth(1).unwrap();
     let named = metadata.replacen("/.well-known/oauth-protected-resource", "", 1);
     assert_eq!(resource["resource"], named.as_str(), "RFC 9728 3.3");
+    (resource, server)
+}
+
+/// The challenge of a request without a token to the document at `address`, and the two
+/// metadata documents it leads to, with no check of what they say.
+pub fn fetch(address: &str) -> (String, Value, Value) {
+    let challenge = call("GET", &format!("{address}/head"), None, None);
+    let challenge = challenge
+        .header("www-authenticate")
+        .expect("a challenge")
+        .to_owned();
+    let metadata = challenge.split('"').nth(1).unwrap();
+    let resource = call("GET", metadata, None, None).body;
     let issuer = resource["authorization_servers"][0].as_str().unwrap();
     let authority = issuer.find("://").unwrap() + 3;
     let (origin, path) = issuer.split_at(
@@ -42,7 +59,7 @@ fn discover(address: &str) -> (Value, Value) {
         None,
     )
     .body;
-    (resource, server)
+    (challenge, resource, server)
 }
 
 /// The id of a public client registered with `server`.
@@ -111,13 +128,15 @@ fn location(answer: &Answer) -> Vec<(String, String)> {
 }
 
 pub fn form(url: &str, fields: &[(&str, &str)]) -> Answer {
-    read(
-        agent()
-            .post(url)
-            .header("Content-Type", "application/x-www-form-urlencoded")
-            .send(query(fields))
-            .unwrap(),
-    )
+    read(send_form(url, fields).unwrap())
+}
+
+/// The response to a form of `fields` posted to `url`, or the error that kept it from coming.
+fn send_form(url: &str, fields: &[(&str, &str)]) -> Result<Response<Body>, ureq::Error> {
+    agent()
+        .post(url)
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .send(query(fields))
 }
 
 /// A client registered on `remote` and a code it was given, with the endpoints.
@@ -149,7 +168,17 @@ pub fn exchange(server: &Value, client: &str, resource: &str, code: &str) -> Ans
 }
 
 pub fn refresh(server: &Value, client: &str, resource: &str, token: &str) -> Answer {
-    form(
+    read(send_refresh(server, client, resource, token).unwrap())
+}
+
+/// The response to a refresh of `token`, or the error that kept it from coming.
+pub fn send_refresh(
+    server: &Value,
+    client: &str,
+    resource: &str,
+    token: &str,
+) -> Result<Response<Body>, ureq::Error> {
+    send_form(
         server["token_endpoint"].as_str().unwrap(),
         &[
             ("grant_type", "refresh_token"),
@@ -414,5 +443,31 @@ fn a_real_remote_s_authorization_server_answers_in_the_shape_the_simulator_does(
     assert_eq!(
         (real.status, real.body["client_id"].is_string()),
         (simulated.status, simulated.body["client_id"].is_string())
+    );
+}
+
+#[test]
+#[ignore = "spends the sign-in that LOFT_REMOTE_CONTRACT_SIGN_IN keeps"]
+fn a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented() {
+    let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
+    let file = std::env::var("LOFT_REMOTE_CONTRACT_SIGN_IN").expect("a loft/remotes.json");
+    let kept: Value = serde_json::from_slice(&std::fs::read(file).unwrap()).unwrap();
+    let sign_in = &kept[address.as_str()];
+    let server = json!({ "token_endpoint": sign_in["tokenEndpoint"] });
+    let field = |name: &str| sign_in[name].as_str().expect(name).to_owned();
+    let (client, resource, old) = (field("clientId"), field("resource"), field("refreshToken"));
+    let rotated = refresh(&server, &client, &resource, &old);
+    assert_eq!(rotated.status, 200, "{:?}", rotated.body);
+    assert_eq!(
+        refresh(&server, &client, &resource, &old).body,
+        rotated.body,
+        "within the grace window, the same answer"
+    );
+    let successor = rotated.body["refresh_token"].as_str().unwrap();
+    assert_eq!(refresh(&server, &client, &resource, successor).status, 200);
+    assert_eq!(
+        refresh(&server, &client, &resource, &old).body["error"],
+        "invalid_grant",
+        "once the successor is presented"
     );
 }

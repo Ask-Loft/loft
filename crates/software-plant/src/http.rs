@@ -1,8 +1,8 @@
 //! A small HTTP/1.1 server on the loopback interface, for simulators of the services Loft calls.
 //! It answers one request per connection, from a [`Responder`] a simulator supplies, records
-//! every request it reads, and stops when it is dropped. A responder that gives no answer holds
-//! the connection open without a word, as a service that never answers does; one that hangs up
-//! closes it without a word, as a service whose answer is lost does.
+//! every request it reads, and stops when it is dropped. A responder that holds the connection
+//! keeps it open without a word, as a service that never answers does; one that hangs up closes
+//! it without a word, as a service whose answer is lost does.
 
 use std::fmt::Write as _;
 use std::io::{self, BufRead, BufReader, Read, Write};
@@ -11,9 +11,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, PoisonError};
 use std::thread::{self, JoinHandle};
 use std::time::Duration;
-
-/// The status of [`Response::hang_up`], which no answer carries on the wire.
-const HANG_UP: u16 = 0;
 
 /// The largest request this server reads, headers and body together.
 const LIMIT: usize = 64 << 20;
@@ -59,12 +56,6 @@ impl Response {
         }
     }
 
-    /// No answer at all: the connection is closed before a byte of a response is written.
-    #[must_use]
-    pub fn hang_up() -> Self {
-        Self::empty(HANG_UP)
-    }
-
     /// A `302` redirect to `location`, with an empty body.
     #[must_use]
     pub fn redirect(location: &str) -> Self {
@@ -86,9 +77,26 @@ impl Response {
     }
 }
 
-/// What a simulator answers: a response, or none, which holds the connection open unanswered.
+/// What a simulator does with a request.
+#[derive(Clone, Debug)]
+pub enum Answer {
+    /// Writes the response and closes the connection.
+    Respond(Response),
+    /// Keeps the connection open unanswered until the server stops.
+    Hold,
+    /// Closes the connection before a byte of a response is written.
+    HangUp,
+}
+
+impl From<Response> for Answer {
+    fn from(response: Response) -> Self {
+        Self::Respond(response)
+    }
+}
+
+/// A simulator's answer to each request.
 pub trait Responder: Send + 'static {
-    fn answer(&mut self, request: &Request) -> Option<Response>;
+    fn answer(&mut self, request: &Request) -> Answer;
 }
 
 /// A running server.
@@ -186,13 +194,14 @@ fn serve(
             .unwrap_or_else(PoisonError::into_inner)
             .push(request);
         match answer {
-            Some(response) => {
-                if response.status != HANG_UP {
-                    let _ = write(&mut stream, &response);
-                }
+            Answer::Respond(response) => {
+                let _ = write(&mut stream, &response);
                 let _ = stream.shutdown(Shutdown::Both);
             }
-            None => held.push(stream),
+            Answer::HangUp => {
+                let _ = stream.shutdown(Shutdown::Both);
+            }
+            Answer::Hold => held.push(stream),
         }
     }
 }

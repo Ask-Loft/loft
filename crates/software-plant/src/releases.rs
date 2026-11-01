@@ -5,7 +5,7 @@
 
 use serde_json::json;
 
-use crate::http::{Request, Responder, Response, Server, refusing_url};
+use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
 
 /// The path of the latest release, under the API's address.
 pub const LATEST: &str = "/repos/Ask-Loft/loft/releases/latest";
@@ -141,17 +141,17 @@ impl ReleaseFeed {
 struct Feed(Behaviour);
 
 impl Responder for Feed {
-    fn answer(&mut self, request: &Request) -> Option<Response> {
+    fn answer(&mut self, request: &Request) -> Answer {
         match &self.0 {
-            Behaviour::Silent => None,
-            Behaviour::Failing(status) => Some(Response::empty(*status)),
-            Behaviour::RateLimited => Some(rate_limited()),
-            Behaviour::Answering(release) => Some(latest(request, Some(release))),
+            Behaviour::Silent => Answer::Hold,
+            Behaviour::Failing(status) => Response::empty(*status).into(),
+            Behaviour::RateLimited => rate_limited().into(),
+            Behaviour::Answering(release) => latest(request, Some(release)).into(),
             Behaviour::Listing(releases) => {
                 let latest_published = releases
                     .iter()
                     .find(|release| !release.draft && !release.prerelease);
-                Some(latest(request, latest_published))
+                latest(request, latest_published).into()
             }
         }
     }

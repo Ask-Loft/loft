@@ -6,7 +6,7 @@
 use std::process::Command;
 use std::time::Duration;
 
-use software_plant::http::{Request, Responder, Response, Server};
+use software_plant::http::{Answer, Request, Responder, Response, Server};
 use software_plant::{BrowserScenario, InstalledBrowser, browser_executable};
 
 use crate::common::Scratch;
@@ -16,11 +16,11 @@ use crate::served::within;
 struct Redirecting;
 
 impl Responder for Redirecting {
-    fn answer(&mut self, request: &Request) -> Option<Response> {
+    fn answer(&mut self, request: &Request) -> Answer {
         if request.path == "/start" {
-            Some(Response::redirect("/landing"))
+            Response::redirect("/landing").into()
         } else {
-            Some(Response::empty(200))
+            Response::empty(200).into()
         }
     }
 }

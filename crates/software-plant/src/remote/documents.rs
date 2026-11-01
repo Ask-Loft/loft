@@ -11,7 +11,6 @@ use super::problem::{self, conflict, invalid, refusal};
 use super::wire::{decode_segment, sha256_hex};
 use super::{
     Call, Held, Metadata, Misstating, RemoteScenario, State, StoredState, TOKEN, head_mark,
-    misstated,
 };
 use crate::http::{Request, Response};
 
@@ -98,6 +97,24 @@ fn head_of(held: &Held) -> Value {
             "files": files,
         })
     })
+}
+
+/// `head`, a head or a lock, with a state root that is not its own, its last digit changed, in
+/// the lock it holds too. A head that is `null` names no state root and stays as it is.
+fn misstated(mut head: Value) -> Value {
+    let other = |root: &Value| {
+        root.as_str().map(|root| {
+            let last = if root.ends_with('0') { '1' } else { '0' };
+            Value::String(format!("{}{last}", &root[..root.len() - 1]))
+        })
+    };
+    if let Some(root) = other(&head["stateRoot"]) {
+        head["stateRoot"] = root;
+    }
+    if let Some(root) = other(&head["lock"]["stateRoot"]) {
+        head["lock"]["stateRoot"] = root;
+    }
+    head
 }
 
 fn texts(files: &BTreeMap<String, String>) -> Vec<Value> {
@@ -236,7 +253,7 @@ fn import(state: &mut State, request: &Request) -> Response {
             let held = state.held.get_or_insert_with(Held::default);
             held.states = states;
             let mut answered = head_of(held);
-            if state.scenario.misstating == Some(Misstating::ImportHead) {
+            if state.scenario.misstating.contains(&Misstating::ImportHead) {
                 answered = misstated(answered);
             }
             Response::json(
@@ -336,7 +353,7 @@ fn publish(state: &mut State, body: &Value) -> Response {
     let at = state.scenario.publish_from + held.states.len() as u64;
     match published_from(held, body, at) {
         Ok((mut reply, stored)) => {
-            if state.scenario.misstating == Some(Misstating::Lock) {
+            if state.scenario.misstating.contains(&Misstating::Lock) {
                 reply["lock"] = misstated(reply["lock"].take());
             }
             if let (Some(stored), Some(held)) = (stored, &mut state.held) {

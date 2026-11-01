@@ -239,7 +239,7 @@ the loopback interface, so `LOFT_TELEMETRY_ENDPOINT`, `LOFT_UPDATE_ENDPOINT` and
 address can point a run at a simulator and at nothing else unencrypted. The only sockets opened
 elsewhere are the listen-only loopback listeners of the Yard page server and of a sign-in's
 redirect, which `tests/network_client.rs` admits by name. The remote's contract suites run their
-real half on demand, against `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CONTRACT_TOKEN`. `.cargo/config.toml` starts every process Cargo runs with both off and
+real half on demand, against `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CONTRACT_TOKEN`, and spend the sign-in that `LOFT_REMOTE_CONTRACT_SIGN_IN`, a `loft/remotes.json`, keeps for that address. `.cargo/config.toml` starts every process Cargo runs with both off and
 both addresses at a closed loopback port; a test that exercises either switches it on through
 `tests/common/telemetry.rs` or `asking` in `tests/update_check.rs`. Run a gate's own `loft`
 through `cargo run`, never `target/debug/loft` directly, or set `LOFT_TELEMETRY=internal`.

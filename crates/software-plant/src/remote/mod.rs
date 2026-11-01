@@ -17,14 +17,14 @@ pub mod wire;
 
 use std::collections::{BTreeMap, HashMap};
 use std::sync::{Arc, Mutex, PoisonError};
+use std::thread;
 use std::time::Duration;
 
 use serde_json::{Value, json};
 
-use crate::http::{Request, Responder, Response, Server, refusing_url};
+use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
 
 pub use oauth::Grant;
-use scenario::misstated;
 use scenario::{Call, Held, Misstating, Mode};
 pub use scenario::{Consent, Metadata, RemoteScenario};
 
@@ -58,6 +58,8 @@ struct State {
     held: Option<Held>,
     replies: HashMap<String, Value>,
     auth: oauth::Auth,
+    /// Whether the answer to the request being answered is lost.
+    answer_lost: bool,
 }
 
 impl State {
@@ -87,6 +89,7 @@ impl Remote {
             origin: String::new(),
             replies: HashMap::new(),
             auth: oauth::Auth::default(),
+            answer_lost: false,
         }));
         let (server, origin) = if refusing {
             (None, refusing_url())
@@ -182,10 +185,10 @@ struct Simulated {
 }
 
 impl Responder for Simulated {
-    fn answer(&mut self, request: &Request) -> Option<Response> {
+    fn answer(&mut self, request: &Request) -> Answer {
         let mut state = lock(&self.state);
         let mut response = match &state.scenario.mode {
-            Mode::Silent => return None,
+            Mode::Silent => return Answer::Hold,
             Mode::Failing { status, code } => match code {
                 Some(code) => problem::problem(*status, code, serde_json::Map::new()),
                 None => problem::plain(*status),
@@ -202,7 +205,17 @@ impl Responder for Simulated {
         {
             response.headers.push(("Retry-After".to_owned(), retry));
         }
-        Some(response)
+        // A refresh is delayed, or its answer lost, with the state released, so that neither
+        // the test nor the simulator's next request waits on it.
+        let delay = oauth::refreshing(request).then_some(state.scenario.refresh_delay);
+        let lost = std::mem::take(&mut state.answer_lost);
+        drop(state);
+        thread::sleep(delay.unwrap_or_default());
+        if lost {
+            Answer::HangUp
+        } else {
+            response.into()
+        }
     }
 }
 

@@ -96,8 +96,8 @@ pub struct RemoteScenario {
     pub(super) refresh_delay: Duration,
     /// The paths every publish is refused as `invalid_request` naming.
     pub(super) invalid_publish: Option<Vec<String>>,
-    /// The answer an accepted call gives that its states do not have.
-    pub(super) misstating: Option<Misstating>,
+    /// The answers of accepted calls that their states do not have.
+    pub(super) misstating: Vec<Misstating>,
 }
 
 impl RemoteScenario {
@@ -125,7 +125,7 @@ impl RemoteScenario {
             losing_refresh: false,
             refresh_delay: Duration::ZERO,
             invalid_publish: None,
-            misstating: None,
+            misstating: Vec::new(),
         }
     }
 
@@ -283,7 +283,8 @@ impl RemoteScenario {
         self
     }
 
-    /// Rotates the next refresh token presented, then closes the connection without answering.
+    /// Loses the answer of the next refresh that rotates a token: the token rotates, then the
+    /// connection closes without an answer.
     #[must_use]
     pub fn losing_a_refresh_answer(mut self) -> Self {
         self.losing_refresh = true;
@@ -307,26 +308,14 @@ impl RemoteScenario {
     /// Answers each accepted publish with a lock whose state root its files do not have.
     #[must_use]
     pub fn misstating_its_lock(mut self) -> Self {
-        self.misstating = Some(Misstating::Lock);
+        self.misstating.push(Misstating::Lock);
         self
     }
 
     /// Answers each accepted import with a head other than its last state.
     #[must_use]
     pub fn misstating_its_import_head(mut self) -> Self {
-        self.misstating = Some(Misstating::ImportHead);
+        self.misstating.push(Misstating::ImportHead);
         self
     }
-}
-
-/// `head`, whatever its fields, with a state root that is not its own: its last digit changed.
-pub(super) fn misstated(mut head: serde_json::Value) -> serde_json::Value {
-    if let Some(root) = head["stateRoot"].as_str() {
-        let mut root = root.to_owned();
-        let last = if root.ends_with('0') { '1' } else { '0' };
-        root.pop();
-        root.push(last);
-        head["stateRoot"] = serde_json::Value::String(root);
-    }
-    head
 }

@@ -20640,6 +20640,9 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
         body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented"
+        body: dd9dfbd066283e4f502e0ec3518c7ee5e94d0038dff3d1362d22bf356bc9848d
   - node: 01a19951-8b23-72b2-8cb9-a4c8523130f8
     reviewed: ccf54ab1a0c59f0f37a92d809cf8c7ff16eb00858a333dc042baa61ae7028c09
     tests:
@@ -20655,6 +20658,9 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
         body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented"
+        body: dd9dfbd066283e4f502e0ec3518c7ee5e94d0038dff3d1362d22bf356bc9848d
   - node: 01a19951-5b6c-769f-802b-1caae94627eb
     reviewed: 580d3723b7c6fc081b6bb0b62f488401a2183db6ef4a053a1b5bfbe28e190b14
     tests:
@@ -20672,13 +20678,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_failures.rs"
         name: "a_lost_refresh_answer_rotates_the_token_and_closes_the_connection_once"
-        body: 1e10e4ee0337beee8ef795a296593b05d0ac846f074a3a4e0994ae00fa34a58f
+        body: e2f1338484d444dc82b1cc9594b6f32ac380602bf755b480682ac188957e8117
   - node: 01a1995a-1ff6-73c4-9f04-0232d8302baa
     reviewed: 2120af3fde43115ada980115b28baedbc0d0c04aaaeca765867802e96e785c2b
     tests:
       - file: "crates/loft-cli/tests/remote_contract_failures.rs"
         name: "a_delaying_scenario_answers_each_refresh_only_after_its_delay"
-        body: 381803dc82ddaae9aa9938e44ea32a6fcc1c474834b3fce37b343c012355ae9b
+        body: 1a4d0ee608a62d3d4b6c723c8c7672fb0b89a692f8acfba24d9fdde1b35d67de
   - node: 01a17989-a8b9-74b1-9049-073b0be616b1
     reviewed: 00040f13ba81c856e1fd2d2efd203c5508d1d845a0c37454fc2705600ac2e4bc
     tests:

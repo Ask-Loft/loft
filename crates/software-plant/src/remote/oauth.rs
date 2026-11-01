@@ -6,7 +6,6 @@
 //! whole sign-in revoked otherwise. Its clock runs from the machine's, moved on by the test.
 
 use std::collections::HashMap;
-use std::thread;
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
@@ -41,11 +40,10 @@ struct Refresh {
     rotated: Option<Rotation>,
 }
 
-/// A refresh token's rotation: the answer it got, when, and the refresh token it issued.
+/// A refresh token's rotation: the answer it got, which issued its successor, and when.
 struct Rotation {
     answer: Value,
     at: Instant,
-    successor: String,
 }
 
 /// One sign-in: its access tokens, each with the moment it expires, and whether it was
@@ -125,9 +123,9 @@ impl Auth {
     /// Whether a refresh token rotated as `rotation` is answered again: within `grace` of its
     /// rotation, and before its successor has itself been presented.
     fn repeats(&self, rotation: &Rotation, grace: Duration) -> bool {
-        let successor_rotated = self
-            .refresh
-            .get(&rotation.successor)
+        let successor_rotated = rotation.answer["refresh_token"]
+            .as_str()
+            .and_then(|successor| self.refresh.get(successor))
             .is_some_and(|successor| successor.rotated.is_some());
         self.now() < rotation.at + grace && !successor_rotated
     }
@@ -199,9 +197,9 @@ pub(super) fn server_metadata(state: &State) -> Response {
     match state.scenario.metadata {
         Metadata::MisnamedIssuer => metadata["issuer"] = json!(format!("{issuer}/elsewhere")),
         Metadata::Unregistering => {
-            metadata
-                .as_object_mut()
-                .map(|fields| fields.remove("registration_endpoint"));
+            if let Some(fields) = metadata.as_object_mut() {
+                fields.remove("registration_endpoint");
+            }
         }
         Metadata::Plain => metadata["code_challenge_methods_supported"] = json!(["plain"]),
         Metadata::Unencrypted => {
@@ -333,6 +331,13 @@ impl Form {
     }
 }
 
+/// Whether `request` asks the token endpoint for a refresh.
+pub(super) fn refreshing(request: &Request) -> bool {
+    request.path == "/auth/token"
+        && Form::read(&String::from_utf8_lossy(&request.body)).field("grant_type")
+            == "refresh_token"
+}
+
 pub(super) fn token(state: &mut State, request: &Request) -> Response {
     let form = Form::read(&String::from_utf8_lossy(&request.body));
     match form.field("grant_type").as_str() {
@@ -400,18 +405,11 @@ fn refresh(state: &mut State, form: &Form) -> Response {
     let at = state.auth.now();
     if let Some(entry) = state.auth.refresh.get_mut(&presented) {
         entry.rotated = Some(Rotation {
-            successor: answer["refresh_token"]
-                .as_str()
-                .unwrap_or_default()
-                .to_owned(),
             answer: answer.clone(),
             at,
         });
     }
     state.auth.refreshes += 1;
-    thread::sleep(state.scenario.refresh_delay);
-    if std::mem::take(&mut state.scenario.losing_refresh) {
-        return Response::hang_up();
-    }
+    state.answer_lost = std::mem::take(&mut state.scenario.losing_refresh);
     Response::json(200, &answer)
 }

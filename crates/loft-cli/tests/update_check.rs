@@ -8,7 +8,7 @@ use std::process::Output;
 use crate::common::telemetry::asking;
 use crate::common::{EPOCH, Scratch, stderr, stdout};
 use serde_json::json;
-use software_plant::http::{Request, Responder, Response, Server};
+use software_plant::http::{Answer, Request, Responder, Response, Server};
 use software_plant::releases::{LATEST, Release};
 use software_plant::{Clock, ReleaseFeed};
 
@@ -288,12 +288,12 @@ fn a_run_that_cannot_keep_the_answer_prints_no_update_notice() {
 struct Redirecting(String);
 
 impl Responder for Redirecting {
-    fn answer(&mut self, _: &Request) -> Option<Response> {
+    fn answer(&mut self, _: &Request) -> Answer {
         let mut response = Response::empty(302);
         response
             .headers
             .push(("Location".to_owned(), self.0.clone()));
-        Some(response)
+        response.into()
     }
 }
 
