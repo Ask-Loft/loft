@@ -125,6 +125,7 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
     let visits = browser.visits();
     assert_eq!(visits.len(), 1, "{visits:?}");
     let url = &visits[0];
+    assert_eq!(browser.arguments(), [vec![url.clone()]], "its one argument");
     assert!(printed.contains(url.as_str()), "the address is printed too");
     assert_eq!(query(url, "response_type").as_deref(), Some("code"));
     assert_eq!(query(url, "code_challenge_method").as_deref(), Some("S256"));
