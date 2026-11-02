@@ -20,7 +20,7 @@ takes `--help`.
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml` against the tree and the test files, and records links a reviewer has checked ([tracing](tracing.md)) |
 | `loft merge-driver` | Merges one file of `spec/` or `.yard/` as git's merge driver; `--install` registers it for both ([publishing and merging](publishing.md)) |
 | `loft yard <command>` | Keeps the branch's Yard Log for the Yard adapters: `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `task`, `continue`, `protocol`, `upgrade`, `serve`, the page server, and each host's hooks ([Yard](yard.md)) |
-| `loft skill install [--host <host>] [--no-plugin]` | Writes the agent skill into the current directory, or brings it up to date |
+| `loft skill install [--host <host>] [--no-plugin] [--server <origin>]` | Writes the agent skill into the current directory, or brings it up to date; `--server` installs a server's skill package instead |
 | `loft telemetry`, `loft update-check` | Switch telemetry and the update check on or off ([telemetry](telemetry.md)) |
 | `loft record-install <way>` | Records how `loft` was installed, for the update notice; the npm package runs it itself ([telemetry](telemetry.md)) |
 
@@ -34,6 +34,13 @@ other entry of that file; `--no-skill` leaves all three out. After an upgrade of
 plugin settings alone. Commit both directories and `.claude/settings.json`, so that everyone
 working on the project has the skill and is offered the plugin. The `yard` skill ships with each
 host's plugin, not through `loft skill install`.
+
+`loft skill install --server <origin>` installs instead the skill package that a server publishes,
+such as a connected document's remote, in a directory of its own beside `loft-spec`
+(`.claude/skills/<name>/` and `.agents/skills/<name>/`, or only the hosts `--host` selects). It
+reads the server's manifest at `<origin>/.well-known/loft-skill.json` and checks the package's
+digest and length against it before writing anything. It enables no plugin and ends with no
+setup report.
 
 Both commands end with a setup report, as `next:` lines and as `setup` in their JSON document: the
 git repository, Loft's merge driver, whether the `loft` that the hosts' hooks find on the search

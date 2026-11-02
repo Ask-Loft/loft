@@ -53,8 +53,10 @@ dialog and on the page; whichever you answer first counts, and the other closes.
 on the page ends plan mode, and the agent goes on in auto mode. A rejection with a reason sends
 the reason back to the agent.
 
-In Codex, questions and plans go to the page, and approving there records your decision. Codex's
-own modes and permissions still govern what the agent may run.
+In Codex, questions and plans go to the page, and approving there records your decision. Where
+decision notifications reach the session, the agent may end its turn once it has asked, and
+your answer on the page wakes it to go on; otherwise it waits for your answer. Codex's own modes
+and permissions still govern what the agent may run.
 
 ## Hosts
 
@@ -86,17 +88,37 @@ Install the Codex plugin (`codex plugin marketplace add Ask-Loft/loft`, then
 `codex plugin add loft@ask-loft`, or choose it in `/plugins`), then review and trust its hooks in
 `/hooks`. Installing the skill alone doesn't activate them. Keep hooks enabled
 (`features.hooks = true`). Codex may ask for another review after a hook definition changes.
+The plugin and `loft` should be the same version: the setup report that `loft init` and
+`loft skill install` end with says whether the `loft` Codex's hooks find on the path is.
 
 The plugin's hooks run `loft yard codex hook`, and a background `loft yard codex watch` that
 Codex owns. It sends a heartbeat every five seconds, restarts the page server if it stops and
 keeps at most 1,000 queued events. A watch lasts at most 24 hours, and later activity starts
 another. This works in local Codex sessions only, not with cloud orchestration.
 
+Two things need a Codex app server already running on the machine, which the watch reaches over
+its Unix-domain socket, `$CODEX_HOME/app-server-control/app-server-control.sock` (`~/.codex`
+where `CODEX_HOME` is not set); the watch starts no Codex process and changes no setting:
+
+- **Token usage.** The watch observes the tokens of each request of an identified turn: fresh
+  input, cached input and output. Without the app server, or across a gap in observing it,
+  usage stays unavailable or partial; reconnecting imports no earlier totals.
+- **Decision notifications.** Once every question, approval and plan of a submission is
+  answered on the page, the watch tells the session's loaded thread, so the agent may end its
+  turn after asking and go on when you decide. The session's context tells the agent whether
+  notifications reach it; where they don't, it waits for the answer instead. Interrupting the
+  agent or ending the session stops them until your next prompt.
+
+`loft yard codex watch --app-server-socket ABSOLUTE_PATH` observes another local socket. The
+plugin's hooks use the default; to use another, change the `watch` commands in the installed
+plugin's `hooks/hooks.json` and review the hooks again in `/hooks`.
+
 The Codex adapter differs from Claude Code's:
 
 - Codex's own dialogs are not synchronised with the page.
 - A successful `update_plan` mirrors its steps as tasks of the agent's working stage.
-- Token usage is unavailable, and tool activity whose subagent is ambiguous is left out.
+- Native hooks carry no token counters, so usage comes only from the app server, and tool
+  activity whose subagent is ambiguous is left out.
 - No transcript is parsed.
 
 Each host's sessions are kept apart, so Claude Code and Codex can share a branch without sharing
