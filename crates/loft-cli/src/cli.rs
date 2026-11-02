@@ -253,6 +253,15 @@ pub enum SkillAction {
         /// Leave `.claude/settings.json` as it is, without enabling the Claude Code plugin.
         #[arg(long)]
         no_plugin: bool,
+        /// Install instead the skill package that the server at this origin publishes, beside
+        /// `loft-spec`.
+        #[arg(
+            long,
+            value_name = "ORIGIN",
+            conflicts_with = "no_plugin",
+            value_parser = crate::skill::server::origin_of
+        )]
+        server: Option<String>,
         #[command(flatten)]
         output: Output,
     },

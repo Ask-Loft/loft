@@ -22,6 +22,7 @@ use crate::environment;
 use crate::network;
 
 pub use client::{Client, Refusal};
+pub use wire::sha256_hex;
 
 /// The variable that names the remote's address for one run, in place of the manifest's.
 pub const ENDPOINT_ENV: &str = "LOFT_REMOTE_ENDPOINT";

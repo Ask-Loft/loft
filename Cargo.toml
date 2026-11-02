@@ -28,6 +28,8 @@ loftspec-store = { path = "crates/loftspec-store", version = "2.3.0-alpha.4" }
 yardlog = { path = "crates/yardlog", version = "2.3.0-alpha.4" }
 yardlog-store = { path = "crates/yardlog-store", version = "2.3.0-alpha.4" }
 clap = { version = "4", features = ["derive"] }
+# Reads a server's skill package, a gzip-compressed tar archive, in Rust alone.
+flate2 = "1"
 getrandom = "0.4"
 hmac = "0.12"
 # The page server reads each request it is sent with it; it is already in the lock through ureq.
@@ -41,6 +43,7 @@ serde_json = "1"
 serde_json_canonicalizer = "0.3"
 sha2 = "0.10"
 socket2 = "0.6"
+tar = { version = "0.4", default-features = false }
 thiserror = "2"
 # Pinned: a test's digest is its tokens as these grammars split them, so a version change can move
 # the digest of every test it parses and report each as changed.

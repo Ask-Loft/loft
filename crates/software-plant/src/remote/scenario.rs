@@ -42,6 +42,14 @@ pub enum Metadata {
     Unencrypted,
 }
 
+/// The skill package a scenario serves: its manifest's `name` and `version`, and its bytes.
+#[derive(Clone, Debug)]
+pub(super) struct Skill {
+    pub(super) name: String,
+    pub(super) version: String,
+    pub(super) package: Vec<u8>,
+}
+
 /// An answer a scenario misstates.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Misstating {
@@ -49,6 +57,8 @@ pub(super) enum Misstating {
     Lock,
     /// An accepted import's head.
     ImportHead,
+    /// The skill package, whose bytes are not the ones its manifest names.
+    Package,
 }
 
 /// A call a scenario can forbid.
@@ -98,6 +108,8 @@ pub struct RemoteScenario {
     pub(super) invalid_publish: Option<Vec<String>>,
     /// The answers of accepted calls that their states do not have.
     pub(super) misstating: Vec<Misstating>,
+    /// The skill package the scenario serves, if any.
+    pub(super) skill: Option<Skill>,
 }
 
 impl RemoteScenario {
@@ -126,6 +138,7 @@ impl RemoteScenario {
             refresh_delay: Duration::ZERO,
             invalid_publish: None,
             misstating: Vec::new(),
+            skill: None,
         }
     }
 
@@ -316,6 +329,24 @@ impl RemoteScenario {
     #[must_use]
     pub fn misstating_its_import_head(mut self) -> Self {
         self.misstating.push(Misstating::ImportHead);
+        self
+    }
+
+    /// Serves a skill package of `package`'s bytes, its manifest naming it `name` at `version`.
+    #[must_use]
+    pub fn skill(mut self, name: &str, version: &str, package: Vec<u8>) -> Self {
+        self.skill = Some(Skill {
+            name: name.to_owned(),
+            version: version.to_owned(),
+            package,
+        });
+        self
+    }
+
+    /// Serves other bytes than the package its manifest names.
+    #[must_use]
+    pub fn tampering(mut self) -> Self {
+        self.misstating.push(Misstating::Package);
         self
     }
 }

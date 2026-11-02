@@ -14,7 +14,7 @@ use std::process;
 /// A file or directory that cannot be written, renamed or removed. The directory staged beside
 /// `directory` is then removed, and `directory` is left as it was unless the package is already
 /// in its place and only the directory it replaced cannot be removed.
-pub fn replace(directory: &Path, files: &[(String, String)]) -> io::Result<()> {
+pub fn replace(directory: &Path, files: &[(String, impl AsRef<[u8]>)]) -> io::Result<()> {
     let staged = stage(directory, files)?;
     swap(&staged, directory).inspect_err(|_| discard(&staged))
 }
@@ -25,13 +25,15 @@ pub fn replace(directory: &Path, files: &[(String, String)]) -> io::Result<()> {
 /// # Errors
 ///
 /// A file or directory that cannot be written; whatever was staged is then removed.
-fn stage(directory: &Path, files: &[(String, String)]) -> io::Result<PathBuf> {
+fn stage(directory: &Path, files: &[(String, impl AsRef<[u8]>)]) -> io::Result<PathBuf> {
     let staged = beside(directory, "new");
     remove(&staged)?;
-    let written = files.iter().try_for_each(|(path, text)| {
-        let at = staged.join(path);
-        fs::create_dir_all(at.parent().expect("a file lies in a directory"))?;
-        fs::write(at, text)
+    let written = fs::create_dir_all(&staged).and_then(|()| {
+        files.iter().try_for_each(|(path, bytes)| {
+            let at = staged.join(path);
+            fs::create_dir_all(at.parent().expect("a file lies in a directory"))?;
+            fs::write(at, bytes)
+        })
     });
     written
         .map(|()| staged.clone())
@@ -83,7 +85,7 @@ fn discard(staged: &Path) {
 
 #[cfg(test)]
 mod tests {
-    use super::{stage, swap};
+    use super::{replace, stage, swap};
     use std::collections::BTreeMap;
     use std::path::Path;
     use std::{env, fs, process};
@@ -146,5 +148,19 @@ mod tests {
             .collect();
         assert_eq!(names, ["loft-spec"]);
         fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn a_package_of_no_files_replaces_the_skill_directory_with_an_empty_one() {
+        let root = env::temp_dir().join(format!("loft-cli-empty-{}", process::id()));
+        let skill = root.join("skill");
+        fs::create_dir_all(&skill).unwrap();
+        fs::write(skill.join("SKILL.md"), "old").unwrap();
+        replace(&skill, &[] as &[(String, String)]).unwrap();
+        assert!(skill.is_dir());
+        assert!(listed(&skill).is_empty());
+        let beside: Vec<_> = fs::read_dir(&root).unwrap().collect();
+        assert_eq!(beside.len(), 1, "nothing staged is left");
+        fs::remove_dir_all(&root).unwrap();
     }
 }

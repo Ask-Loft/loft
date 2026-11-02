@@ -23,6 +23,14 @@ impl Host {
             Self::Codex => ".agents/skills/loft-spec",
         }
     }
+
+    /// The directory, from the project's root, that holds the host's skill directories.
+    pub const fn skills(self) -> &'static str {
+        match self {
+            Self::ClaudeCode => ".claude/skills",
+            Self::Codex => ".agents/skills",
+        }
+    }
 }
 
 const CODEX_ADAPTATION: &str = "agents/openai.yaml";

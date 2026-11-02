@@ -1,5 +1,5 @@
 //! The small pieces of HTTP and OAuth that `loft` reads and writes by hand: a query string,
-//! base64url, the parameters of a `WWW-Authenticate` challenge, and `Retry-After`.
+//! base64url, a SHA-256 digest in hex, the parameters of a `WWW-Authenticate` challenge, and `Retry-After`.
 
 use std::str::FromStr as _;
 
@@ -14,6 +14,12 @@ pub fn query(pairs: &[(&str, &str)]) -> String {
         .map(|(name, value)| format!("{name}={}", encode(value)))
         .collect::<Vec<_>>()
         .join("&")
+}
+
+/// The SHA-256 digest of `bytes`, in lowercase hex.
+pub fn sha256_hex(bytes: &[u8]) -> String {
+    use sha2::{Digest as _, Sha256};
+    format!("{:x}", Sha256::digest(bytes))
 }
 
 /// `bytes` in base64url without padding.

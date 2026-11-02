@@ -23,6 +23,7 @@ path = "src/main.rs"
 
 [dependencies]
 clap.workspace = true
+flate2.workspace = true
 getrandom.workspace = true
 hmac.workspace = true
 httparse.workspace = true
@@ -36,6 +37,7 @@ pulldown-cmark = { workspace = true, features = ["html"] }
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
+tar.workspace = true
 tree-sitter.workspace = true
 tree-sitter-go.workspace = true
 tree-sitter-java.workspace = true
@@ -53,8 +55,6 @@ tungstenite.workspace = true
 socket2.workspace = true
 
 [dev-dependencies]
-# Only to read back the compressed files the page server serves; `loft` itself never decompresses.
-flate2 = "1"
 software-plant = { path = "../software-plant" }
 
 [lints]

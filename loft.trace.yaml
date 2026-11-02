@@ -13719,12 +13719,201 @@ links:
       - file: "crates/loft-cli/tests/setup_report.rs"
         name: "the_plugin_is_listed_only_where_the_claude_code_skill_is_written_with_the_plugin"
         body: 2fde90254d2790e05647fd5fa02f04961e7498981e187aa4ca12ff0a81114b8f
+  - node: 01a18504-d7d1-7279-8543-252bdbfb26b2
+    reviewed: 8d3735b282bf8c324cb15ecae3a99e8a95155ab71a5898966a4817bc6dd525d0
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "the_text_of_a_server_s_skill_names_each_directory_written_and_gives_no_setup_report"
+        body: 108efaef953c8d98480a8dd119023ef0fb1d61995ff99192bd5cab6585d5c430
   - node: 01a18504-d7d1-7279-8543-252c81e11295
     reviewed: 0ea5ba3c197ac21f5635909a935f7fdbd1a7d872f18dba360bd26914a6a2c9b5
     tests:
       - file: "crates/loft-cli/tests/setup_report.rs"
         name: "a_refusal_gives_no_report"
         body: 052e780881b3a28b7b99076f0d0c94b714d495c9f53c75bba7761bd3427680e0
+  - node: 01a156af-5306-73ab-a0e4-ce9c87899113
+    reviewed: 4299b70e30653e4fa0b9b61767f1737d502c74c85de762a41bd64ca92c63f1e2
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a156af-5306-73ab-a0e4-ce9d02c3b2c6
+    reviewed: 682774e6aaaefc83a7e343114c202309aac9a8fceba3ee5c2bdd6d79b854ae42
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a156af-5306-73ab-a0e4-ce9e81baa675
+    reviewed: 924658ed2631874f598c1b09fdcb32a4ea2e29a218dbe466cc835fd9b3c47aa7
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a156af-5306-73ab-a0e4-ce9f412d731b
+    reviewed: cbf4a1f939678b77c397fead2bbb49d372e57b34e95a87ef9481e684138e226e
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a19953-8002-7761-be9c-9ad16cb8dda0
+    reviewed: 3a7e2bc640d421c305f43f734a20af181f7fd1380c6a67b9504322e600bb60cd
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "with_host_a_server_s_skill_is_written_only_for_the_host_selected"
+        body: 545e62f8e95cec9d1891a4ae838cc10c211713f1112ac507ba3db63eb3f45ba4
+  - node: 01a19953-8002-7761-be9c-9ad2e535cc10
+    reviewed: 793609241def52dce672f9d5942425f975c0a656452a92c4f2b0e8393f090c74
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a19953-8002-7761-be9c-9ad3d21c881b
+    reviewed: c4e17211cf74a17cae8474223feb61471226b65a910df3ec4039e8deb98098b6
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_reinstall_replaces_a_server_s_skill_directory_whole"
+        body: bc9e2587524bfe9ee26b5fc6ee679200368b4098b2ab490a627010dc5cb7effd
+  - node: 01a156af-5306-73ab-a0e4-cea066dfb2d7
+    reviewed: 3baccd85e3fdd2b936f49bada80376c67e1dccdc2ed3db6f4214d256e34d13b8
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a156af-5306-73ab-a0e4-cea1d0f3b1d2
+    reviewed: 827f130319c0f459ea9652bb2abc41fbd7dda6bbb8ba1a2772bd9ac809c52629
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a156af-5306-73ab-a0e4-cea241df3b60
+    reviewed: bb32749dff259bdc547515233fff5f9329209a22039b195f5c7eb74942b71d78
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_s_skill_is_written_from_the_top_beside_loft_spec_for_each_host_enabling_no_plugin"
+        body: 0d443d4e4c2a4815d81ba5c65094840d45e42bb4dd709acf3346b35f66c3d34b
+  - node: 01a156af-5306-73ab-a0e4-cea362fca286
+    reviewed: 7b12899f8c99c93793942ab82a2da056af6ce743988f48bdde81f0735e9cc9ce
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "the_server_is_reached_whatever_the_telemetry_and_update_check_switches_say"
+        body: 1f3dd33f26e389e5c5e08bcb1f93dd5a96a55949cdbe5f35a5dac34543fb4e0d
+  - node: 01a156af-5306-73ab-a0e4-cea59735e3ab
+    reviewed: cb70fdbb7eba569cdcf647c79b1b9c6f509932345dd9a9f80f01d9504f89de01
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_package_other_than_the_manifest_names_is_refused_naming_both_digests_and_writes_nothing"
+        body: 941b07a2d8e358a525d934677cfb11843b70edf327f5903e3b0ca0a1bfe6bbd8
+  - node: 01a156af-5306-73ab-a0e4-cea61f7d1693
+    reviewed: 6fca073dc48e6bc547ec7c597646b9b04ecc3dabfc397aabcf0d79f001dcbb27
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_package_other_than_the_manifest_names_is_refused_naming_both_digests_and_writes_nothing"
+        body: 941b07a2d8e358a525d934677cfb11843b70edf327f5903e3b0ca0a1bfe6bbd8
+  - node: 01a156af-5306-73ab-a0e4-cea73d01177d
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_package_other_than_the_manifest_names_is_refused_naming_both_digests_and_writes_nothing"
+        body: 941b07a2d8e358a525d934677cfb11843b70edf327f5903e3b0ca0a1bfe6bbd8
+  - node: 01a156af-5306-73ab-a0e4-cea9c25c537a
+    reviewed: 86267dbfb528830d7958ceedab721b8560bb87ead3793db771d181ccdcec70e2
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_entry_outside_its_skill_directory_is_refused_naming_it_and_nothing_is_written"
+        body: dd41292d04c5bc680cc15a0cf9c60f61f92e0cc22039d5ec0d77461d1a95e5ad
+  - node: 01a156af-5306-73ab-a0e4-ceaa4a2541d9
+    reviewed: e8d0c68154c2efdb055e0d820dec3ea1d704734790c0011eb91c0dd06d54c89b
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_entry_outside_its_skill_directory_is_refused_naming_it_and_nothing_is_written"
+        body: dd41292d04c5bc680cc15a0cf9c60f61f92e0cc22039d5ec0d77461d1a95e5ad
+  - node: 01a156af-5306-73ab-a0e4-ceab7ab49d82
+    reviewed: ff44a10bb5b63894c4411135868f17da67bf878602de9d882cd66c7307300d7d
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_entry_outside_its_skill_directory_is_refused_naming_it_and_nothing_is_written"
+        body: dd41292d04c5bc680cc15a0cf9c60f61f92e0cc22039d5ec0d77461d1a95e5ad
+  - node: 01a19953-8002-7761-be9c-9ad43fec9482
+    reviewed: 428b8f874564f62aa8a1d132e1a657be3da18fdbc1ffabf16b3a4900cc2bce03
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_entry_outside_its_skill_directory_is_refused_naming_it_and_nothing_is_written"
+        body: dd41292d04c5bc680cc15a0cf9c60f61f92e0cc22039d5ec0d77461d1a95e5ad
+  - node: 01a156af-5306-73ab-a0e4-ceacf8fcbc3d
+    reviewed: 0838918d76c37f5166dcc22be96d5e859fa9e3843a55122d762b6e1c086a2b78
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_entry_outside_its_skill_directory_is_refused_naming_it_and_nothing_is_written"
+        body: dd41292d04c5bc680cc15a0cf9c60f61f92e0cc22039d5ec0d77461d1a95e5ad
+  - node: 01a156af-5306-73ab-a0e4-cead8bd7d9ae
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_entry_outside_its_skill_directory_is_refused_naming_it_and_nothing_is_written"
+        body: dd41292d04c5bc680cc15a0cf9c60f61f92e0cc22039d5ec0d77461d1a95e5ad
+  - node: 01a156af-5306-73ab-a0e4-ceaf3797e1ea
+    reviewed: 3f36b74d493390f68eefa3d789414b1d72f4a36a1f803b9aea4309897a1a7fc8
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_name_that_is_loft_spec_or_not_a_slug_is_refused_naming_it_and_a_slug_is_accepted"
+        body: 6ade109ecabdcbcf0b1cecdf00aed4cc6389f243d96998c7af0f1f42e972d44e
+  - node: 01a156af-5306-73ab-a0e4-ceb0df1795a4
+    reviewed: bc536f71378a3dbf35ebb020e1f4ffc2807ef15078b9784da1606fbd3ac92df4
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_name_that_is_loft_spec_or_not_a_slug_is_refused_naming_it_and_a_slug_is_accepted"
+        body: 6ade109ecabdcbcf0b1cecdf00aed4cc6389f243d96998c7af0f1f42e972d44e
+  - node: 01a156af-5306-73ab-a0e4-ceb198d92b2a
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_name_that_is_loft_spec_or_not_a_slug_is_refused_naming_it_and_a_slug_is_accepted"
+        body: 6ade109ecabdcbcf0b1cecdf00aed4cc6389f243d96998c7af0f1f42e972d44e
+  - node: 01a156af-5306-73ab-a0e4-ceb37e080cce
+    reviewed: 07f4cb1182169330dc65ae8ed751e9c62dcb9a9091c568a502ca561d67b62127
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_http_origin_off_the_loopback_interface_is_refused_naming_it_and_never_contacted"
+        body: 3d52e2e87d69b5eef528f21b841014e09bdc6b5fd99d74bc006da4f29b2163e3
+  - node: 01a156af-5306-73ab-a0e4-ceb44e711618
+    reviewed: 5c6a8ed7b4a942a128a8df8f07d2efe7de5235c38cade25483fdffe8309050f0
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_http_origin_off_the_loopback_interface_is_refused_naming_it_and_never_contacted"
+        body: 3d52e2e87d69b5eef528f21b841014e09bdc6b5fd99d74bc006da4f29b2163e3
+  - node: 01a156af-5306-73ab-a0e4-ceb5ad22917a
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_http_origin_off_the_loopback_interface_is_refused_naming_it_and_never_contacted"
+        body: 3d52e2e87d69b5eef528f21b841014e09bdc6b5fd99d74bc006da4f29b2163e3
+  - node: 01a156af-5307-7725-b0b7-f7c23066d56e
+    reviewed: 5c6a8ed7b4a942a128a8df8f07d2efe7de5235c38cade25483fdffe8309050f0
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_origin_with_a_path_a_query_or_a_fragment_is_a_usage_error_naming_it_and_opening_nothing"
+        body: 75b5f85aac7bd852bcfe206d77b808da917f274c9404c21e92550ac413a2a77a
+  - node: 01a156af-5307-7725-b0b7-f7c3e1c0bab7
+    reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "an_origin_with_a_path_a_query_or_a_fragment_is_a_usage_error_naming_it_and_opening_nothing"
+        body: 75b5f85aac7bd852bcfe206d77b808da917f274c9404c21e92550ac413a2a77a
+  - node: 01a156af-5307-7725-b0b7-f7c581e6b6fa
+    reviewed: 5c6a8ed7b4a942a128a8df8f07d2efe7de5235c38cade25483fdffe8309050f0
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_that_refuses_is_silent_or_gives_no_manifest_that_reads_is_refused_naming_it"
+        body: 0464ea1bf83aaedde58a6ac92bcf392179d9862736e9d325d1de04f1e8e342a5
+  - node: 01a156af-5307-7725-b0b7-f7c6ccc9dcf4
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_server_that_refuses_is_silent_or_gives_no_manifest_that_reads_is_refused_naming_it"
+        body: 0464ea1bf83aaedde58a6ac92bcf392179d9862736e9d325d1de04f1e8e342a5
   - node: 01a17844-cbcb-77bf-af93-ba96b26094e4
     reviewed: 44d3d9150507708a3aa364087aab815ec25684fd9ab7deb8f08f744872bcaba5
     tests:
@@ -20343,6 +20532,21 @@ links:
       - file: "crates/loft-cli/tests/remote_contract.rs"
         name: "a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_issued"
         body: 33b691a65e63d72668f183bdf447aa66a41ae8ac39f9b7855865bd171178209b
+  - node: 01a158a1-f02a-75c4-bdf5-1df762d46ddb
+    reviewed: 7820ba5907f9e7ff6ce40557cd90fc4fa8f334e045a13a06fa1c9c64af1043fa
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token"
+        body: 4800a036bac7884b414615a0e5f70355c286404617450cb8b1077ae5cbc4c593
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "a_tampering_scenario_serves_other_bytes_and_one_without_a_skill_answers_not_found"
+        body: c7f3b2c2109942e45b6362fc4576902a1ae6dd4e977de01eb37961606606fc8e
+  - node: 01a158a1-f02a-75c4-bdf5-1df8354840b5
+    reviewed: 2aa0716c2a5b78488c52b67c7d1fac42cc796762108dd1f790557e02bce95649
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token"
+        body: 4800a036bac7884b414615a0e5f70355c286404617450cb8b1077ae5cbc4c593
   - node: 01a156ae-6a51-7230-a9a1-fa958644e55a
     reviewed: c77dd0ebd9b7d3bec2bc8447d265915dfbdc26c26f81449cdd7d2475ea024e75
     tests:
@@ -20712,6 +20916,42 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_writes.rs"
         name: "an_import_whose_states_do_not_hold_together_is_refused"
         body: a68ea6382a977bbade7ffa331050841d55314f58176bfe5e62292bd890ddfad7
+  - node: 01a156af-5308-7015-abac-1426805386cd
+    reviewed: bc8439181265f964b4bf66096c30352c886f972caabe15db4f38c5a0044e390c
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token"
+        body: 4800a036bac7884b414615a0e5f70355c286404617450cb8b1077ae5cbc4c593
+  - node: 01a156af-5308-7015-abac-14277763e6d4
+    reviewed: afcf9b5bbee5b268d61bc39bd8ae58a20018e7fdf18ff1df6d5f0af7227770a8
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token"
+        body: 4800a036bac7884b414615a0e5f70355c286404617450cb8b1077ae5cbc4c593
+  - node: 01a156af-5308-7015-abac-142828644161
+    reviewed: 2f4747576770705a2b40a6f033ec13b1479f6c973c0229e58c4405f5959ce81f
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "a_tampering_scenario_serves_other_bytes_and_one_without_a_skill_answers_not_found"
+        body: c7f3b2c2109942e45b6362fc4576902a1ae6dd4e977de01eb37961606606fc8e
+  - node: 01a156af-5308-7015-abac-142af2b71304
+    reviewed: 7ba8c7e20e5bc01b480b4da9a38dc4aaae31509a2a9587b1f0e953e9bb99ebae
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token"
+        body: 4800a036bac7884b414615a0e5f70355c286404617450cb8b1077ae5cbc4c593
+  - node: 01a156af-5308-7015-abac-142beee199a5
+    reviewed: 276a6475b0c72d8b10cc2791cbd4c5df9197ad38e6b0370f01821262972267cd
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token"
+        body: 4800a036bac7884b414615a0e5f70355c286404617450cb8b1077ae5cbc4c593
+  - node: 01a156af-a712-7288-bba5-d7b63a343de9
+    reviewed: 0c57adfb84726a8bc0d2045963b87a3f57f4b9e444597588f36ceb1e9e263087
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_skill.rs"
+        name: "a_tampering_scenario_serves_other_bytes_and_one_without_a_skill_answers_not_found"
+        body: c7f3b2c2109942e45b6362fc4576902a1ae6dd4e977de01eb37961606606fc8e
   - node: 01a156bc-e91e-73aa-8be6-4da37da04d79
     reviewed: 19fb98bac8e516c233ee1fddb4c94106d8181b19edc59c275f4ddd0b93c48231
     tests:

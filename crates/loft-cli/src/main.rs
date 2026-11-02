@@ -106,8 +106,15 @@ fn skill(root: &Path, action: SkillAction) -> Finished {
     match action {
         SkillAction::Install {
             host,
+            server: Some(origin),
+            output,
+            ..
+        } => skill::server::run(root, &origin, host, output.json()),
+        SkillAction::Install {
+            host,
             no_plugin,
             output,
+            server: None,
         } => skill::run(root, host, plugin(no_plugin), output.json()),
         SkillAction::Package { check, output } => skill::package::run(root, check, output.json()),
     }

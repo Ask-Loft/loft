@@ -14,9 +14,9 @@ use loftspec::document::Document;
 use loftspec::publish::{Lock, ReadTree, Unverified, verify};
 use loftspec_store::FileStore;
 use serde_json::{Value, json};
-use sha2::{Digest as _, Sha256};
 
 use crate::remote::head::{self, Head};
+use crate::remote::sha256_hex;
 use crate::remote::{self, Client, RemoteError, files, history};
 
 /// What a connected document is, as every refusal to publish one names it.
@@ -115,7 +115,7 @@ fn history_digests(root: &Path, lock: &Lock) -> Option<BTreeMap<String, String>>
         state
             .files
             .iter()
-            .map(|(path, bytes)| (format!("spec/{}", path.as_str()), sha256(bytes)))
+            .map(|(path, bytes)| (format!("spec/{}", path.as_str()), sha256_hex(bytes)))
             .collect()
     })
 }
@@ -137,7 +137,7 @@ fn state_digests(client: &Client, lock: &Lock) -> Result<BTreeMap<String, String
         return Err(missing());
     }
     Ok(pairs(&state["files"], "path", "text")
-        .map(|(path, text)| (path.to_owned(), sha256(text.as_bytes())))
+        .map(|(path, text)| (path.to_owned(), sha256_hex(text.as_bytes())))
         .collect())
 }
 
@@ -155,7 +155,7 @@ fn delta(files: &Files, base: &BTreeMap<String, String>) -> Value {
         let text = String::from_utf8_lossy(bytes);
         match base.get(&path) {
             None => added.push(json!({ "path": path, "text": text })),
-            Some(digest) if *digest != sha256(bytes) => {
+            Some(digest) if *digest != sha256_hex(bytes) => {
                 changed.push(json!({ "path": path, "text": text }));
             }
             Some(_) => {}
@@ -175,12 +175,7 @@ fn delta(files: &Files, base: &BTreeMap<String, String>) -> Value {
 /// The retry key of a publish: the SHA-256 digest of the RFC 8785 canonical JSON of the document
 /// key, the base's state root and the delta.
 fn retry_key(key: &str, base_root: Option<&str>, delta: &Value) -> String {
-    sha256(&canonical_bytes(&(key, base_root, delta)))
-}
-
-/// The SHA-256 digest of `bytes`, in lowercase hex.
-fn sha256(bytes: &[u8]) -> String {
-    format!("{:x}", Sha256::digest(bytes))
+    sha256_hex(&canonical_bytes(&(key, base_root, delta)))
 }
 
 /// A refusal of the publish, as the error that stops it. A conflict is read by the head it

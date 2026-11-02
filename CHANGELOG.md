@@ -63,6 +63,13 @@ everything 2.3.0 will hold.
   token of its own, bypassing the sign-in. `LOFT_REMOTE_TIMEOUT` sets how long a call may take
   (30 seconds by default), and `LOFT_REMOTE_WAIT` lets a command wait up to that many seconds,
   once, for a remote that asks it to try again later.
+- `loft skill install --server <origin>` installs the skill package that a server publishes,
+  such as a connected document's remote, into a skill directory of its own beside `loft-spec`
+  (`.claude/skills/<name>/` and `.agents/skills/<name>/`, or only the hosts `--host` selects). It
+  reads the server's manifest at `<origin>/.well-known/loft-skill.json`, checks the package's
+  SHA-256 digest and length against it, and refuses an entry that is a link, holds an absolute
+  path or a `..` segment, or is neither a file nor a directory, before anything is written. It
+  enables no plugin and gives no setup report.
 - An agent's work follows its working stage into another worktree, of the same repository or
   another. A session that worked in a worktree its host could not move it into recorded that
   work's plan, questions, tasks and token cost in the Yard Log of the worktree it started in.

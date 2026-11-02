@@ -13,6 +13,7 @@ mod documents;
 mod oauth;
 pub mod problem;
 mod scenario;
+mod skill;
 pub mod wire;
 
 use std::collections::{BTreeMap, HashMap};
@@ -241,7 +242,11 @@ fn route(state: &mut State, request: &Request) -> Response {
         "/auth/register" => only("POST", request, || oauth::register(state, request)),
         "/auth/authorize" => only("GET", request, || oauth::authorize(state, query)),
         "/auth/token" => only("POST", request, || oauth::token(state, request)),
-        _ => problem::refusal("not_found"),
+        skill::MANIFEST => only("GET", request, || skill::manifest(state)),
+        _ => match skill::package(state, path) {
+            Some(package) => only("GET", request, || package),
+            None => problem::refusal("not_found"),
+        },
     }
 }
 
