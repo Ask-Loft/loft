@@ -239,8 +239,8 @@ change leaves untouched stand, and are not presented again.
 ## Commit `.yard/` with the work
 
 Commit `.yard/` in each commit of the work, beside the code it describes. Answers the person gave
-since the last commit are committed with the next, and so is what Yard Client keeps for each
-session by itself: its token totals under `.yard/<branch>/tokens/` and its activity under
+since the last commit are committed with the next, and so is what Yard keeps for each session by
+itself: its token totals under `.yard/<branch>/tokens/` and its activity under
 `.yard/<branch>/activity/`.
 
 Where a read reports that git ignores `.yard/`, the repository keeps Yard Log on the machine
@@ -445,8 +445,9 @@ read Yard Log for any assignments omitted from that bounded context.
 Native hooks carry no token counters. During an identified native turn, the worker observes
 latest-request usage from an already running local Codex app server over its Unix-domain
 WebSocket. It uses `$CODEX_HOME/app-server-control/app-server-control.sock`, or the same path
-under `~/.codex`; `loft yard codex watch --app-server-socket ABSOLUTE_PATH` selects another
-local socket. It starts no Codex process and changes no configuration, collaboration mode or
+under `~/.codex`. The person selects another local socket by giving
+`loft yard codex watch --app-server-socket ABSOLUTE_PATH` in the plugin's hooks; never change
+hooks yourself to select one. It starts no Codex process and changes no configuration, collaboration mode or
 permissions. The prompt hook waits at most 500 milliseconds for readiness; an absent server,
 an unready new thread or an observation gap leaves usage unavailable or partial. It disconnects
 when the turn ends, and reconnecting imports no historical token totals.

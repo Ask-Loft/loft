@@ -239,8 +239,8 @@ change leaves untouched stand, and are not presented again.
 ## Commit `.yard/` with the work
 
 Commit `.yard/` in each commit of the work, beside the code it describes. Answers the person gave
-since the last commit are committed with the next, and so is what Yard Client keeps for each
-session by itself: its token totals under `.yard/<branch>/tokens/` and its activity under
+since the last commit are committed with the next, and so is what Yard keeps for each session by
+itself: its token totals under `.yard/<branch>/tokens/` and its activity under
 `.yard/<branch>/activity/`.
 
 Where a read reports that git ignores `.yard/`, the repository keeps Yard Log on the machine

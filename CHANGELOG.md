@@ -198,6 +198,14 @@ everything 2.3.0 will hold.
   identifiers prevent duplicate charges after delivery retries or page-server restarts.
   `loft yard codex watch --app-server-socket ABSOLUTE_PATH` selects a custom local socket;
   otherwise it uses the daemon socket under `CODEX_HOME` or `~/.codex` on Unix platforms.
+- Codex Yard delivers decisions: once every question, approval and plan of a submission has its
+  answer on the page, `loft yard codex watch` tells the asking session's loaded thread through the
+  same local app server, so the agent may end its turn after asking rather than wait. The
+  notification names the Yard Log, submission and revision and tells the agent to read Yard
+  before acting; it copies no answer. Each notification is saved before it is sent and is not
+  sent again once acknowledged or read; interruption or the session's end disarms delivery until
+  the person's next prompt, and a withdrawn submission sends none. Session context says whether
+  notifications are available, and the agent waits explicitly where they are not.
 - The Codex plugin includes its Yard skill, composed from the shared workflow and Codex
   instructions, and native hooks for local sessions. Questions and plans use the Yard page;
   Codex's native modes and permissions stay authoritative. Review and trust the hooks after
