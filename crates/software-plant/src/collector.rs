@@ -14,7 +14,7 @@ use std::sync::{Arc, Mutex, PoisonError};
 
 use serde::Deserialize;
 
-use crate::http::{Request, Responder, Response, Server, refusing_url};
+use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
 
 /// The path the collector receives events at.
 pub const PATH: &str = "/api/telemetry";
@@ -102,11 +102,11 @@ struct Answering {
 }
 
 impl Responder for Answering {
-    fn answer(&mut self, request: &Request) -> Option<Response> {
+    fn answer(&mut self, request: &Request) -> Answer {
         match self.behaviour {
-            Behaviour::Silent => None,
-            Behaviour::Failing(status) => Some(Response::empty(status)),
-            Behaviour::Accepting => Some(Response::empty(self.accept(request))),
+            Behaviour::Silent => Answer::Hold,
+            Behaviour::Failing(status) => Response::empty(status).into(),
+            Behaviour::Accepting => Response::empty(self.accept(request)).into(),
         }
     }
 }

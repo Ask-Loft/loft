@@ -3,11 +3,14 @@
 
 use std::fs;
 
-use software_plant::remote::RemoteScenario;
+use serde_json::json;
+use software_plant::BrowserScenario;
+use software_plant::http::{Answer, Request, Responder, Response, Server};
+use software_plant::remote::{RemoteScenario, TOKEN};
 
 use crate::common::connected::{Connected, connected};
 use crate::common::remote::{publish_at, spec, stored, wire, with_criterion};
-use crate::common::signed_in::document;
+use crate::common::signed_in::{self, document};
 use crate::common::tree;
 use crate::pull::{BODY, DECISION, PRODUCT, behind, pull, with_body};
 
@@ -117,4 +120,51 @@ fn a_node_the_tree_deleted_that_the_head_still_holds_stays_deleted_its_binding_d
     let product = fs::read_to_string(run.scratch.file(PRODUCT)).unwrap();
     assert!(product.contains(BODY));
     assert_eq!(run.scratch.loft(&["check"]).status.code(), Some(0));
+}
+
+/// A remote whose head does not read: its publish sequence is not a number.
+struct Garbled;
+
+impl Responder for Garbled {
+    fn answer(&mut self, _: &Request) -> Answer {
+        Response::json(
+            200,
+            &json!({ "head": { "publishSequence": "two", "stateRoot": null } }),
+        )
+        .into()
+    }
+}
+
+#[test]
+fn a_head_that_does_not_read_is_refused_naming_the_remote_s_address() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    let garbled = Server::start(Garbled);
+    let address = format!("{}/documents/{}", garbled.url(), run.history.key);
+    let env = [
+        ("LOFT_REMOTE_ENDPOINT", address.as_str()),
+        ("LOFT_REMOTE_TOKEN", TOKEN),
+    ];
+    let refused = |output: &std::process::Output| {
+        assert_eq!(output.status.code(), Some(1), "{output:?}");
+        let message = Connected::message(output);
+        assert!(
+            message.contains(&format!("{address}: the remote's head does not read")),
+            "{message}"
+        );
+    };
+    let before = tree(&run.scratch.0);
+    let (mut command, _) = signed_in::command(&run.scratch, BrowserScenario::Absent, None);
+    refused(
+        &command
+            .args(["pull", "--format", "json"])
+            .envs(env)
+            .output()
+            .unwrap(),
+    );
+    assert_eq!(tree(&run.scratch.0), before);
+    // A publish reads the same head, and refuses it the same way.
+    run.change();
+    let changed = tree(&run.scratch.0);
+    refused(&run.publish_with(&env));
+    assert_eq!(tree(&run.scratch.0), changed);
 }

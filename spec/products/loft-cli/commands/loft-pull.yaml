@@ -34,7 +34,7 @@ requirements:
       - key: 01a156ad-1b9f-72a4-9f6c-3049dc4cde0c
         name: "Each conflict is written as a typed conflict record, as the merge engine writes it."
       - key: 01a156ad-1b9f-72a4-9f6c-304a2b0727f8
-        name: "`spec/labels.yaml` is written as the head holds it."
+        name: "`spec/labels.yaml` is written as the head holds it, except that the binding of each node the merged tree does not hold is marked departed, as the formatter marks it."
       - key: 01a156ad-1b9f-72a4-9f6c-304bebeac6f1
         name: "`loft.lock.json` holds the head's lock after the pull."
       - key: 01a156ad-1b9f-72a4-9f6c-304c831f0c75

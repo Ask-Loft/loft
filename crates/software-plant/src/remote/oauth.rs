@@ -2,8 +2,8 @@
 //! (RFC 9728), the authorization server metadata (RFC 8414), dynamic registration of public
 //! clients (RFC 7591), the authorization code grant with PKCE (RFC 7636) on a loopback redirect
 //! whose port may differ from the registered one (RFC 8252), the resource named by RFC 8707, and
-//! refresh tokens that rotate on every use, with a grace for one presented again and the whole
-//! sign-in revoked otherwise.
+//! refresh tokens that rotate on every use, with a grace window for one presented again and the
+//! whole sign-in revoked otherwise. Its clock runs from the machine's, moved on by the test.
 
 use std::collections::HashMap;
 use std::time::{Duration, Instant};
@@ -12,7 +12,7 @@ use serde_json::{Value, json};
 
 use super::problem::oauth;
 use super::wire::{base64url, pairs, query, sha256, value};
-use super::{Consent, State};
+use super::{Consent, Metadata, State};
 use crate::http::{Request, Response};
 
 /// A sign-in that the simulator issued: the client it was issued to and its tokens.
@@ -33,11 +33,17 @@ struct Code {
     used: bool,
 }
 
-/// A refresh token: the sign-in it belongs to, and the answer that rotated it, once it has been.
+/// A refresh token: the sign-in it belongs to, and its rotation, once it has been rotated.
 struct Refresh {
     family: usize,
     client_id: String,
-    rotated: Option<Value>,
+    rotated: Option<Rotation>,
+}
+
+/// A refresh token's rotation: the answer it got, which issued its successor, and when.
+struct Rotation {
+    answer: Value,
+    at: Instant,
 }
 
 /// One sign-in: its access tokens, each with the moment it expires, and whether it was
@@ -57,9 +63,16 @@ pub(super) struct Auth {
     families: Vec<Family>,
     issued: u64,
     pub(super) refreshes: usize,
+    /// How far the test moved the clock on from the machine's.
+    pub(super) moved: Duration,
 }
 
 impl Auth {
+    /// The simulator's time: the machine's, moved on by the test.
+    fn now(&self) -> Instant {
+        Instant::now() + self.moved
+    }
+
     fn next(&mut self, kind: &str) -> String {
         self.issued += 1;
         format!("{kind}-{}", self.issued)
@@ -73,7 +86,7 @@ impl Auth {
                 && family
                     .access
                     .iter()
-                    .any(|(issued, expires)| issued == token && Instant::now() < *expires)
+                    .any(|(issued, expires)| issued == token && self.now() < *expires)
         })
     }
 
@@ -88,7 +101,7 @@ impl Auth {
     fn issue(&mut self, family: usize, client_id: &str, expires_in: u64, scope: &str) -> Value {
         let access = self.next("access");
         let refresh = self.next("refresh");
-        let expires = Instant::now() + Duration::from_secs(expires_in);
+        let expires = self.now() + Duration::from_secs(expires_in);
         self.families[family].access.push((access.clone(), expires));
         self.refresh.insert(
             refresh.clone(),
@@ -105,6 +118,16 @@ impl Auth {
             "refresh_token": refresh,
             "scope": scope,
         })
+    }
+
+    /// Whether a refresh token rotated as `rotation` is answered again: within `grace` of its
+    /// rotation, and before its successor has itself been presented.
+    fn repeats(&self, rotation: &Rotation, grace: Duration) -> bool {
+        let successor_rotated = rotation.answer["refresh_token"]
+            .as_str()
+            .and_then(|successor| self.refresh.get(successor))
+            .is_some_and(|successor| successor.rotated.is_some());
+        self.now() < rotation.at + grace && !successor_rotated
     }
 
     /// A registered client and a new sign-in for it, without a browser.
@@ -139,12 +162,20 @@ impl State {
 }
 
 pub(super) fn resource_metadata(state: &State) -> Response {
+    let resource = match state.scenario.metadata {
+        Metadata::MisnamedResource => format!("{}/elsewhere", state.origin),
+        _ => state.resource(),
+    };
+    let scopes = match &state.scenario.metadata {
+        Metadata::Unscoped(scopes) => json!(scopes),
+        _ => json!([state.scenario.scope]),
+    };
     Response::json(
         200,
         &json!({
-            "resource": state.resource(),
+            "resource": resource,
             "authorization_servers": [state.issuer()],
-            "scopes_supported": [state.scenario.scope],
+            "scopes_supported": scopes,
             "bearer_methods_supported": ["header"],
         }),
     )
@@ -152,20 +183,31 @@ pub(super) fn resource_metadata(state: &State) -> Response {
 
 pub(super) fn server_metadata(state: &State) -> Response {
     let issuer = state.issuer();
-    Response::json(
-        200,
-        &json!({
-            "issuer": issuer,
-            "authorization_endpoint": format!("{issuer}/authorize"),
-            "token_endpoint": format!("{issuer}/token"),
-            "registration_endpoint": format!("{issuer}/register"),
-            "response_types_supported": ["code"],
-            "grant_types_supported": ["authorization_code", "refresh_token"],
-            "code_challenge_methods_supported": ["S256"],
-            "token_endpoint_auth_methods_supported": ["none"],
-            "scopes_supported": [state.scenario.scope],
-        }),
-    )
+    let mut metadata = json!({
+        "issuer": issuer,
+        "authorization_endpoint": format!("{issuer}/authorize"),
+        "token_endpoint": format!("{issuer}/token"),
+        "registration_endpoint": format!("{issuer}/register"),
+        "response_types_supported": ["code"],
+        "grant_types_supported": ["authorization_code", "refresh_token"],
+        "code_challenge_methods_supported": ["S256"],
+        "token_endpoint_auth_methods_supported": ["none"],
+        "scopes_supported": [state.scenario.scope],
+    });
+    match state.scenario.metadata {
+        Metadata::MisnamedIssuer => metadata["issuer"] = json!(format!("{issuer}/elsewhere")),
+        Metadata::Unregistering => {
+            if let Some(fields) = metadata.as_object_mut() {
+                fields.remove("registration_endpoint");
+            }
+        }
+        Metadata::Plain => metadata["code_challenge_methods_supported"] = json!(["plain"]),
+        Metadata::Unencrypted => {
+            metadata["authorization_endpoint"] = json!("http://auth.example/authorize");
+        }
+        _ => {}
+    }
+    Response::json(200, &metadata)
 }
 
 /// Whether `uri` is `http` on the loopback interface.
@@ -190,6 +232,9 @@ fn portless(uri: &str) -> String {
 }
 
 pub(super) fn register(state: &mut State, request: &Request) -> Response {
+    if let Some(error) = &state.scenario.refused_registration {
+        return oauth(error);
+    }
     let Ok(metadata) = serde_json::from_slice::<Value>(&request.body) else {
         return oauth("invalid_client_metadata");
     };
@@ -286,6 +331,13 @@ impl Form {
     }
 }
 
+/// Whether `request` asks the token endpoint for a refresh.
+pub(super) fn refreshing(request: &Request) -> bool {
+    request.path == "/auth/token"
+        && Form::read(&String::from_utf8_lossy(&request.body)).field("grant_type")
+            == "refresh_token"
+}
+
 pub(super) fn token(state: &mut State, request: &Request) -> Response {
     let form = Form::read(&String::from_utf8_lossy(&request.body));
     match form.field("grant_type").as_str() {
@@ -296,6 +348,9 @@ pub(super) fn token(state: &mut State, request: &Request) -> Response {
 }
 
 fn exchange(state: &mut State, form: &Form) -> Response {
+    if let Some(error) = &state.scenario.refused_exchange {
+        return oauth(error);
+    }
     let field = |name| form.field(name);
     let Some(code) = state.auth.codes.get_mut(&field("code")) else {
         return oauth("invalid_grant");
@@ -337,9 +392,9 @@ fn refresh(state: &mut State, form: &Form) -> Response {
     if field("resource") != state.resource() {
         return oauth("invalid_target");
     }
-    if let Some(answer) = &entry.rotated {
-        if state.scenario.grace {
-            return Response::json(200, answer);
+    if let Some(rotation) = &entry.rotated {
+        if state.auth.repeats(rotation, state.scenario.grace) {
+            return Response::json(200, &rotation.answer);
         }
         state.auth.families[family].revoked = true;
         return oauth("invalid_grant");
@@ -347,9 +402,14 @@ fn refresh(state: &mut State, form: &Form) -> Response {
     let client_id = entry.client_id.clone();
     let (expires_in, scope) = (state.scenario.expires_in, state.scenario.scope.clone());
     let answer = state.auth.issue(family, &client_id, expires_in, &scope);
+    let at = state.auth.now();
     if let Some(entry) = state.auth.refresh.get_mut(&presented) {
-        entry.rotated = Some(answer.clone());
+        entry.rotated = Some(Rotation {
+            answer: answer.clone(),
+            at,
+        });
     }
     state.auth.refreshes += 1;
+    state.answer_lost = std::mem::take(&mut state.scenario.losing_refresh);
     Response::json(200, &answer)
 }

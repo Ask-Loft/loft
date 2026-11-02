@@ -125,6 +125,11 @@ impl Client {
         }
     }
 
+    /// The document's address.
+    pub fn address(&self) -> &str {
+        &self.address
+    }
+
     /// `GET <address>/<path>`, its JSON answer.
     ///
     /// # Errors

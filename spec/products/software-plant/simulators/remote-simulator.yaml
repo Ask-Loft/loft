@@ -51,6 +51,8 @@ requirements:
         name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the code `unauthenticated`."
       - key: 01a18e1f-8dac-71f7-847a-72434a1d07fd
         name: "Each `401` answer under a document's address carries `WWW-Authenticate: Bearer` with `resource_metadata`, the address of its protected resource metadata, and the scenario's `scope`."
+      - key: 01a1995a-1ff6-73c4-9f04-02266acd23bf
+        name: "A scenario that names no challenged scope sends the challenge without `scope`, and its protected resource metadata lists every scope its scenario names in `scopes_supported`."
       - key: 01a18e1f-8dac-71f7-847a-7244ef7a794f
         name: "A request with an access token that the simulator issued and has not revoked is admitted."
       - key: 01a156ae-6a51-7230-a9a1-fa93388fd0b9
@@ -149,6 +151,8 @@ requirements:
         name: "`files` lists each file the publish rewrote, `spec/labels.yaml` included, as an object of `path` and `text`."
       - key: 01a156ae-6a51-7230-a9a1-faaeda24191f
         name: "`labels` lists each label the publish allocated as an object of `key` and `label`."
+      - key: 01a1995a-1ff6-73c4-9f04-02279b18aa75
+        name: "A scenario that misstates its lock answers an accepted publish with a `lock` whose state root is not that of the files it returns."
       - key: 01a156ae-6a51-7230-a9a1-faaf2a2086bf
         name: "A publish whose `retryKey` the remote accepted before is answered `200 OK` with the answer it gave then and `outcome` set to `replayed`."
       - key: 01a15878-9878-727b-8fd9-ff5ddb0250fd
@@ -163,6 +167,8 @@ requirements:
         name: "A publish that its scenario refuses for a reason other than a moved head, such as a document that takes no more writes, is answered `409 Conflict` with the code `conflict`, the unchanged `head` and a `detail` that gives the reason."
       - key: 01a156ae-6a51-7230-a9a1-fab14d0480ff
         name: "A publish whose body is not a valid request, or whose delta the remote cannot apply, is answered `400 Bad Request` with the code `invalid_request` and a member `paths` listing each path at fault."
+      - key: 01a1995a-1ff6-73c4-9f04-0228c97fff43
+        name: "A scenario that refuses a publish as invalid answers it `400 Bad Request` with the code `invalid_request` and the `paths` its scenario names."
       - key: 01a156ae-6a51-7230-a9a1-fab2e99e3cc0
         name: "A replay is answered before the base is compared with the head."
       - key: 01a158a2-54b4-745a-ba6f-6f5123977eed
@@ -209,6 +215,8 @@ requirements:
         name: "An accepted import is answered `200 OK` with the document's key and its head, as `GET <address>/head` answers them after the import."
       - key: 01a1587a-dee4-70f8-999e-e56075698d22
         name: "The head after an accepted import is the last state of `states`."
+      - key: 01a1995a-1ff6-73c4-9f04-022959a30c48
+        name: "A scenario that misstates its import's head answers an accepted import with a head other than the last state of `states`."
       - key: 01a1587a-dee4-70f8-999e-e5614a15a9d1
         name: "A document that already holds a published state, a draft that is not empty or an open branch is answered `409 Conflict` with the code `conflict` and `head`."
       - key: 01a1587a-dee4-70f8-999e-e5621f30ae41
@@ -302,6 +310,8 @@ requirements:
         name: "`resource` is the protected resource whose path follows `/.well-known/oauth-protected-resource` in the request, as RFC 9728 requires."
       - key: 01a18e1f-8dac-71f7-847a-72480d1d7ed9
         name: "`authorization_servers` lists one issuer, an address on the simulator's origin."
+      - key: 01a1995a-1ff6-73c4-9f04-022a7141cacc
+        name: "A scenario that misnames its protected resource answers with a `resource` other than its own."
   - key: 01a18e1f-8dac-71f7-847a-724917ee9379
     statement:
       form: event_driven
@@ -313,6 +323,14 @@ requirements:
         name: "The body is a JSON object holding `issuer`, `authorization_endpoint`, `token_endpoint`, `registration_endpoint`, `response_types_supported`, `grant_types_supported`, `code_challenge_methods_supported` and `token_endpoint_auth_methods_supported`."
       - key: 01a18e1f-8dac-71f7-847a-724bb32a7aa1
         name: "`issuer` is the issuer that the protected resource metadata names."
+      - key: 01a1995a-1ff6-73c4-9f04-022bd9bfb5ba
+        name: "A scenario that misnames its issuer answers with an `issuer` other than the one the protected resource metadata names."
+      - key: 01a1995a-1ff6-73c4-9f04-022c7834f0af
+        name: "A scenario that leaves out the registration endpoint answers without `registration_endpoint`."
+      - key: 01a1995a-1ff6-73c4-9f04-022d4e6f11fb
+        name: "A scenario that takes no `S256` answers with `code_challenge_methods_supported` holding `plain` alone."
+      - key: 01a1995a-1ff6-73c4-9f04-022ed4979c76
+        name: "A scenario that names an unencrypted endpoint answers with an `authorization_endpoint` that is `http` off the loopback interface."
       - key: 01a18e1f-8dac-71f7-847a-724ccb573384
         name: "`code_challenge_methods_supported` is `S256` alone and `token_endpoint_auth_methods_supported` is `none` alone."
   - key: 01a18e1f-8dac-71f7-847a-724d7b74f304
@@ -328,6 +346,8 @@ requirements:
         name: "A redirect URI that is `http` off the loopback interface is refused `400 Bad Request` with the OAuth error `invalid_redirect_uri`."
       - key: 01a18e1f-8dac-71f7-847a-72500b13db60
         name: "Metadata whose `token_endpoint_auth_method` is not `none`, or whose `grant_types` are not `authorization_code` and `refresh_token`, is refused `400 Bad Request` with the OAuth error `invalid_client_metadata`."
+      - key: 01a1995a-1ff6-73c4-9f04-022f8cef789e
+        name: "A scenario that refuses registration refuses every registration `400 Bad Request` with the OAuth error its scenario names."
   - key: 01a18e1f-8dac-71f7-847a-7251049f0d86
     statement:
       form: event_driven
@@ -362,6 +382,8 @@ requirements:
         name: "A code presented a second time, a `redirect_uri` other than the authorization request's, or a `code_verifier` whose SHA-256 digest is not the `code_challenge`, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
       - key: 01a18e1f-8dac-71f7-847a-725c1d59acb6
         name: "A `resource` other than the authorization request's is refused `400 Bad Request` with the OAuth error `invalid_target`."
+      - key: 01a1995a-1ff6-73c4-9f04-02309a866506
+        name: "A scenario that refuses the exchange refuses every exchange `400 Bad Request` with the OAuth error its scenario names."
   - key: 01a18e1f-8dac-71f7-847a-725db357dec4
     statement:
       form: event_driven
@@ -372,8 +394,16 @@ requirements:
       - key: 01a18e1f-8dac-71f7-847a-725e4c95828e
         name: "An accepted refresh is answered as an accepted exchange is, with a new access token and a new refresh token."
       - key: 01a18e1f-8dac-71f7-847a-725f662f9c67
-        name: "A refresh token presented again after its successor was issued, while its scenario allows that grace, is answered as it was the first time."
+        name: "A refresh token presented again after its successor was issued, within the grace window and before that successor is itself presented, is answered as it was the first time."
+      - key: 01a19951-8b23-72b2-8cb9-a4c8523130f8
+        name: "A refresh token answered as it was the first time issues no token and revokes none."
       - key: 01a18e1f-8dac-71f7-847a-72600450be32
-        name: "A refresh token presented again after its successor was issued, once its scenario allows no grace, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in."
+        name: "A refresh token presented again after its successor was issued, past the grace window or once that successor has been presented, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in."
+      - key: 01a19951-5b6c-769f-802b-1caae94627eb
+        name: "The grace window is the 120 seconds after the rotation, unless its scenario names another length, and is counted on the simulator's clock, which a test can move on without waiting."
       - key: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
         name: "A lapsing scenario refuses every refresh `400 Bad Request` with the OAuth error `invalid_grant`."
+      - key: 01a1995a-1ff6-73c4-9f04-0231e27a1bf0
+        name: "A scenario that loses a refresh's answer rotates the refresh token and closes the connection without answering, once."
+      - key: 01a1995a-1ff6-73c4-9f04-0232d8302baa
+        name: "A scenario that delays refreshes answers each refresh only after the delay its scenario names."

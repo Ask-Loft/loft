@@ -8,6 +8,7 @@ mod compose;
 mod discovery;
 mod hosts;
 pub mod package;
+pub mod server;
 mod settings;
 mod write;
 
@@ -182,14 +183,19 @@ pub fn report(installed: &Installed) {
         Some(Enabled::NotAnObject) => outln!("{}", settings::by_hand()),
     }
     if !installed.skills.is_empty() {
-        let last = written.pop().expect("a skill directory was written");
-        let listed = if written.is_empty() {
-            last.to_owned()
-        } else {
-            format!("{} and {last}", written.join(", "))
-        };
-        outln!("commit {listed}, so that every clone's coding agents have the skill");
+        ask_to_commit(&written);
     }
+}
+
+/// Asks for `written`, at least one path, to be committed.
+fn ask_to_commit(written: &[&str]) {
+    let (last, rest) = written.split_last().expect("a skill directory was written");
+    let listed = if rest.is_empty() {
+        (*last).to_owned()
+    } else {
+        format!("{} and {last}", rest.join(", "))
+    };
+    outln!("commit {listed}, so that every clone's coding agents have the skill");
 }
 
 /// `loft skill install`: writes the skill into the current directory and names the directories

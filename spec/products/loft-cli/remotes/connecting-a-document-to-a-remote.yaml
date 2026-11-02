@@ -151,4 +151,4 @@ requirements:
       - key: 01a1587a-dee2-7262-8c7b-8973b5580080
         name: "No request is sent to the remote."
       - key: 01a1587a-dee2-7262-8c7b-8974362040f4
-        name: "The manifest is left as it was."
+        name: "The manifest's `remote` becomes the address given, and every other field of the manifest, `connected: true` included, is left as it was."

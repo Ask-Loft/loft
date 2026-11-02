@@ -2,7 +2,7 @@
 //! history, the remote that holds it, and a sign-in to that remote.
 
 use std::fs;
-use std::process::Output;
+use std::process::{Command, Output};
 
 use serde_json::{Value, json};
 use software_plant::http::Request;
@@ -82,15 +82,21 @@ impl Connected {
 
     /// Publishes with the variables `env`, in a run whose waits pass at once.
     pub fn publish_with(&self, env: &[(&str, &str)]) -> Output {
+        self.publish_by(|command| {
+            command.envs(env.iter().copied());
+        })
+    }
+
+    /// Publishes in a run whose waits pass at once, with `prepare` setting the command's
+    /// environment.
+    pub fn publish_by(&self, prepare: impl FnOnce(&mut Command)) -> Output {
         let (mut command, _) = signed_in::command_at(
             &self.scratch,
             BrowserScenario::Absent,
             Some(&self.git),
             &Clock::fixed(EPOCH).passing(),
         );
-        for (name, value) in env {
-            command.env(name, value);
-        }
+        prepare(&mut command);
         command
             .args(["publish", "--format", "json"])
             .output()

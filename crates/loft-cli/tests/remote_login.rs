@@ -8,6 +8,7 @@ use std::process::Stdio;
 use loftspec::codec::Files;
 use serde_json::{Value, json};
 use software_plant::BrowserScenario;
+use software_plant::http::Request;
 use software_plant::remote::wire::{pairs, value};
 use software_plant::remote::{Remote, RemoteScenario};
 
@@ -15,6 +16,7 @@ use crate::common::signed_in::{
     self, document, granted, keep, name_remote, run, sign_ins, sign_ins_file,
 };
 use crate::common::{Scratch, tree};
+use crate::snapshot::snapshot;
 
 /// A connected Reading List whose manifest names `remote`.
 fn connected(remote: &Remote) -> Scratch {
@@ -71,6 +73,13 @@ fn login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_a
     assert!(sign_in["expiresAt"].as_str().unwrap().ends_with('Z'));
     let [access, refresh] = tokens(sign_in);
     assert!(remote.admits(&access), "the access token is the one issued");
+    for (path, bytes) in snapshot(&scratch.0) {
+        let text = String::from_utf8_lossy(&bytes);
+        assert!(
+            !text.contains(&access) && !text.contains(&refresh),
+            "{path} holds a token"
+        );
+    }
     let printed = format!(
         "{}{}",
         String::from_utf8_lossy(&output.stdout),
@@ -116,6 +125,7 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
     let visits = browser.visits();
     assert_eq!(visits.len(), 1, "{visits:?}");
     let url = &visits[0];
+    assert_eq!(browser.arguments(), [vec![url.clone()]], "its one argument");
     assert!(printed.contains(url.as_str()), "the address is printed too");
     assert_eq!(query(url, "response_type").as_deref(), Some("code"));
     assert_eq!(query(url, "code_challenge_method").as_deref(), Some("S256"));
@@ -140,6 +150,24 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
         "loft stops listening"
     );
 
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_exchanged_holding_no_secret(&requests, &format!("{printed}{stdout}"));
+}
+
+/// That no request but those under the document's address carries a token, that the code
+/// exchange sends its fields, and that `printed` holds neither its code nor its verifier.
+fn assert_exchanged_holding_no_secret(requests: &[Request], printed: &str) {
+    for request in requests
+        .iter()
+        .filter(|r| !r.path.starts_with("/documents/"))
+    {
+        assert_eq!(
+            request.header("authorization"),
+            None,
+            "{} carries a token",
+            request.path
+        );
+    }
     let exchange = requests.iter().find(|r| r.path == "/auth/token").unwrap();
     let form = String::from_utf8(exchange.body.clone()).unwrap();
     for field in [
@@ -151,6 +179,11 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
         "resource=",
     ] {
         assert!(form.contains(field), "{field} in {form}");
+    }
+    let form = pairs(&form);
+    for secret in ["code", "code_verifier"] {
+        let secret = value(&form, secret).unwrap();
+        assert!(!printed.contains(secret), "no output holds {secret}");
     }
 }
 
@@ -212,6 +245,19 @@ fn login_replaces_the_sign_in_for_its_address_and_keeps_every_other() {
         "an entry this loft does not read is kept as it was"
     );
     assert_ne!(kept[remote.address()]["accessToken"], old["accessToken"]);
+    assert_ne!(
+        kept[remote.address()]["clientId"],
+        old["clientId"],
+        "the sign-in registers anew"
+    );
+    let registrations = remote.requests();
+    assert_eq!(
+        registrations
+            .iter()
+            .filter(|r| r.path == "/auth/register")
+            .count(),
+        1
+    );
     assert_eq!(browser.visits().len(), 1);
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains(&remote.address()), "{stdout}");
@@ -242,7 +288,7 @@ fn login_without_a_remote_in_the_manifest_is_refused_naming_remote_set() {
 fn a_refused_consent_ends_the_sign_in_naming_the_error_and_writes_nothing() {
     let remote = Remote::start(RemoteScenario::accepting("doc-deny").refusing_consent());
     let scratch = connected(&remote);
-    let (output, _) = run(
+    let (output, browser) = run(
         &scratch,
         &["remote", "login"],
         BrowserScenario::Visiting,
@@ -252,6 +298,8 @@ fn a_refused_consent_ends_the_sign_in_naming_the_error_and_writes_nothing() {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("access_denied"), "{stderr}");
     assert!(!sign_ins_file(&scratch).exists());
+    // The browser came back to loft's port, and loft has ended: it listens there no longer.
+    assert_eq!(browser.visits().len(), 1);
 }
 
 #[test]
@@ -318,7 +366,7 @@ fn by_hand(scratch: &Scratch, url: &str) {
     let dir = scratch.plant().join("by-hand");
     std::fs::create_dir_all(&dir).unwrap();
     let _ = BrowserScenario::Visiting.install(&dir);
-    assert_eq!(software_plant::browser::run(&dir, url), 0);
+    assert_eq!(software_plant::browser::run(&dir, &[url.to_owned()]), 0);
 }
 
 /// A request for `target` on the loopback port of `redirect`, and the status line it answers.

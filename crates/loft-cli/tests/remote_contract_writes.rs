@@ -7,11 +7,12 @@ use std::collections::BTreeMap;
 use serde_json::{Value, json};
 use software_plant::remote::{Remote, RemoteScenario, StoredState};
 
-use crate::common::remote::{history, spec, wire, with_criterion};
+use crate::common::remote::{DECISION_KEY, departed, history, spec, wire, with_criterion};
+use crate::pull::DECISION;
 use crate::remote_contract::{assert_problem, get, holding, mark, post};
 
 /// The body of a publish of `files` from `base`, with `retry` as its retry key.
-fn publish_body(
+pub fn publish_body(
     key: &str,
     base: &StoredState,
     files: &BTreeMap<String, String>,
@@ -156,7 +157,7 @@ fn a_create_holds_the_key_and_name_or_is_refused() {
     assert_problem(&refused, 403, "forbidden");
 }
 
-fn import_body(key: &str, states: &[StoredState]) -> Value {
+pub fn import_body(key: &str, states: &[StoredState]) -> Value {
     let states: Vec<Value> = states
         .iter()
         .map(|state| {
@@ -262,4 +263,22 @@ fn an_import_whose_states_do_not_hold_together_is_refused() {
     );
     let forbidden = Remote::start(empty().forbidding_import());
     assert_problem(&post(&forbidden, "/import", &body), 403, "forbidden");
+}
+
+#[test]
+fn a_publish_that_removes_a_node_is_answered_with_its_binding_departed() {
+    let (remote, history) = holding(1);
+    let base = &history.states[0];
+    let mut body = publish_body(&history.key, base, &base.files, "retry-1");
+    body["removed"] = json!([format!("spec/{DECISION}")]);
+    let answer = post(&remote, "/publish", &body);
+    assert_eq!(answer.body["outcome"], "published", "{:?}", answer.body);
+    let labels = answer.body["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|file| file["path"] == "spec/labels.yaml")
+        .and_then(|file| file["text"].as_str())
+        .unwrap();
+    assert!(departed(labels, DECISION_KEY), "{labels}");
 }

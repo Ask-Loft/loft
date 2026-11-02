@@ -6,7 +6,7 @@
 use std::process::Command;
 use std::time::Duration;
 
-use software_plant::http::{Request, Responder, Response, Server};
+use software_plant::http::{Answer, Request, Responder, Response, Server};
 use software_plant::{BrowserScenario, InstalledBrowser, browser_executable};
 
 use crate::common::Scratch;
@@ -16,11 +16,11 @@ use crate::served::within;
 struct Redirecting;
 
 impl Responder for Redirecting {
-    fn answer(&mut self, request: &Request) -> Option<Response> {
+    fn answer(&mut self, request: &Request) -> Answer {
         if request.path == "/start" {
-            Some(Response::redirect("/landing"))
+            Response::redirect("/landing").into()
         } else {
-            Some(Response::empty(200))
+            Response::empty(200).into()
         }
     }
 }
@@ -53,6 +53,25 @@ fn an_absent_browser_requests_nothing_and_exits_1() {
     assert_eq!(open_with(&installed, &address), Some(1));
     assert!(server.requests().is_empty());
     assert_eq!(installed.visits(), [address]);
+}
+
+#[test]
+fn a_browser_run_with_other_than_one_argument_requests_nothing_and_exits_2() {
+    let scratch = Scratch::empty();
+    let server = Server::start(Redirecting);
+    let installed = BrowserScenario::Visiting.install(&scratch.0);
+    let address = format!("{}/start", server.url());
+    for arguments in [vec![], vec![address.clone(), "--new-window".to_owned()]] {
+        let mut command = Command::new(browser_executable());
+        installed.apply(&mut command);
+        assert_eq!(command.args(&arguments).status().unwrap().code(), Some(2));
+    }
+    assert!(server.requests().is_empty());
+    assert_eq!(installed.visits(), Vec::<String>::new());
+    assert_eq!(
+        installed.arguments(),
+        [vec![], vec![address, "--new-window".to_owned()]]
+    );
 }
 
 #[test]

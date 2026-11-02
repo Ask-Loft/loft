@@ -452,6 +452,8 @@ fn loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused
             "connected",
             "only through its remote",
             "labels come from its remote",
+            "`remote` in spec/loftspec.yaml",
+            "LOFT_REMOTE_ENDPOINT",
         ] {
             assert!(message.contains(said), "{message}");
         }

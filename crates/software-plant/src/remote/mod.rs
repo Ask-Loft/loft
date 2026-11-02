@@ -12,16 +12,23 @@
 mod documents;
 mod oauth;
 pub mod problem;
+mod scenario;
+mod skill;
 pub mod wire;
 
 use std::collections::{BTreeMap, HashMap};
 use std::sync::{Arc, Mutex, PoisonError};
+use std::thread;
+use std::time::Duration;
 
 use serde_json::{Value, json};
 
-use crate::http::{Request, Responder, Response, Server, refusing_url};
+use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
 
+pub use documents::misstated_root;
 pub use oauth::Grant;
+use scenario::{Call, Held, Misstating, Mode};
+pub use scenario::{Consent, Metadata, RemoteScenario};
 
 /// The bearer token every scenario admits, as `LOFT_REMOTE_TOKEN` gives it to the binary.
 pub const TOKEN: &str = "simulator-token";
@@ -46,205 +53,6 @@ impl StoredState {
     }
 }
 
-/// How the person answers an authorization request.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Consent {
-    Grant,
-    Deny,
-}
-
-#[derive(Clone, Debug)]
-enum Mode {
-    Accepting,
-    Refusing,
-    Failing { status: u16, code: Option<String> },
-    Silent,
-}
-
-/// A call a scenario can forbid.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Call {
-    Create,
-    Import,
-}
-
-/// The document a scenario holds: its name, its published states and its drafts.
-#[derive(Clone, Debug, Default)]
-struct Held {
-    name: String,
-    states: Vec<StoredState>,
-    drafts: BTreeMap<String, BTreeMap<String, String>>,
-}
-
-/// What a remote simulator holds and how it answers.
-#[derive(Clone, Debug)]
-pub struct RemoteScenario {
-    key: String,
-    mode: Mode,
-    retry_after: Option<String>,
-    held: Option<Held>,
-    /// The calls that every token is forbidden.
-    forbidden: Vec<Call>,
-    closed: Option<String>,
-    import_limit: Option<usize>,
-    state_limit: Option<usize>,
-    consent: Consent,
-    expires_in: u64,
-    grace: bool,
-    lapsed: bool,
-    scope: String,
-    publish_from: u64,
-}
-
-impl RemoteScenario {
-    /// A remote that answers as the contract states, holding no document under `key`.
-    #[must_use]
-    pub fn accepting(key: &str) -> Self {
-        Self {
-            key: key.to_owned(),
-            mode: Mode::Accepting,
-            retry_after: None,
-            held: None,
-            forbidden: Vec::new(),
-            closed: None,
-            import_limit: None,
-            state_limit: None,
-            consent: Consent::Grant,
-            expires_in: 86_400,
-            grace: true,
-            lapsed: false,
-            scope: "documents".to_owned(),
-            publish_from: 1_800_000_000,
-        }
-    }
-
-    /// A remote that answers every request with `status`, and with a problem document of `code`
-    /// where it names one.
-    #[must_use]
-    pub fn failing(key: &str, status: u16, code: Option<&str>) -> Self {
-        Self {
-            mode: Mode::Failing {
-                status,
-                code: code.map(str::to_owned),
-            },
-            ..Self::accepting(key)
-        }
-    }
-
-    /// A remote that accepts each connection and never answers.
-    #[must_use]
-    pub fn silent(key: &str) -> Self {
-        Self {
-            mode: Mode::Silent,
-            ..Self::accepting(key)
-        }
-    }
-
-    /// A remote whose port refuses every connection.
-    #[must_use]
-    pub fn refusing(key: &str) -> Self {
-        Self {
-            mode: Mode::Refusing,
-            ..Self::accepting(key)
-        }
-    }
-
-    /// Holds the document under the scenario's key, named `name`, with `states` published.
-    #[must_use]
-    pub fn holding(mut self, name: &str, states: Vec<StoredState>) -> Self {
-        let held = self.held.get_or_insert_with(Held::default);
-        name.clone_into(&mut held.name);
-        held.states = states;
-        self
-    }
-
-    /// Holds a draft under `branch`, of `files` by their paths from the top of the tree.
-    #[must_use]
-    pub fn draft(mut self, branch: &str, files: BTreeMap<String, String>) -> Self {
-        let held = self.held.get_or_insert_with(Held::default);
-        held.drafts.insert(branch.to_owned(), files);
-        self
-    }
-
-    /// Sends `Retry-After: value` with each failing answer.
-    #[must_use]
-    pub fn retry_after(mut self, value: &str) -> Self {
-        self.retry_after = Some(value.to_owned());
-        self
-    }
-
-    /// Refuses every create as `forbidden`.
-    #[must_use]
-    pub fn forbidding_create(mut self) -> Self {
-        self.forbidden.push(Call::Create);
-        self
-    }
-
-    /// Refuses every import as `forbidden`.
-    #[must_use]
-    pub fn forbidding_import(mut self) -> Self {
-        self.forbidden.push(Call::Import);
-        self
-    }
-
-    /// Refuses every publish as a `conflict` at the head, with `detail` as its reason.
-    #[must_use]
-    pub fn closed(mut self, detail: &str) -> Self {
-        self.closed = Some(detail.to_owned());
-        self
-    }
-
-    /// Refuses an import whose body is longer than `bytes` as `payload_too_large`.
-    #[must_use]
-    pub fn import_limit(mut self, bytes: usize) -> Self {
-        self.import_limit = Some(bytes);
-        self
-    }
-
-    /// Refuses an import that holds a state whose files are longer than `bytes` together, as
-    /// `payload_too_large`.
-    #[must_use]
-    pub fn state_limit(mut self, bytes: usize) -> Self {
-        self.state_limit = Some(bytes);
-        self
-    }
-
-    /// The person refuses each authorization request.
-    #[must_use]
-    pub fn refusing_consent(mut self) -> Self {
-        self.consent = Consent::Deny;
-        self
-    }
-
-    /// Issues access tokens that expire in `seconds`.
-    #[must_use]
-    pub fn expiring_in(mut self, seconds: u64) -> Self {
-        self.expires_in = seconds;
-        self
-    }
-
-    /// Refuses a rotated refresh token presented again, and revokes its sign-in.
-    #[must_use]
-    pub fn without_grace(mut self) -> Self {
-        self.grace = false;
-        self
-    }
-
-    /// Refuses every refresh, as a sign-in that has lapsed.
-    #[must_use]
-    pub fn lapsing(mut self) -> Self {
-        self.lapsed = true;
-        self
-    }
-
-    /// Dates the remote's publishes from `seconds` after the Unix epoch, a second apart.
-    #[must_use]
-    pub fn publishing_from(mut self, seconds: u64) -> Self {
-        self.publish_from = seconds;
-        self
-    }
-}
-
 /// The simulator's state, shared between its server and the test.
 struct State {
     scenario: RemoteScenario,
@@ -252,6 +60,8 @@ struct State {
     held: Option<Held>,
     replies: HashMap<String, Value>,
     auth: oauth::Auth,
+    /// Whether the answer to the request being answered is lost.
+    answer_lost: bool,
 }
 
 impl State {
@@ -281,6 +91,7 @@ impl Remote {
             origin: String::new(),
             replies: HashMap::new(),
             auth: oauth::Auth::default(),
+            answer_lost: false,
         }));
         let (server, origin) = if refusing {
             (None, refusing_url())
@@ -355,6 +166,11 @@ impl Remote {
         state.auth.grant(expires_in)
     }
 
+    /// Moves the simulator's clock on by `by`, without waiting.
+    pub fn advance(&self, by: Duration) {
+        lock(&self.state).auth.moved += by;
+    }
+
     /// Whether the access token `token` is admitted now.
     #[must_use]
     pub fn admits(&self, token: &str) -> bool {
@@ -371,10 +187,10 @@ struct Simulated {
 }
 
 impl Responder for Simulated {
-    fn answer(&mut self, request: &Request) -> Option<Response> {
+    fn answer(&mut self, request: &Request) -> Answer {
         let mut state = lock(&self.state);
         let mut response = match &state.scenario.mode {
-            Mode::Silent => return None,
+            Mode::Silent => return Answer::Hold,
             Mode::Failing { status, code } => match code {
                 Some(code) => problem::problem(*status, code, serde_json::Map::new()),
                 None => problem::plain(*status),
@@ -391,7 +207,17 @@ impl Responder for Simulated {
         {
             response.headers.push(("Retry-After".to_owned(), retry));
         }
-        Some(response)
+        // A refresh is delayed, or its answer lost, with the state released, so that neither
+        // the test nor the simulator's next request waits on it.
+        let delay = oauth::refreshing(request).then_some(state.scenario.refresh_delay);
+        let lost = std::mem::take(&mut state.answer_lost);
+        drop(state);
+        thread::sleep(delay.unwrap_or_default());
+        if lost {
+            Answer::HangUp
+        } else {
+            response.into()
+        }
     }
 }
 
@@ -416,7 +242,11 @@ fn route(state: &mut State, request: &Request) -> Response {
         "/auth/register" => only("POST", request, || oauth::register(state, request)),
         "/auth/authorize" => only("GET", request, || oauth::authorize(state, query)),
         "/auth/token" => only("POST", request, || oauth::token(state, request)),
-        _ => problem::refusal("not_found"),
+        skill::MANIFEST => only("GET", request, || skill::manifest(state)),
+        _ => match skill::package(state, path) {
+            Some(package) => only("GET", request, || package),
+            None => problem::refusal("not_found"),
+        },
     }
 }
 
