@@ -89,9 +89,17 @@ pub fn served(home: &Home) -> Result<Vec<PathBuf>, Failure> {
         .collect())
 }
 
-/// Whether `tree` is one the page server serves.
+/// Whether `tree` is one the page server serves. Each side is compared in its canonical form: a
+/// tree is registered as git names its top, which on Windows is `C:/repo`, while a canonical path
+/// there is written `\\?\C:\repo`, so the two never compare equal as written.
 pub fn is_served(home: &Home, tree: &Path) -> Result<bool, Failure> {
-    Ok(served(home)?.iter().any(|served| served == tree))
+    let tree = canonical(tree);
+    Ok(served(home)?.iter().any(|served| canonical(served) == tree))
+}
+
+/// `path` in its canonical form, or as written where it cannot be resolved.
+fn canonical(path: &Path) -> PathBuf {
+    path.canonicalize().unwrap_or_else(|_| path.to_owned())
 }
 
 /// The repository a worktree belongs to, named by the top of its main worktree.
