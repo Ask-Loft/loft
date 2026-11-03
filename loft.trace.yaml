@@ -32541,6 +32541,9 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_logs.rs"
         name: "a_tree_a_yard_command_added_is_served_without_registering_it"
         body: ab7563c222d0682c01276427251f18b42ff001a1d7256aa8f8120735b52dcc42
+      - file: "crates/loft-cli/tests/yard_serve_spelling.rs"
+        name: "a_tree_registered_under_another_spelling_of_its_path_is_served"
+        body: d5a0d7c9676f48eb961599199dd4395a8a761c1264d07fac519625fc66d20f62
   - node: 01a1877b-6de6-72d5-a7d7-a999103546c3
     reviewed: 997bfc7e593738b55f1f9dd41f7f751a61a8d60f83486efa2458b8b06db12dcf
     tests:

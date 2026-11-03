@@ -147,6 +147,7 @@ mod yard_serve_events;
 mod yard_serve_inherited;
 mod yard_serve_logs;
 mod yard_serve_page_data;
+mod yard_serve_spelling;
 mod yard_serve_subagents;
 mod yard_serve_usage;
 mod yard_serve_working_tree;
