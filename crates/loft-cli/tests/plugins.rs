@@ -301,6 +301,7 @@ fn the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_lo
 
 /// Runs the Claude Code plugin's hook command through the shell as Claude Code does, with the
 /// `loftCommand` setting `setting` and the hook object `hook` on its standard input.
+#[cfg(unix)]
 fn run_claude_hook(scratch: &Scratch, setting: &str, hook: &Value) -> std::process::Output {
     use std::io::Write as _;
     let mut command = Command::new("sh");

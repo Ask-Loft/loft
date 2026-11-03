@@ -164,6 +164,7 @@ impl Scratch {
 
     /// Runs `loft` at [`EPOCH`] under real git, as [`Self::loft_under_real_git`] does, with
     /// `first` ahead of the search path it would have.
+    #[cfg(unix)]
     pub fn loft_under_real_git_with_path_first(&self, args: &[&str], first: &[PathBuf]) -> Output {
         let mut command = self.bare(&Clock::fixed(EPOCH));
         real_git::isolate(&mut command);

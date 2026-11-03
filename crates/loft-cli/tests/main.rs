@@ -43,7 +43,9 @@ mod merge_driver;
 mod merge_driver_install;
 mod needs_repository;
 mod network_client;
+#[cfg(unix)]
 mod npm;
+#[cfg(unix)]
 mod npm_install;
 mod plugins;
 mod publish;
@@ -85,6 +87,7 @@ mod skill_files;
 mod skill_format;
 mod skill_hosts;
 mod skill_install;
+#[cfg(unix)]
 mod skill_package;
 mod skill_server;
 mod source_limits;

@@ -1,17 +1,21 @@
 //! Selected-host installation and preservation of the repository's live skill source.
 
 use std::fs;
-use std::os::unix::fs::symlink;
+#[cfg(unix)]
 use std::path::Path;
 
 use serde_json::{Value, json};
 
-use crate::common::{Scratch, skill_source, stderr, stdout};
+use crate::common::{Scratch, stderr};
+#[cfg(unix)]
+use crate::common::{skill_source, stdout};
 use crate::schema;
 use crate::skill_install::{CLAUDE, CODEX};
 use crate::snapshot::snapshot;
 
+#[cfg(unix)]
 const SOURCE: &str = "crates/loft-cli/skill/loft-spec";
+#[cfg(unix)]
 const LINK: &str = "../../crates/loft-cli/skill/loft-spec";
 
 fn installed(scratch: &Scratch, args: &[&str]) -> Value {
@@ -23,7 +27,9 @@ fn installed(scratch: &Scratch, args: &[&str]) -> Value {
     schema::conforming(&output.stdout, include_str!("../../../schemas/skill.json"))
 }
 
+#[cfg(unix)]
 fn with_source() -> Scratch {
+    use std::os::unix::fs::symlink;
     let scratch = Scratch::empty();
     let source = scratch.0.join(SOURCE);
     fs::create_dir_all(source.join("agents")).unwrap();
@@ -54,8 +60,10 @@ fn selecting_codex_preserves_claude_files_and_does_not_enable_its_plugin() {
     assert!(!fresh.0.join(".claude").exists());
 }
 
+#[cfg(unix)]
 #[test]
 fn selecting_claude_code_leaves_even_an_invalid_codex_destination_untouched() {
+    use std::os::unix::fs::symlink;
     let scratch = Scratch::empty();
     fs::create_dir_all(scratch.0.join(".agents/skills")).unwrap();
     symlink("missing", scratch.0.join(CODEX)).unwrap();
@@ -101,6 +109,7 @@ fn an_unknown_skill_host_is_a_usage_error_without_writes() {
     assert_eq!(snapshot(&scratch.0), before);
 }
 
+#[cfg(unix)]
 #[test]
 fn repeated_installs_preserve_the_repository_discovery_link_and_source_bytes() {
     let scratch = with_source();
@@ -122,6 +131,7 @@ fn repeated_installs_preserve_the_repository_discovery_link_and_source_bytes() {
     assert!(!stdout(&output).contains("commit "));
 }
 
+#[cfg(unix)]
 #[test]
 fn default_install_and_init_preserve_the_link_while_installing_claude() {
     let scratch = with_source();
@@ -140,8 +150,10 @@ fn default_install_and_init_preserve_the_link_while_installing_claude() {
     );
 }
 
+#[cfg(unix)]
 #[test]
 fn broken_and_unexpected_links_are_refused_before_any_installation() {
+    use std::os::unix::fs::symlink;
     for target in ["missing", "../../foreign"] {
         let scratch = Scratch::empty();
         fs::create_dir_all(scratch.0.join(".agents/skills")).unwrap();
@@ -169,6 +181,7 @@ fn broken_and_unexpected_links_are_refused_before_any_installation() {
     }
 }
 
+#[cfg(unix)]
 #[test]
 fn the_known_link_requires_its_source_router_and_codex_metadata() {
     for path in ["SKILL.md", "agents/openai.yaml"] {

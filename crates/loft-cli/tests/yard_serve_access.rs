@@ -3,8 +3,6 @@
 //! with the control token; a request that only reads with neither. A refused request changes no
 //! file.
 
-use std::fs;
-
 use serde_json::{Value, json};
 
 use crate::served::Served;
@@ -130,7 +128,7 @@ fn the_control_token_is_made_once_and_readable_only_by_its_owner() {
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt as _;
-        let mode = fs::metadata(&token).unwrap().permissions().mode();
+        let mode = std::fs::metadata(&token).unwrap().permissions().mode();
         assert_eq!(mode & 0o777, 0o600);
     }
     let again = Served::start(&yard, &[]).token();

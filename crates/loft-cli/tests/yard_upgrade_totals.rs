@@ -5,7 +5,6 @@
 //! of each Yard Log.
 
 use std::fs;
-use std::os::unix::fs::PermissionsExt;
 
 use serde_json::{Value, json};
 
@@ -255,8 +254,10 @@ fn while_a_page_server_runs_totals_files_are_left_and_the_page_server_is_named()
     assert_eq!(text(&yard, "codex~s1"), CODEX_CLASSIFIED);
 }
 
+#[cfg(unix)]
 #[test]
 fn a_totals_file_it_fails_to_write_is_named_beside_what_became_of_each_yard_log() {
+    use std::os::unix::fs::PermissionsExt as _;
     let yard = with_totals(&[("s2", CLAUDE)]);
     let folder = yard.folder(BRANCH).join("tokens");
     fs::set_permissions(&folder, fs::Permissions::from_mode(0o555)).unwrap();
