@@ -226,6 +226,7 @@ fn a_symbolic_link_on_the_way_to_a_written_file_is_refused_by_name_and_nothing_c
     }
 }
 
+#[cfg(unix)]
 fn elsewhere_put(scratch: &Scratch, path: &str) {
     let target = scratch.0.join(path);
     fs::create_dir_all(target.parent().unwrap()).unwrap();

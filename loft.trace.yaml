@@ -12086,7 +12086,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/setup_report.rs"
         name: "a_refusal_gives_no_report"
-        body: 052e780881b3a28b7b99076f0d0c94b714d495c9f53c75bba7761bd3427680e0
+        body: d94fae8df6b0e0d9aad216b2555ebed38a15448a0fc765567bb2333b7c8c7eb6
   - node: 5a70d86e-e021-47bb-9bab-c808cd0b5059
     reviewed: 7200e9c0d4ff1eba1b89d858a47c40bf291d69cde71f389941ad022fde32c691
     tests:
@@ -13661,7 +13661,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "skill_install_renames_a_new_directory_into_each_skill_directory_s_place"
-        body: 6e55a7420ee2c59f671157e5e495336ab37381e33bf4550d596285b653131ae2
+        body: cd376387c49d1792b20e34a9575616f0388a03644cc3e554dc8bb054923709b1
   - node: 01a13654-bf86-77e9-8fd5-8dcb3b697eba
     reviewed: b319e26bf36ff785235c6967b24c1fa8cde364417be156366fd4889c72d12ede
     tests:
@@ -13670,7 +13670,7 @@ links:
         body: 317684c7dfef6a77a6b759bfa1933cf6c484fd072b70b123442ad0813021594e
       - file: "crates/loft-cli/tests/skill_install.rs"
         name: "a_skill_install_that_fails_leaves_the_skill_directory_as_it_was_and_no_temporary_directory"
-        body: 668a4a8a75275121d3b441f9f95052de7cdc4356519a0c85f57b15ca7af8bcf0
+        body: 5538060cabdd059b75bbb09919bd079a8444de3d5c608cb3fdb2bbdc38c5ad1a
   - node: 01a13654-bf86-77e9-8fd5-8dcdad40c3a6
     reviewed: 2e75611f4aab4cc7eb160fc97e2b3a1e5c2305f87589fad36a693d700843730a
     tests:
@@ -13733,7 +13733,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/setup_report.rs"
         name: "a_refusal_gives_no_report"
-        body: 052e780881b3a28b7b99076f0d0c94b714d495c9f53c75bba7761bd3427680e0
+        body: d94fae8df6b0e0d9aad216b2555ebed38a15448a0fc765567bb2333b7c8c7eb6
   - node: 01a156af-5306-73ab-a0e4-ce9c87899113
     reviewed: 4299b70e30653e4fa0b9b61767f1737d502c74c85de762a41bd64ca92c63f1e2
     tests:
@@ -13931,7 +13931,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "selecting_claude_code_leaves_even_an_invalid_codex_destination_untouched"
-        body: 0a7424701b79a5212dab49e94a195f0dc5a7970c19d52d8cf3e4083d535ef865
+        body: 1e694ba3c525c38f5fe1429a0986d1327dd1d0dc4d3deb6728b58e3ab647346a
   - node: 01a17844-cbcb-77bf-af93-ba99e75f4bed
     reviewed: bd490ca7508f75d4ceec8538f858089d6429db741900db8351207dca35f97a9b
     tests:
@@ -13949,46 +13949,46 @@ links:
         body: af05c888d67749e16eb017d1ad7a7b71013e5bb680503ba659e8a42703ff5ef5
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
-        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+        body: 077522ff0661eaaeaa5b91c6b1528c47a96fb06606a778440d7bb4b777ad9df8
   - node: 01a17844-cbcb-77bf-af93-ba9c3e6fb522
     reviewed: 194f8405f58043f5936ef6ae6465a5c178aea5d6d658abbba1860df5df0d61ff
     tests:
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "the_known_link_requires_its_source_router_and_codex_metadata"
-        body: 17fc19fdb8478b7eef0dba17daf0aa6a551f1bd41a4cb931b735eedc89078688
+        body: b2a7f6a696de15a76fd901596169a898de60d4fa3a26cacaec02a40b66bef097
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
-        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+        body: 077522ff0661eaaeaa5b91c6b1528c47a96fb06606a778440d7bb4b777ad9df8
   - node: 01a17844-cbcb-77bf-af93-ba9d055e3558
     reviewed: a90ef02fb2e9fa1d0414951610d0da673fa965db1bc1f5fa505efbbf815199cc
     tests:
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
-        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+        body: 077522ff0661eaaeaa5b91c6b1528c47a96fb06606a778440d7bb4b777ad9df8
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "default_install_and_init_preserve_the_link_while_installing_claude"
-        body: daffe1fbfaad800de136efdb3d242cadcc7d76e4a53171f2c46955d9630a67e5
+        body: 28a93ba15f4a5bc11931733ae1448bd06194f7bbf2577b3d631c3039352fecf8
   - node: 01a17844-cbcb-77bf-af93-ba9ef9131ceb
     reviewed: d7e8b6a4ae21bc4a191cc2d28a06be869ea500e4c6fe47031f872de5ef59e0ff
     tests:
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "repeated_installs_preserve_the_repository_discovery_link_and_source_bytes"
-        body: b49d949ec18311d93696f4d8321b11544b7900e53d67585496526ee86b98be8f
+        body: 077522ff0661eaaeaa5b91c6b1528c47a96fb06606a778440d7bb4b777ad9df8
   - node: 01a17844-cbcb-77bf-af93-baa026e0f72c
     reviewed: 2f923843e27e37ddba20e9f191c529ff92154aef0671b79e9c5ee317c6cd489c
     tests:
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "broken_and_unexpected_links_are_refused_before_any_installation"
-        body: 665505867c6c11cea79bd80749b9d8a4c5534593796091a1372dc5edbe80a23a
+        body: 173ce376ffeae965728efe869954fcba89e609a1da3e2bd3c5dc18d6de0d9aa3
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "the_known_link_requires_its_source_router_and_codex_metadata"
-        body: 17fc19fdb8478b7eef0dba17daf0aa6a551f1bd41a4cb931b735eedc89078688
+        body: b2a7f6a696de15a76fd901596169a898de60d4fa3a26cacaec02a40b66bef097
   - node: 01a17844-cbcb-77bf-af93-baa10982a76c
     reviewed: be534d0f84328b119ffc91231d8885e5eecdbdc8ea402feea42123471d8827b4
     tests:
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "selecting_claude_code_leaves_even_an_invalid_codex_destination_untouched"
-        body: 0a7424701b79a5212dab49e94a195f0dc5a7970c19d52d8cf3e4083d535ef865
+        body: 1e694ba3c525c38f5fe1429a0986d1327dd1d0dc4d3deb6728b58e3ab647346a
       - file: "crates/loft-cli/tests/skill_hosts.rs"
         name: "selecting_codex_does_not_inspect_an_invalid_claude_destination"
         body: be9b39c44503fbe956d95fe1b288254f15f47f5d9aa09b74e64633d7b66357f8
@@ -14660,7 +14660,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/import_openspec.rs"
         name: "a_spec_reached_through_a_symbolic_link_is_not_given"
-        body: f55f735ed85753310db51e1859e1576315df320e079deba031bef016c9e1bb79
+        body: 4d6c2b755b22baf989e4a5847e4c1c2370367740d0f5c8c383706a076950b6df
   - node: 01a13fe4-0f95-721d-8c51-f58ab4b89783
     reviewed: 46fd2654389cc5ca068a97318792a3358230ebdd3e6260f25702911673b0215b
     tests:
@@ -16664,7 +16664,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/setup_report.rs"
         name: "the_hooks_loft_is_found_on_the_search_path_without_node_modules_bin_under_real_git"
-        body: 51a4b83c0fcc1859a9f883f399b4440889e35078169e5d82f9ced74d4fc86b0b
+        body: 32afd9adf7459591ebc8874e7260ea2ee42bee675f1551a6ffc6f5be8d6e06ea
       - file: "crates/loft-cli/src/setup.rs"
         name: "the_hooks_search_path_leaves_out_every_node_modules_bin"
         body: 44309a7bbbafb6e7975bf695af330e1bbb66198d6d5f2859293b0695ad444d06
@@ -25670,7 +25670,7 @@ links:
         body: b072363ee5f0a444c496f4339c071c3b036bbc0fda68bf9c598df72e241c1112
       - file: "crates/loft-cli/tests/yard_serve_access.rs"
         name: "the_control_token_is_made_once_and_readable_only_by_its_owner"
-        body: 1faa71c4a5c9220b3829404325686f33bde75c9894841843f09a543aa9bad821
+        body: ebc2cf52a7ae63290c26551aa2a4e3ee174002c0795ee0ff75f642949e47e717
   - node: 01a1649f-62f0-7320-902c-7d8fc94401ef
     reviewed: db79e23a228af47e0d74764652f10e6da4aee21b606991616d503236bfa4e27d
     tests:
@@ -27881,7 +27881,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
         name: "a_totals_file_it_fails_to_write_is_named_beside_what_became_of_each_yard_log"
-        body: 35435974e467fa80bdd85d736fb8589f0c828b776c138e6db0834415bc95a8ce
+        body: 13b01d156d023b4f7a88182581c3cef33e3c803e9bd7df01c9e5f5cc7ab1dd8e
       - file: "crates/loft-cli/tests/yard_upgrade_totals.rs"
         name: "with_no_home_an_older_totals_file_is_named_as_the_one_it_failed_on"
         body: 0c4964253113fd11f6bc975a9fe814cfa104a3af060b9f8f361eb0575a6e64a9
@@ -29552,13 +29552,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_serve_access.rs"
         name: "the_control_token_is_made_once_and_readable_only_by_its_owner"
-        body: 1faa71c4a5c9220b3829404325686f33bde75c9894841843f09a543aa9bad821
+        body: ebc2cf52a7ae63290c26551aa2a4e3ee174002c0795ee0ff75f642949e47e717
   - node: 01a1646f-546d-7042-befd-eb91a90fe38b
     reviewed: 7cb196138da8444953106b1e9b741a4800780b934a8fe40a90e34620e0515f95
     tests:
       - file: "crates/loft-cli/tests/yard_serve_access.rs"
         name: "the_control_token_is_made_once_and_readable_only_by_its_owner"
-        body: 1faa71c4a5c9220b3829404325686f33bde75c9894841843f09a543aa9bad821
+        body: ebc2cf52a7ae63290c26551aa2a4e3ee174002c0795ee0ff75f642949e47e717
   - node: 01a1646f-546d-7042-befd-eb9374d7cd55
     reviewed: 894ce23f993ee833e34cbf1786385e02a18a07a9bf170dfa45058a3a781a1b95
     tests:

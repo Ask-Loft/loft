@@ -2,7 +2,6 @@
 //! each host and written into the current directory, each package replacing its directory whole.
 
 use std::fs;
-use std::os::unix::fs::{MetadataExt, symlink};
 
 use crate::common::{Scratch, skill_source, stderr};
 use crate::schema;
@@ -173,8 +172,10 @@ fn the_json_of_a_failed_skill_install_lists_the_error() {
     assert!(message.contains(CLAUDE), "{message}");
 }
 
+#[cfg(unix)]
 #[test]
 fn skill_install_renames_a_new_directory_into_each_skill_directory_s_place() {
+    use std::os::unix::fs::MetadataExt as _;
     let scratch = Scratch::empty();
     let mut before = Vec::new();
     for directory in [CLAUDE, CODEX] {
@@ -194,8 +195,10 @@ fn skill_install_renames_a_new_directory_into_each_skill_directory_s_place() {
     }
 }
 
+#[cfg(unix)]
 #[test]
 fn a_skill_install_that_fails_leaves_the_skill_directory_as_it_was_and_no_temporary_directory() {
+    use std::os::unix::fs::symlink;
     let scratch = Scratch::empty();
     let skills = scratch.0.join(".claude/skills");
     fs::create_dir_all(&skills).unwrap();

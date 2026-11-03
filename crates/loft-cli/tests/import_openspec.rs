@@ -2,8 +2,8 @@
 //! project, the files it gives the converter, its findings and `V2-007` report, and the
 //! refusals that write nothing.
 
+use std::fs;
 use std::path::{Path, PathBuf};
-use std::{fs, os::unix::fs::symlink};
 
 use crate::common::{Scratch, stderr, stdout, tree};
 use crate::schema;
@@ -136,8 +136,10 @@ fn an_import_allocates_no_label_and_writes_no_lock_or_trace() {
     assert!(!scratch.0.join("loft.trace.yaml").exists());
 }
 
+#[cfg(unix)]
 #[test]
 fn a_spec_reached_through_a_symbolic_link_is_not_given() {
+    use std::os::unix::fs::symlink;
     let scratch = holding("quiet");
     symlink(
         scratch.0.join("openspec/specs/notes"),

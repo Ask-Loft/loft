@@ -23,6 +23,7 @@ pub fn yard_host_commands(host: &str) -> Vec<String> {
 }
 
 /// The commands `loft skill` lists.
+#[cfg(unix)]
 pub fn skill_commands() -> Vec<String> {
     listed(&["skill"])
 }

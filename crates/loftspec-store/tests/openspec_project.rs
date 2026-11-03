@@ -1,7 +1,6 @@
 //! Reading an `OpenSpec` directory into the files the converter takes.
 
 use std::fs;
-use std::os::unix::fs::symlink;
 
 use crate::common::Scratch;
 use loftspec_store::StoreError;
@@ -25,8 +24,10 @@ fn each_spec_below_specs_is_given_by_its_path_below_specs() {
     assert_eq!(read.specs[1].1, "# Notes\n");
 }
 
+#[cfg(unix)]
 #[test]
 fn a_spec_reached_through_a_symbolic_link_is_not_given() {
+    use std::os::unix::fs::symlink;
     let scratch = project();
     symlink(
         scratch.0.join("specs/notes"),

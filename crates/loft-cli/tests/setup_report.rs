@@ -3,7 +3,6 @@
 //! Claude Code plugin, and the step that remains for each, under the git simulator.
 
 use std::fs;
-use std::os::unix::fs::PermissionsExt as _;
 use std::process::Output;
 
 use serde_json::Value;
@@ -370,17 +369,22 @@ fn a_refusal_gives_no_report() {
     assert!(json.get("setup").is_none(), "{json}");
     assert!(!stdout(&output).contains("next: "));
 
-    let scratch = Scratch::empty();
-    fs::create_dir_all(scratch.0.join(".claude/skills")).unwrap();
-    std::os::unix::fs::symlink("missing", scratch.0.join(".claude/skills/loft-spec")).unwrap();
-    let (output, _) = scratch.loft_in(&["skill", "install", "--format", "json"], &ready());
-    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
-    let json = schema::conforming(&output.stdout, COMMANDS[1].1);
-    assert!(json.get("setup").is_none(), "{json}");
+    #[cfg(unix)]
+    {
+        let scratch = Scratch::empty();
+        fs::create_dir_all(scratch.0.join(".claude/skills")).unwrap();
+        std::os::unix::fs::symlink("missing", scratch.0.join(".claude/skills/loft-spec")).unwrap();
+        let (output, _) = scratch.loft_in(&["skill", "install", "--format", "json"], &ready());
+        assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+        let json = schema::conforming(&output.stdout, COMMANDS[1].1);
+        assert!(json.get("setup").is_none(), "{json}");
+    }
 }
 
+#[cfg(unix)]
 #[test]
 fn the_hooks_loft_is_found_on_the_search_path_without_node_modules_bin_under_real_git() {
+    use std::os::unix::fs::PermissionsExt as _;
     let scratch = Scratch::empty();
     let script = |dir: &str, version: &str| {
         let dir = scratch.0.join(dir);
