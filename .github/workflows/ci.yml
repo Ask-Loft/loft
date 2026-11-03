@@ -42,6 +42,18 @@ jobs:
       # holds is only a warning here.
       - if: github.ref == 'refs/heads/main'
         run: cargo publish --workspace --dry-run
+  # Windows is a supported platform, and the Linux job never compiles code that only Windows
+  # compiles: a test that needs Unix (symbolic links, file modes) is gated with `cfg(unix)`, and so
+  # is every helper only such tests use. Clippy over every target holds that; the suite itself is
+  # not run on Windows.
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Installs the toolchain rust-toolchain.toml pins.
+      - run: rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace --all-targets -- -D warnings
   # The Loft mod is tested by Claude Code's own test kit, under a Claude Code pinned no older than
   # the mod needs; the pin is raised on purpose, in a change of its own. The kit loads the mod and
   # fires events through its hooks with no session, no sign-in and no network, and the tests stub
