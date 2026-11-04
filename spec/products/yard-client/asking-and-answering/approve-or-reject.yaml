@@ -17,6 +17,8 @@ requirements:
         name: "Approving raises Yard Log's revision by one."
       - key: 01a1646f-546c-7521-9643-bbdef30ee260
         name: "The page shows the block approved."
+      - key: 01a1a86a-2483-76c7-894e-d32891589f53
+        name: "A decided block gives its outcome once, in the line that names who decided it and when, and not again beside its title."
       - key: 01a1646f-546c-7521-9643-bbdfcffa05c0
         name: "The outcome names the person by git's `user.name` and `user.email`."
   - key: 01a1646f-546c-7521-9643-bbe03e6aa71e
