@@ -276,3 +276,15 @@ fn codex_cache_write_guidance_lies_in_the_skill_and_not_in_the_session_context()
     }
     assert!(!context.contains("usage"), "{context}");
 }
+
+#[test]
+fn the_codex_yard_adaptation_plans_at_a_branch_s_start_and_ends_a_wave_with_codex_review() {
+    let text = adaptation();
+    for phrase in [
+        "at the start of each branch that builds a change, waves included",
+        "suggest that the person switch Codex to Plan mode",
+        "A wave's closing review runs `codex review --base PARENT`",
+    ] {
+        assert!(text.contains(phrase), "{phrase}");
+    }
+}

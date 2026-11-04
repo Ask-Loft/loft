@@ -474,6 +474,14 @@ everything 2.3.0 will hold.
   apart from realization, guarantees rather than provisioning and the document's conventions;
   changing a product and publishing add their git practice; and a new reference, "Choosing the
   next change", finds and plans what to build next from the published states.
+- The `yard` skill is followed without being asked: its description names planning, building,
+  fixing and reviewing a change on a git branch, and every briefing of a branch, Claude Code's and
+  Codex's alike, tells the agent to follow it. It teaches three more habits: plan at the start of
+  each branch that builds a change (`EnterPlanMode` in Claude Code; in Codex, the planning
+  workflow and a suggestion to switch to Plan mode); keep one note of the issues met and fixed in
+  each stage that builds; and split large work into waves, branches cut from a parent branch that
+  each run their own Yard cycle and end with a review (`/simplify`, then `/code-review` in Claude
+  Code; `codex review --base <parent>` in Codex).
 
 ## 2.2.1 (2026-10-21)
 
