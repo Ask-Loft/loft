@@ -3,6 +3,16 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.3.0-alpha.5 (2026-11-04)
+
+The fifth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.5`. Since 2.3.0-alpha.4 it lets you try
+the Yard page in Loft Web's design, with spec changes and flowcharts drawn by the page itself,
+questions as cards, and findings and decisions that read at a glance; the yard skill followed
+without being asked, with a plan at a branch's start, an issue note for each stage that builds
+and waves; `loft skill install --server`; and the Yard page on Windows. The entries under
+Unreleased below list everything 2.3.0 will hold.
+
 ## 2.3.0-alpha.4 (2026-11-01)
 
 The fourth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
