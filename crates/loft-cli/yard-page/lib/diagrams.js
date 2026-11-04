@@ -1,8 +1,10 @@
 // Diagrams: each code block of a block's Markdown marked `mermaid`, and each diagram the page
 // builds, drawn by the copy of Mermaid the page server serves with the page. Mermaid is loaded
 // the first time a diagram is drawn, in its strict mode, which draws no HTML the source holds.
-// It draws in the page's own colours for the scheme the browser asks for, and each diagram on
-// the page is drawn again when the browser changes its scheme. Each diagram drawn has a button
+// It draws in the page's own design for the scheme the browser asks for: square nodes on the
+// sidebar's ground with hairline borders, the page's face at 13 pixels, muted edges, and groups
+// framed by a hairline on the page's ground; and each diagram on the page is drawn again when the
+// browser changes its scheme. Each diagram drawn has a button
 // that expands it into the page's modal, where it zooms and pans.
 
 import { h } from './dom.js';
@@ -14,6 +16,8 @@ const LIGHT = {
   font: '"Inter", ui-sans-serif, system-ui, sans-serif',
   surface: '#ffffff',
   surface2: '#f3f7fa',
+  side: '#f6f9fb',
+  canvas: '#ffffff',
   mist: '#e5f6ff',
   ink: '#0e141d',
   muted: '#5c646f',
@@ -47,29 +51,34 @@ export function colours() {
   return /** @type {Colours} */ (Object.fromEntries(Object.entries(LIGHT).map(([name, fallback]) => [name, read(kebab(name)) || fallback])));
 }
 
-/** @param {Colours} c */
-function theme(c) {
+/**
+ * Mermaid's theme in the page's design: nodes on the sidebar's ground with hairline borders, the
+ * page's face at 13 pixels, muted edges, and groups and edge labels on the page's ground.
+ * @param {Colours} c
+ */
+export function theme(c) {
   return {
     darkMode: scheme() === 'dark',
     fontFamily: c.font,
-    background: c.surface,
-    primaryColor: c.surface2,
+    fontSize: '13px',
+    background: c.canvas,
+    primaryColor: c.side,
     primaryTextColor: c.ink,
-    primaryBorderColor: c.ink,
+    primaryBorderColor: c.rail,
     secondaryColor: c.mist,
     secondaryTextColor: c.ink,
     secondaryBorderColor: c.rail,
-    tertiaryColor: c.surface,
+    tertiaryColor: c.canvas,
     tertiaryTextColor: c.ink,
     tertiaryBorderColor: c.line,
-    mainBkg: c.surface2,
-    nodeBorder: c.ink,
+    mainBkg: c.side,
+    nodeBorder: c.rail,
     lineColor: c.muted,
     textColor: c.ink,
     titleColor: c.ink,
-    clusterBkg: c.mist,
-    clusterBorder: c.rail,
-    edgeLabelBackground: c.surface,
+    clusterBkg: c.canvas,
+    clusterBorder: c.line,
+    edgeLabelBackground: c.canvas,
     noteBkgColor: c.waitSoft,
     noteTextColor: c.ink,
     noteBorderColor: c.wait,

@@ -4,9 +4,10 @@
 import { forget, root } from './dom.js';
 
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
 
-import { drawAll } from '../../yard-page/lib/diagrams.js';
+import { drawAll, theme } from '../../yard-page/lib/diagrams.js';
 import { h } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
 import { loftView } from '../../yard-page/views/loft/index.js';
@@ -252,4 +253,27 @@ test('closing the expanded diagram gives the focus back to the button that expan
   const { note } = await expanded();
   dialog().querySelector('.modal-close').click();
   assert.ok(document.activeElement === note.querySelector('.diagram-expand'), 'the button has the focus');
+});
+
+test('a diagram is drawn in the page’s design: nodes on the sidebar’s ground with hairline borders, the page’s face at 13 pixels, muted edges', () => {
+  const c = { font: 'Inter', surface: '#fff', surface2: '#f3f7fa', side: '#f6f9fb', canvas: '#ffffff', mist: '#e5f6ff', ink: '#0e141d', muted: '#5c646f', line: '#dbe2e9', rail: '#aab2ba', done: '', doneSoft: '', wait: '', waitSoft: '', danger: '', dangerSoft: '' };
+  const drawn = theme(c);
+  assert.equal(drawn.fontSize, '13px');
+  assert.equal(drawn.fontFamily, 'Inter');
+  assert.equal(drawn.mainBkg, c.side);
+  assert.equal(drawn.primaryColor, c.side);
+  assert.equal(drawn.nodeBorder, c.rail, 'a hairline, not ink');
+  assert.equal(drawn.primaryBorderColor, c.rail);
+  assert.equal(drawn.lineColor, c.muted);
+});
+
+test('a group of a diagram is framed by a hairline on the page’s ground, and an edge’s label lies on the page’s ground', () => {
+  const c = { font: 'Inter', surface: '#fff', surface2: '#f3f7fa', side: '#f6f9fb', canvas: '#ffffff', mist: '#e5f6ff', ink: '#0e141d', muted: '#5c646f', line: '#dbe2e9', rail: '#aab2ba', done: '', doneSoft: '', wait: '', waitSoft: '', danger: '', dangerSoft: '' };
+  const drawn = theme(c);
+  assert.equal(drawn.clusterBkg, c.canvas);
+  assert.equal(drawn.clusterBorder, c.line);
+  assert.equal(drawn.edgeLabelBackground, c.canvas);
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.diagram svg :is\(\.node, \.cluster\) :is\(rect, polygon, path\) \{ rx: 0; ry: 0; stroke-width: 1px; \}/, 'square corners and hairlines');
+  assert.match(css, /svg\[id\^="diagram-"\] \.label \{[^}]*font-size: inherit;[^}]*color: inherit|svg\[id\^="diagram-"\] \.label \{[^}]*color: inherit;[^}]*font-size: inherit/, 'the page’s label rule does not reach a diagram’s labels');
 });

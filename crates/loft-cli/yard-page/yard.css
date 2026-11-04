@@ -736,6 +736,12 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .after-merge { color: var(--signal); font-weight: 600; }
 .diagram { position: relative; overflow: auto; background: var(--canvas); border: 1px solid var(--line); padding: 10px; min-height: 40px; }
 .diagram svg { max-width: 100%; height: auto; }
+/* Mermaid's shapes in the page's design: square corners, and hairlines for borders and edges. */
+.diagram svg :is(.node, .cluster) :is(rect, polygon, path) { rx: 0; ry: 0; stroke-width: 1px; }
+.diagram svg :is(.flowchart-link, .edgePath path, .relation, .messageLine0, .messageLine1) { stroke-width: 1px; }
+/* The page's own `.label` must not reach Mermaid's labels, where it is measured or drawn: its size
+   and colour are the diagram's theme's, 13 pixels in ink. */
+svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; white-space: revert; }
 .diagram-error { color: var(--danger); font-size: 13px; }
 .diagram-expand { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; }
 .diagram-expand:hover { background: var(--mist); }

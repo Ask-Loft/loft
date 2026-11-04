@@ -160,6 +160,8 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
   expect(await colour(diagramBox(page), 'fill')).toBe('rgb(16, 22, 29)');
+  expect(await colour(diagramBox(page), 'stroke')).toBe('rgb(74, 85, 97)');
+  expect(await colour(diagramBox(page), 'stroke-width')).toBe('1px');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
@@ -215,6 +217,11 @@ test('in a browser that asks for a light scheme, the page, its Gantt chart and i
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
   expect(await colour(diagramBox(page), 'fill')).toBe('rgb(246, 249, 251)');
+  expect(await colour(diagramBox(page), 'stroke')).toBe('rgb(170, 178, 186)');
+  const label = page.locator('#block-drawn svg .nodeLabel').first();
+  expect(await colour(label, 'font-size')).toBe('13px');
+  expect(await colour(label, 'color')).toBe('rgb(14, 20, 29)');
+  expect(await colour(diagramBox(page), 'stroke-width')).toBe('1px');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
 });
