@@ -229,6 +229,8 @@ export function specGraph(graph, open, measure) {
       'elk.spacing.edgeEdge': '8',
       'elk.spacing.edgeLabel': '4',
       'elk.aspectRatio': '0.1',
+      // Every edge's points in the diagram's own frame, whichever panel holds its ends.
+      'elk.json.edgeCoords': 'ROOT',
     },
     children: /** @type {any[]} */ ([]),
     edges: /** @type {any[]} */ ([]),
@@ -275,4 +277,29 @@ export function specGraph(graph, open, measure) {
     });
   }
   return root;
+}
+
+/** How far right of its Requirement the trunk of its criteria's lines runs, in pixels. */
+export const TRUNK = 16;
+
+/**
+ * The placed diagram with the lines from each Requirement to its criteria drawn as one bracket:
+ * out from the Requirement's head line, along one trunk, and into each criterion's head line.
+ * @param {ReturnType<typeof import('./flowchart.js').placed>} layout
+ */
+export function trunks(layout) {
+  const byId = new Map(layout.nodes.map((node) => [node.id, node]));
+  const middle = (/** @type {any} */ node) => node.y + CARD.pad + CARD.head / 2;
+  const edges = layout.edges.map((edge) => {
+    const [from, to] = [byId.get(edge.from), byId.get(edge.to)];
+    if (edge.pattern !== 'tree' || !from || !to || to.x <= from.x + from.width) return edge;
+    const right = from.x + from.width;
+    const trunk = Math.min(right + TRUNK, (right + to.x) / 2);
+    const [out, into] = [middle(from), middle(to)];
+    const points = Math.abs(out - into) < 0.5
+      ? [{ x: right, y: out }, { x: to.x, y: into }]
+      : [{ x: right, y: out }, { x: trunk, y: out }, { x: trunk, y: into }, { x: to.x, y: into }];
+    return { ...edge, points };
+  });
+  return { ...layout, edges };
 }

@@ -12,7 +12,7 @@ import { decisionView } from '../../yard-page/views/loft/decision.js';
 import { findingsView } from '../../yard-page/views/loft/findings.js';
 import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
-import { CARD, MOST_BOXES, boxes, extras, headOf, specGraph, wrap } from '../../yard-page/model/spec-graph.js';
+import { CARD, MOST_BOXES, TRUNK, boxes, extras, headOf, specGraph, trunks, wrap } from '../../yard-page/model/spec-graph.js';
 import { placed } from '../../yard-page/model/flowchart.js';
 import { flowchartSvg } from '../../yard-page/views/flowchart-svg.js';
 import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
@@ -487,4 +487,29 @@ test('a working tree with no lock says that the specification has not been publi
 test('a publish recorded after Yard Log closed says it was recorded on the base branch after the merge', () => {
   const view = drawn(publishView({ status: { lock: null } }, { recorded: { ...RECORDED, branch: 'develop' } }, { branch: 'feat/shelf' }));
   assert.match(view.querySelector('.after-merge').textContent, /Recorded on develop after the merge/);
+});
+
+test('the line joining a criterion to its Requirement runs from the Requirement’s right to the criterion’s left, inside their panel', async () => {
+  const layout = trunks(await laid({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion] }));
+  const [held, beside] = [at(layout, 'r'), at(layout, 'c1')];
+  const line = layout.edges.find((edge) => edge.pattern === 'tree');
+  const [start, end] = [line.points[0], line.points.at(-1)];
+  assert.ok(Math.abs(start.x - (held.x + held.width)) < 1 && start.y >= held.y && start.y <= held.y + held.height, 'from the Requirement');
+  assert.ok(Math.abs(end.x - beside.x) < 1 && end.y >= beside.y && end.y <= beside.y + beside.height, 'to the criterion');
+});
+
+test('the lines from a Requirement to its criteria share one trunk, leaving and reaching each box at its head line', async () => {
+  const more = [1, 2, 3].map((n) => ({ ...criterion, key: `c${n + 1}`, label: `AC-${30 + n}`, name: `Criterion number ${n} of the Requirement.` }));
+  const layout = trunks(await laid({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion, ...more] }));
+  const held = at(layout, 'r');
+  const lines = layout.edges.filter((edge) => edge.pattern === 'tree');
+  assert.equal(lines.length, 4);
+  const trunk = held.x + held.width + TRUNK;
+  const head = (/** @type {any} */ node) => node.y + CARD.pad + CARD.head / 2;
+  for (const line of lines) {
+    const to = layout.nodes.find((node) => node.id === line.to);
+    assert.deepEqual(line.points[0], { x: held.x + held.width, y: head(held) }, 'out from the Requirement’s head line');
+    assert.deepEqual(line.points.at(-1), { x: to.x, y: head(to) }, 'into the criterion’s head line');
+    assert.ok(line.points.length === 2 || line.points[1].x === trunk, 'along the one trunk');
+  }
 });

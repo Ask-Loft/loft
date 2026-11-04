@@ -185,3 +185,24 @@ test('each edge and its label name the nodes they join, for the hover layer', as
   assert.equal(edge?.getAttribute('data-to'), 'B');
   assert.equal(drawn.querySelector('.flow-pill')?.getAttribute('data-to'), 'B');
 });
+
+test('an edge within a subgraph runs between its nodes where they are drawn, not where the subgraph’s frame would put it', async () => {
+  const data = {
+    nodes: [
+      { id: 'X', label: 'outside', shape: 'squareRect', cssStyles: [], cssClasses: '' },
+      { id: 'S', label: 'Group', shape: 'rect', isGroup: true },
+      { id: 'A', label: 'first', shape: 'squareRect', parentId: 'S', cssStyles: [], cssClasses: '' },
+      { id: 'B', label: 'second', shape: 'squareRect', parentId: 'S', cssStyles: [], cssClasses: '' },
+    ],
+    edges: [
+      { id: 'L_X_A_0', start: 'X', end: 'A', label: '', arrowTypeEnd: 'arrow_point', arrowTypeStart: 'none', pattern: 'normal' },
+      { id: 'L_A_B_0', start: 'A', end: 'B', label: '', arrowTypeEnd: 'arrow_point', arrowTypeStart: 'none', pattern: 'normal' },
+    ],
+  };
+  const layout = placed(await new ELK().layout(graphOf(data, {}, 'LR', measure)));
+  const [a, b] = ['A', 'B'].map((id) => layout.nodes.find((node) => node.id === id));
+  const inner = layout.edges.find((edge) => edge.id === 'L_A_B_0');
+  const [start, end] = [inner.points[0], inner.points.at(-1)];
+  assert.ok(Math.abs(start.x - (a.x + a.width)) < 1 && start.y >= a.y && start.y <= a.y + a.height, 'it leaves the first node');
+  assert.ok(Math.abs(end.x - b.x) < 1 && end.y >= b.y && end.y <= b.y + b.height, 'and reaches the second');
+});

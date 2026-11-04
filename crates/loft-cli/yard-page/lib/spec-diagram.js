@@ -4,7 +4,7 @@
 
 import { layoutEngine, ruler } from './flowchart.js';
 import { placed } from '../model/flowchart.js';
-import { specGraph } from '../model/spec-graph.js';
+import { specGraph, trunks } from '../model/spec-graph.js';
 import { flowchartSvg } from '../views/flowchart-svg.js';
 
 /**
@@ -23,7 +23,7 @@ export async function drawSpecChange(graph, open, id) {
   } finally {
     done();
   }
-  const layout = placed(await (await layoutEngine()).layout(laid));
+  const layout = trunks(placed(await (await layoutEngine()).layout(laid)));
   return flowchartSvg(layout, id, 'Diagram of the specification’s change').outerHTML;
 }
 

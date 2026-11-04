@@ -108,6 +108,8 @@ export function graphOf(data, classes, direction, measure) {
       'elk.layered.spacing.edgeNodeBetweenLayers': '16',
       'elk.spacing.edgeLabel': '6',
       'elk.edgeLabels.inline': 'false',
+      // Every edge's points in the flowchart's own frame, whichever subgraph holds its ends.
+      'elk.json.edgeCoords': 'ROOT',
     },
     children: /** @type {any[]} */ ([]),
     edges: /** @type {any[]} */ ([]),
