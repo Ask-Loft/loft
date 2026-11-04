@@ -5,7 +5,7 @@ context: "Agents write their diagrams as Mermaid in a block's Markdown, nearly a
 state:
   kind: accepted
   selectedOption: 01a1a7ee-1768-724b-91f4-35ec5bb14463
-  outcome: "The page draws a Mermaid flowchart of a block's Markdown itself: Mermaid parses it, ELK's layered layout places its nodes and routes its edges orthogonally, and the page draws the result as SVG in Loft Web's design. Other diagram kinds, and the diagrams the page builds itself, stay with Mermaid on the page's theme. `elkjs` is vendored beside Mermaid, under its own licence."
+  outcome: "The page draws a Mermaid flowchart of a block's Markdown itself: Mermaid parses it, ELK's layered layout places its nodes and routes its edges orthogonally, and the page draws the result as SVG in Loft Web's design. A `spec-change` view's diagram is drawn by the same renderer, straight from the view's graph. Other diagram kinds stay with Mermaid on the page's theme. `elkjs` is vendored beside Mermaid, under its own licence."
 drivers:
   - key: 01a1a7ee-1768-724b-91f4-35e85ceb653a
     kind: local
@@ -112,6 +112,8 @@ consequences:
     kind: obligation
     statement: "A flowchart feature of Mermaid that the renderer does not draw is either drawn by it or left to Mermaid by a rule the page states."
 subjects:
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eac0614c263d
   - role: affected
     node: 01a1646f-546d-7042-befd-eb213cfb9073
   - role: outcome

@@ -19,9 +19,9 @@ requirements:
       - key: 01a16475-7fbc-7732-a78c-bc4f592eb112
         name: "The diagram draws the `realizes` and decision subject edges between the nodes it shows."
       - key: 01a1646f-546d-7042-befd-eac271279597
-        name: "Each added, changed or removed Requirement is drawn as a box beneath its Feature that holds its statement."
+        name: "Each added, changed or removed Requirement is drawn as a box inside its Feature's panel that holds its statement."
       - key: 01a16475-7fbc-7732-a78c-bc50ee43201f
-        name: "Each added, changed or removed criterion is drawn as a box beneath its Requirement that holds its name."
+        name: "Each added, changed or removed criterion is drawn as a box to the right of its Requirement, joined to it, that holds its name."
       - key: 01a1695a-dd72-7090-817b-abea7cf0c895
         name: "A Requirement or a criterion that did not change is drawn only where a changed criterion lies beneath it, and then only for context."
       - key: 01a1695a-dd72-7090-817b-abebaa96fd5a
@@ -34,6 +34,36 @@ requirements:
         name: "The view names the base revision it compares with, and the commit it was recorded at."
       - key: 01a1646f-546d-7042-befd-eac7b48cb905
         name: "A view of no change says that the specification has not changed since the base revision."
+  - key: 01a1a814-5ac4-7523-9962-5aca4077ab5e
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a `spec-change` view's diagram with its own flowchart renderer, as nested panels and cards in Loft Web's marks, at its own size."
+    criteria:
+      - key: 01a1a814-5ac4-7523-9962-5acb7c0667ce
+        name: "Each Product, Feature Group and Feature the diagram shows is a panel framed by a hairline that holds what belongs to it, headed by its kind's coloured square, its label and its name."
+      - key: 01a1a814-5ac4-7523-9962-5acc70ed77b9
+        name: "A Requirement's box and the boxes of its criteria stand in one row, the criteria stacked one beneath another to its right, each joined to it by a plain line without an arrowhead."
+      - key: 01a1a814-5ac4-7523-9962-5acd501df9ef
+        name: "Each box is a flat card headed by its kind's coloured square and its label in monospace, or its kind's name where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
+      - key: 01a1a814-5ac4-7523-9962-5ace0ee365c5
+        name: "An added, changed or removed box or panel carries a bar at its left in its change's colour and its change in a word at its right; a removed one is also outlined dashed."
+      - key: 01a1a814-5ac4-7523-9962-5acfa4c34f20
+        name: "The bars of change are green `#199e70`, blue `#256abf` and red `#e34948` in a light scheme, and green `#199e70`, blue `#3987e5` and red `#e66767` in a dark one."
+      - key: 01a1a814-5ac4-7523-9962-5ad00cc80371
+        name: "A box or panel drawn only for context lies on the sidebar's ground, in muted ink, with no bar and no word."
+      - key: 01a1a814-5ac4-7523-9962-5ad1ea6ba4e7
+        name: "A `realizes` or decision subject edge is dashed and ends in an arrowhead, its kind named in a pill beside it."
+      - key: 01a1a814-5ac4-7523-9962-5ad2905ffb74
+        name: "A legend above the diagram keys each change the diagram holds by its bar, with the number of boxes and panels of each."
+      - key: 01a1a814-5ac4-7523-9962-5ad3b612d689
+        name: "Pointing at a box brings forward it, its edges and the boxes they join, and fades the rest of the diagram."
+      - key: 01a1a814-5ac4-7523-9962-5ad4d5b14101
+        name: "Choosing a box, by the pointer or by the keyboard, unfolds the diff beneath and brings that node's entry into view, marked."
+      - key: 01a1a814-5ac4-7523-9962-5ad53fd5ae24
+        name: "A Feature Group folded into one box counts its changed nodes, and choosing its box opens it."
+      - key: 01a1a814-5ac4-7523-9962-5ad662373fdb
+        name: "The diagram is drawn at its own size and scrolls sideways where it is wider than its block."
   - key: 01a1695a-dd72-7090-817b-abecf6ac6c9d
     statement:
       form: ubiquitous

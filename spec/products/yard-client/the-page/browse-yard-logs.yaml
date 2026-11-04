@@ -436,7 +436,7 @@ requirements:
       shall: "draw the flowchart itself, as Mermaid parses it and ELK's layered layout places it, in the page's design."
     criteria:
       - key: 01a1a7ee-1770-7572-ab19-cf2fb03c7189
-        name: "Each node is a flat card with a hairline border on the sidebar's ground, its label in the page's face at 13 pixels in ink."
+        name: "Each node is a flat card with a hairline border on the sidebar's ground, square-cornered where it is a rectangle, its label in the page's face at 13 pixels in ink."
       - key: 01a1a7ee-1770-7572-ab19-cf3077c0957b
         name: "A node keeps its shape: a rectangle, a rounded rectangle, a stadium, a diamond or a circle."
       - key: 01a1a7ee-1770-7572-ab19-cf314156af4b
@@ -448,15 +448,17 @@ requirements:
       - key: 01a1a7ee-1770-7572-ab19-cf34ed11577a
         name: "An edge's label lies in a pill on the page's ground beside its edge."
       - key: 01a1a7ee-1770-7572-ab19-cf35dffbf659
-        name: "A subgraph is a panel framed by a hairline on the page's ground, titled in small muted text, holding its nodes."
+        name: "A subgraph is a panel framed by a hairline on the page's ground, titled in small muted monospace capitals, holding its nodes."
       - key: 01a1a7ee-1770-7572-ab19-cf365df5311d
         name: "The flowchart keeps its direction: top to bottom, bottom to top, left to right or right to left."
       - key: 01a1a7ee-1770-7572-ab19-cf371ce2cf24
         name: "A node's own `style` or `classDef` keeps its fill, its stroke and its text colour."
       - key: 01a1a7ee-1770-7572-ab19-cf38e596f988
         name: "A change of the browser's scheme recolours a flowchart already drawn without laying it out again."
-      - key: 01a1a7ee-1770-7572-ab19-cf39bdd8c665
-        name: "The diagrams the page builds itself, such as a `spec-change` view's, are drawn by Mermaid."
+      - key: 01a1a814-5ac4-7523-9962-5ad7fadce012
+        name: "A flowchart is drawn at its own size and never scaled down to fit its block: one wider than its block scrolls sideways within it, its text staying at 13 pixels."
+      - key: 01a1a814-5ac4-7523-9962-5ad8e9672abc
+        name: "Pointing at a node brings forward the node, its edges and the nodes they join, and fades the rest of the flowchart until the pointer leaves it."
   - key: 01a1646f-546d-7042-befd-eb4a816d5c07
     statement:
       form: state_driven
