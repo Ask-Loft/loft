@@ -10,6 +10,20 @@
 `scripts/vendor-mermaid.sh` writes both files from the registry. To move to another release,
 change the version there and here, run it, record the new digest here, and run the page's tests.
 
+# ELK, as the Yard page lays its flowcharts out with it
+
+- Release: elkjs 0.12.1, the Eclipse Layout Kernel compiled to JavaScript, used under the Eclipse
+  Public License 2.0 (`elk.LICENSE`); elkjs is offered under EPL-2.0 or GPL-3.0-or-later.
+- Source: `package/lib/elk.bundled.js` of <https://registry.npmjs.org/elkjs/-/elkjs-0.12.1.tgz>,
+  the build that runs in the page's own thread, with no worker.
+- SHA-256 of that file before compression: `b1032b7cfd2a57c54c6f0e8369d7665e19a579954f7cd20a6dae28f1912ea0d7`.
+- Kept here compressed, as `elk.bundled.js.gz` (`gzip -9 -n`); `loft yard serve` serves it at
+  `vendor/elk.bundled.js` with `Content-Encoding: gzip`, and the page loads it only when it
+  draws a flowchart.
+
+`scripts/vendor-elk.sh` writes both files from the registry. To move to another release, change
+the version there and here, run it, record the new digest here, and run the page's tests.
+
 # Inter, as the Yard page sets its text in it
 
 - Release: Inter, font version v20, as `@fontsource-variable/inter` 5.3.0 ships it, SIL Open Font License 1.1,
