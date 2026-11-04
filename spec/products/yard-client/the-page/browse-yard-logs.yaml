@@ -206,6 +206,10 @@ requirements:
         name: "The address names the stage and the block chosen, so that a reload or a link opens them again."
       - key: 01a1a7a4-51ce-73b8-bd34-87bce0e85c7f
         name: "The list and the pane beside it each scroll on their own."
+      - key: 01a1a888-7990-71fd-bb56-5c5be9b32b6c
+        name: "The pane holds the stage it shows within a width of at most 900 pixels, at the left of the room it has."
+      - key: 01a1a888-7990-71fd-bb56-5c5cf51bf54f
+        name: "The Markdown of a note, of an approval and of a `loft` block spans its block's width, held to no narrower measure."
       - key: 01a1a856-9e14-7124-a2ea-8d787f68be15
         name: "A change to the Yard Log, drawn again, leaves the list and the pane scrolled where they were, and brings no block into view."
       - key: 01a1a856-9e14-7124-a2ea-8d79ddaf440d
