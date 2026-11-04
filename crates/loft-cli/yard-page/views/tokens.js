@@ -103,7 +103,8 @@ function totals(all) {
  */
 export function tokensView(log) {
   const summary = keyed(log.tokenSums);
-  const section = h('section', { class: 'tokens', id: 'tokens', 'aria-labelledby': 'tokens-title' }, h('h3', { id: 'tokens-title' }, 'Tokens'));
+  // The view's tab names it; the view repeats no heading of its own, and is named for a reader.
+  const section = h('section', { class: 'tokens', id: 'tokens', 'aria-label': 'Tokens' });
   const note = h(
     'p',
     { class: 'tokens-note' },

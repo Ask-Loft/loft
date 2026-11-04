@@ -196,3 +196,11 @@ test('each share bar is thin, of one blue with a rounded end on a lighter step o
   const [shaping] = body('stage');
   assert.equal(shaping.cells[1].getAttribute('title'), '81 · 80% of recorded input');
 });
+
+test('the tokens view repeats no heading of the tab that names it, and is named for a reader', () => {
+  const view = tokensView(shown());
+  const section = view.matches('section.tokens') ? view : view.querySelector('section.tokens');
+  assert.ok(section);
+  assert.equal(section.querySelector('h1, h2, h3, h4'), null);
+  assert.equal(section.getAttribute('aria-label'), 'Tokens');
+});

@@ -948,7 +948,6 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
    width, each over a thin bar of its share in one blue, on a lighter step of that blue. Text keeps
    the page's ink; only the bars carry the hue. */
 .tokens { display: grid; gap: 24px; max-width: 1080px; }
-.tokens h3 { font-size: 15px; font-weight: 600; }
 .tokens h4 { font-size: 13px; font-weight: 600; color: var(--muted); }
 .token-totals { display: flex; flex-wrap: wrap; gap: 16px 48px; margin: 0; }
 .token-totals .stat { display: grid; gap: 4px; }
