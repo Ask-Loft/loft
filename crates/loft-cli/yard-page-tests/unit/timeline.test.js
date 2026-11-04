@@ -619,3 +619,23 @@ test('beneath a stage of the list, each block’s row gives its kind as a small 
   assert.match(css, /\.kind-icon \{[^}]*width: 14px; height: 14px; color: var\(--muted\);/);
   assert.match(css, /\.kind-icon svg \{ fill: none; stroke: currentColor; stroke-width: 1\.25;/);
 });
+
+test('a decided approval gives its outcome once, in the line naming who decided it, and not beside its title', () => {
+  const asked = block('approval', 'ship', { title: 'Ship it', markdown: 'May I?', html: '<p>May I?</p>' });
+  asked.outcome = { key: 'o', verdict: 'approved', channel: 'page', act: act('2026-01-01T10:05:00Z', 3, PERSON) };
+  const shown = log([stage('s', 'S', 'active', [asked])]);
+  const drawn = card(asked, { blocks: blocksByKey(shown), decisions: decisionsByQuestion(shown), marked: new Set(), waiting: new Set() });
+  assert.equal(drawn.querySelector('.block-head')?.textContent?.match(/approved/i), null, 'not beside the title');
+  assert.equal(drawn.querySelectorAll('.verdict-word').length, 1);
+  assert.match(drawn.querySelector('.outcome')?.textContent ?? '', /^Approved /);
+});
+
+test('beneath a stage of the list, an active task’s row has a green dot in the margin before it, named to a reader, and no other row does', () => {
+  const doing = block('task', 'doing', { title: 'Doing', state: 'active', detail: '' });
+  const done = block('task', 'done', { title: 'Done', state: 'done', detail: '' });
+  const shown = log([stage('now', 'Now', 'active', [doing, done]), stage('next', 'Next', 'planned', [])]);
+  const rows = [...timeline(shown, context(shown)).querySelectorAll('#row-now .block-rows .block-row')];
+  assert.deepEqual(rows.map((row) => row.querySelector('.active-dot')?.getAttribute('aria-label') ?? null), ['Active', null]);
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.active-dot \{ position: absolute; left: -11px;[^}]*background: var\(--change-added\);/, 'in the margin, out of the row’s flow, green');
+});

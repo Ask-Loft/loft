@@ -165,3 +165,11 @@ test('the tab of the view shown is ink, underlined in action blue', () => {
   assert.match(rule, /color:\s*var\(--ink\)/);
   assert.match(rule, /border-bottom-color:\s*var\(--signal\)/);
 });
+
+test('the head names the branch above the title only where the title is not the branch’s name', () => {
+  const shown = log([stage('s', 'S', 'active', [])]);
+  shown.yardLog.title = shown.branch ?? 'feat/shelf';
+  const drawn = page(shown, { place: { repository: '/work/shelf', main: true } });
+  assert.equal(drawn.querySelector('#head h1#log-title')?.textContent, shown.yardLog.title);
+  assert.deepEqual([...drawn.querySelectorAll('#head .kicker > span')].map((span) => span.textContent), ['shelf']);
+});

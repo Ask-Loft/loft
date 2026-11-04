@@ -250,6 +250,7 @@ function stageRow(stage, chosen, context) {
             dataset: { block: block.id },
             onclick: () => context.onChoose?.(stage.id, block.id),
           },
+          block.kind === 'task' && block.version?.body?.state === 'active' ? h('span', { class: 'active-dot', role: 'img', 'aria-label': 'Active', title: 'Active' }) : null,
           kindIcon(block.kind),
           h('span', { class: 'block-row-title' }, blockTitle(block)),
         ),

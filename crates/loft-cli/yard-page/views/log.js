@@ -153,7 +153,8 @@ export function logHead(log, context) {
         { class: 'kicker' },
         h('span', { class: 'repository', title: where?.repository ?? context.tree }, base(where?.repository ?? context.tree)),
         where && !where.main ? h('span', { class: 'tree', title: context.tree }, base(context.tree)) : null,
-        h('span', { class: 'branch' }, branch),
+        // The branch is named above the title only where the title is not its name.
+        (yardLog.title ?? branch) === branch ? null : h('span', { class: 'branch' }, branch),
       ),
       h('h1', { id: 'log-title' }, yardLog.title ?? branch),
       h(

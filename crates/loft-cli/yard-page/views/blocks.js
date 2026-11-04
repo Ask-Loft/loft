@@ -226,8 +226,8 @@ function decidable(block, context) {
     { class: 'block-head' },
     h('span', { class: 'kind' }, KINDS[block.kind]),
     h('h4', {}, body.title),
-    outcome ? h('span', { class: ['verdict', `verdict--${outcome.verdict}`] }, outcome.verdict) : null,
   );
+  // The outcome is given once, in the line that names who decided it and when.
   const decided = outcome
     ? h(
         'p',
