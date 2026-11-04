@@ -765,16 +765,21 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .option-open { display: inline-flex; gap: 6px; align-items: baseline; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
 .option-open::before { content: '▸'; color: var(--muted); font-size: 11px; }
 .option-open[aria-expanded="true"]::before { content: '▾'; }
-.option-why > td { background: var(--side); white-space: normal; }
-.option-why ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.option-description { margin-bottom: 6px; color: var(--body); }
+.assessments .option-why > td { background: var(--side); white-space: normal; text-align: left; }
+/* The opened row stays at the scroll box's left edge and within its width, however wide the table. */
+.option-why-body { position: sticky; left: 8px; max-width: min(720px, var(--room, 720px)); display: grid; gap: 8px; }
+.option-description { color: var(--body); }
+.option-ratings { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; align-items: baseline; }
+.option-ratings dt { font-weight: 600; color: var(--ink); }
+.option-ratings dd { margin: 0; }
+.option-rating { white-space: nowrap; }
 .consequences { gap: 4px; }
 .consequence { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: baseline; }
 .consequence-kind { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .decision-matrix { display: grid; gap: 6px; }
 .rating-key { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 12.5px; }
 .assessments th[scope="row"] { white-space: nowrap; }
-.assessments td:has(.rating) { text-align: center; }
+.assessments tr:not(.option-why) > td:has(.rating) { text-align: center; }
 .rating-symbol { font-size: 14px; font-weight: 600; }
 .decision-context > p { margin-top: 6px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }

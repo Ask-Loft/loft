@@ -30440,19 +30440,19 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
-        body: 8d09801b9e73dab7fb0c14f6d3e1eef6fcce65aebeb5390c00d6ce63f0b20c01
+        body: 4a0fbf5bfa219827a6f604f85b3d4f35258321c53b3bf7a74da4fa02bca4b55d
   - node: 01a1a86c-65d5-76fe-b38b-1c59d4593b08
     reviewed: ef7a2397b6ad09cdebb532f0d6adfe51b4a2bd675d8b53833e037f3b8621d9f9
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
-        body: 8d09801b9e73dab7fb0c14f6d3e1eef6fcce65aebeb5390c00d6ce63f0b20c01
+        body: 4a0fbf5bfa219827a6f604f85b3d4f35258321c53b3bf7a74da4fa02bca4b55d
   - node: 01a1a86c-65d5-76fe-b38b-1c5a6628183a
     reviewed: ba585ac0c4d919cf635eebe9203bbbd027d1a71a2272550425e35da7576308e5
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
-        body: 8d09801b9e73dab7fb0c14f6d3e1eef6fcce65aebeb5390c00d6ce63f0b20c01
+        body: 4a0fbf5bfa219827a6f604f85b3d4f35258321c53b3bf7a74da4fa02bca4b55d
   - node: 01a1646f-546d-7042-befd-eababcab5af2
     reviewed: 0d9fd5291d8784390b1f197255d6cfa5211f2b676f9a8af9e8643133badc5589
     tests:
@@ -30470,7 +30470,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
-        body: 8d09801b9e73dab7fb0c14f6d3e1eef6fcce65aebeb5390c00d6ce63f0b20c01
+        body: 4a0fbf5bfa219827a6f604f85b3d4f35258321c53b3bf7a74da4fa02bca4b55d
   - node: 01a1646f-546d-7042-befd-eabc540b4e07
     reviewed: f3fe2f71fb1d3a8c92815f3b4a1f50f685fca6206cd2eaec3700f1a3ff9559d7
     tests:
@@ -30482,7 +30482,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
-        body: 8d09801b9e73dab7fb0c14f6d3e1eef6fcce65aebeb5390c00d6ce63f0b20c01
+        body: 4a0fbf5bfa219827a6f604f85b3d4f35258321c53b3bf7a74da4fa02bca4b55d
   - node: 01a1646f-546d-7042-befd-eabdd040918b
     reviewed: 2060621bb194fca44e1ea6e0d7846104f981b5ceba911fb4d5ebd7baa48e16b2
     tests:

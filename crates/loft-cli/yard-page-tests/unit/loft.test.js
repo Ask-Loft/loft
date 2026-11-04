@@ -513,10 +513,12 @@ test('a decision’s selected option comes first in its table, marked, each row 
   assert.equal(toggle.getAttribute('aria-expanded'), 'true');
   assert.equal(why.hidden, false);
   assert.match(why.textContent, /The one/);
-  assert.match(why.textContent, /Speed\s*✓ supports quick/);
-  assert.match(why.textContent, /Size\s*– neutral middling/);
+  const ratings = [...why.querySelectorAll('.option-ratings > *')].map((each) => each.textContent.trim());
+  assert.deepEqual(ratings, ['Speed', '✓ supports', 'quick', 'Size', '– neutral', 'middling'], 'driver, rating and rationale, side by side');
+  assert.match(css, /\.assessments \.option-why > td \{[^}]*text-align: left;/, 'left-aligned, not centred as the ratings are');
+  assert.match(css, /\.assessments tr:not\(\.option-why\) > td:has\(\.rating\) \{ text-align: center; \}/);
+  assert.match(css, /\.option-why-body \{ position: sticky; left: 8px; max-width: min\(720px, var\(--room, 720px\)\);/, 'held within the width the table is seen in');
   assert.equal(rows[0].querySelector('td').getAttribute('tabindex'), '0', 'reached by the keyboard');
-  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
   assert.match(css, /\.assessments td:is\(:hover, :focus-visible\) \.rating-why \{ display: block; \}/);
   assert.match(css, /\.assessments tr\.is-chosen > th \{[^}]*box-shadow: inset 3px 0 0 var\(--signal\);/, 'a bar at its left');
   assert.deepEqual([...view.querySelectorAll('ul.consequences > li.consequence')].map((item) => item.textContent), ['benefitB1', 'costC1', 'benefitB2'], 'one list, each led by its kind');

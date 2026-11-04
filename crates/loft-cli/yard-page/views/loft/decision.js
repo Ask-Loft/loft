@@ -89,11 +89,18 @@ function matrix(options, drivers, rating) {
       h(
         'td',
         { colspan: drivers.length + 1 },
-        option.description ? h('p', { class: 'option-description' }, option.description) : null,
+        // Held at the scroll box's left edge and no wider than it, whatever the table's width.
         h(
-          'ul',
-          {},
-          cells.map(([driver, cell]) => (cell ? h('li', {}, h('strong', {}, driverName(driver)), ' ', ratingMark(cell.rating), cell.rationale ? ` ${cell.rationale}` : '') : null)),
+          'div',
+          { class: 'option-why-body' },
+          option.description ? h('p', { class: 'option-description' }, option.description) : null,
+          h(
+            'dl',
+            { class: 'option-ratings' },
+            cells.flatMap(([driver, cell]) =>
+              cell ? [h('dt', {}, driverName(driver)), h('dd', { class: 'option-rating' }, ratingMark(cell.rating)), h('dd', { class: 'option-rationale' }, cell.rationale ?? '')] : [],
+            ),
+          ),
         ),
       ),
     );
@@ -109,6 +116,9 @@ function matrix(options, drivers, rating) {
           const open = button.getAttribute('aria-expanded') !== 'true';
           button.setAttribute('aria-expanded', String(open));
           opened.hidden = !open;
+          // The row's words keep within the width the table is seen in.
+          const room = button.closest('.table-wrap')?.clientWidth;
+          if (room) opened.style.setProperty('--room', `${room - 32}px`);
         },
       },
       option.title,
