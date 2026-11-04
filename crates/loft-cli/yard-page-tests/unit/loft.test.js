@@ -665,3 +665,21 @@ test('a decision’s outcome comes first beneath its head, and its context and d
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
   assert.match(css, /\.assessments th\[scope="row"\] \{ white-space: nowrap; \}/, 'an option’s title on one line');
 });
+
+test('a finding’s node without a label yet shows a muted mark that says it gets one at the publish, and a pair finding gives its second node beneath', () => {
+  const pair = finding({ rule: 'LQ-008', message: 'Near-duplicates.', change: 'introduced', path: 'spec/one.yaml', line: 3, subjects: [{ key: 'a', path: 'spec/one.yaml', line: 3 }, { key: 'b', path: 'spec/sub/two.yaml', line: 9 }] });
+  const nodes = { a: { label: null, name: 'The hooks reach the log' }, b: { label: 'RQ-9', name: 'The hooks reach the log only' } };
+  const view = drawn(findingsView({ check: { errors: [], findings: [pair], resolved: [] }, nodes }, { reasons: [] }));
+  const line = view.querySelector('.finding-line');
+  const labels = [...line.querySelectorAll('.finding-label')];
+  assert.equal(labels.length, 2, 'the second node in the same columns');
+  const mark = labels[0].querySelector('.no-label');
+  assert.equal(mark?.textContent, 'no label');
+  assert.match(mark?.getAttribute('title') ?? '', /gets one when the specification is published/);
+  assert.equal(mark?.getAttribute('aria-label'), mark?.getAttribute('title'));
+  assert.equal(labels[1].textContent, 'RQ-9');
+  const second = line.querySelector('.finding-what.finding-second');
+  assert.match(second.textContent, /≈ and The hooks reach the log only/);
+  assert.deepEqual([...line.querySelectorAll('.site')].map((site) => [site.textContent, site.getAttribute('title')]), [['one.yaml:3', 'spec/one.yaml:3'], ['two.yaml:9', 'spec/sub/two.yaml:9']]);
+  assert.match(css, /\.no-label \{ color: var\(--muted\);/);
+});

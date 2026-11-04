@@ -815,6 +815,11 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .finding-line .site { justify-self: end; display: inline-flex; max-width: 100%; min-width: 0; }
 .site-file { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .site-line { flex: none; }
+/* A node without a label yet, and the second node of a pair, beneath the first. */
+.no-label { color: var(--muted); font-size: 12px; font-style: italic; cursor: help; }
+.finding-second { color: var(--body); }
+.finding-label.finding-second { padding-left: 1.2em; }
+.pair-mark { color: var(--muted); }
 /* Each finding is one line: its words cut where they run out of room, its place at the right. */
 .finding-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .finding-what :is(p, div) { display: inline; }

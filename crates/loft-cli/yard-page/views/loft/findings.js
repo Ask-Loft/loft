@@ -192,21 +192,61 @@ function findingLine(finding, report, reasons, message) {
   const reason = subject ? reasons.get(`${finding.rule} ${subject.key}`) : undefined;
   const node = subject ? report.nodes?.[subject.key] : undefined;
   const words = [message ? finding.message : null, node?.name ?? null].filter(Boolean).join(' — ');
+  // A finding that names a second node, as a pair of near-duplicate names does, gives it beneath.
+  const other = finding.subjects?.[1];
+  const second = other ? report.nodes?.[other.key] : undefined;
   return h(
     'li',
     { class: ['finding-line', finding.change === 'introduced' ? 'is-introduced' : null] },
-    h('span', { class: 'finding-label' }, node?.label ? tag(node.label) : null),
+    labelCell(node),
     h(
       'span',
       { class: 'finding-what', title: words || null },
       message ? h('span', { class: 'finding-own' }, finding.message, ' ') : null,
       node ? h('span', { class: 'node' }, nameOf(node)) : null,
     ),
-    finding.path
-      ? h('code', { class: 'site', title: place(finding) }, h('span', { class: 'site-file' }, base(finding.path)), finding.line ? h('span', { class: 'site-line' }, `:${finding.line}`) : null)
-      : h('span'),
+    siteCell(finding),
+    other
+      ? [
+          labelCell(second, true),
+          h(
+            'span',
+            { class: 'finding-what finding-second', title: second?.name ?? null },
+            h('span', { class: 'pair-mark', 'aria-hidden': 'true' }, '≈ '),
+            h('span', { class: 'sr-only' }, 'and '),
+            second ? h('span', { class: 'node' }, nameOf(second)) : null,
+          ),
+          siteCell(other),
+        ]
+      : null,
     reason ? h('span', { class: 'reason' }, `Left in place: ${reason}`) : null,
   );
+}
+
+/** What a node without a label yet says to a reader. */
+const NO_LABEL = 'No label yet: it gets one when the specification is published.';
+
+/**
+ * The label column of a finding's line: its node's label, or a muted mark where it has none yet.
+ * @param {any} node
+ * @param {boolean} [second] whether it is the second node of a pair
+ */
+function labelCell(node, second = false) {
+  return h(
+    'span',
+    { class: ['finding-label', second ? 'finding-second' : null] },
+    node?.label ? tag(node.label) : node ? h('span', { class: 'no-label', title: NO_LABEL, 'aria-label': NO_LABEL, role: 'img' }, 'no label') : null,
+  );
+}
+
+/**
+ * The place column of a finding's line: its file's name and line, the whole path on hover.
+ * @param {{ path?: string, line?: number }} site
+ */
+function siteCell(site) {
+  return site.path
+    ? h('code', { class: 'site', title: place(site) }, h('span', { class: 'site-file' }, base(site.path)), site.line ? h('span', { class: 'site-line' }, `:${site.line}`) : null)
+    : h('span');
 }
 
 /** @param {any} item */
