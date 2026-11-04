@@ -425,9 +425,38 @@ requirements:
       - key: 01a1851a-2557-7721-ba02-488bef757a57
         name: "A diagram in a block that waits on the person is drawn in the panel of what waits, as it is in the timeline."
       - key: 01a1a7e1-2b67-777d-ab6f-d4bd4faa80d0
-        name: "A diagram is drawn in the page's design: square nodes on the sidebar's ground with hairline borders, its text in the page's face at 13 pixels, and its edges in muted ink with small arrowheads."
+        name: "A diagram other than a flowchart of a block's Markdown is drawn by Mermaid in the page's design: square nodes on the sidebar's ground with hairline borders, its text in the page's face at 13 pixels in ink, and its edges in muted ink."
       - key: 01a1a7e1-2b67-777d-ab6f-d4be0079e32d
-        name: "A group of a diagram is framed by a hairline on the page's ground, and an edge's label lies on the page's ground."
+        name: "A group of a diagram drawn by Mermaid is framed by a hairline on the page's ground, and an edge's label lies on the page's ground."
+  - key: 01a1a7ee-1770-7572-ab19-cf2e9d620206
+    statement:
+      form: optional
+      where: "a block's Markdown holds a Mermaid flowchart"
+      system: "the page"
+      shall: "draw the flowchart itself, as Mermaid parses it and ELK's layered layout places it, in the page's design."
+    criteria:
+      - key: 01a1a7ee-1770-7572-ab19-cf2fb03c7189
+        name: "Each node is a flat card with a hairline border on the sidebar's ground, its label in the page's face at 13 pixels in ink."
+      - key: 01a1a7ee-1770-7572-ab19-cf3077c0957b
+        name: "A node keeps its shape: a rectangle, a rounded rectangle, a stadium, a diamond or a circle."
+      - key: 01a1a7ee-1770-7572-ab19-cf314156af4b
+        name: "Each node is wide and tall enough for its label as measured in the page's face, so that no label is cut."
+      - key: 01a1a7ee-1770-7572-ab19-cf32ceffe763
+        name: "Each edge runs in horizontal and vertical segments that turn with rounded elbows, in muted ink, and ends in a small arrowhead where Mermaid's source gives it one."
+      - key: 01a1a7ee-1770-7572-ab19-cf332567ff3f
+        name: "A dotted edge is drawn dashed, and a thick edge is drawn thicker than a plain one."
+      - key: 01a1a7ee-1770-7572-ab19-cf34ed11577a
+        name: "An edge's label lies in a pill on the page's ground beside its edge."
+      - key: 01a1a7ee-1770-7572-ab19-cf35dffbf659
+        name: "A subgraph is a panel framed by a hairline on the page's ground, titled in small muted text, holding its nodes."
+      - key: 01a1a7ee-1770-7572-ab19-cf365df5311d
+        name: "The flowchart keeps its direction: top to bottom, bottom to top, left to right or right to left."
+      - key: 01a1a7ee-1770-7572-ab19-cf371ce2cf24
+        name: "A node's own `style` or `classDef` keeps its fill, its stroke and its text colour."
+      - key: 01a1a7ee-1770-7572-ab19-cf38e596f988
+        name: "A change of the browser's scheme recolours a flowchart already drawn without laying it out again."
+      - key: 01a1a7ee-1770-7572-ab19-cf39bdd8c665
+        name: "The diagrams the page builds itself, such as a `spec-change` view's, are drawn by Mermaid."
   - key: 01a1646f-546d-7042-befd-eb4a816d5c07
     statement:
       form: state_driven
