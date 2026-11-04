@@ -471,7 +471,7 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .block-row.is-new { box-shadow: inset 2px 0 0 var(--new); }
 /* An active task's dot lies in the margin before its row, so that the row's icon and title stay in place. */
 .block-row { position: relative; }
-.active-dot { position: absolute; left: -11px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--change-added); }
+.active-dot { position: absolute; left: -11px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--signal); }
 .kind-icon { flex: none; display: inline-flex; width: 14px; height: 14px; color: var(--muted); }
 .kind-icon svg { fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
 .block-row:hover .kind-icon, .block-row.is-chosen .kind-icon { color: var(--body); }

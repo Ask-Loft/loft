@@ -630,12 +630,14 @@ test('a decided approval gives its outcome once, in the line naming who decided 
   assert.match(drawn.querySelector('.outcome')?.textContent ?? '', /^Approved /);
 });
 
-test('beneath a stage of the list, an active task’s row has a green dot in the margin before it, named to a reader, and no other row does', () => {
+test('beneath a stage of the list, an active task’s row has a dot in the margin before it in the colour of the status active, named to a reader, and no other row does', () => {
   const doing = block('task', 'doing', { title: 'Doing', state: 'active', detail: '' });
   const done = block('task', 'done', { title: 'Done', state: 'done', detail: '' });
   const shown = log([stage('now', 'Now', 'active', [doing, done]), stage('next', 'Next', 'planned', [])]);
   const rows = [...timeline(shown, context(shown)).querySelectorAll('#row-now .block-rows .block-row')];
   assert.deepEqual(rows.map((row) => row.querySelector('.active-dot')?.getAttribute('aria-label') ?? null), ['Active', null]);
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
-  assert.match(css, /\.active-dot \{ position: absolute; left: -11px;[^}]*background: var\(--change-added\);/, 'in the margin, out of the row’s flow, green');
+  const active = /\.status\.status--active, \.state\.state--active \{ color: var\((--[a-z-]+)\); \}/.exec(css)?.[1];
+  assert.ok(active, 'the colour the pane gives the status active');
+  assert.match(css, new RegExp(`\\.active-dot \\{ position: absolute; left: -11px;[^}]*background: var\\(${active}\\);`), 'in the margin, out of the row’s flow, in that colour');
 });
