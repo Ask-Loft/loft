@@ -27937,11 +27937,11 @@ links:
         name: "the L of Loft’s wordmark is action blue and the rest of the name ink, in either scheme"
         body: 5318ad44eb34e4be07a8adb8c28f94e063510b079dce96d4f3c49e5ac648b1d6
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold"
-        body: 3db4052732e78f8068e38a5d01328957750f133394d1ddb2ffad1253878de7f7
+        name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
+        body: 81dbc0cf40cd6116014cf92bf3ff921709f0b279b36a4884607a87bf3ec9e8a3
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "in a dark scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold"
-        body: adcb0ccc88bc441872932faae5d2ee44e12defc040d901508f2b1e97402764c8
+        name: "in a dark scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
+        body: e465d1ccfe5fdd4454969cb8960705a2d686a1d9bd5b335059147812316b3f53
   - node: 01a16991-1851-764f-877b-c2d5f6abfd47
     reviewed: 065788a8efe9bd9200f22403608cf6171bf27d38a7bf4545a0d537110d33e865
     tests:
@@ -27985,14 +27985,14 @@ links:
         name: "open, the sidebar is headed by the button that folds it and the wordmark, above the lists"
         body: fddae117e156eb207306a19f460a5830faca81e59b53225f657e638a084d2ca1
   - node: 01a16901-3953-712b-afc6-44269a6cf574
-    reviewed: 0621528d79dc3be6a3943d6064ecfc920a70f08ba4ee441ca03593dafda523c7
+    reviewed: 334a63162ed47a67c9b75de6981608111579cec4e8ced97f2556d8ec3856c94c
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "folded, the sidebar is a rail of the button that opens it and an icon for each view of the Yard Log shown"
-        body: b4dcef269b79849961d5572f3c6e4f949a7c472aef771e4b7974143094ce10b6
+        name: "folded, the sidebar is a rail of the button that opens it"
+        body: 661af238bfc98ea042039fe3af16302b197daf198719bdc969d60bba54dcafb1
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "folding the sidebar leaves a rail of its button and the icons of the views, gives its room to the page, and the next visit keeps it folded"
-        body: 97fa020a87d0ab39247a1cd19fa9cd41f05604ba9f2c8736e4d1158b79ece79f
+        name: "folding the sidebar leaves a rail of its button, gives its room to the page, and the next visit keeps it folded"
+        body: 6f304821826744f89a76065db40f44ed6b83727f5d37d1bef4b2b410b50ef789
   - node: 01a168ea-af3e-70b5-83b9-97ff14bf889d
     reviewed: aec17e0906dfc4806bcbd2b689c62ca4c916244a4c062dd6135d5a23c3572dbb
     tests:
@@ -28000,14 +28000,14 @@ links:
         name: "the sidebar is open until the person folds it, and the browser keeps the choice"
         body: 94f79510146b63687a9a630b8f9762d770cfb3a0433e3b9da0b4b9d1991b3cdf
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "folding the sidebar leaves a rail of its button and the icons of the views, gives its room to the page, and the next visit keeps it folded"
-        body: 97fa020a87d0ab39247a1cd19fa9cd41f05604ba9f2c8736e4d1158b79ece79f
+        name: "folding the sidebar leaves a rail of its button, gives its room to the page, and the next visit keeps it folded"
+        body: 6f304821826744f89a76065db40f44ed6b83727f5d37d1bef4b2b410b50ef789
   - node: 01a168ea-af3e-70b5-83b9-9800f391884d
     reviewed: 78c4bc5eda4d483cfa74ef4c8ea806899283b0a5437ed0cb8849c12f908086eb
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "folding the sidebar leaves a rail of its button and the icons of the views, gives its room to the page, and the next visit keeps it folded"
-        body: 97fa020a87d0ab39247a1cd19fa9cd41f05604ba9f2c8736e4d1158b79ece79f
+        name: "folding the sidebar leaves a rail of its button, gives its room to the page, and the next visit keeps it folded"
+        body: 6f304821826744f89a76065db40f44ed6b83727f5d37d1bef4b2b410b50ef789
   - node: 01a168ea-af3e-70b5-83b9-9801a289a60f
     reviewed: f7629b36d3285dabbb3544b690fb34ba0551515fb559c0faa92d094f264e03c9
     tests:
@@ -28027,11 +28027,11 @@ links:
         name: "in a window narrower than 860 pixels the open sidebar lies over the page, which keeps only the rail’s room"
         body: b690956e6cd26c06e4c99e627b2afcbba8595ce1807e8e8d7428ce472511e2ca
   - node: 01a16920-dde7-743a-aadb-655223112875
-    reviewed: 02e77fee08f3943f4cc6ca1cd1f70b94b2cb89103f003102d2f0590aa598d5b8
+    reviewed: d8897588c530eb4f9cedc7d9fdccaf5994dc6966b6062d20c33b07ac4e9830a0
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page draws the sidebar again only when the list, the Yard Log chosen, the view shown or the sidebar’s fold changes"
-        body: 4e109026fc3675a13f153050275734ea483eee6626f5c8b64a72664182af889a
+        body: 98acaf30f68272182d2b6343696cc28894d6c7d7709a4449babbe5cdca22c45b
   - node: 01a1a7a4-51ce-73b8-bd34-87aa6730ba3d
     reviewed: 59cc3f0e03a5429a1cd82d7801812250e4b570f90937706074848fd6d413bbf4
     tests:
@@ -28042,44 +28042,47 @@ links:
     reviewed: 387e1cd7628f523772aca7c70f7c53798f6ff652df0ae8b3e261147b257bb4dd
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current"
-        body: 9862ffcef35ab7272fdf5048a52abe972419759e8635031776759287d511f43b
+        name: "the branch of the Yard Log shown is the current entry of the sidebar, and the sidebar lists no view"
+        body: ea479240c0b838d8d60a761ef249fa89e6b035e6c982888699d369e4dab7c249
   - node: 01a1a7a4-51ce-73b8-bd34-87ad97d9e616
-    reviewed: c66fe9b46349852606adf498943bb7f0200b82c242026f1f0d889c91cf0a5848
+    reviewed: 87847c60e327267459f578e7a56909651fc9081679e8e4543b2368fd4aeda2a1
     tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current"
-        body: 9862ffcef35ab7272fdf5048a52abe972419759e8635031776759287d511f43b
-  - node: 01a1a7a4-51ce-73b8-bd34-87ae5dc1386d
-    reviewed: 8a31be277c3794e430f86f2abd97fa180b483dcd16c83e1a4acf8ee6c68545b8
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current"
-        body: 9862ffcef35ab7272fdf5048a52abe972419759e8635031776759287d511f43b
-      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold"
-        body: 3db4052732e78f8068e38a5d01328957750f133394d1ddb2ffad1253878de7f7
-      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "in a dark scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold"
-        body: adcb0ccc88bc441872932faae5d2ee44e12defc040d901508f2b1e97402764c8
-  - node: 01a1a7a4-51ce-73b8-bd34-87af31f27e73
-    reviewed: dd5f00cb8b0b99ad773ee0c5c2a1bc6230e05a185f0feb2712145054ae7fbfde
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current"
-        body: 9862ffcef35ab7272fdf5048a52abe972419759e8635031776759287d511f43b
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "each view chosen in the sidebar is kept in the browser and drawn alone"
-        body: 23812897cafb2362312f2a7cc0de8acc49493f65483faeccfb620aea47a2956a
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
+  - node: 01a1a7a4-51ce-73b8-bd34-87ae5dc1386d
+    reviewed: 897a9299e4431158b80bc290833700f602dae401ac47fb7906fe9fc0b996b5c3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the tab of the view shown is ink, underlined in action blue"
+        body: 4021d588005863977d49f935a2d9e0788789cd30c5e45c2e7a408a169c939573
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the page keeps its width, the entries of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: b4a9c0dcbb085563e445f4833d19958fbb135eed5d2065c09f5c92561c80ba4d
+        name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
+        body: 81dbc0cf40cd6116014cf92bf3ff921709f0b279b36a4884607a87bf3ec9e8a3
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a dark scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
+        body: e465d1ccfe5fdd4454969cb8960705a2d686a1d9bd5b335059147812316b3f53
+  - node: 01a1a7a4-51ce-73b8-bd34-87af31f27e73
+    reviewed: db9491cdd4e25f5853ffd18ba95b6b50c8751eeb1c3914f3bccb56c155c701ac
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "choosing a view’s tab shows that view and keeps the stage chosen"
+        body: 0377aa8b96ef9a35685d682b4d10fb07eee1ad6a40cd017f36ac8b169f9302d1
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "each view chosen in the head’s tabs is kept in the browser and drawn alone"
+        body: 0a7c0e532ebd6575deab9a064e2634631f5a0e0fde3c3e79d7d71335464a77c6
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
+        body: 4a0904a0510927aadfa70d79385c31d2e55a610f761afcd275fa615f04b7b939
   - node: 01a1a7a4-51ce-73b8-bd34-87b0c01d27ce
-    reviewed: e0096f277df9eb0ee1324335c2ae661f16dcd8778199dd3d7f257f89e79f0bca
+    reviewed: 592f75fbc5eb50001391888b000ec375d0c46716ef7030f797880d816eaa6c46
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current"
-        body: 9862ffcef35ab7272fdf5048a52abe972419759e8635031776759287d511f43b
+        name: "the branch of the Yard Log shown is the current entry of the sidebar, and the sidebar lists no view"
+        body: ea479240c0b838d8d60a761ef249fa89e6b035e6c982888699d369e4dab7c249
   - node: 01a1a7a4-51ce-73b8-bd34-87b2bbf7a76d
     reviewed: 80834f6013c3a3e4b69124d0512aacb95f10ad64bb8c549e98b4eca0daadaedf
     tests:
@@ -28337,7 +28340,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "the person folds a stage of the list to its row and opens it to list its blocks by kind and title"
-        body: 713ff2d8e4bc603883fca9822cf604fcdd0db608afe24be57e94908c0abca387
+        body: e30f89b067ae20bedbaf8b2fac88efe64c4927656d1b3744555f9a82c8ec9148
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in the list, the active stage is open to its blocks and the planned one folded, and the person folds and opens each"
         body: db6faff02d3b13147def4e14033a3508148c427c39e520cf52bf6a2dc78db9d1
@@ -28388,7 +28391,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "a stage’s row gives the count of its blocks that wait on the person and of those marked since the last visit"
-        body: 380be5f336abd85835f8180d15779eca1b12d69367079ab09cb58c3f9088e1c6
+        body: a464dfd458eb731075738199ab9887bf59a0d0d8f3c62b7a2c4558bf32466957
   - node: 01a1a7a4-51ce-73b8-bd34-87be8a0c6fed
     reviewed: ea0d30ae9a0acea3fdecdeb79b88be648eed878f5001ef32922dfb9220ee3ebe
     tests:
@@ -28437,12 +28440,36 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/order.test.js"
         name: "updating a block preserves its position through mode grouping and reversing stages"
         body: 62fc9f0100788f88db38a17fec2c7646ed1beb38dc48d52e40879a02ad9d917b
+  - node: 01a1a7cf-9eae-75c1-bbfd-bbd5036bc56f
+    reviewed: 2fd9e8c4cfd0bfac6503ca2ad83ee0ac95a08c667e02780aafec847ed9e7454f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "with one stage, the list holds a row for each of its blocks in their order, and no row for the stage"
+        body: fa110bc757b6c8f14392564b6ea66e9598350f15f72623d236ef7115dcf96137
+  - node: 01a1a7cf-9eae-75c1-bbfd-bbd63a7b9af1
+    reviewed: 9e4d862ada8fb136c03c8b00c10e1915ec41b9501ee007e8e39eb83e9d28f2a5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a block’s row shows its title, then its kind and, where it has one, its state as a dot and a word, as a stage’s row shows its status"
+        body: 3cf8d2b8ec5a3ffc979c212f3976ff5fa8bbc32bc4bcf3950d6a6606861ffd64
+  - node: 01a1a7cf-9eae-75c1-bbfd-bbd7159598d3
+    reviewed: 7914541679a2a6d7576feaa1a3594fc6420abea024f5182d622f8b879a1a4ac3
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "choosing a block’s row brings the block into view in the pane and marks it as the block chosen"
+        body: 57c3aea222a18ab3113dac34eb8209e529676b3b897edce3998fe14fd25bfe25
+  - node: 01a1a7cf-9eae-75c1-bbfd-bbd82559a568
+    reviewed: c59d74d80500a194866080de20b4d07c1b373e3bc0bdd31e322671ca5234f816
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "with more than one stage, the list holds a row for each stage, with the rows of its blocks beneath it"
+        body: 77fad2ede38392d3e24816051160de478726916225cf972cfc6849bad7319569
   - node: 01a1690b-2c9b-7594-809f-4a8b682c03f5
     reviewed: 8af40b72e585a526966ba9ec1a4717bafcb502268892efc0a5b51ac1810854a6
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
         name: "a stage and a folded note the person toggled stay so through a fresh draw and after the page loads again"
-        body: 432d3a7f97d43259bb674a4764d6914b61d1716315112dac95e660923fa69a85
+        body: f5b99710d76a7fbbba25163106838f7de136eef5e469d799bb948bfd80377a06
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
         body: 8e15002d3bd77e509585092b0f647453d545b5767ab5e0da5f5eaa7c9f93e21d
@@ -28454,7 +28481,7 @@ links:
         body: be27c6d47420ff8f63bc25c21791455103bc5ab701ff7cd1c8dcdca31e6a7f24
       - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
         name: "a stage and a folded note the person toggled stay so through a fresh draw and after the page loads again"
-        body: 432d3a7f97d43259bb674a4764d6914b61d1716315112dac95e660923fa69a85
+        body: f5b99710d76a7fbbba25163106838f7de136eef5e469d799bb948bfd80377a06
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a fold the person toggled stays so through a change and after a reload, and a stage takes its default once its status changes"
         body: 8e15002d3bd77e509585092b0f647453d545b5767ab5e0da5f5eaa7c9f93e21d
@@ -29152,7 +29179,7 @@ links:
         name: "only what floats over the page carries a hard shadow"
         body: 435951f159df30b9336e33ee52504056cfa39831a8e2fdeb5e718feb9f223afb
   - node: 01a169df-0b4e-72cf-bc3c-472000361eef
-    reviewed: 1e4de23eb36f94db38832c387b3ce98c5bb2be26e11c38dc5413d380e0eb9dc4
+    reviewed: 8df9732455d13d3c71802f6cc271db349ecd989d4c9a73199ac1bbfb7468265b
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
@@ -29248,35 +29275,38 @@ links:
         name: "the page title gives the count of blocks that wait on the person"
         body: e3d7cc9af84f82f634f11ef386e77e053e4ac8832c6b88a8f13e8782ef4fe394
   - node: 01a1646f-546d-7042-befd-eb69ef96a504
-    reviewed: f3e4bd11a3101195861db31660278dfbbb3efd4be7f8efa15823a007e8cdcd4a
+    reviewed: 9e7b9a5c70ec6bee5abcf3792aa59ba8ffdf528e4b86dc4e9fd4bd6f947bca56
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Gantt chart is chosen, kept for the next visit, follows changes, and fits the page as the window narrows"
         body: 46134f1ef0922ec28d59d15b06da20723e6cb4e528dd7cdb0acf1631943a21bc
-      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current"
-        body: 9862ffcef35ab7272fdf5048a52abe972419759e8635031776759287d511f43b
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "each view chosen in the sidebar is kept in the browser and drawn alone"
-        body: 23812897cafb2362312f2a7cc0de8acc49493f65483faeccfb620aea47a2956a
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "choosing a view’s tab shows that view and keeps the stage chosen"
+        body: 0377aa8b96ef9a35685d682b4d10fb07eee1ad6a40cd017f36ac8b169f9302d1
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "each view chosen in the head’s tabs is kept in the browser and drawn alone"
+        body: 0a7c0e532ebd6575deab9a064e2634631f5a0e0fde3c3e79d7d71335464a77c6
   - node: 01a16984-aadb-7721-9995-472440ea0ee8
-    reviewed: 693d474eac993ddda9544685b61f3328b14b26d68076d41954e6710b1b8bb285
+    reviewed: c7a13f10307e14607d40cdf290c33dfd1819bc6ae10b986e5b7990a2ce797812
     tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
-        name: "beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current"
-        body: 9862ffcef35ab7272fdf5048a52abe972419759e8635031776759287d511f43b
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold"
-        body: 3db4052732e78f8068e38a5d01328957750f133394d1ddb2ffad1253878de7f7
+        name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
+        body: 81dbc0cf40cd6116014cf92bf3ff921709f0b279b36a4884607a87bf3ec9e8a3
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "in a dark scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold"
-        body: adcb0ccc88bc441872932faae5d2ee44e12defc040d901508f2b1e97402764c8
+        name: "in a dark scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
+        body: e465d1ccfe5fdd4454969cb8960705a2d686a1d9bd5b335059147812316b3f53
   - node: 01a168c0-7faa-72dc-8ad3-520c27488530
-    reviewed: deff69fb19630753be755eb335ec9c56c1075db8f4b98a290901ae599c965c49
+    reviewed: 981beffd24c2c56796b0e633e824cc9879c260efee34c61240f8f2b78f894fbb
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the page keeps its width, the entries of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: b4a9c0dcbb085563e445f4833d19958fbb135eed5d2065c09f5c92561c80ba4d
+        name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
+        body: 4a0904a0510927aadfa70d79385c31d2e55a610f761afcd275fa615f04b7b939
   - node: 01a1646f-546d-7042-befd-eb6a95402082
     reviewed: c5f20683f5e0c8667aeed4a6be61164f9ff1a0a0bd9f0dacbaa3d907a3e477b8
     tests:
@@ -29293,8 +29323,8 @@ links:
     reviewed: 7f90536f3b5c7ef866c241eaebdcde51e22fe70393f6895854e02f12f3340357
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the page keeps its width, the entries of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: b4a9c0dcbb085563e445f4833d19958fbb135eed5d2065c09f5c92561c80ba4d
+        name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
+        body: 4a0904a0510927aadfa70d79385c31d2e55a610f761afcd275fa615f04b7b939
   - node: 01a168c0-7faa-72dc-8ad3-520ece07dbc3
     reviewed: 30ca4895b79672ad3c175e1335cfef5a0763f66dfdac930c1f4e85551feaeae9
     tests:
@@ -31170,6 +31200,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/capabilities.test.js"
         name: "partial log coverage is shown once while breakdown bars use recorded subtotals"
         body: 7f7777a91272100246cc5350795d3c056134d02597490e7d7bba0dd688aea2d1
+  - node: 01a1a7cf-9eae-75c1-bbfd-bbd173b1e084
+    reviewed: 6bf61d5378c91516f62b357452e80879a036244d43e2853f786fd05e995e94ac
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the four totals are figures in proportional digits, and the table’s counts are right-aligned in digits of one width"
+        body: a552b7961a82c69ad8ee637d97435ab3da4e03c1231c8cf5308bda9196230864
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the tokens view shows its totals, table, coverage and note with no fold, its counts aligned and its bars thin, and live counts reach it"
+        body: 71b8212b63c65325c1a927eef4972e4388f2b3362dd4e05ce675a35ab51e44d3
+  - node: 01a1a7cf-9eae-75c1-bbfd-bbd28581c045
+    reviewed: 0b2cc4494aad1ce8824db61115f6fd7e6f8bf6bd2b70495961afc3f9cd697cc4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "each share bar is thin, of one blue with a rounded end on a lighter step of that blue, and names its count and share when pointed at"
+        body: 1b1d95d78c2e53f6db7ad2ae46fdf1821dbfbbb219c014162bc15adf8226f68d
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the tokens view shows its totals, table, coverage and note with no fold, its counts aligned and its bars thin, and live counts reach it"
+        body: 71b8212b63c65325c1a927eef4972e4388f2b3362dd4e05ce675a35ab51e44d3
   - node: 01a1646f-546d-7042-befd-eb1d0e18125d
     reviewed: 85a313541e390272ce06b2af82e3b1a70db14f9feebf82c909e1527d8542b00e
     tests:
@@ -31185,78 +31233,39 @@ links:
       - file: "crates/loft-cli/src/yard/serve/token_sums/tests.rs"
         name: "with_no_totals_file_nothing_is_counted"
         body: 48ec41a2ce5627a62bba1abb6cccfcc81d3520faea2fce1ba03e542d02bd04d6
-  - node: 01a18002-11df-7502-aae7-e831ca8ffed0
-    reviewed: b75dd9212ff609463a9b2195a15c1b1ce415678e66154fd2fee7f6aca1e43991
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
-        name: "token details start closed with the totals and partial notice outside the fold"
-        body: c6ee018a40e29df25aa76e31c6d7054dd3689dae8e4891624a6aef2a2affba82
-      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "token details start closed and keyboard choices survive live counts and reloads"
-        body: 3492e2e2cb0973f37b5e0d3ffa653814a1e289d68c5aa6a200a2bd582838cf32
-  - node: 01a18002-11df-7502-aae7-e832a623c32e
-    reviewed: 282db9cc159ccdf16def7ed09327fc8a3f15dca0260536baf5bf2dbe196aeaf3
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
-        name: "token details start closed with the totals and partial notice outside the fold"
-        body: c6ee018a40e29df25aa76e31c6d7054dd3689dae8e4891624a6aef2a2affba82
-      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "token details start closed and keyboard choices survive live counts and reloads"
-        body: 3492e2e2cb0973f37b5e0d3ffa653814a1e289d68c5aa6a200a2bd582838cf32
   - node: 01a18002-11df-7502-aae7-e833332abdbc
-    reviewed: 23fc7535d6f828b9bde22d9c9350afe6d69fb52be8ea9f5fe7c1f984a0a9653a
+    reviewed: ed1e2ef2f26c5a4e886f98fca56366938c169f815990cf79815cf139ba921bf6
     tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
-        name: "token details start closed with the totals and partial notice outside the fold"
-        body: c6ee018a40e29df25aa76e31c6d7054dd3689dae8e4891624a6aef2a2affba82
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the table, the reporting coverage and the note show beneath the summary, and nothing folds"
+        body: 29b154a85d25d351c76c96f9af1335e89d92c41b762d020d7014ed14841ca94b
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "token details start closed and keyboard choices survive live counts and reloads"
-        body: 3492e2e2cb0973f37b5e0d3ffa653814a1e289d68c5aa6a200a2bd582838cf32
-  - node: 01a18002-11df-7502-aae7-e8341610973a
-    reviewed: 4055f9489f45a091153753c1d3c5e0bb7ad9d143bdeec3f2334904f6d75f41bf
+        name: "the tokens view shows its totals, table, coverage and note with no fold, its counts aligned and its bars thin, and live counts reach it"
+        body: 71b8212b63c65325c1a927eef4972e4388f2b3362dd4e05ce675a35ab51e44d3
+  - node: 01a1a7cf-9eae-75c1-bbfd-bbd393684ee0
+    reviewed: 15ca6196b69b7d0b917532442dc65fb353809a4552750a82cedbbf74c6d1a871
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "the table, the reporting coverage and the note show beneath the summary, and nothing folds"
+        body: 29b154a85d25d351c76c96f9af1335e89d92c41b762d020d7014ed14841ca94b
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "with no counted request, the summary says so and no table is shown, with no fold to open"
+        body: 811a67ea7cf0afb7d9eca9480ec5f601d416bfb83dd855f5bd9b918e372b6710
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "token details start closed and keyboard choices survive live counts and reloads"
-        body: 3492e2e2cb0973f37b5e0d3ffa653814a1e289d68c5aa6a200a2bd582838cf32
-  - node: 01a18002-11df-7502-aae7-e8354f47bc75
-    reviewed: 1bc26516870a34160dacfda2e6a9eb3220c23ee110eaa8e1ea6f36e14f8181a4
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
-        name: "the token fold choice survives usage redraws and reloads independently for each log"
-        body: 7db73e2c00ac625d8e5f9aa492e47b16adeb82efe0c76fc06a399e2c13063f7d
-      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
-        name: "the token fold stays open when an empty summary receives its first counts"
-        body: 9fa671082872fdfde7bba0db51690c3a7bd4b724621ef8520bba01363e7df142
-      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "token details start closed and keyboard choices survive live counts and reloads"
-        body: 3492e2e2cb0973f37b5e0d3ffa653814a1e289d68c5aa6a200a2bd582838cf32
-      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
-        name: "a redraw captures the current fold state and ignores a replaced elements late toggle"
-        body: dc8839962a19dda605efa2652f14b8bab412031ee97485db4f0c80b7f8f073a9
-  - node: 01a18002-11df-7502-aae7-e836fa6d271e
-    reviewed: e86b93d03439e8acd0766cef42604508c8ba5b43d021a67a41c8e6397fba16b4
-    tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
-        name: "the token fold choice survives usage redraws and reloads independently for each log"
-        body: 7db73e2c00ac625d8e5f9aa492e47b16adeb82efe0c76fc06a399e2c13063f7d
-      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "token details start closed and keyboard choices survive live counts and reloads"
-        body: 3492e2e2cb0973f37b5e0d3ffa653814a1e289d68c5aa6a200a2bd582838cf32
-      - file: "crates/loft-cli/yard-page-tests/unit/kept.test.js"
-        name: "a connected fold is saved before its deferred native toggle event arrives"
-        body: 1f806956f0a98fe140746ad8d64e1b99b2492a13a0126fea9479a99793055a32
+        name: "the tokens view shows its totals, table, coverage and note with no fold, its counts aligned and its bars thin, and live counts reach it"
+        body: 71b8212b63c65325c1a927eef4972e4388f2b3362dd4e05ce675a35ab51e44d3
   - node: 01a18002-11df-7502-aae7-e837eeed49fc
-    reviewed: 5729c52bd243ca6556fa321262af90811468cce66867aa04b7ba8df7d956fb89
+    reviewed: b7a2c6a140570bb538fe737b03799ebff89dda789a37460db7bd7efd656f4d97
     tests:
-      - file: "crates/loft-cli/yard-page-tests/unit/token-fold.test.js"
-        name: "the no tokens summary stays outside closed token details"
-        body: a553eb42d51926cdaf49a72589504803843ae8a156d0a10b45778b9cdfa1c69b
+      - file: "crates/loft-cli/yard-page-tests/unit/tokens.test.js"
+        name: "with no counted request, the summary says so and no table is shown, with no fold to open"
+        body: 811a67ea7cf0afb7d9eca9480ec5f601d416bfb83dd855f5bd9b918e372b6710
   - node: 01a1646f-546d-7042-befd-eb20639f67b6
     reviewed: 14077e1497c0a31d58af4534ec3b3699b39617d027d3d1eeaa33f079629e697a
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "an open page shows a counted request’s tokens within 2 seconds of the request’s end"
-        body: be79cd01710b2a2bc69a0527d5d8b47630539caeeab23decf372638e49278673
+        body: 58cf88ffd7f4b1d8ccadc143d8bb407f9a57eec000f8db59d062706e75e9a721
   - node: 01a182b6-3c58-7235-ad04-392c4702ab33
     reviewed: ca5791e398150d879610e072e9145cc16f61c272c423836f9abc368d5ff11df9
     tests:
