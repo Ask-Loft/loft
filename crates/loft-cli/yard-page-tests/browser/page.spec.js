@@ -86,7 +86,7 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
   await closeWaiting(page);
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
-  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(24, 33, 43)');
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(16, 22, 29)');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
@@ -132,7 +132,7 @@ test('in a browser that asks for a light scheme, the page, its Gantt chart and i
   await closeWaiting(page);
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
-  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(243, 247, 250)');
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(246, 249, 251)');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
 });
@@ -146,7 +146,7 @@ test('when the browser changes its scheme, the open page and each diagram it dre
   });
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect.poll(() => colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
-  await expect.poll(() => colour(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(24, 33, 43)');
+  await expect.poll(() => colour(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(16, 22, 29)');
   expect(await page.evaluate(() => /** @type {any} */ (window).unreloaded)).toBe(true);
 });
 
@@ -1275,4 +1275,28 @@ test('delegated tasks stay in their owner stage through parallel execution, inte
   await page.getByRole('button', { name: 'Timeline', exact: true }).click();
   await expect(original.locator('#block-delegated-a .task-assignee')).toContainText('worker-c');
   expect(await page.locator('#block-delegated-next #block-delegated-a').count()).toBe(0);
+});
+
+test('a line set in the face that stands in for Inter takes Inter’s width and height within 2 percent', async ({ page }) => {
+  await page.goto(address());
+  const sizes = await page.evaluate(async () => {
+    await document.fonts.load('400 15px "Inter"');
+    await document.fonts.load('600 15px "Inter"');
+    const line = 'The page draws each stage of a branch’s Yard Log, its goal and every block it holds.';
+    /** @param {string} family @param {number} weight */
+    const measure = (family, weight) => {
+      const span = document.createElement('span');
+      span.textContent = line;
+      span.style.cssText = `position:absolute;white-space:nowrap;font:${weight} 15px/normal ${family};`;
+      document.body.append(span);
+      const { width, height } = span.getBoundingClientRect();
+      span.remove();
+      return { width, height };
+    };
+    return [400, 600].map((weight) => ({ inter: measure('"Inter"', weight), fallback: measure('"Inter Fallback"', weight) }));
+  });
+  for (const { inter, fallback } of sizes) {
+    expect(Math.abs(fallback.width - inter.width) / inter.width).toBeLessThan(0.02);
+    expect(Math.abs(fallback.height - inter.height) / inter.height).toBeLessThan(0.02);
+  }
 });
