@@ -9,7 +9,7 @@ import { gunzipSync } from 'node:zlib';
 
 import { add, h } from '../../yard-page/lib/dom.js';
 import { decisionView } from '../../yard-page/views/loft/decision.js';
-import { findingsView } from '../../yard-page/views/loft/findings.js';
+import { byRule, findingsView } from '../../yard-page/views/loft/findings.js';
 import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
 import { CARD, CHIP, MOST_BOXES, TRUNK, boxes, cut, evenPanels, extras, headOf, specGraph, trunks, unconstrained, wrap } from '../../yard-page/model/spec-graph.js';
@@ -324,21 +324,49 @@ test('a findings view counts the errors and the findings at each severity, each 
   const check = { errors, findings: [finding({}), finding({ severity: 'warning', rule: 'LQ-002' })], resolved: [], baseline: { revision: 'develop' } };
   const view = drawn(findingsView({ check, nodes: {} }, { reasons: [] }));
   assert.deepEqual([...view.querySelector('.counts').children].map((chip) => chip.textContent), ['1 error', '1 warning', '1 info']);
-  const [error, first] = view.querySelectorAll('.finding');
+  const [error] = view.querySelectorAll('.finding');
   assert.match(error.textContent, /parse error The file is not YAML\./);
   assert.equal(error.querySelector('.site code').textContent, 'spec/b.yaml:2');
-  assert.match(first.textContent, /LQ-005 info introduced/);
-  assert.equal(first.querySelector('.site code').textContent, 'spec/a.yaml:7');
+  const first = view.querySelector('.finding-group[data-rule="LQ-005"]');
+  assert.match(first.querySelector('summary').textContent, /LQ-005 info The text may hold more than one statement\./);
+  assert.equal(first.querySelector('.finding-line .site').textContent, 'spec/a.yaml:7');
   assert.match(view.querySelector('.base').textContent, /against develop/);
 });
 
 test('a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left', () => {
   const report = { check: { errors: [], findings: [finding({ change: 'preexisting' })], resolved: [finding({ rule: 'LQ-009' })] }, nodes: { n1: { label: 'AC-4', name: 'A link expires' } } };
   const view = drawn(findingsView(report, { reasons: [{ rule: 'LQ-005', key: 'n1', reason: 'one rule, said once' }] }));
-  assert.match(view.querySelector('.node').textContent, /AC-4\s+A link expires/);
-  assert.match(view.querySelector('.finding').textContent, /there before/);
-  assert.match(view.querySelector('.finding .reason').textContent, /one rule, said once/);
+  assert.match(view.querySelector('.finding-line .node').textContent, /AC-4\s+A link expires/);
+  assert.equal(view.querySelector('.finding-group .finding-heading').textContent, 'There before');
+  assert.match(view.querySelector('.finding-line .reason').textContent, /one rule, said once/);
   assert.match(view.querySelector('.resolved summary').textContent, /1 resolved by the branch/);
+});
+
+test('findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings', () => {
+  const findings = [
+    finding({ rule: 'LQ-008', severity: 'info', message: 'Near-duplicates.', change: 'preexisting', subjects: [{ key: 'a' }] }),
+    finding({ rule: 'LQ-009', severity: 'hint', message: 'A tag term.', change: 'preexisting', subjects: [{ key: 'b' }] }),
+    finding({ rule: 'LQ-008', severity: 'info', message: 'Near-duplicates.', change: 'introduced', subjects: [{ key: 'c' }] }),
+    finding({ rule: 'LQ-002', severity: 'warning', message: 'A vague word.', change: 'preexisting', subjects: [{ key: 'd' }] }),
+    finding({ rule: 'LQ-008', severity: 'info', message: 'Near-duplicates.', change: 'preexisting', subjects: [{ key: 'e' }] }),
+  ];
+  assert.deepEqual(byRule(findings).map((group) => [group.rule, group.introduced.length, group.before.length]), [['LQ-002', 0, 1], ['LQ-008', 1, 2], ['LQ-009', 0, 1]]);
+  const nodes = Object.fromEntries(['a', 'b', 'c', 'd', 'e'].map((key) => [key, { label: `AC-${key}`, name: `Node ${key}` }]));
+  const view = drawn(findingsView({ check: { errors: [], findings, resolved: [] }, nodes }, { reasons: [] }));
+  assert.equal(view.querySelector('.finding-split').textContent, '1 new on this branch · 4 there before');
+  const groups = [...view.querySelectorAll('.finding-group')];
+  assert.deepEqual(groups.map((group) => group.dataset.rule), ['LQ-002', 'LQ-008', 'LQ-009'], 'most severe first');
+  const dupes = groups[1];
+  assert.equal(dupes.querySelectorAll('.finding-message').length, 1, 'its message once');
+  assert.match(dupes.querySelector('summary .finding-counts').textContent, /1 new on this branch · 2 there before/);
+  assert.deepEqual(groups.map((group) => group.open), [false, true, false], 'open only where the branch introduced one');
+  assert.deepEqual([...dupes.querySelectorAll('.finding-heading')].map((heading) => heading.textContent), ['New on this branch', 'There before (2)']);
+  assert.equal(dupes.querySelector('details.finding-before')?.open, false, 'beneath new findings, those there before are folded beneath their count');
+  assert.equal(groups[0].querySelector('details.finding-before'), null, 'in a group of older findings alone, they are listed');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.finding-what \{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; \}/, 'one line, cut where it runs out of room');
+  assert.equal(dupes.querySelector('.finding-what')?.getAttribute('title'), 'AC-c Node c', 'its whole words on hover');
+  assert.deepEqual([...dupes.querySelectorAll('.finding-line .node')].map((node) => node.textContent.trim()), ['AC-c Node c', 'AC-a Node a', 'AC-e Node e'], 'the new first, each on one line');
 });
 
 test('a check with no error and no finding says that the specification is clean', () => {
@@ -447,14 +475,50 @@ test('a decision view shows the decision, its options with the selected one mark
   assert.match(view.querySelector('.decision-view-head').textContent, /Store a shelf in one file\s*accepted/);
   assert.match(view.querySelector('.unpublished').textContent, /no label/);
   assert.ok(view.querySelector('.decision-option.is-selected').textContent.startsWith('One file'));
-  const cells = [...view.querySelectorAll('.assessments tbody td')].map((cell) => cell.textContent);
-  assert.deepEqual(cells, ['supportsone read', 'conflictsmany reads']);
+  const cells = [...view.querySelectorAll('.assessments tbody tr:not(.option-why) td')];
+  assert.deepEqual(cells.map((cell) => cell.querySelector('.rating').textContent), ['✓ supports', '✕ conflicts'], 'a symbol and a word');
+  assert.deepEqual(cells.map((cell) => cell.querySelector('.rating-why').textContent), ['one read', 'many reads']);
   assert.equal(view.querySelector('.assessments thead th:nth-child(2)').textContent, 'Speed');
-  const tones = [...view.querySelectorAll('.assessments td .chip')].map((chip) => chip.className);
+  const tones = cells.map((cell) => cell.querySelector('.rating').className);
   assert.equal(new Set(tones).size, 2, `each rating has its own colour: ${tones}`);
   assert.match([...view.querySelectorAll('details li')].map((item) => item.textContent).join('\n'), /Speed Fast reads/);
-  assert.match(view.querySelector('.consequences').textContent, /risk A big file/);
-  assert.match(view.querySelector('.subjects').textContent, /affected CMP-1\s+Shelf store/);
+  assert.equal(view.querySelector('.consequence-kind[data-kind="risk"] .consequence-heading').textContent, 'Risks');
+  assert.match(view.querySelector('.consequence-kind li').textContent, /A big file/);
+  assert.match(view.querySelector('.subject-line[data-role="affected"]').textContent, /^Affects: CMP-1\s+Shelf store/);
+  assert.equal(view.querySelector('.subjects .chip, .consequences .chip'), null, 'no framed tag');
+});
+
+test('a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus', () => {
+  const report = {
+    decision: {
+      key: 'd', label: 'ADR-3', title: 'T', state: { kind: 'accepted' },
+      drivers: [{ key: 'r1', label: 'Speed' }, { key: 'r2', label: 'Size' }],
+      options: [{ key: 'o1', title: 'First' }, { key: 'o2', title: 'Chosen', selected: true, description: 'The one' }],
+      assessments: [{ option: 'o2', driver: 'r1', rating: 'supports', rationale: 'quick' }, { option: 'o2', driver: 'r2', rating: 'neutral', rationale: 'middling' }],
+      consequences: [{ kind: 'benefit', statement: 'B1' }, { kind: 'cost', statement: 'C1' }, { kind: 'benefit', statement: 'B2' }],
+      subjects: [{ role: 'affected', node: { label: 'F-1', name: 'One' } }, { role: 'affected', node: { label: 'F-2', name: 'Two' } }, { role: 'outcome', node: { label: 'RQ-1', name: 'Out' } }],
+    },
+  };
+  const view = drawn(decisionView(report));
+  const rows = [...view.querySelectorAll('.assessments tbody tr:not(.option-why)')];
+  assert.deepEqual(rows.map((row) => row.querySelector('th').textContent), ['Chosen', 'First']);
+  assert.ok(rows[0].classList.contains('is-chosen'));
+  const toggle = rows[0].querySelector('.option-open');
+  const why = view.querySelector(`#${toggle.getAttribute('aria-controls')}`);
+  assert.equal(why.hidden, true);
+  toggle.click();
+  assert.equal(toggle.getAttribute('aria-expanded'), 'true');
+  assert.equal(why.hidden, false);
+  assert.match(why.textContent, /The one/);
+  assert.match(why.textContent, /Speed\s*✓ supports quick/);
+  assert.match(why.textContent, /Size\s*– neutral middling/);
+  assert.equal(rows[0].querySelector('td').getAttribute('tabindex'), '0', 'reached by the keyboard');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.assessments td:is\(:hover, :focus-visible\) \.rating-why \{ display: block; \}/);
+  assert.match(css, /\.assessments tr\.is-chosen > th \{[^}]*box-shadow: inset 3px 0 0 var\(--signal\);/, 'a bar at its left');
+  assert.deepEqual([...view.querySelectorAll('.consequence-heading')].map((heading) => heading.textContent), ['Benefits', 'Costs']);
+  assert.deepEqual([...view.querySelectorAll('.consequence-kind[data-kind="benefit"] li')].map((item) => item.textContent), ['B1', 'B2']);
+  assert.deepEqual([...view.querySelectorAll('.subject-line')].map((line) => line.textContent.replace(/\s+/g, ' ').trim()), ['Affects: F-1 One · F-2 Two', 'Outcome: RQ-1 Out']);
 });
 
 test('a decision that is not accepted shows its state, and a rejected one its rationale', () => {

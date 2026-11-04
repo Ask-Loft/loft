@@ -750,16 +750,49 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .decision-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .decision-option { border-top: 1px solid var(--line); padding: 8px 10px; display: grid; gap: 2px; }
 .decision-option.is-selected { background: var(--mist); box-shadow: inset 0 2px 0 var(--ink); }
-.decision-option > .chip { justify-self: start; }
+.chosen-word { justify-self: start; color: var(--done); font-size: 12px; font-weight: 600; }
 .table-wrap { overflow-x: auto; contain: inline-size; }
 .assessments { border-collapse: collapse; font-size: 13px; }
 .assessments th, .assessments td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
 .assessments thead th { background: var(--surface-2); }
 /* The option chosen, and each rating tinted as Loft Web tints a decision's table. */
-.assessments tr.is-chosen > th { background: var(--mist); box-shadow: inset 3px 0 0 var(--ink); }
-.assessments .rating--supports { background: color-mix(in srgb, var(--new) 10%, transparent); }
-.assessments .rating--conflicts { background: color-mix(in srgb, var(--wait) 8%, transparent); }
-.assessments .rationale { font-size: 12px; margin-top: 2px; }
+.assessments tr.is-chosen > th { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
+.assessments td { white-space: nowrap; }
+.assessments td[tabindex] { cursor: help; }
+.rating { font-size: 12.5px; font-weight: 500; }
+.rating-mark--supports { color: var(--done); }
+.rating-mark--neutral { color: var(--muted); }
+.rating-mark--conflicts { color: var(--danger); }
+/* A cell's rationale floats beneath it while the pointer rests on it or it has the focus. */
+.assessments .rating-why { display: none; position: fixed; z-index: 30; width: max-content; max-width: 280px; padding: 6px 8px; background: var(--canvas); border: 1px solid var(--line); box-shadow: 0 4px 12px rgb(0 0 0 / 0.12); color: var(--body); font-size: 12px; font-weight: 400; line-height: 1.45; white-space: normal; }
+.assessments td:is(:hover, :focus-visible) .rating-why { display: block; }
+.option-open { display: inline-flex; gap: 6px; align-items: baseline; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.option-open::before { content: '▸'; color: var(--muted); font-size: 11px; }
+.option-open[aria-expanded="true"]::before { content: '▾'; }
+.option-why > td { background: var(--side); white-space: normal; }
+.option-why ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.option-description { margin-bottom: 6px; color: var(--body); }
+.consequences { gap: 10px; }
+.consequence-heading { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.consequence-kind ul { margin: 2px 0 0; padding-left: 18px; display: grid; gap: 2px; }
+.subjects { gap: 4px; }
+.subject-role { font-weight: 600; color: var(--ink); }
+.subject-sep { color: var(--muted); }
+/* A findings view: a fold for each rule, each finding of it on one line. */
+.finding-split { color: var(--muted); font-size: 13px; }
+.finding-group { border-top: 1px solid var(--line); padding-top: 6px; }
+.finding-group > summary { cursor: pointer; }
+.finding-message { color: var(--body); }
+.finding-counts { color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+.finding-heading { margin: 8px 0 2px; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.finding-lines { list-style: none; margin: 0; padding: 0 0 0 14px; display: grid; gap: 2px; font-size: 13px; }
+.finding-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; align-items: baseline; }
+/* Each finding is one line: its words cut where they run out of room, its place at the right. */
+.finding-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.finding-what :is(p, div) { display: inline; }
+.finding-line .site { color: var(--muted); font-size: 12px; background: none; white-space: nowrap; }
+.finding-line .reason { grid-column: 1 / -1; color: var(--muted); font-style: italic; }
+.finding-before > summary { cursor: pointer; }
 .lock { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
 .lock dt { color: var(--muted); }
 .lock dd { margin: 0; }
