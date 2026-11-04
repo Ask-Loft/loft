@@ -84,7 +84,7 @@ export function specChangeView(report, body, context = {}) {
     legendAt.replaceChildren(...[legend(shown)].filter(Boolean));
     void draw(target, {
       key: `spec\n${key}\n${open ?? ''}`,
-      draw: (id) => drawSpecChange(graph, open, id),
+      draw: (id, expanded) => drawSpecChange(graph, open, id, expanded),
       choose: (chosen) => {
         const group = shown.find((node) => node.key === chosen && isFolded(node));
         if (group) {

@@ -12,7 +12,7 @@ import { decisionView } from '../../yard-page/views/loft/decision.js';
 import { findingsView } from '../../yard-page/views/loft/findings.js';
 import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
-import { CARD, MOST_BOXES, TRUNK, boxes, extras, headOf, specGraph, trunks, wrap } from '../../yard-page/model/spec-graph.js';
+import { CARD, CHIP, MOST_BOXES, TRUNK, boxes, cut, extras, headOf, specGraph, trunks, wrap } from '../../yard-page/model/spec-graph.js';
 import { placed } from '../../yard-page/model/flowchart.js';
 import { flowchartSvg } from '../../yard-page/views/flowchart-svg.js';
 import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
@@ -512,4 +512,18 @@ test('the lines from a Requirement to its criteria share one trunk, leaving and 
     assert.deepEqual(line.points.at(-1), { x: to.x, y: head(to) }, 'into the criterion’s head line');
     assert.ok(line.points.length === 2 || line.points[1].x === trunk, 'along the one trunk');
   }
+});
+
+test('in its block, each box is a chip of one line, its name cut to fit, and its whole name given to a reader and under the pointer', async () => {
+  const layout = placed(await new ELK().layout(specGraph({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion], decisions: [], edges: [] }, null, measure, true)));
+  const chip = at(layout, 'r');
+  assert.equal(chip.card.compact, true);
+  assert.equal(chip.height, CHIP.height, 'one line');
+  assert.ok(chip.card.shown.endsWith('…') && measure([chip.card.shown]).width <= CHIP.name, 'its name cut to fit');
+  const drawn = flowchartSvg(layout, 'c1');
+  const shown = drawn.querySelector('[data-key="r"]');
+  assert.equal(shown?.querySelector('title')?.textContent, requirement.name, 'under the pointer');
+  assert.match(shown?.getAttribute('aria-label') ?? '', new RegExp(requirement.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.equal(shown?.querySelector('.spec-word')?.textContent, 'NEW');
+  assert.equal(cut('short', 100, measure), 'short', 'a name that fits is not cut');
 });

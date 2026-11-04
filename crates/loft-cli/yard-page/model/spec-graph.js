@@ -34,8 +34,12 @@ export const CHANGE_WORDS = { added: 'NEW', changed: 'CHANGED', removed: 'REMOVE
 /** A card's room: its padding, its change bar, its head's height and the gap beneath it, in pixels. */
 export const CARD = { pad: 12, bar: 3, head: 16, gap: 6, extra: 17, min: 140 };
 
-/** A panel's room: its head's height and its padding. */
+/** A panel's room: its head's height and its padding, for full cards and for the compact map. */
 export const PANEL = { head: 44, pad: 12 };
+export const COMPACT_PANEL = { head: 34, pad: 8 };
+
+/** A chip of the compact map: its padding beside its text, its height, and the widest its name runs. */
+export const CHIP = { pad: 10, height: 30, name: 200 };
 
 /** The widest a card's text runs before it wraps. */
 const MOST_WIDTH = { requirement: 220, criterion: 220 };
@@ -124,6 +128,44 @@ export function extras(node) {
 }
 
 /**
+ * `text` cut to no wider than `most` as `measure` finds it, ending in an ellipsis where it is cut.
+ * @param {string} text
+ * @param {number} most
+ * @param {(lines: string[], kind?: string) => { width: number }} measure
+ * @param {string} [kind]
+ */
+export function cut(text, most, measure, kind) {
+  const whole = String(text ?? '');
+  if (measure([whole], kind).width <= most) return whole;
+  const words = whole.split(/\s+/).filter(Boolean);
+  while (words.length > 1 && measure([`${words.join(' ')}…`], kind).width > most) words.pop();
+  let kept = words.join(' ');
+  while (kept.length > 1 && measure([`${kept}…`], kind).width > most) kept = kept.slice(0, -1);
+  return `${kept.replace(/[\s,.;:]+$/, '')}…`;
+}
+
+/**
+ * A chip's ELK node: one line of its label, its name cut to fit, and its change.
+ * @param {any} node
+ * @param {string} id
+ * @param {(lines: string[], kind?: string) => { width: number, height: number }} measure
+ */
+function chipOf(node, id, measure) {
+  const { label, word } = headOf(node);
+  // A folded Feature Group's chip counts its changed nodes after its name.
+  const name = isFolded(node) ? `${node.name ?? ''} · ${node.count} changed` : node.name ?? '';
+  const shown = cut(name, CHIP.name, measure, 'spec-chip-name');
+  const more = extras(node);
+  const width = CARD.bar + CHIP.pad + 12 + measure([label], 'spec-label').width + (shown ? 8 + measure([shown], 'spec-chip-name').width : 0) + (word ? 12 + measure([word], 'spec-word').width : 0) + CHIP.pad;
+  return {
+    id,
+    width: Math.ceil(width),
+    height: CHIP.height,
+    card: { key: node.key, kind: node.kind, label, word, change: node.change ?? null, compact: true, name, shown, lines: [], extras: more, chosen: Boolean(node.change) || isFolded(node) },
+  };
+}
+
+/**
  * The head of a box: its label, or its kind's name, and the word of its change.
  * @param {any} node
  */
@@ -174,18 +216,19 @@ function cardOf(node, id, measure) {
  * @param {string} id
  * @param {number} depth how many panels hold it
  * @param {(lines: string[], kind?: string) => { width: number, height: number }} measure
+ * @param {{ head: number, pad: number }} room
  */
-function panelOf(node, id, depth, measure) {
+function panelOf(node, id, depth, measure, room) {
   const { label, word } = headOf(node);
   const head = 12 + measure([label], 'spec-label').width + 8 + measure([node.name ?? ''], 'spec-panel-name').width + (word ? 16 + measure([word], 'spec-word').width : 0);
   return {
     id,
     group: true,
-    panel: { key: node.key, kind: node.kind, label, name: node.name ?? '', word, change: node.change ?? null, depth, chosen: Boolean(node.change) },
+    panel: { key: node.key, kind: node.kind, label, name: node.name ?? '', word, change: node.change ?? null, depth, chosen: Boolean(node.change), head: room.head, pad: room.pad },
     layoutOptions: {
-      'elk.padding': `[top=${PANEL.head},left=${PANEL.pad},bottom=${PANEL.pad},right=${PANEL.pad}]`,
+      'elk.padding': `[top=${room.head},left=${room.pad},bottom=${room.pad},right=${room.pad}]`,
       'elk.nodeSize.constraints': 'MINIMUM_SIZE',
-      'elk.nodeSize.minimum': `(${Math.ceil(head + 2 * PANEL.pad + CARD.bar)},${PANEL.head + PANEL.pad})`,
+      'elk.nodeSize.minimum': `(${Math.ceil(head + 2 * room.pad + CARD.bar)},${room.head + room.pad})`,
     },
     children: /** @type {any[]} */ ([]),
   };
@@ -197,8 +240,10 @@ function panelOf(node, id, depth, measure) {
  * @param {string | null} open
  * @param {(lines: string[], kind?: string) => { width: number, height: number }} measure a text's
  *   size, as the class `kind` sets it (a card's name where none is given)
+ * @param {boolean} [compact] the compact map the block shows, of one-line chips, rather than the
+ *   full cards the expanded diagram shows
  */
-export function specGraph(graph, open, measure) {
+export function specGraph(graph, open, measure, compact = false) {
   const { shown } = boxes(graph, open);
   const byKey = new Map(shown.map((node, index) => [node.key, { node, id: `n${index}` }]));
   const panel = (/** @type {any} */ node) => PANELS.has(node.kind) && !isFolded(node);
@@ -223,8 +268,8 @@ export function specGraph(graph, open, measure) {
       'elk.layered.considerModelOrder.strategy': 'NODES_AND_EDGES',
       'elk.layered.crossingMinimization.forceNodeModelOrder': 'true',
       'elk.layered.nodePlacement.strategy': 'NETWORK_SIMPLEX',
-      'elk.spacing.nodeNode': '12',
-      'elk.layered.spacing.nodeNodeBetweenLayers': '40',
+      'elk.spacing.nodeNode': compact ? '6' : '12',
+      'elk.layered.spacing.nodeNodeBetweenLayers': compact ? '28' : '40',
       'elk.spacing.edgeNode': '12',
       'elk.spacing.edgeEdge': '8',
       'elk.spacing.edgeLabel': '4',
@@ -238,7 +283,11 @@ export function specGraph(graph, open, measure) {
   /** @type {Map<string, any>} */
   const elkNodes = new Map();
   for (const { node, id } of byKey.values()) {
-    const made = panel(node) ? panelOf(node, id, depthOf(node), measure) : cardOf(node, id, measure);
+    const made = panel(node)
+      ? panelOf(node, id, depthOf(node), measure, compact ? COMPACT_PANEL : PANEL)
+      : compact
+        ? chipOf(node, id, measure)
+        : cardOf(node, id, measure);
     // A decision and a Component lie in the last column, beside the panels they relate to.
     if (!holder(node) && !panel(node) && (node.kind === 'decision' || node.kind === 'component')) {
       made.layoutOptions = { ...made.layoutOptions, 'elk.layered.layering.layerConstraint': 'LAST' };
@@ -289,7 +338,8 @@ export const TRUNK = 16;
  */
 export function trunks(layout) {
   const byId = new Map(layout.nodes.map((node) => [node.id, node]));
-  const middle = (/** @type {any} */ node) => node.y + CARD.pad + CARD.head / 2;
+  // A chip's line is its middle; a card's, its head line.
+  const middle = (/** @type {any} */ node) => node.y + (node.card?.compact ? node.height / 2 : CARD.pad + CARD.head / 2);
   const edges = layout.edges.map((edge) => {
     const [from, to] = [byId.get(edge.from), byId.get(edge.to)];
     if (edge.pattern !== 'tree' || !from || !to || to.x <= from.x + from.width) return edge;

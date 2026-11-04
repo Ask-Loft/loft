@@ -1546,8 +1546,10 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
     await expect(flow.locator('.spec-card')).toHaveCount(6, { timeout: 10_000 });
     await expect(flow.locator('.spec-panel')).toHaveCount(3);
     await expect(page.locator('#block-spec-test .spec-legend')).toHaveText(/^2 new3 changed1 removed$/);
-    // Its own size: a card's name is 13 pixels on the screen, and no card's text runs out of it.
-    expect(await colour(flow.locator('.spec-name').first(), 'font-size')).toBe('13px');
+    // In its block, a compact map of one-line chips, none of whose text runs out of it.
+    await expect(flow.locator('.spec-chip')).toHaveCount(6);
+    expect(await flow.locator('.spec-name').count()).toBe(0);
+    expect(await colour(flow.locator('.spec-chip-name').first(), 'font-size')).toBe('12.5px');
     const fits = await flow.evaluate((svg) =>
       [...svg.querySelectorAll('.spec-card')].every((card) => {
         const frame = /** @type {SVGGraphicsElement} */ (card.querySelector('.spec-frame')).getBBox();
@@ -1571,6 +1573,12 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
     await expect(entry).toHaveCount(1);
     await expect(entry).toContainText('An edit made through the link');
     await expect(entry).toBeInViewport();
+    // Expanded, the full cards, each name in the page's face at 13 pixels.
+    await page.locator('#block-spec-test .diagram-expand').click();
+    const expanded = page.locator('dialog.modal[data-modal="diagram"] svg.flow');
+    await expect(expanded.locator('.spec-name').first()).toBeVisible({ timeout: 10_000 });
+    expect(await colour(expanded.locator('.spec-name').first(), 'font-size')).toBe('13px');
+    await page.keyboard.press('Escape');
   }
   await page.emulateMedia({ colorScheme: 'light' });
 });

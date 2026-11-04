@@ -811,6 +811,8 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .flow .spec-word { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; fill: var(--muted); }
 .flow .spec-panel-name { font-size: 13px; font-weight: 600; fill: var(--ink); }
 .flow .spec-extra { font-size: 12px; fill: var(--muted); }
+.flow .spec-chip-name { font-size: 12.5px; fill: var(--ink); }
+.spec-card--context .spec-chip-name { fill: var(--muted); }
 .spec-card--context .spec-name { fill: var(--muted); }
 .flow-edge--tree { stroke: var(--rail); }
 .flow [role="button"] { cursor: pointer; }

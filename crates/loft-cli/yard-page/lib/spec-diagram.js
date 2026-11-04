@@ -12,14 +12,15 @@ import { flowchartSvg } from '../views/flowchart-svg.js';
  * @param {any} graph a `spec-change` report's graph
  * @param {string | null} open
  * @param {string} id unique on the page
+ * @param {boolean} [expanded] the full cards of the expanded diagram, rather than the compact map
  * @returns {Promise<string>} the SVG's markup
  */
-export async function drawSpecChange(graph, open, id) {
+export async function drawSpecChange(graph, open, id, expanded = false) {
   await document.fonts?.ready;
   const { measure, done } = ruler();
   let laid;
   try {
-    laid = specGraph(graph, open, measure);
+    laid = specGraph(graph, open, measure, !expanded);
   } finally {
     done();
   }

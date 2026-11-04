@@ -7,7 +7,7 @@
 
 import { svg } from '../lib/dom.js';
 import { PAD } from '../model/flowchart.js';
-import { CARD, KIND_NAMES, PANEL } from '../model/spec-graph.js';
+import { CARD, CHIP, KIND_NAMES } from '../model/spec-graph.js';
 
 /**
  * The attributes that let a node be chosen and name it to a reader.
@@ -43,10 +43,36 @@ function head(what, left, right, y, name) {
 }
 
 /**
- * A card, in its place.
+ * A chip of the compact map, in its place: one line of its label, its name cut to fit and its
+ * change; its whole name a reader is given and the pointer shows.
+ * @param {any} node a placed node with its compact `card`
+ */
+function chipSvg(node) {
+  const { x, y, width, height, card } = node;
+  const middle = y + height / 2;
+  return svg(
+    'g',
+    { class: `spec-card spec-chip spec-card--${card.change ?? 'context'}`, 'data-id': node.id, ...choosable(card, card.name) },
+    card.shown !== card.name ? svg('title', {}, card.name) : null,
+    svg('rect', { class: 'spec-frame', x, y, width, height }),
+    card.change ? svg('rect', { class: 'spec-bar', x, y, width: CARD.bar, height }) : null,
+    svg('rect', { class: `spec-kind spec-kind--${card.kind}`, x: x + CARD.bar + CHIP.pad, y: middle - 3, width: 6, height: 6 }),
+    svg(
+      'text',
+      { x: x + CARD.bar + CHIP.pad + 12, y: middle, 'dominant-baseline': 'central' },
+      svg('tspan', { class: 'spec-label' }, card.label),
+      card.shown ? svg('tspan', { class: 'spec-chip-name', dx: 8 }, card.shown) : null,
+    ),
+    card.word ? svg('text', { class: 'spec-word', x: x + width - CHIP.pad, y: middle, 'text-anchor': 'end', 'dominant-baseline': 'central' }, card.word) : null,
+  );
+}
+
+/**
+ * A card, in its place: a chip of the compact map, or a full card.
  * @param {any} node a placed node with its `card`
  */
 export function cardSvg(node) {
+  if (node.card.compact) return chipSvg(node);
   const { x, y, width, height, card } = node;
   const left = x + CARD.bar + CARD.pad;
   const middle = y + CARD.pad + CARD.head / 2;
@@ -82,6 +108,6 @@ export function panelSvg(group) {
     },
     svg('rect', { class: 'spec-panel-frame', x, y, width, height }),
     panel.change ? svg('rect', { class: 'spec-bar', x, y, width: CARD.bar, height }) : null,
-    head(panel, x + CARD.bar + PANEL.pad, x + width - PANEL.pad, y + PANEL.head / 2, panel.name),
+    head(panel, x + CARD.bar + panel.pad, x + width - panel.pad, y + panel.head / 2, panel.name),
   );
 }

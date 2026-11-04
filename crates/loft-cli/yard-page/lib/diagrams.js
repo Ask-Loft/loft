@@ -139,8 +139,9 @@ const EXPANDED = new WeakSet();
 
 /**
  * A diagram the page builds and draws itself: `draw` gives its SVG's markup, the same whatever
- * the scheme, under `key`; `choose`, where given, is told the key of a node the person chooses.
- * @typedef {{ key: string, draw: (id: string) => Promise<string>, choose?: (key: string) => void }} Drawing
+ * the scheme, under `key`, for its block or, `expanded`, for the modal; `choose`, where given, is
+ * told the key of a node the person chooses.
+ * @typedef {{ key: string, draw: (id: string, expanded: boolean) => Promise<string>, choose?: (key: string) => void }} Drawing
  */
 
 /**
@@ -179,14 +180,15 @@ export async function draw(target, source) {
   /** @type {string} */
   const text = typeof source === 'object' ? '' : typeof source === 'function' ? source(colours()) : source;
   const flow = typeof source === 'string' && FLOWCHART.test(text);
-  const key = drawing ? `drawing\n${drawing.key}` : flow ? `flow\n${text}` : `${scheme()}\n${text}`;
+  const expanded = EXPANDED.has(target);
+  const key = drawing ? `drawing\n${expanded ? 'expanded' : 'block'}\n${drawing.key}` : flow ? `flow\n${text}` : `${scheme()}\n${text}`;
   if (drawn.has(key)) {
     show(target, drawn.get(key));
     return;
   }
   const id = `diagram-${(counter += 1)}`;
   try {
-    const svg = drawing ? await drawing.draw(id) : flow ? await drawFlowchart(await mermaid(), text, id) : (await (await mermaid()).render(id, text)).svg;
+    const svg = drawing ? await drawing.draw(id, expanded) : flow ? await drawFlowchart(await mermaid(), text, id) : (await (await mermaid()).render(id, text)).svg;
     drawn.set(key, svg);
     if (drawn.size > KEPT) drawn.delete(drawn.keys().next().value);
     if (turns.get(target) !== turn) return;

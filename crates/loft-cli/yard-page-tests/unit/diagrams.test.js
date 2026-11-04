@@ -139,18 +139,22 @@ test('expanding a diagram opens it in a modal over the page, named by its block,
   assert.ok(document.activeElement === opened.querySelector('.zoom-stage'), 'the stage has the focus');
 });
 
-test('the expanded spec-change diagram is the one the page drew, with the Feature Group the person opened', async () => {
+test('the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened', async () => {
   const block = specChange(folded());
   await settled();
   const open = [...block.querySelectorAll('.group-button')].find((button) => button.textContent.startsWith('FG-2'));
   open.click();
   await settled();
   await settled(400);
-  const onPage = block.querySelector('.spec-diagram svg.flow')?.textContent;
-  assert.match(onPage ?? '', /Feature 2\.0/);
+  const keys = (/** @type {Element | null} */ at) => [...(at?.querySelectorAll('svg.flow [data-key]') ?? [])].map((each) => each.getAttribute('data-key')).sort();
+  const onPage = block.querySelector('.spec-diagram');
+  assert.match(onPage?.querySelector('svg.flow')?.textContent ?? '', /Feature 2\.0/);
+  assert.ok(onPage?.querySelector('.spec-chip') && !onPage.querySelector('.spec-name'), 'the block holds the compact map');
   block.querySelector('.spec-diagram .diagram-expand').click();
   await settled(400);
-  assert.equal(dialog().querySelector('.zoom-stage svg.flow')?.textContent, onPage);
+  const stage = dialog().querySelector('.zoom-stage');
+  assert.deepEqual(keys(stage), keys(onPage), 'the same boxes');
+  assert.ok(stage.querySelector('.spec-name') && !stage.querySelector('.spec-chip'), 'expanded, as full cards');
   assert.equal(dialog().querySelector('.modal-head h2').textContent, 'Spec change');
 });
 
