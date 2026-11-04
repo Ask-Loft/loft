@@ -41,3 +41,7 @@ requirements:
         name: "Within a rule's group, each finding is one line giving its node's label and name and the file and line it names."
       - key: 01a1a888-7990-71fd-bb56-5c5aea494ec8
         name: "The lines of a rule's group align their labels, names and places in columns, each place giving its file's name and line, and its file's whole path while the pointer rests on it."
+      - key: 01a1a893-5c27-75df-bb8a-f1e0eed36598
+        name: "A finding whose node has no label yet shows a muted mark in the label's column, which says to a reader and while the pointer rests on it that the node gets its label when the specification is published."
+      - key: 01a1a893-5c28-7461-a409-7c02df21cc76
+        name: "A finding that names two nodes, as a pair of near-duplicate names does, gives the second beneath the first in the same columns, with its own label, name and place."
