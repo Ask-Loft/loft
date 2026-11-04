@@ -51,9 +51,9 @@ requirements:
       - key: 01a1693f-7b72-7290-8335-f1758a4c74e2
         name: "The panel closes by its close button, and by Escape while the focus is within it."
       - key: 01a1693f-7b72-7290-8335-f1760105ed39
-        name: "A button in the page's header, after the switch of views, gives the count of the blocks that wait on the person and opens the panel."
+        name: "A button among the controls of the page's head gives the count of the blocks that wait on the person and opens the panel."
       - key: 01a16984-aadb-7721-9995-472382b34b90
-        name: "The button stays in view while the Yard Log scrolls."
+        name: "The button stays in view while the panes of the Yard Log scroll."
       - key: 01a1693f-7b72-7290-8335-f177e0a5756c
         name: "Each waiting block's button to answer opens the panel at that block's form."
       - key: 01a1693f-7b72-7290-8335-f17849978e57
@@ -73,8 +73,10 @@ requirements:
         name: "The panel keeps its margin to the bottom, left and right edges of the viewport and follows the viewport's size as it changes."
       - key: 01a1693f-7b72-7290-8335-f17d39c6e2b0
         name: "Content taller than the panel scrolls within it, while its heading and its close button stay in place."
+      - key: 01a1a7a4-51ce-73b8-bd34-87c31d6d0eaf
+        name: "The panel is drawn as what floats over the page: an ink border and a hard shadow offset down and to the right."
       - key: 01a169df-0b4e-72cf-bc3c-472000361eef
-        name: "The page above the panel is not darkened, scrolls and takes clicks, and its switch of views changes the view while the panel stays open."
+        name: "The page above the panel is not darkened, scrolls and takes clicks, and its entries of the views change the view while the panel stays open."
       - key: 01a169df-0b4e-72cf-bc3c-472182670121
         name: "While the panel is open, the page's end can be scrolled above the panel, so no part of the Yard Log stays hidden beneath it."
       - key: 01a169df-0b4e-72cf-bc3c-4722edee80d5

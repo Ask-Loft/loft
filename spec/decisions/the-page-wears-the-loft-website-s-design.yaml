@@ -3,9 +3,10 @@ slug: the-page-wears-the-loft-website-s-design
 title: "The page wears the Loft website's design"
 context: "The Yard page began with a palette of its own: a slate ground, rounded cards, amber for what waits and green for what is done, in the system's sans-serif. The Loft website, where Loft is introduced and its articles are read, sets its text in Inter on a white ground, draws its boxes square with an ink border and an offset shadow, and keeps a palette of ink, action blue, teal, rust and lilac in a light and a dark scheme. A person who reads about Loft on the website and then opens the Yard page meets two products."
 state:
-  kind: accepted
+  kind: superseded
   selectedOption: 01a16863-60a6-73b6-8b11-7a3781eb2f4f
   outcome: "The page sets its text in Inter, which the page server serves with it, and takes its palette, its square ink-bordered boxes and its offset shadows from the Loft website, in the website's light and dark schemes, following the browser's scheme with no switch of its own."
+  successor: 01a1a7a4-51c7-714b-a7e4-6f3c65c5b714
 drivers:
   - key: 01a16863-60a6-73b6-8b11-7a347cce8834
     kind: local
