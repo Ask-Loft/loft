@@ -36,11 +36,9 @@ ignored, leave it out of commits.
 
 ### Questions and plan approval use the Yard page
 
-Write the questions, approvals and plans of one decision point in a batch with `--send`.
-Give the person the page address, then await the decision using automatic monitoring or explicit
-waiting as described below. Read the answers and outcomes before proceeding. Withdraw a
-submission the work has overtaken. Never treat a timeout as approval, and never write the
-person's answers yourself.
+Send a decision point's batch with `--send`, give the person the page address, then await the
+decision by automatic monitoring or explicit waiting, below. Never treat a timeout as approval,
+and never write the person's answers yourself.
 
 Yard submissions use the page rather than native questions. Native question dialogs and native
 plan approvals are not synchronized with the page. Page approval does not switch Codex out of
@@ -70,7 +68,6 @@ check what work is already done, and do not repeat completed work because anothe
 
 Interruption or session end disarms automatic continuation. A later genuine user prompt can rearm
 monitoring; an adapter-generated notification cannot. Normal turn completion leaves monitoring armed.
-Native mode, permissions and hook trust continue to govern all work.
 
 ### Planning workflow
 
@@ -79,10 +76,13 @@ at release `rust-v0.164.0`, Copyright 2025 OpenAI, licensed under Apache-2.0. It
 plan presentation and completion boundary are adapted for Yard. No prompt in this skill changes
 Codex's native collaboration mode.
 
-Use this workflow when the person asks for a plan, and for the build plan required after
-specification approval and its separate commit. A changed requirement needs a plan for only the
-steps it affects. Keep implementation stages planned until the person has approved their plan
-and native mode permits their build.
+Use this workflow when the person asks for a plan, at the start of each branch that builds a
+change, waves included, and for the build plan required after specification approval and its
+separate commit. At a branch's start, suggest that the person switch Codex to Plan mode; the
+suggestion changes no mode. A changed requirement needs a plan for only the steps it affects.
+Keep implementation stages planned until the person has approved their plan and native mode
+permits their build. A wave's closing review runs `codex review --base PARENT`, naming the parent
+branch; work through what it reports as the shared workflow says.
 
 #### Planning boundary
 

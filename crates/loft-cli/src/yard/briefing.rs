@@ -14,6 +14,9 @@ use super::caller::Continuations;
 /// The most characters the briefing's text holds.
 pub const LIMIT: usize = 2000;
 
+/// The line by which every briefing of a branch names the skill whose workflow keeps Yard Log.
+const SKILL: &str = "Follow the `yard` skill for the work on this branch.";
+
 /// Where the briefing is given: the worktree, the branch, its page's address, whether git
 /// ignores `.yard/`, whether Yard Log is closed and the revision the agent last read.
 pub struct Where<'a> {
@@ -160,11 +163,12 @@ fn page_line(at: &Where) -> String {
     )
 }
 
-/// The text of a branch with no Yard Log: its page's address, and that it has none yet.
+/// The text of a branch with no Yard Log: its page's address, that it has none yet and the skill
+/// to follow.
 fn absent(at: &Where) -> String {
     let none = match at.branch {
-        Some(_) => "The branch has no Yard Log yet: the first write opens it.",
-        None => "HEAD is detached: Yard Log belongs to a branch, so there is none here.",
+        Some(_) => format!("The branch has no Yard Log yet: the first write opens it.\n{SKILL}"),
+        None => "HEAD is detached: Yard Log belongs to a branch, so there is none here.".to_owned(),
     };
     format!("{}\n{none}", page_line(at))
 }
@@ -181,6 +185,7 @@ fn text(fields: &Value, at: &Where) -> String {
     let mut head = vec![
         format!("Yard Log of `{branch}` in `{tree}`."),
         page_line(at),
+        SKILL.to_owned(),
     ];
     head.push(if at.ignored {
         "git ignores `.yard/`, so Yard Log stays out of the commits.".to_owned()

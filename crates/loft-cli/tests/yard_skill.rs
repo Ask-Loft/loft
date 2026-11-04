@@ -41,6 +41,9 @@ fn the_shared_yard_workflow_names_no_host_or_native_tool() {
         "## Have the spec change approved",
         "## Plan the build",
         "only the steps",
+        "## Plan at the start of each branch",
+        "## Keep one note of the issues",
+        "## Split large work into waves",
         "## Commit",
         "## Close it",
     ] {
@@ -388,5 +391,64 @@ fn the_yard_skill_tells_the_agent_to_check_a_report_by_the_counts_a_read_gives()
     says(&[
         "the number of items of each list it counts in `reportCounts`",
         "check what a report holds by its counts",
+    ]);
+}
+
+#[test]
+fn the_yard_skill_s_description_names_each_kind_of_work_on_a_branch() {
+    let text = read(&format!("{SKILL}/SKILL.md"));
+    let description = text
+        .lines()
+        .find_map(|line| line.strip_prefix("description: "))
+        .expect("a description");
+    for kind in [
+        "planning, building, fixing and reviewing a change on a git branch",
+        "a session starts or resumes on a branch whose Yard Log is open",
+    ] {
+        assert!(description.contains(kind), "the description omits: {kind}");
+    }
+}
+
+#[test]
+fn the_yard_skill_tells_the_agent_to_plan_at_the_start_of_each_branch_that_builds() {
+    says(&[
+        "When work that builds a change begins on a branch, each wave's branch included, plan the branch's work before you write any of its code",
+        "Where the specification changes first, that plan is the build's plan, once the change is approved and committed",
+        "A session that resumes or continues a branch whose plan is approved goes on with that plan",
+        "At the start of a branch that builds a change, call `EnterPlanMode` before its first code",
+    ]);
+}
+
+#[test]
+fn the_yard_skill_tells_the_agent_to_keep_one_issue_note_in_each_build_stage() {
+    says(&[
+        "Each stage that builds the change keeps one note, under one id",
+        "write the note again as each issue is found or fixed",
+        "failing tests, defects in existing code, wrong assumptions, review findings",
+        "Give each issue how it was found, its fix and its state",
+        "The note stands apart from the plan's tasks and from the fixes the person asked for",
+        "A build plan includes keeping it",
+    ]);
+}
+
+#[test]
+fn the_yard_skill_tells_the_agent_to_propose_waves_for_large_work() {
+    says(&[
+        "Work that spans more than one subsystem, or more than eight tasks, is large",
+        "Propose splitting it into waves in the plan of a parent branch; the person's approval of that plan approves them",
+        "Each wave runs on a branch cut from the parent branch, with a Yard Log of its own",
+        "The parent's Yard Log keeps one stage for each wave, active while the wave runs and done once it is merged",
+        "closes its Yard Log, then merges into the parent branch",
+        "The parent merges into its own base after the last wave",
+    ]);
+}
+
+#[test]
+fn the_yard_skill_tells_the_agent_to_end_each_wave_with_a_review() {
+    says(&[
+        "End each wave with a review of the wave's changes as its last task",
+        "Fix the review's confirmed findings as `regular` tasks and list them in the stage's issue note",
+        "Ask the person, as one decision point, about the findings you dispute or that would change the scope",
+        "A wave's review is `/simplify`, then `/code-review`",
     ]);
 }

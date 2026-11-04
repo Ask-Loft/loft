@@ -136,7 +136,9 @@ requirements:
       - key: 01a182b6-3c59-766a-a80e-37e62a9ce27d
         name: "The briefing's text counts what it leaves out to keep within 2,000 characters, and directs the agent to read Yard Log for it."
       - key: 01a182b6-3c59-766a-a80e-37e7ac57cb5d
-        name: "The briefing of a branch with no Yard Log names only the page's address and that the branch has no Yard Log yet."
+        name: "The briefing of a branch with no Yard Log names only the page's address, that the branch has no Yard Log yet and the `yard` skill to follow."
+      - key: 01a1a75a-9d00-7185-8c68-c2ae5de8cd94
+        name: "The briefing of a branch tells the agent to follow the `yard` skill for the work on it."
       - key: 01a182b6-3c59-766a-a80e-37e807efebd5
         name: "The briefing says whether Yard Log is closed and whether git ignores `.yard/`."
       - key: 01a182b6-3c59-766a-a80e-37e925896ef9

@@ -84,6 +84,11 @@ and present with `ExitPlanMode` only the steps whose criteria the change touches
 stands. The steps of the approved plan that the change leaves untouched stand, and are not
 presented again.
 
+At the start of a branch that builds a change, call `EnterPlanMode` before its first code; where
+the specification changes first, that is the plan mode above. A wave's review is `/simplify`, then
+`/code-review`, each run with the Skill tool: `/simplify` applies its cleanups, and `/code-review`
+reports the findings you then fix or put to the person.
+
 Record the publish with `yard_published` on the base branch once `loft publish` is committed.
 Where `yard_read` reports that git ignores `.yard/`, commit nothing of `.yard/`.
 When the branch's work is finished, close Yard Log with `yard_close`, commit the closed Yard Log

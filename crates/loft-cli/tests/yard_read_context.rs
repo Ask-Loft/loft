@@ -20,6 +20,9 @@ fn context(yard: &Yard, agent: Option<&str>, extra: &[&str]) -> Value {
     yard.read("s1", &args)["context"].clone()
 }
 
+/// The line by which every briefing of a branch names the skill to follow.
+const SKILL: &str = "Follow the `yard` skill for the work on this branch.";
+
 fn text(context: &Value) -> &str {
     context["text"].as_str().unwrap()
 }
@@ -202,7 +205,9 @@ fn the_briefing_of_a_branch_with_no_yard_log_names_only_the_page_and_that_there_
     let page = briefed["page"].as_str().unwrap();
     assert_eq!(
         text(&briefed),
-        format!("Its page: {page}\nThe branch has no Yard Log yet: the first write opens it.")
+        format!(
+            "Its page: {page}\nThe branch has no Yard Log yet: the first write opens it.\n{SKILL}"
+        )
     );
     assert!(snapshot(&yard.scratch.0) == before, "a file changed");
 }
@@ -232,6 +237,18 @@ fn the_briefing_says_whether_yard_log_is_closed_and_whether_git_ignores_yard() {
         text.contains("Yard Log is closed: it takes no more writes"),
         "{text}"
     );
+}
+
+#[test]
+fn every_briefing_of_a_branch_tells_the_agent_to_follow_the_yard_skill() {
+    let mut yard = Yard::new();
+    assert!(text(&context(&yard, None, &[])).contains(SKILL));
+    yard.write("s1", ASK, &[]);
+    assert!(text(&context(&yard, None, &[])).contains(SKILL));
+    yard.git = yard.git.clone().ignoring(":/.yard/");
+    let closed = yard.run(&["close", "--session", "s1"]);
+    assert_eq!(closed.status.code(), Some(0), "{}", stderr(&closed));
+    assert!(text(&context(&yard, None, &[])).contains(SKILL));
 }
 
 #[test]

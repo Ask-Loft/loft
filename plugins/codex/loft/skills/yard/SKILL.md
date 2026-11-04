@@ -1,6 +1,6 @@
 ---
 name: yard
-description: Keep the branch's Yard Log while planning and building a change, ask the person's questions and approvals through it, and record what each step produced and decided. Use whenever work on a git branch is planned, staged, asked about or reviewed, when a session starts on a branch whose Yard Log has open stages or submissions, and before a branch is merged.
+description: Keep the branch's Yard Log while planning, building, fixing and reviewing a change on a git branch: its stages and tasks, the person's questions and approvals, and what each step produced and decided. Use for any work on a git branch, even where the person does not name Yard: when work on a new branch or a wave begins, when a session starts or resumes on a branch whose Yard Log is open, when a change is planned, built, fixed or reviewed, and before a branch is merged.
 ---
 
 # Yard Log
@@ -111,6 +111,14 @@ approved counts as asking for the build it describes, through any supported appr
 A question they answered does not, and a change to the specification the person approved does not
 count as asking for its build: it settles what is built, not when.
 
+## Plan at the start of each branch
+
+When work that builds a change begins on a branch, each wave's branch included, plan the
+branch's work before you write any of its code, through the host adaptation's planning
+interface. Where the specification changes first, that plan is the build's plan, once the change
+is approved and committed. A session that resumes or continues a branch whose plan is approved
+goes on with that plan.
+
 ## Make bounded tasks part of the plan
 
 Break each implementation plan into bounded tasks. Each task has one concrete outcome. Give
@@ -150,6 +158,14 @@ person sees how much of a stage went on what they asked to have put right.
 
 To record a fix, write its `task` block with `type: fix`, or use the host adaptation's task
 metadata.
+
+## Keep one note of the issues you meet
+
+Each stage that builds the change keeps one note, under one id such as `build-issues`, of the
+issues you run into yourself during its work: failing tests, defects in existing code, wrong
+assumptions, review findings. Give each issue how it was found, its fix and its state, in a
+table, and write the note again as each issue is found or fixed. The note stands apart from the
+plan's tasks and from the fixes the person asked for. A build plan includes keeping it.
 
 ## Ask once per decision point, then wait
 
@@ -236,6 +252,20 @@ record its `spec-change` view before you write any code that meets it. Plan agai
 whose criteria the change touches, each as it now stands. The steps of the approved plan that the
 change leaves untouched stand, and are not presented again.
 
+## Split large work into waves
+
+Work that spans more than one subsystem, or more than eight tasks, is large. Propose splitting
+it into waves in the plan of a parent branch; the person's approval of that plan approves them.
+Each wave runs on a branch cut from the parent branch, with a Yard Log of its own: it plans,
+builds, ends with a review and closes its Yard Log, then merges into the parent branch. The
+parent's Yard Log keeps one stage for each wave, active while the wave runs and done once it is
+merged. The parent merges into its own base after the last wave.
+
+End each wave with a review of the wave's changes as its last task, run as the host adaptation
+says. Fix the review's confirmed findings as `regular` tasks and list them in the stage's issue
+note. Ask the person, as one decision point, about the findings you dispute or that would change
+the scope.
+
 ## Commit `.yard/` with the work
 
 Commit `.yard/` in each commit of the work, beside the code it describes. Answers the person gave
@@ -290,11 +320,9 @@ ignored, leave it out of commits.
 
 ### Questions and plan approval use the Yard page
 
-Write the questions, approvals and plans of one decision point in a batch with `--send`.
-Give the person the page address, then await the decision using automatic monitoring or explicit
-waiting as described below. Read the answers and outcomes before proceeding. Withdraw a
-submission the work has overtaken. Never treat a timeout as approval, and never write the
-person's answers yourself.
+Send a decision point's batch with `--send`, give the person the page address, then await the
+decision by automatic monitoring or explicit waiting, below. Never treat a timeout as approval,
+and never write the person's answers yourself.
 
 Yard submissions use the page rather than native questions. Native question dialogs and native
 plan approvals are not synchronized with the page. Page approval does not switch Codex out of
@@ -324,7 +352,6 @@ check what work is already done, and do not repeat completed work because anothe
 
 Interruption or session end disarms automatic continuation. A later genuine user prompt can rearm
 monitoring; an adapter-generated notification cannot. Normal turn completion leaves monitoring armed.
-Native mode, permissions and hook trust continue to govern all work.
 
 ### Planning workflow
 
@@ -333,10 +360,13 @@ at release `rust-v0.164.0`, Copyright 2025 OpenAI, licensed under Apache-2.0. It
 plan presentation and completion boundary are adapted for Yard. No prompt in this skill changes
 Codex's native collaboration mode.
 
-Use this workflow when the person asks for a plan, and for the build plan required after
-specification approval and its separate commit. A changed requirement needs a plan for only the
-steps it affects. Keep implementation stages planned until the person has approved their plan
-and native mode permits their build.
+Use this workflow when the person asks for a plan, at the start of each branch that builds a
+change, waves included, and for the build plan required after specification approval and its
+separate commit. At a branch's start, suggest that the person switch Codex to Plan mode; the
+suggestion changes no mode. A changed requirement needs a plan for only the steps it affects.
+Keep implementation stages planned until the person has approved their plan and native mode
+permits their build. A wave's closing review runs `codex review --base PARENT`, naming the parent
+branch; work through what it reports as the shared workflow says.
 
 #### Planning boundary
 
