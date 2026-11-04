@@ -79,6 +79,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("views/blocks.js", JS),
     asset!("views/flowchart-svg.js", JS),
     asset!("views/gantt.js", JS),
+    asset!("views/question-card.js", JS),
     asset!("views/inherited.js", JS),
     asset!("views/log.js", JS),
     asset!("views/timeline.js", JS),

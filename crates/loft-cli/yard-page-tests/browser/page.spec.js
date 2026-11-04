@@ -450,11 +450,22 @@ test('the Markdown, the prompt and the options of each block in the panel span t
     // Each text fills the box it lies in, and the box is most of the panel's width: far more than
     // a measure of 75 characters, about 700 pixels here. The plan, the question's prompt and
     // context, and each option's detail.
-    const texts = await panel.locator('.prose > p, .prompt, legend', { hasText: 'The plan reads' }).all();
-    expect(texts.length).toBeGreaterThanOrEqual(5);
-    for (const text of texts) {
+    const texts = await panel.locator('.prose > p, .prompt, legend', { hasText: 'The plan reads' }).filter({ hasNot: page.locator('xpath=ancestor::*[contains(@class, "option-card")]') }).all();
+    const spanning = [];
+    for (const text of texts) if (!(await text.evaluate((element) => Boolean(element.closest('.option-card'))))) spanning.push(text);
+    expect(spanning.length).toBeGreaterThanOrEqual(3);
+    for (const text of spanning) {
       expect(await text.evaluate((element) => getComputedStyle(element).maxWidth)).toBe('none');
       expect((await box(text)).width).toBeGreaterThan(room * 0.8);
+    }
+    // The options stand as cards across the panel, each detail filling its card.
+    const grid = panel.locator('.question-form', { has: page.locator('legend', { hasText: 'The plan reads' }) }).locator('.option-grid');
+    expect((await box(grid)).width).toBeGreaterThan(room * 0.8);
+    for (const card of await grid.locator('.option-card').all()) {
+      const detail = card.locator('.choice-detail p').first();
+      if (!(await detail.count())) continue;
+      expect(await detail.evaluate((element) => getComputedStyle(element).maxWidth)).toBe('none');
+      expect((await box(detail)).width).toBeGreaterThan((await box(card)).width * 0.8);
     }
     // The timeline keeps its measure.
     await closeWaiting(page);
@@ -1436,4 +1447,28 @@ test('a flowchart is drawn by the page in its own design, with orthogonal edges 
   await expect(page.locator('#block-talked svg.flow')).toHaveCount(0);
   await page.locator('#block-flowed .diagram-expand').click();
   await expect(page.locator('dialog.modal--diagram svg.flow')).toBeVisible();
+});
+
+test('the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one', async ({ page }) => {
+  write([{ id: 'cards-q', kind: 'question', stage: 'shape', header: 'Cards', prompt: 'Which card?', options: [{ label: 'Left', detail: 'a', recommended: true }, { label: 'Middle', detail: 'b' }, { label: 'Right', detail: 'c' }] }], ['--send']);
+  for (const [width, across] of [[1440, true], [560, false]]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(address());
+    const panel = waitingModal(page);
+    await expect(panel).toBeVisible({ timeout: LIVE });
+    // In a narrow window the open sidebar lies over the page; the person folds it to answer.
+    const fold = page.getByRole('button', { name: 'Fold the sidebar' });
+    if (!across && (await fold.isVisible())) await fold.click();
+    const form = panel.locator('.question-card', { has: page.locator('legend', { hasText: 'Which card?' }) });
+    const cards = form.locator('.option-card');
+    await expect(cards).toHaveCount(4);
+    const [first, second] = [await box(cards.nth(0)), await box(cards.nth(1))];
+    expect(Math.abs(first.y - second.y) < 1).toBe(across);
+    await form.locator('label.choice', { hasText: 'Middle' }).click();
+    await expect(form.locator('.question-state')).toHaveText('Chosen: B');
+    expect(await colour(cards.nth(1), 'outline-color')).toBe('rgb(20, 72, 143)');
+    await form.locator('.clear-choice').click();
+    await expect(form.locator('.question-state')).toHaveText('Not chosen yet');
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
 });

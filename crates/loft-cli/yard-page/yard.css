@@ -546,14 +546,41 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .fold summary { cursor: pointer; color: var(--muted); }
 .fold[open] > summary { margin-bottom: 6px; }
 
-.prompt { font-weight: 600; max-width: 75ch; }
-.options { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.option { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; padding: 4px 8px; }
-.option.is-chosen { background: var(--mist); box-shadow: inset 4px 0 0 var(--signal); font-weight: 600; }
-.option-label { font-weight: 600; }
-.option-detail { flex-basis: 100%; color: var(--body); font-size: 14px; }
+/* A question, in the timeline and the panel alike: a head with its kind, its header as a chip and
+   its state at the right; its prompt as its title; its options as cards side by side, each
+   lettered in a circle, a recommended one marked beneath its label, a chosen one outlined in
+   action blue. */
+.question-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.question-chip { padding: 2px 8px; border: 1px solid var(--line); background: var(--side); color: var(--body); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; line-height: 18px; text-transform: uppercase; }
+.question-state { margin-left: auto; color: var(--muted); font-size: 13px; }
+.question-state--chosen { color: var(--signal); font-weight: 600; }
+.question-state--answered { color: var(--done); font-weight: 600; }
+.question-state--waiting { color: var(--wait); font-weight: 600; }
+.prompt { color: var(--ink); font-size: 18px; font-weight: 700; line-height: 26px; letter-spacing: -0.01em; max-width: 75ch; }
+.option-grid { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+@media (max-width: 640px) { .option-grid { grid-template-columns: minmax(0, 1fr); } }
+.option-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; padding: 14px 16px; border: 1px solid var(--line); background: var(--canvas); }
+.option-card.is-chosen, .option-card:has(.option-input:checked) { outline: 2px solid var(--signal); outline-offset: -1px; }
+.option-card:has(.option-input:focus-visible) { box-shadow: 0 0 0 4px var(--mist); }
+label.option-card, .option-card label.choice { cursor: pointer; }
+label.option-card:hover, .own-words:hover { border-color: var(--rail); }
+.option-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+.option-top .choice { display: flex; align-items: center; gap: 10px; }
+.option-letter { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--rail); border-radius: 50%; color: var(--body); font-family: var(--mono); font-size: 12px; line-height: 1; }
+.option-card.is-chosen .option-letter, .option-card:has(.option-input:checked) .option-letter { border-color: var(--signal); background: var(--signal); color: var(--canvas); }
+:is(.option-label, .choice-label) { color: var(--ink); font-size: 15px; font-weight: 600; line-height: 22px; overflow-wrap: anywhere; }
+:is(.option-detail, .choice-detail) { color: var(--body); font-size: 14px; max-width: none; }
+/* The radio button or checkbox of a card lies, unseen, over the card's letter, in reach of the
+   pointer, the keyboard and a reader; the card itself shows what is chosen. */
+.option-input { position: absolute; top: 14px; left: 16px; z-index: 1; width: 24px; height: 24px; margin: 0; border-radius: 50%; opacity: 0; cursor: pointer; }
+.own-words .words { width: 100%; }
+.question-card { display: grid; gap: 8px; }
+.question-form { border: 1px solid var(--line); padding: 16px; margin: 0; display: grid; gap: 10px; min-width: 0; }
+.question-form.is-answered { box-shadow: inset 3px 0 0 var(--new); }
+.question-form > legend.prompt { float: left; width: 100%; padding: 0; }
+.question-foot { margin: 0; }
 .badge { font-family: var(--mono); font-size: 12px; font-weight: 400; padding: 0 6px; border: 1px solid currentColor; }
-.badge--recommended { color: var(--signal); border-style: dashed; }
+.badge--recommended { border: 0; padding: 2px 6px; background: var(--done-soft); color: var(--done); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
 .badge--chosen { color: var(--new); }
 .answer { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
 .answer-text { font-weight: 650; color: var(--done); }
@@ -575,22 +602,8 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .submission { border-top: 1px solid var(--line); padding: 16px 0; display: grid; gap: 14px; }
 .submission-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; align-items: baseline; }
 .submission-head h3 { font-size: 20px; font-weight: 700; letter-spacing: -0.015em; color: var(--ink); }
-.question-form { border: 1px solid var(--line); padding: 10px 12px 12px; margin: 0; display: grid; gap: 6px; }
-.question-form.is-answered { box-shadow: inset 3px 0 0 var(--new); }
-.question-form legend { font-weight: 600; padding: 0 4px; font-size: 14px; }
-.question-form .header { color: var(--muted); font-weight: 600; font-size: 13px; }
 .hint { color: var(--muted); font-size: 13px; }
-/* A choice as Loft Web lists one: a bar at its left in action blue once chosen, on mist under the pointer. */
-.choice { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: baseline; padding: 6px 10px; border-left: 4px solid transparent; cursor: pointer; }
-.choice:hover { background: var(--mist); }
-.choice:has(input:checked) { background: var(--mist); border-left-color: var(--signal); }
-.choice:has(input:checked) .choice-label { font-weight: 700; }
-.choice input { grid-row: span 2; margin: 0; accent-color: var(--signal); }
-.choice-label { font-weight: 600; }
-.choice .badge { grid-column: 2; justify-self: start; }
-.choice-detail { grid-column: 2; color: var(--body); font-size: 14px; }
 .words, .reason { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
-.own-words .words { padding: 0 8px 8px; }
 textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--canvas); border: 1px solid var(--rail); padding: 8px 12px; width: 100%; resize: vertical; }
 textarea:focus { border-color: var(--signal); }
 .send-row, .decide-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
