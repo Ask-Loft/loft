@@ -25977,6 +25977,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page shows a block approved once the person approves it, and the count of what waits changes"
         body: 874db02fcbffec2b6a552d538dd378f53ba85a808792c949795c60f0e467af25
+  - node: 01a1a86a-2483-76c7-894e-d32891589f53
+    reviewed: 063ab0e04bf642ee929a53b93551cf0384b3c6708d0486f06f386570b2cbc561
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "a decided approval gives its outcome once, in the line naming who decided it, and not beside its title"
+        body: 11326534f9dc2f438de5bbf1de4679aa0c51c1f0b12c5ceebb6d6d30137f9936
   - node: 01a1646f-546c-7521-9643-bbdfcffa05c0
     reviewed: 81f8c5cd6ffc5536f0e3afd3dcaa7ec189d3089de1a27f49dae12167d6bc3405
     tests:
@@ -28105,11 +28111,14 @@ links:
         name: "the branch of the Yard Log shown is the current entry of the sidebar, and the sidebar lists no view"
         body: ea479240c0b838d8d60a761ef249fa89e6b035e6c982888699d369e4dab7c249
   - node: 01a1a7a4-51ce-73b8-bd34-87b2bbf7a76d
-    reviewed: 80834f6013c3a3e4b69124d0512aacb95f10ad64bb8c549e98b4eca0daadaedf
+    reviewed: 7da5adef0e76ea821aaea574a3b78e84d38aa459484708d3964e531c9ae5410a
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
         name: "the head names the repository, the worktree where it is not the main one, and the branch, above the title"
         body: ab526cbd723ef83d7161e4df4efa7893d9819b77a5952b42637f8c810196d8d0
+      - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
+        name: "the head names the branch above the title only where the title is not the branch’s name"
+        body: 882ce6804e12dde419c5af43c2c8e39d1ba696c4719cfbfd6536b2f1f3835302
   - node: 01a1a7a4-51ce-73b8-bd34-87b3b38538ff
     reviewed: cb8d5aca28ed95dc7aa85dc0f537bd22ad916f9b9f6014940eb90ead37ec31a8
     tests:
@@ -28419,6 +28428,12 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "beneath a stage of the list, each block’s row gives its kind as a small light icon, named to a reader and on hover, and no word"
         body: da6fcde397bacb7c6f26199f753aad2a805277fdfe2c8743a0148eba69184807
+  - node: 01a1a86a-2483-76c7-894e-d32912c94eba
+    reviewed: 155f3997554f82658752b1f47b4a879c19906b050f64ccbaea7f37ad0a5a5fe0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "beneath a stage of the list, an active task’s row has a green dot in the margin before it, named to a reader, and no other row does"
+        body: 2e46b4b803f455622d13e38f6a22a5a9d34bd0503b54a2254f25029b187b1afe
   - node: 01a1a7a4-51ce-73b8-bd34-87bda9d6693e
     reviewed: 15952e9c7e5554af4fa462411fca4ecc5158001b43c1202787fad1a2fce2c8dc
     tests:
