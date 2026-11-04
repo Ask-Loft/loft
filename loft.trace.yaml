@@ -29009,7 +29009,7 @@ links:
         body: 5d0afa194e0f2102de8f401d70a64d30a59dce99cdd529dea119887eaf789d9e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join"
-        body: a7eb2e1bc5e0f5cb1d113aa10755c656b47636c066595c1d2609ad83394f3147
+        body: e01f90290c95800ac86c8c6ab36f533cf44492f0832eca9b76366dc12369d930
   - node: 01a1a814-5ac4-7523-9962-5ad8e9672abc
     reviewed: e45f69e1050b96d0a4217c4c2d3d97d0c7408313ff7626ba00ce866517ea6928
     tests:
@@ -29021,7 +29021,7 @@ links:
         body: 56379bcc433601632e6ded77c7a5b02fd14de96017d89e594b2abc774cb66ec0
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join"
-        body: a7eb2e1bc5e0f5cb1d113aa10755c656b47636c066595c1d2609ad83394f3147
+        body: e01f90290c95800ac86c8c6ab36f533cf44492f0832eca9b76366dc12369d930
       - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
         name: "each edge and its label name the nodes they join, for the hover layer"
         body: 157cb12aba96299cda59f00a178416678fa27709b86e82b8f3957b197e04936e
@@ -30524,7 +30524,7 @@ links:
         body: 6befb808cb452711b83777e47ecae97d60109e588e5fad4ad34103a8976e7fe6
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1a836-8724-73ee-8657-ce8aec3a1302
     reviewed: e26ec5c53fab4bbed2d9141c50a2a885fef97a86350c98d77a6aa42c62165d04
     tests:
@@ -30536,7 +30536,7 @@ links:
         body: 6befb808cb452711b83777e47ecae97d60109e588e5fad4ad34103a8976e7fe6
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1a836-8725-715c-9d62-b5b2deeb88a9
     reviewed: 83559a1890f06c972647bab666f3a695ececb0e927e27428f94b9dba70fa1075
     tests:
@@ -30554,7 +30554,7 @@ links:
         body: fd9837c4be59e79964a77f71c61192efb77837197bfaa225ea2bde93852391d9
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1a823-bcd4-7465-a368-65401608d872
     reviewed: a932106d9bfbedd470dda661cc65ba7f7824ff3166be53056937bd3427446bbf
     tests:
@@ -30569,7 +30569,7 @@ links:
         body: 63cb157669f25f2edb30d634864e09a02eeed4f6cc04839c76c05280d9c33523
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1a814-5ac4-7523-9962-5ad00cc80371
     reviewed: 54afa7dc5b49b386ae1e953b80d228e8416797079e9639e3c68c9944ff621173
     tests:
@@ -30590,7 +30590,7 @@ links:
         body: 14ab86fab5ecd96e795813560cf3506b0303ad0b7866bced1f5d1cc58a3c22aa
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1a814-5ac4-7523-9962-5ad3b612d689
     reviewed: a5ded37d4db4707ee59f7deb49cefc93b3fb1655af6d9a650a55df6a08cb6cd2
     tests:
@@ -30602,7 +30602,7 @@ links:
         body: 56379bcc433601632e6ded77c7a5b02fd14de96017d89e594b2abc774cb66ec0
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1a814-5ac4-7523-9962-5ad4d5b14101
     reviewed: 517b6293b52b32385fa763e2a641a63d8d152f5dafe8bc03b86925393273bcf5
     tests:
@@ -30614,7 +30614,7 @@ links:
         body: 20bfbd02ac09bd1f29e2de8d5e54bd8a22261c395e97f662b88535ae7ce866df
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1a814-5ac4-7523-9962-5ad53fd5ae24
     reviewed: b3cc2e224d6cb25b1c45d458517c8a7ca41a9b4aebf4ecbe1bebe7f30f10cee9
     tests:
@@ -30632,7 +30632,7 @@ links:
         body: 5d0afa194e0f2102de8f401d70a64d30a59dce99cdd529dea119887eaf789d9e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
   - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
     reviewed: 5e8a8d2490cd2c5b2f68bef2301663b81adf663d9c4fa6f7915d59c49262b6fb
     tests:
