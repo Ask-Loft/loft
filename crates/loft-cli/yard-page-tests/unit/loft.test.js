@@ -495,7 +495,9 @@ test('a decision view shows the decision, its options with the selected one mark
   assert.match([...view.querySelectorAll('details li')].map((item) => item.textContent).join('\n'), /Speed Fast reads/);
   assert.equal(view.querySelector('.consequence[data-kind="risk"] .consequence-kind').textContent, 'risk');
   assert.match(view.querySelector('.consequence').textContent, /A big file/);
-  assert.match(view.querySelector('.subject-line[data-role="affected"]').textContent, /^Affects: CMP-1\s+Shelf store/);
+  const affects = view.querySelector('.subject-role-row[data-role="affected"]');
+  assert.equal(affects.querySelector('.subject-role').textContent, 'Affects');
+  assert.match(affects.querySelector('.subject').textContent, /^CMP-1\s+Shelf store/);
   assert.equal(view.querySelector('.subjects .chip, .consequences .chip'), null, 'no framed tag');
 });
 
@@ -531,7 +533,12 @@ test('a decision’s selected option comes first in its table, marked, each row 
   assert.match(css, /\.assessments tr\.is-chosen > th \{[^}]*box-shadow: inset 3px 0 0 var\(--signal\);/, 'a bar at its left');
   assert.deepEqual([...view.querySelectorAll('ul.consequences > li.consequence')].map((item) => item.textContent), ['benefitB1', 'costC1', 'benefitB2'], 'one list, each led by its kind');
   assert.match(css, /\.consequence-kind \{[^}]*color: var\(--muted\);/, 'its kind a small muted word');
-  assert.deepEqual([...view.querySelectorAll('.subject-line')].map((line) => line.textContent.replace(/\s+/g, ' ').trim()), ['Affects: F-1 One · F-2 Two', 'Stated as: RQ-1 Out']);
+  const roleRows = (/** @type {Element} */ row) => [row.querySelector('.subject-role').textContent, [...row.querySelectorAll('.subject')].map((item) => item.textContent.replace(/\s+/g, ' ').trim())];
+  assert.deepEqual([...view.querySelectorAll('.subject-role-row')].map(roleRows), [['Affects', ['F-1 One', 'F-2 Two']], ['Stated as', ['RQ-1 Out']]], 'one subject to a line beside its role');
+  assert.equal(view.querySelector('.subject')?.getAttribute('title'), 'F-1 One', 'its name whole on hover');
+  assert.match(css, /\.subject-role-row \{ display: grid; grid-template-columns: 7\.5em minmax\(0, 1fr\);/, 'in the column of the consequences’ kinds');
+  assert.match(css, /\.consequence \{ display: grid; grid-template-columns: 7\.5em minmax\(0, 1fr\);/);
+  assert.match(css, /\.subject \{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; \}/, 'kept to one line');
 });
 
 test('a decision that is not accepted shows its state, and a rejected one its rationale', () => {

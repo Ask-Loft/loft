@@ -200,7 +200,8 @@ function consequencesOf(consequences) {
 }
 
 /**
- * The subjects, one line for each role, headed by the role.
+ * The subjects, one to a line beside their role, in the column that gives the consequences'
+ * kinds; each kept to one line, its name whole on hover.
  * @param {any[]} subjects
  */
 function subjectsOf(subjects) {
@@ -211,13 +212,19 @@ function subjectsOf(subjects) {
     { class: 'subjects' },
     roles.map((role) =>
       h(
-        'p',
-        { class: 'subject-line', dataset: { role } },
-        h('span', { class: 'subject-role' }, `${ROLE_WORDS[/** @type {keyof typeof ROLE_WORDS} */ (role)] ?? capital(role)}:`),
-        ' ',
-        subjects
-          .filter((subject) => subject.role === role)
-          .flatMap((subject, index) => [index ? h('span', { class: 'subject-sep', 'aria-hidden': 'true' }, ' · ') : null, h('span', { class: 'subject' }, subject.node ? named(subject.node) : subject.former ?? '')]),
+        'div',
+        { class: 'subject-role-row', dataset: { role } },
+        h('span', { class: 'subject-role' }, ROLE_WORDS[/** @type {keyof typeof ROLE_WORDS} */ (role)] ?? capital(role)),
+        h(
+          'ul',
+          { class: 'subject-list' },
+          subjects
+            .filter((subject) => subject.role === role)
+            .map((subject) => {
+              const whole = subject.node ? [subject.node.label, subject.node.name].filter(Boolean).join(' ') : subject.former ?? '';
+              return h('li', { class: 'subject', title: whole || null }, subject.node ? named(subject.node) : subject.former ?? '');
+            }),
+        ),
       ),
     ),
   );
