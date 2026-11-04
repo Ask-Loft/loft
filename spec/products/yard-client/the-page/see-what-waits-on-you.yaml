@@ -33,6 +33,10 @@ requirements:
         name: "Submissions sent in the same second are listed by their local arrival revisions, regardless of their callers."
       - key: 01a17f75-05dc-7361-a0cd-c02ae4b708af
         name: "Each submission's waiting forms retain its block order, including a plan or approval before a question."
+      - key: 01a1a82c-15aa-71db-b193-37675ce01170
+        name: "Only the panel's title says that blocks wait on the person: a submission in it has no heading of its own."
+      - key: 01a1a82c-15aa-71db-b193-37687bb90e93
+        name: "A question in the panel is headed by its prompt, above its header chip and its state."
       - key: 01a1646f-546d-7042-befd-eb648d58cd02
         name: "Where Yard Log has no open submission, no panel opens and nothing shows above the timeline."
       - key: 01a1693f-7b72-7290-8335-f171c49df026
