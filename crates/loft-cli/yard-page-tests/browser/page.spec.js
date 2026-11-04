@@ -164,27 +164,27 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
 
-/** Loft's wordmark and the entry of the view shown in `scheme`, whose ink, action blue and mist are given. */
-async function wordmarkColours(page, scheme, ink, signal, mist) {
+/** Loft's wordmark and the tab of the view shown in `scheme`, whose ink and action blue are given. */
+async function wordmarkColours(page, scheme, ink, signal) {
   await page.emulateMedia({ colorScheme: scheme });
   await page.goto(address());
   await closeWaiting(page);
   expect(await colour(page.locator('.wordmark-initial'), 'color')).toBe(signal);
   expect(await colour(page.locator('.wordmark'), 'color')).toBe(ink);
-  const shown = page.locator('#side .view-entry[aria-current="page"]');
+  const shown = page.locator('#head .view-tab[aria-current="page"]');
   await expect(shown).toHaveText('Timeline');
-  expect(await colour(shown, 'background-color')).toBe(mist);
-  expect(await colour(shown, 'font-weight')).toBe('600');
-  const other = page.locator('#side .view-entry:not([aria-current])').first();
-  expect(await colour(other, 'font-weight')).toBe('400');
+  expect(await colour(shown, 'color')).toBe(ink);
+  expect(await colour(shown, 'border-bottom-color')).toBe(signal);
+  const other = page.locator('#head .view-tab:not([aria-current])').first();
+  expect(await colour(other, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
 }
 
-test('in a light scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold', async ({ page }) => {
-  await wordmarkColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)', 'rgb(229, 246, 255)');
+test('in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue', async ({ page }) => {
+  await wordmarkColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)');
 });
 
-test('in a dark scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold', async ({ page }) => {
-  await wordmarkColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)', 'rgb(19, 34, 51)');
+test('in a dark scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue', async ({ page }) => {
+  await wordmarkColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
 });
 
 test('the wordmark’s L meets the rest of its name with no gap between them, and Yard stands on its baseline, muted', async ({ page }) => {
@@ -746,19 +746,19 @@ test('the page begins at the sidebar’s edge and reaches the right edge of the 
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('the page keeps its width, the entries of the views stay in place whichever view is shown, and the stage chosen stays chosen', async ({ page }) => {
+test('the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto(address());
   const main = page.locator('#log');
-  const timeline = page.locator('#side .view-entry', { hasText: 'Timeline' });
+  const timeline = page.locator('#head .view-tab', { hasText: 'Timeline' });
   await timeline.click();
   await expect(page.locator('.timeline .stage-list')).toBeVisible();
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
   await chooseStage(page, 'build');
-  await expect(page.locator('#side .log-item.is-current .view-entries')).toBeVisible();
+  await expect(page.locator('#side [data-view]')).toHaveCount(0);
   const before = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
   for (const view of ['Gantt chart', 'Tokens']) {
-    await page.locator('#side .view-entry', { hasText: view }).click();
+    await page.locator('#head .view-tab', { hasText: view }).click();
     await expect(page.locator(view === 'Tokens' ? '.tokens' : '.gantt')).toBeVisible();
     const after = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
     expect(after.main?.width).toBe(before.main?.width);
@@ -817,7 +817,7 @@ test('the sidebar runs down the window’s left from top to bottom, on a ground 
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('folding the sidebar leaves a rail of its button and the icons of the views, gives its room to the page, and the next visit keeps it folded', async ({ page }) => {
+test('folding the sidebar leaves a rail of its button, gives its room to the page, and the next visit keeps it folded', async ({ page }) => {
   await page.goto(address());
   const side = page.locator('#side');
   const main = page.locator('#log');
@@ -829,7 +829,7 @@ test('folding the sidebar leaves a rail of its button and the icons of the views
   await fold.click();
   await expect(page.locator('#side-lists')).toBeHidden();
   await expect(side.locator('.wordmark-link')).toHaveCount(0);
-  await expect(side.locator('.rail-views button')).toHaveCount(3);
+  await expect(side.locator('.side-head button')).toHaveCount(1);
   await expect.poll(async () => (await box(side)).width).toBe(68);
   const rail = await box(side);
   expect(rail.height).toBe(900);
@@ -1052,7 +1052,7 @@ test('choosing a stage in the Gantt chart opens the timeline at it', async ({ pa
 
 test('an open page shows a counted request’s tokens within 2 seconds of the request’s end', async ({ page }) => {
   await page.goto(address());
-  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   await expect(page.locator('#tokens')).toBeVisible();
   const events = [
     { session: 's1', dir: setup.tree, at: since(-30), kind: 'turn.start' },
@@ -1072,7 +1072,7 @@ test('an open page shows a counted request’s tokens within 2 seconds of the re
 
 test('the page draws the sidebar again only when the list, the Yard Log chosen, the view shown or the sidebar’s fold changes', async ({ page }) => {
   await page.goto(address());
-  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   const totals = page.locator('.token-totals dd').first();
   await expect(page.locator('#tokens')).toBeVisible();
   const before = await totals.getAttribute('title');
@@ -1120,7 +1120,7 @@ test('Claude and Codex plans use the same Plan mode bands and approval explanati
 test('a Codex session whose cache writes were not measured shows them as unavailable, and its totals file stays as written', async ({ page }) => {
   const source = unmeasuredCodexTotals();
   await page.goto(address());
-  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   const row = page.locator('tbody[data-by="session"] tr').filter({ has: page.locator('code[title="unmeasured-cache-write"]') });
   await expect(row).toHaveCount(1);
   await expect(row.locator('td').nth(2)).toHaveText('Unavailable');
@@ -1297,7 +1297,7 @@ test('free form checkboxes combine with named choices and keep selection indepen
 test('token details start closed and keyboard choices survive live counts and reloads', async ({ page }) => {
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
-  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   const section = page.locator('#tokens');
   const details = section.locator('details.token-details');
   const summary = details.locator(':scope > summary');

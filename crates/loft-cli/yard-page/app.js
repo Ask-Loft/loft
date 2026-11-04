@@ -99,18 +99,14 @@ function render() {
   if (!main || !side || !head) return;
   // The sidebar is drawn again only when what it shows changed, not at each change of the Yard Log.
   const chosen = route && { tree: route.tree, branch: route.branch };
-  const shown = JSON.stringify([state.listing, chosen, prefs.folded(), prefs.view()]);
+  const shown = JSON.stringify([state.listing, chosen, prefs.folded()]);
   if (shown !== drawnSide) {
     drawnSide = shown;
     replace(
       side,
-      sidebar(state.listing, chosen, prefs.folded(), prefs.view(), {
+      sidebar(state.listing, chosen, prefs.folded(), {
         onToggle: (folded) => {
           prefs.set('list', folded ? 'folded' : 'open');
-          render();
-        },
-        onView: (view) => {
-          prefs.set('view', view);
           render();
         },
       }),

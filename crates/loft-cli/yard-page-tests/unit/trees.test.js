@@ -135,8 +135,8 @@ test('with no Yard Log served, the page links adapter installation instructions'
 });
 
 /** The sidebar drawn from `shown`, folded or open, for the Yard Log `current` in the view `view`. */
-function side(shown, { folded = false, current = null, view = 'timeline', onToggle = () => {}, onView = () => {} } = {}) {
-  return sidebar(shown, current, folded, view, { onToggle, onView }).filter(Boolean);
+function side(shown, { folded = false, current = null, onToggle = () => {} } = {}) {
+  return sidebar(shown, current, folded, { onToggle }).filter(Boolean);
 }
 
 const SHELF = { tree: '/work/shelf', branch: 'feat/shelf' };
@@ -168,26 +168,21 @@ test('the sidebar is headed by Loft’s wordmark, its L apart from the rest of t
   assert.equal(head.textContent, 'LoftYard', 'the head names no other mark');
 });
 
-test('folded, the sidebar is a rail of the button that opens it and an icon for each view of the Yard Log shown', () => {
+test('folded, the sidebar is a rail of the button that opens it', () => {
   /** @type {boolean[]} */
   const asked = [];
-  const [head, rail, lists] = side(listing({ count: 0 }), { folded: true, current: SHELF, view: 'gantt', onToggle: (folded) => asked.push(folded) });
+  const parts = side(listing({ count: 0 }), { folded: true, current: SHELF, onToggle: (folded) => asked.push(folded) });
+  assert.equal(parts.length, 2, 'the rail holds its head and the hidden lists, and no view');
+  const [head, lists] = parts;
   assert.ok(!head.querySelector('.wordmark-link'));
   const button = head.querySelector('button');
   assert.equal(button?.getAttribute('aria-label'), 'Open the sidebar');
   assert.equal(button?.getAttribute('aria-expanded'), 'false');
   assert.ok(button?.querySelector('svg'));
-  const views = [...rail.querySelectorAll('button')].map((entry) => [entry.getAttribute('aria-label'), entry.getAttribute('aria-current')]);
-  assert.deepEqual(views, [
-    ['Timeline', null],
-    ['Gantt chart', 'page'],
-    ['Tokens', null],
-  ]);
-  assert.ok(rail.querySelectorAll('svg').length === 3);
+  assert.equal(head.querySelectorAll('button').length, 1);
   assert.ok(lists.hidden);
   button?.click();
   assert.deepEqual(asked, [false]);
-  assert.equal(side(listing(), { folded: true }).length, 2, 'with no Yard Log shown, the rail holds no view');
 });
 
 test('the sidebar is open until the person folds it, and the browser keeps the choice', () => {
@@ -207,19 +202,12 @@ test('with the sidebar folded, the rail gives the count of blocks that wait on t
   assert.ok(!side(listing({ count: 0 }), { folded: true })[0].querySelector('.waiting-count'));
 });
 
-test('beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current', () => {
-  /** @type {string[]} */
-  const chosen = [];
-  const [, lists] = side(listing(), { current: SHELF, view: 'tokens', onView: (view) => chosen.push(view) });
+test('the branch of the Yard Log shown is the current entry of the sidebar, and the sidebar lists no view', () => {
+  const [, lists] = side(listing(), { current: SHELF });
   const item = lists.querySelector('.log-item.is-current');
   assert.equal(item?.querySelector('a')?.getAttribute('aria-current'), 'page');
-  const entries = [...item.querySelectorAll('.view-entries .view-entry')];
-  assert.deepEqual(entries.map((entry) => entry.textContent), ['Timeline', 'Gantt chart', 'Tokens']);
-  assert.deepEqual(entries.map((entry) => entry.getAttribute('aria-current')), [null, null, 'page']);
-  assert.ok(entries.every((entry) => entry.querySelector('svg')), 'each entry has its icon');
-  entries[1].click();
-  assert.deepEqual(chosen, ['gantt']);
-  assert.equal(lists.querySelectorAll('.view-entries').length, 1, 'no other listed branch shows the entries of its views');
+  assert.equal(lists.querySelectorAll('.log-item [aria-current]').length, 1);
+  assert.ok(!lists.querySelector('[data-view]'), 'no listed branch shows a view');
 });
 
 /** The inherited Yard Logs the page server holds in these tests: 51 of them, `old-00` closed last. */

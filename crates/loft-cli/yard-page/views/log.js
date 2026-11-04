@@ -2,10 +2,10 @@
 // that sums up its stages and the blocks changed since the last visit, and at its right the
 // controls of the view shown, the order of the stages and the count of what waits on the person,
 // which opens it in the modal. Beneath the head, whether it is closed, carried from another branch
-// or of a newer format, and the view chosen in the sidebar: the timeline, the Gantt chart or the
-// tokens it took.
+// or of a newer format, and the view chosen in the tabs along the head's foot: the timeline, the
+// Gantt chart or the tokens it took.
 
-import { add, h } from '../lib/dom.js';
+import { add, h, svg } from '../lib/dom.js';
 import { base, count, place, when } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import * as prefs from '../lib/prefs.js';
@@ -164,7 +164,48 @@ export function logHead(log, context) {
       ),
     ),
     h('div', { class: 'head-controls' }, orderControl(context), waitControl(log, context)),
+    viewTabs(context),
   ];
+}
+
+/** @typedef {'timeline' | 'gantt' | 'tokens'} View */
+
+/** The views of a Yard Log, in their order, each with Loft Web's icon drawn on a square of 16. */
+export const VIEWS = /** @type {[View, string, string[]][]} */ ([
+  ['timeline', 'Timeline', ['M3.5 3.5h2v2h-2zM3.5 7h2v2h-2zM3.5 10.5h2v2h-2z', 'M8 4.5h5.5M8 8h5.5M8 11.5h5.5']],
+  ['gantt', 'Gantt chart', ['M2.5 4h6M5.5 8h7.5M8.5 12h5']],
+  ['tokens', 'Tokens', ['M6 2.5l-1.5 11M11.5 2.5l-1.5 11M2.5 6h11M2 10h11']],
+]);
+
+/**
+ * The tabs of the views along the head's foot, the one shown marked as current. Choosing one
+ * keeps the stage and the block chosen, which the address holds.
+ * @param {LogContext} context
+ */
+function viewTabs(context) {
+  const shown = prefs.view();
+  return h(
+    'nav',
+    { class: 'view-tabs', 'aria-label': 'Views' },
+    VIEWS.map(([view, name, paths]) =>
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'view-tab',
+          dataset: { view },
+          'aria-current': view === shown ? 'page' : null,
+          onclick: () => {
+            if (view === prefs.view()) return;
+            prefs.set('view', view);
+            context.onView();
+          },
+        },
+        svg('svg', { class: 'tab-icon', viewBox: '0 0 16 16', width: 16, height: 16, 'aria-hidden': 'true' }, paths.map((d) => svg('path', { d }))),
+        name,
+      ),
+    ),
+  );
 }
 
 /**

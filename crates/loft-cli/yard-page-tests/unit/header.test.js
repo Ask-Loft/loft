@@ -1,7 +1,7 @@
 // The page's head: where the Yard Log lies, its title and the line that sums it up, and the
 // controls of the view shown at its right, the order of the stages and the button that opens what
-// waits on the person; Loft's wordmark, its L in action blue; and the view chosen in the sidebar,
-// kept in the browser.
+// waits on the person; the tabs of the views along its foot; Loft's wordmark, its L in action
+// blue; and the view chosen, kept in the browser.
 
 import { forget, root } from './dom.js';
 
@@ -46,7 +46,7 @@ function page(shown, more = {}) {
   return at;
 }
 
-test('each view chosen in the sidebar is kept in the browser and drawn alone', () => {
+test('each view chosen in the head’s tabs is kept in the browser and drawn alone', () => {
   const shown = log([stage('s', 'S', 'active', [])]);
   assert.equal(prefs.view(), 'timeline');
   assert.ok(page(shown).querySelector('.timeline'));
@@ -134,4 +134,34 @@ test('the page names no other mark than Loft’s wordmark and Yard', () => {
   drawn.innerHTML = html.match(/<body>[\s\S]*<\/body>/)?.[0] ?? '';
   assert.equal(drawn.querySelectorAll('.mark, .mark-word, .dots').length, 0);
   assert.ok(!/\.(mark-word|dots)\b/.test(css), 'the stylesheet draws no other mark');
+});
+
+test('beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current', () => {
+  const shown = log([stage('s', 'S', 'active', [])]);
+  prefs.set('view', 'gantt');
+  const head = page(shown).querySelector('#head');
+  const tabs = [...(head?.querySelectorAll('.view-tabs .view-tab') ?? [])];
+  assert.deepEqual(tabs.map((tab) => tab.textContent), ['Timeline', 'Gantt chart', 'Tokens']);
+  assert.deepEqual(tabs.map((tab) => tab.getAttribute('aria-current')), [null, 'page', null]);
+  assert.ok(tabs.every((tab) => tab.querySelector('svg')), 'each tab has its icon');
+  const summary = head?.querySelector('.summary');
+  assert.ok(summary && summary.compareDocumentPosition(tabs[0]) & Node.DOCUMENT_POSITION_FOLLOWING, 'the tabs follow the summary');
+});
+
+test('choosing a view’s tab shows that view and keeps the stage chosen', () => {
+  const shown = log([stage('s', 'S', 'active', [])]);
+  let drawn = 0;
+  const head = page(shown, { chosen: { stage: 's' }, onView: () => (drawn += 1) }).querySelector('#head');
+  /** @type {HTMLElement | null | undefined} */ (head?.querySelector('[data-view="tokens"]'))?.click();
+  assert.equal(prefs.view(), 'tokens');
+  assert.equal(drawn, 1, 'the page is drawn again');
+  /** @type {HTMLElement | null | undefined} */ (head?.querySelector('[data-view="timeline"]'))?.click();
+  assert.equal(drawn, 2);
+  assert.ok(page(shown, { chosen: { stage: 's' } }).querySelector('.stage-pane #block-s'), 'the stage chosen stays chosen');
+});
+
+test('the tab of the view shown is ink, underlined in action blue', () => {
+  const rule = css.match(/\.view-tab\[aria-current="page"\]\s*\{([^}]*)\}/)?.[1] ?? '';
+  assert.match(rule, /color:\s*var\(--ink\)/);
+  assert.match(rule, /border-bottom-color:\s*var\(--signal\)/);
 });

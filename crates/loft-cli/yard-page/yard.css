@@ -272,7 +272,6 @@ button { font: inherit; }
 .app-name { font-size: 14px; line-height: 1; color: var(--muted); }
 .side-lists { display: grid; gap: 22px; padding: 8px 14px 24px; }
 .side-lists[hidden] { display: none; }
-.rail-views { display: grid; justify-items: center; gap: 4px; padding: 4px 0; }
 .connection { display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 24px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .is-folded .connection { justify-content: center; padding: 12px 0 16px; }
 .is-folded .connection-words { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -321,6 +320,13 @@ button { font: inherit; }
 }
 .control select:hover { background-color: var(--mist); }
 .head-controls .wait-button { min-height: 40px; }
+/* The views, as tabs along the head's foot: the one shown in ink, underlined in action blue on the
+   head's own hairline. */
+.view-tabs { flex: 1 0 100%; display: flex; gap: 24px; margin: 4px 0 -16px; }
+.view-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--body); font-size: 14px; white-space: nowrap; cursor: pointer; }
+.view-tab:hover { color: var(--ink); }
+.view-tab[aria-current="page"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--signal); }
+.tab-icon { flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; }
 @media (max-width: 860px) {
   .page-head { padding: 20px 16px 12px; }
 }
@@ -363,13 +369,6 @@ button { font: inherit; }
 .log-item .title { color: var(--muted); font-size: 13px; font-weight: 400; flex-basis: 100%; }
 .log-item.is-inherited .branch { color: var(--muted); }
 .log-item .waiting-count { margin-left: auto; }
-/* The views of the Yard Log shown, beneath its branch and set in from it, as Loft Web lists a
-   document's pages beneath it. */
-.view-entries { list-style: none; margin: 2px 0 6px; padding: 0 0 0 14px; display: grid; gap: 2px; }
-.view-entry { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 36px; padding: 0 10px; border: 0; background: none; color: var(--ink); font-size: 14px; text-align: left; white-space: nowrap; cursor: pointer; }
-.view-entry:hover { background: var(--mist); }
-.view-entry[aria-current="page"] { background: var(--mist); font-weight: 600; }
-.view-entry .side-icon { flex: none; }
 .waiting-count {
   min-width: 20px;
   padding: 0 6px;
