@@ -226,3 +226,72 @@ requirements:
         name: "The skill says that ending that stage returns the work to the agent's own directory."
       - key: 01a18a50-2ff6-715f-af9c-707adfa12f6c
         name: "The skill says to name the tree to close another worktree's Yard Log or to record a publish in it."
+  - key: 01a1a75a-9d00-7185-8c68-c29668b9cfe6
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill's description"
+      shall: "name each kind of work on a branch that the skill applies to, so that the agent follows the skill without being asked to."
+    criteria:
+      - key: 01a1a75a-9d00-7185-8c68-c29787bd457b
+        name: "The description names planning, building, fixing and reviewing a change on a git branch."
+      - key: 01a1a75a-9d00-7185-8c68-c298bb99d6ea
+        name: "The description names a session that starts or resumes on a branch whose Yard Log is open."
+  - key: 01a1a75a-9d00-7185-8c68-c2996a1ab8a6
+    statement:
+      form: event_driven
+      when: "work that builds a change begins on a branch"
+      system: "the `yard` skill"
+      shall: "tell the agent to plan the branch's work before it writes any of the branch's code."
+    criteria:
+      - key: 01a1a75a-9d00-7185-8c68-c29a38e8f8c1
+        name: "The skill says to plan at the start of each branch that builds a change, each wave's branch included."
+      - key: 01a1a75a-9d00-7185-8c68-c29bbd5e48b5
+        name: "The skill says that, where the specification changes first, the plan comes once the change is approved and committed."
+      - key: 01a1a75a-9d00-7185-8c68-c29cf2d64044
+        name: "The skill says that a session that resumes or continues a branch whose plan is approved goes on with that plan."
+      - key: 01a1a75a-9d00-7185-8c68-c29dcfd17a7b
+        name: "The skill says to call `EnterPlanMode` at the start of a branch that builds a change."
+  - key: 01a1a75a-9d00-7185-8c68-c29e607873e5
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to keep, in each stage that builds the change, one note that lists the issues it found and fixed during the stage's work."
+    criteria:
+      - key: 01a1a75a-9d00-7185-8c68-c29fd6c3fea4
+        name: "The skill says to keep the note under one id in its stage, and to write it again as each issue is found or fixed."
+      - key: 01a1a75a-9d00-7185-8c68-c2a01211cd19
+        name: "The skill says that the note lists the issues the agent ran into itself, such as failing tests, defects in existing code, wrong assumptions and review findings."
+      - key: 01a1a75a-9d00-7185-8c68-c2a1ea066f57
+        name: "The skill says that the note gives each issue how it was found, its fix and its state."
+      - key: 01a1a75a-9d00-7185-8c68-c2a28aa92e21
+        name: "The skill says that the note stands apart from the plan's tasks and from the fixes the person asked for."
+      - key: 01a1a75a-9d00-7185-8c68-c2a31c1a9ce7
+        name: "The skill says that a build plan includes keeping the note."
+  - key: 01a1a75a-9d00-7185-8c68-c2a4bdbc5be5
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to propose splitting large work into waves, each on a branch of its own cut from a parent branch."
+    criteria:
+      - key: 01a1a75a-9d00-7185-8c68-c2a535dc4028
+        name: "The skill says that work that spans more than one subsystem, or more than eight tasks, is large."
+      - key: 01a1a75a-9d00-7185-8c68-c2a653996799
+        name: "The skill says that the parent branch's plan proposes the waves, and that the person's approval of that plan approves them."
+      - key: 01a1a75a-9d00-7185-8c68-c2a7791ae8c7
+        name: "The skill says that each wave runs on a branch cut from the parent branch, with a Yard Log of its own."
+      - key: 01a1a75a-9d00-7185-8c68-c2a81fc57514
+        name: "The skill says that the parent's Yard Log keeps one stage for each wave, active while the wave runs and done once it is merged."
+      - key: 01a1a75a-9d00-7185-8c68-c2a9cb945191
+        name: "The skill says that a wave closes its Yard Log and merges into the parent branch, and that the parent merges into its own base after the last wave."
+  - key: 01a1a75a-9d00-7185-8c68-c2aa84ce8911
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill"
+      shall: "tell the agent to end each wave with a review of the wave's changes as its last task."
+    criteria:
+      - key: 01a1a75a-9d00-7185-8c68-c2abc3b2a9ce
+        name: "The skill says that the review's confirmed findings are fixed as `regular` tasks and listed in the stage's issue note."
+      - key: 01a1a75a-9d00-7185-8c68-c2ac2aae124a
+        name: "The skill says to ask the person, as one decision point, about the findings the agent disputes or that would change the scope."
+      - key: 01a1a75a-9d00-7185-8c68-c2ad0eb92742
+        name: "The skill says to run `/simplify` and then `/code-review` as the review."

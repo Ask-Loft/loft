@@ -60,3 +60,7 @@ requirements:
         name: "The workflow distinguishes planning and approval from the native update_plan checklist."
       - key: 01a1795d-05c7-708c-baca-7278658667c3
         name: "The adaptation claims neither a native mode transition nor a native plan approval from Yard's planning instructions or page approval."
+      - key: 01a1a75a-9cff-71cb-ba49-976bab8ec826
+        name: "The adaptation says to follow its planning workflow at the start of a branch that builds a change, and to suggest that the person switch Codex to Plan mode."
+      - key: 01a1a75a-9cff-71cb-ba49-976c1e560e3d
+        name: "The adaptation says to run `codex review` against the parent branch as the review that ends a wave."
