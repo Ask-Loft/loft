@@ -28361,7 +28361,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "the person folds a stage of the list to its row and opens it to list its blocks by kind and title"
-        body: e30f89b067ae20bedbaf8b2fac88efe64c4927656d1b3744555f9a82c8ec9148
+        body: 889601f880ff415b0aa53a03d609d58612885ca9c20e85a56ab9b7bc77fe567c
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in the list, the active stage is open to its blocks and the planned one folded, and the person folds and opens each"
         body: db6faff02d3b13147def4e14033a3508148c427c39e520cf52bf6a2dc78db9d1
@@ -28407,6 +28407,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the list and the pane each scroll on their own beneath the head, and the page itself never scrolls"
         body: e4c4d677e13374add75691d259b284887b73fbc316ebf8ea9189c6a0b539cd66
+  - node: 01a1a856-9e14-7124-a2ea-8d787f68be15
+    reviewed: 9ab3a09673a2f8cb719b292ada10bf1f216d7923ee28e5e9f45b0accde85b98a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a change drawn leaves the list and the pane scrolled where they were, and brings the chosen block back into view only when it is chosen"
+        body: 20ba50b70c90b0f6eda15c7fe2d4647d0b69888e93d9e4debb477ecb038898bd
+  - node: 01a1a856-9e14-7124-a2ea-8d79ddaf440d
+    reviewed: cb3f65eb4d880801d6bd86416b75b22cdcdc89cfde7ebfc1d67c45d9c4208abf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "beneath a stage of the list, each block’s row gives its kind as a small light icon, named to a reader and on hover, and no word"
+        body: da6fcde397bacb7c6f26199f753aad2a805277fdfe2c8743a0148eba69184807
   - node: 01a1a7a4-51ce-73b8-bd34-87bda9d6693e
     reviewed: 15952e9c7e5554af4fa462411fca4ecc5158001b43c1202787fad1a2fce2c8dc
     tests:
