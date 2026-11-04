@@ -46,7 +46,7 @@ requirements:
       - key: 01a168ea-af3e-70b5-83b9-97fe8c01e07f
         name: "Open, the sidebar is headed by the button that folds it and the wordmark, and lists the Yard Logs beneath them."
       - key: 01a16901-3953-712b-afc6-44269a6cf574
-        name: "Folded, the sidebar is a rail that holds the button that opens it and an icon for each view of the Yard Log shown."
+        name: "Folded, the sidebar is a rail that holds the button that opens it."
       - key: 01a168ea-af3e-70b5-83b9-97ff14bf889d
         name: "The sidebar is open unless the person chose to fold it, and the person's choice is kept in the browser."
       - key: 01a168ea-af3e-70b5-83b9-9800f391884d
@@ -58,25 +58,25 @@ requirements:
       - key: 01a16901-3953-712b-afc6-44278c6402e4
         name: "In a window narrower than 860 pixels, the open sidebar lies over the Yard Log rather than beside it."
       - key: 01a16920-dde7-743a-aadb-655223112875
-        name: "The page draws the sidebar again only when the list of Yard Logs, the Yard Log chosen, the view shown or the sidebar's fold changes."
+        name: "The page draws the sidebar again only when the list of Yard Logs, the Yard Log chosen or the sidebar's fold changes."
       - key: 01a1a7a4-51ce-73b8-bd34-87aa6730ba3d
         name: "The foot of the sidebar says whether the page is following Yard Log live."
   - key: 01a1a7a4-51ce-73b8-bd34-87abe528f508
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "list the views of the Yard Log shown beneath its branch in the sidebar, each as an entry of the sidebar with an icon and its name."
+      shall: "show the views of the Yard Log shown as tabs in its head, beneath the line that sums up its stages, each with an icon and its name."
     criteria:
       - key: 01a1a7a4-51ce-73b8-bd34-87ac9b0845b5
         name: "The branch of the Yard Log shown is marked as the current entry of the sidebar."
       - key: 01a1a7a4-51ce-73b8-bd34-87ad97d9e616
-        name: "Beneath the branch of the Yard Log shown, and set in from it, lie the entries Timeline, Gantt chart and Tokens, in that order."
+        name: "Beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, in that order."
       - key: 01a1a7a4-51ce-73b8-bd34-87ae5dc1386d
-        name: "The entry of the view shown is marked as current, on the mist ground and in semibold."
+        name: "The tab of the view shown is marked as current, in ink and underlined in action blue."
       - key: 01a1a7a4-51ce-73b8-bd34-87af31f27e73
-        name: "Choosing a view's entry shows that view of the Yard Log and keeps the stage chosen."
+        name: "Choosing a view's tab shows that view of the Yard Log and keeps the stage chosen."
       - key: 01a1a7a4-51ce-73b8-bd34-87b0c01d27ce
-        name: "No other listed branch shows the entries of its views."
+        name: "The sidebar lists no view of any Yard Log."
   - key: 01a1a7a4-51ce-73b8-bd34-87b10883edd5
     statement:
       form: ubiquitous
@@ -222,6 +222,21 @@ requirements:
         name: "The blocks within each stage retain Yard Log's stored order through mode grouping."
       - key: 01a17f75-05dc-7361-a0cd-c025788f6f99
         name: "Changing a block's current version leaves its timeline position unchanged."
+  - key: 01a1a7cf-9eae-75c1-bbfd-bbd40af8fbc3
+    statement:
+      form: state_driven
+      while: "the branch's Yard Log holds a single stage"
+      system: "the page"
+      shall: "list the stage's blocks as the list's rows in place of the stage, each drawn as a stage's row is drawn."
+    criteria:
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd5036bc56f
+        name: "With one stage, the list holds a row for each of its blocks in their order, and no row for the stage."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd63a7b9af1
+        name: "A block's row shows its title on its first line and, on its second, its kind and, where it has one, its state, as a dot and a word, as a stage's row shows its status."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd7159598d3
+        name: "Choosing a block's row brings the block into view in the pane and marks it as the block chosen."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd82559a568
+        name: "With more than one stage, the list holds a row for each stage, with the rows of its blocks beneath it."
   - key: 01a1690b-2c9b-7594-809f-4a8a666e8f7c
     statement:
       form: ubiquitous

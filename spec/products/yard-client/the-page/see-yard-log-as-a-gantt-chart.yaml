@@ -12,11 +12,11 @@ requirements:
       shall: "offer the timeline, the Gantt chart and the tokens as three views of Yard Log, and remember in this browser the one chosen."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb69ef96a504
-        name: "The entries beneath the branch of the Yard Log shown in the sidebar choose the timeline, the Gantt chart or the tokens."
+        name: "The tabs in the page's head choose the timeline, the Gantt chart or the tokens."
       - key: 01a16984-aadb-7721-9995-472440ea0ee8
-        name: "Each view's entry is drawn as an entry of the sidebar, with an icon and the view's name, and the one shown is marked as current."
+        name: "Each view's tab shows an icon and the view's name, and the one shown is marked as current."
       - key: 01a168c0-7faa-72dc-8ad3-520c27488530
-        name: "The entries of the views stay in the same place whichever view is shown."
+        name: "The tabs stay in the same place whichever view is shown."
       - key: 01a1646f-546d-7042-befd-eb6a95402082
         name: "The view chosen is the one shown the next time the page opens in this browser."
       - key: 01a1646f-546d-7042-befd-eb6b4a34aab6

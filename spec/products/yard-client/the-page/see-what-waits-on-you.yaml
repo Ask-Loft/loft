@@ -76,7 +76,7 @@ requirements:
       - key: 01a1a7a4-51ce-73b8-bd34-87c31d6d0eaf
         name: "The panel is drawn as what floats over the page: an ink border and a hard shadow offset down and to the right."
       - key: 01a169df-0b4e-72cf-bc3c-472000361eef
-        name: "The page above the panel is not darkened, scrolls and takes clicks, and its entries of the views change the view while the panel stays open."
+        name: "The page above the panel is not darkened, scrolls and takes clicks, and its tabs of the views change the view while the panel stays open."
       - key: 01a169df-0b4e-72cf-bc3c-472182670121
         name: "While the panel is open, the page's end can be scrolled above the panel, so no part of the Yard Log stays hidden beneath it."
       - key: 01a169df-0b4e-72cf-bc3c-4722edee80d5

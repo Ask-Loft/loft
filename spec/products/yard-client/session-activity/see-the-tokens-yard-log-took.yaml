@@ -29,6 +29,10 @@ requirements:
         name: "Each measured breakdown count has a bar showing its share of Yard Log's recorded subtotal for that counter, including when token accounting is partial."
       - key: 01a17a6d-c247-738d-ac55-ded98716c59e
         name: "Each displayed token percentage describes a share of recorded usage."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd173b1e084
+        name: "The four totals are drawn as figures in proportional digits, and each count of the table is right-aligned in digits of one width, so that the counts of a column line up."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd28581c045
+        name: "Each share bar is drawn in one hue, thin, with a rounded end, on a track of a lighter step of that hue, and names its count and share when pointed at."
       - key: 01a1646f-546d-7042-befd-eb1d0e18125d
         name: "The page explains that requests an agent host makes inside its own tools may be outside the reported usage."
       - key: 01a1646f-546d-7042-befd-eb1e1e831c2e
@@ -37,22 +41,14 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "keep token details in a fold that starts closed, with the token summary visible outside it."
+      shall: "show the tokens' summary, the table of their breakdowns, the reporting coverage and the explanatory note together, with no fold."
     criteria:
-      - key: 01a18002-11df-7502-aae7-e831ca8ffed0
-        name: "With no saved choice for Yard Log, the token details fold is closed."
-      - key: 01a18002-11df-7502-aae7-e832a623c32e
-        name: "The four summary totals and any partial-accounting indicator remain visible while the details are closed."
       - key: 01a18002-11df-7502-aae7-e833332abdbc
-        name: "The breakdown table, reporting coverage and explanatory note are hidden until the details are opened."
-      - key: 01a18002-11df-7502-aae7-e8341610973a
-        name: "The person can open and close the token details by keyboard."
-      - key: 01a18002-11df-7502-aae7-e8354f47bc75
-        name: "Live usage updates retain the person's chosen fold state."
-      - key: 01a18002-11df-7502-aae7-e836fa6d271e
-        name: "The browser restores the token fold choice for each Yard Log independently after a reload."
+        name: "The breakdown table, the reporting coverage and the explanatory note show beneath the summary without being opened."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd393684ee0
+        name: "The tokens view offers no control that folds or opens its details."
       - key: 01a18002-11df-7502-aae7-e837eeed49fc
-        name: "With no counted request, the empty summary remains visible without opening the token details."
+        name: "With no counted request, the summary says that no tokens have been counted yet, and no table is shown."
   - key: 01a1646f-546d-7042-befd-eb1fa3e702b8
     statement:
       form: event_driven
