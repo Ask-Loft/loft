@@ -608,7 +608,6 @@ label.option-card:hover, .own-words:hover { border-color: var(--rail); }
 .decision-head { display: grid; gap: 6px; }
 .decision-line { border-left: 3px solid var(--signal); padding-left: 10px; display: grid; gap: 2px; }
 .decision-number { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--signal); }
-.consequence { max-width: 75ch; }
 .verdict-word { font-weight: 600; font-size: 13px; }
 .verdict--approved { color: var(--done); }
 .verdict--rejected { color: var(--danger); }
@@ -682,7 +681,7 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 }
 .modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; }
 /* In the panel, text spans its width: the panel has less height to give it than the timeline. */
-.modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .consequence, .goal, .banner) { max-width: none; }
+.modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .goal, .banner) { max-width: none; }
 .dock-edge { position: absolute; top: -5px; left: 0; right: 0; z-index: 1; height: 10px; cursor: row-resize; touch-action: none; }
 .dock-edge::after { content: ''; position: absolute; top: 3px; left: 50%; width: 48px; height: 4px; margin-left: -24px; background: var(--rail); }
 .dock-edge:hover::after, .dock-edge:focus-visible::after { background: var(--signal); }
@@ -773,9 +772,13 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .option-ratings dt { font-weight: 600; color: var(--ink); }
 .option-ratings dd { margin: 0; }
 .option-rating { white-space: nowrap; }
-.consequences { gap: 4px; }
-.consequence { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: baseline; }
-.consequence-kind { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+/* A decision's parts stand apart on one rhythm; its head and its outcome, and its two folds, are pairs. */
+.loft-view--decision { gap: 16px; }
+.loft-view--decision > .decision-view-head + .outcome { margin-top: -8px; color: var(--ink); }
+.loft-view--decision > details.fold + details.fold { margin-top: -10px; }
+.consequences { gap: 6px; }
+.consequence { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.consequence-kind { color: var(--muted); font-size: 13px; font-weight: 500; text-transform: capitalize; }
 .decision-matrix { display: grid; gap: 6px; }
 .rating-key { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 12.5px; }
 .assessments th[scope="row"] { white-space: nowrap; }

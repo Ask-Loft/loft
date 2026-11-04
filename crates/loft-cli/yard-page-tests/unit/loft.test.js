@@ -634,6 +634,14 @@ test('panels that stand one beneath another in a column are as wide as one anoth
   }
 });
 
+test('a decision’s parts stand on one rhythm, its head and outcome and its two folds as pairs, its consequences’ kinds quiet words', () => {
+  assert.match(css, /\.loft-view--decision \{ gap: 16px; \}/);
+  assert.match(css, /\.loft-view--decision > \.decision-view-head \+ \.outcome \{ margin-top: -8px;/);
+  assert.match(css, /\.loft-view--decision > details\.fold \+ details\.fold \{ margin-top: -10px; \}/);
+  assert.match(css, /\.consequence-kind \{ color: var\(--muted\); font-size: 13px; font-weight: 500; text-transform: capitalize; \}/, 'not mono capitals');
+  assert.doesNotMatch(css, /\.consequence \{ max-width/, 'as wide as the outcome above them');
+});
+
 test('a decision’s outcome comes first beneath its head, and its context and drivers are folded at its end', () => {
   const view = drawn(
     decisionView({ decision: { title: 'T', label: 'ADR-5', context: 'Why we chose', state: { kind: 'accepted', outcome: 'We chose A' }, drivers: [{ key: 'r', label: 'Speed' }], options: [{ key: 'a', title: 'A', selected: true }], assessments: [] } }),
