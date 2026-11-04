@@ -134,10 +134,12 @@ test('on a wide window the pane holds its stage within 900 pixels, and a note’
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
   await page.locator('#row-shape .block-row[data-block="wide-note"]').click();
-  const stage = await box(page.locator('.stage-pane > .stage'));
+  await expect(page.locator('#block-wide-note')).toBeVisible();
+  // The page draws itself again as the note arrives, so each box is read once it can be measured.
+  const stage = await steadyBox(page.locator('.stage-pane > .stage'));
   expect(stage.width).toBeLessThanOrEqual(900);
-  const text = await box(page.locator('#block-wide-note .prose > p').first());
-  const block = await box(page.locator('#block-wide-note'));
+  const text = await steadyBox(page.locator('#block-wide-note .prose > p').first());
+  const block = await steadyBox(page.locator('#block-wide-note'));
   expect(text.width).toBeGreaterThan(700);
   expect(block.x + block.width - (text.x + text.width)).toBeLessThan(40);
   await page.setViewportSize({ width: 1280, height: 900 });
