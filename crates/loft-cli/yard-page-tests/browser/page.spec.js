@@ -91,39 +91,48 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
 
-/** The mark's Y and the header's switch of views in `scheme`, whose ink and action blue are given. */
-async function headerColours(page, scheme, ink, signal) {
+/** Loft's wordmark and the entry of the view shown in `scheme`, whose ink, action blue and mist are given. */
+async function wordmarkColours(page, scheme, ink, signal, mist) {
   await page.emulateMedia({ colorScheme: scheme });
   await page.goto(address());
   await closeWaiting(page);
-  expect(await colour(page.locator('.mark-initial'), 'color')).toBe(signal);
-  expect(await colour(page.locator('.mark-word'), 'color')).toBe(ink);
-  const shown = page.locator('header.top nav.views [aria-pressed="true"]');
+  expect(await colour(page.locator('.wordmark-initial'), 'color')).toBe(signal);
+  expect(await colour(page.locator('.wordmark'), 'color')).toBe(ink);
+  const shown = page.locator('#side .view-entry[aria-current="page"]');
   await expect(shown).toHaveText('Timeline');
-  expect(await colour(shown, 'color')).toBe(ink);
-  expect(await colour(shown, 'text-decoration-line')).toBe('underline');
-  expect(await colour(shown, 'text-decoration-color')).toBe(signal);
-  const other = page.locator('header.top nav.views [aria-pressed="false"]');
-  expect(await colour(other, 'text-decoration-line')).toBe('none');
-  expect(await colour(other, 'border-top-width')).toBe('0px');
+  expect(await colour(shown, 'background-color')).toBe(mist);
+  expect(await colour(shown, 'font-weight')).toBe('600');
+  const other = page.locator('#side .view-entry:not([aria-current])').first();
+  expect(await colour(other, 'font-weight')).toBe('400');
 }
 
-test('in a light scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue', async ({ page }) => {
-  await headerColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)');
+test('in a light scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold', async ({ page }) => {
+  await wordmarkColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)', 'rgb(229, 246, 255)');
 });
 
-test('in a dark scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue', async ({ page }) => {
-  await headerColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
+test('in a dark scheme, the wordmark’s L is action blue and the rest ink, and the entry of the view shown is on mist in semibold', async ({ page }) => {
+  await wordmarkColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)', 'rgb(19, 34, 51)');
 });
 
-test('the mark’s Y meets the rest of its name with no gap between them', async ({ page }) => {
+test('the wordmark’s L meets the rest of its name with no gap between them, and Yard stands on its baseline, muted', async ({ page }) => {
   await page.goto(address());
-  const gap = await page.locator('.mark-initial').evaluate((initial) => {
+  const gap = await page.locator('.wordmark-initial').evaluate((initial) => {
     const rest = document.createRange();
     rest.selectNodeContents(/** @type {Node} */ (initial.nextSibling));
     return rest.getBoundingClientRect().left - initial.getBoundingClientRect().right;
   });
   expect(Math.abs(gap)).toBeLessThan(1);
+  const baseline = (locator) =>
+    locator.evaluate((element) => {
+      const probe = document.createElement('span');
+      probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+      element.append(probe);
+      const y = probe.getBoundingClientRect().top;
+      probe.remove();
+      return y;
+    });
+  expect(Math.abs((await baseline(page.locator('.wordmark'))) - (await baseline(page.locator('.app-name'))))).toBeLessThan(1);
+  expect(await colour(page.locator('.app-name'), 'color')).toBe(await colour(page.locator('.connection'), 'color'));
 });
 
 test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
@@ -410,13 +419,12 @@ test('the person closes the panel by its button or Escape and it stays closed th
   await expect(modal.locator('.submission')).toHaveCount(1, { timeout: LIVE });
 });
 
-test('the button that opens what waits lies in the page’s header after the switch of views, and stays in view while the Yard Log scrolls', async ({ page }) => {
+test('the button that opens what waits lies in the page’s head, and stays in view while the Yard Log scrolls', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto(address());
   await closeWaiting(page);
-  const button = page.locator('header.top #open-waiting');
+  const button = page.locator('#head #open-waiting');
   await expect(button).toHaveText('1 waits on you');
-  expect((await box(button)).x).toBeGreaterThan((await box(page.locator('header.top nav.views'))).x);
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   await expect(button).toBeInViewport();
@@ -644,37 +652,37 @@ test('the Gantt chart is chosen, kept for the next visit, follows changes, and f
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right', async ({ page }) => {
-  const layout = page.locator('.layout');
+test('the page begins at the sidebar’s edge and reaches the right edge of the window, whatever its width', async ({ page }) => {
+  const side = page.locator('#side');
+  const shown = page.locator('.page');
   await page.goto(address());
-  for (const [window, wide] of [
-    [1280, 1280],
-    [2200, 1800],
-  ]) {
+  for (const window of [1280, 2200, 3000]) {
     await page.setViewportSize({ width: window, height: 900 });
-    await expect.poll(async () => (await layout.boundingBox())?.width).toBe(wide);
-    expect((await layout.boundingBox())?.x).toBe(0);
+    await expect.poll(async () => (await box(shown)).x + (await box(shown)).width).toBe(window);
+    const edge = await box(side);
+    expect((await box(shown)).x).toBe(edge.x + edge.width);
   }
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('the page keeps its width and its switch of views stays in place whichever view is shown', async ({ page }) => {
+test('the page keeps its width and the entries of the views stay in place whichever view is shown', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto(address());
   const main = page.locator('#log');
-  const timeline = page.getByRole('button', { name: 'Timeline' });
+  const timeline = page.locator('#side .view-entry', { hasText: 'Timeline' });
   await timeline.click();
   await expect(page.locator('ol.timeline')).toBeVisible();
-  await expect(page.locator('header.top nav.views').getByRole('button', { name: 'Timeline' })).toBeVisible();
-  expect((await box(timeline)).x).toBeGreaterThan((await box(page.locator('header.top .mark'))).x);
-  const before = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
-  await page.getByRole('button', { name: 'Gantt chart' }).click();
-  await expect(page.locator('.gantt')).toBeVisible();
-  const after = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
-  expect(after.main?.width).toBe(before.main?.width);
-  expect(after.switch?.x).toBe(before.switch?.x);
-  expect(after.switch?.y).toBe(before.switch?.y);
-  await page.getByRole('button', { name: 'Timeline' }).click();
+  await expect(page.locator('#side .log-item.is-current .view-entries')).toBeVisible();
+  const before = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
+  for (const view of ['Gantt chart', 'Tokens']) {
+    await page.locator('#side .view-entry', { hasText: view }).click();
+    await expect(page.locator(view === 'Tokens' ? '.tokens' : '.gantt')).toBeVisible();
+    const after = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
+    expect(after.main?.width).toBe(before.main?.width);
+    expect(after.entry?.x).toBe(before.entry?.x);
+    expect(after.entry?.y).toBe(before.entry?.y);
+  }
+  await timeline.click();
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
@@ -705,59 +713,62 @@ test('the inherited Yard Logs are folded beneath their count under the repositor
   await page.evaluate(() => localStorage.removeItem('yard.inherited'));
 });
 
-test('the menu runs down the window’s left from top to bottom, beside the page’s header, and stays while the Yard Log scrolls', async ({ page }) => {
+test('the sidebar runs down the window’s left from top to bottom, on a ground of its own, and stays while the Yard Log scrolls', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto(address());
   const side = page.locator('#side');
-  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toBeVisible();
+  await expect(side.locator('.wordmark-link')).toBeVisible();
   const menu = await box(side);
   expect([menu.x, menu.y, menu.height]).toEqual([0, 0, 400]);
-  expect((await box(page.locator('.top'))).x).toBe(menu.x + menu.width);
+  expect(await colour(side, 'background-color')).not.toBe(await colour(page.locator('body'), 'background-color'));
+  expect((await box(page.locator('.page'))).x).toBe(menu.x + menu.width);
+  await expect(side.locator('.connection')).toHaveText('Live');
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
   expect(Math.abs((await box(side)).y)).toBeLessThan(1);
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('folding the menu leaves a strip and gives its room to the page, which begins as near the strip as it lay to the menu, and the next visit keeps it folded', async ({ page }) => {
+test('folding the sidebar leaves a rail of its button and the icons of the views, gives its room to the page, and the next visit keeps it folded', async ({ page }) => {
   await page.goto(address());
   const side = page.locator('#side');
   const main = page.locator('#log');
-  const header = page.locator('.top');
+  const shown = page.locator('.page');
   const open = await box(side);
   const gap = (await box(main)).x - (open.x + open.width);
-  const fold = page.getByRole('button', { name: 'Fold the menu of Yard Logs' });
+  const fold = page.getByRole('button', { name: 'Fold the sidebar' });
   await expect(fold).toHaveAttribute('aria-expanded', 'true');
   await fold.click();
-  await expect(page.locator('#menu-lists')).toBeHidden();
-  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toHaveCount(0);
-  await expect.poll(async () => (await box(side)).width).toBe(58);
-  const strip = await box(side);
-  expect(strip.height).toBe(900);
-  expect((await box(header)).x).toBe(strip.x + strip.width);
-  expect((await box(main)).x).toBe(strip.x + strip.width + gap);
+  await expect(page.locator('#side-lists')).toBeHidden();
+  await expect(side.locator('.wordmark-link')).toHaveCount(0);
+  await expect(side.locator('.rail-views button')).toHaveCount(3);
+  await expect.poll(async () => (await box(side)).width).toBe(68);
+  const rail = await box(side);
+  expect(rail.height).toBe(900);
+  expect((await box(shown)).x).toBe(rail.x + rail.width);
+  expect((await box(main)).x).toBe(rail.x + rail.width + gap);
   await page.reload();
-  const opener = page.getByRole('button', { name: /^Open the menu of Yard Logs/ });
+  const opener = page.getByRole('button', { name: /^Open the sidebar/ });
   await expect(opener).toHaveAttribute('aria-expanded', 'false');
-  expect((await box(side)).width).toBe(58);
+  expect((await box(side)).width).toBe(68);
   await opener.click();
-  await expect(page.locator('#menu-lists')).toBeVisible();
+  await expect(page.locator('#side-lists')).toBeVisible();
   await expect.poll(async () => (await box(main)).x).toBe(open.x + open.width + gap);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });
 
-test('in a window narrower than 860 pixels the open menu lies over the page, which keeps only the strip’s room', async ({ page }) => {
+test('in a window narrower than 860 pixels the open sidebar lies over the page, which keeps only the rail’s room', async ({ page }) => {
   await page.setViewportSize({ width: 700, height: 900 });
   await page.goto(address());
   const side = page.locator('#side');
   const menu = await box(side);
-  const header = await box(page.locator('.top'));
+  const shown = await box(page.locator('.page'));
   expect(menu.x).toBe(0);
-  expect(header.x).toBe(58);
-  expect(menu.x + menu.width).toBeGreaterThan(header.x + 200);
-  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
-  await expect.poll(async () => (await box(side)).width).toBe(58);
-  expect((await box(page.locator('.top'))).x).toBe(58);
+  expect(shown.x).toBe(68);
+  expect(menu.x + menu.width).toBeGreaterThan(shown.x + 120);
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(68);
+  expect((await box(page.locator('.page'))).x).toBe(68);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
   await page.setViewportSize({ width: 1280, height: 900 });
 });
@@ -912,14 +923,14 @@ test('dragging the column’s edge widens it within its bounds, and the next vis
   await page.evaluate(() => localStorage.removeItem('yard.gantt-names'));
 });
 
-test('folding the menu widens the Gantt chart into the room the menu left, and opening it narrows the chart again', async ({ page }) => {
+test('folding the sidebar widens the Gantt chart into the room the sidebar left, and opening it narrows the chart again', async ({ page }) => {
   const frame = await openLongDay(page);
   const width = () => frame.evaluate((element) => element.clientWidth);
   const before = await width();
   const menu = (await page.locator('#side').boundingBox())?.width ?? 0;
-  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
-  await expect.poll(width).toBe(before + menu - 58);
-  await page.getByRole('button', { name: /^Open the menu of Yard Logs/ }).click();
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
+  await expect.poll(width).toBe(before + menu - 68);
+  await page.getByRole('button', { name: /^Open the sidebar/ }).click();
   await expect.poll(width).toBe(before);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });
@@ -952,6 +963,7 @@ test('choosing a stage in the Gantt chart opens the timeline at it', async ({ pa
 
 test('an open page shows a counted request’s tokens within 2 seconds of the request’s end', async ({ page }) => {
   await page.goto(address());
+  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
   await expect(page.locator('#tokens')).toBeVisible();
   const events = [
     { session: 's1', dir: setup.tree, at: since(-30), kind: 'turn.start' },
@@ -969,19 +981,20 @@ test('an open page shows a counted request’s tokens within 2 seconds of the re
   await expect(page.locator('.token-totals dd').first()).toHaveAttribute('title', '4321', { timeout: LIVE });
 });
 
-test('the page draws the menu again only when the list, the Yard Log chosen or the menu’s fold changes', async ({ page }) => {
+test('the page draws the sidebar again only when the list, the Yard Log chosen, the view shown or the sidebar’s fold changes', async ({ page }) => {
   await page.goto(address());
+  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
   const totals = page.locator('.token-totals dd').first();
   await expect(page.locator('#tokens')).toBeVisible();
   const before = await totals.getAttribute('title');
-  // A mark on the menu as drawn, which a menu drawn again does not carry.
-  await page.evaluate(() => document.querySelector('#side .menu-head')?.setAttribute('data-mark', 'drawn'));
-  const marked = page.locator('#side .menu-head[data-mark="drawn"]');
+  // A mark on the sidebar as drawn, which a sidebar drawn again does not carry.
+  await page.evaluate(() => document.querySelector('#side .side-head')?.setAttribute('data-mark', 'drawn'));
+  const marked = page.locator('#side .side-head[data-mark="drawn"]');
   const request = { session: 's1', dir: setup.tree, at: since(-1), kind: 'request', model: 'claude-opus-5-5', tokens: { input: 1111, cacheRead: 0, cacheWrite: 0, output: 1 } };
   expect((await postAsMod('/api/events', [request])).status).toBe(200);
   await expect.poll(() => totals.getAttribute('title'), { timeout: LIVE }).not.toBe(before);
   await expect(marked).toHaveCount(1);
-  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
   await expect(marked).toHaveCount(0);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });
@@ -1194,6 +1207,7 @@ test('free form checkboxes combine with named choices and keep selection indepen
 test('token details start closed and keyboard choices survive live counts and reloads', async ({ page }) => {
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
   const section = page.locator('#tokens');
   const details = section.locator('details.token-details');
   const summary = details.locator(':scope > summary');

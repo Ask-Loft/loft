@@ -183,145 +183,94 @@ button { font: inherit; }
   * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
 
-.top {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 16px 32px;
-  min-height: 60px;
-  padding: 10px 24px;
-  background: var(--canvas);
-  border-bottom: 1px solid var(--line);
-}
-/* The website's signature: a row of dots under the header, from cyan through to lilac. */
-.dots {
-  height: 15px;
-  background: linear-gradient(90deg, var(--kind-product), var(--kind-group), var(--kind-feature), var(--kind-requirement), var(--kind-criterion));
-  -webkit-mask: radial-gradient(circle at center, #000 0 2.2px, transparent 2.8px) 0 50% / 13px 15px repeat-x;
-  mask: radial-gradient(circle at center, #000 0 2.2px, transparent 2.8px) 0 50% / 13px 15px repeat-x;
-}
-.mark-word {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 21px;
-  letter-spacing: -0.03em;
-}
-.mark-word::before {
-  content: "";
-  width: 11px;
-  height: 11px;
-  background: var(--kind-product);
-  box-shadow: 0 0 0 1px var(--ink);
-}
-/* The Y wears the action blue the website's wordmark gives its L; the rest of the name is ink. */
-.mark-initial { color: var(--signal); }
-/* After the mark, what the header holds for the Yard Log shown: the switch of views, drawn as the
-   website's navigation, and the count of what waits on the person. */
-.chrome { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; min-width: 0; }
-.chrome:empty { display: none; }
-.views { display: flex; gap: 24px; }
-.view-tab {
-  border: 0;
-  background: none;
-  padding: 8px 0;
-  color: var(--body);
-  font-size: 15px;
-  font-weight: 500;
-  text-decoration: none;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 2px;
-  cursor: pointer;
-}
-.view-tab:hover { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--signal); }
-.view-tab[aria-pressed="true"] { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--signal); }
-.chrome .wait-button { padding: 4px 12px; font-size: 14px; }
-.connection { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 13px; }
-.connection-dot { width: 8px; height: 8px; background: var(--done); box-shadow: 0 0 0 1px var(--ink); }
-.is-offline .connection-dot { background: var(--wait); }
-
-/* The window holds two columns: the menu of Yard Logs down its left from top to bottom, and the
-   page beside it, header and all. Folded, the menu is a strip that holds only its button. */
+/* The window holds two columns, as Loft Web's does: the sidebar down its left from top to
+   bottom, on a ground of its own, and the page beside it. Folded, the sidebar is a rail that holds
+   its button, an icon for each view and the count of what waits. */
 .layout {
-  --menu: 300px;
-  --strip: 58px;
+  --sidebar: 248px;
+  --rail-width: 68px;
   display: grid;
-  grid-template-columns: var(--menu) minmax(0, 1fr);
-  max-width: 1800px;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
   min-height: 100vh;
   margin: 0;
   align-items: start;
 }
-.is-folded .layout { grid-template-columns: var(--strip) minmax(0, 1fr); }
+.is-folded .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
 .side {
   position: sticky;
   top: 0;
   z-index: 6;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  overflow: auto;
-  background: var(--surface);
-  border-right: 1px solid var(--ink);
+  background: var(--side);
+  border-right: 1px solid var(--line);
 }
+.side-content { flex: 1; min-height: 0; overflow: auto; overscroll-behavior-y: contain; }
 .page { grid-column: 2; min-width: 0; }
-.main { min-width: 0; margin: 28px 24px 48px; }
+.main { min-width: 0; margin: 28px 40px 48px; }
 .loading, .empty, .welcome p { color: var(--muted); }
 .welcome { padding: 40px 0; display: grid; gap: 10px; max-width: 60ch; }
+.welcome h2 { font-size: 28px; line-height: 32px; font-weight: 700; letter-spacing: -0.025em; }
 .welcome .commands { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
 .notice:empty { display: none; }
 .notice {
   margin-bottom: 16px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-left: 3px solid var(--signal);
   background: var(--signal-soft);
   color: var(--ink);
+  font-size: 14px;
 }
 
-/* Too narrow for both side by side, the open menu lies over the page, which keeps the strip's room. */
+/* Too narrow for both side by side, the open sidebar lies over the page, which keeps the rail's room. */
 @media (max-width: 860px) {
-  .layout { grid-template-columns: var(--strip) minmax(0, 1fr); }
-  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--menu), calc(100vw - 32px)); z-index: 20; box-shadow: 6px 0 0 var(--shadow); }
+  .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
+  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--sidebar), calc(100vw - 32px)); z-index: 20; border-right-color: var(--ink); box-shadow: var(--float); }
   .main { margin: 20px 16px 40px; }
-  .top { padding: 10px 16px; gap: 8px 20px; flex-wrap: wrap; }
-  .connection-words { display: none; }
 }
 
-/* The menu: its head, as tall as the page's header and level with it, then the lists. */
+/* The sidebar: the button that folds it and the wordmark, then what waits and the Yard Logs, and
+   at its foot whether the page follows Yard Log live. */
 
-.menu-head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 60px;
-  padding: 10px 11px 10px 20px;
-  background: var(--side);
-  border-bottom: 1px solid var(--line);
-}
-.is-folded .menu-head { justify-content: center; padding: 10px; }
-.menu-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-.menu-button {
+.side-head { display: flex; align-items: center; gap: 4px; padding: 12px 14px 10px; }
+.is-folded .side-head { flex-direction: column; padding: 12px 0 10px; }
+.side-button {
   position: relative;
-  display: inline-grid;
+  display: grid;
+  flex: none;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border: 1px solid var(--ink);
-  background: var(--surface);
+  border: 0;
+  background: none;
   color: var(--ink);
   cursor: pointer;
 }
-.menu-button:hover { background: var(--mist); }
-.menu-icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
-.menu-button .waiting-count { position: absolute; top: -8px; right: -9px; min-width: 18px; padding: 0 4px; line-height: 16px; font-size: 11px; box-shadow: 0 0 0 1px var(--ink); }
-.menu-lists { display: grid; gap: 22px; padding: 20px 14px 32px 20px; }
-.menu-lists[hidden] { display: none; }
+.side-button:hover, .side-button[aria-current="page"] { background: var(--mist); }
+.side-icon { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.side-button .waiting-count { position: absolute; top: 0; right: -6px; min-width: 0; padding: 0 2px; font-size: 11px; line-height: 14px; background: var(--side); }
+/* Loft's wordmark, its L in action blue, and the name of the application beside it, muted. */
+.wordmark-link { display: inline-flex; align-items: baseline; gap: 8px; padding: 10px 6px; color: var(--ink); text-decoration: none; }
+.wordmark { font-size: 20px; line-height: 1; font-weight: 700; letter-spacing: -0.05em; }
+.wordmark-initial { color: var(--signal); }
+.app-name { font-size: 14px; line-height: 1; color: var(--muted); }
+.side-lists { display: grid; gap: 22px; padding: 8px 14px 24px; }
+.side-lists[hidden] { display: none; }
+.rail-views { display: grid; justify-items: center; gap: 4px; padding: 4px 0; }
+.connection { display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 24px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.is-folded .connection { justify-content: center; padding: 12px 0 16px; }
+.is-folded .connection-words { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--done); }
+.is-offline .connection-dot { background: var(--wait); }
+
+/* Until the page's head is drawn, what the header holds for the Yard Log shown. */
+.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; padding: 16px 40px 0; }
+.page-head:has(> .chrome:empty) { display: none; }
+.chrome { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.chrome:empty { display: none; }
+.chrome .wait-button { min-height: 36px; padding: 6px 14px; font-size: 14px; }
 
 /* The list of Yard Logs, and what waits everywhere. */
 
@@ -332,7 +281,7 @@ button { font: inherit; }
   display: grid;
   gap: 8px;
 }
-.everywhere h2 { font-size: 15px; font-weight: 700; color: var(--wait); }
+.everywhere h2 { font-size: 14px; font-weight: 600; color: var(--wait); }
 .wait-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .wait-link { display: flex; flex-wrap: wrap; gap: 0 8px; font-weight: 600; text-decoration: none; }
 .wait-link .tree, .wait-link .repository { color: var(--muted); font-weight: 400; font-size: 13px; }
@@ -341,23 +290,33 @@ button { font: inherit; }
 .sent { color: var(--muted); font-size: 13px; }
 
 .trees { display: grid; gap: 20px; }
-.repository h2 { font-size: 13px; color: var(--ink); font-weight: 700; letter-spacing: -0.005em; margin-bottom: 6px; }
-.worktree h3 { font-size: 12px; font-weight: 500; margin: 8px 0 4px; font-family: var(--mono); color: var(--muted); letter-spacing: 0; }
+.repository h2 { padding: 0 10px; margin-bottom: 2px; font-size: 13px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.worktree h3 { padding: 0 10px; font-size: 12px; font-weight: 400; margin: 8px 0 2px; font-family: var(--mono); color: var(--muted); letter-spacing: 0; }
 .logs { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.log-item a {
+.log-item > a {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 8px;
+  align-items: center;
+  gap: 0 12px;
+  min-height: 40px;
   padding: 6px 10px;
   color: var(--ink);
+  font-size: 14px;
   text-decoration: none;
 }
-.log-item a:hover { background: var(--surface-2); }
-.log-item.is-current a { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
-.log-item .branch { font-weight: 600; }
-.log-item .title { color: var(--muted); font-size: 13px; flex-basis: 100%; }
-.log-item.is-inherited .branch { font-weight: 450; color: var(--muted); }
+.log-item > a:hover { background: var(--mist); }
+.log-item.is-current > a { background: var(--mist); font-weight: 600; }
+.log-item .branch { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.log-item .title { color: var(--muted); font-size: 13px; font-weight: 400; flex-basis: 100%; }
+.log-item.is-inherited .branch { color: var(--muted); }
+.log-item .waiting-count { margin-left: auto; }
+/* The views of the Yard Log shown, beneath its branch and set in from it, as Loft Web lists a
+   document's pages beneath it. */
+.view-entries { list-style: none; margin: 2px 0 6px; padding: 0 0 0 14px; display: grid; gap: 2px; }
+.view-entry { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 36px; padding: 0 10px; border: 0; background: none; color: var(--ink); font-size: 14px; text-align: left; white-space: nowrap; cursor: pointer; }
+.view-entry:hover { background: var(--mist); }
+.view-entry[aria-current="page"] { background: var(--mist); font-weight: 600; }
+.view-entry .side-icon { flex: none; }
 .waiting-count {
   min-width: 20px;
   padding: 0 6px;
@@ -372,14 +331,14 @@ button { font: inherit; }
 .tag--danger { color: var(--danger); border-color: var(--danger); }
 /* A repository's inherited Yard Logs, folded beneath their count, fetched a page at a time. */
 .inherited { margin-top: 10px; }
-.inherited > summary { cursor: pointer; padding: 4px 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+.inherited > summary { cursor: pointer; padding: 4px 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
 .inherited-count { font-variant-numeric: tabular-nums; font-weight: 400; }
 .inherited[open] > summary { margin-bottom: 6px; }
-.inherited-filter { width: 100%; margin-bottom: 6px; padding: 5px 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; }
+.inherited-filter { width: 100%; margin-bottom: 6px; padding: 6px 10px; border: 1px solid var(--rail); background: var(--canvas); color: var(--ink); font: inherit; font-size: 13px; }
 .inherited-words { color: var(--muted); font-size: 13px; }
 .inherited-words:empty { display: none; }
-.more-button { margin-top: 6px; padding: 2px 10px; border: 1px solid var(--rail); background: var(--surface); color: var(--ink); font-size: 13px; cursor: pointer; }
-.more-button:hover { background: var(--surface-2); }
+.more-button { margin-top: 6px; padding: 0; border: 0; background: none; color: var(--signal); font-size: 13px; font-weight: 600; cursor: pointer; }
+.more-button:hover { text-decoration: underline; text-underline-offset: 4px; }
 .more-button[hidden] { display: none; }
 
 /* A Yard Log. */

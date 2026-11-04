@@ -10,7 +10,7 @@ import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
 import { failedLog, logChrome, logView } from './views/log.js';
-import { menu, title, welcome } from './views/trees.js';
+import { sidebar, title, welcome } from './views/trees.js';
 import { openWaiting, waitingModal } from './views/waiting.js';
 
 const state = {
@@ -85,8 +85,8 @@ function notify(text) {
   if (region) region.textContent = text;
 }
 
-/** What the menu was last drawn from: the listing, the Yard Log chosen and the menu's fold. */
-let drawnMenu = '';
+/** What the sidebar was last drawn from: the listing, the Yard Log chosen, the view shown and the sidebar's fold. */
+let drawnSide = '';
 
 function render() {
   const route = parse(location.hash);
@@ -94,19 +94,25 @@ function render() {
   const focused = /** @type {HTMLInputElement | null} */ (document.activeElement);
   const focus = focused?.id ? { id: focused.id, start: focused.selectionStart, end: focused.selectionEnd } : null;
   const main = document.getElementById('log');
-  const side = document.getElementById('side');
+  const side = document.getElementById('side-content');
   const chrome = document.getElementById('chrome');
   if (!main || !side || !chrome) return;
-  // The menu is drawn again only when what it shows changed, not at each change of the Yard Log.
+  // The sidebar is drawn again only when what it shows changed, not at each change of the Yard Log.
   const chosen = route && { tree: route.tree, branch: route.branch };
-  const shown = JSON.stringify([state.listing, chosen, prefs.folded()]);
-  if (shown !== drawnMenu) {
-    drawnMenu = shown;
+  const shown = JSON.stringify([state.listing, chosen, prefs.folded(), prefs.view()]);
+  if (shown !== drawnSide) {
+    drawnSide = shown;
     replace(
       side,
-      menu(state.listing, route, prefs.folded(), (folded) => {
-        prefs.set('list', folded ? 'folded' : 'open');
-        render();
+      sidebar(state.listing, chosen, prefs.folded(), prefs.view(), {
+        onToggle: (folded) => {
+          prefs.set('list', folded ? 'folded' : 'open');
+          render();
+        },
+        onView: (view) => {
+          prefs.set('view', view);
+          render();
+        },
       }),
     );
   }
@@ -175,7 +181,7 @@ function reveal(id) {
 }
 
 function start() {
-  // The menu takes the person's choice before anything is loaded, so a folded one never shows open.
+  // The sidebar takes the person's choice before anything is loaded, so a folded one never shows open.
   document.body.classList.toggle('is-folded', prefs.folded());
   window.addEventListener('hashchange', () => {
     state.notice = '';

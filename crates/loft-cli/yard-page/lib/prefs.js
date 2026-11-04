@@ -1,5 +1,5 @@
 // What the page keeps in this browser, and only here: the order of the stages, the view chosen,
-// whether the list of Yard Logs is folded, the revision of each Yard Log's last visit, and the answers chosen and not sent. Storage may be
+// whether the sidebar is folded, the revision of each Yard Log's last visit, and the answers chosen and not sent. Storage may be
 // missing or refuse, as in a private window; the page then works with what it holds in memory.
 
 const PREFIX = 'yard.';
@@ -75,9 +75,13 @@ export function order() {
   return get('order') === 'oldest' ? 'oldest' : 'newest';
 }
 
-/** The view of Yard Log: the `timeline` unless the person chose the `gantt` chart. */
+/**
+ * The view of Yard Log: the `timeline` unless the person chose the `gantt` chart or the `tokens`.
+ * @returns {'timeline' | 'gantt' | 'tokens'}
+ */
 export function view() {
-  return get('view') === 'gantt' ? 'gantt' : 'timeline';
+  const chosen = get('view');
+  return chosen === 'gantt' || chosen === 'tokens' ? chosen : 'timeline';
 }
 
 /** Whether the list of Yard Logs is folded: open unless the person folded it. */

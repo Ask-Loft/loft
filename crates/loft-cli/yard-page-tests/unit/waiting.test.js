@@ -61,7 +61,7 @@ function page(shown, more = {}) {
     onWaiting: openWaiting,
     ...more,
   };
-  at.append(h('header', { class: 'top' }, h('div', { id: 'chrome', class: 'chrome' }, logChrome(shown, context))), logView(shown, context));
+  at.append(h('header', { id: 'head', class: 'page-head' }, h('div', { id: 'chrome', class: 'chrome' }, logChrome(shown, context))), logView(shown, context));
   waitingModal(shown, where);
   return at;
 }
@@ -156,13 +156,13 @@ test('a submission sent after the panel was closed opens it again', () => {
   assert.equal(dialog().querySelectorAll('.submission').length, 2);
 });
 
-test('a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the panel', () => {
+test('a button among the controls of the page’s head gives the count of the blocks that wait and opens the panel', () => {
   const first = question('colour', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], { submissions: [open([first, second], '2026-01-01T10:04:00Z')] });
   const drawn = page(shown);
   modal.close('waiting');
-  const button = drawn.querySelector('header.top nav.views + #open-waiting');
+  const button = drawn.querySelector('header#head #open-waiting');
   assert.equal(button.textContent, '2 wait on you');
   button.click();
   assert.ok(dialog().open);

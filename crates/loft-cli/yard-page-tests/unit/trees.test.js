@@ -8,7 +8,7 @@ import { beforeEach, test } from 'node:test';
 import * as prefs from '../../yard-page/lib/prefs.js';
 import { parse } from '../../yard-page/lib/route.js';
 import * as inherited from '../../yard-page/views/inherited.js';
-import { menu, title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
+import { sidebar, title, treeList, waitingList, welcome } from '../../yard-page/views/trees.js';
 
 beforeEach(() => {
   forget();
@@ -134,36 +134,63 @@ test('with no Yard Log served, the page links adapter installation instructions'
   assert.equal(shown.querySelector('a').getAttribute('href'), 'https://github.com/Ask-Loft/loft#yard-client');
 });
 
-test('open, the menu is headed Yard Logs beside a button that folds it, above the lists', () => {
+/** The sidebar drawn from `shown`, folded or open, for the Yard Log `current` in the view `view`. */
+function side(shown, { folded = false, current = null, view = 'timeline', onToggle = () => {}, onView = () => {} } = {}) {
+  return sidebar(shown, current, folded, view, { onToggle, onView }).filter(Boolean);
+}
+
+const SHELF = { tree: '/work/shelf', branch: 'feat/shelf' };
+
+test('open, the sidebar is headed by the button that folds it and the wordmark, above the lists', () => {
   /** @type {boolean[]} */
   const asked = [];
-  const [head, lists] = menu(listing(), null, false, (folded) => asked.push(folded));
-  assert.equal(head.querySelector('h2')?.textContent, 'Yard Logs');
+  const [head, lists] = side(listing(), { onToggle: (folded) => asked.push(folded) });
   const button = head.querySelector('button');
-  assert.equal(button?.getAttribute('aria-label'), 'Fold the menu of Yard Logs');
+  assert.equal(button?.getAttribute('aria-label'), 'Fold the sidebar');
   assert.equal(button?.getAttribute('aria-expanded'), 'true');
   assert.equal(button?.getAttribute('aria-controls'), lists.id);
+  assert.ok(button?.compareDocumentPosition(head.querySelector('.wordmark-link')) & Node.DOCUMENT_POSITION_FOLLOWING, 'the wordmark follows the button');
   assert.ok(!lists.hidden);
   assert.ok(lists.querySelector('nav.trees'));
   button?.click();
   assert.deepEqual(asked, [true]);
 });
 
-test('folded, the menu holds only a button drawn as three lines, which opens it', () => {
+test('the sidebar is headed by Loft’s wordmark, its L apart from the rest of the name, with Yard beside it', () => {
+  const [head] = side(listing());
+  const mark = head.querySelector('.wordmark-link');
+  const word = mark?.querySelector('.wordmark');
+  assert.equal(word?.textContent, 'Loft');
+  assert.equal(word?.querySelector('.wordmark-initial')?.textContent, 'L');
+  assert.equal(word?.childNodes.length, 2, 'the L and the rest of the name, with no space between them');
+  assert.equal(mark?.querySelector('.app-name')?.textContent, 'Yard');
+  assert.ok(word?.compareDocumentPosition(mark.querySelector('.app-name')) & Node.DOCUMENT_POSITION_FOLLOWING);
+  assert.equal(head.textContent, 'LoftYard', 'the head names no other mark');
+});
+
+test('folded, the sidebar is a rail of the button that opens it and an icon for each view of the Yard Log shown', () => {
   /** @type {boolean[]} */
   const asked = [];
-  const [head, lists] = menu(listing({ count: 0 }), null, true, (folded) => asked.push(folded));
-  assert.ok(!head.querySelector('h2'));
+  const [head, rail, lists] = side(listing({ count: 0 }), { folded: true, current: SHELF, view: 'gantt', onToggle: (folded) => asked.push(folded) });
+  assert.ok(!head.querySelector('.wordmark-link'));
   const button = head.querySelector('button');
-  assert.equal(button?.getAttribute('aria-label'), 'Open the menu of Yard Logs');
+  assert.equal(button?.getAttribute('aria-label'), 'Open the sidebar');
   assert.equal(button?.getAttribute('aria-expanded'), 'false');
-  assert.equal(button?.querySelectorAll('svg path').length, 3);
+  assert.ok(button?.querySelector('svg'));
+  const views = [...rail.querySelectorAll('button')].map((entry) => [entry.getAttribute('aria-label'), entry.getAttribute('aria-current')]);
+  assert.deepEqual(views, [
+    ['Timeline', null],
+    ['Gantt chart', 'page'],
+    ['Tokens', null],
+  ]);
+  assert.ok(rail.querySelectorAll('svg').length === 3);
   assert.ok(lists.hidden);
   button?.click();
   assert.deepEqual(asked, [false]);
+  assert.equal(side(listing(), { folded: true }).length, 2, 'with no Yard Log shown, the rail holds no view');
 });
 
-test('the menu is open until the person folds it, and the browser keeps the choice', () => {
+test('the sidebar is open until the person folds it, and the browser keeps the choice', () => {
   assert.equal(prefs.folded(), false);
   prefs.set('list', 'folded');
   assert.equal(prefs.folded(), true);
@@ -172,12 +199,27 @@ test('the menu is open until the person folds it, and the browser keeps the choi
   assert.equal(prefs.folded(), false);
 });
 
-test('with the menu folded, its button gives the count of blocks that wait on the person, and none while open or while none wait', () => {
-  const [folded] = menu(listing(), null, true, () => {});
+test('with the sidebar folded, the rail gives the count of blocks that wait on the person, and none while open or while none wait', () => {
+  const [folded] = side(listing(), { folded: true });
   assert.equal(folded.querySelector('.waiting-count')?.textContent, '2');
-  assert.equal(folded.querySelector('button')?.getAttribute('aria-label'), 'Open the menu of Yard Logs, 2 wait on you');
-  assert.ok(!menu(listing(), null, false, () => {})[0].querySelector('.waiting-count'));
-  assert.ok(!menu(listing({ count: 0 }), null, true, () => {})[0].querySelector('.waiting-count'));
+  assert.equal(folded.querySelector('button')?.getAttribute('aria-label'), 'Open the sidebar, 2 wait on you');
+  assert.ok(!side(listing())[0].querySelector('.waiting-count'));
+  assert.ok(!side(listing({ count: 0 }), { folded: true })[0].querySelector('.waiting-count'));
+});
+
+test('beneath the branch of the Yard Log shown lie the entries of its views, the one shown marked as current', () => {
+  /** @type {string[]} */
+  const chosen = [];
+  const [, lists] = side(listing(), { current: SHELF, view: 'tokens', onView: (view) => chosen.push(view) });
+  const item = lists.querySelector('.log-item.is-current');
+  assert.equal(item?.querySelector('a')?.getAttribute('aria-current'), 'page');
+  const entries = [...item.querySelectorAll('.view-entries .view-entry')];
+  assert.deepEqual(entries.map((entry) => entry.textContent), ['Timeline', 'Gantt chart', 'Tokens']);
+  assert.deepEqual(entries.map((entry) => entry.getAttribute('aria-current')), [null, null, 'page']);
+  assert.ok(entries.every((entry) => entry.querySelector('svg')), 'each entry has its icon');
+  entries[1].click();
+  assert.deepEqual(chosen, ['gantt']);
+  assert.equal(lists.querySelectorAll('.view-entries').length, 1, 'no other listed branch shows the entries of its views');
 });
 
 /** The inherited Yard Logs the page server holds in these tests: 51 of them, `old-00` closed last. */
@@ -247,7 +289,7 @@ test('opened, the fold lists the inherited Yard Logs 50 at a time, and the brows
   const again = foldOf(treeList(listing(), null));
   assert.equal(again.open, true);
   await settled();
-  assert.equal(again.querySelectorAll('.inherited-logs .log-item').length, 51, 'a menu drawn again keeps those shown');
+  assert.equal(again.querySelectorAll('.inherited-logs .log-item').length, 51, 'a sidebar drawn again keeps those shown');
 });
 
 test('the filter lists only the inherited Yard Logs whose branch or title holds its text, whatever its case', async () => {

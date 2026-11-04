@@ -1,7 +1,7 @@
 // A branch's Yard Log: its title and where it is, whether it is closed, carried from another
-// branch or of a newer format; the blocks changed since the last visit; the timeline or the Gantt
-// chart; and the tokens it took. In the page's header beside it, the switch of views and the
-// count of what waits on the person, which opens it in the modal.
+// branch or of a newer format; the blocks changed since the last visit; and the view chosen in
+// the sidebar, the timeline, the Gantt chart or the tokens it took. In the page's head, the count
+// of what waits on the person, which opens it in the modal.
 
 import { add, h } from '../lib/dom.js';
 import { base, count, place, when } from '../lib/format.js';
@@ -111,38 +111,23 @@ export function logView(log, context) {
     toolbar(order, view, marked.size, context.onView),
     view === 'gantt'
       ? gantt(log, { width: context.width, now: context.now, onPick: context.onPick })
-      : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now }),
-    tokensView(log),
+      : view === 'tokens'
+        ? tokensView(log)
+        : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now }),
   );
   return section;
 }
 
 /**
- * What the page's header holds for the Yard Log shown, after the Yard mark: the switch of views,
- * then the count of what waits on the person, which opens it.
+ * What the page's head holds for the Yard Log shown: the count of what waits on the person, which
+ * opens it.
  * @param {any} log
  * @param {LogContext} context
  */
 export function logChrome(log, context) {
-  const view = prefs.view();
   const answering = answeringIn(log, context);
   const count = waitingIn(log).reduce((sum, item) => sum + item.waiting.length, 0);
-  const tab = (value, label) =>
-    h(
-      'button',
-      {
-        type: 'button',
-        class: 'view-tab',
-        'aria-pressed': view === value ? 'true' : 'false',
-        onclick: () => {
-          prefs.set('view', value);
-          context.onView();
-        },
-      },
-      label,
-    );
   return [
-    h('nav', { class: 'views', 'aria-label': 'View' }, tab('timeline', 'Timeline'), tab('gantt', 'Gantt chart')),
     answering && count
       ? h('button', { type: 'button', class: 'primary wait-button', id: 'open-waiting', onclick: () => answering() }, `${count} ${count === 1 ? 'waits' : 'wait'} on you`)
       : null,
@@ -197,7 +182,7 @@ function header(log, context) {
  * and the count of blocks changed since the last visit at its right; not drawn when it holds
  * neither.
  * @param {'newest' | 'oldest'} order
- * @param {'timeline' | 'gantt'} view
+ * @param {'timeline' | 'gantt' | 'tokens'} view
  * @param {number} changed
  * @param {() => void} onView
  */
