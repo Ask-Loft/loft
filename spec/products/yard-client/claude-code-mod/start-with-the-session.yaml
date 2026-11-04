@@ -17,7 +17,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc648ffcbb12
         name: "The context holds at most 2,000 characters, and counts what it leaves out."
       - key: 01a1646f-546c-7521-9643-bc652c97d270
-        name: "A session on a branch with no Yard Log gets only the page's address and that the branch has no Yard Log yet."
+        name: "A session on a branch with no Yard Log gets only the page's address, that the branch has no Yard Log yet and the `yard` skill to follow."
       - key: 01a1646f-546c-7521-9643-bc668f484c8e
         name: "A session on a branch whose Yard Log is closed is told that it is closed."
       - key: 01a1646f-546c-7521-9643-bc673dc31f07
