@@ -28416,6 +28416,24 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the list and the pane each scroll on their own beneath the head, and the page itself never scrolls"
         body: e4c4d677e13374add75691d259b284887b73fbc316ebf8ea9189c6a0b539cd66
+  - node: 01a1a888-7990-71fd-bb56-5c5be9b32b6c
+    reviewed: 73b5a3ae546f5886042f21e8c36c4c7dd9ff44eac76a93b2d8f914c9db8747be
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "the pane holds its stage within 900 pixels, and a note’s, an approval’s and a loft block’s Markdown spans its block"
+        body: 9c96088e6dc91c27a120c3bb091bbf4440988b4664fc61b7dab91871acedd137
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "on a wide window the pane holds its stage within 900 pixels, and a note’s text spans its block"
+        body: a34cdff4d25898d7d6259e0692c1dd9e0476d236f03961b53df2b704cd041c10
+  - node: 01a1a888-7990-71fd-bb56-5c5cf51bf54f
+    reviewed: 4622cf47718d203406bf517bcc04d73f79c7493c215ce77d595f731d6e69fe05
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
+        name: "the pane holds its stage within 900 pixels, and a note’s, an approval’s and a loft block’s Markdown spans its block"
+        body: 9c96088e6dc91c27a120c3bb091bbf4440988b4664fc61b7dab91871acedd137
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "on a wide window the pane holds its stage within 900 pixels, and a note’s text spans its block"
+        body: a34cdff4d25898d7d6259e0692c1dd9e0476d236f03961b53df2b704cd041c10
   - node: 01a1a856-9e14-7124-a2ea-8d787f68be15
     reviewed: 9ab3a09673a2f8cb719b292ada10bf1f216d7923ee28e5e9f45b0accde85b98a
     tests:
@@ -30836,13 +30854,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
-        body: 6724c54d599e23b7be92ba1de760f4a33afd0a84a501cbb4dc23cd7d4dd1d58d
+        body: d7c2aa81605f120ce707a5a073ab56387d2e20b0b316d91d2926ff62078f73a7
   - node: 01a1646f-546d-7042-befd-eace3bd53656
     reviewed: f4fec1e8af5d2127c115851e76af988226afbbeafffd6bf3cdedef74b8e45b4b
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
+        body: 58999e8015e7c1e37c61a1baa757ab153cef6c44fb0e91c3537880d1cf8887c6
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_findings_view_names_each_node_a_finding_names_by_its_label_and_name"
         body: 1a097780cc5de83fbf7ef5dc474d7f2e1b747a88f4b1de6153fffa9dd074be27
@@ -30851,7 +30869,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
+        body: 58999e8015e7c1e37c61a1baa757ab153cef6c44fb0e91c3537880d1cf8887c6
   - node: 01a1646f-546d-7042-befd-ead0ef8802b7
     reviewed: 36232e19decf1e8b38659d5e02554b8e42222b6c9aa1811f77d27078d3ccaa6d
     tests:
@@ -30863,58 +30881,73 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
-        body: 6724c54d599e23b7be92ba1de760f4a33afd0a84a501cbb4dc23cd7d4dd1d58d
+        body: d7c2aa81605f120ce707a5a073ab56387d2e20b0b316d91d2926ff62078f73a7
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
+        body: 58999e8015e7c1e37c61a1baa757ab153cef6c44fb0e91c3537880d1cf8887c6
   - node: 01a1646f-546d-7042-befd-ead279dd7751
     reviewed: 14c726cdae8d1198ab4238abf00070bda0ee4c1c6cbcb3ce7ad72acf31a84ec5
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
+        body: 58999e8015e7c1e37c61a1baa757ab153cef6c44fb0e91c3537880d1cf8887c6
   - node: 01a1646f-546d-7042-befd-ead3b74268b1
     reviewed: 3928d58f5b021c0de939751fbf7b230b94954eca3d2534bd211cc4c1c17f3a83
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
-        body: 6724c54d599e23b7be92ba1de760f4a33afd0a84a501cbb4dc23cd7d4dd1d58d
+        body: d7c2aa81605f120ce707a5a073ab56387d2e20b0b316d91d2926ff62078f73a7
   - node: 01a1a86c-65d5-76fe-b38b-1c5d653dc449
     reviewed: baeeca683f58f99f5bec9d415c1948e7a8b570cac4fbfbf5acacea2579d7b6d2
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
-        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
   - node: 01a1a86c-65d5-76fe-b38b-1c5e49a0f5b7
     reviewed: 4479769c0e0e832e624706815ff25cbdd4f57bd8973d2b9a92c9aff42625d3f8
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
-        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
+  - node: 01a1a888-798f-7356-874b-18d65dabc5b5
+    reviewed: 1a25ced5c8cee6e903e8f852a7fd1ac03273dce71e44da6ae00089b03d424f3b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
   - node: 01a1a86c-65d5-76fe-b38b-1c5f279f15ef
     reviewed: a420d7af72e1de75e9c13a21d0c6f53ea6d526830524a3f87d48bbf6f0c3e862
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
-        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
   - node: 01a1a86c-65d5-76fe-b38b-1c6058d721e9
     reviewed: 381392875dd0508b350d783ee0c402464efcfce964abf5d91c33b3d32a11ed39
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
-        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
   - node: 01a1a86c-65d5-76fe-b38b-1c618493bb5a
     reviewed: 0b6d9c1605acce04e0cc65ff027a31710d53dac514f4a74b804f500cdfce38c7
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
-        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
   - node: 01a1a86c-65d5-76fe-b38b-1c622a453ff5
     reviewed: 56f0b94fa7f95c8ca8e00dcebb7f5d51e5f1773f30a2298074ee460fbba2728c
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
-        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
+  - node: 01a1a888-7990-71fd-bb56-5c5aea494ec8
+    reviewed: f812f7054287d08fbce11d3b822136c5f3dcf32c3c926752cf1c8c7064636025
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: c1c9bd4a532fb287cf4290ad493d24d326032f7f337aa39894bf962a878ac503
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
+        body: d7c2aa81605f120ce707a5a073ab56387d2e20b0b316d91d2926ff62078f73a7
   - node: 01a1646f-546d-7042-befd-ead6c6d6b941
     reviewed: 34e9d3d3aac34e4f380f6b66f30274ab91f55e302a1e1e7b6dc6d0e4e9a45621
     tests:
