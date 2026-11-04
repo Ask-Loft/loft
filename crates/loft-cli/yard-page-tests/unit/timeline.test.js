@@ -9,7 +9,7 @@ import * as prefs from '../../yard-page/lib/prefs.js';
 import { blocksByKey, changedSince, decisionsByQuestion, grouped, ordered, stretches } from '../../yard-page/model/log.js';
 import { chart } from '../../yard-page/model/gantt.js';
 import { card } from '../../yard-page/views/blocks.js';
-import { failedLog, logView, unreadable } from '../../yard-page/views/log.js';
+import { failedLog, logHead, logView, unreadable } from '../../yard-page/views/log.js';
 import { timeline } from '../../yard-page/views/timeline.js';
 import { EXPLORE, PERSON, act, answer, block, log, open, question, stage } from './fixtures.js';
 
@@ -32,20 +32,22 @@ function context(shown, more = {}) {
 /** A Yard Log's page, drawn into the document. */
 function page(shown, more = {}) {
   const at = root();
-  at.append(
-    logView(shown, {
-      tree: '/work/shelf',
-      branch: 'feat/shelf',
-      last: null,
-      now: Date.parse('2026-01-01T12:00:00Z'),
-      width: 960,
-      refresh: () => {},
-      notify: () => {},
-      onView: () => {},
-      onPick: () => {},
-      ...more,
-    }),
-  );
+  const drawing = {
+    tree: '/work/shelf',
+    branch: 'feat/shelf',
+    last: null,
+    now: Date.parse('2026-01-01T12:00:00Z'),
+    width: 960,
+    refresh: () => {},
+    notify: () => {},
+    onView: () => {},
+    onPick: () => {},
+    ...more,
+  };
+  const head = document.createElement('header');
+  head.id = 'head';
+  head.append(...logHead(shown, drawing));
+  at.append(head, logView(shown, drawing));
   return at;
 }
 

@@ -155,7 +155,7 @@
 /* The frame. */
 
 * { box-sizing: border-box; }
-html { scroll-padding-top: 88px; }
+html { scroll-padding-top: 160px; }
 body {
   margin: 0;
   background: var(--canvas);
@@ -265,12 +265,52 @@ button { font: inherit; }
 .connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--done); }
 .is-offline .connection-dot { background: var(--wait); }
 
-/* Until the page's head is drawn, what the header holds for the Yard Log shown. */
-.page-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; padding: 16px 40px 0; }
-.page-head:has(> .chrome:empty) { display: none; }
-.chrome { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-.chrome:empty { display: none; }
-.chrome .wait-button { min-height: 36px; padding: 6px 14px; font-size: 14px; }
+/* The head of the Yard Log shown, as Loft Web heads a page: where it lies above its title, a line
+   that sums it up beneath, and the controls of the view shown at its right, each labelled above
+   it in small text. It stays in place while what lies beneath it scrolls. */
+.page-head {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 32px;
+  padding: 24px 40px 16px;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--line);
+}
+.page-head:empty { display: none; }
+.head-text { display: grid; gap: 2px; min-width: 0; }
+.kicker { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; font-size: 14px; color: var(--ink); }
+.kicker .tree { color: var(--body); }
+.kicker .branch { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.page-head h1 { font-size: 28px; line-height: 32px; font-weight: 700; letter-spacing: -0.025em; overflow-wrap: anywhere; text-wrap: balance; }
+.summary { color: var(--body); font-size: 14px; }
+.summary .changed-count { color: var(--new); font-weight: 600; }
+.head-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 12px; }
+.control { display: grid; gap: 4px; }
+.control-label { font-size: 12px; line-height: 16px; color: var(--muted); }
+.control select {
+  min-width: 180px;
+  min-height: 40px;
+  padding: 0 34px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--canvas) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%235c646f' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center / 12px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
+}
+.control select:hover { background-color: var(--mist); }
+.head-controls .wait-button { min-height: 40px; }
+@media (max-width: 860px) {
+  .page-head { padding: 20px 16px 12px; }
+}
 
 /* The list of Yard Logs, and what waits everywhere. */
 
@@ -344,23 +384,12 @@ button { font: inherit; }
 /* A Yard Log. */
 
 .yard-log { display: grid; gap: 22px; }
-.log-head { display: grid; gap: 8px; }
-.log-head h2 { font-size: 32px; line-height: 1.1; letter-spacing: -0.03em; word-spacing: 0.04em; font-weight: 700; }
-.where { display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
-.where .branch { color: var(--signal); }
+.banners { display: grid; gap: 8px; }
 .banner { padding: 10px 14px; border-left: 3px solid var(--rail); background: var(--surface-2); max-width: 75ch; font-size: 14px; }
 .banner--closed { border-color: var(--done); background: var(--done-soft); }
 .banner--newer { border-color: var(--wait-line); background: var(--wait-soft); }
 .unreadable { background: var(--danger-soft); border-left: 3px solid var(--danger); padding: 14px 16px; display: grid; gap: 8px; }
-.unreadable h2 { color: var(--danger); font-size: 18px; }
-
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 10px; }
-.changed-count { color: var(--new); font-weight: 600; font-size: 14px; margin-left: auto; }
-.segments { display: inline-flex; border: 1px solid var(--ink); background: var(--surface); }
-.segment { border: 0; background: none; padding: 6px 14px; color: var(--body); font-weight: 500; cursor: pointer; }
-.segment + .segment { border-left: 1px solid var(--ink); }
-.segment:hover { color: var(--ink); background: var(--surface-2); }
-.segment.is-on { background: var(--ink); color: var(--canvas); }
+.unreadable h2 { color: var(--danger); font-size: 20px; }
 
 /* The timeline: a rail with a station for each stage, as the website draws a timeline. */
 
@@ -817,5 +846,5 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
   .tokens-table thead .number { white-space: normal; }
   .tokens-table th, .tokens-table td { padding: 6px 4px; }
   .tokens-table th[scope="row"] { min-width: 8em; }
-  .log-head h2 { font-size: 26px; }
+  .page-head h1 { font-size: 24px; line-height: 28px; }
 }

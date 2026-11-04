@@ -9,7 +9,7 @@ import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
-import { failedLog, logChrome, logView } from './views/log.js';
+import { failedLog, logHead, logView } from './views/log.js';
 import { sidebar, title, welcome } from './views/trees.js';
 import { openWaiting, waitingModal } from './views/waiting.js';
 
@@ -95,8 +95,8 @@ function render() {
   const focus = focused?.id ? { id: focused.id, start: focused.selectionStart, end: focused.selectionEnd } : null;
   const main = document.getElementById('log');
   const side = document.getElementById('side-content');
-  const chrome = document.getElementById('chrome');
-  if (!main || !side || !chrome) return;
+  const head = document.getElementById('head');
+  if (!main || !side || !head) return;
   // The sidebar is drawn again only when what it shows changed, not at each change of the Yard Log.
   const chosen = route && { tree: route.tree, branch: route.branch };
   const shown = JSON.stringify([state.listing, chosen, prefs.folded(), prefs.view()]);
@@ -118,11 +118,11 @@ function render() {
   }
   document.body.classList.toggle('is-folded', prefs.folded());
   if (!route) {
-    replace(chrome);
+    replace(head);
     replace(main, welcome(state.listing));
     waitingModal(null, { tree: '', branch: '', refresh, notify });
   } else if (state.logStatus !== 200) {
-    replace(chrome);
+    replace(head);
     replace(main, failedLog(state.logStatus, state.log, route.tree));
     waitingModal(null, { tree: route.tree, branch: route.branch, refresh, notify });
   } else {
@@ -141,8 +141,9 @@ function render() {
         location.hash = format({ ...route, block: id });
       },
       onWaiting: openWaiting,
+      place: placeOf(state.listing, route.tree),
     };
-    replace(chrome, logChrome(state.log, context));
+    replace(head, logHead(state.log, context));
     replace(
       main,
       h('p', { id: 'notice', class: 'notice', role: 'status', 'aria-live': 'polite' }, state.notice),
@@ -167,6 +168,20 @@ function render() {
       }
     }
   }
+}
+
+/**
+ * The repository a tree belongs to in the listing, and whether it is the repository's main
+ * worktree; none for a tree the listing does not hold.
+ * @param {any} listing
+ * @param {string} tree
+ */
+function placeOf(listing, tree) {
+  for (const repository of listing?.repositories ?? []) {
+    const found = (repository.trees ?? []).find((each) => each.tree === tree);
+    if (found) return { repository: repository.repository, main: Boolean(found.main) };
+  }
+  return undefined;
 }
 
 /** Opens and shows the block `id`. @param {string} id */

@@ -10,7 +10,7 @@ import { afterEach, beforeEach, test } from 'node:test';
 import * as prefs from '../../yard-page/lib/prefs.js';
 import { h } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
-import { logChrome, logView } from '../../yard-page/views/log.js';
+import { logHead, logView } from '../../yard-page/views/log.js';
 import { openWaiting, waitingModal } from '../../yard-page/views/waiting.js';
 import { EXPLORE, act, block, log, open, question, stage } from './fixtures.js';
 
@@ -61,7 +61,7 @@ function page(shown, more = {}) {
     onWaiting: openWaiting,
     ...more,
   };
-  at.append(h('header', { id: 'head', class: 'page-head' }, h('div', { id: 'chrome', class: 'chrome' }, logChrome(shown, context))), logView(shown, context));
+  at.append(h('header', { id: 'head', class: 'page-head' }, logHead(shown, context)), logView(shown, context));
   waitingModal(shown, where);
   return at;
 }
