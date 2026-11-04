@@ -428,6 +428,9 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .station.status--active::before { background: var(--signal); border-color: var(--signal); }
 .station.status--done::before { background: var(--done); border-color: var(--done); }
 .station.status--dropped::before { border-style: dashed; }
+.station.status--note::before { border-color: var(--line); }
+.stage-facts .state { font-size: 12px; }
+.state.state--waiting { color: var(--wait); }
 .rail-line { display: flex; align-items: center; gap: 8px; margin: 10px 0 8px -22px; color: var(--muted); font-size: 12px; font-weight: 600; }
 .rail-line::before { content: ""; flex: 0 0 14px; border-top: 1px dashed var(--rail); }
 .rail-line::after { content: ""; flex: 1; border-top: 1px dashed var(--rail); }

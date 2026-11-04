@@ -168,7 +168,7 @@ function moved(shown, status) {
 
 test('a stage and a folded note the person toggled stay so through a fresh draw and after the page loads again', () => {
   const note = block('note', 'kept-note', { title: 'Folded', folded: true, html: '<p>Held.</p>' });
-  const shown = yardLog([stage('now', 'Now', 'active', [note])]);
+  const shown = yardLog([stage('now', 'Now', 'active', [note]), stage('next', 'Next', 'planned', [])]);
   kept.begin(shown);
   const first = drawTimeline(shown);
   first.querySelector('#row-now .fold-button').click();

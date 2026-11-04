@@ -10,7 +10,7 @@ import { blocksByKey, changedSince, decisionsByQuestion, grouped, ordered, stret
 import { chart } from '../../yard-page/model/gantt.js';
 import { card } from '../../yard-page/views/blocks.js';
 import { failedLog, logHead, logView, unreadable } from '../../yard-page/views/log.js';
-import { LIST, chosenStage, timeline } from '../../yard-page/views/timeline.js';
+import { LIST, blockState, chosenStage, timeline } from '../../yard-page/views/timeline.js';
 import { format, parse } from '../../yard-page/lib/route.js';
 import { readFileSync } from 'node:fs';
 import { EXPLORE, PERSON, act, answer, block, log, open, question, stage } from './fixtures.js';
@@ -75,7 +75,7 @@ test('in the list, each active stage and the stage chosen are open to their bloc
 test('the person folds a stage of the list to its row and opens it to list its blocks by kind and title', () => {
   const note = block('note', 'n', { title: 'What it found', markdown: 'x', html: '' });
   const asked = question('shelf', ['A', 'B']);
-  const shown = log([stage('now', 'Now', 'active', [note, asked])]);
+  const shown = log([stage('now', 'Now', 'active', [note, asked]), stage('next', 'Next', 'planned', [])]);
   const drawn = timeline(shown, context(shown));
   const row = drawn.querySelector('#row-now');
   const rows = [...row.querySelectorAll('.block-rows .block-row')].map((each) => [each.querySelector('.kind').textContent, each.querySelector('.block-row-title').textContent]);
@@ -140,7 +140,7 @@ test('the address names the stage and the block chosen, so that a reload or a li
 test('a stage’s row gives the count of its blocks that wait on the person and of those marked since the last visit', () => {
   const asked = question('shelf', ['A', 'B']);
   const fresh = block('note', 'fresh', { markdown: 'y' });
-  const shown = log([stage('a', 'A', 'active', [asked, fresh])]);
+  const shown = log([stage('a', 'A', 'active', [asked, fresh]), stage('b', 'B', 'planned', [])]);
   const drawn = timeline(shown, context(shown, { waiting: new Set([asked.key]), marked: new Set([asked.key, fresh.key]) }));
   const facts = drawn.querySelector('#row-a .stage-facts');
   assert.equal(facts.querySelector('.waiting-count').textContent, '1 waiting');
@@ -540,4 +540,61 @@ test('a plan within native plan activity reuses its band once and otherwise rece
   assert.equal(fallback.querySelectorAll('.mode-band--plan article').length, 1);
   assert.equal(fallback.querySelector('.mode-band--plan article').dataset.kind, 'plan');
   assert.equal(fallback.querySelector('.mode-band--spec article').dataset.kind, 'note');
+});
+
+/** A lone stage that holds a note, a task, a question and an approval. */
+function lone() {
+  const note = block('note', 'found', { title: 'What it found', markdown: 'x', html: '' });
+  const task = block('task', 'build', { title: 'Build the shelf', state: 'active' });
+  const asked = question('shelf', ['A', 'B']);
+  const approval = block('approval', 'ship', { title: 'Ship it', markdown: 'y' }, { more: { outcome: { verdict: 'approved' } } });
+  return { note, task, asked, approval, shown: log([stage('only', 'Only', 'active', [note, task, asked, approval])]) };
+}
+
+test('with one stage, the list holds a row for each of its blocks in their order, and no row for the stage', () => {
+  const { shown } = lone();
+  const drawn = timeline(shown, context(shown));
+  const rows = [...drawn.querySelectorAll('.stages > li.station')];
+  assert.deepEqual(rows.map((row) => row.id), ['row-found', 'row-build', 'row-shelf', 'row-ship']);
+  assert.ok(!drawn.querySelector('#row-only'), 'no row for the stage');
+  assert.ok(!drawn.querySelector('.fold-button, .block-rows'), 'no fold and no rows beneath a row');
+  assert.ok(drawn.querySelector('.stage-pane #block-only'), 'the pane still shows the stage');
+});
+
+test('a block’s row shows its title, then its kind and, where it has one, its state as a dot and a word, as a stage’s row shows its status', () => {
+  const { shown, asked } = lone();
+  const drawn = timeline(shown, context(shown, { waiting: new Set([asked.key]) }));
+  const facts = (id) => {
+    const row = drawn.querySelector(`#row-${id}`);
+    return [row.querySelector('.stage-choose .stage-title').textContent, row.querySelector('.stage-facts .kind').textContent, row.querySelector('.stage-facts .state')?.textContent ?? null];
+  };
+  assert.deepEqual(facts('found'), ['What it found', 'Note', null]);
+  assert.deepEqual(facts('build'), ['Build the shelf', 'Task', 'Active']);
+  assert.deepEqual(facts('shelf'), ['shelf', 'Question', 'Waits on you']);
+  assert.deepEqual(facts('ship'), ['Ship it', 'Approval', 'Approved']);
+  assert.ok(drawn.querySelector('#row-build').classList.contains('status--active'), 'the rail marks it as a stage of its state');
+  assert.ok(drawn.querySelector('#row-ship').classList.contains('status--done'));
+  assert.equal(blockState(block('task', 't', { title: 'T', state: 'dropped' }), context(shown))?.[0], 'Dropped');
+});
+
+test('choosing a block’s row brings the block into view in the pane and marks it as the block chosen', () => {
+  const { shown } = lone();
+  /** @type {[string, string | undefined][]} */
+  const chosen = [];
+  const drawn = timeline(shown, context(shown, { onChoose: (stageId, blockId) => chosen.push([stageId, blockId]) }));
+  drawn.querySelector('#row-build .stage-choose').click();
+  assert.deepEqual(chosen, [['only', 'build']]);
+  const again = timeline(shown, context(shown, { chosen: { block: 'build' } }));
+  assert.ok(again.querySelector('#row-build').classList.contains('is-chosen'));
+  assert.equal(again.querySelector('#row-build .stage-choose').getAttribute('aria-current'), 'true');
+  assert.equal(again.querySelectorAll('.station.is-chosen').length, 1);
+  assert.ok(again.querySelector('.stage-pane #block-build'));
+});
+
+test('with more than one stage, the list holds a row for each stage, with the rows of its blocks beneath it', () => {
+  const { note, task } = lone();
+  const shown = log([stage('a', 'A', 'active', [note]), stage('b', 'B', 'planned', [task])]);
+  const drawn = timeline(shown, context(shown));
+  assert.deepEqual([...drawn.querySelectorAll('.stages > li.station')].map((row) => row.id), ['row-a', 'row-b']);
+  assert.ok(drawn.querySelector('#row-a .block-rows [data-block="found"]'));
 });

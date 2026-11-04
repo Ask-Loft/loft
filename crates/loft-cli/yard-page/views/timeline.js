@@ -2,7 +2,8 @@
 // the stages of a branch's Yard Log in their order on a rail, each with its title, its status in a
 // word and a colour, the agent that owns it and the counts of its blocks that wait on the person
 // and that changed since the last visit, a line where the stages done or dropped end and the
-// planned ones begin, and each stage open to its blocks or folded to its row; at its right, the
+// planned ones begin, and each stage open to its blocks or folded to its row; while Yard Log holds
+// a single stage, its blocks in place of it, each drawn as a stage's row is. At its right, the
 // stage chosen, with its goal and each of its blocks in full, those written during one stretch of
 // plan or spec mode drawn under a band. A splitter between them sets the list's width.
 
@@ -51,7 +52,8 @@ export function timeline(log, context) {
   if (!list.length) return h('p', { class: 'empty' }, 'No stage has been written yet.');
   const chosen = chosenStage(list, context.chosen);
   const items = [];
-  list.forEach((stage, index) => {
+  if (list.length === 1) items.push(...shownBlocks(chosen, context).map((block) => blockStation(chosen, block, context)));
+  else list.forEach((stage, index) => {
     if (index === line) {
       const words = context.order === 'oldest' ? 'Planned from here on' : 'Planned above this line';
       items.push(h('li', { class: 'rail-line' }, h('span', {}, words)));
@@ -110,6 +112,86 @@ function chevron() {
   return svg('svg', { class: 'chevron', viewBox: '0 0 16 16', width: 14, height: 14, 'aria-hidden': 'true' }, svg('path', { d: 'M6 4l4 4-4 4' }));
 }
 
+/** A stage's blocks, but those drawn in the question they answer. @param {any} stage @param {TimelineContext} context */
+function shownBlocks(stage, context) {
+  return (stage.blocks ?? []).filter((block) => !drawnInQuestion(block, context.blocks));
+}
+
+/**
+ * The button of a row of the list, as a stage's row is drawn: its title on its first line and,
+ * on its second, its facts.
+ * @param {{ title: any, facts: any[], chosen: boolean, onclick: () => void }} row
+ */
+function rowButton({ title, facts, chosen, onclick }) {
+  return h(
+    'button',
+    { type: 'button', class: 'stage-choose', 'aria-current': chosen ? 'true' : null, onclick },
+    h('span', { class: 'stage-title' }, title),
+    h('span', { class: 'stage-facts' }, facts),
+  );
+}
+
+const STATES = { open: 'Open', active: 'Active', done: 'Done', dropped: 'Dropped' };
+
+/**
+ * A block's state as a dot and a word, with the status whose mark its row takes on the rail: a
+ * task's state, whether a question was answered, an approval's or a plan's verdict, or that it
+ * waits on the person. A note, a decision or a report of Loft has none.
+ * @param {any} block
+ * @param {TimelineContext} context
+ * @returns {[string, string, string] | null} the word, its class and the status of its mark
+ */
+export function blockState(block, context) {
+  if (context.waiting.has(block.key)) return ['Waits on you', 'state--waiting', 'active'];
+  const body = block.version.body ?? {};
+  if (block.kind === 'task') {
+    const state = body.state ?? 'open';
+    return [STATES[state] ?? state, `state--${state}`, state === 'open' ? 'planned' : state];
+  }
+  if (block.kind === 'question') return block.answer ? ['Answered', 'state--done', 'done'] : ['Open', 'state--open', 'planned'];
+  if (block.kind === 'approval' || block.kind === 'plan') {
+    const verdict = block.outcome?.verdict;
+    if (verdict === 'approved') return ['Approved', 'state--done', 'done'];
+    if (verdict === 'rejected') return ['Rejected', 'state--dropped', 'dropped'];
+    return ['Open', 'state--open', 'planned'];
+  }
+  return null;
+}
+
+/**
+ * The row of a block of a lone stage, drawn as a stage's row is: its title, then its kind and,
+ * where it has one, its state. Choosing it brings the block into view in the pane.
+ * @param {any} stage
+ * @param {any} block
+ * @param {TimelineContext} context
+ */
+function blockStation(stage, block, context) {
+  const state = blockState(block, context);
+  const chosen = context.chosen?.block === block.id;
+  return h(
+    'li',
+    {
+      class: ['station', 'station--block', `status--${state?.[2] ?? 'note'}`, chosen ? 'is-chosen' : null, context.marked.has(block.key) ? 'is-new' : null],
+      id: `row-${block.id}`,
+      dataset: { key: block.key, block: block.id },
+    },
+    h(
+      'div',
+      { class: 'list-row' },
+      rowButton({
+        title: blockTitle(block),
+        chosen,
+        onclick: () => context.onChoose?.(stage.id, block.id),
+        facts: [
+          h('span', { class: 'kind' }, KINDS[block.kind] ?? block.kind),
+          state ? h('span', { class: ['state', state[1]] }, state[0]) : null,
+          context.marked.has(block.key) ? h('span', { class: 'changed-mark' }, 'new') : null,
+        ],
+      }),
+    ),
+  );
+}
+
 /**
  * A stage's row in the list: the button that folds it, the row that chooses it, and while open
  * the rows of its blocks, each of which chooses it and brings the block into view.
@@ -119,7 +201,7 @@ function chevron() {
  */
 function stageRow(stage, chosen, context) {
   const body = stage.version.body;
-  const blocks = (stage.blocks ?? []).filter((block) => !drawnInQuestion(block, context.blocks));
+  const blocks = shownBlocks(stage, context);
   const owner = stage.owner;
   const path = `${stage.key}/open`;
   // Open while active or chosen and folded otherwise, unless the person chose otherwise under its status.
@@ -179,24 +261,17 @@ function stageRow(stage, chosen, context) {
       'div',
       { class: 'list-row' },
       fold,
-      h(
-        'button',
-        {
-          type: 'button',
-          class: 'stage-choose',
-          'aria-current': chosen ? 'true' : null,
-          onclick: () => context.onChoose?.(stage.id),
-        },
-        h('span', { class: 'stage-title' }, body.title),
-        h(
-          'span',
-          { class: 'stage-facts' },
+      rowButton({
+        title: body.title,
+        chosen,
+        onclick: () => context.onChoose?.(stage.id),
+        facts: [
           h('span', { class: ['status', `status--${body.status}`] }, STATUS[body.status] ?? body.status),
           owner ? h('span', { class: 'owner' }, owner.agent ? `${who(owner)} subagent` : 'main agent') : null,
           waits ? h('span', { class: 'waiting-count', title: `${waits} wait on you` }, `${waits} waiting`) : null,
           marked ? h('span', { class: 'changed-mark', title: `${marked} changed since your last visit` }, `${marked} new`) : null,
-        ),
-      ),
+        ],
+      }),
     ),
     rows,
   );
@@ -236,7 +311,7 @@ function firstLine(text) {
  */
 function stagePane(stage, context) {
   const body = stage.version.body;
-  const blocks = (stage.blocks ?? []).filter((block) => !drawnInQuestion(block, context.blocks));
+  const blocks = shownBlocks(stage, context);
   const owner = stage.owner;
   const times = stage.times ?? {};
   return h(
