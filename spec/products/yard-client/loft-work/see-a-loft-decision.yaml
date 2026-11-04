@@ -36,7 +36,9 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eabc540b4e07
         name: "Each subject shows its role and its node, by its label and its name."
       - key: 01a1a86c-65d5-76fe-b38b-1c5c68102d44
-        name: "The subjects of one role lie on one line headed by the role, such as `Affects:`, with no frame around the role."
+        name: "The subjects of one role are listed one to a line beside their role, such as `Affects`, in the column that gives the consequences' kinds, with no frame around the role."
+      - key: 01a1a896-a913-722b-b87e-a7e4ec791caf
+        name: "Each subject keeps to one line, its name cut where it runs out of room and given whole while the pointer rests on it."
       - key: 01a1646f-546d-7042-befd-eabdd040918b
         name: "A decision that is not accepted shows its state, and a rejected or retired one its rationale."
       - key: 01a1646f-546d-7042-befd-eabebf41cb3d
