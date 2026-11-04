@@ -477,7 +477,8 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .block-row:hover .kind-icon, .block-row.is-chosen .kind-icon { color: var(--body); }
 .block-row-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+/* The pane holds the stage it shows within 900 px, at the left of the room it has. */
+.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 900px; }
 .stage-head { display: grid; gap: 4px; }
 .pane-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 14px; color: var(--body); }
 .stage > .stage-head .stage-title { font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -0.015em; }
@@ -543,6 +544,8 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .tone-word.tone--danger { color: var(--danger); }
 .prose { overflow-wrap: anywhere; color: var(--ink); }
 .prose > :not(.table-wrap, pre) { max-width: 75ch; }
+/* A note's, an approval's and a loft block's Markdown spans its block, held to no narrower measure. */
+:is(.block--note, .block--approval, .block--loft) .prose > :not(.table-wrap, pre) { max-width: none; }
 .prose > * + * { margin-top: 0.6em; }
 .prose h1, .prose h2, .prose h3, .prose h4 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 .prose pre { overflow: auto; contain: inline-size; padding: 12px 16px; background: var(--code); border: 1px solid var(--line); font-size: 13px; }

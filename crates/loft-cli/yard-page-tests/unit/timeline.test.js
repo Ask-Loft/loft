@@ -641,3 +641,10 @@ test('beneath a stage of the list, an active task’s row has a dot in the margi
   assert.ok(active, 'the colour the pane gives the status active');
   assert.match(css, new RegExp(`\\.active-dot \\{ position: absolute; left: -11px;[^}]*background: var\\(${active}\\);`), 'in the margin, out of the row’s flow, in that colour');
 });
+
+test('the pane holds its stage within 900 pixels, and a note’s, an approval’s and a loft block’s Markdown spans its block', () => {
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.stage \{[^}]*max-width: 900px; \}/);
+  assert.match(css, /:is\(\.block--note, \.block--approval, \.block--loft\) \.prose > :not\(\.table-wrap, pre\) \{ max-width: none; \}/);
+  assert.match(css, /^\.prose > :not\(\.table-wrap, pre\) \{ max-width: 75ch; \}/m, 'other blocks keep their measure');
+});

@@ -128,6 +128,21 @@ test('a change drawn leaves the list and the pane scrolled where they were, and 
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+test('on a wide window the pane holds its stage within 900 pixels, and a note’s text spans its block', async ({ page }) => {
+  write([{ id: 'wide-note', kind: 'note', stage: 'shape', title: 'A wide note', markdown: 'A sentence long enough to run past seventy-five characters on one line, and on, and on, and on, so that its measure shows.' }]);
+  await page.setViewportSize({ width: 2000, height: 900 });
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="wide-note"]').click();
+  const stage = await box(page.locator('.stage-pane > .stage'));
+  expect(stage.width).toBeLessThanOrEqual(900);
+  const text = await box(page.locator('#block-wide-note .prose > p').first());
+  const block = await box(page.locator('#block-wide-note'));
+  expect(text.width).toBeGreaterThan(700);
+  expect(block.x + block.width - (text.x + text.width)).toBeLessThan(40);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
 test('the splitter narrows and widens the list by the keyboard and by a drag, and the next visit keeps the width', async ({ page }) => {
   await page.goto(address());
   await closeWaiting(page);
