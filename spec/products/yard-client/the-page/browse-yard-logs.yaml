@@ -211,7 +211,7 @@ requirements:
       - key: 01a1a856-9e14-7124-a2ea-8d79ddaf440d
         name: "Beneath a stage of the list, each block's row gives its kind as a small light icon before its title, an `L` for a `loft` block, which names the kind to a reader and while the pointer rests on it."
       - key: 01a1a86a-2483-76c7-894e-d32912c94eba
-        name: "Beneath a stage of the list, the row of each `active` task is marked by a green dot in the margin before it, which names the task active to a reader and moves neither its icon nor its title."
+        name: "Beneath a stage of the list, the row of each `active` task is marked by a dot in the margin before it, in the colour the pane gives the status `active`, which names the task active to a reader and moves neither its icon nor its title."
       - key: 01a1a7a4-51ce-73b8-bd34-87bda9d6693e
         name: "A stage's row in the list gives the count of its blocks that wait on the person and the count of its blocks marked since the last visit."
       - key: 01a1a7a4-51ce-73b8-bd34-87be8a0c6fed
