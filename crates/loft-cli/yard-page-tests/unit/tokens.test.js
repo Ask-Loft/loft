@@ -3,6 +3,7 @@
 import { forget } from './dom.js';
 
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
 
 import { tokensView } from '../../yard-page/views/tokens.js';
@@ -155,4 +156,43 @@ test('an empty stage uses classified session coverage rather than historical raw
     assert.equal(row.cells[1].textContent, '0');
     assert.equal(row.cells[3].textContent, classified ? '0' : 'Unavailable');
   }
+});
+
+test('the table, the reporting coverage and the note show beneath the summary, and nothing folds', () => {
+  const view = tokensView({ ...shown(), activity: [{ host: 'claude-code', session: 's1' }] });
+  assert.ok(!view.querySelector('details, summary'), 'the tokens view offers no fold');
+  const order = ['.token-totals', '.tokens-table', '.reporting-coverage', '.tokens-note'].map((part) => view.querySelector(part));
+  assert.ok(order.every(Boolean));
+  order.slice(1).forEach((part, n) => assert.ok(order[n].compareDocumentPosition(part) & Node.DOCUMENT_POSITION_FOLLOWING));
+});
+
+test('with no counted request, the summary says so and no table is shown, with no fold to open', () => {
+  const view = tokensView(log([], { activity: [{ host: 'claude-code', session: 's1' }] }));
+  assert.equal(view.querySelector('.empty')?.textContent, 'No tokens have been counted yet.');
+  assert.ok(!view.querySelector('table, details'));
+  assert.ok(view.querySelector('.reporting-coverage') && view.querySelector('.tokens-note'));
+});
+
+const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+/** The declarations of the first rule whose selector is exactly `selector`. @param {string} selector */
+const rule = (selector) => css.match(new RegExp(`(?:^|\\n)${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]*)\\}`))?.[1] ?? '';
+
+test('the four totals are figures in proportional digits, and the table’s counts are right-aligned in digits of one width', () => {
+  const view = tokensView(shown());
+  assert.deepEqual([...view.querySelectorAll('.token-totals .stat dt')].map((name) => name.textContent), ['Input', 'Cache read', 'Cache write', 'Output']);
+  assert.ok(!/tabular-nums/.test(rule('.token-totals dd')), 'the figures keep proportional digits');
+  assert.match(rule('.token-totals dd'), /font-size:\s*28px/);
+  assert.match(rule('.tokens-table .number'), /text-align:\s*right/);
+  assert.match(rule('.tokens-table .number'), /font-variant-numeric:\s*tabular-nums/);
+});
+
+test('each share bar is thin, of one blue with a rounded end on a lighter step of that blue, and names its count and share when pointed at', () => {
+  assert.match(rule('.share'), /height:\s*4px/);
+  assert.match(rule('.share'), /background:\s*var\(--bar-track\)/);
+  assert.match(rule('.share-fill'), /background:\s*var\(--bar\)/);
+  assert.match(rule('.share-fill'), /border-radius:\s*0 2px 2px 0/);
+  const light = css.match(/--bar:\s*(#[0-9a-f]{6});\s*--bar-track:\s*(#[0-9a-f]{6})/);
+  assert.deepEqual(light?.slice(1), ['#256abf', '#cde2fb'], 'one ramp: the bar and a lighter step for its track');
+  const [shaping] = body('stage');
+  assert.equal(shaping.cells[1].getAttribute('title'), '81 · 80% of recorded input');
 });

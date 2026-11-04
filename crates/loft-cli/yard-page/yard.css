@@ -54,6 +54,9 @@
   --rail: #aab2ba;
   --shadow: #0e141d;
   --signal: #14488f;
+  /* The share bars' blue and its track, steps of one ramp that pass the dataviz validator on this surface. */
+  --bar: #256abf;
+  --bar-track: #cde2fb;
   --signal-soft: #e4efff;
   --done: #0a756c;
   --done-soft: #e3f4f1;
@@ -111,6 +114,8 @@
     --rail: #4a5561;
     --shadow: #5f7389;
     --signal: #8ec5f2;
+    --bar: #3987e5;
+    --bar-track: #0d366b;
     --signal-soft: #142640;
     --done: #5ed3c0;
     --done-soft: #0f2e2a;
@@ -843,32 +848,37 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
 .split-total { color: var(--muted); }
 
-/* The tokens. */
-
-.tokens { border-top: 1px solid var(--line); padding: 16px 0; display: grid; gap: 12px; }
-.tokens h3 { font-size: 14px; font-weight: 600; }
-.tokens h4 { font-size: 14px; color: var(--muted); }
-.token-details > summary { cursor: pointer; font-size: 14px; }
-.token-details-content { display: grid; gap: 12px; margin-top: 12px; }
-.token-totals { display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 0; }
-.token-totals dt { color: var(--muted); font-size: 12px; }
-.token-totals dd { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-.tokens-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.tokens-table th, .tokens-table td { padding: 6px 8px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
-.tokens-table thead :is(th, td) { color: var(--muted); font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--rail); }
-.tokens-table tbody th { font-weight: 600; overflow-wrap: break-word; }
-.tokens-table th[scope="row"] { min-width: 10em; }
+/* The tokens, as the dataviz method draws figures and a table: the four totals as a row of stat
+   tiles in proportional figures, then one table whose counts are right-aligned in digits of one
+   width, each over a thin bar of its share in one blue, on a lighter step of that blue. Text keeps
+   the page's ink; only the bars carry the hue. */
+.tokens { display: grid; gap: 24px; max-width: 1080px; }
+.tokens h3 { font-size: 15px; font-weight: 600; }
+.tokens h4 { font-size: 13px; font-weight: 600; color: var(--muted); }
+.token-totals { display: flex; flex-wrap: wrap; gap: 16px 48px; margin: 0; }
+.token-totals .stat { display: grid; gap: 4px; }
+.token-totals dt { color: var(--muted); font-size: 13px; }
+.token-totals dd { margin: 0; color: var(--ink); font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -0.02em; }
+.table-wrap { overflow-x: auto; overscroll-behavior-x: none; overscroll-behavior-y: auto; }
+.tokens-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tokens-table th, .tokens-table td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.tokens-table thead :is(th, td) { padding-top: 0; padding-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--rail); }
+.tokens-table tbody th { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.tokens-table th[scope="row"] { min-width: 12em; }
+.tokens-table .group th { padding-top: 24px; padding-bottom: 6px; color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
 /* A subagent's share of a stage, beneath the stage it worked for. */
-.tokens-table .within th { padding-left: 24px; color: var(--muted); font-weight: 400; }
-.tokens-table .number { width: 1%; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
-.tokens-table .group th { padding-top: 18px; color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
-.tokens-table code { font-size: 12px; }
+.tokens-table .within th { padding-left: 28px; color: var(--body); font-weight: 400; }
+.tokens-table .number { width: 112px; min-width: 112px; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+.tokens-table thead .number { color: var(--muted); }
+.tokens-table code { font-family: var(--mono); font-size: 12px; }
 .tokens-table code, .tokens-table .span, .tokens-table .model { white-space: nowrap; }
 .tokens-table .span, .tokens-table .model, .tokens-table .no-stage { color: var(--muted); font-weight: 400; }
 .tokens-table .span, .tokens-table .model { margin-left: 8px; }
-.share { display: block; min-width: 72px; height: 4px; margin-top: 4px; background: var(--surface-2); }
-.share-fill { display: block; height: 100%; max-width: 100%; background: var(--signal); }
+.share { display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track); overflow: hidden; }
+.share-fill { display: block; height: 100%; max-width: 100%; border-radius: 0 2px 2px 0; background: var(--bar); }
 .number { text-align: right; font-variant-numeric: tabular-nums; }
+.reporting-coverage { display: grid; gap: 6px; }
+.reporting-coverage ul { margin: 0; padding-left: 18px; color: var(--body); font-size: 13px; }
 .tokens-note { color: var(--muted); font-size: 13px; }
 @media (max-width: 560px) {
   .criteria-table thead { display: none; }

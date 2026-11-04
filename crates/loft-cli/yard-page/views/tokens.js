@@ -1,9 +1,10 @@
-// The tokens Yard Log took: the four counts in all, by stage with each type of subagent's share
-// beneath it, by session, by agent and model, and by submission.
+// The tokens Yard Log took: the four counts in all as a row of figures, then one table of their
+// breakdowns, by stage with each type of subagent's share beneath it, by session, by agent and
+// model, and by submission, each count right-aligned in digits of one width with a thin bar of
+// its share; then which agent hosts report what, and what the counts may leave out. Nothing folds.
 
 import { add, h } from '../lib/dom.js';
 import { tokens as amount, when } from '../lib/format.js';
-import * as kept from '../lib/kept.js';
 import { COUNTERS as KEYS, any, summary as keyed } from '../model/tokens.js';
 
 /** @type {Record<string, string>} */
@@ -76,15 +77,24 @@ function agentName(agent) {
   return [agent.who.charAt(0).toUpperCase() + agent.who.slice(1), h('span', { class: 'model' }, agent.model)];
 }
 
-/** Detailed token information is closed by default, remembered for this Yard Log.
- * @param {any} log
- * @param {...any} content
+/**
+ * The four counts in all, each a figure under its name.
+ * @param {import('../model/tokens.js').Counts} all
  */
-function tokenDetails(log, ...content) {
-  const path = log.yardLog?.key ? `${log.yardLog.key}/tokens` : null;
-  return kept.details({ path, open: false }, { class: 'token-details' },
-    h('summary', {}, 'Token details'),
-    h('div', { class: 'token-details-content' }, ...content));
+function totals(all) {
+  return h(
+    'dl',
+    { class: 'token-totals' },
+    COUNTS.map(([name, word]) => {
+      const value = all[name];
+      return h(
+        'div',
+        { class: 'stat' },
+        h('dt', {}, word),
+        h('dd', { title: value === undefined ? 'Unavailable' : String(value) }, value === undefined ? 'Unavailable' : amount(value)),
+      );
+    }),
+  );
 }
 
 /**
@@ -102,7 +112,7 @@ export function tokensView(log) {
   const reporting = reportingOf(log.activity ?? []);
   if (summary.partial) add(section, h('p', { class: 'token-coverage', role: 'status' }, 'Token accounting: partial. Percentages show shares of recorded usage.'));
   if (!summary.counted) {
-    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), tokenDetails(log, reporting, note));
+    add(section, h('p', { class: 'empty' }, 'No tokens have been counted yet.'), reporting, note);
     return section;
   }
   const stages = (log.stages ?? []).flatMap((stage) => {
@@ -128,8 +138,10 @@ export function tokensView(log) {
   ].filter((group) => group.rows.length);
   add(
     section,
-    h('dl', { class: 'token-totals' }, COUNTS.map(([name, word]) => h('div', {}, h('dt', {}, word), h('dd', { title: summary.all[name] === undefined ? 'Unavailable' : String(summary.all[name]) }, summary.all[name] === undefined ? 'Unavailable' : amount(summary.all[name]))))),
-    tokenDetails(log, breakdowns(groups, summary.all), reporting, note),
+    totals(summary.all),
+    breakdowns(groups, summary.all),
+    reporting,
+    note,
   );
   return section;
 }

@@ -1294,25 +1294,24 @@ test('free form checkboxes combine with named choices and keep selection indepen
   await expect(panel).toBeHidden({ timeout: LIVE });
 });
 
-test('token details start closed and keyboard choices survive live counts and reloads', async ({ page }) => {
+test('the tokens view shows its totals, table, coverage and note with no fold, its counts aligned and its bars thin, and live counts reach it', async ({ page }) => {
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
   await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   const section = page.locator('#tokens');
-  const details = section.locator('details.token-details');
-  const summary = details.locator(':scope > summary');
   const totals = section.locator('.token-totals');
   await expect(totals).toBeVisible();
-  await expect(details).not.toHaveAttribute('open', '');
-  await expect(section.locator('.tokens-table')).toBeHidden();
-  await expect(section.locator('.reporting-coverage')).toBeHidden();
-  await expect(section.locator('.tokens-note')).toBeHidden();
-  await summary.focus();
-  await page.keyboard.press('Enter');
-  await expect(details).toHaveAttribute('open', '');
-  await expect(section.locator('.tokens-table')).toBeVisible();
-  await expect(section.locator('.reporting-coverage')).toBeVisible();
-  await expect(section.locator('.tokens-note')).toBeVisible();
+  await expect(section.locator('details, summary')).toHaveCount(0);
+  for (const part of ['.tokens-table', '.reporting-coverage', '.tokens-note']) await expect(section.locator(part)).toBeVisible();
+  expect(await colour(totals.locator('dd').first(), 'font-variant-numeric')).toBe('normal');
+  const count = section.locator('.tokens-table tbody td.number').first();
+  expect(await colour(count, 'font-variant-numeric')).toBe('tabular-nums');
+  expect(await colour(count, 'text-align')).toBe('right');
+  const bar = count.locator('.share');
+  expect((await box(bar)).height).toBe(4);
+  const shown = await box(count);
+  const tip = await box(count.locator('.share-fill'));
+  expect(tip.x).toBeGreaterThanOrEqual(shown.x);
   const before = Number(await totals.locator('dd').first().getAttribute('title'));
   const posted = await postAsMod('/api/events', [{
     session: 's1', dir: setup.tree, at: since(0), kind: 'request', model: 'claude-opus-5-5',
@@ -1320,17 +1319,7 @@ test('token details start closed and keyboard choices survive live counts and re
   }]);
   expect(posted.status).toBe(200);
   await expect(totals.locator('dd').first()).toHaveAttribute('title', String(before + 1), { timeout: LIVE });
-  await expect(details).toHaveAttribute('open', '');
-  await page.reload();
-  await expect(details).toHaveAttribute('open', '');
-  await expect(totals).toBeVisible();
-  await summary.focus();
-  await page.keyboard.press('Space');
-  await expect(details).not.toHaveAttribute('open', '');
-  await page.reload();
-  await expect(totals).toBeVisible();
-  await expect(details).not.toHaveAttribute('open', '');
-  await expect(section.locator('.tokens-table')).toBeHidden();
+  await expect(section.locator('.tokens-table')).toBeVisible();
 });
 
 
