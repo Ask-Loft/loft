@@ -12,7 +12,7 @@ import { decisionView } from '../../yard-page/views/loft/decision.js';
 import { findingsView } from '../../yard-page/views/loft/findings.js';
 import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
-import { CARD, CHIP, MOST_BOXES, TRUNK, boxes, cut, extras, headOf, specGraph, trunks, unconstrained, wrap } from '../../yard-page/model/spec-graph.js';
+import { CARD, CHIP, MOST_BOXES, TRUNK, boxes, cut, evenPanels, extras, headOf, specGraph, trunks, unconstrained, wrap } from '../../yard-page/model/spec-graph.js';
 import { placed } from '../../yard-page/model/flowchart.js';
 import { flowchartSvg } from '../../yard-page/views/flowchart-svg.js';
 import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
@@ -134,9 +134,10 @@ test('each box says how its node changed in a word, and a box drawn for context 
   assert.equal(drawn.querySelector('.spec-card--changed .spec-word')?.textContent, 'CHANGED');
 });
 
-test('a box gives its node’s label in monospace, or its kind’s name where the node has none yet', () => {
-  assert.equal(headOf({ ...criterion, label: null }).label, 'Criterion');
-  assert.equal(headOf({ key: 'd', kind: 'decision', label: null, name: 'x' }).label, 'Decision');
+test('a box gives its node’s label in monospace, or its kind’s label prefix where the node has none yet', () => {
+  assert.equal(headOf({ ...criterion, label: null }).label, 'AC');
+  assert.equal(headOf({ ...requirement, label: null }).label, 'RQ');
+  assert.equal(headOf({ key: 'd', kind: 'decision', label: null, name: 'x' }).label, 'ADR');
   assert.match(css, /\.flow \.spec-label \{ font-family: var\(--mono\);/);
 });
 
@@ -545,5 +546,21 @@ test('the boxes of one column start at one left edge, however wide each is', asy
   for (const compact of [true, false]) {
     const layout = placed(await new ELK().layout(specGraph({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion, short], decisions: [], edges: [] }, null, measure, compact)));
     assert.equal(at(layout, 'r').x, at(layout, 'r2').x);
+  }
+});
+
+test('panels that stand one beneath another in a column are as wide as one another, and a panel spans the panel that holds it', async () => {
+  const other = { key: 'p2', kind: 'product', label: 'P-2', name: 'A second Product with a much longer name than the first one has', parent: null, change: null };
+  const second = { key: 'g2', kind: 'feature_group', label: 'FG-9', name: 'Its group', parent: 'p2', change: null };
+  const lone = { key: 'f2', kind: 'feature', label: 'F-9', name: 'Short', parent: 'g2', change: 'added' };
+  for (const compact of [true, false]) {
+    const layout = evenPanels(placed(await new ELK().layout(specGraph({ nodes: [product, group, feature, other, second, lone], decisions: [], edges: [] }, null, measure, compact))));
+    const [p1, p2] = [at(layout, 'p'), at(layout, 'p2')];
+    assert.equal(p1.x, p2.x, 'one column');
+    assert.equal(p1.width, p2.width, 'as wide as one another');
+    for (const [inner, outer] of [['g', 'p'], ['f', 'g'], ['g2', 'p2'], ['f2', 'g2']]) {
+      const [held, holder] = [at(layout, inner), at(layout, outer)];
+      assert.equal(held.x + held.width, holder.x + holder.width - holder.panel.pad, `${inner} spans ${outer}`);
+    }
   }
 });

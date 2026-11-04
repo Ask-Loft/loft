@@ -179,8 +179,9 @@ export function placed(laid) {
     for (const child of node.children ?? []) {
       const x = dx + (child.x ?? 0);
       const y = dy + (child.y ?? 0);
-      if (child.group) groups.push({ id: child.id, title: child.title, panel: child.panel, x, y, width: child.width, height: child.height });
-      else nodes.push({ id: child.id, shape: child.shape, lines: child.lines, text: child.text, style: child.style, card: child.card, x, y, width: child.width, height: child.height });
+      const parent = node.id === 'root' ? null : node.id;
+      if (child.group) groups.push({ id: child.id, parent, title: child.title, panel: child.panel, x, y, width: child.width, height: child.height });
+      else nodes.push({ id: child.id, parent, shape: child.shape, lines: child.lines, text: child.text, style: child.style, card: child.card, x, y, width: child.width, height: child.height });
       visit(child, x, y);
     }
     for (const edge of node.edges ?? []) {

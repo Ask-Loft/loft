@@ -28,6 +28,19 @@ export const KIND_NAMES = {
   decision: 'Decision',
 };
 
+/** Each kind's label prefix, for a box whose node has no label yet. */
+export const KIND_PREFIXES = {
+  product: 'P',
+  feature_group: 'FG',
+  feature: 'F',
+  requirement: 'RQ',
+  criterion: 'AC',
+  component: 'CMP',
+  constraint: 'CON',
+  quality_attribute: 'QA',
+  decision: 'ADR',
+};
+
 /** The word that says how a node changed. */
 export const CHANGE_WORDS = { added: 'NEW', changed: 'CHANGED', removed: 'REMOVED' };
 
@@ -171,7 +184,7 @@ function chipOf(node, id, measure) {
  */
 export function headOf(node) {
   return {
-    label: node.label || KIND_NAMES[/** @type {keyof typeof KIND_NAMES} */ (node.kind)] || String(node.kind ?? ''),
+    label: node.label || KIND_PREFIXES[/** @type {keyof typeof KIND_PREFIXES} */ (node.kind)] || String(node.kind ?? ''),
     word: CHANGE_WORDS[/** @type {keyof typeof CHANGE_WORDS} */ (node.change)] ?? null,
   };
 }
@@ -350,6 +363,31 @@ export function unconstrained(graph) {
     return { ...node, layoutOptions: options, children: (node.children ?? []).map(strip) };
   };
   return strip(graph);
+}
+
+/**
+ * The placed diagram with its panels as wide as one another where they stand in one column, and
+ * each panel spanning the panel that holds it.
+ * @param {ReturnType<typeof import('./flowchart.js').placed>} layout
+ */
+export function evenPanels(layout) {
+  const groups = layout.groups.map((group) => ({ ...group }));
+  const byId = new Map(groups.map((group) => [group.id, group]));
+  // Panels outside any panel that start at one left edge stand in one column.
+  const columns = new Map();
+  for (const group of groups) {
+    if (!group.panel || group.parent) continue;
+    const at = Math.round(group.x);
+    columns.set(at, Math.max(columns.get(at) ?? 0, group.width));
+  }
+  // Parents come before their children, as the placement visits them.
+  for (const group of groups) {
+    if (!group.panel) continue;
+    const holder = group.parent ? byId.get(group.parent) : null;
+    if (holder?.panel) group.width = holder.x + holder.width - holder.panel.pad - group.x;
+    else if (!group.parent) group.width = columns.get(Math.round(group.x)) ?? group.width;
+  }
+  return { ...layout, groups };
 }
 
 /** How far right of its Requirement the trunk of its criteria's lines runs, in pixels. */

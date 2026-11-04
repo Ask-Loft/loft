@@ -27,7 +27,7 @@ function chain() {
 
 const near = (target) => [...target.querySelectorAll('.is-near')].map((each) => each.getAttribute('data-id') ?? `${each.getAttribute('data-from')}>${each.getAttribute('data-to')}`);
 
-test('pointing at a node brings forward it, its edges and their labels and the nodes they join, and nothing else', () => {
+test('pointing at a node marks it, its edges and their labels and the nodes they join, and nothing else', () => {
   const target = chain();
   target.querySelector('[data-id="A"] rect').dispatchEvent(new Event('pointerover', { bubbles: true }));
   assert.ok(target.querySelector('svg').classList.contains('is-emphasis'));
@@ -36,7 +36,7 @@ test('pointing at a node brings forward it, its edges and their labels and the n
   assert.deepEqual(near(target).sort(), ['A', 'A>B', 'A>B', 'B', 'B>C', 'C'].sort(), 'a node between two brings both forward');
 });
 
-test('the rest fades until the pointer leaves the node, and moving within it keeps it forward', () => {
+test('the marks stay until the pointer leaves the node, moving within it keeps them, and nothing fades', () => {
   const target = chain();
   const node = target.querySelector('[data-id="A"]');
   node.querySelector('rect').dispatchEvent(new Event('pointerover', { bubbles: true }));
@@ -48,5 +48,8 @@ test('the rest fades until the pointer leaves the node, and moving within it kee
   assert.ok(!target.querySelector('svg').classList.contains('is-emphasis'));
   assert.deepEqual(near(target), []);
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
-  assert.match(css, /\.flow\.is-emphasis :is\(\.flow-node, \.flow-edge, \.flow-pill, \.spec-card\):not\(\.is-near\) \{ opacity: 0\.25; \}/);
+  assert.doesNotMatch(css, /is-emphasis[^{]*\{[^}]*opacity/, 'nothing fades');
+  assert.match(css, /\.flow\.is-emphasis \.flow-edge\.is-near \{ stroke: var\(--signal\);/, 'its edges in action blue');
+  assert.match(css, /\.flow\.is-emphasis \.flow-node\.is-near :is\(rect, polygon, circle\) \{ stroke: var\(--signal\);/, 'its nodes outlined in action blue');
+  assert.match(css, /\.flow\.is-emphasis \.spec-card\.is-near \.spec-frame \{ stroke: var\(--signal\);/);
 });

@@ -17,7 +17,7 @@ import { CARD, CHIP, KIND_NAMES } from '../model/spec-graph.js';
 function choosable(what, name) {
   if (!what.chosen) return {};
   const kind = KIND_NAMES[/** @type {keyof typeof KIND_NAMES} */ (what.kind)] ?? what.kind;
-  const said = [what.label === kind ? kind : `${what.label}, ${kind}`, what.word ? what.word.toLowerCase() : null].filter(Boolean).join(', ');
+  const said = [`${what.label}, ${kind}`, what.word ? what.word.toLowerCase() : null].filter(Boolean).join(', ');
   return { 'data-key': what.key, role: 'button', tabindex: 0, 'aria-label': `${said}: ${name}` };
 }
 

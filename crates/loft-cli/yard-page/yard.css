@@ -824,10 +824,12 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .change-tree li.is-marked { outline: 2px solid var(--signal); outline-offset: 4px; }
 .flow .flow-group-title { fill: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
 /* Pointing at a node brings it, its edges and its neighbours forward, and fades the rest. */
-.flow :is(.flow-node, .flow-edge, .flow-pill, .spec-card) { transition: opacity 120ms ease; }
-.flow.is-emphasis :is(.flow-node, .flow-edge, .flow-pill, .spec-card):not(.is-near) { opacity: 0.25; }
-.flow.is-emphasis .flow-edge.is-near { stroke: var(--ink); }
-@media (prefers-reduced-motion: reduce) { .flow :is(.flow-node, .flow-edge, .flow-pill, .spec-card) { transition: none; } }
+/* Pointing at a node outlines it and the nodes its edges join in action blue and draws those
+   edges in action blue; nothing fades, so moving between nodes makes nothing flicker. */
+.flow.is-emphasis .flow-edge.is-near { stroke: var(--signal); stroke-width: 1.75px; }
+.flow.is-emphasis .flow-node.is-near :is(rect, polygon, circle) { stroke: var(--signal); stroke-width: 2px; }
+.flow.is-emphasis .spec-card.is-near .spec-frame { stroke: var(--signal); stroke-width: 2px; }
+.flow.is-emphasis .flow-pill.is-near rect { stroke: var(--signal); }
 .diagram-error { color: var(--danger); font-size: 13px; }
 /* A drawn diagram keeps a margin at its right for the button that expands it, which never covers it. */
 .diagram.is-drawn { padding-right: 48px; }
@@ -838,7 +840,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 /* An expanded diagram: the modal's body is its stage, where it zooms and pans, never scrolls. */
 .modal--diagram .modal-body { position: relative; display: block; padding: 0; overflow: hidden; }
 .zoom { position: absolute; inset: 0; }
-.zoom-stage { position: absolute; inset: 0; overflow: hidden; background: var(--surface); touch-action: none; overscroll-behavior: contain; cursor: grab; }
+.zoom-stage { position: absolute; inset: 0; overflow: hidden; background: var(--surface); touch-action: none; overscroll-behavior: contain; cursor: grab; user-select: none; -webkit-user-select: none; }
 .zoom-stage.is-dragging { cursor: grabbing; }
 .zoom-stage:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
 .zoom-content { position: absolute; top: 0; left: 0; transform-origin: 0 0; }

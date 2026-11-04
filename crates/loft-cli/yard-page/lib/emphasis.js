@@ -1,6 +1,6 @@
-// The hover layer of a diagram the page draws itself: pointing at a node, or focusing it, brings
-// forward the node, its edges and their labels and the nodes at their other ends, and fades the
-// rest of the diagram until the pointer or the focus leaves it. Panels never fade.
+// The hover layer of a diagram the page draws itself: pointing at a node, or focusing it, marks
+// the node, its edges and their labels and the nodes at their other ends, which the stylesheet
+// outlines in action blue, until the pointer or the focus leaves it. Nothing fades.
 
 /** What takes part: the nodes that bring their neighbours forward, and what fades. */
 const NODES = '.flow-node, .spec-card';

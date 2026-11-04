@@ -1484,7 +1484,7 @@ test('the cards of a question’s options stand side by side, at most three to a
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join', async ({ page }) => {
+test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node outlines it and its neighbours in action blue and fades nothing', async ({ page }) => {
   const chain = Array.from({ length: 9 }, (_, n) => `  s${n}[Step ${n} of a long chain] --> s${n + 1}[Step ${n + 1} of a long chain]`).join('\n');
   write([{ id: 'wide-flow', kind: 'note', stage: 'shape', title: 'A wide flow', markdown: `\`\`\`mermaid\nflowchart LR\n${chain}\n\`\`\`` }]);
   await page.goto(address());
@@ -1503,14 +1503,18 @@ test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and
   const label = flow.locator('.flow-label').first();
   expect(await label.evaluate((element) => /** @type {SVGGraphicsElement} */ (element).getBoundingClientRect().height)).toBeGreaterThan(12);
   expect(await colour(label, 'font-size')).toBe('13px');
+  // Pointing at a node outlines it and its neighbour in action blue, and fades nothing.
+  const outline = (id) => colour(flow.locator(`.flow-node[data-id="${id}"] rect`), 'stroke');
   await flow.locator('.flow-node[data-id="s0"]').hover();
-  await expect.poll(() => colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('0.25');
-  expect(await colour(flow.locator('.flow-node[data-id="s1"]'), 'opacity')).toBe('1');
+  await expect.poll(() => outline('s1')).toBe('rgb(20, 72, 143)');
+  expect(await outline('s0')).toBe('rgb(20, 72, 143)');
+  expect(await outline('s5')).not.toBe('rgb(20, 72, 143)');
+  expect(await colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('1');
   await page.mouse.move(0, 0);
-  await expect.poll(() => colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('1');
+  await expect.poll(() => outline('s1')).not.toBe('rgb(20, 72, 143)');
 });
 
-test('a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card', async ({ page }) => {
+test('a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card', async ({ page }) => {
   for (const scheme of /** @type {const} */ (['light', 'dark'])) {
     await page.emulateMedia({ colorScheme: scheme });
     await page.goto(address());
@@ -1571,10 +1575,14 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
     expect(await colour(flow.locator('.spec-card--added .spec-bar'), 'fill')).toBe(bars[0]);
     expect(await colour(flow.locator('.spec-card--changed .spec-bar'), 'fill')).toBe(bars[1]);
     expect(await colour(flow.locator('.spec-card--removed .spec-bar'), 'fill')).toBe(bars[2]);
-    // Pointing at the decision brings forward the Requirement it settles and fades a criterion.
+    // A new criterion without a label shows its kind's prefix.
+    expect(await flow.locator('.spec-card[data-key="c2"] .spec-label').textContent()).toBe('AC');
+    // Pointing at the decision outlines the Requirement it settles in action blue, and fades nothing.
+    const signal = scheme === 'light' ? 'rgb(20, 72, 143)' : 'rgb(142, 197, 242)';
     await flow.locator('.spec-card[data-key="d"]').hover();
-    await expect.poll(() => colour(flow.locator('.spec-card[data-key="c3"]'), 'opacity')).toBe('0.25');
-    expect(await colour(flow.locator('.spec-card--context'), 'opacity')).toBe('1');
+    await expect.poll(() => colour(flow.locator('.spec-card--context .spec-frame'), 'stroke')).toBe(signal);
+    expect(await colour(flow.locator('.spec-card[data-key="c3"] .spec-frame'), 'stroke')).not.toBe(signal);
+    expect(await colour(flow.locator('.spec-card[data-key="c3"]'), 'opacity')).toBe('1');
     await flow.locator('.spec-card[data-key="c1"]').click();
     const entry = page.locator('#block-spec-test .diff li.is-marked');
     await expect(entry).toHaveCount(1);
@@ -1585,6 +1593,13 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
     const expanded = page.locator('dialog.modal[data-modal="diagram"] svg.flow');
     await expect(expanded.locator('.spec-name').first()).toBeVisible({ timeout: 10_000 });
     expect(await colour(expanded.locator('.spec-name').first(), 'font-size')).toBe('13px');
+    // Dragging it pans, and selects none of its text.
+    const name = await box(expanded.locator('.spec-name').first());
+    await page.mouse.move(name.x + 2, name.y + name.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(name.x + 160, name.y + 60, { steps: 8 });
+    await page.mouse.up();
+    expect(await page.evaluate(() => String(getSelection()))).toBe('');
     await page.keyboard.press('Escape');
   }
   await page.emulateMedia({ colorScheme: 'light' });

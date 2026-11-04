@@ -443,3 +443,8 @@ test('a drawing the page builds is drawn once, whatever the scheme, and tells it
   card.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
   assert.deepEqual(chosen, ['k1', 'k1'], 'by the pointer and by Enter, not by another key');
 });
+
+test('dragging the expanded diagram selects none of its text', () => {
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.zoom-stage \{[^}]*user-select: none; -webkit-user-select: none; \}/);
+});
