@@ -100,6 +100,34 @@ test('the list and the pane each scroll on their own beneath the head, and the p
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+test('a change drawn leaves the list and the pane scrolled where they were, and brings the chosen block back into view only when it is chosen', async ({ page }) => {
+  write([{ id: 'scroll-tall', kind: 'note', stage: 'shape', title: 'A tall note', markdown: Array.from({ length: 60 }, (_, line) => `Line ${line + 1}.`).join('\n\n') }]);
+  await page.setViewportSize({ width: 1280, height: 360 });
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="q1"]').click();
+  const pane = page.locator('.stage-pane');
+  const list = page.locator('.stage-list');
+  await expect(page.locator('.stage-pane #block-q1')).toBeInViewport();
+  // The person scrolls the pane away from the block chosen, and the list to its end.
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await list.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  const was = { pane: await pane.evaluate((element) => element.scrollTop), list: await list.evaluate((element) => element.scrollTop) };
+  expect(was.pane).toBeGreaterThan(0);
+  expect(was.list).toBeGreaterThan(0);
+  await expect(page.locator('.stage-pane #block-q1')).not.toBeInViewport();
+  // An agent writes; the page draws the change.
+  write([{ id: 'scroll-tick', kind: 'note', stage: 'build', title: 'A change elsewhere', markdown: 'x' }]);
+  await expect(page.locator('#row-build .block-row[data-block="scroll-tick"]')).toHaveCount(1, { timeout: LIVE });
+  expect(await pane.evaluate((element) => element.scrollTop)).toBe(was.pane);
+  expect(await list.evaluate((element) => element.scrollTop)).toBe(was.list);
+  await expect(page.locator('.stage-pane #block-q1')).toHaveClass(/is-picked/);
+  // Choosing a block anew still brings it into view.
+  await page.locator('#row-shape .block-row[data-block="scroll-tall"]').click();
+  await expect(page.locator('.stage-pane #block-scroll-tall')).toBeInViewport();
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
 test('the splitter narrows and widens the list by the keyboard and by a drag, and the next visit keeps the width', async ({ page }) => {
   await page.goto(address());
   await closeWaiting(page);

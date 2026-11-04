@@ -10,7 +10,7 @@ import { blocksByKey, changedSince, decisionsByQuestion, grouped, ordered, stret
 import { chart } from '../../yard-page/model/gantt.js';
 import { card } from '../../yard-page/views/blocks.js';
 import { failedLog, logHead, logView, unreadable } from '../../yard-page/views/log.js';
-import { LIST, blockState, chosenStage, timeline } from '../../yard-page/views/timeline.js';
+import { KIND_ICONS, LIST, blockState, chosenStage, timeline } from '../../yard-page/views/timeline.js';
 import { format, parse } from '../../yard-page/lib/route.js';
 import { readFileSync } from 'node:fs';
 import { EXPLORE, PERSON, act, answer, block, log, open, question, stage } from './fixtures.js';
@@ -78,7 +78,7 @@ test('the person folds a stage of the list to its row and opens it to list its b
   const shown = log([stage('now', 'Now', 'active', [note, asked]), stage('next', 'Next', 'planned', [])]);
   const drawn = timeline(shown, context(shown));
   const row = drawn.querySelector('#row-now');
-  const rows = [...row.querySelectorAll('.block-rows .block-row')].map((each) => [each.querySelector('.kind').textContent, each.querySelector('.block-row-title').textContent]);
+  const rows = [...row.querySelectorAll('.block-rows .block-row')].map((each) => [each.querySelector('.kind-icon').getAttribute('aria-label'), each.querySelector('.block-row-title').textContent]);
   assert.deepEqual(rows, [
     ['Note', 'What it found'],
     ['Question', 'shelf'],
@@ -597,4 +597,25 @@ test('with more than one stage, the list holds a row for each stage, with the ro
   const drawn = timeline(shown, context(shown));
   assert.deepEqual([...drawn.querySelectorAll('.stages > li.station')].map((row) => row.id), ['row-a', 'row-b']);
   assert.ok(drawn.querySelector('#row-a .block-rows [data-block="found"]'));
+});
+
+test('beneath a stage of the list, each block’s row gives its kind as a small light icon, named to a reader and on hover, and no word', () => {
+  const kinds = ['note', 'question', 'approval', 'plan', 'decision', 'task', 'loft'];
+  const blocks = kinds.map((kind) => (kind === 'question' ? question('shelf', ['A', 'B']) : block(kind, `b-${kind}`, { title: kind, markdown: 'x', html: '' })));
+  const shown = log([stage('now', 'Now', 'active', blocks), stage('next', 'Next', 'planned', [])]);
+  const rows = [...timeline(shown, context(shown)).querySelectorAll('#row-now .block-rows .block-row')];
+  const names = { note: 'Note', question: 'Question', approval: 'Approval', plan: 'Plan', decision: 'Decision', task: 'Task', loft: 'Loft' };
+  rows.forEach((row, index) => {
+    const icon = row.querySelector('.kind-icon');
+    assert.equal(icon?.getAttribute('role'), 'img');
+    assert.equal(icon?.getAttribute('aria-label'), names[kinds[index]]);
+    assert.equal(icon?.getAttribute('title'), names[kinds[index]]);
+    assert.ok(icon?.querySelector('svg path'), 'drawn, not written');
+    assert.ok(!row.querySelector('.kind'), 'no word of its kind');
+  });
+  assert.deepEqual(Object.keys(KIND_ICONS).sort(), [...kinds].sort(), 'one icon for each kind');
+  assert.deepEqual(KIND_ICONS.loft, ['M5.75 3.5v9h5'], 'an L for a loft block');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.kind-icon \{[^}]*width: 14px; height: 14px; color: var\(--muted\);/);
+  assert.match(css, /\.kind-icon svg \{ fill: none; stroke: currentColor; stroke-width: 1\.25;/);
 });

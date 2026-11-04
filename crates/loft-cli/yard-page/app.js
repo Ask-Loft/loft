@@ -122,6 +122,7 @@ function render() {
     replace(main, failedLog(state.logStatus, state.log, route.tree));
     waitingModal(null, { tree: route.tree, branch: route.branch, refresh, notify });
   } else {
+    const scrolled = scrollOf(main);
     /** @type {import('./views/log.js').LogContext} */
     const context = {
       tree: route.tree,
@@ -153,7 +154,15 @@ function render() {
     waitingModal(state.log, { tree: route.tree, branch: route.branch, refresh, notify });
     drawAll(main);
     settle(main);
-    if (route.block && prefs.view() === 'timeline') reveal(route.block);
+    // A change drawn again leaves the list and the pane where they were scrolled; only a stage or
+    // a block chosen anew, or another view or Yard Log, moves them.
+    const aim = JSON.stringify([route.tree, route.branch, route.stage ?? null, route.block ?? null, prefs.view()]);
+    const sameLog = scrolled.log === JSON.stringify([route.tree, route.branch]);
+    if (route.block && prefs.view() === 'timeline') pick(route.block);
+    if (sameLog) restoreScroll(main, scrolled, aim === aimed);
+    if (aim !== aimed && route.block && prefs.view() === 'timeline') reveal(route.block);
+    aimed = aim;
+    drawnLog = JSON.stringify([route.tree, route.branch]);
   }
   if (focus) {
     const again = /** @type {HTMLInputElement | null} */ (document.getElementById(focus.id));
@@ -214,19 +223,57 @@ function blockOf(log, id) {
   return (log?.stages ?? []).some((stage) => stage.id === id) ? undefined : id;
 }
 
+/** The stage, block, view and Yard Log the panes were last brought to, as JSON. */
+let aimed = '';
+/** The Yard Log drawn last, as JSON. */
+let drawnLog = '';
+
 /**
- * Shows the block `id` in the pane of its stage, marked as the block chosen, and opens what folds
- * it there.
+ * Where the main column, the list and the pane are scrolled, before they are drawn again.
+ * @param {HTMLElement} main
+ */
+function scrollOf(main) {
+  return {
+    log: drawnLog,
+    main: main.scrollTop,
+    list: main.querySelector('.stage-list')?.scrollTop ?? 0,
+    pane: main.querySelector('.stage-pane')?.scrollTop ?? 0,
+  };
+}
+
+/**
+ * Scrolls the main column and the list back to where they were, and the pane too where `pane`.
+ * @param {HTMLElement} main
+ * @param {ReturnType<typeof scrollOf>} was
+ * @param {boolean} pane
+ */
+function restoreScroll(main, was, pane) {
+  main.scrollTop = was.main;
+  const list = main.querySelector('.stage-list');
+  if (list) list.scrollTop = was.list;
+  const shown = main.querySelector('.stage-pane');
+  if (pane && shown) shown.scrollTop = was.pane;
+}
+
+/**
+ * Marks the block `id` in the pane of its stage as the block chosen, and opens what folds it there.
  * @param {string} id
  */
-function reveal(id) {
+function pick(id) {
   const target = document.getElementById(`block-${id}`);
   if (!target) return;
   for (let at = target; at; at = at.parentElement) {
     if (at instanceof HTMLDetailsElement) at.open = true;
   }
   target.classList.add('is-picked');
-  target.scrollIntoView({ block: 'center' });
+}
+
+/**
+ * Brings the block `id` into view in the pane of its stage.
+ * @param {string} id
+ */
+function reveal(id) {
+  document.getElementById(`block-${id}`)?.scrollIntoView({ block: 'center' });
 }
 
 /**

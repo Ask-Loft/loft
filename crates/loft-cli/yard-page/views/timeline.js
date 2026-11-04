@@ -19,6 +19,31 @@ const STATUS = { planned: 'Planned', active: 'Active', done: 'Done', dropped: 'D
 
 const KINDS = { note: 'Note', question: 'Question', approval: 'Approval', plan: 'Plan', decision: 'Decision', task: 'Task', loft: 'Loft' };
 
+/** Each kind's icon beneath a stage of the list, drawn in light strokes on a square of 16. */
+export const KIND_ICONS = {
+  note: ['M4 2.5h5.5L12 5v8.5H4z', 'M6.25 8h3.5M6.25 10.5h3.5'],
+  question: ['M8 1.75a6.25 6.25 0 1 0 0 12.5a6.25 6.25 0 1 0 0-12.5z', 'M6.25 6.25a1.75 1.75 0 1 1 2.5 1.6c-.5.25-.75.6-.75 1.15v.5', 'M8 11.25v.5'],
+  approval: ['M8 1.75a6.25 6.25 0 1 0 0 12.5a6.25 6.25 0 1 0 0-12.5z', 'M5.5 8.25l1.75 1.75 3.25-3.5'],
+  plan: ['M5.5 3H3.5v10.5h9V3h-2', 'M6 2h4v2H6z', 'M5.75 7.5h4.5M5.75 10h3'],
+  decision: ['M8 14V8.5L4.5 4M8 8.5L11.5 4', 'M3.5 6.25V3.5h2.75M12.5 6.25V3.5H9.75'],
+  task: ['M3 3h10v10H3z', 'M5.5 8l1.75 1.75L10.75 6'],
+  loft: ['M5.75 3.5v9h5'],
+};
+
+/**
+ * A block's kind as a small light icon, named to a reader and while the pointer rests on it.
+ * @param {string} kind
+ */
+export function kindIcon(kind) {
+  const name = KINDS[/** @type {keyof typeof KINDS} */ (kind)] ?? kind;
+  const paths = KIND_ICONS[/** @type {keyof typeof KIND_ICONS} */ (kind)] ?? KIND_ICONS.note;
+  return h(
+    'span',
+    { class: 'kind-icon', role: 'img', 'aria-label': name, title: name, dataset: { kind } },
+    svg('svg', { viewBox: '0 0 16 16', width: 14, height: 14, 'aria-hidden': 'true' }, paths.map((d) => svg('path', { d }))),
+  );
+}
+
 /** The list's width: its default, its bounds and the step of an arrow key, in pixels. */
 export const LIST = { width: 360, least: 240, most: 640, step: 16 };
 
@@ -225,7 +250,7 @@ function stageRow(stage, chosen, context) {
             dataset: { block: block.id },
             onclick: () => context.onChoose?.(stage.id, block.id),
           },
-          h('span', { class: 'kind' }, KINDS[block.kind] ?? block.kind),
+          kindIcon(block.kind),
           h('span', { class: 'block-row-title' }, blockTitle(block)),
         ),
       ),
