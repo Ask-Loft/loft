@@ -5,10 +5,10 @@
 // each finding on one line with the node it names and where it is, those introduced first, and
 // the agent's reason beside a finding left in place; and the findings the branch resolved.
 
-import { h } from '../../lib/dom.js';
+import { h, svg } from '../../lib/dom.js';
 import * as kept from '../../lib/kept.js';
-import { count, place } from '../../lib/format.js';
-import { chip, leftOut, named } from './index.js';
+import { base, count, place } from '../../lib/format.js';
+import { chip, leftOut, nameOf, tag } from './index.js';
 
 const SEVERITIES = ['error', 'warning', 'info', 'hint'];
 
@@ -96,7 +96,28 @@ export function byRule(findings) {
  */
 function split(findings) {
   const introduced = findings.filter((finding) => finding.change === 'introduced').length;
-  return `${introduced} new on this branch · ${findings.length - introduced} there before`;
+  return h('span', { class: 'finding-counts' }, countMark('new', introduced), countMark('before', findings.length - introduced));
+}
+
+/** The icon of each count, drawn in light strokes on a square of 16. */
+const COUNT_ICONS = {
+  new: ['M8 1.75a6.25 6.25 0 1 0 0 12.5a6.25 6.25 0 1 0 0-12.5z', 'M8 5v6M5 8h6'],
+  before: ['M8 1.75a6.25 6.25 0 1 0 0 12.5a6.25 6.25 0 1 0 0-12.5z', 'M8 4.5V8l2.5 1.75'],
+};
+
+/**
+ * A count of findings as a number beside its icon, named to a reader and on hover.
+ * @param {'new' | 'before'} which
+ * @param {number} n
+ */
+function countMark(which, n) {
+  const words = which === 'new' ? `${n} new on this branch` : `${n} there before`;
+  return h(
+    'span',
+    { class: ['count-mark', `count-mark--${which}`, n ? null : 'is-none'], role: 'img', 'aria-label': words, title: words },
+    svg('svg', { viewBox: '0 0 16 16', width: 14, height: 14, 'aria-hidden': 'true' }, COUNT_ICONS[which].map((d) => svg('path', { d }))),
+    String(n),
+  );
 }
 
 /**
@@ -108,10 +129,10 @@ function split(findings) {
  */
 function ruleGroup(group, report, reasons, key) {
   const same = [...group.introduced, ...group.before].every((finding) => finding.message === group.message);
-  const list = (/** @type {string} */ heading, /** @type {any[]} */ items) =>
+  const list = (/** @type {'new' | 'before'} */ which, /** @type {any[]} */ items) =>
     items.length
       ? [
-          h('p', { class: 'finding-heading' }, heading),
+          h('p', { class: 'finding-heading' }, headingOf(which, items.length)),
           h('ul', { class: 'finding-lines' }, items.map((finding) => findingLine(finding, report, reasons, !same))),
         ]
       : null;
@@ -121,10 +142,10 @@ function ruleGroup(group, report, reasons, key) {
       ? kept.details(
           { path: key ? `${key}/rule/${group.rule}/before` : null, open: false },
           { class: 'fold finding-before' },
-          h('summary', { class: 'finding-heading' }, `There before (${group.before.length})`),
+          h('summary', { class: 'finding-heading' }, headingOf('before', group.before.length)),
           h('ul', { class: 'finding-lines' }, group.before.map((finding) => findingLine(finding, report, reasons, !same))),
         )
-      : list('There before', group.before);
+      : list('before', group.before);
   return kept.details(
     { path: key ? `${key}/rule/${group.rule}` : null, open: group.introduced.length > 0 },
     { class: 'fold finding-group', dataset: { rule: group.rule } },
@@ -137,16 +158,30 @@ function ruleGroup(group, report, reasons, key) {
       ' ',
       h('span', { class: 'finding-message' }, same ? group.message : `${group.introduced.length + group.before.length} findings`),
       ' ',
-      h('span', { class: 'finding-counts' }, split([...group.introduced, ...group.before])),
+      split([...group.introduced, ...group.before]),
     ),
-    list('New on this branch', group.introduced),
+    list('new', group.introduced),
     older,
   );
 }
 
 /**
- * One finding on one line: the node it names and where it is, and the agent's reason where it
- * left the finding in place.
+ * The heading of the findings the branch introduced, or of those there before it: its icon and
+ * its words with their count.
+ * @param {'new' | 'before'} which
+ * @param {number} n
+ */
+function headingOf(which, n) {
+  return [
+    svg('svg', { class: `count-icon count-icon--${which}`, viewBox: '0 0 16 16', width: 13, height: 13, 'aria-hidden': 'true' }, COUNT_ICONS[which].map((d) => svg('path', { d }))),
+    ` ${which === 'new' ? 'New on this branch' : 'There before'} (${n})`,
+  ];
+}
+
+/**
+ * One finding on one line, in columns aligned from line to line: its node's label, its name, and
+ * its file's name and line, the whole path on hover; then the agent's reason where it left the
+ * finding in place.
  * @param {any} finding
  * @param {any} report
  * @param {Map<string, string>} reasons
@@ -156,17 +191,20 @@ function findingLine(finding, report, reasons, message) {
   const subject = finding.subjects?.[0];
   const reason = subject ? reasons.get(`${finding.rule} ${subject.key}`) : undefined;
   const node = subject ? report.nodes?.[subject.key] : undefined;
-  const words = [message ? finding.message : null, node ? [node.label, node.name].filter(Boolean).join(' ') : null].filter(Boolean).join(' — ');
+  const words = [message ? finding.message : null, node?.name ?? null].filter(Boolean).join(' — ');
   return h(
     'li',
     { class: ['finding-line', finding.change === 'introduced' ? 'is-introduced' : null] },
+    h('span', { class: 'finding-label' }, node?.label ? tag(node.label) : null),
     h(
       'span',
       { class: 'finding-what', title: words || null },
       message ? h('span', { class: 'finding-own' }, finding.message, ' ') : null,
-      node ? h('span', { class: 'node' }, named(node)) : null,
+      node ? h('span', { class: 'node' }, nameOf(node)) : null,
     ),
-    finding.path ? h('code', { class: 'site' }, place(finding)) : null,
+    finding.path
+      ? h('code', { class: 'site', title: place(finding) }, h('span', { class: 'site-file' }, base(finding.path)), finding.line ? h('span', { class: 'site-line' }, `:${finding.line}`) : null)
+      : h('span'),
     reason ? h('span', { class: 'reason' }, `Left in place: ${reason}`) : null,
   );
 }

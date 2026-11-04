@@ -329,15 +329,21 @@ test('a findings view counts the errors and the findings at each severity, each 
   assert.equal(error.querySelector('.site code').textContent, 'spec/b.yaml:2');
   const first = view.querySelector('.finding-group[data-rule="LQ-005"]');
   assert.match(first.querySelector('summary').textContent, /LQ-005 info The text may hold more than one statement\./);
-  assert.equal(first.querySelector('.finding-line .site').textContent, 'spec/a.yaml:7');
+  const place = first.querySelector('.finding-line .site');
+  assert.equal(place.textContent, 'a.yaml:7', 'its file’s name and line');
+  assert.equal(place.getAttribute('title'), 'spec/a.yaml:7', 'its whole path on hover');
+  assert.equal(place.querySelector('.site-line').textContent, ':7');
+  assert.match(css, /\.site-file \{ min-width: 0; overflow: hidden; text-overflow: ellipsis; \}/, 'a long file name is cut');
+  assert.match(css, /\.site-line \{ flex: none; \}/, 'never its line');
   assert.match(view.querySelector('.base').textContent, /against develop/);
 });
 
 test('a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left', () => {
   const report = { check: { errors: [], findings: [finding({ change: 'preexisting' })], resolved: [finding({ rule: 'LQ-009' })] }, nodes: { n1: { label: 'AC-4', name: 'A link expires' } } };
   const view = drawn(findingsView(report, { reasons: [{ rule: 'LQ-005', key: 'n1', reason: 'one rule, said once' }] }));
-  assert.match(view.querySelector('.finding-line .node').textContent, /AC-4\s+A link expires/);
-  assert.equal(view.querySelector('.finding-group .finding-heading').textContent, 'There before');
+  assert.equal(view.querySelector('.finding-line .finding-label').textContent, 'AC-4');
+  assert.equal(view.querySelector('.finding-line .node').textContent, 'A link expires');
+  assert.equal(view.querySelector('.finding-group .finding-heading').textContent.trim(), 'There before (1)');
   assert.match(view.querySelector('.finding-line .reason').textContent, /one rule, said once/);
   assert.match(view.querySelector('.resolved summary').textContent, /1 resolved by the branch/);
 });
@@ -353,20 +359,22 @@ test('findings are grouped by rule from errors down to hints, each rule giving i
   assert.deepEqual(byRule(findings).map((group) => [group.rule, group.introduced.length, group.before.length]), [['LQ-002', 0, 1], ['LQ-008', 1, 2], ['LQ-009', 0, 1]]);
   const nodes = Object.fromEntries(['a', 'b', 'c', 'd', 'e'].map((key) => [key, { label: `AC-${key}`, name: `Node ${key}` }]));
   const view = drawn(findingsView({ check: { errors: [], findings, resolved: [] }, nodes }, { reasons: [] }));
-  assert.equal(view.querySelector('.finding-split').textContent, '1 new on this branch · 4 there before');
+  const marks = (/** @type {Element} */ within) => [...within.querySelectorAll('.count-mark')].map((mark) => [mark.textContent, mark.getAttribute('aria-label'), mark.getAttribute('title'), Boolean(mark.querySelector('svg path'))]);
+  assert.deepEqual(marks(view.querySelector('.finding-split')), [['1', '1 new on this branch', '1 new on this branch', true], ['4', '4 there before', '4 there before', true]], 'each count a number beside its icon, named');
   const groups = [...view.querySelectorAll('.finding-group')];
   assert.deepEqual(groups.map((group) => group.dataset.rule), ['LQ-002', 'LQ-008', 'LQ-009'], 'most severe first');
   const dupes = groups[1];
   assert.equal(dupes.querySelectorAll('.finding-message').length, 1, 'its message once');
-  assert.match(dupes.querySelector('summary .finding-counts').textContent, /1 new on this branch · 2 there before/);
+  assert.deepEqual(marks(dupes.querySelector('summary')).map(([, words]) => words), ['1 new on this branch', '2 there before']);
   assert.deepEqual(groups.map((group) => group.open), [false, true, false], 'open only where the branch introduced one');
-  assert.deepEqual([...dupes.querySelectorAll('.finding-heading')].map((heading) => heading.textContent), ['New on this branch', 'There before (2)']);
+  assert.deepEqual([...dupes.querySelectorAll('.finding-heading')].map((heading) => heading.textContent.trim()), ['New on this branch (1)', 'There before (2)']);
   assert.equal(dupes.querySelector('details.finding-before')?.open, false, 'beneath new findings, those there before are folded beneath their count');
   assert.equal(groups[0].querySelector('details.finding-before'), null, 'in a group of older findings alone, they are listed');
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
   assert.match(css, /\.finding-what \{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; \}/, 'one line, cut where it runs out of room');
-  assert.equal(dupes.querySelector('.finding-what')?.getAttribute('title'), 'AC-c Node c', 'its whole words on hover');
-  assert.deepEqual([...dupes.querySelectorAll('.finding-line .node')].map((node) => node.textContent.trim()), ['AC-c Node c', 'AC-a Node a', 'AC-e Node e'], 'the new first, each on one line');
+  assert.equal(dupes.querySelector('.finding-what')?.getAttribute('title'), 'Node c', 'its whole words on hover');
+  assert.deepEqual([...dupes.querySelectorAll('.finding-line')].map((line) => [line.querySelector('.finding-label').textContent, line.querySelector('.node').textContent]), [['AC-c', 'Node c'], ['AC-a', 'Node a'], ['AC-e', 'Node e']], 'the new first, each on one line');
+  assert.match(css, /\.finding-line \{ display: grid; grid-template-columns: 6\.5em minmax\(0, 1fr\) minmax\(0, 16em\);[^}]*border-top: 1px solid var\(--line\); \}/, 'columns aligned from line to line, a hairline between');
 });
 
 test('a check with no error and no finding says that the specification is clean', () => {
