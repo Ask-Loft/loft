@@ -24646,11 +24646,17 @@ links:
         name: "the_briefing_s_text_counts_what_it_leaves_out_within_2000_characters"
         body: ed4eec512b1ad07fcc9b23da8afcd421ea361b6fe39f376f56305558dffa7b28
   - node: 01a182b6-3c59-766a-a80e-37e7ac57cb5d
-    reviewed: 502d83cc261c4cd9dae4f22c078adae15fb1a350c12ccb8010eb3beb7f6b7ae5
+    reviewed: 8565e15f8125e84f32128b9e01489da769bc9071358ba4837d8632d4175611cc
     tests:
       - file: "crates/loft-cli/tests/yard_read_context.rs"
         name: "the_briefing_of_a_branch_with_no_yard_log_names_only_the_page_and_that_there_is_none"
-        body: a07b77fbe9177914678a124cc393290107a8e64f7dfa8e7a1895b37b84b4f60d
+        body: 81d8e6265cdd188bcb1dd290c05f6d6661a9612ceddea076041afdc2c49ea676
+  - node: 01a1a75a-9d00-7185-8c68-c2ae5de8cd94
+    reviewed: 5134473cd29b2a82f23c4d1405c086025c5f7453f918e2148562f92a580686e0
+    tests:
+      - file: "crates/loft-cli/tests/yard_read_context.rs"
+        name: "every_briefing_of_a_branch_tells_the_agent_to_follow_the_yard_skill"
+        body: 75e6a38ac1644f47bb32567890d9e723a4194cbac4ef05be01fb0d2d26804663
   - node: 01a182b6-3c59-766a-a80e-37e807efebd5
     reviewed: 092cf90d085e8bde29283960d08a797b63cbd40ede3f1cfa8432931e2de89cfd
     tests:
@@ -31684,11 +31690,11 @@ links:
         name: "the_briefing_s_text_counts_what_it_leaves_out_within_2000_characters"
         body: ed4eec512b1ad07fcc9b23da8afcd421ea361b6fe39f376f56305558dffa7b28
   - node: 01a1646f-546c-7521-9643-bc652c97d270
-    reviewed: 6c3058de595e0fc50b301f0bbe28ef73f0d071bf1a2619f48d4b14e0eb996cda
+    reviewed: 4bc42689c3fd2abc6c42d368986b79c89e13e558bc51cb0710c2f2a4d71732df
     tests:
       - file: "crates/loft-cli/tests/yard_read_context.rs"
         name: "the_briefing_of_a_branch_with_no_yard_log_names_only_the_page_and_that_there_is_none"
-        body: a07b77fbe9177914678a124cc393290107a8e64f7dfa8e7a1895b37b84b4f60d
+        body: 81d8e6265cdd188bcb1dd290c05f6d6661a9612ceddea076041afdc2c49ea676
   - node: 01a1646f-546c-7521-9643-bc668f484c8e
     reviewed: 5569a32fe07c9c59504335a6604a6e87e43612e0ae29bc5e09400339b8bb94df
     tests:
