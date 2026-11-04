@@ -50,6 +50,15 @@ everything 2.3.0 will hold.
   scrolling on its own, with the stage and block chosen kept in the address and a splitter whose
   width the browser keeps. Labels, change chips and a decision's table follow Loft Web's marks,
   and only what floats over the page keeps a hard shadow.
+- The Yard page draws a `spec-change` view and each flowchart of a block's Markdown itself, laid
+  out by ELK in the page's own marks. A spec change is a compact map of nested panels and chips
+  in its block and full cards once expanded, each changed box saying how in a word and a colour,
+  and pointing at a box outlines what it joins. Questions are cards, three to a row, with the
+  person's own words beneath and a button that clears the choice. A `findings` view groups its
+  findings by rule, counting those new on the branch and those there before, one aligned line
+  each; a `decision` view lists its options once, as a compact table of ratings, with its outcome
+  first. The pane holds its stage within 900 pixels, and the list and the pane keep their scroll
+  while the Yard Log changes.
 - A document can be connected to a remote that publishes it for everyone who works on it.
   `loft remote set <address>` signs you in, connects the document (creating it on the remote and
   importing the states the repository has already published), and names the address in the
