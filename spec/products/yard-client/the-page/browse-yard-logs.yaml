@@ -206,6 +206,10 @@ requirements:
         name: "The address names the stage and the block chosen, so that a reload or a link opens them again."
       - key: 01a1a7a4-51ce-73b8-bd34-87bce0e85c7f
         name: "The list and the pane beside it each scroll on their own."
+      - key: 01a1a856-9e14-7124-a2ea-8d787f68be15
+        name: "A change to the Yard Log, drawn again, leaves the list and the pane scrolled where they were, and brings no block into view."
+      - key: 01a1a856-9e14-7124-a2ea-8d79ddaf440d
+        name: "Beneath a stage of the list, each block's row gives its kind as a small light icon before its title, an `L` for a `loft` block, which names the kind to a reader and while the pointer rests on it."
       - key: 01a1a7a4-51ce-73b8-bd34-87bda9d6693e
         name: "A stage's row in the list gives the count of its blocks that wait on the person and the count of its blocks marked since the last visit."
       - key: 01a1a7a4-51ce-73b8-bd34-87be8a0c6fed
