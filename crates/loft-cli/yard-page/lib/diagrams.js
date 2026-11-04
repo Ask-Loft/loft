@@ -6,10 +6,13 @@
 // framed by a hairline on the page's ground; and each diagram on the page is drawn again when the
 // browser changes its scheme. A flowchart of a block's Markdown is drawn by the page itself, over
 // ELK (`flowchart.js`), in classes the stylesheet colours, so a change of scheme recolours it
-// without laying it out again; the diagrams the page builds itself stay with Mermaid. Each diagram drawn has a button
-// that expands it into the page's modal, where it zooms and pans.
+// without laying it out again; so is a diagram the page builds itself, given as a drawing that
+// draws its own SVG. A diagram the page draws keeps its own size, scrolling sideways where it is
+// wider than its block, and brings a node's neighbours forward under the pointer. Each diagram
+// drawn has a button that expands it into the page's modal, where it zooms and pans.
 
 import { h } from './dom.js';
+import { emphasis } from './emphasis.js';
 import { FLOWCHART, drawFlowchart } from './flowchart.js';
 import * as modal from './modal.js';
 import { zoomStage } from './zoom.js';
@@ -135,35 +138,59 @@ const turns = new WeakMap();
 const EXPANDED = new WeakSet();
 
 /**
- * Draws `source` into `target`, or the source that `source` makes from the colours of the
- * scheme, with a button that expands it; where it does not parse, shows the source with a line
- * saying it could not be drawn, and no button.
+ * A diagram the page builds and draws itself: `draw` gives its SVG's markup, the same whatever
+ * the scheme, under `key`; `choose`, where given, is told the key of a node the person chooses.
+ * @typedef {{ key: string, draw: (id: string) => Promise<string>, choose?: (key: string) => void }} Drawing
+ */
+
+/**
+ * Shows `svg` in `target`: a diagram the page drew keeps its own size within a box that scrolls
+ * sideways, unless it is drawn expanded, and takes the hover layer.
  * @param {HTMLElement} target
- * @param {string | ((colours: Colours) => string)} source
+ * @param {string} svg
+ */
+function show(target, svg) {
+  target.innerHTML = svg;
+  const own = target.querySelector(':scope > svg.flow');
+  if (own && !EXPANDED.has(target)) {
+    const scroll = document.createElement('div');
+    scroll.className = 'diagram-scroll';
+    own.replaceWith(scroll);
+    scroll.append(own);
+  }
+  if (own) emphasis(target);
+  target.classList.add('is-drawn');
+  expandable(target);
+}
+
+/**
+ * Draws `source` into `target`: Mermaid's source, the source that `source` makes from the
+ * colours of the scheme, or a drawing; with a button that expands it. Where it cannot be drawn,
+ * shows its source with a line saying it could not be drawn, and no button.
+ * @param {HTMLElement} target
+ * @param {string | ((colours: Colours) => string) | Drawing} source
  */
 export async function draw(target, source) {
   shown.set(target, source);
   const turn = (turns.get(target) ?? 0) + 1;
   turns.set(target, turn);
-  const text = typeof source === 'function' ? source(colours()) : source;
+  const drawing = typeof source === 'object' ? source : null;
+  if (drawing?.choose) chooser(target, drawing);
+  /** @type {string} */
+  const text = typeof source === 'object' ? '' : typeof source === 'function' ? source(colours()) : source;
   const flow = typeof source === 'string' && FLOWCHART.test(text);
-  const key = flow ? `flow\n${text}` : `${scheme()}\n${text}`;
+  const key = drawing ? `drawing\n${drawing.key}` : flow ? `flow\n${text}` : `${scheme()}\n${text}`;
   if (drawn.has(key)) {
-    target.innerHTML = drawn.get(key);
-    target.classList.add('is-drawn');
-    expandable(target);
+    show(target, drawn.get(key));
     return;
   }
   const id = `diagram-${(counter += 1)}`;
   try {
-    const library = await mermaid();
-    const svg = flow ? await drawFlowchart(library, text, id) : (await library.render(id, text)).svg;
+    const svg = drawing ? await drawing.draw(id) : flow ? await drawFlowchart(await mermaid(), text, id) : (await (await mermaid()).render(id, text)).svg;
     drawn.set(key, svg);
     if (drawn.size > KEPT) drawn.delete(drawn.keys().next().value);
     if (turns.get(target) !== turn) return;
-    target.innerHTML = svg;
-    target.classList.add('is-drawn');
-    expandable(target);
+    show(target, svg);
   } catch (error) {
     document.getElementById(id)?.remove();
     document.getElementById(`d${id}`)?.remove();
@@ -173,9 +200,37 @@ export async function draw(target, source) {
     const line = document.createElement('p');
     line.className = 'diagram-error';
     line.textContent = 'This diagram could not be drawn.';
-    target.replaceChildren(line, pre);
+    target.replaceChildren(line, ...(text ? [pre] : []));
     target.classList.add('is-failed');
   }
+}
+
+/** The targets whose nodes tell their drawing's `choose`, and the drawing each tells now. */
+const choosers = new WeakMap();
+
+/**
+ * Lets the person choose a node of the drawing in `target`, by the pointer or by Enter or Space,
+ * unless it is drawn expanded.
+ * @param {HTMLElement} target
+ * @param {Drawing} drawing
+ */
+function chooser(target, drawing) {
+  if (EXPANDED.has(target)) return;
+  const bound = choosers.has(target);
+  choosers.set(target, drawing);
+  if (bound) return;
+  /** @param {Event} event */
+  const keyOf = (event) => /** @type {Element | null} */ (event.target)?.closest?.('[data-key][role="button"]')?.getAttribute('data-key') ?? null;
+  target.addEventListener('click', (event) => {
+    const key = keyOf(event);
+    if (key) choosers.get(target)?.choose?.(key);
+  });
+  target.addEventListener('keydown', (event) => {
+    const key = keyOf(event);
+    if (!key || (event.key !== 'Enter' && event.key !== ' ')) return;
+    event.preventDefault();
+    choosers.get(target)?.choose?.(key);
+  });
 }
 
 /**

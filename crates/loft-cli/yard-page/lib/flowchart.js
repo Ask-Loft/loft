@@ -31,16 +31,17 @@ function elk() {
 }
 
 /**
- * Measures labels as the page's stylesheet sets a flowchart's text: in an SVG of the class
- * `flow` laid off the page.
- * @returns {{ measure: (lines: string[]) => { width: number, height: number }, done: () => void }}
+ * Measures text as the page's stylesheet sets a diagram's text: in an SVG of the class `flow`
+ * laid off the page, in the class `kind` (a node's label where none is given).
+ * @returns {{ measure: (lines: string[], kind?: string) => { width: number, height: number }, done: () => void }}
  */
-function ruler() {
+export function ruler() {
   const text = svg('text', { class: 'flow-label' });
   const root = svg('svg', { class: 'flow', width: 0, height: 0, 'aria-hidden': 'true', style: 'position:absolute;left:-9999px;top:0;visibility:hidden' }, text);
   document.body.append(root);
   return {
-    measure: (lines) => {
+    measure: (lines, kind = 'flow-label') => {
+      text.setAttribute('class', kind);
       let width = 0;
       for (const line of lines) {
         text.textContent = line || ' ';
@@ -51,6 +52,9 @@ function ruler() {
     done: () => root.remove(),
   };
 }
+
+/** @returns {Promise<any>} ELK's layout engine, loaded the first time it is asked for. */
+export const layoutEngine = () => elk();
 
 /**
  * The SVG of the flowchart `text`, drawn by the page.

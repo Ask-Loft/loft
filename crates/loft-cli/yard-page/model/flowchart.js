@@ -20,6 +20,9 @@ const SHAPES = {
 /** The room around a label inside its node, and the height of one line, in pixels. */
 export const PAD = { x: 16, y: 10, line: 18 };
 
+/** The room a group's title takes above its nodes, and beside them, in pixels. */
+export const TITLE = { top: 36, side: 16 };
+
 /** ELK's direction for each of Mermaid's. */
 const DIRECTIONS = { TB: 'DOWN', TD: 'DOWN', BT: 'UP', LR: 'RIGHT', RL: 'LEFT' };
 
@@ -83,7 +86,8 @@ export function sizeOf(shape, text) {
  * @param {{ nodes: any[], edges: any[] }} data `getData()` of Mermaid's flowchart database
  * @param {Record<string, string[]>} classes each `classDef`'s styles, by its name
  * @param {string} direction Mermaid's direction: TB, TD, BT, LR or RL
- * @param {(lines: string[]) => { width: number, height: number }} measure a label's size
+ * @param {(lines: string[], kind?: string) => { width: number, height: number }} measure a label's
+ *   size, as the class `kind` sets it (a node's label where none is given)
  */
 export function graphOf(data, classes, direction, measure) {
   /** @type {Map<string, any>} */
@@ -111,11 +115,18 @@ export function graphOf(data, classes, direction, measure) {
   for (const node of data.nodes) {
     const text = lines(node.label);
     if (node.isGroup) {
+      // A group's title is set in capitals, and the group is at least as wide as it.
+      const title = text.join(' ').toUpperCase();
+      const wide = measure([title], 'flow-group-title').width + 2 * TITLE.side;
       elkNodes.set(node.id, {
         id: node.id,
-        title: text.join(' '),
+        title,
         group: true,
-        layoutOptions: { 'elk.padding': '[top=36,left=16,bottom=16,right=16]' },
+        layoutOptions: {
+          'elk.padding': `[top=${TITLE.top},left=${TITLE.side},bottom=${TITLE.side},right=${TITLE.side}]`,
+          'elk.nodeSize.constraints': 'MINIMUM_SIZE',
+          'elk.nodeSize.minimum': `(${Math.ceil(wide)},${TITLE.top + TITLE.side})`,
+        },
         children: [],
       });
       continue;
@@ -175,6 +186,8 @@ export function placed(laid) {
       const label = edge.labels?.[0];
       edges.push({
         id: edge.id,
+        from: edge.sources?.[0],
+        to: edge.targets?.[0],
         points,
         pattern: edge.pattern,
         arrowEnd: Boolean(edge.arrowEnd),

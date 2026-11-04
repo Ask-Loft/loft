@@ -123,15 +123,18 @@ test('an edge’s label lies in a pill beside its edge', async () => {
   assert.ok(label && label.width >= measure(['go']).width, 'wide enough for its text');
 });
 
-test('a subgraph is a panel titled in small text, holding its nodes', async () => {
+test('a subgraph is a panel titled in small muted monospace capitals, holding its nodes', async () => {
   const { groups, nodes } = await laid();
   const [group] = groups;
-  assert.equal(group.title, 'The group');
+  assert.equal(group.title, 'THE GROUP');
+  assert.ok(group.width >= measure(['THE GROUP']).width + 32, 'at least as wide as its title');
   const inside = nodes.find((node) => node.id === 'C');
   assert.ok(inside.x >= group.x && inside.x + inside.width <= group.x + group.width, 'its node lies within it across');
   assert.ok(inside.y >= group.y + 20 && inside.y + inside.height <= group.y + group.height, 'and below its title');
   const drawn = flowchartSvg(await laid(), 'f4');
-  assert.equal(drawn.querySelector('.flow-group .flow-group-title')?.textContent, 'The group');
+  assert.equal(drawn.querySelector('.flow-group .flow-group-title')?.textContent, 'THE GROUP');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.flow \.flow-group-title \{ fill: var\(--muted\); font-family: var\(--mono\); font-size: 11px;/);
 });
 
 test('the flowchart keeps its direction', async () => {
@@ -161,4 +164,24 @@ test('each node is a flat card with a hairline border on the sidebar’s ground,
   assert.match(css, /\.flow text \{ font-family: var\(--font\); font-size: 13px; \}/);
   assert.match(css, /\.flow-label \{ fill: var\(--ink\); \}/);
   assert.ok(!/filter|drop-shadow/.test(css.match(/\.flow-node[^}]*\}/g)?.join('') ?? ''), 'flat: no shadow');
+});
+
+test('a subgraph is at least as wide as its title, however narrow its nodes', async () => {
+  const data = {
+    nodes: [
+      { id: 'S', label: 'A title much longer than the one node it holds', shape: 'rect', isGroup: true },
+      { id: 'A', label: 'a', shape: 'squareRect', parentId: 'S', cssStyles: [], cssClasses: '' },
+    ],
+    edges: [],
+  };
+  const { groups } = placed(await new ELK().layout(graphOf(data, {}, 'LR', measure)));
+  assert.ok(groups[0].width >= measure(['A TITLE MUCH LONGER THAN THE ONE NODE IT HOLDS']).width + 32);
+});
+
+test('each edge and its label name the nodes they join, for the hover layer', async () => {
+  const drawn = flowchartSvg(await laid(), 'f6');
+  const edge = drawn.querySelector('path.flow-edge');
+  assert.equal(edge?.getAttribute('data-from'), 'A');
+  assert.equal(edge?.getAttribute('data-to'), 'B');
+  assert.equal(drawn.querySelector('.flow-pill')?.getAttribute('data-to'), 'B');
 });

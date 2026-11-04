@@ -5,7 +5,7 @@
 // flowchart without laying it out again; only a node's own `style` or `classDef` is written on it.
 
 import { svg } from '../lib/dom.js';
-import { PAD, pathOf } from '../model/flowchart.js';
+import { PAD, TITLE, pathOf } from '../model/flowchart.js';
 
 /** The room around the flowchart, and the radius of an edge's elbows, in pixels. */
 const MARGIN = 8;
@@ -67,8 +67,10 @@ function nodeOf(node) {
  * @param {string} marker the id of the arrowhead's marker
  */
 function edgeOf(edge, marker) {
+  const ends = { 'data-from': edge.from, 'data-to': edge.to };
   const path = svg('path', {
     class: `flow-edge flow-edge--${edge.pattern}`,
+    ...ends,
     d: pathOf(edge.points, ELBOW),
     'marker-end': edge.arrowEnd ? `url(#${marker})` : null,
     'marker-start': edge.arrowStart ? `url(#${marker}-start)` : null,
@@ -76,7 +78,7 @@ function edgeOf(edge, marker) {
   const pill = edge.label
     ? svg(
         'g',
-        { class: 'flow-pill' },
+        { class: 'flow-pill', ...ends },
         svg('rect', { x: edge.label.x, y: edge.label.y, width: edge.label.width, height: edge.label.height, rx: edge.label.height / 2, ry: edge.label.height / 2 }),
         label(edge.label.lines, edge.label.x + edge.label.width / 2, edge.label.y + edge.label.height / 2, 'flow-pill-label'),
       )
@@ -121,7 +123,7 @@ export function flowchartSvg(layout, id) {
         'g',
         { class: 'flow-group', 'data-id': group.id },
         svg('rect', { x: group.x, y: group.y, width: group.width, height: group.height }),
-        svg('text', { class: 'flow-group-title', x: group.x + 12, y: group.y + 20 }, group.title),
+        svg('text', { class: 'flow-group-title', x: group.x + TITLE.side, y: group.y + 22 }, group.title),
       ),
     ),
     edges.map((edge) => edge.path),

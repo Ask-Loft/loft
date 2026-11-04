@@ -1424,7 +1424,7 @@ test('a flowchart is drawn by the page in its own design, with orthogonal edges 
   const flow = page.locator('#block-flowed svg.flow');
   await expect(flow).toBeVisible({ timeout: 10_000 });
   await expect(flow.locator('.flow-node')).toHaveCount(4);
-  await expect(flow.locator('.flow-group .flow-group-title')).toHaveText('Later work');
+  await expect(flow.locator('.flow-group .flow-group-title')).toHaveText('LATER WORK');
   await expect(flow.locator('.flow-pill')).toHaveCount(3);
   const checked = await flow.evaluate((svg) => {
     const straight = [...svg.querySelectorAll('path.flow-edge')].every((path) => {
@@ -1471,4 +1471,26 @@ test('the cards of a question’s options stand side by side in a wide window an
     await expect(form.locator('.question-state')).toHaveText('Not chosen yet');
   }
   await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join', async ({ page }) => {
+  const chain = Array.from({ length: 9 }, (_, n) => `  s${n}[Step ${n} of a long chain] --> s${n + 1}[Step ${n + 1} of a long chain]`).join('\n');
+  write([{ id: 'wide-flow', kind: 'note', stage: 'shape', title: 'A wide flow', markdown: `\`\`\`mermaid\nflowchart LR\n${chain}\n\`\`\`` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'shape');
+  const flow = page.locator('#block-wide-flow svg.flow');
+  await expect(flow).toBeVisible({ timeout: 10_000 });
+  const scroll = page.locator('#block-wide-flow .diagram-scroll');
+  const sizes = await scroll.evaluate((element) => ({ client: element.clientWidth, scroll: element.scrollWidth }));
+  expect(sizes.scroll).toBeGreaterThan(sizes.client);
+  // Drawn at its own size: a label's 13 pixels are 13 on the screen.
+  const label = flow.locator('.flow-label').first();
+  expect(await label.evaluate((element) => /** @type {SVGGraphicsElement} */ (element).getBoundingClientRect().height)).toBeGreaterThan(12);
+  expect(await colour(label, 'font-size')).toBe('13px');
+  await flow.locator('.flow-node[data-id="s0"]').hover();
+  await expect.poll(() => colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('0.25');
+  expect(await colour(flow.locator('.flow-node[data-id="s1"]'), 'opacity')).toBe('1');
+  await page.mouse.move(0, 0);
+  await expect.poll(() => colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('1');
 });

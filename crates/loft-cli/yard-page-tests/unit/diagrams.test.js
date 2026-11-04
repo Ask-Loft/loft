@@ -8,7 +8,7 @@ import { gunzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
 
-import { drawAll, theme } from '../../yard-page/lib/diagrams.js';
+import { draw, drawAll, theme } from '../../yard-page/lib/diagrams.js';
 import { h } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
 import { loftView } from '../../yard-page/views/loft/index.js';
@@ -357,4 +357,48 @@ test('a flowchart drawn again, as a change of scheme draws it, is not laid out a
   }
   assert.equal(parses, first, 'the drawing kept is reused, whatever the scheme');
   assert.ok(again.querySelector('.diagram svg.flow'));
+});
+
+test('a flowchart is drawn at its own size within a box that scrolls sideways, and at its own size when expanded', async () => {
+  const note = noteWith('Wide', 'flowchart LR\n  A --> B');
+  drawAll(note);
+  await settled(400);
+  const scroll = note.querySelector('.diagram > .diagram-scroll');
+  assert.ok(scroll?.querySelector(':scope > svg.flow'), 'the drawing lies in its scroll box');
+  assert.ok(note.querySelector('.diagram > .diagram-expand'), 'the button stays outside the box, which does not move it');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.diagram svg\.flow \{ max-width: none;/, 'never scaled down to fit');
+  assert.match(css, /\.diagram-scroll \{ overflow-x: auto;[^}]*overscroll-behavior-x: none; overscroll-behavior-y: auto;/);
+  /** @type {HTMLElement} */ (note.querySelector('.diagram-expand')).click();
+  await settled(400);
+  assert.ok(dialog().querySelector('.zoom-content > svg.flow'), 'expanded, it is the zoom stage that moves it');
+});
+
+test('a drawing the page builds is drawn once, whatever the scheme, and tells it which node the person chose', async () => {
+  let draws = 0;
+  const chosen = [];
+  const drawing = {
+    key: 'a-drawing',
+    draw: async () => {
+      draws += 1;
+      return '<svg class="flow" viewBox="0 0 10 10"><g class="spec-card" data-id="n" data-key="k1" role="button" tabindex="0"><rect/></g></svg>';
+    },
+    choose: (/** @type {string} */ key) => chosen.push(key),
+  };
+  const target = h('div', { class: 'diagram' });
+  document.body.firstElementChild.append(target);
+  await draw(target, drawing);
+  const before = globalThis.matchMedia;
+  globalThis.matchMedia = /** @type {any} */ ((query) => ({ matches: !before?.(query)?.matches, addEventListener() {} }));
+  try {
+    await draw(target, drawing);
+  } finally {
+    globalThis.matchMedia = before;
+  }
+  assert.equal(draws, 1);
+  const card = /** @type {HTMLElement} */ (target.querySelector('[data-key="k1"]'));
+  card.dispatchEvent(new Event('click', { bubbles: true }));
+  card.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  card.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  assert.deepEqual(chosen, ['k1', 'k1'], 'by the pointer and by Enter, not by another key');
 });

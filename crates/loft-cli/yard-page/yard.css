@@ -758,7 +758,10 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 /* A flowchart the page draws itself: flat cards with hairline borders on the sidebar's ground, the
    page's face at 13 pixels in ink, edges in muted ink, their labels in pills and groups as panels
    on the page's ground, each framed by a hairline. */
-.diagram svg.flow { max-width: 100%; height: auto; font-family: var(--font); overflow: visible; }
+/* A diagram the page draws keeps its own size, so that its text stays at 13 pixels: one wider than
+   its block scrolls sideways within it. */
+.diagram svg.flow { max-width: none; height: auto; font-family: var(--font); overflow: visible; display: block; }
+.diagram-scroll { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: none; overscroll-behavior-y: auto; padding-bottom: 4px; }
 .flow text { font-family: var(--font); font-size: 13px; }
 .flow-node :is(rect, polygon, circle) { fill: var(--side); stroke: var(--rail); stroke-width: 1px; }
 .flow-label { fill: var(--ink); }
@@ -769,7 +772,12 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .flow-pill rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
 .flow-pill-label { fill: var(--body); font-size: 12px; }
 .flow-group rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
-.flow-group-title { fill: var(--muted); font-size: 12px; font-weight: 500; }
+.flow .flow-group-title { fill: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
+/* Pointing at a node brings it, its edges and its neighbours forward, and fades the rest. */
+.flow :is(.flow-node, .flow-edge, .flow-pill, .spec-card) { transition: opacity 120ms ease; }
+.flow.is-emphasis :is(.flow-node, .flow-edge, .flow-pill, .spec-card):not(.is-near) { opacity: 0.25; }
+.flow.is-emphasis .flow-edge.is-near { stroke: var(--ink); }
+@media (prefers-reduced-motion: reduce) { .flow :is(.flow-node, .flow-edge, .flow-pill, .spec-card) { transition: none; } }
 .diagram-error { color: var(--danger); font-size: 13px; }
 /* A drawn diagram keeps a margin at its right for the button that expands it, which never covers it. */
 .diagram.is-drawn { padding-right: 48px; }
