@@ -17,7 +17,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bbca52bc4f23
         name: "A question that takes more than one option lets the person choose one or more."
       - key: 01a1646f-546c-7521-9643-bbcb591fde24
-        name: "Every question offers the person's own words as a selectable option, the last of its cards, lettered after its named options and holding its text field."
+        name: "Every question offers the person's own words as a selectable option, lettered after its named options, in a card of its own beneath the cards of its options and as wide as they are, holding its text field."
       - key: 01a17fef-700e-72d2-a706-77312594a4f4
         name: "The own-words option of a question that takes one option has a radio button in the same group as its named options."
       - key: 01a17fef-700e-72d2-a706-7732f76e866c
@@ -42,6 +42,8 @@ requirements:
         name: "Each option shows its detail."
       - key: 01a1a7e1-2b66-70b4-981e-7a9051f31e38
         name: "Clearing a question's choice deselects its options and its own words, and keeps the text the person typed."
+      - key: 01a1a823-8646-7346-9e17-367cc6db12b2
+        name: "A button beside the question's state, in its head, clears its choice, and is disabled while nothing is chosen."
   - key: 01a1646f-546c-7521-9643-bbcda4ebeec9
     statement:
       form: event_driven

@@ -47,7 +47,9 @@ requirements:
       - key: 01a1a814-5ac4-7523-9962-5acd501df9ef
         name: "Each box is a flat card headed by its kind's coloured square and its label in monospace, or its kind's name where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
       - key: 01a1a814-5ac4-7523-9962-5ace0ee365c5
-        name: "An added, changed or removed box or panel carries a bar at its left in its change's colour and its change in a word at its right; a removed one is also outlined dashed."
+        name: "An added, changed or removed box or panel carries a bar at its left in its change's colour and its change in a word at its right."
+      - key: 01a1a823-bcd4-7465-a368-65401608d872
+        name: "A removed box or panel is outlined dashed."
       - key: 01a1a814-5ac4-7523-9962-5acfa4c34f20
         name: "The bars of change are green `#199e70`, blue `#256abf` and red `#e34948` in a light scheme, and green `#199e70`, blue `#3987e5` and red `#e66767` in a dark one."
       - key: 01a1a814-5ac4-7523-9962-5ad00cc80371

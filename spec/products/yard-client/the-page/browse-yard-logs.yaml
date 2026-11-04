@@ -330,10 +330,16 @@ requirements:
         name: "The head of a question gives its header in small monospace capitals and, at its right, its state: not chosen yet, the options chosen, or its answer."
       - key: 01a1a7e1-2b66-70b4-981e-7a9328745df3
         name: "A question's prompt is its title, and its context lies beneath it."
+      - key: 01a1a823-8647-71dc-a940-bd041c4a1e74
+        name: "A question's prompt is set as a block's title is, at 15 pixels and semibold."
+      - key: 01a1a823-d964-77b1-8ed3-9bacdda8a798
+        name: "A question's header chip, its state, its options' labels and its answer are no larger than 14 pixels."
+      - key: 01a1a823-d964-77b1-8ed3-9bad6d86d0bd
+        name: "Nothing in a question is bolder than semibold."
       - key: 01a1a7e1-2b66-70b4-981e-7a94b97d8ed1
         name: "Each option is a card of its own, lettered A, B, C and on in a circle before its label, with its detail beneath, and a recommended option is marked as recommended beneath its label."
       - key: 01a1a7e1-2b66-70b4-981e-7a95a684080d
-        name: "The cards of the options stand side by side as far as the width allows, and one beneath another in a narrow window."
+        name: "The cards of the options stand side by side, at most three to a row, and one beneath another in a narrow window."
       - key: 01a1a7e1-2b66-70b4-981e-7a96621ff53a
         name: "The card of a chosen option is outlined in action blue."
       - key: 01a1a7e1-2b66-70b4-981e-7a9758c93481
