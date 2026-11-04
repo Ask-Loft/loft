@@ -43,6 +43,13 @@ everything 2.3.0 will hold.
 
 ## Unreleased
 
+- The Yard page wears Loft Web's design. A sidebar lists the Yard Logs under Loft's wordmark and
+  folds to a rail; beneath the branch shown lie its views, Timeline, Gantt chart and a new
+  Tokens view. The Yard Log shown has a head that names where it lies, sums up its stages and
+  holds its controls. The timeline is a list of stages beside a pane of the stage chosen, each
+  scrolling on its own, with the stage and block chosen kept in the address and a splitter whose
+  width the browser keeps. Labels, change chips and a decision's table follow Loft Web's marks,
+  and only what floats over the page keeps a hard shadow.
 - A document can be connected to a remote that publishes it for everyone who works on it.
   `loft remote set <address>` signs you in, connects the document (creating it on the remote and
   importing the states the repository has already published), and names the address in the

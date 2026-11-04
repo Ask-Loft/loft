@@ -38,17 +38,150 @@ async function deaf(page) {
   await page.route('**/api/stream', (route) => route.abort());
 }
 
-test('the person can fold and open each stage, the active one open and the planned one folded', async ({ page }) => {
+/** The button that folds the stage `id` in the list, and opens it. */
+function foldOf(page, id) {
+  return page.locator(`#row-${id} .fold-button`);
+}
+
+/** Chooses the stage `id` in the list, so that the pane shows it. */
+async function chooseStage(page, id) {
+  await page.locator(`#row-${id} .stage-choose`).click();
+  await expect(page.locator(`.stage-pane #block-${id}`)).toBeVisible();
+}
+
+test('in the list, the active stage is open to its blocks and the planned one folded, and the person folds and opens each', async ({ page }) => {
   await page.goto(address());
   await closeWaiting(page);
-  const shape = page.locator('#block-shape');
-  const build = page.locator('#block-build');
-  await expect(shape).toHaveAttribute('open', '');
-  await expect(build).not.toHaveAttribute('open', '');
-  await build.locator('summary').click();
-  await expect(build).toHaveAttribute('open', '');
-  await shape.locator('summary').click();
-  await expect(shape).not.toHaveAttribute('open', '');
+  const shape = foldOf(page, 'shape');
+  const build = foldOf(page, 'build');
+  await expect(shape).toHaveAttribute('aria-expanded', 'true');
+  await expect(build).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#row-build .block-rows')).toBeHidden();
+  await build.click();
+  await expect(build).toHaveAttribute('aria-expanded', 'true');
+  await shape.click();
+  await expect(shape).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#row-shape .block-rows')).toBeHidden();
+  await expect(page.locator('#row-shape .stage-choose')).toBeVisible();
+});
+
+test('choosing a stage shows it in the pane, choosing a block brings it into view marked, and the address keeps both through a reload', async ({ page }) => {
+  await page.goto(address());
+  await closeWaiting(page);
+  await expect(page.locator('.stage-pane #block-shape')).toBeVisible();
+  await page.locator('#row-build .stage-choose').click();
+  await expect(page.locator('.stage-pane #stage-title')).toHaveText(await page.locator('#row-build .stage-title').innerText());
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('stage')).toBe('build');
+  await page.locator('#row-shape .block-row[data-block="q1"]').click();
+  const card = page.locator('.stage-pane #block-q1');
+  await expect(card).toHaveClass(/is-picked/);
+  await expect(card).toBeInViewport();
+  const hash = new URLSearchParams(new URL(page.url()).hash.slice(1));
+  expect([hash.get('stage'), hash.get('block')]).toEqual(['shape', 'q1']);
+  await page.reload();
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await expect(page.locator('.stage-pane #block-q1')).toHaveClass(/is-picked/);
+});
+
+test('the list and the pane each scroll on their own beneath the head, and the page itself never scrolls', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 500 });
+  await page.goto(address());
+  await closeWaiting(page);
+  const pane = page.locator('.stage-pane');
+  const list = page.locator('.stage-list');
+  const head = await box(page.locator('#head'));
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  expect(await list.evaluate((element) => element.scrollTop)).toBe(0);
+  expect((await box(page.locator('#head'))).y).toBe(head.y);
+  await page.mouse.move(640, 300);
+  await page.mouse.wheel(0, 400);
+  expect(await page.evaluate(() => [window.scrollY, document.documentElement.scrollHeight <= window.innerHeight])).toEqual([0, true]);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('a change drawn leaves the list and the pane scrolled where they were, and brings the chosen block back into view only when it is chosen', async ({ page }) => {
+  write([{ id: 'scroll-tall', kind: 'note', stage: 'shape', title: 'A tall note', markdown: Array.from({ length: 60 }, (_, line) => `Line ${line + 1}.`).join('\n\n') }]);
+  await page.setViewportSize({ width: 1280, height: 360 });
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="q1"]').click();
+  const pane = page.locator('.stage-pane');
+  const list = page.locator('.stage-list');
+  await expect(page.locator('.stage-pane #block-q1')).toBeInViewport();
+  // The person scrolls the pane away from the block chosen, and the list to its end.
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await list.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  const was = { pane: await pane.evaluate((element) => element.scrollTop), list: await list.evaluate((element) => element.scrollTop) };
+  expect(was.pane).toBeGreaterThan(0);
+  expect(was.list).toBeGreaterThan(0);
+  await expect(page.locator('.stage-pane #block-q1')).not.toBeInViewport();
+  // An agent writes; the page draws the change.
+  write([{ id: 'scroll-tick', kind: 'note', stage: 'build', title: 'A change elsewhere', markdown: 'x' }]);
+  await expect(page.locator('#row-build .block-row[data-block="scroll-tick"]')).toHaveCount(1, { timeout: LIVE });
+  expect(await pane.evaluate((element) => element.scrollTop)).toBe(was.pane);
+  expect(await list.evaluate((element) => element.scrollTop)).toBe(was.list);
+  await expect(page.locator('.stage-pane #block-q1')).toHaveClass(/is-picked/);
+  // Choosing a block anew still brings it into view.
+  await page.locator('#row-shape .block-row[data-block="scroll-tall"]').click();
+  await expect(page.locator('.stage-pane #block-scroll-tall')).toBeInViewport();
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('on a wide window the pane holds its stage within 900 pixels, and a note’s text spans its block', async ({ page }) => {
+  write([{ id: 'wide-note', kind: 'note', stage: 'shape', title: 'A wide note', markdown: 'A sentence long enough to run past seventy-five characters on one line, and on, and on, and on, so that its measure shows.' }]);
+  await page.setViewportSize({ width: 2000, height: 900 });
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="wide-note"]').click();
+  await expect(page.locator('#block-wide-note')).toBeVisible();
+  // The page draws itself again as the note arrives, so each box is read once it can be measured.
+  const stage = await steadyBox(page.locator('.stage-pane > .stage'));
+  expect(stage.width).toBeLessThanOrEqual(900);
+  const text = await steadyBox(page.locator('#block-wide-note .prose > p').first());
+  const block = await steadyBox(page.locator('#block-wide-note'));
+  expect(text.width).toBeGreaterThan(700);
+  expect(block.x + block.width - (text.x + text.width)).toBeLessThan(40);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('a decision’s consequence reads as a paragraph at the width of its block, not in a narrow column', async ({ page }) => {
+  write([
+    { id: 'wide-q', kind: 'question', stage: 'shape', prompt: 'Which way?', header: 'Way', options: [{ label: 'Left', recommended: true }, { label: 'Right' }] },
+    { id: 'wide-d', kind: 'decision', stage: 'shape', question: 'wide-q', title: 'Left it is', consequence: 'The option grid ends with a card lettered after the options that holds the text field, and choosing it chooses it as one choice among the others.' },
+  ]);
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="wide-q"]').click();
+  const consequence = page.locator('#block-wide-q .consequence > *').first();
+  await expect(consequence).toBeVisible();
+  expect((await steadyBox(consequence)).width).toBeGreaterThan(400);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('the splitter narrows and widens the list by the keyboard and by a drag, and the next visit keeps the width', async ({ page }) => {
+  await page.goto(address());
+  await closeWaiting(page);
+  const list = page.locator('.stage-list');
+  const handle = page.getByRole('separator', { name: 'Width of the list of stages' });
+  const start = (await box(list)).width;
+  await handle.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(async () => (await box(list)).width).toBe(start + 16);
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(async () => (await box(list)).width).toBe(start - 16);
+  const grip = await box(handle);
+  await page.mouse.move(grip.x + 1, grip.y + 200);
+  await page.mouse.down();
+  await page.mouse.move(grip.x + 61, grip.y + 200, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(async () => (await box(list)).width).toBe(start + 44);
+  await page.reload();
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  expect((await box(list)).width).toBe(start + 44);
+  await page.evaluate(() => localStorage.removeItem('yard.split'));
 });
 
 test('choosing a listed branch opens its Yard Log at its own address', async ({ page }) => {
@@ -77,7 +210,7 @@ function colour(locator, property) {
 
 /** A box of the diagram drawn in the block `drawn`. */
 function diagramBox(page) {
-  return page.locator('#block-drawn svg g.node').first().locator('rect, path, polygon');
+  return page.locator('#block-drawn svg.flow .flow-node').first().locator('rect, polygon, circle');
 }
 
 test('in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours', async ({ page }) => {
@@ -86,44 +219,55 @@ test('in a browser that asks for a dark scheme, the page, its Gantt chart and it
   await closeWaiting(page);
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
-  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(24, 33, 43)');
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(16, 22, 29)');
+  expect(await colour(diagramBox(page), 'stroke')).toBe('rgb(74, 85, 97)');
+  expect(await colour(diagramBox(page), 'stroke-width')).toBe('1px');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
 
-/** The mark's Y and the header's switch of views in `scheme`, whose ink and action blue are given. */
-async function headerColours(page, scheme, ink, signal) {
+/** Loft's wordmark and the tab of the view shown in `scheme`, whose ink and action blue are given. */
+async function wordmarkColours(page, scheme, ink, signal) {
   await page.emulateMedia({ colorScheme: scheme });
   await page.goto(address());
   await closeWaiting(page);
-  expect(await colour(page.locator('.mark-initial'), 'color')).toBe(signal);
-  expect(await colour(page.locator('.mark-word'), 'color')).toBe(ink);
-  const shown = page.locator('header.top nav.views [aria-pressed="true"]');
+  expect(await colour(page.locator('.wordmark-initial'), 'color')).toBe(signal);
+  expect(await colour(page.locator('.wordmark'), 'color')).toBe(ink);
+  const shown = page.locator('#head .view-tab[aria-current="page"]');
   await expect(shown).toHaveText('Timeline');
   expect(await colour(shown, 'color')).toBe(ink);
-  expect(await colour(shown, 'text-decoration-line')).toBe('underline');
-  expect(await colour(shown, 'text-decoration-color')).toBe(signal);
-  const other = page.locator('header.top nav.views [aria-pressed="false"]');
-  expect(await colour(other, 'text-decoration-line')).toBe('none');
-  expect(await colour(other, 'border-top-width')).toBe('0px');
+  expect(await colour(shown, 'border-bottom-color')).toBe(signal);
+  const other = page.locator('#head .view-tab:not([aria-current])').first();
+  expect(await colour(other, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
 }
 
-test('in a light scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue', async ({ page }) => {
-  await headerColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)');
+test('in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue', async ({ page }) => {
+  await wordmarkColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)');
 });
 
-test('in a dark scheme, the mark’s Y is action blue and the rest ink, and the view shown in the header’s switch is ink underlined in action blue', async ({ page }) => {
-  await headerColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
+test('in a dark scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue', async ({ page }) => {
+  await wordmarkColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
 });
 
-test('the mark’s Y meets the rest of its name with no gap between them', async ({ page }) => {
+test('the wordmark’s L meets the rest of its name with no gap between them, and Yard stands on its baseline, muted', async ({ page }) => {
   await page.goto(address());
-  const gap = await page.locator('.mark-initial').evaluate((initial) => {
+  const gap = await page.locator('.wordmark-initial').evaluate((initial) => {
     const rest = document.createRange();
     rest.selectNodeContents(/** @type {Node} */ (initial.nextSibling));
     return rest.getBoundingClientRect().left - initial.getBoundingClientRect().right;
   });
   expect(Math.abs(gap)).toBeLessThan(1);
+  const baseline = (locator) =>
+    locator.evaluate((element) => {
+      const probe = document.createElement('span');
+      probe.style.cssText = 'display:inline-block;width:0;height:0;vertical-align:baseline';
+      element.append(probe);
+      const y = probe.getBoundingClientRect().top;
+      probe.remove();
+      return y;
+    });
+  expect(Math.abs((await baseline(page.locator('.wordmark'))) - (await baseline(page.locator('.app-name'))))).toBeLessThan(1);
+  expect(await colour(page.locator('.app-name'), 'color')).toBe(await colour(page.locator('.connection'), 'color'));
 });
 
 test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
@@ -132,7 +276,12 @@ test('in a browser that asks for a light scheme, the page, its Gantt chart and i
   await closeWaiting(page);
   expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
-  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(243, 247, 250)');
+  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(246, 249, 251)');
+  expect(await colour(diagramBox(page), 'stroke')).toBe('rgb(170, 178, 186)');
+  const label = page.locator('#block-drawn svg.flow .flow-label').first();
+  expect(await colour(label, 'font-size')).toBe('13px');
+  expect(await colour(label, 'fill')).toBe('rgb(14, 20, 29)');
+  expect(await colour(diagramBox(page), 'stroke-width')).toBe('1px');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
 });
@@ -146,7 +295,7 @@ test('when the browser changes its scheme, the open page and each diagram it dre
   });
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect.poll(() => colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
-  await expect.poll(() => colour(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(24, 33, 43)');
+  await expect.poll(() => colour(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(16, 22, 29)');
   expect(await page.evaluate(() => /** @type {any} */ (window).unreloaded)).toBe(true);
 });
 
@@ -210,7 +359,7 @@ test('a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and
   await expect.poll(() => zoomShown(page)).toBeGreaterThan(0);
   const before = await diagramOnScreen(page);
   const pointer = { x: before.x + before.width * 0.3, y: before.y + before.height * 0.6 };
-  const scrolled = await page.evaluate(() => window.scrollY);
+  const scrolled = await page.locator('.stage-pane').evaluate((element) => element.scrollTop);
   const fitted = await zoomShown(page);
   await page.mouse.move(pointer.x, pointer.y);
   // A pinch on a trackpad reaches Chromium as the wheel with Ctrl held.
@@ -237,7 +386,7 @@ test('a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and
   expect(dragged.x).toBeCloseTo(wheeled.x + 50, 0);
   expect(dragged.y).toBeCloseTo(wheeled.y + 30, 0);
 
-  expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+  expect(await page.locator('.stage-pane').evaluate((element) => element.scrollTop)).toBe(scrolled);
   expect(await diagramModal(page).locator('.modal-body').evaluate((body) => body.scrollTop)).toBe(0);
   await expect(stage).toBeVisible();
 });
@@ -292,20 +441,21 @@ test('the open submissions wait in a panel over a live page: not darkened, the p
   await page.goto(address());
   const panel = waitingModal(page);
   await expect(panel).toBeVisible();
-  await expect(panel.locator('.submission legend', { hasText: 'Which shelf?' })).toBeVisible();
+  await expect(panel.locator('.submission .prompt', { hasText: 'Which shelf?' })).toBeVisible();
   await expect(page.locator('#log .submission')).toHaveCount(0);
   expect(await panel.evaluate((dialog) => dialog.matches(':modal'))).toBe(false);
-  // A stage's fold above the panel takes the click, and the page scrolls under the wheel.
-  const shape = page.locator('#block-shape');
-  const fold = /** @type {{ x: number, y: number }} */ (await shape.locator(':scope > summary').boundingBox());
+  // A stage's fold above the panel takes the click, and the pane scrolls under the wheel.
+  const shape = foldOf(page, 'shape');
+  const fold = await box(shape);
   expect(fold.y).toBeLessThan((await box(panel)).y);
-  await page.mouse.click(fold.x + 10, fold.y + 5);
-  await expect(shape).not.toHaveAttribute('open', '');
-  await page.mouse.click(fold.x + 10, fold.y + 5);
-  await expect(shape).toHaveAttribute('open', '');
-  await page.mouse.move(640, 100);
+  await page.mouse.click(fold.x + 5, fold.y + 5);
+  await expect(shape).toHaveAttribute('aria-expanded', 'false');
+  await page.mouse.click(fold.x + 5, fold.y + 5);
+  await expect(shape).toHaveAttribute('aria-expanded', 'true');
+  const pane = page.locator('.stage-pane');
+  await page.mouse.move((await box(pane)).x + 200, (await box(pane)).y + 60);
   await page.mouse.wheel(0, 200);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   await expect(page.locator('.gantt-frame')).toBeVisible();
   await expect(panel).toBeVisible();
@@ -360,11 +510,22 @@ test('the Markdown, the prompt and the options of each block in the panel span t
     // Each text fills the box it lies in, and the box is most of the panel's width: far more than
     // a measure of 75 characters, about 700 pixels here. The plan, the question's prompt and
     // context, and each option's detail.
-    const texts = await panel.locator('.prose > p, .prompt, legend', { hasText: 'The plan reads' }).all();
-    expect(texts.length).toBeGreaterThanOrEqual(5);
-    for (const text of texts) {
+    const texts = await panel.locator('.prose > p, .prompt', { hasText: 'The plan reads' }).filter({ hasNot: page.locator('xpath=ancestor::*[contains(@class, "option-card")]') }).all();
+    const spanning = [];
+    for (const text of texts) if (!(await text.evaluate((element) => Boolean(element.closest('.option-card'))))) spanning.push(text);
+    expect(spanning.length).toBeGreaterThanOrEqual(3);
+    for (const text of spanning) {
       expect(await text.evaluate((element) => getComputedStyle(element).maxWidth)).toBe('none');
       expect((await box(text)).width).toBeGreaterThan(room * 0.8);
+    }
+    // The options stand as cards across the panel, each detail filling its card.
+    const grid = panel.locator('.question-card', { has: page.locator('.prompt', { hasText: 'The plan reads' }) }).locator('.option-grid');
+    expect((await box(grid)).width).toBeGreaterThan(room * 0.8);
+    for (const card of await grid.locator('.option-card').all()) {
+      const detail = card.locator('.choice-detail p').first();
+      if (!(await detail.count())) continue;
+      expect(await detail.evaluate((element) => getComputedStyle(element).maxWidth)).toBe('none');
+      expect((await box(detail)).width).toBeGreaterThan((await box(card)).width * 0.8);
     }
     // The timeline keeps its measure.
     await closeWaiting(page);
@@ -379,9 +540,14 @@ test('while the panel is open, the page’s end scrolls above the panel, so no p
   await page.goto(address());
   const panel = waitingModal(page);
   await expect(panel).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const last = page.locator('#log > :last-child');
+  const pane = page.locator('.stage-pane');
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  const last = page.locator('.stage-pane .stage > :last-child');
   await expect.poll(async () => (await box(last)).y + (await box(last)).height).toBeLessThanOrEqual((await box(panel)).y);
+  const list = page.locator('.stage-list');
+  await list.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  const end = page.locator('.stage-list .stages > :last-child');
+  await expect.poll(async () => (await box(end)).y + (await box(end)).height).toBeLessThanOrEqual((await box(panel)).y);
 });
 
 test('the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent', async ({ page }) => {
@@ -393,7 +559,7 @@ test('the person closes the panel by its button or Escape and it stays closed th
   write([{ id: 'while-closed', kind: 'note', stage: 'shape', title: 'Written while it is closed', markdown: 'x' }]);
   await expect(page.locator('#block-while-closed')).toBeVisible({ timeout: LIVE });
   await expect(modal).toBeHidden();
-  const button = page.locator('.top #open-waiting');
+  const button = page.locator('#head #open-waiting');
   await expect(button).toHaveText('1 waits on you');
   await button.click();
   await expect(modal).toBeVisible();
@@ -410,15 +576,15 @@ test('the person closes the panel by its button or Escape and it stays closed th
   await expect(modal.locator('.submission')).toHaveCount(1, { timeout: LIVE });
 });
 
-test('the button that opens what waits lies in the page’s header after the switch of views, and stays in view while the Yard Log scrolls', async ({ page }) => {
+test('the button that opens what waits lies in the page’s head, and stays in view while the Yard Log scrolls', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto(address());
   await closeWaiting(page);
-  const button = page.locator('header.top #open-waiting');
+  const button = page.locator('#head #open-waiting');
   await expect(button).toHaveText('1 waits on you');
-  expect((await box(button)).x).toBeGreaterThan((await box(page.locator('header.top nav.views'))).x);
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  const pane = page.locator('.stage-pane');
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await expect(button).toBeInViewport();
   await button.click();
   await expect(waitingModal(page)).toBeVisible();
@@ -459,28 +625,29 @@ test('a fold the person toggled stays so through a change and after a reload, an
   ]);
   await page.goto(address());
   await closeWaiting(page);
+  await chooseStage(page, 'shape');
   const note = page.locator('#block-kept-fold details');
-  const shape = page.locator('#block-shape');
-  const later = page.locator('#block-kept-stage');
+  const shape = foldOf(page, 'shape');
+  const later = foldOf(page, 'kept-stage');
   await note.locator('summary').click();
-  await shape.locator(':scope > summary').click();
-  await later.locator(':scope > summary').click();
+  await shape.click();
+  await later.click();
   const held = async () => {
     await expect(note).toHaveAttribute('open', '');
-    await expect(shape).not.toHaveAttribute('open', '');
-    await expect(later).toHaveAttribute('open', '');
+    await expect(shape).toHaveAttribute('aria-expanded', 'false');
+    await expect(later).toHaveAttribute('aria-expanded', 'true');
   };
   await held();
   write([{ id: 'kept-meanwhile', kind: 'stage', title: 'Written meanwhile', status: 'planned' }]);
-  await expect(page.locator('#block-kept-meanwhile')).toBeVisible({ timeout: LIVE });
+  await expect(page.locator('#row-kept-meanwhile')).toBeVisible({ timeout: LIVE });
   await held();
   await page.reload();
   await expect(page.locator('#log-title')).toBeVisible();
   await closeWaiting(page);
   await held();
   write([{ id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'done' }]);
-  await expect(later.locator('.status')).toHaveText('Done', { timeout: LIVE });
-  await expect(later).not.toHaveAttribute('open', '');
+  await expect(page.locator('#row-kept-stage .status')).toHaveText('Done', { timeout: LIVE });
+  await expect(later).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('an answer given in Claude Code shows within 2 seconds, and the count of what waits changes with it', async ({ page }) => {
@@ -497,7 +664,7 @@ test('an answer given in Claude Code shows within 2 seconds, and the count of wh
 
 test('the page sends every answer of a submission at once, and shows them given on the page', async ({ page }) => {
   await page.goto(address());
-  const panel = page.locator('.submission', { has: page.locator('legend', { hasText: 'Which colour?' }) });
+  const panel = page.locator('.submission', { has: page.locator('.prompt', { hasText: 'Which colour?' }) });
   const send = panel.getByRole('button', { name: 'Send answers' });
   await expect(send).toBeDisabled();
   await panel.locator('input[value="Blue"]').check();
@@ -516,7 +683,7 @@ test('the page shows the first answer with the channel it came from', async ({ p
   ask('q3', 'Which size?');
   await deaf(page);
   await page.goto(address());
-  const panel = page.locator('.submission', { has: page.locator('legend', { hasText: 'Which size?' }) });
+  const panel = page.locator('.submission', { has: page.locator('.prompt', { hasText: 'Which size?' }) });
   await expect(panel).toBeVisible();
   await panel.locator('input[value="Blue"]').check();
   answerInTerminal([{ block: 'q3', labels: ['Red'] }]);
@@ -644,39 +811,51 @@ test('the Gantt chart is chosen, kept for the next visit, follows changes, and f
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('the page begins at the window’s left and grows with the window up to 1800 pixels, any room beyond it at its right', async ({ page }) => {
-  const layout = page.locator('.layout');
+test('the page begins at the sidebar’s edge and reaches the right edge of the window, whatever its width', async ({ page }) => {
+  const side = page.locator('#side');
+  const shown = page.locator('.page');
   await page.goto(address());
-  for (const [window, wide] of [
-    [1280, 1280],
-    [2200, 1800],
-  ]) {
+  for (const window of [1280, 2200, 3000]) {
     await page.setViewportSize({ width: window, height: 900 });
-    await expect.poll(async () => (await layout.boundingBox())?.width).toBe(wide);
-    expect((await layout.boundingBox())?.x).toBe(0);
+    await expect.poll(async () => (await box(shown)).x + (await box(shown)).width).toBe(window);
+    const edge = await box(side);
+    expect((await box(shown)).x).toBe(edge.x + edge.width);
   }
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('the page keeps its width and its switch of views stays in place whichever view is shown', async ({ page }) => {
+test('the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto(address());
   const main = page.locator('#log');
-  const timeline = page.getByRole('button', { name: 'Timeline' });
+  const timeline = page.locator('#head .view-tab', { hasText: 'Timeline' });
   await timeline.click();
-  await expect(page.locator('ol.timeline')).toBeVisible();
-  await expect(page.locator('header.top nav.views').getByRole('button', { name: 'Timeline' })).toBeVisible();
-  expect((await box(timeline)).x).toBeGreaterThan((await box(page.locator('header.top .mark'))).x);
-  const before = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
-  await page.getByRole('button', { name: 'Gantt chart' }).click();
-  await expect(page.locator('.gantt')).toBeVisible();
-  const after = { main: await main.boundingBox(), switch: await timeline.boundingBox() };
-  expect(after.main?.width).toBe(before.main?.width);
-  expect(after.switch?.x).toBe(before.switch?.x);
-  expect(after.switch?.y).toBe(before.switch?.y);
-  await page.getByRole('button', { name: 'Timeline' }).click();
+  await expect(page.locator('.timeline .stage-list')).toBeVisible();
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'build');
+  await expect(page.locator('#side [data-view]')).toHaveCount(0);
+  // The head is drawn again at each change, so each box is read once it can be measured.
+  const before = { main: await steadyBox(main), entry: await steadyBox(timeline) };
+  for (const view of ['Gantt chart', 'Tokens']) {
+    await page.locator('#head .view-tab', { hasText: view }).click();
+    await expect(page.locator(view === 'Tokens' ? '.tokens' : '.gantt')).toBeVisible();
+    const after = { main: await steadyBox(main), entry: await steadyBox(timeline) };
+    expect(after.main.width).toBe(before.main.width);
+    expect(after.entry.x).toBe(before.entry.x);
+    expect(after.entry.y).toBe(before.entry.y);
+  }
+  await timeline.click();
+  await expect(page.locator('.stage-pane #block-build')).toBeVisible();
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('stage')).toBe('build');
   await page.setViewportSize({ width: 1280, height: 900 });
 });
+
+/** The box of what `locator` finds, read again while it is being drawn anew and has none. */
+async function steadyBox(locator) {
+  let found = null;
+  await expect.poll(async () => (found = await locator.boundingBox())).not.toBeNull();
+  return /** @type {{ x: number, y: number, width: number, height: number }} */ (found);
+}
 
 /** The box of what `locator` finds, which must be drawn. */
 async function box(locator) {
@@ -705,59 +884,65 @@ test('the inherited Yard Logs are folded beneath their count under the repositor
   await page.evaluate(() => localStorage.removeItem('yard.inherited'));
 });
 
-test('the menu runs down the window’s left from top to bottom, beside the page’s header, and stays while the Yard Log scrolls', async ({ page }) => {
+test('the sidebar runs down the window’s left from top to bottom, on a ground of its own, and stays while the Yard Log scrolls', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 400 });
   await page.goto(address());
   const side = page.locator('#side');
-  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toBeVisible();
+  await expect(side.locator('.wordmark-link')).toBeVisible();
   const menu = await box(side);
   expect([menu.x, menu.y, menu.height]).toEqual([0, 0, 400]);
-  expect((await box(page.locator('.top'))).x).toBe(menu.x + menu.width);
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  expect(await colour(side, 'background-color')).not.toBe(await colour(page.locator('body'), 'background-color'));
+  expect((await box(page.locator('.page'))).x).toBe(menu.x + menu.width);
+  await expect(side.locator('.connection')).toHaveText('Live');
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'shape');
+  const pane = page.locator('.stage-pane');
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   expect(Math.abs((await box(side)).y)).toBeLessThan(1);
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('folding the menu leaves a strip and gives its room to the page, which begins as near the strip as it lay to the menu, and the next visit keeps it folded', async ({ page }) => {
+test('folding the sidebar leaves a rail of its button, gives its room to the page, and the next visit keeps it folded', async ({ page }) => {
   await page.goto(address());
   const side = page.locator('#side');
   const main = page.locator('#log');
-  const header = page.locator('.top');
+  const shown = page.locator('.page');
   const open = await box(side);
   const gap = (await box(main)).x - (open.x + open.width);
-  const fold = page.getByRole('button', { name: 'Fold the menu of Yard Logs' });
+  const fold = page.getByRole('button', { name: 'Fold the sidebar' });
   await expect(fold).toHaveAttribute('aria-expanded', 'true');
   await fold.click();
-  await expect(page.locator('#menu-lists')).toBeHidden();
-  await expect(side.getByRole('heading', { name: 'Yard Logs' })).toHaveCount(0);
-  await expect.poll(async () => (await box(side)).width).toBe(58);
-  const strip = await box(side);
-  expect(strip.height).toBe(900);
-  expect((await box(header)).x).toBe(strip.x + strip.width);
-  expect((await box(main)).x).toBe(strip.x + strip.width + gap);
+  await expect(page.locator('#side-lists')).toBeHidden();
+  await expect(side.locator('.wordmark-link')).toHaveCount(0);
+  await expect(side.locator('.side-head button')).toHaveCount(1);
+  await expect.poll(async () => (await box(side)).width).toBe(68);
+  const rail = await box(side);
+  expect(rail.height).toBe(900);
+  expect((await box(shown)).x).toBe(rail.x + rail.width);
+  expect((await box(main)).x).toBe(rail.x + rail.width + gap);
   await page.reload();
-  const opener = page.getByRole('button', { name: /^Open the menu of Yard Logs/ });
+  const opener = page.getByRole('button', { name: /^Open the sidebar/ });
   await expect(opener).toHaveAttribute('aria-expanded', 'false');
-  expect((await box(side)).width).toBe(58);
+  expect((await box(side)).width).toBe(68);
   await opener.click();
-  await expect(page.locator('#menu-lists')).toBeVisible();
+  await expect(page.locator('#side-lists')).toBeVisible();
   await expect.poll(async () => (await box(main)).x).toBe(open.x + open.width + gap);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });
 
-test('in a window narrower than 860 pixels the open menu lies over the page, which keeps only the strip’s room', async ({ page }) => {
+test('in a window narrower than 860 pixels the open sidebar lies over the page, which keeps only the rail’s room', async ({ page }) => {
   await page.setViewportSize({ width: 700, height: 900 });
   await page.goto(address());
   const side = page.locator('#side');
   const menu = await box(side);
-  const header = await box(page.locator('.top'));
+  const shown = await box(page.locator('.page'));
   expect(menu.x).toBe(0);
-  expect(header.x).toBe(58);
-  expect(menu.x + menu.width).toBeGreaterThan(header.x + 200);
-  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
-  await expect.poll(async () => (await box(side)).width).toBe(58);
-  expect((await box(page.locator('.top'))).x).toBe(58);
+  expect(shown.x).toBe(68);
+  expect(menu.x + menu.width).toBeGreaterThan(shown.x + 120);
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(68);
+  expect((await box(page.locator('.page'))).x).toBe(68);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
   await page.setViewportSize({ width: 1280, height: 900 });
 });
@@ -854,7 +1039,7 @@ test('while the chart scrolls sideways its names stay in view, and while it scro
   expect((await frame.boundingBox())?.height ?? 0).toBeLessThanOrEqual(900);
 });
 
-test('the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the page', async ({ page }) => {
+test('the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the pane that holds it', async ({ page }) => {
   const frame = await openLongDay(page);
   const behaviour = await frame.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -862,12 +1047,13 @@ test('the chart’s frame does not rebound at its edges, and a scroll down it ca
   });
   expect(behaviour).toEqual(['none', 'auto']);
   await frame.evaluate((element) => (element.scrollTop = element.scrollHeight));
-  await page.evaluate(() => window.scrollTo(0, 0));
+  const main = page.locator('#log');
+  await main.evaluate((element) => element.scrollTo(0, 0));
   const box = await frame.boundingBox();
   if (!box) throw new Error('the chart has no frame');
   await page.mouse.move(box.x + box.width / 2, box.y + Math.min(box.height, 900 - box.y) / 2);
   await page.mouse.wheel(0, 400);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
 });
 
 test('every name stays inside the column, a long one cut short with an ellipsis', async ({ page }) => {
@@ -912,14 +1098,14 @@ test('dragging the column’s edge widens it within its bounds, and the next vis
   await page.evaluate(() => localStorage.removeItem('yard.gantt-names'));
 });
 
-test('folding the menu widens the Gantt chart into the room the menu left, and opening it narrows the chart again', async ({ page }) => {
+test('folding the sidebar widens the Gantt chart into the room the sidebar left, and opening it narrows the chart again', async ({ page }) => {
   const frame = await openLongDay(page);
   const width = () => frame.evaluate((element) => element.clientWidth);
   const before = await width();
   const menu = (await page.locator('#side').boundingBox())?.width ?? 0;
-  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
-  await expect.poll(width).toBe(before + menu - 58);
-  await page.getByRole('button', { name: /^Open the menu of Yard Logs/ }).click();
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
+  await expect.poll(width).toBe(before + menu - 68);
+  await page.getByRole('button', { name: /^Open the sidebar/ }).click();
   await expect.poll(width).toBe(before);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });
@@ -944,14 +1130,15 @@ test('choosing a stage in the Gantt chart opens the timeline at it', async ({ pa
   await page.goto(address());
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   await page.locator('.stage-name', { hasText: 'Shape the shelf' }).click();
-  await expect(page.locator('ol.timeline')).toBeVisible();
-  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('block')).toBe('shape');
-  await expect(page.locator('#block-shape')).toHaveAttribute('open', '');
-  await expect(page.locator('#block-shape')).toHaveClass(/is-picked/);
+  await expect(page.locator('.timeline .stage-list')).toBeVisible();
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('stage')).toBe('shape');
+  await expect(page.locator('.stage-pane #block-shape')).toBeVisible();
+  await expect(page.locator('#row-shape .stage-choose')).toHaveAttribute('aria-current', 'true');
 });
 
 test('an open page shows a counted request’s tokens within 2 seconds of the request’s end', async ({ page }) => {
   await page.goto(address());
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   await expect(page.locator('#tokens')).toBeVisible();
   const events = [
     { session: 's1', dir: setup.tree, at: since(-30), kind: 'turn.start' },
@@ -969,19 +1156,20 @@ test('an open page shows a counted request’s tokens within 2 seconds of the re
   await expect(page.locator('.token-totals dd').first()).toHaveAttribute('title', '4321', { timeout: LIVE });
 });
 
-test('the page draws the menu again only when the list, the Yard Log chosen or the menu’s fold changes', async ({ page }) => {
+test('the page draws the sidebar again only when the list, the Yard Log chosen, the view shown or the sidebar’s fold changes', async ({ page }) => {
   await page.goto(address());
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   const totals = page.locator('.token-totals dd').first();
   await expect(page.locator('#tokens')).toBeVisible();
   const before = await totals.getAttribute('title');
-  // A mark on the menu as drawn, which a menu drawn again does not carry.
-  await page.evaluate(() => document.querySelector('#side .menu-head')?.setAttribute('data-mark', 'drawn'));
-  const marked = page.locator('#side .menu-head[data-mark="drawn"]');
+  // A mark on the sidebar as drawn, which a sidebar drawn again does not carry.
+  await page.evaluate(() => document.querySelector('#side .side-head')?.setAttribute('data-mark', 'drawn'));
+  const marked = page.locator('#side .side-head[data-mark="drawn"]');
   const request = { session: 's1', dir: setup.tree, at: since(-1), kind: 'request', model: 'claude-opus-5-5', tokens: { input: 1111, cacheRead: 0, cacheWrite: 0, output: 1 } };
   expect((await postAsMod('/api/events', [request])).status).toBe(200);
   await expect.poll(() => totals.getAttribute('title'), { timeout: LIVE }).not.toBe(before);
   await expect(marked).toHaveCount(1);
-  await page.getByRole('button', { name: 'Fold the menu of Yard Logs' }).click();
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
   await expect(marked).toHaveCount(0);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
 });
@@ -1000,11 +1188,12 @@ test('Claude and Codex plans use the same Plan mode bands and approval explanati
     const form = waiting.locator('.decision-form').filter({ has: page.locator(`#approve-shared-plan-${id}`) });
     await expect(form.locator('.plan-mode')).toHaveText(copy);
     await form.getByRole('button', { name: 'Approve', exact: true }).click();
-    await expect(page.locator(`#block-shared-plan-${id} .verdict-word`)).toHaveText('Approved');
+    await chooseStage(page, `shared-${id}`);
+    await expect(page.locator(`#block-shared-plan-${id} .verdict-word`)).toHaveText('Approved', { timeout: LIVE });
   }
   if (await waiting.isVisible()) await closeWaiting(page);
   for (const id of ['claude', 'codex']) {
-    await page.locator(`#block-shared-${id} > summary`).click();
+    await chooseStage(page, `shared-${id}`);
     const band = page.locator('.mode-band--plan').filter({ has: page.locator(`#block-shared-plan-${id}`) });
     await expect(band).toHaveCount(1);
     await expect(band.locator('.mode-head')).toContainText('Plan mode');
@@ -1017,6 +1206,7 @@ test('Claude and Codex plans use the same Plan mode bands and approval explanati
 test('a Codex session whose cache writes were not measured shows them as unavailable, and its totals file stays as written', async ({ page }) => {
   const source = unmeasuredCodexTotals();
   await page.goto(address());
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   const row = page.locator('tbody[data-by="session"] tr').filter({ has: page.locator('code[title="unmeasured-cache-write"]') });
   await expect(row).toHaveCount(1);
   await expect(row.locator('td').nth(2)).toHaveText('Unavailable');
@@ -1034,8 +1224,7 @@ test('editing a card keeps its position and creation time while showing its upda
   ]);
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
-  const shape = page.locator('#block-shape');
-  if (await shape.getAttribute('open') === null) await shape.locator(':scope > summary').click();
+  await chooseStage(page, 'shape');
   const first = page.locator('#block-order-first');
   const meta = first.locator('.block-meta');
   await expect(meta).toContainText('Created');
@@ -1191,24 +1380,24 @@ test('free form checkboxes combine with named choices and keep selection indepen
   await expect(panel).toBeHidden({ timeout: LIVE });
 });
 
-test('token details start closed and keyboard choices survive live counts and reloads', async ({ page }) => {
+test('the tokens view shows its totals, table, coverage and note with no fold, its counts aligned and its bars thin, and live counts reach it', async ({ page }) => {
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#head .view-tab', { hasText: 'Tokens' }).click();
   const section = page.locator('#tokens');
-  const details = section.locator('details.token-details');
-  const summary = details.locator(':scope > summary');
   const totals = section.locator('.token-totals');
   await expect(totals).toBeVisible();
-  await expect(details).not.toHaveAttribute('open', '');
-  await expect(section.locator('.tokens-table')).toBeHidden();
-  await expect(section.locator('.reporting-coverage')).toBeHidden();
-  await expect(section.locator('.tokens-note')).toBeHidden();
-  await summary.focus();
-  await page.keyboard.press('Enter');
-  await expect(details).toHaveAttribute('open', '');
-  await expect(section.locator('.tokens-table')).toBeVisible();
-  await expect(section.locator('.reporting-coverage')).toBeVisible();
-  await expect(section.locator('.tokens-note')).toBeVisible();
+  await expect(section.locator('details, summary')).toHaveCount(0);
+  for (const part of ['.tokens-table', '.reporting-coverage', '.tokens-note']) await expect(section.locator(part)).toBeVisible();
+  expect(await colour(totals.locator('dd').first(), 'font-variant-numeric')).toBe('normal');
+  const count = section.locator('.tokens-table tbody td.number').first();
+  expect(await colour(count, 'font-variant-numeric')).toBe('tabular-nums');
+  expect(await colour(count, 'text-align')).toBe('right');
+  const bar = count.locator('.share');
+  expect((await box(bar)).height).toBe(4);
+  const shown = await box(count);
+  const tip = await box(count.locator('.share-fill'));
+  expect(tip.x).toBeGreaterThanOrEqual(shown.x);
   const before = Number(await totals.locator('dd').first().getAttribute('title'));
   const posted = await postAsMod('/api/events', [{
     session: 's1', dir: setup.tree, at: since(0), kind: 'request', model: 'claude-opus-5-5',
@@ -1216,17 +1405,7 @@ test('token details start closed and keyboard choices survive live counts and re
   }]);
   expect(posted.status).toBe(200);
   await expect(totals.locator('dd').first()).toHaveAttribute('title', String(before + 1), { timeout: LIVE });
-  await expect(details).toHaveAttribute('open', '');
-  await page.reload();
-  await expect(details).toHaveAttribute('open', '');
-  await expect(totals).toBeVisible();
-  await summary.focus();
-  await page.keyboard.press('Space');
-  await expect(details).not.toHaveAttribute('open', '');
-  await page.reload();
-  await expect(totals).toBeVisible();
-  await expect(details).not.toHaveAttribute('open', '');
-  await expect(section.locator('.tokens-table')).toBeHidden();
+  await expect(section.locator('.tokens-table')).toBeVisible();
 });
 
 
@@ -1243,10 +1422,11 @@ test('delegated tasks stay in their owner stage through parallel execution, inte
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
   await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  await chooseStage(page, 'delegated-stage');
   const original = page.locator('#block-delegated-stage');
   const card = original.locator('#block-delegated-a');
   await expect(card.locator('.task-assignee')).toHaveText('Assigned to codex / delegation-browser / worker-a (builder)');
-  await expect(original.locator(':scope > summary .owner')).toHaveText('main agent');
+  await expect(original.locator('.pane-kicker .owner')).toHaveText('main agent');
   const end = { session_id: session, cwd: setup.tree, hook_event_name: 'SubagentStop', agent_id: 'worker-a', agent_type: 'builder' };
   atEpoch(['codex', 'hook'], end, epoch + 20);
   await expect(card.locator('.state')).toHaveText('Open', { timeout: LIVE });
@@ -1275,4 +1455,220 @@ test('delegated tasks stay in their owner stage through parallel execution, inte
   await page.getByRole('button', { name: 'Timeline', exact: true }).click();
   await expect(original.locator('#block-delegated-a .task-assignee')).toContainText('worker-c');
   expect(await page.locator('#block-delegated-next #block-delegated-a').count()).toBe(0);
+});
+
+test('a line set in the face that stands in for Inter takes Inter’s width and height within 2 percent', async ({ page }) => {
+  await page.goto(address());
+  const sizes = await page.evaluate(async () => {
+    await document.fonts.load('400 15px "Inter"');
+    await document.fonts.load('600 15px "Inter"');
+    const line = 'The page draws each stage of a branch’s Yard Log, its goal and every block it holds.';
+    /** @param {string} family @param {number} weight */
+    const measure = (family, weight) => {
+      const span = document.createElement('span');
+      span.textContent = line;
+      span.style.cssText = `position:absolute;white-space:nowrap;font:${weight} 15px/normal ${family};`;
+      document.body.append(span);
+      const { width, height } = span.getBoundingClientRect();
+      span.remove();
+      return { width, height };
+    };
+    return [400, 600].map((weight) => ({ inter: measure('"Inter"', weight), fallback: measure('"Inter Fallback"', weight) }));
+  });
+  for (const { inter, fallback } of sizes) {
+    expect(Math.abs(fallback.width - inter.width) / inter.width).toBeLessThan(0.02);
+    expect(Math.abs(fallback.height - inter.height) / inter.height).toBeLessThan(0.02);
+  }
+});
+
+test('a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid', async ({ page }) => {
+  write([
+    { id: 'flowed', kind: 'note', stage: 'shape', title: 'A drawn flow', markdown: '```mermaid\nflowchart TD\n  ask[Ask the person] -->|answered| decide{Decide?}\n  decide -->|yes| build([Build it])\n  decide -.->|no| ask\n  subgraph later [Later work]\n    ship((Ship))\n  end\n  build ==> ship\n```' },
+    { id: 'talked', kind: 'note', stage: 'shape', title: 'A conversation', markdown: '```mermaid\nsequenceDiagram\n  Agent->>Person: asks\n  Person-->>Agent: answers\n```' },
+  ]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'shape');
+  const flow = page.locator('#block-flowed svg.flow');
+  await expect(flow).toBeVisible({ timeout: 10_000 });
+  await expect(flow.locator('.flow-node')).toHaveCount(4);
+  await expect(flow.locator('.flow-group .flow-group-title')).toHaveText('LATER WORK');
+  await expect(flow.locator('.flow-pill')).toHaveCount(3);
+  const checked = await flow.evaluate((svg) => {
+    const straight = [...svg.querySelectorAll('path.flow-edge')].every((path) => {
+      const steps = (path.getAttribute('d') ?? '').match(/[MLA][^MLA]*/g) ?? [];
+      /** @type {number[][]} */
+      const ends = steps.map((step) => step.trim().slice(1).trim().split(/[\s,]+/).map(Number).slice(-2));
+      // Each straight run goes along one axis; the arcs between them turn the elbows.
+      return steps.every((step, index) => step[0] !== 'L' || Math.abs(ends[index][0] - ends[index - 1][0]) < 0.5 || Math.abs(ends[index][1] - ends[index - 1][1]) < 0.5);
+    });
+    const whole = [...svg.querySelectorAll('.flow-node')].every((node) => {
+      const shape = /** @type {SVGGraphicsElement} */ (node.querySelector('rect, polygon, circle')).getBBox();
+      const text = /** @type {SVGGraphicsElement} */ (node.querySelector('text')).getBBox();
+      return text.x >= shape.x && text.x + text.width <= shape.x + shape.width && text.y >= shape.y && text.y + text.height <= shape.y + shape.height;
+    });
+    return { straight, whole };
+  });
+  expect(checked).toEqual({ straight: true, whole: true });
+  const talked = page.locator('#block-talked .diagram svg');
+  await expect(talked).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('#block-talked svg.flow')).toHaveCount(0);
+  await page.locator('#block-flowed .diagram-expand').click();
+  await expect(page.locator('dialog.modal--diagram svg.flow')).toBeVisible();
+});
+
+test('the cards of a question’s options stand side by side, at most three to a row, with the person’s own words beneath, and one beneath another in a narrow window', async ({ page }) => {
+  write([{ id: 'cards-q', kind: 'question', stage: 'shape', header: 'Cards', prompt: 'Which card?', options: [{ label: 'Left', detail: 'a', recommended: true }, { label: 'Middle', detail: 'b' }, { label: 'Right', detail: 'c' }, { label: 'Fourth', detail: 'd' }] }], ['--send']);
+  for (const [width, across] of [[1440, true], [560, false]]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(address());
+    const panel = waitingModal(page);
+    await expect(panel).toBeVisible({ timeout: LIVE });
+    // In a narrow window the open sidebar lies over the page; the person folds it to answer.
+    const fold = page.getByRole('button', { name: 'Fold the sidebar' });
+    if (!across && (await fold.isVisible())) await fold.click();
+    const form = panel.locator('.question-card', { has: page.locator('.prompt', { hasText: 'Which card?' }) });
+    const cards = form.locator('.option-grid > .option-card');
+    await expect(cards).toHaveCount(4);
+    const [first, second, third, fourth] = [await box(cards.nth(0)), await box(cards.nth(1)), await box(cards.nth(2)), await box(cards.nth(3))];
+    expect(Math.abs(first.y - second.y) < 1).toBe(across);
+    if (across) {
+      expect(Math.abs(first.y - third.y) < 1, 'three to a row').toBe(true);
+      expect(fourth.y > first.y + first.height, 'the fourth on the next').toBe(true);
+    }
+    const own = await box(form.locator('.option-grid + .own-words'));
+    const grid = await box(form.locator('.option-grid'));
+    expect(own.y).toBeGreaterThan(grid.y + grid.height - 1);
+    expect(Math.abs(own.width - grid.width) < 1, 'as wide as the cards').toBe(true);
+    const clearing = form.locator('.question-head .clear-choice');
+    await expect(clearing).toBeDisabled();
+    await form.locator('label.choice', { hasText: 'Middle' }).click();
+    await expect(form.locator('.question-state')).toHaveText('Chosen: B');
+    expect(await colour(cards.nth(1), 'outline-color')).toBe('rgb(20, 72, 143)');
+    await clearing.click();
+    await expect(form.locator('.question-state')).toHaveText('Not chosen yet');
+    await expect(clearing).toBeDisabled();
+  }
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node outlines it and its neighbours in action blue and fades nothing', async ({ page }) => {
+  const chain = Array.from({ length: 9 }, (_, n) => `  s${n}[Step ${n} of a long chain] --> s${n + 1}[Step ${n + 1} of a long chain]`).join('\n');
+  write([{ id: 'wide-flow', kind: 'note', stage: 'shape', title: 'A wide flow', markdown: `\`\`\`mermaid\nflowchart LR\n${chain}\n\`\`\`` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'shape');
+  const flow = page.locator('#block-wide-flow svg.flow');
+  await expect(flow).toBeVisible({ timeout: 10_000 });
+  const scroll = page.locator('#block-wide-flow .diagram-scroll');
+  const sizes = await scroll.evaluate((element) => ({ client: element.clientWidth, scroll: element.scrollWidth }));
+  expect(sizes.scroll).toBeGreaterThan(sizes.client);
+  // It scrolls within its own box: neither the stage's pane nor the main column grows past the window.
+  const pane = await box(page.locator('.stage-pane'));
+  expect(pane.x + pane.width).toBeLessThanOrEqual(page.viewportSize().width + 0.5);
+  expect(await page.locator('#log').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  // Drawn at its own size: a label's 13 pixels are 13 on the screen.
+  const label = flow.locator('.flow-label').first();
+  expect(await label.evaluate((element) => /** @type {SVGGraphicsElement} */ (element).getBoundingClientRect().height)).toBeGreaterThan(12);
+  expect(await colour(label, 'font-size')).toBe('13px');
+  // Pointing at a node outlines it and its neighbour in action blue, and fades nothing.
+  const outline = (id) => colour(flow.locator(`.flow-node[data-id="${id}"] rect`), 'stroke');
+  await flow.locator('.flow-node[data-id="s0"]').hover();
+  await expect.poll(() => outline('s1')).toBe('rgb(20, 72, 143)');
+  expect(await outline('s0')).toBe('rgb(20, 72, 143)');
+  expect(await outline('s5')).not.toBe('rgb(20, 72, 143)');
+  expect(await colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('1');
+  await page.mouse.move(0, 0);
+  await expect.poll(() => outline('s1')).not.toBe('rgb(20, 72, 143)');
+});
+
+test('a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card', async ({ page }) => {
+  for (const scheme of /** @type {const} */ (['light', 'dark'])) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto(address());
+    if (await waitingModal(page).isVisible()) await closeWaiting(page);
+    await page.evaluate(async () => {
+      const { loftView } = await import('./views/loft/index.js');
+      const { add } = await import('./lib/dom.js');
+      const node = (key, kind, label, name, parent, change = null) => ({ key, kind, label, name, parent, change });
+      const nodes = [
+        node('p', 'product', 'P-1', 'Reading List', null),
+        node('g', 'feature_group', 'FG-2', 'Sharing', 'p'),
+        node('f', 'feature', 'F-3', 'Share a list', 'g', 'changed'),
+        node('r', 'requirement', 'RQ-7', 'While a list is shared, the shelf shall refuse edits made through the link.', 'f'),
+        node('c1', 'criterion', 'AC-21', 'An edit made through the link is refused, and the link says so.', 'r', 'changed'),
+        node('c2', 'criterion', null, 'A reader who follows the link sees the list as it is now.', 'r', 'added'),
+        node('c3', 'criterion', 'AC-22', 'The owner sees who opened the link.', 'r', 'removed'),
+        node('cmp', 'component', 'CMP-3', 'Link service', null, 'changed'),
+      ];
+      const report = {
+        status: { base: { revision: 'develop', commit: '0123456789abcdef', added: [], changed: [], removed: [] } },
+        graph: {
+          nodes,
+          decisions: [{ key: 'd', kind: 'decision', label: null, name: 'Links are read only', change: 'added' }],
+          edges: [{ from: 'f', to: 'cmp', kind: 'realizes' }, { from: 'd', to: 'r', kind: 'subject', role: 'outcome' }],
+          diff: nodes.filter((each) => each.change).map((each) => ({ ...each, words: { after: each.name } })),
+        },
+      };
+      document.getElementById('block-spec-test')?.remove();
+      const article = document.createElement('article');
+      article.id = 'block-spec-test';
+      article.className = 'block';
+      article.dataset.key = 'spec-test';
+      add(article, loftView({ view: 'spec-change', report, recorded: {}, reasons: [] }));
+      document.querySelector('.stage-pane .blocks, main, body')?.prepend(article);
+    });
+    const flow = page.locator('#block-spec-test svg.flow');
+    await expect(flow.locator('.spec-card')).toHaveCount(6, { timeout: 10_000 });
+    // A diagram wider than its block scrolls within it: the block grows no wider than its pane.
+    const [held, pane] = [await box(page.locator('#block-spec-test')), await box(page.locator('.stage-pane'))];
+    expect(held.x + held.width).toBeLessThanOrEqual(pane.x + pane.width + 0.5);
+    await expect(flow.locator('.spec-panel')).toHaveCount(3);
+    await expect(page.locator('#block-spec-test .spec-legend')).toHaveText(/^2 new3 changed1 removed$/);
+    // In its block, a compact map of one-line chips, none of whose text runs out of it.
+    await expect(flow.locator('.spec-chip')).toHaveCount(6);
+    expect(await flow.locator('.spec-name').count()).toBe(0);
+    expect(await colour(flow.locator('.spec-chip-name').first(), 'font-size')).toBe('12.5px');
+    const fits = await flow.evaluate((svg) =>
+      [...svg.querySelectorAll('.spec-card')].every((card) => {
+        const frame = /** @type {SVGGraphicsElement} */ (card.querySelector('.spec-frame')).getBBox();
+        return [...card.querySelectorAll('text')].every((text) => {
+          const box = /** @type {SVGGraphicsElement} */ (text).getBBox();
+          return box.x >= frame.x && box.x + box.width <= frame.x + frame.width + 0.5 && box.y >= frame.y && box.y + box.height <= frame.y + frame.height + 0.5;
+        });
+      }),
+    );
+    expect(fits).toBe(true);
+    const bars = { light: ['rgb(25, 158, 112)', 'rgb(37, 106, 191)', 'rgb(227, 73, 72)'], dark: ['rgb(25, 158, 112)', 'rgb(57, 135, 229)', 'rgb(230, 103, 103)'] }[scheme];
+    expect(await colour(flow.locator('.spec-card--added .spec-bar'), 'fill')).toBe(bars[0]);
+    expect(await colour(flow.locator('.spec-card--changed .spec-bar'), 'fill')).toBe(bars[1]);
+    expect(await colour(flow.locator('.spec-card--removed .spec-bar'), 'fill')).toBe(bars[2]);
+    // A new criterion without a label shows its kind's prefix.
+    expect(await flow.locator('.spec-card[data-key="c2"] .spec-label').textContent()).toBe('AC');
+    // Pointing at the decision outlines the Requirement it settles in action blue, and fades nothing.
+    const signal = scheme === 'light' ? 'rgb(20, 72, 143)' : 'rgb(142, 197, 242)';
+    await flow.locator('.spec-card[data-key="d"]').hover();
+    await expect.poll(() => colour(flow.locator('.spec-card--context .spec-frame'), 'stroke')).toBe(signal);
+    expect(await colour(flow.locator('.spec-card[data-key="c3"] .spec-frame'), 'stroke')).not.toBe(signal);
+    expect(await colour(flow.locator('.spec-card[data-key="c3"]'), 'opacity')).toBe('1');
+    await flow.locator('.spec-card[data-key="c1"]').click();
+    const entry = page.locator('#block-spec-test .diff li.is-marked');
+    await expect(entry).toHaveCount(1);
+    await expect(entry).toContainText('An edit made through the link');
+    await expect(entry).toBeInViewport();
+    // Expanded, the full cards, each name in the page's face at 13 pixels.
+    await page.locator('#block-spec-test .diagram-expand').click();
+    const expanded = page.locator('dialog.modal[data-modal="diagram"] svg.flow');
+    await expect(expanded.locator('.spec-name').first()).toBeVisible({ timeout: 10_000 });
+    expect(await colour(expanded.locator('.spec-name').first(), 'font-size')).toBe('13px');
+    // Dragging it pans, and selects none of its text.
+    const name = await box(expanded.locator('.spec-name').first());
+    await page.mouse.move(name.x + 2, name.y + name.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(name.x + 160, name.y + 60, { steps: 8 });
+    await page.mouse.up();
+    expect(await page.evaluate(() => String(getSelection()))).toBe('');
+    await page.keyboard.press('Escape');
+  }
+  await page.emulateMedia({ colorScheme: 'light' });
 });

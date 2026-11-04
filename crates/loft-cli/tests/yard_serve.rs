@@ -99,6 +99,35 @@ fn a_file_of_the_page_the_browser_holds_is_not_sent_again() {
 }
 
 #[test]
+fn elk_is_served_compressed_and_decompresses_to_the_release_its_readme_names() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &[]);
+    let script = served.get("/vendor/elk.bundled.js");
+    assert_eq!(script.status, 200);
+    assert!(
+        script.head.contains("content-encoding: gzip"),
+        "{}",
+        script.head
+    );
+    assert_eq!(script.body, page_file("vendor/elk.bundled.js.gz"));
+    let mut text = String::new();
+    flate2::read::GzDecoder::new(script.body.as_slice())
+        .read_to_string(&mut text)
+        .unwrap();
+    assert!(text.contains("g.ELK = f()"), "{}", &text[..80]);
+    let readme = String::from_utf8(page_file("vendor/README.md")).unwrap();
+    let digest = format!("{:x}", sha2::Sha256::digest(text.as_bytes()));
+    assert!(
+        readme.contains(&digest),
+        "the README names another digest than {digest}"
+    );
+    assert_eq!(
+        served.get("/vendor/elk.LICENSE").body,
+        page_file("vendor/elk.LICENSE")
+    );
+}
+
+#[test]
 fn mermaid_is_served_compressed_and_decompresses_to_the_release_its_readme_names() {
     let yard = Yard::new();
     let served = Served::start(&yard, &[]);

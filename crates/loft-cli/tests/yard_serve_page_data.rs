@@ -253,3 +253,32 @@ fn the_page_reads_each_loft_block_with_its_report() {
     assert!(body["report"]["status"].is_object(), "{body}");
     assert!(body.get("reportBytes").is_none(), "{body}");
 }
+
+#[test]
+fn each_session_s_activity_says_whether_the_session_has_stopped() {
+    let yard = Yard::new();
+    yard.write("s1", NOTES, &[]);
+    let folder = yard.folder(BRANCH).join("activity");
+    fs::create_dir_all(&folder).unwrap();
+    for session in ["s1", "s2"] {
+        fs::write(
+            folder.join(format!("{session}.yaml")),
+            format!("session: {session}\nhost: claude-code\nlastEnded: 2026-01-01T10:00:09Z\n"),
+        )
+        .unwrap();
+    }
+    let served = served(&yard);
+    let heard = served.post_as_mod("/api/heard", &json!({ "session": "s1" }));
+    assert_eq!(heard.status, 200);
+    let read = log(&yard, &served);
+    let stopped = |session: &str| {
+        read["activity"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|entry| entry["session"] == session)
+            .map(|entry| entry["stopped"].clone())
+    };
+    assert_eq!(stopped("s1"), Some(json!(false)), "heard just now: {read}");
+    assert_eq!(stopped("s2"), Some(json!(true)), "never heard: {read}");
+}

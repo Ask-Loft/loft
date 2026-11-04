@@ -1,0 +1,120 @@
+key: 01a1a7ee-1768-724b-91f4-35e78d4a199a
+slug: flowcharts-are-drawn-by-the-page-over-elk
+title: "Flowcharts are drawn by the page over ELK"
+context: "Agents write their diagrams as Mermaid in a block's Markdown, nearly all of them flowcharts, and the page drew each with Mermaid, which lays a flowchart out with dagre and draws it in its own shapes: curved edges that cross their labels, uneven spacing, and boxes whose look a theme and a stylesheet change only so far. Beside the rest of the page, drawn in Loft Web's design, the diagrams looked like another product. Mermaid's parser stays the reference for what its source means."
+state:
+  kind: accepted
+  selectedOption: 01a1a7ee-1768-724b-91f4-35ec5bb14463
+  outcome: "The page draws a Mermaid flowchart of a block's Markdown itself: Mermaid parses it, ELK's layered layout places its nodes and routes its edges orthogonally, and the page draws the result as SVG in Loft Web's design. A `spec-change` view's diagram is drawn by the same renderer, straight from the view's graph. Other diagram kinds stay with Mermaid on the page's theme. `elkjs` is vendored beside Mermaid, under its own licence."
+drivers:
+  - key: 01a1a7ee-1768-724b-91f4-35e85ceb653a
+    kind: local
+    label: "Read at a glance"
+    statement: "A flowchart's structure reads at a glance: even spacing, edges that do not cross their labels, and no label cut."
+  - key: 01a1a7ee-1768-724b-91f4-35e904f9b991
+    kind: local
+    label: "One product"
+    statement: "A diagram looks like the rest of the page, in Loft Web's design."
+  - key: 01a1a7ee-1768-724b-91f4-35ea9e079ce6
+    kind: local
+    label: "Mermaid source"
+    statement: "Agents keep writing Mermaid, and every diagram it can express is drawn."
+  - key: 01a1a7ee-1768-724b-91f4-35eb9a6ea220
+    kind: local
+    label: "Served from loft"
+    statement: "The page loads nothing from outside the page server, and no build step makes it."
+options:
+  - key: 01a1a7ee-1768-724b-91f4-35ec5bb14463
+    title: "The page's own renderer over ELK"
+    description: "Mermaid parses a flowchart; ELK's layered layout places its nodes and routes its edges orthogonally; the page draws the result as its own SVG in Loft Web's design. Other diagram kinds stay with Mermaid."
+  - key: 01a1a7ee-1768-724b-91f4-35ed0a76bb40
+    title: "Mermaid with ELK's layout"
+    description: "Mermaid draws, with its layout switched to ELK through its own loader for it."
+  - key: 01a1a7ee-1768-724b-91f4-35eed7d2069b
+    title: "Graphviz"
+    description: "A flowchart translated to DOT, laid out and drawn by Graphviz compiled to WebAssembly."
+  - key: 01a1a7ee-1768-724b-91f4-35ef205b2902
+    title: "Mermaid, themed"
+    description: "Mermaid lays out and draws, in the page's colours and hairlines through its theme and the page's stylesheet."
+assessments:
+  - option: 01a1a7ee-1768-724b-91f4-35ec5bb14463
+    driver: 01a1a7ee-1768-724b-91f4-35e85ceb653a
+    rating: supports
+    rationale: "ELK places nodes evenly and routes edges orthogonally around their labels"
+  - option: 01a1a7ee-1768-724b-91f4-35ec5bb14463
+    driver: 01a1a7ee-1768-724b-91f4-35e904f9b991
+    rating: supports
+    rationale: "the page draws every shape, line and label in its own styles"
+  - option: 01a1a7ee-1768-724b-91f4-35ec5bb14463
+    driver: 01a1a7ee-1768-724b-91f4-35ea9e079ce6
+    rating: supports
+    rationale: "Mermaid still parses every flowchart, and draws every other kind"
+  - option: 01a1a7ee-1768-724b-91f4-35ec5bb14463
+    driver: 01a1a7ee-1768-724b-91f4-35eb9a6ea220
+    rating: supports
+    rationale: "elkjs is vendored and served by the page server, loaded only when a flowchart is drawn"
+  - option: 01a1a7ee-1768-724b-91f4-35ed0a76bb40
+    driver: 01a1a7ee-1768-724b-91f4-35e85ceb653a
+    rating: supports
+    rationale: "ELK places nodes evenly and routes edges orthogonally"
+  - option: 01a1a7ee-1768-724b-91f4-35ed0a76bb40
+    driver: 01a1a7ee-1768-724b-91f4-35e904f9b991
+    rating: neutral
+    rationale: "Mermaid's own shapes, arrowheads and label boxes, restyled only as far as its theme allows"
+  - option: 01a1a7ee-1768-724b-91f4-35ed0a76bb40
+    driver: 01a1a7ee-1768-724b-91f4-35ea9e079ce6
+    rating: supports
+    rationale: "Mermaid parses and draws"
+  - option: 01a1a7ee-1768-724b-91f4-35ed0a76bb40
+    driver: 01a1a7ee-1768-724b-91f4-35eb9a6ea220
+    rating: supports
+    rationale: "Mermaid's ELK loader vendored beside it"
+  - option: 01a1a7ee-1768-724b-91f4-35eed7d2069b
+    driver: 01a1a7ee-1768-724b-91f4-35e85ceb653a
+    rating: supports
+    rationale: "dot's layered layout and splines"
+  - option: 01a1a7ee-1768-724b-91f4-35eed7d2069b
+    driver: 01a1a7ee-1768-724b-91f4-35e904f9b991
+    rating: neutral
+    rationale: "Graphviz's drawing, styled after the fact"
+  - option: 01a1a7ee-1768-724b-91f4-35eed7d2069b
+    driver: 01a1a7ee-1768-724b-91f4-35ea9e079ce6
+    rating: conflicts
+    rationale: "a translation from Mermaid to DOT that covers only what it was written for"
+  - option: 01a1a7ee-1768-724b-91f4-35eed7d2069b
+    driver: 01a1a7ee-1768-724b-91f4-35eb9a6ea220
+    rating: neutral
+    rationale: "a WebAssembly build of 1.5 MB to serve"
+  - option: 01a1a7ee-1768-724b-91f4-35ef205b2902
+    driver: 01a1a7ee-1768-724b-91f4-35e85ceb653a
+    rating: conflicts
+    rationale: "dagre's curved edges cross their labels and its spacing is uneven"
+  - option: 01a1a7ee-1768-724b-91f4-35ef205b2902
+    driver: 01a1a7ee-1768-724b-91f4-35e904f9b991
+    rating: conflicts
+    rationale: "Mermaid's own shapes, which a theme changes only so far"
+  - option: 01a1a7ee-1768-724b-91f4-35ef205b2902
+    driver: 01a1a7ee-1768-724b-91f4-35ea9e079ce6
+    rating: supports
+    rationale: "Mermaid parses and draws"
+  - option: 01a1a7ee-1768-724b-91f4-35ef205b2902
+    driver: 01a1a7ee-1768-724b-91f4-35eb9a6ea220
+    rating: supports
+    rationale: "nothing new to serve"
+consequences:
+  - key: 01a1a7ee-1768-724b-91f4-35f06d15929f
+    kind: benefit
+    statement: "A flowchart is drawn in the page's own shapes, lines and type, laid out evenly with orthogonal edges."
+  - key: 01a1a7ee-1768-724b-91f4-35f183e9bddf
+    kind: cost
+    statement: "The page vendors `elkjs` beside Mermaid, under its own licence, and keeps a renderer of its own with its tests."
+  - key: 01a1a7ee-1768-724b-91f4-35f224e4b21b
+    kind: obligation
+    statement: "A flowchart feature of Mermaid that the renderer does not draw is either drawn by it or left to Mermaid by a rule the page states."
+subjects:
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eac0614c263d
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eb213cfb9073
+  - role: outcome
+    node: 01a1a7ee-1770-7572-ab19-cf2e9d620206

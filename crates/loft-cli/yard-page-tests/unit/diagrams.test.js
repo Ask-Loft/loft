@@ -4,9 +4,11 @@
 import { forget, root } from './dom.js';
 
 import assert from 'node:assert/strict';
+import { gunzipSync } from 'node:zlib';
+import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
 
-import { drawAll } from '../../yard-page/lib/diagrams.js';
+import { draw, drawAll, theme } from '../../yard-page/lib/diagrams.js';
 import { h } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
 import { loftView } from '../../yard-page/views/loft/index.js';
@@ -14,8 +16,25 @@ import { loftView } from '../../yard-page/views/loft/index.js';
 const window = /** @type {any} */ (globalThis.window);
 globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0);
 
+/** How many times the stub parsed a flowchart. */
+let parses = 0;
+
 /** @type {any} */ (globalThis).mermaid = {
   initialize() {},
+  mermaidAPI: {
+    /** A flowchart of `A --> B` links, as Mermaid's parser gives it. @param {string} text */
+    async getDiagramFromText(text) {
+      parses += 1;
+      if (text.includes('not a diagram') || text.includes('-->>')) throw new Error('Parse error');
+      const links = [...text.matchAll(/(\w+)\s*-->\s*(\w+)/g)];
+      const ids = [...new Set(links.flatMap(([, from, to]) => [from, to]))];
+      const data = {
+        nodes: ids.map((id) => ({ id, label: id, shape: 'squareRect', cssStyles: [], cssClasses: '' })),
+        edges: links.map(([, start, end], n) => ({ id: `L_${start}_${end}_${n}`, start, end, label: '', arrowTypeEnd: 'arrow_point', arrowTypeStart: 'none', pattern: 'normal' })),
+      };
+      return { type: 'flowchart-v2', db: { getData: () => data, getDirection: () => 'LR', getClasses: () => ({}) } };
+    },
+  },
   async render(_id, text) {
     if (text.includes('not a diagram')) throw new Error('Parse error');
     const escaped = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -57,7 +76,7 @@ function drawnText(at) {
 }
 
 test('each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it', async () => {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   const button = note.querySelector('.diagram .diagram-expand');
@@ -88,7 +107,7 @@ function folded() {
 /** A `loft` block of a spec-change view of `graph`, on the page. */
 function specChange(graph) {
   const report = { status: { base: { revision: 'develop', added: [{ kind: 'feature', name: 'x' }], changed: [], removed: [] } }, graph };
-  graph.diff = [{ key: 'x', kind: 'feature', label: null, name: 'x', change: 'added', words: { after: 'x' } }];
+  graph.diff = [...(graph.diff ?? []), { key: 'x', kind: 'feature', label: null, name: 'x', change: 'added', words: { after: 'x' } }];
   const article = h(
     'article',
     { class: 'block block--loft', dataset: { key: 'loft-key' } },
@@ -106,7 +125,7 @@ test('each spec-change diagram shows the button that expands it', async () => {
 });
 
 test('expanding a diagram opens it in a modal over the page, named by its block, with no button of its own', async () => {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   note.querySelector('.diagram-expand').click();
@@ -115,22 +134,27 @@ test('expanding a diagram opens it in a modal over the page, named by its block,
   assert.ok(opened?.open, 'the modal is open');
   assert.ok(opened.classList.contains('modal') && opened.classList.contains('modal--diagram'));
   assert.equal(opened.querySelector('.modal-head h2').textContent, 'How it flows');
-  assert.equal(drawnText(opened.querySelector('.zoom-stage')), 'flowchart LR\n  A --> B');
+  assert.equal(drawnText(opened.querySelector('.zoom-stage')), 'sequenceDiagram\n  A->>B: hi');
   assert.ok(!opened.querySelector('.diagram-expand'));
   assert.ok(document.activeElement === opened.querySelector('.zoom-stage'), 'the stage has the focus');
 });
 
-test('the expanded spec-change diagram is the one the page drew, with the Feature Group the person opened', async () => {
+test('the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened', async () => {
   const block = specChange(folded());
   await settled();
   const open = [...block.querySelectorAll('.group-button')].find((button) => button.textContent.startsWith('FG-2'));
   open.click();
   await settled();
-  const onPage = drawnText(block.querySelector('.spec-diagram'));
-  assert.match(onPage, /Feature 2\.0/);
+  await settled(400);
+  const keys = (/** @type {Element | null} */ at) => [...(at?.querySelectorAll('svg.flow [data-key]') ?? [])].map((each) => each.getAttribute('data-key')).sort();
+  const onPage = block.querySelector('.spec-diagram');
+  assert.match(onPage?.querySelector('svg.flow')?.textContent ?? '', /Feature 2\.0/);
+  assert.ok(onPage?.querySelector('.spec-chip') && !onPage.querySelector('.spec-name'), 'the block holds the compact map');
   block.querySelector('.spec-diagram .diagram-expand').click();
-  await settled();
-  assert.equal(drawnText(dialog().querySelector('.zoom-stage')), onPage);
+  await settled(400);
+  const stage = dialog().querySelector('.zoom-stage');
+  assert.deepEqual(keys(stage), keys(onPage), 'the same boxes');
+  assert.ok(stage.querySelector('.spec-name') && !stage.querySelector('.spec-chip'), 'expanded, as full cards');
   assert.equal(dialog().querySelector('.modal-head h2').textContent, 'Spec change');
 });
 
@@ -148,7 +172,7 @@ function corner() {
 
 /** Expands the diagram of a note, on a stage of 1000 by 600 pixels, and fits it there. */
 async function expanded() {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   note.querySelector('.diagram-expand').click();
@@ -169,7 +193,7 @@ function press(at, key) {
 }
 
 test('the expanded diagram shows only once it is fitted to the modal', async () => {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   note.querySelector('.diagram-expand').click();
@@ -241,7 +265,7 @@ test('closing the expanded diagram gives the focus back to its button, even afte
   const { note } = await expanded();
   // The page draws its blocks afresh at each change, while the modal stays open.
   note.remove();
-  const again = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const again = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(again);
   await settled();
   dialog().querySelector('.modal-close').click();
@@ -252,4 +276,175 @@ test('closing the expanded diagram gives the focus back to the button that expan
   const { note } = await expanded();
   dialog().querySelector('.modal-close').click();
   assert.ok(document.activeElement === note.querySelector('.diagram-expand'), 'the button has the focus');
+});
+
+test('a diagram is drawn in the page’s design: nodes on the sidebar’s ground with hairline borders, the page’s face at 13 pixels, muted edges', () => {
+  const c = { font: 'Inter', surface: '#fff', surface2: '#f3f7fa', side: '#f6f9fb', canvas: '#ffffff', mist: '#e5f6ff', ink: '#0e141d', muted: '#5c646f', line: '#dbe2e9', rail: '#aab2ba', done: '', doneSoft: '', wait: '', waitSoft: '', danger: '', dangerSoft: '' };
+  const drawn = theme(c);
+  assert.equal(drawn.fontSize, '13px');
+  assert.equal(drawn.fontFamily, 'Inter');
+  assert.equal(drawn.mainBkg, c.side);
+  assert.equal(drawn.primaryColor, c.side);
+  assert.equal(drawn.nodeBorder, c.rail, 'a hairline, not ink');
+  assert.equal(drawn.primaryBorderColor, c.rail);
+  assert.equal(drawn.lineColor, c.muted);
+});
+
+test('a group of a diagram is framed by a hairline on the page’s ground, and an edge’s label lies on the page’s ground', () => {
+  const c = { font: 'Inter', surface: '#fff', surface2: '#f3f7fa', side: '#f6f9fb', canvas: '#ffffff', mist: '#e5f6ff', ink: '#0e141d', muted: '#5c646f', line: '#dbe2e9', rail: '#aab2ba', done: '', doneSoft: '', wait: '', waitSoft: '', danger: '', dangerSoft: '' };
+  const drawn = theme(c);
+  assert.equal(drawn.clusterBkg, c.canvas);
+  assert.equal(drawn.clusterBorder, c.line);
+  assert.equal(drawn.edgeLabelBackground, c.canvas);
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.diagram svg :is\(\.node, \.cluster\) :is\(rect, polygon, path\) \{ rx: 0; ry: 0; stroke-width: 1px; \}/, 'square corners and hairlines');
+  assert.match(css, /svg\[id\^="diagram-"\] \.label \{[^}]*font-size: inherit;[^}]*color: inherit|svg\[id\^="diagram-"\] \.label \{[^}]*color: inherit;[^}]*font-size: inherit/, 'the page’s label rule does not reach a diagram’s labels');
+});
+
+/** The ELK the page server serves, run as the page runs it, so that a flowchart is laid out. */
+/** @type {any} */ (globalThis).ELK = (() => {
+  const code = gunzipSync(readFileSync(new URL('../../yard-page/vendor/elk.bundled.js.gz', import.meta.url))).toString('utf8');
+  const module = { exports: {} };
+  new Function('module', 'exports', code)(module, module.exports);
+  return module.exports;
+})();
+
+test('a flowchart of a block’s Markdown is drawn by the page itself, and another kind by Mermaid', async () => {
+  const flow = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const other = noteWith('Who says what', 'sequenceDiagram\n  A->>B: hi');
+  drawAll(flow);
+  drawAll(other);
+  await settled(400);
+  const drawn = flow.querySelector('.diagram svg');
+  assert.ok(drawn?.classList.contains('flow'), 'the page’s own SVG');
+  assert.equal(drawn?.querySelectorAll('.flow-node').length, 2);
+  assert.equal(drawn?.querySelectorAll('path.flow-edge').length, 1);
+  assert.ok(flow.querySelector('.diagram .diagram-expand'), 'it expands as any diagram does');
+  assert.ok(!other.querySelector('.diagram svg.flow'));
+  assert.equal(drawnText(other), 'sequenceDiagram\n  A->>B: hi', 'Mermaid drew the other');
+});
+
+test('a flowchart that does not parse shows its source, with the line saying it could not be drawn', async () => {
+  const note = noteWith('Broken flow', 'flowchart LR\n  A -->> B');
+  drawAll(note);
+  await settled(200);
+  assert.equal(note.querySelector('.diagram-error')?.textContent, 'This diagram could not be drawn.');
+  assert.equal(note.querySelector('.diagram pre')?.textContent, 'flowchart LR\n  A -->> B');
+});
+
+test('a spec-change view’s diagram is drawn by the page’s renderer, under a legend that counts each change', async () => {
+  const graph = folded();
+  graph.nodes = graph.nodes.slice(0, 6);
+  graph.nodes.push({ key: 'gone', kind: 'feature', label: 'F-9', name: 'Gone', parent: 'g0', change: 'removed' });
+  const block = specChange(graph);
+  await settled(400);
+  assert.ok(block.querySelector('.spec-diagram svg.flow .spec-panel'), 'the page’s own SVG, of panels');
+  const items = [...block.querySelectorAll('.spec-legend .spec-legend-item')];
+  assert.deepEqual(items.map((item) => item.textContent), ['4 new', '1 removed']);
+  assert.deepEqual(items.map((item) => item.querySelector('.spec-key')?.getAttribute('class')), ['spec-key spec-key--added', 'spec-key spec-key--removed']);
+});
+
+test('choosing a card, by the pointer or by Enter, unfolds the diff and brings that node’s entry into view, marked', async () => {
+  const graph = folded();
+  graph.nodes = graph.nodes.slice(0, 4);
+  graph.diff.push({ key: 'g0f1', kind: 'feature', label: null, name: 'Feature 0.1', change: 'added', words: { after: 'Feature 0.1' } });
+  const block = specChange(graph);
+  await settled(400);
+  const fold = /** @type {HTMLDetailsElement} */ (block.querySelector('details.diff'));
+  assert.equal(fold.open, false);
+  const card = /** @type {HTMLElement} */ (block.querySelector('.spec-diagram [data-key="g0f1"]'));
+  assert.equal(card.getAttribute('role'), 'button');
+  assert.equal(card.getAttribute('tabindex'), '0');
+  card.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  assert.equal(fold.open, true);
+  const marked = [...block.querySelectorAll('.diff li.is-marked')];
+  assert.deepEqual(marked.map((item) => /** @type {HTMLElement} */ (item).dataset.key), ['g0f1']);
+  assert.ok(!block.querySelector('.spec-diagram .spec-card--context[role="button"]'), 'a box drawn for context has no entry to choose');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.change-tree li\.is-marked \{ outline: 2px solid var\(--signal\);/);
+});
+
+test('choosing a folded Feature Group’s box opens it, and its box counts its changed nodes', async () => {
+  const block = specChange(folded());
+  await settled(400);
+  const box = /** @type {HTMLElement} */ (block.querySelector('.spec-diagram [data-key="g2"]'));
+  assert.match(box.textContent ?? '', /9 changed/);
+  box.dispatchEvent(new Event('click', { bubbles: true }));
+  await settled(400);
+  assert.match(block.querySelector('.spec-diagram svg.flow')?.textContent ?? '', /Feature 2\.0/);
+  assert.ok(block.querySelector('.group-button.is-open')?.textContent?.startsWith('FG-2'), 'the picker says it is open');
+});
+
+test('the button that expands a diagram lies in a margin of its own, over none of the drawing', () => {
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.diagram\.is-drawn \{ padding-right: 48px; \}/);
+  assert.match(css, /\.diagram-expand \{ position: absolute; top: 6px; right: 6px; width: 32px;/, 'narrower than the margin, at its right');
+});
+
+test('a flowchart drawn again, as a change of scheme draws it, is not laid out again', async () => {
+  const note = noteWith('Once', 'flowchart LR\n  X --> Y');
+  drawAll(note);
+  await settled(400);
+  const first = parses;
+  const before = globalThis.matchMedia;
+  // The browser now asks for the other scheme.
+  globalThis.matchMedia = /** @type {any} */ ((query) => ({ matches: !before?.(query)?.matches, addEventListener() {} }));
+  const again = noteWith('Once again', 'flowchart LR\n  X --> Y');
+  try {
+    drawAll(again);
+    await settled(100);
+  } finally {
+    globalThis.matchMedia = before;
+  }
+  assert.equal(parses, first, 'the drawing kept is reused, whatever the scheme');
+  assert.ok(again.querySelector('.diagram svg.flow'));
+});
+
+test('a flowchart is drawn at its own size within a box that scrolls sideways, and at its own size when expanded', async () => {
+  const note = noteWith('Wide', 'flowchart LR\n  A --> B');
+  drawAll(note);
+  await settled(400);
+  const scroll = note.querySelector('.diagram > .diagram-scroll');
+  assert.ok(scroll?.querySelector(':scope > svg.flow'), 'the drawing lies in its scroll box');
+  assert.ok(note.querySelector('.diagram > .diagram-expand'), 'the button stays outside the box, which does not move it');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.diagram svg\.flow \{ max-width: none;/, 'never scaled down to fit');
+  assert.match(css, /\.diagram-scroll \{ overflow-x: auto;[^}]*overscroll-behavior-x: none; overscroll-behavior-y: auto;/);
+  /** @type {HTMLElement} */ (note.querySelector('.diagram-expand')).click();
+  await settled(400);
+  assert.ok(dialog().querySelector('.zoom-content > svg.flow'), 'expanded, it is the zoom stage that moves it');
+});
+
+test('a drawing the page builds is drawn once, whatever the scheme, and tells it which node the person chose', async () => {
+  let draws = 0;
+  const chosen = [];
+  const drawing = {
+    key: 'a-drawing',
+    draw: async () => {
+      draws += 1;
+      return '<svg class="flow" viewBox="0 0 10 10"><g class="spec-card" data-id="n" data-key="k1" role="button" tabindex="0"><rect/></g></svg>';
+    },
+    choose: (/** @type {string} */ key) => chosen.push(key),
+  };
+  const target = h('div', { class: 'diagram' });
+  document.body.firstElementChild.append(target);
+  await draw(target, drawing);
+  const before = globalThis.matchMedia;
+  globalThis.matchMedia = /** @type {any} */ ((query) => ({ matches: !before?.(query)?.matches, addEventListener() {} }));
+  try {
+    await draw(target, drawing);
+  } finally {
+    globalThis.matchMedia = before;
+  }
+  assert.equal(draws, 1);
+  const card = /** @type {HTMLElement} */ (target.querySelector('[data-key="k1"]'));
+  card.dispatchEvent(new Event('click', { bubbles: true }));
+  card.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  card.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+  assert.deepEqual(chosen, ['k1', 'k1'], 'by the pointer and by Enter, not by another key');
+});
+
+test('dragging the expanded diagram selects none of its text', () => {
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.zoom-stage \{[^}]*user-select: none; -webkit-user-select: none; \}/);
 });

@@ -8,12 +8,14 @@ import * as api from '../lib/api.js';
 import { h, html, markdown } from '../lib/dom.js';
 import { when, who } from '../lib/format.js';
 import { getJson, setJson } from '../lib/prefs.js';
+import { chosenState, letter, optionCard, optionGrid, questionHead } from './question-card.js';
 import {
   PLAN_APPROVAL,
   acceptRecommendations,
   answerOf,
   choose,
   chooseOwnWords,
+  clear,
   isAnswered,
   readyToSend,
   say,
@@ -73,7 +75,6 @@ export function submissionPanel(submission, waiting, where) {
     h(
       'header',
       { class: 'submission-head' },
-      h('h3', {}, waiting.length === 1 ? 'Waits on you' : `${waiting.length} wait on you`),
       h('p', { class: 'sent' }, 'Sent by ', h('span', { class: 'who' }, who(submission.agent ?? submission.sent?.by)), ' at ', h('time', { datetime: submission.sent?.at }, when(submission.sent?.at))),
     ),
     waiting.map((block) => block.kind === 'question'
@@ -130,6 +131,20 @@ export function sentWords(reply) {
 }
 
 /**
+ * What a question's head says of the person's choice: the letters of the options chosen, the own
+ * words' letter after the options', or that nothing is chosen yet.
+ * @param {any} body
+ * @param {import('../model/answers.js').Answer} answer
+ */
+function stateOf(body, answer) {
+  const letters = body.options.flatMap((/** @type {any} */ option, /** @type {number} */ index) => (answer.labels.includes(option.label) ? [letter(index)] : []));
+  if (answer.ownWordsSelected) letters.push(letter(body.options.length));
+  return letters;
+}
+
+/**
+ * A question as the person answers it: its card, whose options are lettered cards to choose,
+ * the person's own words the last of them, with a way to clear the choice.
  * @param {import('../model/log.js').Block} block
  * @param {string} key the submission's key
  * @param {() => void} update
@@ -140,6 +155,12 @@ function questionForm(block, key, update) {
   const answer = answerOf(draft, block.key);
   const type = body.multiple ? 'checkbox' : 'radio';
   const name = `answer-${block.id}`;
+  const letters = stateOf(body, answer);
+  const clearing = /** @type {HTMLButtonElement} */ (
+    h('button', { type: 'button', class: 'clear-choice', disabled: !letters.length, onclick: () => { keep(key, clear(draftOf(key), block)); sync(); } }, 'Clear')
+  );
+  const head = questionHead(body.header, chosenState(letters), letters.length ? 'chosen' : undefined, clearing);
+  const state = /** @type {HTMLElement} */ (head.querySelector('.question-state'));
   const sync = () => {
     const draft = draftOf(key);
     const answer = answerOf(draft, block.key);
@@ -148,49 +169,57 @@ function questionForm(block, key, update) {
     });
     const own = /** @type {HTMLInputElement | null} */ (fieldset.querySelector(`#${name}-words`));
     if (own) own.checked = answer.ownWordsSelected === true;
+    const chosen = stateOf(body, answer);
+    state.textContent = chosenState(chosen);
+    state.classList.toggle('question-state--chosen', chosen.length > 0);
+    clearing.disabled = !chosen.length;
     fieldset.classList.toggle('is-answered', isAnswered(draft, block));
     update();
   };
+  const cards = body.options.map((option, index) =>
+    optionCard('label', { class: 'choice', for: `${name}-${index}` }, {
+      index,
+      recommended: option.recommended,
+      before: h('input', {
+        type,
+        name,
+        id: `${name}-${index}`,
+        class: 'option-input',
+        value: option.label,
+        checked: answer.labels.includes(option.label),
+        onchange: () => {
+          keep(key, choose(draftOf(key), block, option.label));
+          sync();
+        },
+      }),
+      label: h('span', { class: 'choice-label' }, option.label),
+      after: [markdown(option.detailHtml, option.detail, 'choice-detail')],
+    }),
+  );
+  const own = ownWordsForm(block, answer, () => {
+    keep(key, chooseOwnWords(draftOf(key), block));
+    sync();
+  }, (event) => {
+    keep(key, say(draftOf(key), block, event.target.value));
+    sync();
+  });
+  // The prompt heads the question, above its head, and names its choices for a reader.
+  const prompt = h('h3', { class: 'prompt', id: `prompt-${block.id}` }, body.prompt);
   const fieldset = h(
     'fieldset',
-    { class: ['question-form', isAnswered(draft, block) ? 'is-answered' : null], dataset: { key: block.key } },
-    h('legend', {}, h('span', { class: 'header' }, body.header), ' ', body.prompt),
+    { class: ['question-form', isAnswered(draft, block) ? 'is-answered' : null], dataset: { key: block.key }, 'aria-labelledby': `prompt-${block.id}` },
     body.contextHtml ? html(body.contextHtml, 'prose context') : null,
     body.multiple ? h('p', { class: 'hint' }, 'Choose one or more.') : null,
-    body.options.map((option, index) =>
-      h(
-        'label',
-        { class: 'choice', for: `${name}-${index}` },
-        h('input', {
-          type,
-          name,
-          id: `${name}-${index}`,
-          value: option.label,
-          checked: answer.labels.includes(option.label),
-          onchange: () => {
-            keep(key, choose(draftOf(key), block, option.label));
-            sync();
-          },
-        }),
-        h('span', { class: 'choice-label' }, option.label),
-        option.recommended ? h('span', { class: 'badge badge--recommended' }, 'Recommended') : null,
-        markdown(option.detailHtml, option.detail, 'choice-detail'),
-      ),
-    ),
-    ownWordsForm(block, answer, () => {
-      keep(key, chooseOwnWords(draftOf(key), block));
-      sync();
-    }, (event) => {
-      keep(key, say(draftOf(key), block, event.target.value));
-      sync();
-    }),
+    optionGrid(cards),
+    own,
   );
   const words = /** @type {HTMLTextAreaElement | null} */ (fieldset.querySelector('textarea'));
   if (words) words.value = answer.words ?? '';
-  return fieldset;
+  return h('div', { class: 'question-card' }, prompt, head, fieldset);
 }
 
-/** A separate selection control and labelled text field, with text retained when unselected.
+/** The person's own words, a card of its own beneath a question's options, lettered after them: its own
+ * selection control and a labelled text field, the text kept while it is not selected.
  * @param {import('../model/log.js').Block} block
  * @param {import('../model/answers.js').Answer} answer
  * @param {() => void} choose
@@ -198,13 +227,15 @@ function questionForm(block, key, update) {
  */
 function ownWordsForm(block, answer, choose, edit) {
   const name = `answer-${block.id}`;
-  return h('div', { class: 'own-words' },
-    h('label', { class: 'choice', for: `${name}-words` },
-      h('input', { id: `${name}-words`, name, type: block.version.body.multiple ? 'checkbox' : 'radio',
+  return optionCard('div', { class: 'own-words' }, {
+    index: block.version.body.options.length,
+    label: h('label', { class: 'choice', for: `${name}-words` },
+      h('input', { id: `${name}-words`, name, class: 'option-input', type: block.version.body.multiple ? 'checkbox' : 'radio',
         checked: answer.ownWordsSelected === true, onchange: choose }),
       h('span', { class: 'choice-label' }, 'In your own words')),
-    h('label', { class: 'words', for: `words-${block.id}` }, 'Your answer',
-      h('textarea', { id: `words-${block.id}`, rows: 2, oninput: edit })));
+    after: [h('label', { class: 'words', for: `words-${block.id}` }, 'Your answer',
+      h('textarea', { id: `words-${block.id}`, rows: 2, oninput: edit }))],
+  });
 }
 
 /**

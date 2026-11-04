@@ -1,8 +1,9 @@
 // The Yard Logs the page server serves: above them, every open submission on the machine, oldest
 // first, with its repository, worktree and branch; then each repository, named by the top of its
 // main worktree, with each worktree's current branch's Yard Log, and the Yard Logs carried from
-// other branches in a fold of the repository's own (`inherited.js`). They lie in the menu down the window's left, which folds
-// to a strip that holds only the button that opens it.
+// other branches in a fold of the repository's own (`inherited.js`). They lie in the sidebar down
+// the window's left, headed by Loft's wordmark with Yard beside it, which folds to a rail that
+// holds the button that opens it and the count of what waits.
 
 import { h, svg } from '../lib/dom.js';
 import { base, when, who } from '../lib/format.js';
@@ -57,6 +58,13 @@ export function waitingList(listing) {
   );
 }
 
+/** Loft Web's panel icon, drawn on a square of 16. */
+const PANEL = 'M2.5 3h11v10h-11zM6 3v10';
+
+function panelIcon() {
+  return svg('svg', { class: 'side-icon', viewBox: '0 0 16 16', width: 18, height: 18, 'aria-hidden': 'true' }, svg('path', { d: PANEL }));
+}
+
 /**
  * A Yard Log of the list, at its own address, with `current` marked.
  * @param {string} tree
@@ -72,8 +80,8 @@ function logItem(tree, log, current) {
       'a',
       { href: address(tree, log.branch), 'aria-current': here ? 'page' : null },
       h('span', { class: 'branch' }, log.branch),
-      log.title && log.title !== log.branch ? h('span', { class: 'title' }, log.title) : null,
       log.waiting ? h('span', { class: 'waiting-count', title: `${log.waiting} wait on you` }, String(log.waiting)) : null,
+      log.title && log.title !== log.branch ? h('span', { class: 'title' }, log.title) : null,
       log.closed ? h('span', { class: 'tag' }, 'closed') : null,
       log.inherited ? h('span', { class: 'tag' }, 'inherited') : null,
       log.newer ? h('span', { class: 'tag tag--warning' }, `newer format ${log.format}`) : null,
@@ -123,55 +131,42 @@ export function treeList(listing, current) {
   );
 }
 
-/** Three lines: the button that opens the folded menu. */
-function threeLines() {
-  return svg(
-    'svg',
-    { class: 'menu-icon', viewBox: '0 0 20 20', width: 20, height: 20, 'aria-hidden': 'true' },
-    [5, 10, 15].map((y) => svg('path', { d: `M3 ${y}h14` })),
-  );
-}
-
-/** Two chevrons pointing left: the button that folds the open menu. */
-function foldArrows() {
-  return svg(
-    'svg',
-    { class: 'menu-icon', viewBox: '0 0 20 20', width: 20, height: 20, 'aria-hidden': 'true' },
-    svg('path', { d: 'M10 5l-5 5 5 5' }),
-    svg('path', { d: 'M16 5l-5 5 5 5' }),
-  );
-}
-
 /**
- * The menu of Yard Logs: open, its head names it beside the button that folds it, above what
- * waits and the list; folded, its head holds only the button that opens it, with the count of
- * what waits on the person, which the folded list no longer shows.
+ * The sidebar: open, its head holds the button that folds it and Loft's wordmark with Yard beside
+ * it, above what waits and the list; folded, it is a rail of the button that opens it, with the
+ * count of what waits on the person.
  * @param {any} listing
  * @param {{ tree: string, branch: string } | null} current
  * @param {boolean} folded
- * @param {(folded: boolean) => void} onToggle
+ * @param {{ onToggle: (folded: boolean) => void }} actions
  */
-export function menu(listing, current, folded, onToggle) {
+export function sidebar(listing, current, folded, { onToggle }) {
   const waiting = listing?.count ?? 0;
-  const label = folded ? `Open the menu of Yard Logs${waiting ? `, ${waiting} wait on you` : ''}` : 'Fold the menu of Yard Logs';
+  const label = folded ? `Open the sidebar${waiting ? `, ${waiting} wait on you` : ''}` : 'Fold the sidebar';
   const button = h(
     'button',
     {
       type: 'button',
-      id: 'menu-button',
-      class: 'menu-button',
-      'aria-controls': 'menu-lists',
+      id: 'side-button',
+      class: 'side-button',
+      'aria-controls': 'side-lists',
       'aria-expanded': folded ? 'false' : 'true',
       'aria-label': label,
       title: label,
       onclick: () => onToggle(!folded),
     },
-    folded ? threeLines() : foldArrows(),
+    panelIcon(),
     folded && waiting ? h('span', { class: 'waiting-count', 'aria-hidden': 'true' }, String(waiting)) : null,
   );
+  const mark = h(
+    'a',
+    { class: 'wordmark-link', href: '#', 'aria-label': 'Loft Yard: the Yard Logs' },
+    h('span', { class: 'wordmark' }, h('span', { class: 'wordmark-initial' }, 'L'), 'oft'),
+    h('span', { class: 'app-name' }, 'Yard'),
+  );
   return [
-    h('div', { class: 'menu-head' }, folded ? null : h('h2', { class: 'menu-title' }, 'Yard Logs'), button),
-    h('div', { id: 'menu-lists', class: 'menu-lists', hidden: folded }, waitingList(listing), treeList(listing, current)),
+    h('div', { class: 'side-head' }, button, folded ? null : mark),
+    h('div', { id: 'side-lists', class: 'side-lists', hidden: folded }, waitingList(listing), treeList(listing, current)),
   ];
 }
 

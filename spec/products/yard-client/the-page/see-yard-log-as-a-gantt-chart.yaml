@@ -9,20 +9,20 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "offer the timeline and the Gantt chart as two views of Yard Log, and remember in this browser the one chosen."
+      shall: "offer the timeline, the Gantt chart and the tokens as three views of Yard Log, and remember in this browser the one chosen."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb69ef96a504
-        name: "A switch in the page's header, after the Yard mark, chooses the timeline or the Gantt chart."
+        name: "The tabs in the page's head choose the timeline, the Gantt chart or the tokens."
       - key: 01a16984-aadb-7721-9995-472440ea0ee8
-        name: "The switch is drawn as the Loft website's navigation: each view named in text, the one shown in ink and underlined in action blue."
+        name: "Each view's tab shows an icon and the view's name, and the one shown is marked as current."
       - key: 01a168c0-7faa-72dc-8ad3-520c27488530
-        name: "The switch stays in the same place whichever view is shown."
+        name: "The tabs stay in the same place whichever view is shown."
       - key: 01a1646f-546d-7042-befd-eb6a95402082
         name: "The view chosen is the one shown the next time the page opens in this browser."
       - key: 01a1646f-546d-7042-befd-eb6b4a34aab6
         name: "The Gantt chart follows Yard Log's changes as the timeline does."
       - key: 01a1646f-546d-7042-befd-eb6c59e28e31
-        name: "While the Gantt chart is shown, the page keeps the width it has while the timeline is shown."
+        name: "While the Gantt chart or the tokens are shown, the page keeps the width it has while the timeline is shown, in one pane beneath its head."
   - key: 01a168c0-7faa-72dc-8ad3-520deb7f6c75
     statement:
       form: ubiquitous
@@ -185,3 +185,26 @@ requirements:
         name: "Each stretch of spec mode is shaded faintly and hatched across every lane of the chart, over each lane's background."
       - key: 01a1646f-546d-7042-befd-eb80ccffb25f
         name: "Each stretch of spec mode is labelled as spec mode, and gives its length on hover."
+  - key: 01a1a7e1-2b67-777d-ab6f-d4bf3e94624b
+    statement:
+      form: optional
+      where: "a session of Yard Log has stopped, unheard for 60 seconds"
+      system: "the page"
+      shall: "end what the session left going on at its last event in Yard Log, rather than at now."
+    criteria:
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c0f9768d94
+        name: "A turn, a stage it owns, a task it executes, a stretch of plan or spec mode, a subagent's run or a Loft run that a stopped session left with no end ends at that session's last event in Yard Log."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c1e29c6104
+        name: "While Yard Log is closed, or none of its sessions is heard and no submission is open, the chart ends at the end of its last record and does not grow as time passes."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c2646cddb9
+        name: "While a session of Yard Log is heard, what it has going on is drawn to now."
+  - key: 01a1a7e1-2b67-777d-ab6f-d4c3d14b496b
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "give with each session's activity whether the session has stopped."
+    criteria:
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c4b2f268dd
+        name: "A session never heard, or not heard for 60 seconds, is given as stopped."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c5ee134a0d
+        name: "A session heard within the last 60 seconds is given as not stopped."

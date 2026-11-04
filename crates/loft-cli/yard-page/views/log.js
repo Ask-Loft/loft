@@ -1,9 +1,11 @@
-// A branch's Yard Log: its title and where it is, whether it is closed, carried from another
-// branch or of a newer format; the blocks changed since the last visit; the timeline or the Gantt
-// chart; and the tokens it took. In the page's header beside it, the switch of views and the
-// count of what waits on the person, which opens it in the modal.
+// A branch's Yard Log. Its head, as Loft Web heads a page: where it lies, its title and a line
+// that sums up its stages and the blocks changed since the last visit, and at its right the
+// controls of the view shown, the order of the stages and the count of what waits on the person,
+// which opens it in the modal. Beneath the head, whether it is closed, carried from another branch
+// or of a newer format, and the view chosen in the tabs along the head's foot: the timeline, the
+// Gantt chart or the tokens it took.
 
-import { add, h } from '../lib/dom.js';
+import { add, h, svg } from '../lib/dom.js';
 import { base, count, place, when } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import * as prefs from '../lib/prefs.js';
@@ -24,7 +26,10 @@ import { waitingIn } from './waiting.js';
 /**
  * @typedef {{ tree: string, branch: string, last: number | null, now: number, width: number,
  *   refresh: () => void, notify: (text: string) => void, onView: () => void,
- *   onPick: (id: string) => void, onWaiting?: (blockKey?: string) => void }} LogContext
+ *   onPick: (id: string) => void, onWaiting?: (blockKey?: string) => void,
+ *   place?: { repository: string, main: boolean },
+ *   chosen?: { stage?: string, block?: string },
+ *   onChoose?: (stage: string, block?: string) => void }} LogContext
  */
 
 /**
@@ -107,46 +112,145 @@ export function logView(log, context) {
   const section = h('section', { class: ['yard-log', `view--${view}`], 'aria-labelledby': 'log-title' });
   add(
     section,
-    header(log, context),
-    toolbar(order, view, marked.size, context.onView),
+    banners(log),
     view === 'gantt'
       ? gantt(log, { width: context.width, now: context.now, onPick: context.onPick })
-      : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now }),
-    tokensView(log),
+      : view === 'tokens'
+        ? tokensView(log)
+        : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now, chosen: context.chosen, onChoose: context.onChoose }),
   );
   return section;
 }
 
+const STATUSES = [
+  ['done', 'done'],
+  ['active', 'active'],
+  ['planned', 'planned'],
+  ['dropped', 'dropped'],
+];
+
 /**
- * What the page's header holds for the Yard Log shown, after the Yard mark: the switch of views,
- * then the count of what waits on the person, which opens it.
+ * The head of the Yard Log shown: where it lies, its title and the line that sums it up, and at
+ * its right the controls of the view shown, each labelled above it.
  * @param {any} log
  * @param {LogContext} context
  */
-export function logChrome(log, context) {
-  const view = prefs.view();
+export function logHead(log, context) {
+  const yardLog = log.yardLog ?? {};
+  const branch = log.branch ?? context.branch;
+  const where = context.place;
+  const stages = log.stages ?? [];
+  const tally = STATUSES.map(([status, word]) => [stages.filter((stage) => stage.version.body.status === status).length, word])
+    .filter(([n, word]) => n || word !== 'dropped')
+    .map(([n, word]) => `${n} ${word}`);
+  const marked = changedSince(log, context.last).size;
+  return [
+    h(
+      'div',
+      { class: 'head-text' },
+      h(
+        'p',
+        { class: 'kicker' },
+        h('span', { class: 'repository', title: where?.repository ?? context.tree }, base(where?.repository ?? context.tree)),
+        where && !where.main ? h('span', { class: 'tree', title: context.tree }, base(context.tree)) : null,
+        // The branch is named above the title only where the title is not its name.
+        (yardLog.title ?? branch) === branch ? null : h('span', { class: 'branch' }, branch),
+      ),
+      h('h1', { id: 'log-title' }, yardLog.title ?? branch),
+      h(
+        'p',
+        { class: 'summary' },
+        `${count(stages.length, 'stage')}: ${tally.join(', ')}`,
+        marked ? [' · ', h('span', { class: 'changed-count' }, `${count(marked, 'block')} changed since your last visit`)] : null,
+      ),
+    ),
+    h('div', { class: 'head-controls' }, orderControl(context), waitControl(log, context)),
+    viewTabs(context),
+  ];
+}
+
+/** @typedef {'timeline' | 'gantt' | 'tokens'} View */
+
+/** The views of a Yard Log, in their order, each with Loft Web's icon drawn on a square of 16. */
+export const VIEWS = /** @type {[View, string, string[]][]} */ ([
+  ['timeline', 'Timeline', ['M3.5 3.5h2v2h-2zM3.5 7h2v2h-2zM3.5 10.5h2v2h-2z', 'M8 4.5h5.5M8 8h5.5M8 11.5h5.5']],
+  ['gantt', 'Gantt chart', ['M2.5 4h6M5.5 8h7.5M8.5 12h5']],
+  ['tokens', 'Tokens', ['M6 2.5l-1.5 11M11.5 2.5l-1.5 11M2.5 6h11M2 10h11']],
+]);
+
+/**
+ * The tabs of the views along the head's foot, the one shown marked as current. Choosing one
+ * keeps the stage and the block chosen, which the address holds.
+ * @param {LogContext} context
+ */
+function viewTabs(context) {
+  const shown = prefs.view();
+  return h(
+    'nav',
+    { class: 'view-tabs', 'aria-label': 'Views' },
+    VIEWS.map(([view, name, paths]) =>
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'view-tab',
+          dataset: { view },
+          'aria-current': view === shown ? 'page' : null,
+          onclick: () => {
+            if (view === prefs.view()) return;
+            prefs.set('view', view);
+            context.onView();
+          },
+        },
+        svg('svg', { class: 'tab-icon', viewBox: '0 0 16 16', width: 16, height: 16, 'aria-hidden': 'true' }, paths.map((d) => svg('path', { d }))),
+        name,
+      ),
+    ),
+  );
+}
+
+/**
+ * The control of the order of the stages, shown only with the timeline.
+ * @param {LogContext} context
+ */
+function orderControl(context) {
+  if (prefs.view() !== 'timeline') return null;
+  const order = prefs.order();
+  const select = h(
+    'select',
+    {
+      id: 'order',
+      onchange: (/** @type {Event} */ event) => {
+        prefs.set('order', /** @type {HTMLSelectElement} */ (event.target).value);
+        context.onView();
+      },
+    },
+    h('option', { value: 'newest', selected: order === 'newest' }, 'Newest first'),
+    h('option', { value: 'oldest', selected: order === 'oldest' }, 'Oldest first'),
+  );
+  return h('label', { class: 'control' }, h('span', { class: 'control-label' }, 'Order of the stages'), select);
+}
+
+/**
+ * The button that gives the count of what waits on the person and opens it, where it can be
+ * answered on the page and anything waits.
+ * @param {any} log
+ * @param {LogContext} context
+ */
+function waitControl(log, context) {
   const answering = answeringIn(log, context);
-  const count = waitingIn(log).reduce((sum, item) => sum + item.waiting.length, 0);
-  const tab = (value, label) =>
+  const waits = waitingIn(log).reduce((sum, item) => sum + item.waiting.length, 0);
+  if (!answering || !waits) return null;
+  return h(
+    'div',
+    { class: 'control' },
+    h('span', { class: 'control-label', id: 'waiting-label' }, 'Asked of you'),
     h(
       'button',
-      {
-        type: 'button',
-        class: 'view-tab',
-        'aria-pressed': view === value ? 'true' : 'false',
-        onclick: () => {
-          prefs.set('view', value);
-          context.onView();
-        },
-      },
-      label,
-    );
-  return [
-    h('nav', { class: 'views', 'aria-label': 'View' }, tab('timeline', 'Timeline'), tab('gantt', 'Gantt chart')),
-    answering && count
-      ? h('button', { type: 'button', class: 'primary wait-button', id: 'open-waiting', onclick: () => answering() }, `${count} ${count === 1 ? 'waits' : 'wait'} on you`)
-      : null,
-  ];
+      { type: 'button', class: 'primary wait-button', id: 'open-waiting', 'aria-describedby': 'waiting-label', onclick: () => answering() },
+      `${waits} ${waits === 1 ? 'waits' : 'wait'} on you`,
+    ),
+  );
 }
 
 /**
@@ -159,17 +263,13 @@ function answeringIn(log, context) {
 }
 
 /**
+ * Whether the Yard Log shown is closed, carried from another branch or of a newer format.
  * @param {any} log
- * @param {LogContext} context
  */
-function header(log, context) {
+function banners(log) {
   const yardLog = log.yardLog ?? {};
   const closed = yardLog.closedBy && yardLog.closedBy !== 'open';
-  return h(
-    'header',
-    { class: 'log-head' },
-    h('p', { class: 'where' }, h('span', { class: 'tree' }, base(context.tree)), h('span', { class: 'branch' }, log.branch ?? context.branch)),
-    h('h2', { id: 'log-title' }, yardLog.title ?? log.branch),
+  const shown = [
     closed
       ? h(
           'p',
@@ -189,45 +289,6 @@ function header(log, context) {
           `Written in the format ${yardLog.format}, newer than this loft reads: a newer loft is needed to show it whole and to answer here. ${count(log.leftOut, 'record')} left out.`,
         )
       : null,
-  );
-}
-
-/**
- * The line above the stages: the order of the stages at its left, shown only with the timeline,
- * and the count of blocks changed since the last visit at its right; not drawn when it holds
- * neither.
- * @param {'newest' | 'oldest'} order
- * @param {'timeline' | 'gantt'} view
- * @param {number} changed
- * @param {() => void} onView
- */
-function toolbar(order, view, changed, onView) {
-  if (view !== 'timeline' && !changed) return null;
-  const choice = (value, label) =>
-    h(
-      'button',
-      {
-        type: 'button',
-        class: ['segment', order === value ? 'is-on' : null],
-        'aria-pressed': order === value ? 'true' : 'false',
-        onclick: () => {
-          prefs.set('order', value);
-          onView();
-        },
-      },
-      label,
-    );
-  return h(
-    'div',
-    { class: 'toolbar' },
-    view === 'timeline'
-      ? h(
-          'div',
-          { class: 'segments', role: 'group', 'aria-label': 'Order of the stages' },
-          choice('newest', 'Newest first'),
-          choice('oldest', 'Oldest first'),
-        )
-      : null,
-    changed ? h('p', { class: 'changed-count' }, `${count(changed, 'block')} changed since your last visit`) : null,
-  );
+  ].filter(Boolean);
+  return shown.length ? h('div', { class: 'banners' }, shown) : null;
 }

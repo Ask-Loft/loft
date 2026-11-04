@@ -1082,6 +1082,10 @@
         "lastEnded": {
           "type": "string"
         },
+        "stopped": {
+          "description": "The page server's only: whether the session has stopped, never heard or not heard for 60 seconds",
+          "type": "boolean"
+        },
         "turns": {
           "type": "array",
           "items": {

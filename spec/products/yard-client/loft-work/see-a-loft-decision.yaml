@@ -12,16 +12,38 @@ requirements:
       shall: "draw a `decision` view with the decision's title, label, state, context and outcome, its options, a table of its assessments, its consequences and its subjects."
     criteria:
       - key: 01a1646f-546d-7042-befd-eab87ad2fa8b
-        name: "Each option shows its title and description, and the selected option is marked as selected."
+        name: "Each option shows its title in its row of the table, and its description once its row is opened."
+      - key: 01a1a879-b49c-74df-b755-c48a1b0870b2
+        name: "The options are listed once, as the rows of the table, and the selected option is marked as selected."
       - key: 01a1646f-546d-7042-befd-eab9f27ee1c1
-        name: "The table has a row for each option and a column for each driver, and each cell gives the rating in a word as well as a colour, with its rationale."
+        name: "The table has a row for each option and a column for each driver, and each cell gives the rating as a symbol in its colour, which names the rating to a reader."
+      - key: 01a1a879-b49c-74df-b755-c48b1ef1ef99
+        name: "A line above the table names the rating each symbol stands for."
+      - key: 01a1a879-b49c-74df-b755-c48c5e06a169
+        name: "An option's title takes one line of the table where the view is wide enough for it."
+      - key: 01a1a86c-65d5-76fe-b38b-1c58b8ab8657
+        name: "A cell gives its rationale while the pointer rests on it or it has the focus."
+      - key: 01a1a86c-65d5-76fe-b38b-1c59d4593b08
+        name: "Each option's row opens to the rationale of each of its ratings."
+      - key: 01a1a86c-65d5-76fe-b38b-1c5a6628183a
+        name: "The selected option's row comes first, marked by a bar at its left."
       - key: 01a1646f-546d-7042-befd-eababcab5af2
         name: "Each driver shows its label and statement, or the node it stands for."
       - key: 01a1646f-546d-7042-befd-eabbb57e9401
         name: "Each consequence shows its kind and its statement."
+      - key: 01a1a86c-65d5-76fe-b38b-1c5b7e887d44
+        name: "The consequences form one list without bullets, each led by its kind in a small muted word."
       - key: 01a1646f-546d-7042-befd-eabc540b4e07
         name: "Each subject shows its role and its node, by its label and its name."
+      - key: 01a1a86c-65d5-76fe-b38b-1c5c68102d44
+        name: "The subjects of one role are listed one to a line beside their role, such as `Affects`, in the column that gives the consequences' kinds, with no frame around the role."
+      - key: 01a1a896-a913-722b-b87e-a7e4ec791caf
+        name: "Each subject keeps to one line, its name cut where it runs out of room and given whole while the pointer rests on it."
       - key: 01a1646f-546d-7042-befd-eabdd040918b
         name: "A decision that is not accepted shows its state, and a rejected or retired one its rationale."
       - key: 01a1646f-546d-7042-befd-eabebf41cb3d
         name: "A decision with no label shows that it has not been published."
+      - key: 01a1a879-b49c-74df-b755-c48dad46c751
+        name: "The decision's outcome comes first beneath its head, before the table."
+      - key: 01a1a879-b49c-74df-b755-c48ebe84c508
+        name: "The decision's context and its drivers are each folded beneath a summary that the person opens."

@@ -10,7 +10,7 @@ import { afterEach, beforeEach, test } from 'node:test';
 import * as prefs from '../../yard-page/lib/prefs.js';
 import { h } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
-import { logChrome, logView } from '../../yard-page/views/log.js';
+import { logHead, logView } from '../../yard-page/views/log.js';
 import { openWaiting, waitingModal } from '../../yard-page/views/waiting.js';
 import { EXPLORE, act, block, log, open, question, stage } from './fixtures.js';
 
@@ -61,7 +61,7 @@ function page(shown, more = {}) {
     onWaiting: openWaiting,
     ...more,
   };
-  at.append(h('header', { class: 'top' }, h('div', { id: 'chrome', class: 'chrome' }, logChrome(shown, context))), logView(shown, context));
+  at.append(h('header', { id: 'head', class: 'page-head' }, logHead(shown, context)), logView(shown, context));
   waitingModal(shown, where);
   return at;
 }
@@ -156,13 +156,13 @@ test('a submission sent after the panel was closed opens it again', () => {
   assert.equal(dialog().querySelectorAll('.submission').length, 2);
 });
 
-test('a button in the page’s header, after the switch of views, gives the count of the blocks that wait and opens the panel', () => {
+test('a button among the controls of the page’s head gives the count of the blocks that wait and opens the panel', () => {
   const first = question('colour', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], { submissions: [open([first, second], '2026-01-01T10:04:00Z')] });
   const drawn = page(shown);
   modal.close('waiting');
-  const button = drawn.querySelector('header.top nav.views + #open-waiting');
+  const button = drawn.querySelector('header#head #open-waiting');
   assert.equal(button.textContent, '2 wait on you');
   button.click();
   assert.ok(dialog().open);
@@ -224,12 +224,12 @@ test('the panel closes by itself once nothing in it waits on the person, and the
 
 test('a diagram in a waiting block is drawn in the panel, as it is in the timeline', async () => {
   const asked = question('colour', ['Red', 'Blue'], {
-    contextHtml: '<pre><code class="language-mermaid">flowchart LR\n  A --&gt; B</code></pre>',
+    contextHtml: '<pre><code class="language-mermaid">sequenceDiagram\n  A-&gt;&gt;B: hi</code></pre>',
   });
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
   for (let turn = 0; turn < 5; turn += 1) await new Promise((done) => setTimeout(done, 0));
   const body = dialog().querySelector('.modal-body');
   assert.ok(!body.querySelector('pre > code.language-mermaid'), 'the diagram is still a code block');
-  assert.equal(body.querySelector('.diagram svg text')?.textContent, 'flowchart LR\n  A --> B');
+  assert.equal(body.querySelector('.diagram svg text')?.textContent, 'sequenceDiagram\n  A->>B: hi');
 });

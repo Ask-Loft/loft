@@ -1,10 +1,10 @@
-/* The Yard page, dressed as the Loft website: Inter on a white ground, square boxes with an ink
-   border, a hard offset shadow on what is in hand and on what waits on the person, and the
-   website's dotted cyan-to-lilac rule under the header. Action blue marks what is in hand, teal
-   what is done, rust what waits on the person, lilac plan mode and rose a fix the person asked
-   for. The dark scheme is the website's own, taken when the browser asks for it. Tokens first,
-   then the frame, the list of Yard Logs, the timeline, the blocks, the answers, the Loft views,
-   the Gantt chart and the tokens. */
+/* The Yard page, dressed as Loft Web: Inter on a white ground, a sidebar on a ground of its own,
+   square corners and hairline rules, and a hard offset shadow only on what floats over the page.
+   Its tokens are Loft Web's, drawn again here, since the page shares no code with it: action blue
+   marks what is in hand, teal what is done, rust what waits on the person, lilac plan mode and
+   rose a fix the person asked for, and each kind of node has its colour. The dark scheme is Loft
+   Web's own, taken when the browser asks for it. Tokens first, then the frame, the sidebar, the
+   head, the timeline, the blocks, the answers, the Loft views, the Gantt chart and the tokens. */
 
 @font-face {
   font-family: "Inter";
@@ -15,18 +15,48 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* A face of the system's standing in for Inter until it loads, sized to Inter's widths and set on
+   its lines, so that nothing moves when Inter lands. Inter's ascender and descender are 0.96875
+   and 0.2412 of its em, with no line gap; its width over Arial's on a line of English prose is
+   1.0685 at weight 400 and 1.0114 at 600. Each face's size-adjust is that ratio and its overrides
+   Inter's metrics divided by it. Arial is named as macOS and Windows install it, and Liberation
+   Sans and Arimo, which share its metrics, as Linux does. */
+@font-face {
+  font-family: "Inter Fallback";
+  font-weight: 100 500;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans"), local("Arimo");
+  size-adjust: 106.85%;
+  ascent-override: 90.67%;
+  descent-override: 22.58%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Inter Fallback";
+  font-weight: 600 900;
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("LiberationSans-Bold"), local("Arimo Bold");
+  size-adjust: 101.14%;
+  ascent-override: 95.78%;
+  descent-override: 23.85%;
+  line-gap-override: 0%;
+}
+
 :root {
   --canvas: #ffffff;
   --surface: #ffffff;
-  --surface-2: #f3f7fa;
+  --surface-2: #f6f9fb;
+  --side: #f6f9fb;
   --mist: #e5f6ff;
   --ink: #0e141d;
   --body: #424b56;
   --muted: #5c646f;
-  --line: #dbe2e9;
+  --line: #e4e9ee;
   --rail: #aab2ba;
   --shadow: #0e141d;
   --signal: #14488f;
+  /* The share bars' blue and its track, steps of one ramp that pass the dataviz validator on this surface. */
+  --bar: #256abf;
+  --bar-track: #cde2fb;
   --signal-soft: #e4efff;
   --done: #0a756c;
   --done-soft: #e3f4f1;
@@ -43,15 +73,22 @@
   --spec: #7a5600;
   --spec-soft: #fbf0d6;
   --new: #007083;
-  --button: #aee2fd;
-  --button-hover: #98d8f9;
-  --on-button: #0e141d;
-  --header: rgb(255 255 255 / 90%);
-  --cyan: #56d3da;
-  --sky: #2cb4e4;
-  --cornflower: #468de5;
-  --periwinkle: #6868d2;
-  --lilac: #8b57be;
+  --button: #14488f;
+  --button-hover: #1a56ab;
+  --on-button: #ffffff;
+  --kind-product: #56d3da;
+  --kind-group: #2cb4e4;
+  --kind-feature: #468de5;
+  --kind-requirement: #6868d2;
+  --kind-criterion: #8b57be;
+  --kind-constraint: #a86b12;
+  --kind-quality: #0f8b8d;
+  --kind-component: #aab2ba;
+  /* The bars of change in a spec-change diagram: steps that pass the dataviz validator on this
+     surface, told apart by a word as well. */
+  --change-added: #199e70;
+  --change-changed: #256abf;
+  --change-removed: #e34948;
   --series-task: #468de5;
   --series-task-pale: #c4dbf7;
   --series-fix: #d23f74;
@@ -60,8 +97,10 @@
   --series-wait: #eb6834;
   --series-work: #aab2ba;
   --series-subagent: #8b57be;
-  --scrim: rgb(14 20 29 / 55%);
-  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --code: rgb(14 20 29 / 5%);
+  --scrim: rgb(14 20 29 / 28%);
+  --float: 3px 3px 0 var(--shadow);
+  --font: "Inter", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   color-scheme: light;
 }
@@ -69,16 +108,19 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --canvas: #0c1117;
-    --surface: #131a22;
-    --surface-2: #18212b;
-    --mist: #121d28;
+    --surface: #0c1117;
+    --surface-2: #10161d;
+    --side: #10161d;
+    --mist: #132233;
     --ink: #e8eef4;
     --body: #b8c2cc;
     --muted: #95a0ab;
-    --line: #26313d;
+    --line: #222c37;
     --rail: #4a5561;
     --shadow: #5f7389;
     --signal: #8ec5f2;
+    --bar: #3987e5;
+    --bar-track: #0d366b;
     --signal-soft: #142640;
     --done: #5ed3c0;
     --done-soft: #0f2e2a;
@@ -95,15 +137,20 @@
     --spec: #e8b64a;
     --spec-soft: #2e2510;
     --new: #56d3da;
-    --button: #aee2fd;
-    --button-hover: #c6ebfe;
-    --on-button: #0e141d;
-    --header: rgb(12 17 23 / 88%);
-    --cyan: #56d3da;
-    --sky: #2cb4e4;
-    --cornflower: #468de5;
-    --periwinkle: #6868d2;
-    --lilac: #9b6fd0;
+    --button: #8ec5f2;
+    --button-hover: #a9d3f5;
+    --on-button: #0c1117;
+    --kind-product: #56d3da;
+    --kind-group: #2cb4e4;
+    --kind-feature: #468de5;
+    --kind-requirement: #7d7de0;
+    --kind-criterion: #9d6fd0;
+    --kind-constraint: #e0a84a;
+    --kind-quality: #4fc3c5;
+    --kind-component: #4a5561;
+    --change-added: #199e70;
+    --change-changed: #3987e5;
+    --change-removed: #e66767;
     --series-task: #468de5;
     --series-task-pale: #24405f;
     --series-fix: #e2578a;
@@ -112,7 +159,8 @@
     --series-wait: #d95926;
     --series-work: #4a5561;
     --series-subagent: #9b6fd0;
-    --scrim: rgb(0 0 0 / 70%);
+    --code: rgb(232 238 244 / 7%);
+    --scrim: rgb(0 0 0 / 55%);
     color-scheme: dark;
   }
 }
@@ -120,12 +168,12 @@
 /* The frame. */
 
 * { box-sizing: border-box; }
-html { scroll-padding-top: 88px; }
+html { scroll-padding-top: 160px; }
 body {
   margin: 0;
   background: var(--canvas);
   color: var(--ink);
-  font: 15px/1.55 var(--font);
+  font: 15px/1.5 var(--font);
   font-feature-settings: "cv02", "cv03", "cv04", "calt";
   -webkit-font-smoothing: antialiased;
 }
@@ -134,173 +182,178 @@ h2, h3 { text-wrap: balance; letter-spacing: -0.015em; }
 a { color: var(--signal); text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
 a:hover { text-decoration-thickness: 2.5px; }
 code, .label { font-family: var(--mono); font-size: 0.86em; }
-code { background: var(--mist); padding: 1px 5px; }
+code { background: var(--code); padding: 0 4px; }
 pre code, .label code { background: none; padding: 0; }
 /* A colour written in a code span, drawn on that colour, ringed so that one like the ground shows. */
 code.colour { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabular-nums; }
-.label { display: inline-block; padding: 0 6px; background: var(--surface-2); color: var(--ink); font-weight: 600; line-height: 1.6; white-space: nowrap; }
-.label--f { background: var(--mist); box-shadow: inset 2px 0 0 var(--cyan); }
-.label--rq { background: var(--signal-soft); box-shadow: inset 2px 0 0 var(--cornflower); }
-.label--new { background: none; box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-weight: 400; font-style: italic; }
+/* A label as Loft Web sets one: in monospace and muted, after a square in its node's kind's colour,
+   apart from the name beside it, which keeps the ink. */
+.label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.6; white-space: nowrap; }
+.label::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--kind, var(--rail)); }
+.label--p { --kind: var(--kind-product); }
+.label--fg { --kind: var(--kind-group); }
+.label--f { --kind: var(--kind-feature); }
+.label--rq { --kind: var(--kind-requirement); }
+.label--ac { --kind: var(--kind-criterion); }
+.label--con { --kind: var(--kind-constraint); }
+.label--qa { --kind: var(--kind-quality); }
+.label--cmp { --kind: var(--kind-component); }
+.label--adr { --kind: var(--rail); }
+.label--new { padding: 0 6px; border: 1px dashed var(--new); color: var(--new); }
+.label--new::before { content: none; }
 button { font: inherit; }
 :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
 
-.top {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 16px 32px;
-  min-height: 60px;
-  padding: 10px 24px;
-  background: var(--header);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--ink);
-}
-/* The website's signature: a row of dots under the header, from cyan through to lilac. */
-.dots {
-  height: 15px;
-  background: linear-gradient(90deg, var(--cyan), var(--sky), var(--cornflower), var(--periwinkle), var(--lilac));
-  -webkit-mask: radial-gradient(circle at center, #000 0 2.2px, transparent 2.8px) 0 50% / 13px 15px repeat-x;
-  mask: radial-gradient(circle at center, #000 0 2.2px, transparent 2.8px) 0 50% / 13px 15px repeat-x;
-}
-.mark-word {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 21px;
-  letter-spacing: -0.03em;
-}
-.mark-word::before {
-  content: "";
-  width: 11px;
-  height: 11px;
-  background: var(--cyan);
-  box-shadow: 0 0 0 1px var(--ink);
-}
-/* The Y wears the action blue the website's wordmark gives its L; the rest of the name is ink. */
-.mark-initial { color: var(--signal); }
-/* After the mark, what the header holds for the Yard Log shown: the switch of views, drawn as the
-   website's navigation, and the count of what waits on the person. */
-.chrome { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; min-width: 0; }
-.chrome:empty { display: none; }
-.views { display: flex; gap: 24px; }
-.view-tab {
-  border: 0;
-  background: none;
-  padding: 8px 0;
-  color: var(--body);
-  font-size: 15px;
-  font-weight: 500;
-  text-decoration: none;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 2px;
-  cursor: pointer;
-}
-.view-tab:hover { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--signal); }
-.view-tab[aria-pressed="true"] { color: var(--ink); text-decoration-line: underline; text-decoration-color: var(--signal); }
-.chrome .wait-button { padding: 4px 12px; font-size: 14px; }
-.connection { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--muted); font-size: 13px; }
-.connection-dot { width: 8px; height: 8px; background: var(--done); box-shadow: 0 0 0 1px var(--ink); }
-.is-offline .connection-dot { background: var(--wait); }
-
-/* The window holds two columns: the menu of Yard Logs down its left from top to bottom, and the
-   page beside it, header and all. Folded, the menu is a strip that holds only its button. */
+/* The window holds two columns, as Loft Web's does: the sidebar down its left from top to
+   bottom, on a ground of its own, and the page beside it. Folded, the sidebar is a rail that holds
+   its button, an icon for each view and the count of what waits. */
 .layout {
-  --menu: 300px;
-  --strip: 58px;
+  --sidebar: 248px;
+  --rail-width: 68px;
   display: grid;
-  grid-template-columns: var(--menu) minmax(0, 1fr);
-  max-width: 1800px;
-  min-height: 100vh;
+  grid-template-columns: var(--sidebar) minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
   margin: 0;
-  align-items: start;
+  overflow: hidden;
 }
-.is-folded .layout { grid-template-columns: var(--strip) minmax(0, 1fr); }
+.is-folded .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
 .side {
   position: sticky;
   top: 0;
   z-index: 6;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
-  overflow: auto;
-  background: var(--surface);
-  border-right: 1px solid var(--ink);
+  height: 100dvh;
+  background: var(--side);
+  border-right: 1px solid var(--line);
 }
-.page { grid-column: 2; min-width: 0; }
-.main { min-width: 0; margin: 28px 24px 48px; }
+.side-content { flex: 1; min-height: 0; overflow: auto; overscroll-behavior-y: contain; }
+.page { grid-column: 2; display: flex; flex-direction: column; min-width: 0; height: 100vh; height: 100dvh; overflow: hidden; }
+/* The gutter of its scrollbar is kept, so that its width, by which the Gantt chart is drawn, holds whether or not it scrolls. */
+.main { flex: 1; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; padding: 28px 40px 48px; }
 .loading, .empty, .welcome p { color: var(--muted); }
 .welcome { padding: 40px 0; display: grid; gap: 10px; max-width: 60ch; }
+.welcome h2 { font-size: 28px; line-height: 32px; font-weight: 700; letter-spacing: -0.025em; }
 .welcome .commands { margin: 0; padding-left: 1.4em; display: grid; gap: 4px; }
 .notice:empty { display: none; }
 .notice {
   margin-bottom: 16px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-left: 3px solid var(--signal);
   background: var(--signal-soft);
   color: var(--ink);
+  font-size: 14px;
 }
 
-/* Too narrow for both side by side, the open menu lies over the page, which keeps the strip's room. */
+/* Too narrow for both side by side, the open sidebar lies over the page, which keeps the rail's room. */
 @media (max-width: 860px) {
-  .layout { grid-template-columns: var(--strip) minmax(0, 1fr); }
-  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--menu), calc(100vw - 32px)); z-index: 20; box-shadow: 6px 0 0 var(--shadow); }
-  .main { margin: 20px 16px 40px; }
-  .top { padding: 10px 16px; gap: 8px 20px; flex-wrap: wrap; }
-  .connection-words { display: none; }
+  .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
+  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--sidebar), calc(100vw - 32px)); z-index: 20; border-right-color: var(--ink); box-shadow: var(--float); }
+  .main { padding: 20px 16px 40px; }
 }
 
-/* The menu: its head, as tall as the page's header and level with it, then the lists. */
+/* The sidebar: the button that folds it and the wordmark, then what waits and the Yard Logs, and
+   at its foot whether the page follows Yard Log live. */
 
-.menu-head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 60px;
-  padding: 10px 11px 10px 20px;
-  background: var(--header);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--ink);
-}
-.is-folded .menu-head { justify-content: center; padding: 10px; }
-.menu-title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
-.menu-button {
+.side-head { display: flex; align-items: center; gap: 4px; padding: 12px 14px 10px; }
+.is-folded .side-head { flex-direction: column; padding: 12px 0 10px; }
+.side-button {
   position: relative;
-  display: inline-grid;
+  display: grid;
+  flex: none;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   padding: 0;
-  border: 1px solid var(--ink);
-  background: var(--surface);
+  border: 0;
+  background: none;
   color: var(--ink);
   cursor: pointer;
 }
-.menu-button:hover { background: var(--mist); }
-.menu-icon { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: square; }
-.menu-button .waiting-count { position: absolute; top: -8px; right: -9px; min-width: 18px; padding: 0 4px; line-height: 16px; font-size: 11px; box-shadow: 0 0 0 1px var(--ink); }
-.menu-lists { display: grid; gap: 22px; padding: 20px 14px 32px 20px; }
-.menu-lists[hidden] { display: none; }
+.side-button:hover, .side-button[aria-current="page"] { background: var(--mist); }
+.side-icon { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.side-button .waiting-count { position: absolute; top: 0; right: -6px; min-width: 0; padding: 0 2px; font-size: 11px; line-height: 14px; background: var(--side); }
+/* Loft's wordmark, its L in action blue, and the name of the application beside it, muted. */
+.wordmark-link { display: inline-flex; align-items: baseline; gap: 8px; padding: 10px 6px; color: var(--ink); text-decoration: none; }
+.wordmark { font-size: 20px; line-height: 1; font-weight: 700; letter-spacing: -0.05em; }
+.wordmark-initial { color: var(--signal); }
+.app-name { font-size: 14px; line-height: 1; color: var(--muted); }
+.side-lists { display: grid; gap: 22px; padding: 8px 14px 24px; }
+.side-lists[hidden] { display: none; }
+.connection { display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 24px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+.is-folded .connection { justify-content: center; padding: 12px 0 16px; }
+.is-folded .connection-words { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.connection-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--done); }
+.is-offline .connection-dot { background: var(--wait); }
+
+/* The head of the Yard Log shown, as Loft Web heads a page: where it lies above its title, a line
+   that sums it up beneath, and the controls of the view shown at its right, each labelled above
+   it in small text. It stays in place while what lies beneath it scrolls. */
+.page-head {
+  flex: none;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 32px;
+  padding: 24px 40px 16px;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--line);
+}
+.page-head:empty { display: none; }
+.head-text { display: grid; gap: 2px; min-width: 0; }
+.kicker { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; font-size: 14px; color: var(--ink); }
+.kicker .tree { color: var(--body); }
+.kicker .branch { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.page-head h1 { font-size: 28px; line-height: 32px; font-weight: 700; letter-spacing: -0.025em; overflow-wrap: anywhere; text-wrap: balance; }
+.summary { color: var(--body); font-size: 14px; }
+.summary .changed-count { color: var(--new); font-weight: 600; }
+.head-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 12px; }
+.control { display: grid; gap: 4px; }
+.control-label { font-size: 12px; line-height: 16px; color: var(--muted); }
+.control select {
+  min-width: 180px;
+  min-height: 40px;
+  padding: 0 34px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--canvas) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%235c646f' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 10px center / 12px;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  appearance: none;
+  cursor: pointer;
+}
+.control select:hover { background-color: var(--mist); }
+.head-controls .wait-button { min-height: 40px; }
+/* The views, as tabs along the head's foot: the one shown in ink, underlined in action blue on the
+   head's own hairline. */
+.view-tabs { flex: 1 0 100%; display: flex; gap: 24px; margin: 4px 0 -16px; }
+.view-tab { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 2px; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--body); font-size: 14px; white-space: nowrap; cursor: pointer; }
+.view-tab:hover { color: var(--ink); }
+.view-tab[aria-current="page"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--signal); }
+.tab-icon { flex: none; fill: none; stroke: currentColor; stroke-width: 1.5; }
+@media (max-width: 860px) {
+  .page-head { padding: 20px 16px 12px; }
+}
 
 /* The list of Yard Logs, and what waits everywhere. */
 
 .everywhere {
   background: var(--wait-soft);
-  border: 1px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--wait-line);
-  padding: 12px 14px;
+  border-left: 3px solid var(--wait);
+  padding: 10px 14px;
   display: grid;
   gap: 8px;
 }
-.everywhere h2 { font-size: 15px; font-weight: 700; color: var(--wait); }
+.everywhere h2 { font-size: 14px; font-weight: 600; color: var(--wait); }
 .wait-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .wait-link { display: flex; flex-wrap: wrap; gap: 0 8px; font-weight: 600; text-decoration: none; }
 .wait-link .tree, .wait-link .repository { color: var(--muted); font-weight: 400; font-size: 13px; }
@@ -309,131 +362,147 @@ button { font: inherit; }
 .sent { color: var(--muted); font-size: 13px; }
 
 .trees { display: grid; gap: 20px; }
-.repository h2 { font-size: 13px; color: var(--ink); font-weight: 700; letter-spacing: -0.005em; margin-bottom: 6px; }
-.worktree h3 { font-size: 12px; font-weight: 500; margin: 8px 0 4px; font-family: var(--mono); color: var(--muted); letter-spacing: 0; }
+.repository h2 { padding: 0 10px; margin-bottom: 2px; font-size: 13px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.worktree h3 { padding: 0 10px; font-size: 12px; font-weight: 400; margin: 8px 0 2px; font-family: var(--mono); color: var(--muted); letter-spacing: 0; }
 .logs { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.log-item a {
+.log-item > a {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 8px;
+  align-items: center;
+  gap: 0 12px;
+  min-height: 40px;
   padding: 6px 10px;
   color: var(--ink);
+  font-size: 14px;
   text-decoration: none;
 }
-.log-item a:hover { background: var(--surface-2); }
-.log-item.is-current a { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
-.log-item .branch { font-weight: 600; }
-.log-item .title { color: var(--muted); font-size: 13px; flex-basis: 100%; }
-.log-item.is-inherited .branch { font-weight: 450; color: var(--muted); }
+.log-item > a:hover { background: var(--mist); }
+.log-item.is-current > a { background: var(--mist); font-weight: 600; }
+.log-item .branch { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+.log-item .title { color: var(--muted); font-size: 13px; font-weight: 400; flex-basis: 100%; }
+.log-item.is-inherited .branch { color: var(--muted); }
+.log-item .waiting-count { margin-left: auto; }
 .waiting-count {
   min-width: 20px;
   padding: 0 6px;
-  background: var(--wait);
-  color: var(--canvas);
-  font-size: 12px;
-  font-weight: 700;
+  color: var(--wait);
+  font-size: 13px;
+  font-weight: 600;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
-.tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); padding: 0 6px; }
+.tag { font-family: var(--mono); font-size: 12px; color: var(--muted); border: 1px solid var(--rail); padding: 0 6px; }
 .tag--warning { color: var(--wait); border-color: var(--wait-line); }
 .tag--danger { color: var(--danger); border-color: var(--danger); }
 /* A repository's inherited Yard Logs, folded beneath their count, fetched a page at a time. */
 .inherited { margin-top: 10px; }
-.inherited > summary { cursor: pointer; padding: 4px 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+.inherited > summary { cursor: pointer; padding: 4px 10px; font-size: 13px; font-weight: 600; color: var(--muted); }
 .inherited-count { font-variant-numeric: tabular-nums; font-weight: 400; }
 .inherited[open] > summary { margin-bottom: 6px; }
-.inherited-filter { width: 100%; margin-bottom: 6px; padding: 5px 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 13px; }
+.inherited-filter { width: 100%; margin-bottom: 6px; padding: 6px 10px; border: 1px solid var(--rail); background: var(--canvas); color: var(--ink); font: inherit; font-size: 13px; }
 .inherited-words { color: var(--muted); font-size: 13px; }
 .inherited-words:empty { display: none; }
-.more-button { margin-top: 6px; padding: 2px 10px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 13px; cursor: pointer; }
-.more-button:hover { background: var(--surface-2); }
+.more-button { margin-top: 6px; padding: 0; border: 0; background: none; color: var(--signal); font-size: 13px; font-weight: 600; cursor: pointer; }
+.more-button:hover { text-decoration: underline; text-underline-offset: 4px; }
 .more-button[hidden] { display: none; }
 
 /* A Yard Log. */
 
-.yard-log { display: grid; gap: 22px; }
-.log-head { display: grid; gap: 8px; }
-.log-head h2 { font-size: 32px; line-height: 1.1; letter-spacing: -0.03em; word-spacing: 0.04em; font-weight: 700; }
-.where { display: flex; gap: 10px; flex-wrap: wrap; color: var(--muted); font-size: 12.5px; font-family: var(--mono); }
-.where .branch { color: var(--signal); }
-.banner { padding: 8px 12px; border: 1px solid var(--line); border-left-width: 3px; background: var(--surface-2); max-width: 75ch; }
+/* Nothing a Yard Log draws widens it past the room it is given: what is wider scrolls within its own box. */
+.yard-log { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; min-width: 0; }
+.banners { display: grid; gap: 8px; }
+.banner { padding: 10px 14px; border-left: 3px solid var(--rail); background: var(--surface-2); max-width: 75ch; font-size: 14px; }
 .banner--closed { border-color: var(--done); background: var(--done-soft); }
 .banner--newer { border-color: var(--wait-line); background: var(--wait-soft); }
-.unreadable { background: var(--danger-soft); border: 1px solid var(--ink); box-shadow: 4px 4px 0 var(--danger); padding: 16px; display: grid; gap: 8px; }
-.unreadable h2 { color: var(--danger); font-size: 18px; }
+.unreadable { background: var(--danger-soft); border-left: 3px solid var(--danger); padding: 14px 16px; display: grid; gap: 8px; }
+.unreadable h2 { color: var(--danger); font-size: 20px; }
 
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 10px; }
-.changed-count { color: var(--new); font-weight: 600; font-size: 14px; margin-left: auto; }
-.segments { display: inline-flex; border: 1px solid var(--ink); background: var(--surface); }
-.segment { border: 0; background: none; padding: 6px 14px; color: var(--body); font-weight: 500; cursor: pointer; }
-.segment + .segment { border-left: 1px solid var(--ink); }
-.segment:hover { color: var(--ink); background: var(--surface-2); }
-.segment.is-on { background: var(--ink); color: var(--canvas); }
+/* The timeline, as Loft Web's History lists its states: the stages on a dashed rail, the one
+   chosen on mist, beside a pane of that stage in full, each scrolling on its own beneath the head,
+   with a splitter between them. */
 
-/* The timeline: a rail with a station for each stage, as the website draws a timeline. */
+.main:has(> .yard-log.view--timeline) { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.main:has(> .yard-log.view--timeline) > .notice { margin: 16px 40px 0; }
+.yard-log.view--timeline { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0; }
+.view--timeline > .banners { padding: 16px 40px 0; }
+.view--timeline > .empty { padding: 28px 40px; }
+.timeline { flex: 1; min-height: 0; display: grid; grid-template-columns: var(--list, 360px) 1px minmax(0, 1fr); }
+.stage-list, .stage-pane { min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
+.stage-list { padding: 16px 12px 32px 16px; }
+.stage-pane { padding: 24px 40px 48px; }
+.splitter { position: relative; z-index: 2; background: var(--line); cursor: col-resize; touch-action: none; }
+.splitter::after { content: ""; position: absolute; inset: 0 -4px; }
+.splitter:hover, .splitter:focus-visible { background: var(--signal); outline: none; }
+body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-list, .stage-pane) { padding-bottom: calc(var(--dock-height, 50vh) + 24px); }
 
-.timeline { list-style: none; margin: 0; padding: 0 0 0 28px; position: relative; display: grid; gap: 14px; }
-.timeline::before { content: ""; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.stages { list-style: none; margin: 0; padding: 0 0 0 22px; position: relative; display: grid; gap: 2px; }
+.stages::before { content: ""; position: absolute; left: 6px; top: 14px; bottom: 14px; border-left: 1px dashed var(--rail); }
 .station { position: relative; }
-.station::before {
-  content: "";
-  position: absolute;
-  left: -26px;
-  top: 17px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid var(--rail);
-  background: var(--canvas);
-}
-.station:has(.stage.status--active)::before {
-  left: -28px;
-  top: 14px;
-  width: 20px;
-  height: 20px;
-  border-radius: 0;
-  border: 3px solid var(--canvas);
-  outline: 2px solid var(--ink);
-  outline-offset: -2px;
-  background: var(--signal);
-}
-.station:has(.stage.status--done)::before { border-color: var(--done); background: var(--done); }
-.station:has(.stage.status--dropped)::before { border-style: dashed; border-color: var(--drop); }
-.rail-line { position: relative; display: flex; align-items: center; gap: 10px; margin-left: -28px; color: var(--muted); font-size: 12px; }
-.rail-line::before { content: ""; flex: 0 0 24px; height: 0; border-top: 3px dotted var(--rail); }
-.rail-line::after { content: ""; flex: 1; height: 0; border-top: 3px dotted var(--rail); }
+.station::before { content: ""; position: absolute; left: -21px; top: 12px; width: 10px; height: 10px; border: 1px solid var(--rail); background: var(--side); }
+.station.status--active::before { background: var(--signal); border-color: var(--signal); }
+.station.status--done::before { background: var(--done); border-color: var(--done); }
+.station.status--dropped::before { border-style: dashed; }
+.station.status--note::before { border-color: var(--line); }
+.stage-facts .state { font-size: 12px; }
+.state.state--waiting { color: var(--wait); }
+.rail-line { display: flex; align-items: center; gap: 8px; margin: 10px 0 8px -22px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.rail-line::before { content: ""; flex: 0 0 14px; border-top: 1px dashed var(--rail); }
+.rail-line::after { content: ""; flex: 1; border-top: 1px dashed var(--rail); }
+.list-row { display: flex; align-items: flex-start; }
+.fold-button { display: grid; flex: none; place-items: center; width: 24px; height: 28px; margin-top: 4px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.fold-button:hover { background: var(--mist); color: var(--ink); }
+.chevron { fill: none; stroke: currentColor; stroke-width: 1.5; transition: transform 0.12s; }
+.fold-button[aria-expanded="true"] .chevron { transform: rotate(90deg); }
+.stage-choose { display: grid; flex: 1; gap: 2px; min-width: 0; padding: 6px 10px; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.stage-choose:hover { background: var(--mist); }
+.station.is-chosen > .list-row .stage-choose { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
+.stage-choose .stage-title { font-size: 15px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.station.status--dropped .stage-choose .stage-title { color: var(--muted); text-decoration: line-through; }
+.stage-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; font-size: 12px; color: var(--muted); }
+.stage-facts .status { font-size: 12px; }
+.stage-facts .waiting-count { min-width: 0; padding: 0; font-size: 12px; }
+.changed-mark { color: var(--new); font-weight: 600; }
+.block-rows { list-style: none; margin: 2px 0 8px 24px; padding: 0; display: grid; }
+.block-rows[hidden] { display: none; }
+.block-row { display: flex; align-items: center; gap: 8px; width: 100%; padding: 4px 10px; border: 0; background: none; color: var(--body); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.block-row:hover { background: var(--mist); color: var(--ink); }
+.block-row.is-chosen { background: var(--mist); color: var(--ink); font-weight: 600; }
+.block-row.is-waiting { box-shadow: inset 2px 0 0 var(--wait); }
+.block-row.is-new { box-shadow: inset 2px 0 0 var(--new); }
+/* An active task's dot lies in the margin before its row, so that the row's icon and title stay in place. */
+.block-row { position: relative; }
+.active-dot { position: absolute; left: -11px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; border-radius: 50%; background: var(--signal); }
+.kind-icon { flex: none; display: inline-flex; width: 14px; height: 14px; color: var(--muted); }
+.kind-icon svg { fill: none; stroke: currentColor; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
+.block-row:hover .kind-icon, .block-row.is-chosen .kind-icon { color: var(--body); }
+.block-row-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.stage { background: var(--surface); border: 1px solid var(--ink); }
-.stage.status--active { box-shadow: 4px 4px 0 var(--shadow); }
-.stage.status--planned { border-style: dashed; border-color: var(--rail); }
-.stage.status--dropped { border-color: var(--line); }
-.stage.is-new { border-left: 4px solid var(--new); }
-.stage-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
-  padding: 12px 16px;
-  cursor: pointer;
-  list-style: none;
-}
-.stage-head::-webkit-details-marker { display: none; }
-.stage-head:hover .stage-title { text-decoration: underline; text-decoration-color: var(--signal); text-decoration-thickness: 2px; text-underline-offset: 5px; }
-.stage-title { font-size: 17px; font-weight: 600; flex: 1 1 260px; }
+/* The pane holds the stage it shows within 900 px, at the left of the room it has. */
+.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; max-width: 900px; }
+.stage-head { display: grid; gap: 4px; }
+.pane-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 14px; color: var(--body); }
+.stage > .stage-head .stage-title { font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -0.015em; }
 .owner, .count { color: var(--muted); font-size: 13px; }
-.goal, .goal.prose { padding: 0 16px; color: var(--body); max-width: 75ch; }
-.stage-times { padding: 2px 16px 0; color: var(--muted); font-size: 13px; }
-.blocks { display: grid; gap: 10px; padding: 14px 16px 16px; }
+.goal, .goal.prose { color: var(--body); max-width: 75ch; }
+.stage-times { color: var(--muted); font-size: 13px; }
+.blocks { display: grid; grid-template-columns: minmax(0, 1fr); border-bottom: 1px solid var(--line); }
+@media (max-width: 860px) {
+  .timeline { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 40%) 1px minmax(0, 1fr); }
+  .splitter { cursor: auto; pointer-events: none; }
+  .stage-pane { padding: 20px 16px 40px; }
+  .main:has(> .yard-log.view--timeline) > .notice, .view--timeline > .banners { margin-left: 16px; margin-right: 16px; padding-left: 0; padding-right: 0; }
+}
 
-.status, .state { font-size: 12px; font-weight: 600; padding: 0 7px; line-height: 20px; border: 1px solid currentColor; white-space: nowrap; }
+/* A status, as Loft Web gives a decision's: a dot in its colour, then its word. */
+.status, .state { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; line-height: 20px; white-space: nowrap; }
+.status::before, .state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .status.status--planned, .state.state--open { color: var(--muted); }
-.status.status--active, .state.state--active { color: var(--signal); background: var(--signal-soft); }
+.status.status--planned::before, .state.state--open::before { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+.status.status--active, .state.state--active { color: var(--signal); }
 .status.status--done, .state.state--done { color: var(--done); }
 .status.status--dropped, .state.state--dropped { color: var(--drop); text-decoration: line-through; }
-.task-type { font-size: 12px; font-weight: 600; padding: 0 7px; line-height: 20px; white-space: nowrap; }
-.task-type--fix { color: var(--surface); background: var(--series-fix); }
+.task-type { font-family: var(--mono); font-size: 12px; padding: 0 6px; line-height: 18px; border: 1px solid currentColor; white-space: nowrap; }
+.task-type--fix { color: var(--series-fix); }
 .stage.status--dropped .stage-title { color: var(--muted); }
 
 .mode-band { border-left: 3px solid; padding: 8px 10px 10px; display: grid; gap: 10px; }
@@ -449,10 +518,10 @@ button { font: inherit; }
 
 /* The blocks. */
 
-.block { background: var(--surface); border: 1px solid var(--line); padding: 12px 14px; display: grid; gap: 8px; position: relative; }
-.block.is-new { border-color: var(--new); }
-.block.is-picked { outline: 3px solid var(--signal); outline-offset: 2px; }
-.block.is-waiting { border-color: var(--ink); background: var(--wait-soft); box-shadow: 3px 3px 0 var(--wait-line); }
+.block { border-top: 1px solid var(--line); padding: 14px 14px 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; position: relative; }
+.block.is-new { box-shadow: inset 3px 0 0 var(--new); }
+.block.is-picked { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
+.block.is-waiting { background: var(--wait-soft); box-shadow: inset 3px 0 0 var(--wait); }
 .new-mark { font-size: 12px; font-weight: 700; color: var(--new); }
 .block-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
 .block-head h4 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
@@ -461,10 +530,10 @@ button { font: inherit; }
 .block-head > .kind, summary > .kind { display: inline-flex; align-items: center; gap: 7px; }
 .block-head > .kind::before, summary > .kind::before { content: ""; flex: none; width: 7px; height: 7px; background: var(--rail); box-shadow: 0 0 0 1px currentColor; }
 .tone-word { font-size: 12px; font-weight: 700; }
-.block.tone--info { border-left: 3px solid var(--info); }
-.block.tone--success { border-left: 3px solid var(--done); }
-.block.tone--warning { border-left: 3px solid var(--wait-line); }
-.block.tone--danger { border-left: 3px solid var(--danger); }
+.block.tone--info { box-shadow: inset 3px 0 0 var(--info); }
+.block.tone--success { box-shadow: inset 3px 0 0 var(--done); }
+.block.tone--warning { box-shadow: inset 3px 0 0 var(--wait-line); }
+.block.tone--danger { box-shadow: inset 3px 0 0 var(--danger); }
 .tone--info .block-head > .kind::before, .tone--info summary > .kind::before { background: var(--info); }
 .tone--success .block-head > .kind::before, .tone--success summary > .kind::before { background: var(--done); }
 .tone--warning .block-head > .kind::before, .tone--warning summary > .kind::before { background: var(--wait-line); }
@@ -475,16 +544,18 @@ button { font: inherit; }
 .tone-word.tone--danger { color: var(--danger); }
 .prose { overflow-wrap: anywhere; color: var(--ink); }
 .prose > :not(.table-wrap, pre) { max-width: 75ch; }
+/* A note's, an approval's and a loft block's Markdown spans its block, held to no narrower measure. */
+:is(.block--note, .block--approval, .block--loft) .prose > :not(.table-wrap, pre) { max-width: none; }
 .prose > * + * { margin-top: 0.6em; }
 .prose h1, .prose h2, .prose h3, .prose h4 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
-.prose pre { overflow: auto; contain: inline-size; padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--line); font-size: 13px; }
-.prose table { width: 100%; border-collapse: collapse; overflow-wrap: normal; border-top: 2px solid var(--ink); font-size: 14px; }
-.prose th, .prose td { padding: 7px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); overflow-wrap: break-word; }
-.prose thead th { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.prose pre { overflow: auto; contain: inline-size; padding: 12px 16px; background: var(--code); border: 1px solid var(--line); font-size: 13px; }
+.prose table { width: 100%; border-collapse: collapse; overflow-wrap: normal; font-size: 14px; }
+.prose th, .prose td { padding: 6px 8px; text-align: left; vertical-align: top; border: 1px solid var(--line); overflow-wrap: break-word; }
+.prose thead th { font-size: 13px; font-weight: 600; color: var(--ink); background: var(--surface-2); }
 .prose ul, .prose ol { padding-left: 22px; }
 .prose li::marker { color: var(--muted); }
 .prose ol > li::marker { font-family: var(--mono); font-weight: 600; color: var(--signal); }
-.prose blockquote { margin-left: 0; padding-left: 12px; border-left: 3px solid var(--rail); color: var(--body); }
+.prose blockquote { margin-left: 0; padding-left: 16px; border-left: 3px solid var(--rail); color: var(--muted); }
 .block-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; color: var(--muted); font-size: 12px; }
 .versions summary { cursor: pointer; }
 .versions ol { padding-left: 18px; display: grid; gap: 6px; }
@@ -492,25 +563,55 @@ button { font: inherit; }
 .fold summary { cursor: pointer; color: var(--muted); }
 .fold[open] > summary { margin-bottom: 6px; }
 
-.prompt { font-weight: 600; max-width: 75ch; }
-.options { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
-.option { display: flex; flex-wrap: wrap; gap: 2px 8px; align-items: baseline; padding: 4px 8px; }
-.option.is-chosen { background: var(--done-soft); box-shadow: inset 3px 0 0 var(--done); }
-.option-label { font-weight: 600; }
-.option-detail { flex-basis: 100%; color: var(--body); font-size: 14px; }
-.badge { font-size: 11px; font-weight: 700; padding: 0 6px; }
-.badge--recommended { color: var(--signal); background: var(--signal-soft); }
-.badge--chosen { color: var(--done); background: var(--done-soft); }
+/* A question, in the timeline and the panel alike: a head with its kind, its header as a chip and
+   its state at the right; its prompt as its title; its options as cards side by side, each
+   lettered in a circle, a recommended one marked beneath its label, a chosen one outlined in
+   action blue. */
+.question-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.question-head .question-chip { padding: 2px 8px; border: 1px solid var(--line); background: var(--side); color: var(--body); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; line-height: 18px; text-transform: uppercase; }
+.question-state { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 500; }
+.question-state--chosen { color: var(--signal); }
+.question-state--answered { color: var(--done); }
+.question-state--waiting { color: var(--wait); }
+/* Clearing a question's choice: a small secondary button beside its state. */
+.clear-choice { border: 1px solid var(--rail); background: var(--canvas); color: var(--ink); padding: 1px 10px; font: inherit; font-size: 12px; font-weight: 500; line-height: 20px; cursor: pointer; }
+.clear-choice:hover:not(:disabled) { background: var(--mist); border-color: var(--signal); }
+.clear-choice:disabled { color: var(--muted); border-color: var(--line); cursor: default; }
+/* A question's prompt is set as a block's title is. */
+.prompt { color: var(--ink); font-size: 15px; font-weight: 600; line-height: 22px; letter-spacing: -0.01em; max-width: 75ch; }
+/* At most three cards to a row: each at least a third of the row, less its gaps. */
+.option-grid { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(max(220px, calc((100% - 24px) / 3)), 1fr)); gap: 12px; }
+@media (max-width: 640px) { .option-grid { grid-template-columns: minmax(0, 1fr); } }
+.option-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; padding: 14px 16px; border: 1px solid var(--line); background: var(--canvas); }
+.option-card.is-chosen, .option-card:has(.option-input:checked) { outline: 2px solid var(--signal); outline-offset: -1px; }
+.option-card:has(.option-input:focus-visible) { box-shadow: 0 0 0 4px var(--mist); }
+label.option-card, .option-card label.choice { cursor: pointer; }
+label.option-card:hover, .own-words:hover { border-color: var(--rail); }
+.option-top { display: flex; align-items: center; gap: 10px; width: 100%; }
+.option-top .choice { display: flex; align-items: center; gap: 10px; }
+.option-letter { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--rail); border-radius: 50%; color: var(--body); font-family: var(--mono); font-size: 12px; line-height: 1; }
+.option-card.is-chosen .option-letter, .option-card:has(.option-input:checked) .option-letter { border-color: var(--signal); background: var(--signal); color: var(--canvas); }
+:is(.option-label, .choice-label) { color: var(--ink); font-size: 14px; font-weight: 600; line-height: 20px; overflow-wrap: anywhere; }
+:is(.option-detail, .choice-detail) { color: var(--body); font-size: 14px; max-width: none; }
+/* The radio button or checkbox of a card lies, unseen, over the card's letter, in reach of the
+   pointer, the keyboard and a reader; the card itself shows what is chosen. */
+.option-input { position: absolute; top: 14px; left: 16px; z-index: 1; width: 24px; height: 24px; margin: 0; border-radius: 50%; opacity: 0; cursor: pointer; }
+.own-words .words { width: 100%; }
+.question-card { display: grid; gap: 8px; }
+.question-form { border: 1px solid var(--line); padding: 16px; margin: 0; display: grid; gap: 10px; min-width: 0; }
+.question-form.is-answered { box-shadow: inset 3px 0 0 var(--new); }
+.badge { font-family: var(--mono); font-size: 12px; font-weight: 400; padding: 0 6px; border: 1px solid currentColor; }
+.badge--recommended { border: 0; padding: 2px 6px; background: var(--done-soft); color: var(--done); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+.badge--chosen { color: var(--new); }
 .answer { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
-.answer-text { font-weight: 650; color: var(--done); }
+.answer-text { font-size: 14px; font-weight: 600; color: var(--done); }
 .byline { color: var(--muted); font-size: 13px; }
 .waits { color: var(--wait); font-weight: 600; font-size: 14px; }
 .link { border: 0; background: none; padding: 0; color: var(--signal); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: pointer; }
 .decision-head { display: grid; gap: 6px; }
 .decision-line { border-left: 3px solid var(--signal); padding-left: 10px; display: grid; gap: 2px; }
 .decision-number { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--signal); }
-.consequence { max-width: 75ch; }
-.verdict, .verdict-word { font-weight: 700; font-size: 13px; }
+.verdict-word { font-weight: 600; font-size: 13px; }
 .verdict--approved { color: var(--done); }
 .verdict--rejected { color: var(--danger); }
 .plan-mode { font-size: 14px; color: var(--signal); }
@@ -518,54 +619,41 @@ button { font: inherit; }
 
 /* Answering. */
 
-.submission { background: var(--surface); border: 1px solid var(--ink); box-shadow: 5px 5px 0 var(--wait-line); padding: 16px; display: grid; gap: 14px; }
+.submission { border-top: 1px solid var(--line); padding: 16px 0; display: grid; gap: 14px; }
 .submission-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; align-items: baseline; }
-.submission-head h3 { font-size: 18px; font-weight: 700; color: var(--wait); }
-.question-form { border: 1px solid var(--line); padding: 10px 12px 12px; margin: 0; display: grid; gap: 6px; }
-.question-form.is-answered { border-color: var(--done); box-shadow: inset 3px 0 0 var(--done); }
-.question-form legend { font-weight: 600; padding: 0 4px; }
-.question-form .header { color: var(--muted); font-weight: 600; font-size: 13px; }
 .hint { color: var(--muted); font-size: 13px; }
-.choice { display: grid; grid-template-columns: auto 1fr; column-gap: 10px; align-items: baseline; padding: 6px 8px; cursor: pointer; }
-.choice:hover { background: var(--surface-2); }
-.choice:has(input:checked) { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
-.choice input { grid-row: span 2; margin: 0; accent-color: var(--signal); }
-.choice-label { font-weight: 600; }
-.choice .badge { grid-column: 2; justify-self: start; }
-.choice-detail { grid-column: 2; color: var(--body); font-size: 14px; }
 .words, .reason { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
-.own-words .words { padding: 0 8px 8px; }
-textarea { font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--rail); padding: 6px 8px; width: 100%; resize: vertical; }
-textarea:focus { border-color: var(--ink); }
+textarea { font: inherit; font-size: 14px; color: var(--ink); background: var(--canvas); border: 1px solid var(--rail); padding: 8px 12px; width: 100%; resize: vertical; }
+textarea:focus { border-color: var(--signal); }
 .send-row, .decide-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
 .decide-row .reason { flex: 1 1 240px; }
-/* Buttons as the website's: an ink border, a hard shadow, pressed in when clicked. */
+/* Buttons as Loft Web's: the one action filled in action blue, a second one outlined, one that
+   cannot be undone filled in rust; square, with no shadow. */
 .primary, .secondary, .danger {
-  min-height: 38px;
-  padding: 7px 16px;
+  min-height: 40px;
+  padding: 8px 18px;
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
-  border: 1px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--shadow);
-  transition: background-color 0.15s, transform 0.12s, box-shadow 0.12s;
+  border: 1px solid transparent;
+  transition: background-color 0.15s, filter 0.15s;
 }
-.primary:hover:not(:disabled), .secondary:hover:not(:disabled), .danger:hover:not(:disabled) { box-shadow: 5px 5px 0 var(--shadow); }
-.primary:active:not(:disabled), .secondary:active:not(:disabled), .danger:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--shadow); }
 .primary { background: var(--button); color: var(--on-button); }
 .primary:hover:not(:disabled) { background: var(--button-hover); }
-.secondary { background: var(--surface); color: var(--ink); }
-.danger { background: var(--surface); color: var(--danger); border-color: var(--danger); box-shadow: 3px 3px 0 var(--danger); }
-.danger:hover:not(:disabled) { box-shadow: 5px 5px 0 var(--danger); }
+.secondary { background: none; color: var(--ink); border-color: var(--rail); }
+.secondary:hover:not(:disabled) { background: var(--mist); }
+.danger { background: var(--wait); color: var(--canvas); }
+.danger:hover:not(:disabled) { filter: brightness(1.1); }
 button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
 .send-message:empty { display: none; }
 .send-message { font-size: 14px; color: var(--muted); }
 .decision-form { border: 1px solid var(--line); padding: 10px 12px; display: grid; gap: 8px; }
 
-/* The modal: over the page darkened behind it, a margin from each edge of the viewport, its
+/* The modal: over the page veiled behind it, a margin from each edge of the viewport, its
    heading and close button fixed above content that scrolls. Docked, it is a panel along the
    bottom of the viewport within the same margin, over a page that stays live above it and gains
-   room at its end as tall as the panel, so nothing of it stays hidden beneath. */
+   room at its end as tall as the panel, so nothing of it stays hidden beneath. Either floats as
+   Loft Web floats a panel: an ink border and a hard shadow down and to the right. */
 
 .modal[open] {
   position: fixed;
@@ -581,40 +669,45 @@ button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
   background: var(--canvas);
   color: var(--ink);
   border: 1px solid var(--ink);
-  box-shadow: 6px 6px 0 var(--wait-line);
+  box-shadow: var(--float);
 }
 .modal::backdrop { background: var(--scrim); }
 body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
-.modal-head h2 { font-size: 18px; font-weight: 700; }
-.modal-close { width: 36px; height: 36px; flex: none; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; box-shadow: 2px 2px 0 var(--shadow); }
-.modal-close:hover { background: var(--surface-2); }
+.modal-head h2 { font-size: 20px; font-weight: 700; letter-spacing: -0.015em; }
+.modal-close { width: 36px; height: 36px; flex: none; border: 0; background: none; color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.modal-close:hover { background: var(--mist); }
 .modal-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; padding: 16px; display: grid; align-content: start; gap: 16px; }
 .modal-body .submission { box-shadow: none; }
 @media (max-width: 860px) {
   .modal[open] { inset: 16px; }
 }
-.modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; box-shadow: 6px -6px 0 var(--wait-line); }
-body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 50vh) + 24px); }
+.modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; }
 /* In the panel, text spans its width: the panel has less height to give it than the timeline. */
+.consequence:not(.consequences > *) { max-width: 75ch; }
 .modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .consequence, .goal, .banner) { max-width: none; }
 .dock-edge { position: absolute; top: -5px; left: 0; right: 0; z-index: 1; height: 10px; cursor: row-resize; touch-action: none; }
 .dock-edge::after { content: ''; position: absolute; top: 3px; left: 50%; width: 48px; height: 4px; margin-left: -24px; background: var(--rail); }
 .dock-edge:hover::after, .dock-edge:focus-visible::after { background: var(--signal); }
-.wait-button { background: var(--wait-soft); color: var(--wait); border-color: var(--wait-line); box-shadow: 3px 3px 0 var(--wait-line); }
-.wait-button:hover:not(:disabled) { background: var(--wait-soft); box-shadow: 5px 5px 0 var(--wait-line); }
+.wait-button { background: var(--wait); color: var(--canvas); }
+.wait-button:hover:not(:disabled) { background: var(--wait); filter: brightness(1.1); }
 
 /* The Loft views. */
 
-.loft-view { display: grid; gap: 8px; }
+.loft-view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .recorded, .base { color: var(--muted); font-size: 12px; }
 .clean { color: var(--done); font-weight: 600; }
-.chip { display: inline-block; font-size: 12px; font-weight: 600; padding: 0 7px; line-height: 20px; border: 1px solid currentColor; }
+.chip { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 0 6px; line-height: 18px; border: 1px solid currentColor; }
 .chip--success { color: var(--done); }
 .chip--warning { color: var(--wait); }
 .chip--danger, .chip--error { color: var(--danger); }
 .chip--info { color: var(--info); }
 .chip--muted, .chip--hint { color: var(--muted); }
+/* The chips of a change, as Loft Web draws them: new dashed in teal, changed in action blue, removed in rust. */
+.chip--new { color: var(--new); border-style: dashed; }
+.chip--changed { color: var(--signal); }
+.chip--removed { color: var(--wait); }
+.chip--plain { color: var(--muted); border-color: var(--rail); }
 .counts { display: flex; flex-wrap: wrap; gap: 6px; }
 .findings, .criteria, .changes, .tests, .consequences, .subjects { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .finding { border-top: 1px solid var(--line); padding-top: 6px; }
@@ -639,7 +732,7 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .coverage--small { flex: 0 0 120px; height: 6px; }
 .criteria-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 12px; }
 .criteria-table th, .criteria-table td { padding: 5px 8px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
-.criteria-table thead th { font-family: var(--mono); color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 2px solid var(--ink); }
+.criteria-table thead th { color: var(--muted); font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--rail); }
 .criteria-table .requirement-row th { padding-top: 14px; font-weight: 400; font-size: 14px; line-height: 1.5; border-bottom-color: var(--rail); }
 .criteria-table tbody:first-of-type .requirement-row th { padding-top: 8px; }
 .ears-word { color: var(--muted); font-style: italic; }
@@ -657,43 +750,187 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .decision-view-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
 .decision-view-head h5 { font-size: 15px; font-weight: 600; }
 .unpublished { color: var(--muted); font-size: 13px; }
-.decision-options { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.decision-option { border: 1px solid var(--line); padding: 6px 10px; display: grid; gap: 2px; }
-.decision-option.is-selected { border-color: var(--ink); background: var(--done-soft); box-shadow: 3px 3px 0 var(--done); }
-.decision-option > .chip { justify-self: start; }
 .table-wrap { overflow-x: auto; contain: inline-size; }
 .assessments { border-collapse: collapse; font-size: 13px; }
 .assessments th, .assessments td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
 .assessments thead th { background: var(--surface-2); }
-.assessments .rationale { font-size: 12px; margin-top: 2px; }
+/* The option chosen, and each rating tinted as Loft Web tints a decision's table. */
+.assessments tr.is-chosen > th { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
+.assessments td { white-space: nowrap; }
+.assessments td[tabindex] { cursor: help; }
+.rating { font-size: 12.5px; font-weight: 500; }
+.rating-mark--supports { color: var(--done); }
+.rating-mark--neutral { color: var(--muted); }
+.rating-mark--conflicts { color: var(--danger); }
+/* A cell's rationale floats beneath it while the pointer rests on it or it has the focus. */
+.assessments .rating-why { display: none; position: fixed; z-index: 30; width: max-content; max-width: 280px; padding: 6px 8px; background: var(--canvas); border: 1px solid var(--line); box-shadow: 0 4px 12px rgb(0 0 0 / 0.12); color: var(--body); font-size: 12px; font-weight: 400; line-height: 1.45; white-space: normal; }
+.assessments td:is(:hover, :focus-visible) .rating-why { display: block; }
+.option-open { display: inline-flex; gap: 6px; align-items: baseline; padding: 0; border: 0; background: none; color: var(--ink); font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.option-open::before { content: '▸'; color: var(--muted); font-size: 11px; }
+.option-open[aria-expanded="true"]::before { content: '▾'; }
+.assessments .option-why > td { background: var(--side); white-space: normal; text-align: left; }
+/* The opened row stays at the scroll box's left edge and within its width, however wide the table. */
+.option-why-body { position: sticky; left: 8px; max-width: min(720px, var(--room, 720px)); display: grid; gap: 8px; }
+.option-description { color: var(--body); }
+.option-ratings { display: grid; grid-template-columns: max-content max-content minmax(0, 1fr); gap: 4px 12px; margin: 0; align-items: baseline; }
+.option-ratings dt { font-weight: 600; color: var(--ink); }
+.option-ratings dd { margin: 0; }
+.option-rating { white-space: nowrap; }
+/* A decision's parts stand apart on one rhythm; its head and its outcome, and its two folds, are pairs. */
+.loft-view--decision { gap: 16px; }
+.loft-view--decision > .decision-view-head + .outcome { margin-top: -8px; color: var(--ink); }
+.loft-view--decision > details.fold + details.fold { margin-top: -10px; }
+.consequences { gap: 6px; }
+/* A Loft decision's consequences, each beside its kind; a Yard decision's consequence is a paragraph of its own. */
+.consequences > .consequence { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.consequence-kind { color: var(--muted); font-size: 13px; font-weight: 500; text-transform: capitalize; }
+.decision-matrix { display: grid; gap: 6px; }
+.rating-key { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 12.5px; }
+.assessments th[scope="row"] { white-space: nowrap; }
+.assessments tr:not(.option-why) > td:has(.rating) { text-align: center; }
+.rating-symbol { font-size: 14px; font-weight: 600; }
+.decision-context > p { margin-top: 6px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.subjects { gap: 6px; }
+/* Each role beside its subjects, in the column that gives the consequences' kinds, one subject to a line. */
+.subject-role-row { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 12px; align-items: baseline; }
+.subject-role { color: var(--muted); font-size: 13px; font-weight: 500; }
+.subject-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.subject { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A findings view: a fold for each rule, each finding of it on one line. */
+.finding-split { color: var(--muted); font-size: 13px; }
+.finding-group { border-top: 1px solid var(--line); padding-top: 6px; }
+.finding-group > summary { cursor: pointer; }
+.finding-message { color: var(--body); }
+.finding-counts { display: inline-flex; gap: 10px; margin-left: 4px; color: var(--muted); font-size: 12.5px; white-space: nowrap; vertical-align: baseline; }
+/* Each count a number beside its icon: new findings in the colour of what is new, older ones muted. */
+.count-mark { display: inline-flex; align-items: center; gap: 3px; font-variant-numeric: tabular-nums; }
+.count-mark svg, .count-icon { flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+.count-mark--new:not(.is-none), .count-icon--new { color: var(--new); }
+.count-mark.is-none { opacity: 0.55; }
+.finding-heading { display: flex; align-items: center; gap: 6px; margin: 10px 0 4px; color: var(--muted); font-size: 12.5px; font-weight: 500; }
+.finding-before > summary.finding-heading { display: list-item; }
+.finding-before > summary .count-icon { vertical-align: -2px; margin-right: 2px; }
+/* A rule's lines align their labels, names and places in columns, a hairline between each. */
+.finding-lines { list-style: none; margin: 0; padding: 0 0 0 18px; display: grid; font-size: 13px; }
+.finding-line { display: grid; grid-template-columns: 6.5em minmax(0, 1fr) minmax(0, 16em); gap: 2px 12px; align-items: baseline; padding: 5px 0; border-top: 1px solid var(--line); }
+.finding-line:first-child { border-top: 0; }
+.finding-label { white-space: nowrap; overflow: hidden; }
+/* A long file name is cut, never its line. */
+.finding-line .site { justify-self: end; display: inline-flex; max-width: 100%; min-width: 0; }
+.site-file { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.site-line { flex: none; }
+/* A node without a label yet, and the second node of a pair, beneath the first. */
+.no-label { color: var(--muted); font-size: 12px; font-style: italic; cursor: help; }
+.finding-second { color: var(--body); }
+.finding-label.finding-second { padding-left: 1.2em; }
+.pair-mark { color: var(--muted); }
+/* Each finding is one line: its words cut where they run out of room, its place at the right. */
+.finding-what { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.finding-what :is(p, div) { display: inline; }
+.finding-line .site { color: var(--muted); font-size: 12px; background: none; white-space: nowrap; }
+.finding-line .reason { grid-column: 1 / -1; color: var(--muted); font-style: italic; }
+.finding-before > summary { cursor: pointer; }
 .lock { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
 .lock dt { color: var(--muted); }
 .lock dd { margin: 0; }
 .after-merge { color: var(--signal); font-weight: 600; }
-.diagram { position: relative; overflow: auto; background: var(--surface); border: 1px solid var(--line); padding: 10px; min-height: 40px; }
+.diagram { position: relative; overflow: auto; background: var(--canvas); border: 1px solid var(--line); padding: 10px; min-height: 40px; }
 .diagram svg { max-width: 100%; height: auto; }
+/* Mermaid's shapes in the page's design: square corners, and hairlines for borders and edges. */
+.diagram svg :is(.node, .cluster) :is(rect, polygon, path) { rx: 0; ry: 0; stroke-width: 1px; }
+.diagram svg :is(.flowchart-link, .edgePath path, .relation, .messageLine0, .messageLine1) { stroke-width: 1px; }
+/* The page's own `.label` must not reach Mermaid's labels, where it is measured or drawn: its size
+   and colour are the diagram's theme's, 13 pixels in ink. */
+svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; white-space: revert; }
+/* A flowchart the page draws itself: flat cards with hairline borders on the sidebar's ground, the
+   page's face at 13 pixels in ink, edges in muted ink, their labels in pills and groups as panels
+   on the page's ground, each framed by a hairline. */
+/* A diagram the page draws keeps its own size, so that its text stays at 13 pixels: one wider than
+   its block scrolls sideways within it. */
+.diagram svg.flow { max-width: none; height: auto; font-family: var(--font); overflow: visible; display: block; }
+.diagram-scroll { overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: none; overscroll-behavior-y: auto; padding-bottom: 4px; }
+.flow text { font-family: var(--font); font-size: 13px; }
+.flow-node :is(rect, polygon, circle) { fill: var(--side); stroke: var(--rail); stroke-width: 1px; }
+.flow-label { fill: var(--ink); }
+.flow-edge { fill: none; stroke: var(--muted); stroke-width: 1.25px; stroke-linejoin: round; }
+.flow-edge--dotted { stroke-dasharray: 4 4; }
+.flow-edge--thick { stroke-width: 2.5px; }
+.flow-arrow { fill: var(--muted); }
+.flow-pill rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
+.flow-pill-label { fill: var(--body); font-size: 12px; }
+.flow-group rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
+/* A spec-change diagram: nested panels and cards, each headed by its kind's square, its label and
+   its change, a bar at its left in its change's colour. */
+.spec-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; color: var(--body); font-size: 13px; }
+.spec-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.spec-key { width: 3px; height: 14px; background: var(--change); }
+.spec-key--changed, .spec-card--changed, .spec-panel--changed { --change: var(--change-changed); }
+.spec-key--removed, .spec-card--removed, .spec-panel--removed { --change: var(--change-removed); }
+.spec-key--added, .spec-card--added, .spec-panel--added { --change: var(--change-added); }
+.spec-frame { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
+.spec-card--context .spec-frame { fill: var(--side); }
+.spec-panel-frame { stroke: var(--line); stroke-width: 1px; }
+.spec-panel--even .spec-panel-frame { fill: var(--side); }
+.spec-panel--odd .spec-panel-frame { fill: var(--canvas); }
+.spec-card--removed .spec-frame, .spec-panel--removed .spec-panel-frame { stroke: var(--rail); stroke-dasharray: 4 3; }
+.spec-bar { fill: var(--change); }
+.spec-kind { fill: var(--rail); }
+.spec-kind--product { fill: var(--kind-product); }
+.spec-kind--feature_group { fill: var(--kind-group); }
+.spec-kind--feature { fill: var(--kind-feature); }
+.spec-kind--requirement { fill: var(--kind-requirement); }
+.spec-kind--criterion { fill: var(--kind-criterion); }
+.spec-kind--constraint { fill: var(--kind-constraint); }
+.spec-kind--quality_attribute { fill: var(--kind-quality); }
+.spec-kind--component { fill: var(--kind-component); }
+.flow .spec-label { font-family: var(--mono); font-size: 11.5px; fill: var(--body); }
+.flow .spec-word { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; fill: var(--muted); }
+.flow .spec-panel-name { font-size: 13px; font-weight: 600; fill: var(--ink); }
+.flow .spec-extra { font-size: 12px; fill: var(--muted); }
+.flow .spec-chip-name { font-size: 12.5px; fill: var(--ink); }
+.spec-card--context .spec-chip-name { fill: var(--muted); }
+.spec-card--context .spec-name { fill: var(--muted); }
+.flow-edge--tree { stroke: var(--rail); }
+.flow [role="button"] { cursor: pointer; }
+.flow [role="button"]:focus { outline: none; }
+.spec-card[role="button"]:is(:hover, :focus-visible) .spec-frame { stroke: var(--signal); }
+.spec-card[role="button"]:focus-visible .spec-frame { stroke-width: 2px; }
+.spec-panel[role="button"]:focus-visible .spec-panel-frame { stroke: var(--signal); stroke-width: 2px; }
+.change-tree li.is-marked { outline: 2px solid var(--signal); outline-offset: 4px; }
+.flow .flow-group-title { fill: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
+/* Pointing at a node brings it, its edges and its neighbours forward, and fades the rest. */
+/* Pointing at a node outlines it and the nodes its edges join in action blue and draws those
+   edges in action blue; nothing fades, so moving between nodes makes nothing flicker. */
+.flow.is-emphasis .flow-edge.is-near { stroke: var(--signal); stroke-width: 1.75px; }
+.flow.is-emphasis .flow-node.is-near :is(rect, polygon, circle) { stroke: var(--signal); stroke-width: 2px; }
+.flow.is-emphasis .spec-card.is-near .spec-frame { stroke: var(--signal); stroke-width: 2px; }
+.flow.is-emphasis .flow-pill.is-near rect { stroke: var(--signal); }
 .diagram-error { color: var(--danger); font-size: 13px; }
-.diagram-expand { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; box-shadow: 2px 2px 0 var(--shadow); }
-.diagram-expand:hover { background: var(--surface-2); }
+/* A drawn diagram keeps a margin at its right for the button that expands it, which never covers it. */
+.diagram.is-drawn { padding-right: 48px; }
+.zoom-content.is-drawn { padding-right: 0; }
+.diagram-expand { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; }
+.diagram-expand:hover { background: var(--mist); }
 
 /* An expanded diagram: the modal's body is its stage, where it zooms and pans, never scrolls. */
 .modal--diagram .modal-body { position: relative; display: block; padding: 0; overflow: hidden; }
 .zoom { position: absolute; inset: 0; }
-.zoom-stage { position: absolute; inset: 0; overflow: hidden; background: var(--surface); touch-action: none; overscroll-behavior: contain; cursor: grab; }
+.zoom-stage { position: absolute; inset: 0; overflow: hidden; background: var(--surface); touch-action: none; overscroll-behavior: contain; cursor: grab; user-select: none; -webkit-user-select: none; }
 .zoom-stage.is-dragging { cursor: grabbing; }
 .zoom-stage:focus-visible { outline: 2px solid var(--ink); outline-offset: -4px; }
 .zoom-content { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
 .zoom-stage:not(.is-fitted) .zoom-content { visibility: hidden; }
 .zoom-content svg { display: block; width: 100%; height: auto; max-width: none !important; }
-.zoom-tools { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--ink); box-shadow: 2px 2px 0 var(--shadow); }
-.zoom-button { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--ink); background: var(--surface); color: var(--ink); font-size: 16px; cursor: pointer; }
-.zoom-button:hover { background: var(--surface-2); }
+.zoom-tools { position: absolute; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 4px; padding: 4px; background: var(--canvas); border: 1px solid var(--ink); box-shadow: var(--float); }
+.zoom-button { min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 16px; cursor: pointer; }
+.zoom-button:hover { background: var(--mist); }
 .zoom-percent { min-width: 52px; text-align: center; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--ink); }
 .group-picker { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .picker-words { color: var(--muted); font-size: 13px; }
-.group-button { border: 1px solid var(--ink); background: var(--surface); padding: 2px 10px; font-size: 13px; cursor: pointer; color: var(--ink); }
-.group-button:hover { background: var(--surface-2); }
-.group-button.is-open { background: var(--ink); color: var(--canvas); }
+.group-button { border: 1px solid var(--rail); background: var(--canvas); padding: 2px 10px; font-size: 13px; cursor: pointer; color: var(--ink); }
+.group-button:hover { background: var(--mist); }
+.group-button.is-open { background: var(--mist); border-color: var(--signal); box-shadow: inset 0 -2px 0 var(--signal); font-weight: 600; }
 /* The diff of a spec change: each node's words, the words removed struck through and the words
    added underlined, as well as coloured. */
 .diff > ul { display: grid; gap: 10px; }
@@ -705,7 +942,7 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 /* The Gantt chart. */
 
 .gantt { display: grid; gap: 12px; }
-.gantt-frame { --head: 44px; --row: 24px; --task-row: 17px; overflow: auto; max-height: calc(100vh - 24px); background: var(--surface); border: 1px solid var(--ink); overscroll-behavior-x: none; overscroll-behavior-y: auto; }
+.gantt-frame { --head: 44px; --row: 24px; --task-row: 17px; overflow: auto; max-height: calc(100vh - 24px); background: var(--canvas); border: 1px solid var(--line); overscroll-behavior-x: none; overscroll-behavior-y: auto; }
 .gantt-sheet { position: relative; font-size: 12px; }
 .gantt-head, .gantt-row { display: grid; grid-template-columns: var(--names) minmax(0, 1fr); }
 .gantt-head { position: sticky; top: 0; z-index: 8; height: var(--head); background: var(--surface); border-bottom: 1px solid var(--line); }
@@ -784,32 +1021,36 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
 .swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; }
 .split-total { color: var(--muted); }
 
-/* The tokens. */
-
-.tokens { background: var(--surface); border: 1px solid var(--ink); padding: 16px; display: grid; gap: 12px; }
-.tokens h3 { font-size: 18px; font-weight: 700; }
-.tokens h4 { font-size: 14px; color: var(--muted); }
-.token-details > summary { cursor: pointer; font-size: 14px; }
-.token-details-content { display: grid; gap: 12px; margin-top: 12px; }
-.token-totals { display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 0; }
-.token-totals dt { color: var(--muted); font-size: 12px; }
-.token-totals dd { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-.tokens-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.tokens-table th, .tokens-table td { padding: 6px 8px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
-.tokens-table thead :is(th, td) { font-family: var(--mono); color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 2px solid var(--ink); }
-.tokens-table tbody th { font-weight: 600; overflow-wrap: break-word; }
-.tokens-table th[scope="row"] { min-width: 10em; }
+/* The tokens, as the dataviz method draws figures and a table: the four totals as a row of stat
+   tiles in proportional figures, then one table whose counts are right-aligned in digits of one
+   width, each over a thin bar of its share in one blue, on a lighter step of that blue. Text keeps
+   the page's ink; only the bars carry the hue. */
+.tokens { display: grid; gap: 24px; max-width: 1080px; }
+.tokens h4 { font-size: 13px; font-weight: 600; color: var(--muted); }
+.token-totals { display: flex; flex-wrap: wrap; gap: 16px 48px; margin: 0; }
+.token-totals .stat { display: grid; gap: 4px; }
+.token-totals dt { color: var(--muted); font-size: 13px; }
+.token-totals dd { margin: 0; color: var(--ink); font-size: 28px; line-height: 32px; font-weight: 600; letter-spacing: -0.02em; }
+.table-wrap { overflow-x: auto; overscroll-behavior-x: none; overscroll-behavior-y: auto; }
+.tokens-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.tokens-table th, .tokens-table td { padding: 10px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.tokens-table thead :is(th, td) { padding-top: 0; padding-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 500; border-bottom: 1px solid var(--rail); }
+.tokens-table tbody th { color: var(--ink); font-weight: 500; overflow-wrap: anywhere; }
+.tokens-table th[scope="row"] { min-width: 12em; }
+.tokens-table .group th { padding-top: 24px; padding-bottom: 6px; color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
 /* A subagent's share of a stage, beneath the stage it worked for. */
-.tokens-table .within th { padding-left: 24px; color: var(--muted); font-weight: 400; }
-.tokens-table .number { width: 1%; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
-.tokens-table .group th { padding-top: 18px; color: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; }
-.tokens-table code { font-size: 12px; }
+.tokens-table .within th { padding-left: 28px; color: var(--body); font-weight: 400; }
+.tokens-table .number { width: 112px; min-width: 112px; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); }
+.tokens-table thead .number { color: var(--muted); }
+.tokens-table code { font-family: var(--mono); font-size: 12px; }
 .tokens-table code, .tokens-table .span, .tokens-table .model { white-space: nowrap; }
 .tokens-table .span, .tokens-table .model, .tokens-table .no-stage { color: var(--muted); font-weight: 400; }
 .tokens-table .span, .tokens-table .model { margin-left: 8px; }
-.share { display: block; min-width: 72px; height: 4px; margin-top: 4px; background: var(--surface-2); }
-.share-fill { display: block; height: 100%; max-width: 100%; background: var(--signal); }
+.share { display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--bar-track); overflow: hidden; }
+.share-fill { display: block; height: 100%; max-width: 100%; border-radius: 0 2px 2px 0; background: var(--bar); }
 .number { text-align: right; font-variant-numeric: tabular-nums; }
+.reporting-coverage { display: grid; gap: 6px; }
+.reporting-coverage ul { margin: 0; padding-left: 18px; color: var(--body); font-size: 13px; }
 .tokens-note { color: var(--muted); font-size: 13px; }
 @media (max-width: 560px) {
   .criteria-table thead { display: none; }
@@ -824,5 +1065,8 @@ body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 5
   .tokens-table thead .number { white-space: normal; }
   .tokens-table th, .tokens-table td { padding: 6px 4px; }
   .tokens-table th[scope="row"] { min-width: 8em; }
-  .log-head h2 { font-size: 26px; }
+  .page-head h1 { font-size: 24px; line-height: 28px; }
 }
+/* The person's own words lie beneath the cards of the options, as wide as they are. */
+.option-grid + .own-words { margin-top: 12px; }
+.question-form > .option-grid + .own-words { margin-top: 2px; }

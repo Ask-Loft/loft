@@ -1,0 +1,142 @@
+key: 01a1a7a4-51c7-714b-a7e4-6f3c65c5b714
+slug: the-page-wears-loft-web-s-design
+title: "The page wears Loft Web's design"
+context: "The Yard page took the Loft website's design: Inter on a white ground, square boxes with an ink border and an offset shadow, a dotted rule from cyan to lilac under its header, and one long column of stages and their blocks. Loft Web, the application in which a person reads, compares and decides a Loft document, has since drawn the same palette and the same Inter in a quieter way: a sidebar on a ground of its own that folds to a rail, a head over each page with its controls at the right, hairlines rather than borders, a hard shadow only on what floats over the page, and a list beside a pane of the item chosen, each scrolling on its own. A person who moves between Loft Web and the Yard page meets two products. Loft Web's design system is a package of a private repository, built with React and Tailwind, while the Yard page is files of this public repository that the page server serves with no build step."
+state:
+  kind: accepted
+  selectedOption: 01a1a7a4-51c7-714b-a7e4-6f4225ee1fad
+  outcome: "The page takes Loft Web's frame and dress: its sidebar of Yard Logs with the views of the Yard Log shown beneath its branch, Loft's wordmark with Yard beside it, a head over the Yard Log shown, hairlines, a hard shadow only on what floats, its marks for a node's kind and its fields for answers; and it draws the timeline as a list of stages beside a pane of the stage chosen. It draws them in its own styles and modules, and shares no code with Loft Web."
+drivers:
+  - key: 01a1a7a4-51c7-714b-a7e4-6f3de470203e
+    kind: local
+    label: "One product"
+    statement: "The Yard page and Loft Web read as one product."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f3e704fe075
+    kind: local
+    label: "Served from loft"
+    statement: "The page loads nothing from outside the page server."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f3f720917f7
+    kind: local
+    label: "Built here"
+    statement: "The page is made of this repository's own files, with no build step and no dependency on a private package."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f405d88faad
+    kind: local
+    label: "Legible in both schemes"
+    statement: "Every text of the page reads clearly in a light and in a dark scheme."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f414323730a
+    kind: local
+    label: "Reach any stage"
+    statement: "The person reaches any stage of a long Yard Log without scrolling past the others."
+options:
+  - key: 01a1a7a4-51c7-714b-a7e4-6f4225ee1fad
+    title: "Loft Web's design, as a list and a pane"
+    description: "Loft Web's frame, tokens, marks and fields, drawn by the page's own styles, with the timeline as a list of stages beside a pane of the stage chosen."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f434f359ca9
+    title: "Loft Web's frame over one column"
+    description: "Loft Web's frame, tokens, marks and fields, with the timeline kept as one column of stages, each a section under a hairline."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f446338dfc8
+    title: "Loft Web's design system as a dependency"
+    description: "The page rebuilt as a React application over Loft Web's design system, built before the page server embeds it."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f4594d5bbbd
+    title: "The website's design"
+    description: "The page keeps the Loft website's borders, shadows, dotted rule and one column."
+assessments:
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4225ee1fad
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3de470203e
+    rating: supports
+    rationale: "the same frame, the same marks and the same list beside a pane as Loft Web"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4225ee1fad
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3e704fe075
+    rating: supports
+    rationale: "the page's styles and modules are served by the page server, and the face standing in for Inter is the system's own"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4225ee1fad
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3f720917f7
+    rating: supports
+    rationale: "the design is drawn again in the page's own CSS and modules"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4225ee1fad
+    driver: 01a1a7a4-51c7-714b-a7e4-6f405d88faad
+    rating: supports
+    rationale: "Loft Web's own light and dark tokens, held to the contrast the page's criterion names"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4225ee1fad
+    driver: 01a1a7a4-51c7-714b-a7e4-6f414323730a
+    rating: supports
+    rationale: "every stage is a row of the list"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f434f359ca9
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3de470203e
+    rating: neutral
+    rationale: "the same frame and marks, but read in a shape Loft Web never uses"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f434f359ca9
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3e704fe075
+    rating: supports
+    rationale: "as for the list and the pane"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f434f359ca9
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3f720917f7
+    rating: supports
+    rationale: "as for the list and the pane"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f434f359ca9
+    driver: 01a1a7a4-51c7-714b-a7e4-6f405d88faad
+    rating: supports
+    rationale: "as for the list and the pane"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f434f359ca9
+    driver: 01a1a7a4-51c7-714b-a7e4-6f414323730a
+    rating: conflicts
+    rationale: "a stage far down the column is reached by scrolling past those before it"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f446338dfc8
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3de470203e
+    rating: supports
+    rationale: "the very components Loft Web draws"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f446338dfc8
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3e704fe075
+    rating: supports
+    rationale: "the built page would be embedded and served as the page is now"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f446338dfc8
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3f720917f7
+    rating: conflicts
+    rationale: "the design system lives in a private repository and needs a build"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f446338dfc8
+    driver: 01a1a7a4-51c7-714b-a7e4-6f405d88faad
+    rating: supports
+    rationale: "Loft Web's own schemes"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f446338dfc8
+    driver: 01a1a7a4-51c7-714b-a7e4-6f414323730a
+    rating: supports
+    rationale: "Loft Web's list and pane"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4594d5bbbd
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3de470203e
+    rating: conflicts
+    rationale: "the page and Loft Web look like two products"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4594d5bbbd
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3e704fe075
+    rating: supports
+    rationale: "Inter is served by the page server"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4594d5bbbd
+    driver: 01a1a7a4-51c7-714b-a7e4-6f3f720917f7
+    rating: supports
+    rationale: "the page as it is"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4594d5bbbd
+    driver: 01a1a7a4-51c7-714b-a7e4-6f405d88faad
+    rating: supports
+    rationale: "the website's own schemes"
+  - option: 01a1a7a4-51c7-714b-a7e4-6f4594d5bbbd
+    driver: 01a1a7a4-51c7-714b-a7e4-6f414323730a
+    rating: conflicts
+    rationale: "one long column"
+consequences:
+  - key: 01a1a7a4-51c7-714b-a7e4-6f4639c03953
+    kind: benefit
+    statement: "A person who moves between Loft Web and the Yard page meets one product."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f474a9143e6
+    kind: cost
+    statement: "The timeline is drawn again around a stage chosen, and its tests with it."
+  - key: 01a1a7a4-51c7-714b-a7e4-6f487c43ae55
+    kind: obligation
+    statement: "A change of Loft Web's tokens, marks or components reaches the page only when the page's own styles are changed to match it."
+subjects:
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eb213cfb9073
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eb5c525a2752
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eb677bcc8418
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb2848576856

@@ -4,6 +4,7 @@
 import { forget } from './dom.js';
 
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
 
 import { add, h } from '../../yard-page/lib/dom.js';
@@ -137,18 +138,28 @@ test('a trace view whose report gives no Requirement lists each Feature’s crit
   assert.equal(view.querySelectorAll('tr.criterion').length, 5);
 });
 
-test('a label is a tag of its own, tinted by its node’s kind', () => {
-  const tags = ['F-3', 'RQ-6', 'AC-7', 'CMP-2'].map((label) => drawn(named({ label, name: 'A node' })).querySelector('.label'));
-  assert.deepEqual(
-    tags.map((each) => [...each.classList]),
-    [
-      ['label', 'label--f'],
-      ['label', 'label--rq'],
-      ['label', 'label--ac'],
-      ['label', 'label--cmp'],
-    ],
-  );
-  assert.equal(tags[0].nextSibling.textContent, ' ');
+test('a label is drawn in monospace and muted, apart from the name beside it, which keeps the page’s ink', () => {
+  const tag = drawn(named({ label: 'F-3', name: 'A node' })).querySelector('.label');
+  assert.equal(tag.textContent, 'F-3');
+  assert.equal(tag.nextSibling.textContent, ' ');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  const rule = css.match(/\n\.label \{([^}]*)\}/)?.[1] ?? '';
+  assert.match(rule, /color: var\(--muted\)/);
+  assert.match(css, /code, \.label \{ font-family: var\(--mono\)/);
+});
+
+test('each kind of node has a square of its own colour before its label', () => {
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.label::before \{[^}]*width: 6px; height: 6px; background: var\(--kind, /);
+  const kinds = { P: 'product', FG: 'group', F: 'feature', RQ: 'requirement', AC: 'criterion', CON: 'constraint', QA: 'quality', CMP: 'component' };
+  const colours = new Set();
+  for (const [prefix, kind] of Object.entries(kinds)) {
+    const tag = drawn(named({ label: `${prefix}-1`, name: 'A node' })).querySelector('.label');
+    assert.deepEqual([...tag.classList], ['label', `label--${prefix.toLowerCase()}`]);
+    assert.match(css, new RegExp(`\\.label--${prefix.toLowerCase()} \\{ --kind: var\\(--kind-${kind}\\); \\}`));
+    colours.add(css.match(new RegExp(`--kind-${kind}: (#[0-9a-f]{6});`))?.[1]);
+  }
+  assert.equal(colours.size, Object.keys(kinds).length, 'each kind has a colour of its own');
 });
 
 test('a criterion’s state comes from its own tests and rules, though the report’s lists left them out', () => {

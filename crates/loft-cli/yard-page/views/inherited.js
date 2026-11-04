@@ -1,7 +1,7 @@
 // A repository's inherited Yard Logs, in a fold of their own under it: folded unless the person
 // opened it, which the browser keeps; opened, they are fetched from the page server 50 at a time,
 // the one closed last first, filtered by branch or title. The listing gives only their count, so
-// the menu holds none of them until the person asks.
+// the sidebar holds none of them until the person asks.
 
 import * as api from '../lib/api.js';
 import { h } from '../lib/dom.js';
@@ -15,7 +15,7 @@ const PAUSE = 200;
 
 /**
  * What the page holds of each repository's inherited Yard Logs, by the repository, so that a
- * menu drawn again shows them as they were: the filter, those fetched and how many match.
+ * sidebar drawn again shows them as they were: the filter, those fetched and how many match.
  * @typedef {{ filter: string, logs: any[], total: number | null, asked: number }} Held
  * @type {Map<string, Held>}
  */
@@ -51,7 +51,7 @@ function keepOpen(repository, open) {
 
 /**
  * The fold of `repository`'s inherited Yard Logs, each drawn by `item`; `index` names its filter
- * so that the focus stays in it when the menu is drawn again.
+ * so that the focus stays in it when the sidebar is drawn again.
  * @param {{ repository: string, inherited: number }} repository
  * @param {number} index
  * @param {(log: any) => HTMLElement} item
@@ -77,7 +77,7 @@ export function inheritedFold(repository, index, item) {
     state.logs = from ? [...state.logs, ...(reply.body.logs ?? [])] : reply.body.logs ?? [];
     draw();
   };
-  /** Fetches again as many as are held, a page at a time, so a menu drawn again keeps them. */
+  /** Fetches again as many as are held, a page at a time, so a sidebar drawn again keeps them. */
   const again = async () => {
     const wanted = Math.max(PAGE, state.logs.length);
     await fetchFrom(0);

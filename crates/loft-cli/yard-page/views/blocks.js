@@ -8,6 +8,7 @@ import { assignee, count, when, who } from '../lib/format.js';
 import * as kept from '../lib/kept.js';
 import { PLAN_APPROVAL } from '../model/answers.js';
 import { loftView } from './loft/index.js';
+import { optionCard, optionGrid, questionHead } from './question-card.js';
 
 /**
  * @typedef {import('../model/log.js').Block} Block
@@ -122,6 +123,9 @@ export function answerText(answer) {
 }
 
 /**
+ * A question in the timeline: its card as the panel draws it, read only, headed by its header and
+ * its state, or by the decisions that settle it; its options as lettered cards, those chosen
+ * outlined, folded beneath the answer once it is answered.
  * @param {Block} block
  * @param {Context} context
  */
@@ -130,23 +134,30 @@ function question(block, context) {
   const decisions = context.decisions.get(block.key) ?? [];
   const answer = block.answer;
   const chosen = new Set(answer?.labels ?? []);
-  const options = h(
-    'ul',
-    { class: 'options' },
-    body.options.map((option) =>
-      h(
-        'li',
-        { class: ['option', chosen.has(option.label) ? 'is-chosen' : null] },
-        h('span', { class: 'option-label' }, option.label),
-        option.recommended ? h('span', { class: 'badge badge--recommended' }, 'Recommended') : null,
-        chosen.has(option.label) ? h('span', { class: 'badge badge--chosen' }, 'Chosen') : null,
-        markdown(option.detailHtml, option.detail, 'option-detail'),
-      ),
-    ),
+  const cards = body.options.map((option, index) =>
+    optionCard('div', { class: 'option' }, {
+      index,
+      chosen: chosen.has(option.label),
+      recommended: option.recommended,
+      label: h('span', { class: 'option-label' }, option.label),
+      after: [markdown(option.detailHtml, option.detail, 'option-detail')],
+    }),
   );
+  const own = answer?.words
+    ? optionCard('div', { class: 'option own-words' }, {
+      index: body.options.length,
+      chosen: true,
+      label: h('span', { class: 'option-label' }, 'In your own words'),
+      after: [h('p', { class: 'option-detail' }, answer.words)],
+    })
+    : null;
+  const options = [optionGrid(cards), own];
   const context_ = body.contextHtml ? html(body.contextHtml, 'prose context') : null;
   const prompt = h('p', { class: 'prompt' }, body.prompt);
-  const head = decisions.length
+  const waiting = context.waiting.has(block.key);
+  const state = answer ? answerText(answer) : waiting ? 'Waits on you' : 'Not chosen yet';
+  const head = questionHead(body.header, state, answer ? 'answered' : waiting ? 'waiting' : undefined);
+  const decided = decisions.length
     ? h(
         'header',
         { class: 'decision-head' },
@@ -160,7 +171,7 @@ function question(block, context) {
           ),
         ),
       )
-    : h('header', { class: 'block-head' }, h('span', { class: 'kind' }, KINDS.question), h('h4', {}, body.header));
+    : null;
   if (answer) {
     const answered = h(
       'p',
@@ -171,20 +182,21 @@ function question(block, context) {
       answer.notes ? h('span', { class: 'answer-notes' }, ` ${answer.notes}`) : null,
     );
     return [
+      decided,
       head,
-      decisions.length ? prompt : null,
+      prompt,
       answered,
       kept.details(
         { path: `${block.key}/options`, open: false },
         { class: 'fold' },
-        h('summary', {}, decisions.length ? 'Context and options' : body.prompt),
+        h('summary', {}, decisions.length ? 'Context and options' : 'The options'),
         context_,
         options,
       ),
     ];
   }
-  const waiting = context.waiting.has(block.key);
   return [
+    decided,
     head,
     prompt,
     context_,
@@ -214,8 +226,8 @@ function decidable(block, context) {
     { class: 'block-head' },
     h('span', { class: 'kind' }, KINDS[block.kind]),
     h('h4', {}, body.title),
-    outcome ? h('span', { class: ['verdict', `verdict--${outcome.verdict}`] }, outcome.verdict) : null,
   );
+  // The outcome is given once, in the line that names who decided it and when.
   const decided = outcome
     ? h(
         'p',

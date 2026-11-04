@@ -51,7 +51,8 @@ export function chip(word, tone) {
 }
 
 /**
- * A label as a tag of its own, tinted by its node's kind, which its prefix names.
+ * A label in monospace, apart from the name beside it, after a square in the colour of its node's
+ * kind, which its prefix names, as Loft Web marks a node.
  * @param {string} label
  */
 export function tag(label) {
@@ -75,8 +76,8 @@ export function named(node) {
   return [node.label ? tag(node.label) : null, ' ', nameOf(node)];
 }
 
-/** The tone of each change a node can have gone through. @type {Record<string, string>} */
-export const CHANGE_TONES = { added: 'success', changed: 'warning', removed: 'danger' };
+/** The chip of each change a node can have gone through, as Loft Web draws them. @type {Record<string, string>} */
+export const CHANGE_TONES = { added: 'new', changed: 'changed', removed: 'removed' };
 
 /**
  * A node in a list of changes: how it changed, its kind and its name.

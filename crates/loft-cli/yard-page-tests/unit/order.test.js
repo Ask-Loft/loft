@@ -43,8 +43,10 @@ test('updating a block preserves its position through mode grouping and reversin
     if (updated) a.version = { ...a.version, act: act('2026-01-01T11:30:00Z', 5), number: 2 };
     for (const order of ['oldest', 'newest']) {
       const drawn = timeline(shown, context(shown, order));
-      assert.deepEqual([...drawn.querySelectorAll('article.block')].map(e => e.id),
-        order === 'newest' ? ['block-c', 'block-a', 'block-b'] : ['block-a', 'block-b', 'block-c']);
+      assert.deepEqual([...drawn.querySelectorAll('.block-row')].map(e => e.dataset.block),
+        order === 'newest' ? ['c', 'a', 'b'] : ['a', 'b', 'c']);
+      const pane = timeline(shown, { ...context(shown, order), chosen: { stage: 'first' } });
+      assert.deepEqual([...pane.querySelectorAll('.stage-pane article.block')].map(e => e.id), ['block-a', 'block-b']);
     }
   }
 });

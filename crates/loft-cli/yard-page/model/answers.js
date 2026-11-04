@@ -70,6 +70,18 @@ export function say(draft, block, words) {
 }
 
 /**
+ * The draft with the question `block`'s choice cleared: none of its options and not its own words
+ * chosen, the words the person typed kept.
+ * @param {Draft} draft
+ * @param {any} block
+ * @returns {Draft}
+ */
+export function clear(draft, block) {
+  const answer = answerOf(draft, block.key);
+  return { ...draft, [block.key]: { ...answer, labels: [], ownWordsSelected: false } };
+}
+
+/**
  * The draft with the recommended options chosen for each question that has nothing chosen: all
  * of them for a question that takes more than one option, the first for one that takes one.
  * @param {Draft} draft

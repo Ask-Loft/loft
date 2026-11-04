@@ -2,7 +2,7 @@ key: 01a1646f-546d-7042-befd-eb213cfb9073
 slug: browse-yard-logs
 name: "Browse Yard Logs"
 body: |
-  The page lists every branch's Yard Log the page server serves, across every repository and worktree on the machine, and draws one branch's Yard Log as a timeline of its stages, from the work done through the stages in hand to the stages still planned, with each block drawn by its kind.
+  The page lists every branch's Yard Log the page server serves, across every repository and worktree on the machine, and draws one branch's Yard Log as a timeline of its stages, from the work done through the stages in hand to the stages still planned: a list of the stages beside a pane that shows the stage chosen, with each block drawn by its kind.
 
   The page shows each block's current version and offers its earlier versions, since Yard Log keeps them all.
 realizes:
@@ -13,48 +13,94 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "lie at the left of the window and grow with the window up to 1800 pixels wide."
+      shall: "fill the window beside its sidebar, from the window's top to its bottom."
     criteria:
       - key: 01a168d9-f2df-7350-8964-7ecb58ac5bcb
-        name: "The page begins at the left edge of the window, whatever the window's width."
+        name: "The page begins at the sidebar's edge, whatever the window's width."
       - key: 01a168d9-f2df-7350-8964-7ecc86fbfc7d
-        name: "The page is as wide as the window allows, up to 1800 pixels."
+        name: "The page reaches the right edge of the window, whatever the window's width."
       - key: 01a168d9-f2df-7350-8964-7ecd425523e1
-        name: "In a window wider than 1800 pixels, the room beyond the page lies at its right."
+        name: "The page itself never scrolls: its head stays in place, and what lies beneath the head scrolls within its own pane."
   - key: 01a16984-aada-7286-b3f3-2f74df71220a
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "head itself with the Yard mark, whose Y wears the action blue that the Loft website's wordmark gives its L, and the rest of the name ink."
+      shall: "head its sidebar with Loft's wordmark, whose L wears the action blue and the rest of the name ink, and with the word Yard beside it in muted text."
     criteria:
       - key: 01a16984-aadb-7721-9995-4721c3e03b58
-        name: "The Y of the mark is action blue and the rest of the name ink, in the light and in the dark scheme alike."
+        name: "The L of the wordmark is action blue and the rest of the name ink, in the light and in the dark scheme alike."
       - key: 01a16991-1851-764f-877b-c2d5f6abfd47
-        name: "The mark's name reads as one word: no space lies between its Y and the rest of the name."
+        name: "The wordmark reads as one word: no space lies between its L and the rest of the name."
+      - key: 01a1a7a4-51ce-73b8-bd34-87a84c7109a0
+        name: "The word Yard stands after the wordmark on the same baseline, in muted text."
+      - key: 01a1a7a4-51ce-73b8-bd34-87a9cc566aa7
+        name: "The page names no other mark than the wordmark and the word Yard."
   - key: 01a168ea-af3d-7473-83c8-50bb2e1a4b32
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "hold the list of Yard Logs in a menu down the left of the window, which the person can fold to a narrow strip and open again, and give the room the menu leaves to the Yard Log shown."
+      shall: "hold the list of Yard Logs in a sidebar down the left of the window, on a ground of its own apart from the page's, which the person can fold to a rail and open again, and give the room the sidebar leaves to the Yard Log shown."
     criteria:
       - key: 01a16901-3952-7392-b2a8-3b99d4dc57a2
-        name: "The menu runs down the left of the window from its top to its bottom, beside the page's header, and stays in place while the Yard Log scrolls."
+        name: "The sidebar runs down the left of the window from its top to its bottom, and stays in place while the Yard Log scrolls."
       - key: 01a168ea-af3e-70b5-83b9-97fe8c01e07f
-        name: "Open, the menu is headed “Yard Logs”, beside a button that folds it."
+        name: "Open, the sidebar is headed by the button that folds it and the wordmark, and lists the Yard Logs beneath them."
       - key: 01a16901-3953-712b-afc6-44269a6cf574
-        name: "Folded, the menu is a narrow strip that holds a button drawn as three lines, which opens it."
+        name: "Folded, the sidebar is a rail that holds the button that opens it."
       - key: 01a168ea-af3e-70b5-83b9-97ff14bf889d
-        name: "The menu is open unless the person chose to fold it, and the person's choice is kept in the browser."
+        name: "The sidebar is open unless the person chose to fold it, and the person's choice is kept in the browser."
       - key: 01a168ea-af3e-70b5-83b9-9800f391884d
-        name: "With the menu folded, the page's header and the Yard Log shown begin beside the strip, as near its edge as they lay to the open menu's."
+        name: "With the sidebar folded, the page begins at the rail's edge and widens into the room the sidebar left."
       - key: 01a168ea-af3e-70b5-83b9-9801a289a60f
-        name: "With the menu folded, the Gantt chart widens into the room the menu left, and narrows again once the menu is opened."
+        name: "With the sidebar folded, the Gantt chart widens into the room the sidebar left, and narrows again once the sidebar is opened."
       - key: 01a168ea-af3e-70b5-83b9-9802c4271166
-        name: "With the menu folded, its button gives the count of blocks that wait on the person."
+        name: "With the sidebar folded, the rail gives the count of blocks that wait on the person."
       - key: 01a16901-3953-712b-afc6-44278c6402e4
-        name: "In a window narrower than 860 pixels, the open menu lies over the Yard Log rather than beside it."
+        name: "In a window narrower than 860 pixels, the open sidebar lies over the Yard Log rather than beside it."
       - key: 01a16920-dde7-743a-aadb-655223112875
-        name: "The page draws the menu again only when the list of Yard Logs, the Yard Log chosen or the menu's fold changes."
+        name: "The page draws the sidebar again only when the list of Yard Logs, the Yard Log chosen or the sidebar's fold changes."
+      - key: 01a1a7a4-51ce-73b8-bd34-87aa6730ba3d
+        name: "The foot of the sidebar says whether the page is following Yard Log live."
+  - key: 01a1a7a4-51ce-73b8-bd34-87abe528f508
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show the views of the Yard Log shown as tabs in its head, beneath the line that sums up its stages, each with an icon and its name."
+    criteria:
+      - key: 01a1a7a4-51ce-73b8-bd34-87ac9b0845b5
+        name: "The branch of the Yard Log shown is marked as the current entry of the sidebar."
+      - key: 01a1a7a4-51ce-73b8-bd34-87ad97d9e616
+        name: "Beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, in that order."
+      - key: 01a1a7a4-51ce-73b8-bd34-87ae5dc1386d
+        name: "The tab of the view shown is marked as current, in ink and underlined in action blue."
+      - key: 01a1a7a4-51ce-73b8-bd34-87af31f27e73
+        name: "Choosing a view's tab shows that view of the Yard Log and keeps the stage chosen."
+      - key: 01a1a7a4-51ce-73b8-bd34-87b0c01d27ce
+        name: "The sidebar lists no view of any Yard Log."
+  - key: 01a1a7a4-51ce-73b8-bd34-87b10883edd5
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "head the Yard Log shown with where it lies, its title and a line that sums up its stages."
+    criteria:
+      - key: 01a1a7a4-51ce-73b8-bd34-87b2bbf7a76d
+        name: "Above the title, the head names the repository, the worktree where it is not the repository's main one, and the branch where the title is not the branch's name."
+      - key: 01a1a7a4-51ce-73b8-bd34-87b3b38538ff
+        name: "The head's title is Yard Log's title."
+      - key: 01a1a7a4-51ce-73b8-bd34-87b4e2e9e2e4
+        name: "Beneath the title, a line in muted text gives the count of the stages done, active and planned."
+      - key: 01a1a7a4-51ce-73b8-bd34-87b7c99107b7
+        name: "Hairlines, not borders, divide the head from the panes and the panes from each other."
+  - key: 01a1a7a4-d31a-709a-8ee5-1f3a50e13e5f
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "set the controls of the view shown at the right of the Yard Log's head."
+    criteria:
+      - key: 01a1a7a4-51ce-73b8-bd34-87b54aac01b7
+        name: "Each control of the head is labelled above it in small text."
+      - key: 01a1a7a4-51ce-73b8-bd34-87b600deb823
+        name: "The head stays in place, its controls in view, while the panes beneath it scroll."
   - key: 01a1646f-546d-7042-befd-eb22743f9709
     statement:
       form: ubiquitous
@@ -144,12 +190,38 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "show the stages of the branch's Yard Log as a timeline in their order, each with its title, its status, its goal and the agent that owns it."
+      shall: "show the stages of the branch's Yard Log as a list in their order beside a pane of the stage chosen, the list giving each stage's title, its status and the agent that owns it, and the pane the stage's goal and each of its blocks in full."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb2917150250
-        name: "Each `active` stage is open and every other stage is folded."
+        name: "In the list, each `active` stage and the stage chosen are open to their blocks and every other stage is folded, unless the person chose otherwise."
       - key: 01a1646f-546d-7042-befd-eb2a277e3a0d
-        name: "The person can fold and open each stage."
+        name: "The person can fold each stage of the list to its row and open it to list its blocks, each by its kind and its title."
+      - key: 01a1a7a4-51ce-73b8-bd34-87b8cfafd33f
+        name: "When a Yard Log opens, the stage chosen is the one its address names, else the first `active` stage in the order shown, else the first stage."
+      - key: 01a1a7a4-51ce-73b8-bd34-87b9f7849faa
+        name: "Choosing a stage in the list shows it in the pane beside the list, with its goal, its status, the agent that owns it and each of its blocks."
+      - key: 01a1a7a4-51ce-73b8-bd34-87ba54f4d783
+        name: "Choosing a block in the list shows its stage in the pane and brings the block into view, marked as the block chosen."
+      - key: 01a1a7a4-51ce-73b8-bd34-87bb23449244
+        name: "The address names the stage and the block chosen, so that a reload or a link opens them again."
+      - key: 01a1a7a4-51ce-73b8-bd34-87bce0e85c7f
+        name: "The list and the pane beside it each scroll on their own."
+      - key: 01a1a888-7990-71fd-bb56-5c5be9b32b6c
+        name: "The pane holds the stage it shows within a width of at most 900 pixels, at the left of the room it has."
+      - key: 01a1a888-7990-71fd-bb56-5c5cf51bf54f
+        name: "The Markdown of a note, of an approval and of a `loft` block spans its block's width, held to no narrower measure."
+      - key: 01a1a856-9e14-7124-a2ea-8d787f68be15
+        name: "A change to the Yard Log, drawn again, leaves the list and the pane scrolled where they were, and brings no block into view."
+      - key: 01a1a856-9e14-7124-a2ea-8d79ddaf440d
+        name: "Beneath a stage of the list, each block's row gives its kind as a small light icon before its title, an `L` for a `loft` block, which names the kind to a reader and while the pointer rests on it."
+      - key: 01a1a86a-2483-76c7-894e-d32912c94eba
+        name: "Beneath a stage of the list, the row of each `active` task is marked by a dot in the margin before it, in the colour the pane gives the status `active`, which names the task active to a reader and moves neither its icon nor its title."
+      - key: 01a1a7a4-51ce-73b8-bd34-87bda9d6693e
+        name: "A stage's row in the list gives the count of its blocks that wait on the person and the count of its blocks marked since the last visit."
+      - key: 01a1a7a4-51ce-73b8-bd34-87be8a0c6fed
+        name: "A splitter between the list and the pane sets the list's width, which is kept in the browser."
+      - key: 01a1a7a4-51ce-73b8-bd34-87bf8fa0ae5e
+        name: "The splitter is reached by the keyboard, and the arrow keys left and right narrow and widen the list."
       - key: 01a1646f-546d-7042-befd-eb2bf26cc683
         name: "A line marks where the `done` and `dropped` stages end and the `planned` ones begin."
       - key: 01a1646f-546d-7042-befd-eb2cf93edd47
@@ -160,6 +232,21 @@ requirements:
         name: "The blocks within each stage retain Yard Log's stored order through mode grouping."
       - key: 01a17f75-05dc-7361-a0cd-c025788f6f99
         name: "Changing a block's current version leaves its timeline position unchanged."
+  - key: 01a1a7cf-9eae-75c1-bbfd-bbd40af8fbc3
+    statement:
+      form: state_driven
+      while: "the branch's Yard Log holds a single stage"
+      system: "the page"
+      shall: "list the stage's blocks as the list's rows in place of the stage, each drawn as a stage's row is drawn."
+    criteria:
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd5036bc56f
+        name: "With one stage, the list holds a row for each of its blocks in their order, and no row for the stage."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd63a7b9af1
+        name: "A block's row shows its title on its first line and, on its second, its kind and, where it has one, its state, as a dot and a word, as a stage's row shows its status."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd7159598d3
+        name: "Choosing a block's row brings the block into view in the pane and marks it as the block chosen."
+      - key: 01a1a7cf-9eae-75c1-bbfd-bbd82559a568
+        name: "With more than one stage, the list holds a row for each stage, with the rows of its blocks beneath it."
   - key: 01a1690b-2c9b-7594-809f-4a8a666e8f7c
     statement:
       form: ubiquitous
@@ -187,7 +274,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb2f03e5bd8d
         name: "The person's choice of order is kept in the browser."
       - key: 01a16984-aadb-7721-9995-4722a569ce6d
-        name: "The switch of order lies at the left of the line above the stages, and is shown only with the timeline."
+        name: "The switch of order lies among the controls of the page's head, and is shown only with the timeline."
       - key: 01a17f75-05dc-7361-a0cd-c0268b033931
         name: "Choosing newest first reverses stages without reversing the blocks within them."
   - key: 01a1646f-546d-7042-befd-eb3071ddc29b
@@ -243,6 +330,30 @@ requirements:
         name: "An `approval` or a `plan` block shows its Markdown."
       - key: 01a16475-7fbd-7213-a7f7-927e63f98c39
         name: "Once decided, an `approval` or a `plan` block shows its outcome, with who decided it, when and on which channel."
+  - key: 01a1a7e1-2b66-70b4-981e-7a91b0d53bdc
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a question, in the timeline and in the panel of what waits alike, as a card headed by its header and its state, titled by its prompt, with its context beneath and its options as cards side by side."
+    criteria:
+      - key: 01a1a7e1-2b66-70b4-981e-7a921242b3f3
+        name: "The head of a question gives its header in small monospace capitals and, at its right, its state: not chosen yet, the options chosen, or its answer."
+      - key: 01a1a7e1-2b66-70b4-981e-7a9328745df3
+        name: "A question's prompt is its title, and its context lies beneath it."
+      - key: 01a1a823-8647-71dc-a940-bd041c4a1e74
+        name: "A question's prompt is set as a block's title is, at 15 pixels and semibold."
+      - key: 01a1a823-d964-77b1-8ed3-9bacdda8a798
+        name: "A question's header chip, its state, its options' labels and its answer are no larger than 14 pixels."
+      - key: 01a1a823-d964-77b1-8ed3-9bad6d86d0bd
+        name: "Nothing in a question is bolder than semibold."
+      - key: 01a1a7e1-2b66-70b4-981e-7a94b97d8ed1
+        name: "Each option is a card of its own, lettered A, B, C and on in a circle before its label, with its detail beneath, and a recommended option is marked as recommended beneath its label."
+      - key: 01a1a7e1-2b66-70b4-981e-7a95a684080d
+        name: "The cards of the options stand side by side, at most three to a row, and one beneath another in a narrow window."
+      - key: 01a1a7e1-2b66-70b4-981e-7a96621ff53a
+        name: "The card of a chosen option is outlined in action blue."
+      - key: 01a1a7e1-2b66-70b4-981e-7a9758c93481
+        name: "In the timeline, a question's cards offer no control that chooses an option."
       - key: 01a1646f-546d-7042-befd-eb3c782601a4
         name: "A decision shows its number, its title and its consequence."
       - key: 01a1646f-546d-7042-befd-eb3dabdc81f0
@@ -299,12 +410,12 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "set each label a `loft` view gives apart from the name beside it, tinted by its node's kind."
+      shall: "set each label a `loft` view gives in monospace before the name beside it, after a square in the colour of its node's kind."
     criteria:
       - key: 01a16844-c9d1-72df-8cfa-5cd9ccec0949
-        name: "A label is drawn as a tag of its own, apart from the name beside it."
+        name: "A label is drawn in monospace and muted text, apart from the name beside it, which keeps the page's ink."
       - key: 01a16844-c9d1-72df-8cfa-5cda23d83c08
-        name: "The labels of a Feature, a Requirement and a criterion each have a tint of their own, and their text keeps the page's ink."
+        name: "A Product, a Feature Group, a Feature, a Requirement, a criterion, a Constraint, a Quality Attribute and a Component each have a square of their own colour before their label."
   - key: 01a1686f-4733-773b-b571-50bed5024ccb
     statement:
       form: optional
@@ -329,6 +440,41 @@ requirements:
         name: "A diagram that does not parse shows its source, with a line saying that it could not be drawn."
       - key: 01a1851a-2557-7721-ba02-488bef757a57
         name: "A diagram in a block that waits on the person is drawn in the panel of what waits, as it is in the timeline."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4bd4faa80d0
+        name: "A diagram other than a flowchart of a block's Markdown is drawn by Mermaid in the page's design: square nodes on the sidebar's ground with hairline borders, its text in the page's face at 13 pixels in ink, and its edges in muted ink."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4be0079e32d
+        name: "A group of a diagram drawn by Mermaid is framed by a hairline on the page's ground, and an edge's label lies on the page's ground."
+  - key: 01a1a7ee-1770-7572-ab19-cf2e9d620206
+    statement:
+      form: optional
+      where: "a block's Markdown holds a Mermaid flowchart"
+      system: "the page"
+      shall: "draw the flowchart itself, as Mermaid parses it and ELK's layered layout places it, in the page's design."
+    criteria:
+      - key: 01a1a7ee-1770-7572-ab19-cf2fb03c7189
+        name: "Each node is a flat card with a hairline border on the sidebar's ground, square-cornered where it is a rectangle, its label in the page's face at 13 pixels in ink."
+      - key: 01a1a7ee-1770-7572-ab19-cf3077c0957b
+        name: "A node keeps its shape: a rectangle, a rounded rectangle, a stadium, a diamond or a circle."
+      - key: 01a1a7ee-1770-7572-ab19-cf314156af4b
+        name: "Each node is wide and tall enough for its label as measured in the page's face, so that no label is cut."
+      - key: 01a1a7ee-1770-7572-ab19-cf32ceffe763
+        name: "Each edge runs in horizontal and vertical segments that turn with rounded elbows, in muted ink, and ends in a small arrowhead where Mermaid's source gives it one."
+      - key: 01a1a7ee-1770-7572-ab19-cf332567ff3f
+        name: "A dotted edge is drawn dashed, and a thick edge is drawn thicker than a plain one."
+      - key: 01a1a7ee-1770-7572-ab19-cf34ed11577a
+        name: "An edge's label lies in a pill on the page's ground beside its edge."
+      - key: 01a1a7ee-1770-7572-ab19-cf35dffbf659
+        name: "A subgraph is a panel framed by a hairline on the page's ground, titled in small muted monospace capitals, holding its nodes."
+      - key: 01a1a7ee-1770-7572-ab19-cf365df5311d
+        name: "The flowchart keeps its direction: top to bottom, bottom to top, left to right or right to left."
+      - key: 01a1a7ee-1770-7572-ab19-cf371ce2cf24
+        name: "A node's own `style` or `classDef` keeps its fill, its stroke and its text colour."
+      - key: 01a1a7ee-1770-7572-ab19-cf38e596f988
+        name: "A change of the browser's scheme recolours a flowchart already drawn without laying it out again."
+      - key: 01a1a814-5ac4-7523-9962-5ad7fadce012
+        name: "A flowchart is drawn at its own size and never scaled down to fit its block: one wider than its block scrolls sideways within it, its text staying at 13 pixels."
+      - key: 01a1a814-5ac4-7523-9962-5ad8e9672abc
+        name: "Pointing at a node outlines it and the nodes its edges join in action blue and draws those edges in action blue until the pointer leaves it, and fades nothing."
   - key: 01a1646f-546d-7042-befd-eb4a816d5c07
     statement:
       form: state_driven
@@ -361,3 +507,13 @@ requirements:
         name: "The page's colours turn to the new scheme without a reload."
       - key: 01a16863-60a7-772b-980e-a07f74dd4ee6
         name: "Each diagram already drawn is drawn again in the new scheme's colours."
+  - key: 01a1a7a4-51ce-73b8-bd34-87c021023032
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "set its text in Inter, and until Inter has loaded, in a face of the system's sized to Inter's widths and lines."
+    criteria:
+      - key: 01a1a7a4-51ce-73b8-bd34-87c1356d6448
+        name: "A line of text takes the same width and height before Inter loads as after, within 2 percent."
+      - key: 01a1a7a4-51ce-73b8-bd34-87c2b61fe307
+        name: "The face that stands in for Inter is one the system holds, and the page loads nothing for it."

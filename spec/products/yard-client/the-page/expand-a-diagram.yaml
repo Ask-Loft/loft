@@ -53,6 +53,8 @@ requirements:
         name: "Scrolling with two fingers or with the wheel pans the diagram."
       - key: 01a1695a-dd72-7090-817b-ac05c9382c0b
         name: "Dragging the diagram pans it."
+      - key: 01a1a84c-fa66-73d3-855b-0ffcf388af46
+        name: "Dragging the diagram selects none of its text."
       - key: 01a1695a-dd72-7090-817b-ac06c2e927c9
         name: "Buttons in the modal zoom in, zoom out and fit the whole diagram to the modal."
       - key: 01a1695a-dd72-7090-817b-ac075b2314e0
