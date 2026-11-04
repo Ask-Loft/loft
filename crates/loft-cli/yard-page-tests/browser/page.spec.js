@@ -38,17 +38,90 @@ async function deaf(page) {
   await page.route('**/api/stream', (route) => route.abort());
 }
 
-test('the person can fold and open each stage, the active one open and the planned one folded', async ({ page }) => {
+/** The button that folds the stage `id` in the list, and opens it. */
+function foldOf(page, id) {
+  return page.locator(`#row-${id} .fold-button`);
+}
+
+/** Chooses the stage `id` in the list, so that the pane shows it. */
+async function chooseStage(page, id) {
+  await page.locator(`#row-${id} .stage-choose`).click();
+  await expect(page.locator(`.stage-pane #block-${id}`)).toBeVisible();
+}
+
+test('in the list, the active stage is open to its blocks and the planned one folded, and the person folds and opens each', async ({ page }) => {
   await page.goto(address());
   await closeWaiting(page);
-  const shape = page.locator('#block-shape');
-  const build = page.locator('#block-build');
-  await expect(shape).toHaveAttribute('open', '');
-  await expect(build).not.toHaveAttribute('open', '');
-  await build.locator('summary').click();
-  await expect(build).toHaveAttribute('open', '');
-  await shape.locator('summary').click();
-  await expect(shape).not.toHaveAttribute('open', '');
+  const shape = foldOf(page, 'shape');
+  const build = foldOf(page, 'build');
+  await expect(shape).toHaveAttribute('aria-expanded', 'true');
+  await expect(build).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#row-build .block-rows')).toBeHidden();
+  await build.click();
+  await expect(build).toHaveAttribute('aria-expanded', 'true');
+  await shape.click();
+  await expect(shape).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#row-shape .block-rows')).toBeHidden();
+  await expect(page.locator('#row-shape .stage-choose')).toBeVisible();
+});
+
+test('choosing a stage shows it in the pane, choosing a block brings it into view marked, and the address keeps both through a reload', async ({ page }) => {
+  await page.goto(address());
+  await closeWaiting(page);
+  await expect(page.locator('.stage-pane #block-shape')).toBeVisible();
+  await page.locator('#row-build .stage-choose').click();
+  await expect(page.locator('.stage-pane #stage-title')).toHaveText(await page.locator('#row-build .stage-title').innerText());
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('stage')).toBe('build');
+  await page.locator('#row-shape .block-row[data-block="q1"]').click();
+  const card = page.locator('.stage-pane #block-q1');
+  await expect(card).toHaveClass(/is-picked/);
+  await expect(card).toBeInViewport();
+  const hash = new URLSearchParams(new URL(page.url()).hash.slice(1));
+  expect([hash.get('stage'), hash.get('block')]).toEqual(['shape', 'q1']);
+  await page.reload();
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await expect(page.locator('.stage-pane #block-q1')).toHaveClass(/is-picked/);
+});
+
+test('the list and the pane each scroll on their own beneath the head, and the page itself never scrolls', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 500 });
+  await page.goto(address());
+  await closeWaiting(page);
+  const pane = page.locator('.stage-pane');
+  const list = page.locator('.stage-list');
+  const head = await box(page.locator('#head'));
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  expect(await list.evaluate((element) => element.scrollTop)).toBe(0);
+  expect((await box(page.locator('#head'))).y).toBe(head.y);
+  await page.mouse.move(640, 300);
+  await page.mouse.wheel(0, 400);
+  expect(await page.evaluate(() => [window.scrollY, document.documentElement.scrollHeight <= window.innerHeight])).toEqual([0, true]);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+test('the splitter narrows and widens the list by the keyboard and by a drag, and the next visit keeps the width', async ({ page }) => {
+  await page.goto(address());
+  await closeWaiting(page);
+  const list = page.locator('.stage-list');
+  const handle = page.getByRole('separator', { name: 'Width of the list of stages' });
+  const start = (await box(list)).width;
+  await handle.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(async () => (await box(list)).width).toBe(start + 16);
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(async () => (await box(list)).width).toBe(start - 16);
+  const grip = await box(handle);
+  await page.mouse.move(grip.x + 1, grip.y + 200);
+  await page.mouse.down();
+  await page.mouse.move(grip.x + 61, grip.y + 200, { steps: 4 });
+  await page.mouse.up();
+  await expect.poll(async () => (await box(list)).width).toBe(start + 44);
+  await page.reload();
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  expect((await box(list)).width).toBe(start + 44);
+  await page.evaluate(() => localStorage.removeItem('yard.split'));
 });
 
 test('choosing a listed branch opens its Yard Log at its own address', async ({ page }) => {
@@ -219,7 +292,7 @@ test('a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and
   await expect.poll(() => zoomShown(page)).toBeGreaterThan(0);
   const before = await diagramOnScreen(page);
   const pointer = { x: before.x + before.width * 0.3, y: before.y + before.height * 0.6 };
-  const scrolled = await page.evaluate(() => window.scrollY);
+  const scrolled = await page.locator('.stage-pane').evaluate((element) => element.scrollTop);
   const fitted = await zoomShown(page);
   await page.mouse.move(pointer.x, pointer.y);
   // A pinch on a trackpad reaches Chromium as the wheel with Ctrl held.
@@ -246,7 +319,7 @@ test('a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and
   expect(dragged.x).toBeCloseTo(wheeled.x + 50, 0);
   expect(dragged.y).toBeCloseTo(wheeled.y + 30, 0);
 
-  expect(await page.evaluate(() => window.scrollY)).toBe(scrolled);
+  expect(await page.locator('.stage-pane').evaluate((element) => element.scrollTop)).toBe(scrolled);
   expect(await diagramModal(page).locator('.modal-body').evaluate((body) => body.scrollTop)).toBe(0);
   await expect(stage).toBeVisible();
 });
@@ -304,17 +377,18 @@ test('the open submissions wait in a panel over a live page: not darkened, the p
   await expect(panel.locator('.submission legend', { hasText: 'Which shelf?' })).toBeVisible();
   await expect(page.locator('#log .submission')).toHaveCount(0);
   expect(await panel.evaluate((dialog) => dialog.matches(':modal'))).toBe(false);
-  // A stage's fold above the panel takes the click, and the page scrolls under the wheel.
-  const shape = page.locator('#block-shape');
-  const fold = /** @type {{ x: number, y: number }} */ (await shape.locator(':scope > summary').boundingBox());
+  // A stage's fold above the panel takes the click, and the pane scrolls under the wheel.
+  const shape = foldOf(page, 'shape');
+  const fold = await box(shape);
   expect(fold.y).toBeLessThan((await box(panel)).y);
-  await page.mouse.click(fold.x + 10, fold.y + 5);
-  await expect(shape).not.toHaveAttribute('open', '');
-  await page.mouse.click(fold.x + 10, fold.y + 5);
-  await expect(shape).toHaveAttribute('open', '');
-  await page.mouse.move(640, 100);
+  await page.mouse.click(fold.x + 5, fold.y + 5);
+  await expect(shape).toHaveAttribute('aria-expanded', 'false');
+  await page.mouse.click(fold.x + 5, fold.y + 5);
+  await expect(shape).toHaveAttribute('aria-expanded', 'true');
+  const pane = page.locator('.stage-pane');
+  await page.mouse.move((await box(pane)).x + 200, (await box(pane)).y + 60);
   await page.mouse.wheel(0, 200);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   await expect(page.locator('.gantt-frame')).toBeVisible();
   await expect(panel).toBeVisible();
@@ -388,9 +462,14 @@ test('while the panel is open, the page’s end scrolls above the panel, so no p
   await page.goto(address());
   const panel = waitingModal(page);
   await expect(panel).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const last = page.locator('#log > :last-child');
+  const pane = page.locator('.stage-pane');
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  const last = page.locator('.stage-pane .stage > :last-child');
   await expect.poll(async () => (await box(last)).y + (await box(last)).height).toBeLessThanOrEqual((await box(panel)).y);
+  const list = page.locator('.stage-list');
+  await list.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  const end = page.locator('.stage-list .stages > :last-child');
+  await expect.poll(async () => (await box(end)).y + (await box(end)).height).toBeLessThanOrEqual((await box(panel)).y);
 });
 
 test('the person closes the panel by its button or Escape and it stays closed through a change, until they open it again or a new submission is sent', async ({ page }) => {
@@ -402,7 +481,7 @@ test('the person closes the panel by its button or Escape and it stays closed th
   write([{ id: 'while-closed', kind: 'note', stage: 'shape', title: 'Written while it is closed', markdown: 'x' }]);
   await expect(page.locator('#block-while-closed')).toBeVisible({ timeout: LIVE });
   await expect(modal).toBeHidden();
-  const button = page.locator('.top #open-waiting');
+  const button = page.locator('#head #open-waiting');
   await expect(button).toHaveText('1 waits on you');
   await button.click();
   await expect(modal).toBeVisible();
@@ -425,8 +504,9 @@ test('the button that opens what waits lies in the page’s head, and stays in v
   await closeWaiting(page);
   const button = page.locator('#head #open-waiting');
   await expect(button).toHaveText('1 waits on you');
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  const pane = page.locator('.stage-pane');
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   await expect(button).toBeInViewport();
   await button.click();
   await expect(waitingModal(page)).toBeVisible();
@@ -467,28 +547,29 @@ test('a fold the person toggled stays so through a change and after a reload, an
   ]);
   await page.goto(address());
   await closeWaiting(page);
+  await chooseStage(page, 'shape');
   const note = page.locator('#block-kept-fold details');
-  const shape = page.locator('#block-shape');
-  const later = page.locator('#block-kept-stage');
+  const shape = foldOf(page, 'shape');
+  const later = foldOf(page, 'kept-stage');
   await note.locator('summary').click();
-  await shape.locator(':scope > summary').click();
-  await later.locator(':scope > summary').click();
+  await shape.click();
+  await later.click();
   const held = async () => {
     await expect(note).toHaveAttribute('open', '');
-    await expect(shape).not.toHaveAttribute('open', '');
-    await expect(later).toHaveAttribute('open', '');
+    await expect(shape).toHaveAttribute('aria-expanded', 'false');
+    await expect(later).toHaveAttribute('aria-expanded', 'true');
   };
   await held();
   write([{ id: 'kept-meanwhile', kind: 'stage', title: 'Written meanwhile', status: 'planned' }]);
-  await expect(page.locator('#block-kept-meanwhile')).toBeVisible({ timeout: LIVE });
+  await expect(page.locator('#row-kept-meanwhile')).toBeVisible({ timeout: LIVE });
   await held();
   await page.reload();
   await expect(page.locator('#log-title')).toBeVisible();
   await closeWaiting(page);
   await held();
   write([{ id: 'kept-stage', kind: 'stage', title: 'A stage for later', status: 'done' }]);
-  await expect(later.locator('.status')).toHaveText('Done', { timeout: LIVE });
-  await expect(later).not.toHaveAttribute('open', '');
+  await expect(page.locator('#row-kept-stage .status')).toHaveText('Done', { timeout: LIVE });
+  await expect(later).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('an answer given in Claude Code shows within 2 seconds, and the count of what waits changes with it', async ({ page }) => {
@@ -671,7 +752,7 @@ test('the page keeps its width and the entries of the views stay in place whiche
   const main = page.locator('#log');
   const timeline = page.locator('#side .view-entry', { hasText: 'Timeline' });
   await timeline.click();
-  await expect(page.locator('ol.timeline')).toBeVisible();
+  await expect(page.locator('.timeline .stage-list')).toBeVisible();
   await expect(page.locator('#side .log-item.is-current .view-entries')).toBeVisible();
   const before = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
   for (const view of ['Gantt chart', 'Tokens']) {
@@ -723,8 +804,11 @@ test('the sidebar runs down the window’s left from top to bottom, on a ground 
   expect(await colour(side, 'background-color')).not.toBe(await colour(page.locator('body'), 'background-color'));
   expect((await box(page.locator('.page'))).x).toBe(menu.x + menu.width);
   await expect(side.locator('.connection')).toHaveText('Live');
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'shape');
+  const pane = page.locator('.stage-pane');
+  await pane.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  await expect.poll(() => pane.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
   expect(Math.abs((await box(side)).y)).toBeLessThan(1);
   await page.setViewportSize({ width: 1280, height: 900 });
 });
@@ -865,7 +949,7 @@ test('while the chart scrolls sideways its names stay in view, and while it scro
   expect((await frame.boundingBox())?.height ?? 0).toBeLessThanOrEqual(900);
 });
 
-test('the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the page', async ({ page }) => {
+test('the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the pane that holds it', async ({ page }) => {
   const frame = await openLongDay(page);
   const behaviour = await frame.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -873,12 +957,13 @@ test('the chart’s frame does not rebound at its edges, and a scroll down it ca
   });
   expect(behaviour).toEqual(['none', 'auto']);
   await frame.evaluate((element) => (element.scrollTop = element.scrollHeight));
-  await page.evaluate(() => window.scrollTo(0, 0));
+  const main = page.locator('#log');
+  await main.evaluate((element) => element.scrollTo(0, 0));
   const box = await frame.boundingBox();
   if (!box) throw new Error('the chart has no frame');
   await page.mouse.move(box.x + box.width / 2, box.y + Math.min(box.height, 900 - box.y) / 2);
   await page.mouse.wheel(0, 400);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
 });
 
 test('every name stays inside the column, a long one cut short with an ellipsis', async ({ page }) => {
@@ -955,10 +1040,10 @@ test('choosing a stage in the Gantt chart opens the timeline at it', async ({ pa
   await page.goto(address());
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   await page.locator('.stage-name', { hasText: 'Shape the shelf' }).click();
-  await expect(page.locator('ol.timeline')).toBeVisible();
-  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('block')).toBe('shape');
-  await expect(page.locator('#block-shape')).toHaveAttribute('open', '');
-  await expect(page.locator('#block-shape')).toHaveClass(/is-picked/);
+  await expect(page.locator('.timeline .stage-list')).toBeVisible();
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('stage')).toBe('shape');
+  await expect(page.locator('.stage-pane #block-shape')).toBeVisible();
+  await expect(page.locator('#row-shape .stage-choose')).toHaveAttribute('aria-current', 'true');
 });
 
 test('an open page shows a counted request’s tokens within 2 seconds of the request’s end', async ({ page }) => {
@@ -1013,11 +1098,12 @@ test('Claude and Codex plans use the same Plan mode bands and approval explanati
     const form = waiting.locator('.decision-form').filter({ has: page.locator(`#approve-shared-plan-${id}`) });
     await expect(form.locator('.plan-mode')).toHaveText(copy);
     await form.getByRole('button', { name: 'Approve', exact: true }).click();
-    await expect(page.locator(`#block-shared-plan-${id} .verdict-word`)).toHaveText('Approved');
+    await chooseStage(page, `shared-${id}`);
+    await expect(page.locator(`#block-shared-plan-${id} .verdict-word`)).toHaveText('Approved', { timeout: LIVE });
   }
   if (await waiting.isVisible()) await closeWaiting(page);
   for (const id of ['claude', 'codex']) {
-    await page.locator(`#block-shared-${id} > summary`).click();
+    await chooseStage(page, `shared-${id}`);
     const band = page.locator('.mode-band--plan').filter({ has: page.locator(`#block-shared-plan-${id}`) });
     await expect(band).toHaveCount(1);
     await expect(band.locator('.mode-head')).toContainText('Plan mode');
@@ -1030,6 +1116,7 @@ test('Claude and Codex plans use the same Plan mode bands and approval explanati
 test('a Codex session whose cache writes were not measured shows them as unavailable, and its totals file stays as written', async ({ page }) => {
   const source = unmeasuredCodexTotals();
   await page.goto(address());
+  await page.locator('#side .view-entry', { hasText: 'Tokens' }).click();
   const row = page.locator('tbody[data-by="session"] tr').filter({ has: page.locator('code[title="unmeasured-cache-write"]') });
   await expect(row).toHaveCount(1);
   await expect(row.locator('td').nth(2)).toHaveText('Unavailable');
@@ -1047,8 +1134,7 @@ test('editing a card keeps its position and creation time while showing its upda
   ]);
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
-  const shape = page.locator('#block-shape');
-  if (await shape.getAttribute('open') === null) await shape.locator(':scope > summary').click();
+  await chooseStage(page, 'shape');
   const first = page.locator('#block-order-first');
   const meta = first.locator('.block-meta');
   await expect(meta).toContainText('Created');
@@ -1257,10 +1343,11 @@ test('delegated tasks stay in their owner stage through parallel execution, inte
   await page.goto(address());
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
   await page.getByRole('button', { name: 'Timeline', exact: true }).click();
+  await chooseStage(page, 'delegated-stage');
   const original = page.locator('#block-delegated-stage');
   const card = original.locator('#block-delegated-a');
   await expect(card.locator('.task-assignee')).toHaveText('Assigned to codex / delegation-browser / worker-a (builder)');
-  await expect(original.locator(':scope > summary .owner')).toHaveText('main agent');
+  await expect(original.locator('.pane-kicker .owner')).toHaveText('main agent');
   const end = { session_id: session, cwd: setup.tree, hook_event_name: 'SubagentStop', agent_id: 'worker-a', agent_type: 'builder' };
   atEpoch(['codex', 'hook'], end, epoch + 20);
   await expect(card.locator('.state')).toHaveText('Open', { timeout: LIVE });

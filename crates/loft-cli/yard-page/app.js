@@ -132,13 +132,17 @@ function render() {
       branch: route.branch,
       last: lastVisit(state.log),
       now: Date.now(),
-      width: main.clientWidth || 960,
+      width: contentWidth(main) || 960,
       refresh,
       notify,
       onView: render,
       onPick: (id) => {
         prefs.set('view', 'timeline');
-        location.hash = format({ ...route, block: id });
+        location.hash = format({ tree: route.tree, branch: route.branch, stage: stageOf(state.log, id), block: blockOf(state.log, id) });
+      },
+      chosen: { stage: route.stage, block: route.block },
+      onChoose: (stage, block) => {
+        location.hash = format({ tree: route.tree, branch: route.branch, stage, block });
       },
       onWaiting: openWaiting,
       place: placeOf(state.listing, route.tree),
@@ -153,7 +157,7 @@ function render() {
     waitingModal(state.log, { tree: route.tree, branch: route.branch, refresh, notify });
     drawAll(main);
     settle(main);
-    if (route.block) reveal(route.block);
+    if (route.block && prefs.view() === 'timeline') reveal(route.block);
   }
   if (focus) {
     const again = /** @type {HTMLInputElement | null} */ (document.getElementById(focus.id));
@@ -171,6 +175,15 @@ function render() {
 }
 
 /**
+ * The width within `element`'s padding, which a view drawn in it has.
+ * @param {HTMLElement} element
+ */
+function contentWidth(element) {
+  const style = getComputedStyle(element);
+  return element.clientWidth - parseFloat(style.paddingLeft || '0') - parseFloat(style.paddingRight || '0');
+}
+
+/**
  * The repository a tree belongs to in the listing, and whether it is the repository's main
  * worktree; none for a tree the listing does not hold.
  * @param {any} listing
@@ -184,7 +197,32 @@ function placeOf(listing, tree) {
   return undefined;
 }
 
-/** Opens and shows the block `id`. @param {string} id */
+/**
+ * The id of the stage `id` names, itself or the stage that holds the block `id`.
+ * @param {any} log
+ * @param {string} id
+ */
+function stageOf(log, id) {
+  for (const stage of log?.stages ?? []) {
+    if (stage.id === id || (stage.blocks ?? []).some((block) => block.id === id)) return stage.id;
+  }
+  return undefined;
+}
+
+/**
+ * The block `id` names, where it is a block and not a stage.
+ * @param {any} log
+ * @param {string} id
+ */
+function blockOf(log, id) {
+  return (log?.stages ?? []).some((stage) => stage.id === id) ? undefined : id;
+}
+
+/**
+ * Shows the block `id` in the pane of its stage, marked as the block chosen, and opens what folds
+ * it there.
+ * @param {string} id
+ */
 function reveal(id) {
   const target = document.getElementById(`block-${id}`);
   if (!target) return;
@@ -195,17 +233,33 @@ function reveal(id) {
   target.scrollIntoView({ block: 'center' });
 }
 
+/**
+ * The Yard Log a route names, without the stage and the block chosen in it.
+ * @param {import('./lib/route.js').Route | null} route
+ */
+function logOf(route) {
+  return route ? { tree: route.tree, branch: route.branch } : null;
+}
+
 function start() {
   // The sidebar takes the person's choice before anything is loaded, so a folded one never shows open.
   document.body.classList.toggle('is-folded', prefs.folded());
+  let shownLog = JSON.stringify(logOf(parse(location.hash)));
   window.addEventListener('hashchange', () => {
     state.notice = '';
-    void load();
+    // A stage or a block chosen in the Yard Log shown is drawn from what the page holds.
+    const next = JSON.stringify(logOf(parse(location.hash)));
+    const same = next === shownLog && state.log;
+    shownLog = next;
+    if (same) render();
+    else void load();
   });
+  // The Gantt chart is drawn again when the room it has changes; the padding that the timeline and
+  // the other views give the pane differently is not a change of that room.
   let width = 0;
   new ResizeObserver(([entry]) => {
-    const next = Math.round(entry.contentRect.width);
-    if (next !== width && prefs.view() === 'gantt') render();
+    const next = /** @type {HTMLElement} */ (entry.target).clientWidth;
+    if (next !== width && width && prefs.view() === 'gantt') render();
     width = next;
   }).observe(document.getElementById('log') ?? document.body);
   api.follow({

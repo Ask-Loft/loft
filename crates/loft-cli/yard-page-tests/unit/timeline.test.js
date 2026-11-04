@@ -10,7 +10,9 @@ import { blocksByKey, changedSince, decisionsByQuestion, grouped, ordered, stret
 import { chart } from '../../yard-page/model/gantt.js';
 import { card } from '../../yard-page/views/blocks.js';
 import { failedLog, logHead, logView, unreadable } from '../../yard-page/views/log.js';
-import { timeline } from '../../yard-page/views/timeline.js';
+import { LIST, chosenStage, timeline } from '../../yard-page/views/timeline.js';
+import { format, parse } from '../../yard-page/lib/route.js';
+import { readFileSync } from 'node:fs';
 import { EXPLORE, PERSON, act, answer, block, log, open, question, stage } from './fixtures.js';
 
 beforeEach(forget);
@@ -51,15 +53,124 @@ function page(shown, more = {}) {
   return at;
 }
 
-test('each active stage is open and every other stage is folded', () => {
+/** Whether each stage of the list is open to its blocks, by its row's id. */
+function folds(drawn) {
+  return [...drawn.querySelectorAll('.stages > li.station')].map((row) => [row.id, row.querySelector('.fold-button')?.getAttribute('aria-expanded') === 'true' && !row.querySelector('.block-rows')?.hidden]);
+}
+
+test('in the list, each active stage and the stage chosen are open to their blocks, and every other stage is folded', () => {
   const shown = log([stage('done', 'Done one', 'done', []), stage('now', 'Now', 'active', []), stage('later', 'Later', 'planned', [])]);
-  const drawn = timeline(shown, context(shown));
-  const open = [...drawn.querySelectorAll('details.stage')].map((details) => [details.id, details.open]);
-  assert.deepEqual(open, [
-    ['block-done', false],
-    ['block-now', true],
-    ['block-later', false],
+  assert.deepEqual(folds(timeline(shown, context(shown))), [
+    ['row-done', false],
+    ['row-now', true],
+    ['row-later', false],
   ]);
+  assert.deepEqual(folds(timeline(shown, context(shown, { chosen: { stage: 'later' } }))), [
+    ['row-done', false],
+    ['row-now', true],
+    ['row-later', true],
+  ]);
+});
+
+test('the person folds a stage of the list to its row and opens it to list its blocks by kind and title', () => {
+  const note = block('note', 'n', { title: 'What it found', markdown: 'x', html: '' });
+  const asked = question('shelf', ['A', 'B']);
+  const shown = log([stage('now', 'Now', 'active', [note, asked])]);
+  const drawn = timeline(shown, context(shown));
+  const row = drawn.querySelector('#row-now');
+  const rows = [...row.querySelectorAll('.block-rows .block-row')].map((each) => [each.querySelector('.kind').textContent, each.querySelector('.block-row-title').textContent]);
+  assert.deepEqual(rows, [
+    ['Note', 'What it found'],
+    ['Question', 'shelf'],
+  ]);
+  const fold = row.querySelector('.fold-button');
+  fold.click();
+  assert.equal(fold.getAttribute('aria-expanded'), 'false');
+  assert.ok(row.querySelector('.block-rows').hidden);
+  assert.ok(row.querySelector('.stage-choose'), 'folded, the stage keeps its row');
+  fold.click();
+  assert.ok(!row.querySelector('.block-rows').hidden);
+});
+
+test('the stage chosen is the one the address names, else the first active stage in the order shown, else the first stage', () => {
+  const stages = [stage('a', 'A', 'done', [block('note', 'in-a', { markdown: 'x' })]), stage('b', 'B', 'active', []), stage('c', 'C', 'active', []), stage('d', 'D', 'planned', [])];
+  assert.equal(chosenStage(stages, { stage: 'd' }).id, 'd');
+  assert.equal(chosenStage(stages, { block: 'in-a' }).id, 'a', 'a block the address names chooses its stage');
+  assert.equal(chosenStage(stages, {}).id, 'b');
+  assert.equal(chosenStage([...stages].reverse(), { stage: 'gone' }).id, 'c');
+  assert.equal(chosenStage([stages[0], stages[3]], {}).id, 'a');
+});
+
+test('choosing a stage shows it in the pane beside the list, with its goal, its status, its owner and each of its blocks', () => {
+  const note = block('note', 'n', { title: 'Found', markdown: 'x', html: '<p>Found it.</p>' });
+  const shown = log([stage('a', 'A', 'done', [note], { owner: EXPLORE }), stage('b', 'B', 'active', [])]);
+  /** @type {any[]} */
+  const chose = [];
+  const drawn = timeline(shown, context(shown, { onChoose: (...args) => chose.push(args) }));
+  assert.equal(drawn.querySelector('.stage-pane #stage-title').textContent, 'B');
+  drawn.querySelector('#row-a .stage-choose').click();
+  assert.deepEqual(chose, [['a']]);
+  const again = timeline(shown, context(shown, { chosen: { stage: 'a' } }));
+  const pane = again.querySelector('.stage-pane');
+  assert.equal(pane.querySelector('#stage-title').textContent, 'A');
+  assert.equal(pane.querySelector('.pane-kicker .status').textContent, 'Done');
+  assert.equal(pane.querySelector('.pane-kicker .owner').textContent, 'Explore subagent');
+  assert.match(pane.querySelector('.goal').textContent, /The goal of A/);
+  assert.deepEqual([...pane.querySelectorAll('article.block')].map((each) => each.id), ['block-n']);
+  assert.equal(again.querySelector('#row-a .stage-choose').getAttribute('aria-current'), 'true');
+});
+
+test('choosing a block in the list chooses its stage and the block, which the pane marks as chosen', () => {
+  const note = block('note', 'n', { title: 'Found', markdown: 'x', html: '' });
+  const shown = log([stage('a', 'A', 'active', [note]), stage('b', 'B', 'planned', [])]);
+  /** @type {any[]} */
+  const chose = [];
+  timeline(shown, context(shown, { onChoose: (...args) => chose.push(args) })).querySelector('#row-a .block-row').click();
+  assert.deepEqual(chose, [['a', 'n']]);
+  const drawn = timeline(shown, context(shown, { chosen: { stage: 'a', block: 'n' } }));
+  assert.ok(drawn.querySelector('#row-a .block-row').classList.contains('is-chosen'));
+});
+
+test('the address names the stage and the block chosen, so that a reload or a link opens them again', () => {
+  const hash = format({ tree: '/work/shelf', branch: 'feat/shelf', stage: 'a', block: 'n' });
+  assert.deepEqual(parse(hash), { tree: '/work/shelf', branch: 'feat/shelf', stage: 'a', block: 'n' });
+  assert.deepEqual(parse(format({ tree: '/t', branch: 'b' })), { tree: '/t', branch: 'b', stage: undefined, block: undefined });
+});
+
+test('a stage’s row gives the count of its blocks that wait on the person and of those marked since the last visit', () => {
+  const asked = question('shelf', ['A', 'B']);
+  const fresh = block('note', 'fresh', { markdown: 'y' });
+  const shown = log([stage('a', 'A', 'active', [asked, fresh])]);
+  const drawn = timeline(shown, context(shown, { waiting: new Set([asked.key]), marked: new Set([asked.key, fresh.key]) }));
+  const facts = drawn.querySelector('#row-a .stage-facts');
+  assert.equal(facts.querySelector('.waiting-count').textContent, '1 waiting');
+  assert.equal(facts.querySelector('.changed-mark').textContent, '2 new');
+  const quiet = timeline(shown, context(shown));
+  assert.equal(quiet.querySelectorAll('#row-a .waiting-count, #row-a .changed-mark').length, 0);
+});
+
+test('a splitter between the list and the pane, reached by the keyboard, narrows and widens the list, and the browser keeps the width', () => {
+  prefs.set('split', null);
+  const shown = log([stage('a', 'A', 'active', [])]);
+  const drawn = timeline(shown, context(shown));
+  const handle = drawn.querySelector('.splitter');
+  assert.equal(handle.getAttribute('role'), 'separator');
+  assert.equal(handle.getAttribute('tabindex'), '0');
+  assert.equal(drawn.style.getPropertyValue('--list'), `${LIST.width}px`);
+  handle.dispatchEvent(Object.assign(new Event('keydown'), { key: 'ArrowRight' }));
+  assert.equal(drawn.style.getPropertyValue('--list'), `${LIST.width + LIST.step}px`);
+  handle.dispatchEvent(Object.assign(new Event('keydown'), { key: 'ArrowLeft' }));
+  handle.dispatchEvent(Object.assign(new Event('keydown'), { key: 'ArrowLeft' }));
+  assert.equal(prefs.get('split'), String(LIST.width - LIST.step));
+  assert.equal(timeline(shown, context(shown)).style.getPropertyValue('--list'), `${LIST.width - LIST.step}px`);
+  prefs.set('split', null);
+});
+
+test('the list and the pane each scroll on their own, and the page itself never scrolls', () => {
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.stage-list, \.stage-pane \{[^}]*overflow-y: auto/);
+  assert.match(css, /\.page \{[^}]*height: 100dvh;[^}]*overflow: hidden/);
+  assert.match(css, /\.layout \{[^}]*height: 100dvh;[^}]*overflow: hidden/);
 });
 
 test('each stage shows its title, its status as a word, its goal and its owner', () => {
@@ -78,8 +189,8 @@ test('a line marks where the stages done and dropped end and the planned ones be
   assert.equal(ordered(stages, 'newest').line, 2);
   const shown = log(stages);
   const drawn = timeline(shown, context(shown));
-  const items = [...drawn.children].map((item) => (item.classList.contains('rail-line') ? 'line' : item.querySelector('.stage').id));
-  assert.deepEqual(items, ['block-a', 'block-b', 'line', 'block-c', 'block-d']);
+  const items = [...drawn.querySelector('.stages').children].map((item) => (item.classList.contains('rail-line') ? 'line' : item.id));
+  assert.deepEqual(items, ['row-a', 'row-b', 'line', 'row-c', 'row-d']);
 });
 
 test('the stages are newest first unless the person chose otherwise, and the choice is kept in the browser', () => {

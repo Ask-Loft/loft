@@ -191,9 +191,10 @@ button { font: inherit; }
   --rail-width: 68px;
   display: grid;
   grid-template-columns: var(--sidebar) minmax(0, 1fr);
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
   margin: 0;
-  align-items: start;
+  overflow: hidden;
 }
 .is-folded .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
 .side {
@@ -203,12 +204,14 @@ button { font: inherit; }
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   background: var(--side);
   border-right: 1px solid var(--line);
 }
 .side-content { flex: 1; min-height: 0; overflow: auto; overscroll-behavior-y: contain; }
-.page { grid-column: 2; min-width: 0; }
-.main { min-width: 0; margin: 28px 40px 48px; }
+.page { grid-column: 2; display: flex; flex-direction: column; min-width: 0; height: 100vh; height: 100dvh; overflow: hidden; }
+/* The gutter of its scrollbar is kept, so that its width, by which the Gantt chart is drawn, holds whether or not it scrolls. */
+.main { flex: 1; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; padding: 28px 40px 48px; }
 .loading, .empty, .welcome p { color: var(--muted); }
 .welcome { padding: 40px 0; display: grid; gap: 10px; max-width: 60ch; }
 .welcome h2 { font-size: 28px; line-height: 32px; font-weight: 700; letter-spacing: -0.025em; }
@@ -227,7 +230,7 @@ button { font: inherit; }
 @media (max-width: 860px) {
   .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
   body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--sidebar), calc(100vw - 32px)); z-index: 20; border-right-color: var(--ink); box-shadow: var(--float); }
-  .main { margin: 20px 16px 40px; }
+  .main { padding: 20px 16px 40px; }
 }
 
 /* The sidebar: the button that folds it and the wordmark, then what waits and the Yard Logs, and
@@ -269,8 +272,7 @@ button { font: inherit; }
    that sums it up beneath, and the controls of the view shown at its right, each labelled above
    it in small text. It stays in place while what lies beneath it scrolls. */
 .page-head {
-  position: sticky;
-  top: 0;
+  flex: none;
   z-index: 5;
   display: flex;
   flex-wrap: wrap;
@@ -391,58 +393,72 @@ button { font: inherit; }
 .unreadable { background: var(--danger-soft); border-left: 3px solid var(--danger); padding: 14px 16px; display: grid; gap: 8px; }
 .unreadable h2 { color: var(--danger); font-size: 20px; }
 
-/* The timeline: a rail with a station for each stage, as the website draws a timeline. */
+/* The timeline, as Loft Web's History lists its states: the stages on a dashed rail, the one
+   chosen on mist, beside a pane of that stage in full, each scrolling on its own beneath the head,
+   with a splitter between them. */
 
-.timeline { list-style: none; margin: 0; padding: 0 0 0 28px; position: relative; display: grid; gap: 14px; }
-.timeline::before { content: ""; position: absolute; left: 8px; top: 8px; bottom: 8px; width: 2px; background: var(--line); }
+.main:has(> .yard-log.view--timeline) { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.main:has(> .yard-log.view--timeline) > .notice { margin: 16px 40px 0; }
+.yard-log.view--timeline { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 0; }
+.view--timeline > .banners { padding: 16px 40px 0; }
+.view--timeline > .empty { padding: 28px 40px; }
+.timeline { flex: 1; min-height: 0; display: grid; grid-template-columns: var(--list, 360px) 1px minmax(0, 1fr); }
+.stage-list, .stage-pane { min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; }
+.stage-list { padding: 16px 12px 32px 16px; }
+.stage-pane { padding: 24px 40px 48px; }
+.splitter { position: relative; z-index: 2; background: var(--line); cursor: col-resize; touch-action: none; }
+.splitter::after { content: ""; position: absolute; inset: 0 -4px; }
+.splitter:hover, .splitter:focus-visible { background: var(--signal); outline: none; }
+body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-list, .stage-pane) { padding-bottom: calc(var(--dock-height, 50vh) + 24px); }
+
+.stages { list-style: none; margin: 0; padding: 0 0 0 22px; position: relative; display: grid; gap: 2px; }
+.stages::before { content: ""; position: absolute; left: 6px; top: 14px; bottom: 14px; border-left: 1px dashed var(--rail); }
 .station { position: relative; }
-.station::before {
-  content: "";
-  position: absolute;
-  left: -26px;
-  top: 17px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid var(--rail);
-  background: var(--canvas);
-}
-.station:has(.stage.status--active)::before {
-  left: -28px;
-  top: 14px;
-  width: 20px;
-  height: 20px;
-  border-radius: 0;
-  border: 3px solid var(--canvas);
-  outline: 2px solid var(--ink);
-  outline-offset: -2px;
-  background: var(--signal);
-}
-.station:has(.stage.status--done)::before { border-color: var(--done); background: var(--done); }
-.station:has(.stage.status--dropped)::before { border-style: dashed; border-color: var(--drop); }
-.rail-line { position: relative; display: flex; align-items: center; gap: 10px; margin-left: -28px; color: var(--muted); font-size: 12px; }
-.rail-line::before { content: ""; flex: 0 0 24px; height: 0; border-top: 3px dotted var(--rail); }
-.rail-line::after { content: ""; flex: 1; height: 0; border-top: 3px dotted var(--rail); }
+.station::before { content: ""; position: absolute; left: -21px; top: 12px; width: 10px; height: 10px; border: 1px solid var(--rail); background: var(--side); }
+.station.status--active::before { background: var(--signal); border-color: var(--signal); }
+.station.status--done::before { background: var(--done); border-color: var(--done); }
+.station.status--dropped::before { border-style: dashed; }
+.rail-line { display: flex; align-items: center; gap: 8px; margin: 10px 0 8px -22px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.rail-line::before { content: ""; flex: 0 0 14px; border-top: 1px dashed var(--rail); }
+.rail-line::after { content: ""; flex: 1; border-top: 1px dashed var(--rail); }
+.list-row { display: flex; align-items: flex-start; }
+.fold-button { display: grid; flex: none; place-items: center; width: 24px; height: 28px; margin-top: 4px; padding: 0; border: 0; background: none; color: var(--muted); cursor: pointer; }
+.fold-button:hover { background: var(--mist); color: var(--ink); }
+.chevron { fill: none; stroke: currentColor; stroke-width: 1.5; transition: transform 0.12s; }
+.fold-button[aria-expanded="true"] .chevron { transform: rotate(90deg); }
+.stage-choose { display: grid; flex: 1; gap: 2px; min-width: 0; padding: 6px 10px; border: 0; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; }
+.stage-choose:hover { background: var(--mist); }
+.station.is-chosen > .list-row .stage-choose { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
+.stage-choose .stage-title { font-size: 15px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
+.station.status--dropped .stage-choose .stage-title { color: var(--muted); text-decoration: line-through; }
+.stage-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; font-size: 12px; color: var(--muted); }
+.stage-facts .status { font-size: 12px; }
+.stage-facts .waiting-count { min-width: 0; padding: 0; font-size: 12px; }
+.changed-mark { color: var(--new); font-weight: 600; }
+.block-rows { list-style: none; margin: 2px 0 8px 24px; padding: 0; display: grid; }
+.block-rows[hidden] { display: none; }
+.block-row { display: flex; align-items: baseline; gap: 8px; width: 100%; padding: 4px 10px; border: 0; background: none; color: var(--body); font: inherit; font-size: 13px; text-align: left; cursor: pointer; }
+.block-row:hover { background: var(--mist); color: var(--ink); }
+.block-row.is-chosen { background: var(--mist); color: var(--ink); font-weight: 600; }
+.block-row.is-waiting { box-shadow: inset 2px 0 0 var(--wait); }
+.block-row.is-new { box-shadow: inset 2px 0 0 var(--new); }
+.block-row > .kind { flex: none; width: 62px; font-size: 10px; }
+.block-row-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.stage { border-top: 1px solid var(--line); }
-.stage.status--active { box-shadow: inset 3px 0 0 var(--signal); }
-.stage.is-new { box-shadow: inset 3px 0 0 var(--new); }
-.stage-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
-  padding: 12px 16px;
-  cursor: pointer;
-  list-style: none;
-}
-.stage-head::-webkit-details-marker { display: none; }
-.stage-head:hover .stage-title { text-decoration: underline; text-decoration-color: var(--signal); text-decoration-thickness: 2px; text-underline-offset: 5px; }
-.stage-title { font-size: 17px; font-weight: 600; flex: 1 1 260px; }
+.stage { display: grid; gap: 16px; }
+.stage-head { display: grid; gap: 4px; }
+.pane-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 14px; color: var(--body); }
+.stage > .stage-head .stage-title { font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -0.015em; }
 .owner, .count { color: var(--muted); font-size: 13px; }
-.goal, .goal.prose { padding: 0 16px; color: var(--body); max-width: 75ch; }
-.stage-times { padding: 2px 16px 0; color: var(--muted); font-size: 13px; }
-.blocks { display: grid; gap: 10px; padding: 14px 16px 16px; }
+.goal, .goal.prose { color: var(--body); max-width: 75ch; }
+.stage-times { color: var(--muted); font-size: 13px; }
+.blocks { display: grid; border-bottom: 1px solid var(--line); }
+@media (max-width: 860px) {
+  .timeline { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 40%) 1px minmax(0, 1fr); }
+  .splitter { cursor: auto; pointer-events: none; }
+  .stage-pane { padding: 20px 16px 40px; }
+  .main:has(> .yard-log.view--timeline) > .notice, .view--timeline > .banners { margin-left: 16px; margin-right: 16px; padding-left: 0; padding-right: 0; }
+}
 
 /* A status, as Loft Web gives a decision's: a dot in its colour, then its word. */
 .status, .state { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; line-height: 20px; white-space: nowrap; }
@@ -617,7 +633,6 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
   .modal[open] { inset: 16px; }
 }
 .modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; }
-body:has(.modal--docked[open]) .page { padding-bottom: calc(var(--dock-height, 50vh) + 24px); }
 /* In the panel, text spans its width: the panel has less height to give it than the timeline. */
 .modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .consequence, .goal, .banner) { max-width: none; }
 .dock-edge { position: absolute; top: -5px; left: 0; right: 0; z-index: 1; height: 10px; cursor: row-resize; touch-action: none; }

@@ -171,22 +171,24 @@ test('a stage and a folded note the person toggled stay so through a fresh draw 
   const shown = yardLog([stage('now', 'Now', 'active', [note])]);
   kept.begin(shown);
   const first = drawTimeline(shown);
-  toggle(first.querySelector('details.stage'));
+  first.querySelector('#row-now .fold-button').click();
   toggle(first.querySelector('#block-kept-note details'));
   for (const drawn of [drawTimeline(shown), (reload(shown), drawTimeline(shown))]) {
-    assert.equal(drawn.querySelector('details.stage').open, false);
+    assert.equal(drawn.querySelector('#row-now .fold-button').getAttribute('aria-expanded'), 'false');
+    assert.ok(drawn.querySelector('#row-now .block-rows').hidden);
     assert.equal(drawn.querySelector('#block-kept-note details').open, true);
   }
 });
 
 test('a planned stage the person opened is folded again once it is done', () => {
-  const shown = yardLog([stage('later', 'Later', 'planned', [])]);
+  const shown = yardLog([stage('now', 'Now', 'active', []), stage('later', 'Later', 'planned', [])]);
+  const open = (drawn) => drawn.querySelector('#row-later .fold-button').getAttribute('aria-expanded');
   kept.begin(shown);
-  toggle(drawTimeline(shown).querySelector('details.stage'));
-  assert.equal(drawTimeline(shown).querySelector('details.stage').open, true);
-  const done = moved(shown, 'done');
+  drawTimeline(shown).querySelector('#row-later .fold-button').click();
+  assert.equal(open(drawTimeline(shown)), 'true');
+  const done = { ...shown, stages: [shown.stages[0], moved({ ...shown, stages: [shown.stages[1]] }, 'done').stages[0]] };
   kept.begin(done);
-  assert.equal(drawTimeline(done).querySelector('details.stage').open, false);
+  assert.equal(open(drawTimeline(done)), 'false');
 });
 
 test('the Feature Group the person opened in a spec-change view is open again after the page loads again', () => {

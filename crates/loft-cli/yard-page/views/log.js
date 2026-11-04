@@ -27,7 +27,9 @@ import { waitingIn } from './waiting.js';
  * @typedef {{ tree: string, branch: string, last: number | null, now: number, width: number,
  *   refresh: () => void, notify: (text: string) => void, onView: () => void,
  *   onPick: (id: string) => void, onWaiting?: (blockKey?: string) => void,
- *   place?: { repository: string, main: boolean } }} LogContext
+ *   place?: { repository: string, main: boolean },
+ *   chosen?: { stage?: string, block?: string },
+ *   onChoose?: (stage: string, block?: string) => void }} LogContext
  */
 
 /**
@@ -115,7 +117,7 @@ export function logView(log, context) {
       ? gantt(log, { width: context.width, now: context.now, onPick: context.onPick })
       : view === 'tokens'
         ? tokensView(log)
-        : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now }),
+        : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now, chosen: context.chosen, onChoose: context.onChoose }),
   );
   return section;
 }

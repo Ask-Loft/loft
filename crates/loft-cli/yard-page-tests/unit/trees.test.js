@@ -65,7 +65,7 @@ test('each listed branch shows its worktree, its name, its title and the count o
 test('choosing a listed branch opens its Yard Log at an address of its own that names its tree and branch', () => {
   const list = treeList(listing(), null);
   const href = list.querySelector('.log-item a').getAttribute('href');
-  assert.deepEqual(parse(href), { tree: '/work/shelf', branch: 'feat/shelf', block: undefined });
+  assert.deepEqual(parse(href), { tree: '/work/shelf', branch: 'feat/shelf', stage: undefined, block: undefined });
 });
 
 test('every open submission is shown above the list, oldest first, with its repository, worktree and branch', () => {
