@@ -86,13 +86,13 @@ export function decisionView(report, _body, context = {}) {
               options.map((option) =>
                 h(
                   'tr',
-                  {},
-                  h('th', { scope: 'row' }, option.title),
+                  { class: option.selected ? 'is-chosen' : null },
+                  h('th', { scope: 'row' }, option.selected ? [chip('chosen', 'plain'), ' '] : null, option.title),
                   drivers.map((driver) => {
                     const cell = rating.get(`${option.key} ${driver.key}`);
                     return h(
                       'td',
-                      {},
+                      { class: cell ? `rating--${cell.rating}` : null },
                       cell ? chip(cell.rating, RATINGS[cell.rating] ?? 'muted') : '',
                       cell?.rationale ? h('p', { class: 'rationale' }, cell.rationale) : null,
                     );

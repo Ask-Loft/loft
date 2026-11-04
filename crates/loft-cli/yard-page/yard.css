@@ -173,10 +173,21 @@ code { background: var(--code); padding: 0 4px; }
 pre code, .label code { background: none; padding: 0; }
 /* A colour written in a code span, drawn on that colour, ringed so that one like the ground shows. */
 code.colour { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabular-nums; }
-.label { display: inline-block; padding: 0 6px; background: var(--surface-2); color: var(--ink); font-weight: 600; line-height: 1.6; white-space: nowrap; }
-.label--f { background: var(--mist); box-shadow: inset 2px 0 0 var(--kind-feature); }
-.label--rq { background: var(--signal-soft); box-shadow: inset 2px 0 0 var(--kind-requirement); }
-.label--new { background: none; box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-weight: 400; font-style: italic; }
+/* A label as Loft Web sets one: in monospace and muted, after a square in its node's kind's colour,
+   apart from the name beside it, which keeps the ink. */
+.label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.6; white-space: nowrap; }
+.label::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--kind, var(--rail)); }
+.label--p { --kind: var(--kind-product); }
+.label--fg { --kind: var(--kind-group); }
+.label--f { --kind: var(--kind-feature); }
+.label--rq { --kind: var(--kind-requirement); }
+.label--ac { --kind: var(--kind-criterion); }
+.label--con { --kind: var(--kind-constraint); }
+.label--qa { --kind: var(--kind-quality); }
+.label--cmp { --kind: var(--kind-component); }
+.label--adr { --kind: var(--rail); }
+.label--new { padding: 0 6px; border: 1px dashed var(--new); color: var(--new); }
+.label--new::before { content: none; }
 button { font: inherit; }
 :focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
@@ -652,6 +663,11 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .chip--danger, .chip--error { color: var(--danger); }
 .chip--info { color: var(--info); }
 .chip--muted, .chip--hint { color: var(--muted); }
+/* The chips of a change, as Loft Web draws them: new dashed in teal, changed in action blue, removed in rust. */
+.chip--new { color: var(--new); border-style: dashed; }
+.chip--changed { color: var(--signal); }
+.chip--removed { color: var(--wait); }
+.chip--plain { color: var(--muted); border-color: var(--rail); }
 .counts { display: flex; flex-wrap: wrap; gap: 6px; }
 .findings, .criteria, .changes, .tests, .consequences, .subjects { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
 .finding { border-top: 1px solid var(--line); padding-top: 6px; }
@@ -702,6 +718,10 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .assessments { border-collapse: collapse; font-size: 13px; }
 .assessments th, .assessments td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; }
 .assessments thead th { background: var(--surface-2); }
+/* The option chosen, and each rating tinted as Loft Web tints a decision's table. */
+.assessments tr.is-chosen > th { background: var(--mist); box-shadow: inset 3px 0 0 var(--ink); }
+.assessments .rating--supports { background: color-mix(in srgb, var(--new) 10%, transparent); }
+.assessments .rating--conflicts { background: color-mix(in srgb, var(--wait) 8%, transparent); }
 .assessments .rationale { font-size: 12px; margin-top: 2px; }
 .lock { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
 .lock dt { color: var(--muted); }
