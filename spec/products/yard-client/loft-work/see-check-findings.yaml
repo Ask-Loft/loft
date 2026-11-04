@@ -25,3 +25,15 @@ requirements:
         name: "The findings that the branch resolved are listed."
       - key: 01a1646f-546d-7042-befd-ead3b74268b1
         name: "The view names the base revision it marks the findings against."
+      - key: 01a1a86c-65d5-76fe-b38b-1c5d653dc449
+        name: "The findings are grouped by rule, in the order of their severity from errors down to hints, each group giving its rule, its severity and its message once."
+      - key: 01a1a86c-65d5-76fe-b38b-1c5e49a0f5b7
+        name: "Each rule's group counts its findings that the branch introduced and those there before it."
+      - key: 01a1a86c-65d5-76fe-b38b-1c5f279f15ef
+        name: "Above the groups, the view counts the findings that the branch introduced and those there before it."
+      - key: 01a1a86c-65d5-76fe-b38b-1c6058d721e9
+        name: "A rule's group starts open where the branch introduced one of its findings, and folded otherwise, and the person opens and folds each group."
+      - key: 01a1a86c-65d5-76fe-b38b-1c618493bb5a
+        name: "Within a rule's group, the findings the branch introduced come first under a heading of their own, then those there before it under theirs."
+      - key: 01a1a86c-65d5-76fe-b38b-1c622a453ff5
+        name: "Within a rule's group, each finding is one line giving its node's label and name and the file and line it names."
