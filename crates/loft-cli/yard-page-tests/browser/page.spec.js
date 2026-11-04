@@ -746,13 +746,15 @@ test('the page begins at the sidebar’s edge and reaches the right edge of the 
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('the page keeps its width and the entries of the views stay in place whichever view is shown', async ({ page }) => {
+test('the page keeps its width, the entries of the views stay in place whichever view is shown, and the stage chosen stays chosen', async ({ page }) => {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.goto(address());
   const main = page.locator('#log');
   const timeline = page.locator('#side .view-entry', { hasText: 'Timeline' });
   await timeline.click();
   await expect(page.locator('.timeline .stage-list')).toBeVisible();
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'build');
   await expect(page.locator('#side .log-item.is-current .view-entries')).toBeVisible();
   const before = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
   for (const view of ['Gantt chart', 'Tokens']) {
@@ -764,6 +766,8 @@ test('the page keeps its width and the entries of the views stay in place whiche
     expect(after.entry?.y).toBe(before.entry?.y);
   }
   await timeline.click();
+  await expect(page.locator('.stage-pane #block-build')).toBeVisible();
+  expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('stage')).toBe('build');
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 

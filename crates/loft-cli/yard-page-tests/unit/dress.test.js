@@ -43,3 +43,9 @@ test('only what floats over the page carries a hard shadow', () => {
   const offsets = [...css.matchAll(/([^{}\n][^{}]*)\{[^}]*box-shadow:\s*(-?[1-9]\d*px -?\d+px 0 [^;]*);/g)].map((m) => m[1].trim());
   assert.deepEqual(offsets, [], 'no rule draws its own offset shadow');
 });
+
+test('hairlines, not borders, divide the head from the panes and the panes from each other', () => {
+  assert.match(rule('.page-head'), /border-bottom:\s*1px solid var\(--line\)/);
+  assert.match(rule('.splitter'), /background:\s*var\(--line\)/);
+  assert.ok(!/border:/.test(rule('.page-head')) && !/border:/.test(rule('.splitter')), 'neither is boxed');
+});
