@@ -742,7 +742,25 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 /* The page's own `.label` must not reach Mermaid's labels, where it is measured or drawn: its size
    and colour are the diagram's theme's, 13 pixels in ink. */
 svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; white-space: revert; }
+/* A flowchart the page draws itself: flat cards with hairline borders on the sidebar's ground, the
+   page's face at 13 pixels in ink, edges in muted ink, their labels in pills and groups as panels
+   on the page's ground, each framed by a hairline. */
+.diagram svg.flow { max-width: 100%; height: auto; font-family: var(--font); overflow: visible; }
+.flow text { font-family: var(--font); font-size: 13px; }
+.flow-node :is(rect, polygon, circle) { fill: var(--side); stroke: var(--rail); stroke-width: 1px; }
+.flow-label { fill: var(--ink); }
+.flow-edge { fill: none; stroke: var(--muted); stroke-width: 1.25px; stroke-linejoin: round; }
+.flow-edge--dotted { stroke-dasharray: 4 4; }
+.flow-edge--thick { stroke-width: 2.5px; }
+.flow-arrow { fill: var(--muted); }
+.flow-pill rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
+.flow-pill-label { fill: var(--body); font-size: 12px; }
+.flow-group rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
+.flow-group-title { fill: var(--muted); font-size: 12px; font-weight: 500; }
 .diagram-error { color: var(--danger); font-size: 13px; }
+/* A drawn diagram keeps a margin at its right for the button that expands it, which never covers it. */
+.diagram.is-drawn { padding-right: 48px; }
+.zoom-content.is-drawn { padding-right: 0; }
 .diagram-expand { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 1px solid var(--line); background: var(--canvas); color: var(--ink); font-size: 18px; line-height: 1; cursor: pointer; }
 .diagram-expand:hover { background: var(--mist); }
 

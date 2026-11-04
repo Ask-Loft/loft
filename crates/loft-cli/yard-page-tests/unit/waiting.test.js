@@ -224,12 +224,12 @@ test('the panel closes by itself once nothing in it waits on the person, and the
 
 test('a diagram in a waiting block is drawn in the panel, as it is in the timeline', async () => {
   const asked = question('colour', ['Red', 'Blue'], {
-    contextHtml: '<pre><code class="language-mermaid">flowchart LR\n  A --&gt; B</code></pre>',
+    contextHtml: '<pre><code class="language-mermaid">sequenceDiagram\n  A-&gt;&gt;B: hi</code></pre>',
   });
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
   for (let turn = 0; turn < 5; turn += 1) await new Promise((done) => setTimeout(done, 0));
   const body = dialog().querySelector('.modal-body');
   assert.ok(!body.querySelector('pre > code.language-mermaid'), 'the diagram is still a code block');
-  assert.equal(body.querySelector('.diagram svg text')?.textContent, 'flowchart LR\n  A --> B');
+  assert.equal(body.querySelector('.diagram svg text')?.textContent, 'sequenceDiagram\n  A->>B: hi');
 });

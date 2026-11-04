@@ -4,10 +4,13 @@
 // It draws in the page's own design for the scheme the browser asks for: square nodes on the
 // sidebar's ground with hairline borders, the page's face at 13 pixels, muted edges, and groups
 // framed by a hairline on the page's ground; and each diagram on the page is drawn again when the
-// browser changes its scheme. Each diagram drawn has a button
+// browser changes its scheme. A flowchart of a block's Markdown is drawn by the page itself, over
+// ELK (`flowchart.js`), in classes the stylesheet colours, so a change of scheme recolours it
+// without laying it out again; the diagrams the page builds itself stay with Mermaid. Each diagram drawn has a button
 // that expands it into the page's modal, where it zooms and pans.
 
 import { h } from './dom.js';
+import { FLOWCHART, drawFlowchart } from './flowchart.js';
 import * as modal from './modal.js';
 import { zoomStage } from './zoom.js';
 
@@ -143,7 +146,8 @@ export async function draw(target, source) {
   const turn = (turns.get(target) ?? 0) + 1;
   turns.set(target, turn);
   const text = typeof source === 'function' ? source(colours()) : source;
-  const key = `${scheme()}\n${text}`;
+  const flow = typeof source === 'string' && FLOWCHART.test(text);
+  const key = flow ? `flow\n${text}` : `${scheme()}\n${text}`;
   if (drawn.has(key)) {
     target.innerHTML = drawn.get(key);
     target.classList.add('is-drawn');
@@ -153,7 +157,7 @@ export async function draw(target, source) {
   const id = `diagram-${(counter += 1)}`;
   try {
     const library = await mermaid();
-    const { svg } = await library.render(id, text);
+    const svg = flow ? await drawFlowchart(library, text, id) : (await library.render(id, text)).svg;
     drawn.set(key, svg);
     if (drawn.size > KEPT) drawn.delete(drawn.keys().next().value);
     if (turns.get(target) !== turn) return;

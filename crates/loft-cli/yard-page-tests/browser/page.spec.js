@@ -150,7 +150,7 @@ function colour(locator, property) {
 
 /** A box of the diagram drawn in the block `drawn`. */
 function diagramBox(page) {
-  return page.locator('#block-drawn svg g.node').first().locator('rect, path, polygon');
+  return page.locator('#block-drawn svg.flow .flow-node').first().locator('rect, polygon, circle');
 }
 
 test('in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours', async ({ page }) => {
@@ -218,9 +218,9 @@ test('in a browser that asks for a light scheme, the page, its Gantt chart and i
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
   expect(await colour(diagramBox(page), 'fill')).toBe('rgb(246, 249, 251)');
   expect(await colour(diagramBox(page), 'stroke')).toBe('rgb(170, 178, 186)');
-  const label = page.locator('#block-drawn svg .nodeLabel').first();
+  const label = page.locator('#block-drawn svg.flow .flow-label').first();
   expect(await colour(label, 'font-size')).toBe('13px');
-  expect(await colour(label, 'color')).toBe('rgb(14, 20, 29)');
+  expect(await colour(label, 'fill')).toBe('rgb(14, 20, 29)');
   expect(await colour(diagramBox(page), 'stroke-width')).toBe('1px');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
   expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
@@ -1400,4 +1400,40 @@ test('a line set in the face that stands in for Inter takes Inter’s width and 
     expect(Math.abs(fallback.width - inter.width) / inter.width).toBeLessThan(0.02);
     expect(Math.abs(fallback.height - inter.height) / inter.height).toBeLessThan(0.02);
   }
+});
+
+test('a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid', async ({ page }) => {
+  write([
+    { id: 'flowed', kind: 'note', stage: 'shape', title: 'A drawn flow', markdown: '```mermaid\nflowchart TD\n  ask[Ask the person] -->|answered| decide{Decide?}\n  decide -->|yes| build([Build it])\n  decide -.->|no| ask\n  subgraph later [Later work]\n    ship((Ship))\n  end\n  build ==> ship\n```' },
+    { id: 'talked', kind: 'note', stage: 'shape', title: 'A conversation', markdown: '```mermaid\nsequenceDiagram\n  Agent->>Person: asks\n  Person-->>Agent: answers\n```' },
+  ]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await chooseStage(page, 'shape');
+  const flow = page.locator('#block-flowed svg.flow');
+  await expect(flow).toBeVisible({ timeout: 10_000 });
+  await expect(flow.locator('.flow-node')).toHaveCount(4);
+  await expect(flow.locator('.flow-group .flow-group-title')).toHaveText('Later work');
+  await expect(flow.locator('.flow-pill')).toHaveCount(3);
+  const checked = await flow.evaluate((svg) => {
+    const straight = [...svg.querySelectorAll('path.flow-edge')].every((path) => {
+      const steps = (path.getAttribute('d') ?? '').match(/[MLA][^MLA]*/g) ?? [];
+      /** @type {number[][]} */
+      const ends = steps.map((step) => step.trim().slice(1).trim().split(/[\s,]+/).map(Number).slice(-2));
+      // Each straight run goes along one axis; the arcs between them turn the elbows.
+      return steps.every((step, index) => step[0] !== 'L' || Math.abs(ends[index][0] - ends[index - 1][0]) < 0.5 || Math.abs(ends[index][1] - ends[index - 1][1]) < 0.5);
+    });
+    const whole = [...svg.querySelectorAll('.flow-node')].every((node) => {
+      const shape = /** @type {SVGGraphicsElement} */ (node.querySelector('rect, polygon, circle')).getBBox();
+      const text = /** @type {SVGGraphicsElement} */ (node.querySelector('text')).getBBox();
+      return text.x >= shape.x && text.x + text.width <= shape.x + shape.width && text.y >= shape.y && text.y + text.height <= shape.y + shape.height;
+    });
+    return { straight, whole };
+  });
+  expect(checked).toEqual({ straight: true, whole: true });
+  const talked = page.locator('#block-talked .diagram svg');
+  await expect(talked).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('#block-talked svg.flow')).toHaveCount(0);
+  await page.locator('#block-flowed .diagram-expand').click();
+  await expect(page.locator('dialog.modal--diagram svg.flow')).toBeVisible();
 });

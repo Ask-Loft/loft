@@ -4,6 +4,7 @@
 import { forget, root } from './dom.js';
 
 import assert from 'node:assert/strict';
+import { gunzipSync } from 'node:zlib';
 import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
 
@@ -17,6 +18,19 @@ globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0);
 
 /** @type {any} */ (globalThis).mermaid = {
   initialize() {},
+  mermaidAPI: {
+    /** A flowchart of `A --> B` links, as Mermaid's parser gives it. @param {string} text */
+    async getDiagramFromText(text) {
+      if (text.includes('not a diagram') || text.includes('-->>')) throw new Error('Parse error');
+      const links = [...text.matchAll(/(\w+)\s*-->\s*(\w+)/g)];
+      const ids = [...new Set(links.flatMap(([, from, to]) => [from, to]))];
+      const data = {
+        nodes: ids.map((id) => ({ id, label: id, shape: 'squareRect', cssStyles: [], cssClasses: '' })),
+        edges: links.map(([, start, end], n) => ({ id: `L_${start}_${end}_${n}`, start, end, label: '', arrowTypeEnd: 'arrow_point', arrowTypeStart: 'none', pattern: 'normal' })),
+      };
+      return { type: 'flowchart-v2', db: { getData: () => data, getDirection: () => 'LR', getClasses: () => ({}) } };
+    },
+  },
   async render(_id, text) {
     if (text.includes('not a diagram')) throw new Error('Parse error');
     const escaped = text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -58,7 +72,7 @@ function drawnText(at) {
 }
 
 test('each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it', async () => {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   const button = note.querySelector('.diagram .diagram-expand');
@@ -107,7 +121,7 @@ test('each spec-change diagram shows the button that expands it', async () => {
 });
 
 test('expanding a diagram opens it in a modal over the page, named by its block, with no button of its own', async () => {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   note.querySelector('.diagram-expand').click();
@@ -116,7 +130,7 @@ test('expanding a diagram opens it in a modal over the page, named by its block,
   assert.ok(opened?.open, 'the modal is open');
   assert.ok(opened.classList.contains('modal') && opened.classList.contains('modal--diagram'));
   assert.equal(opened.querySelector('.modal-head h2').textContent, 'How it flows');
-  assert.equal(drawnText(opened.querySelector('.zoom-stage')), 'flowchart LR\n  A --> B');
+  assert.equal(drawnText(opened.querySelector('.zoom-stage')), 'sequenceDiagram\n  A->>B: hi');
   assert.ok(!opened.querySelector('.diagram-expand'));
   assert.ok(document.activeElement === opened.querySelector('.zoom-stage'), 'the stage has the focus');
 });
@@ -149,7 +163,7 @@ function corner() {
 
 /** Expands the diagram of a note, on a stage of 1000 by 600 pixels, and fits it there. */
 async function expanded() {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   note.querySelector('.diagram-expand').click();
@@ -170,7 +184,7 @@ function press(at, key) {
 }
 
 test('the expanded diagram shows only once it is fitted to the modal', async () => {
-  const note = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const note = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(note);
   await settled();
   note.querySelector('.diagram-expand').click();
@@ -242,7 +256,7 @@ test('closing the expanded diagram gives the focus back to its button, even afte
   const { note } = await expanded();
   // The page draws its blocks afresh at each change, while the modal stays open.
   note.remove();
-  const again = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const again = noteWith('How it flows', 'sequenceDiagram\n  A->>B: hi');
   drawAll(again);
   await settled();
   dialog().querySelector('.modal-close').click();
@@ -276,4 +290,48 @@ test('a group of a diagram is framed by a hairline on the page’s ground, and a
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
   assert.match(css, /\.diagram svg :is\(\.node, \.cluster\) :is\(rect, polygon, path\) \{ rx: 0; ry: 0; stroke-width: 1px; \}/, 'square corners and hairlines');
   assert.match(css, /svg\[id\^="diagram-"\] \.label \{[^}]*font-size: inherit;[^}]*color: inherit|svg\[id\^="diagram-"\] \.label \{[^}]*color: inherit;[^}]*font-size: inherit/, 'the page’s label rule does not reach a diagram’s labels');
+});
+
+/** The ELK the page server serves, run as the page runs it, so that a flowchart is laid out. */
+/** @type {any} */ (globalThis).ELK = (() => {
+  const code = gunzipSync(readFileSync(new URL('../../yard-page/vendor/elk.bundled.js.gz', import.meta.url))).toString('utf8');
+  const module = { exports: {} };
+  new Function('module', 'exports', code)(module, module.exports);
+  return module.exports;
+})();
+
+test('a flowchart of a block’s Markdown is drawn by the page itself, and another kind by Mermaid', async () => {
+  const flow = noteWith('How it flows', 'flowchart LR\n  A --> B');
+  const other = noteWith('Who says what', 'sequenceDiagram\n  A->>B: hi');
+  drawAll(flow);
+  drawAll(other);
+  await settled(400);
+  const drawn = flow.querySelector('.diagram svg');
+  assert.ok(drawn?.classList.contains('flow'), 'the page’s own SVG');
+  assert.equal(drawn?.querySelectorAll('.flow-node').length, 2);
+  assert.equal(drawn?.querySelectorAll('path.flow-edge').length, 1);
+  assert.ok(flow.querySelector('.diagram .diagram-expand'), 'it expands as any diagram does');
+  assert.ok(!other.querySelector('.diagram svg.flow'));
+  assert.equal(drawnText(other), 'sequenceDiagram\n  A->>B: hi', 'Mermaid drew the other');
+});
+
+test('a flowchart that does not parse shows its source, with the line saying it could not be drawn', async () => {
+  const note = noteWith('Broken flow', 'flowchart LR\n  A -->> B');
+  drawAll(note);
+  await settled(200);
+  assert.equal(note.querySelector('.diagram-error')?.textContent, 'This diagram could not be drawn.');
+  assert.equal(note.querySelector('.diagram pre')?.textContent, 'flowchart LR\n  A -->> B');
+});
+
+test('the diagrams the page builds itself are drawn by Mermaid', async () => {
+  const block = specChange(folded());
+  await settled(200);
+  assert.ok(block.querySelector('.spec-diagram svg'), 'drawn');
+  assert.ok(!block.querySelector('.spec-diagram svg.flow'), 'not by the page’s renderer');
+});
+
+test('the button that expands a diagram lies in a margin of its own, over none of the drawing', () => {
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.diagram\.is-drawn \{ padding-right: 48px; \}/);
+  assert.match(css, /\.diagram-expand \{ position: absolute; top: 6px; right: 6px; width: 32px;/, 'narrower than the margin, at its right');
 });
