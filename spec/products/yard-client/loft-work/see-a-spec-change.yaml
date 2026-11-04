@@ -38,14 +38,18 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw a `spec-change` view's diagram with its own flowchart renderer, as nested panels and cards in Loft Web's marks, at its own size."
+      shall: "draw a `spec-change` view's diagram with its own flowchart renderer, as nested panels and cards in Loft Web's marks, at its own size: a compact map in its block, and full cards once expanded."
     criteria:
       - key: 01a1a814-5ac4-7523-9962-5acb7c0667ce
         name: "Each Product, Feature Group and Feature the diagram shows is a panel framed by a hairline that holds what belongs to it, headed by its kind's coloured square, its label and its name."
       - key: 01a1a814-5ac4-7523-9962-5acc70ed77b9
         name: "A Requirement's box and the boxes of its criteria stand in one row, the criteria stacked one beneath another to its right, each joined to it by a plain line without an arrowhead."
       - key: 01a1a814-5ac4-7523-9962-5acd501df9ef
-        name: "Each box is a flat card headed by its kind's coloured square and its label in monospace, or its kind's name where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
+        name: "Expanded, each box is a flat card headed by its kind's coloured square and its label in monospace, or its kind's name where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
+      - key: 01a1a836-8724-73ee-8657-ce8aec3a1302
+        name: "In its block, each box is a chip of one line: its kind's coloured square, its label or its kind's name, its name cut to the chip's measured width, and its change in a word."
+      - key: 01a1a836-8725-715c-9d62-b5b2deeb88a9
+        name: "A chip whose name is cut gives its whole name to a reader and shows it while the pointer rests on the chip."
       - key: 01a1a814-5ac4-7523-9962-5ace0ee365c5
         name: "An added, changed or removed box or panel carries a bar at its left in its change's colour and its change in a word at its right."
       - key: 01a1a823-bcd4-7465-a368-65401608d872
