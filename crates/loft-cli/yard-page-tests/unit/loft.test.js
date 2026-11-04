@@ -474,16 +474,19 @@ test('a decision view shows the decision, its options with the selected one mark
   const view = drawn(decisionView(report));
   assert.match(view.querySelector('.decision-view-head').textContent, /Store a shelf in one file\s*accepted/);
   assert.match(view.querySelector('.unpublished').textContent, /no label/);
-  assert.ok(view.querySelector('.decision-option.is-selected').textContent.startsWith('One file'));
+  assert.equal(view.querySelector('.decision-option, .decision-options'), null, 'the options are listed once, as the table’s rows');
+  assert.equal(view.querySelector('.assessments tr.is-chosen th').textContent, 'One file (selected)');
   const cells = [...view.querySelectorAll('.assessments tbody tr:not(.option-why) td')];
-  assert.deepEqual(cells.map((cell) => cell.querySelector('.rating').textContent), ['✓ supports', '✕ conflicts'], 'a symbol and a word');
+  assert.deepEqual(cells.map((cell) => cell.querySelector('.rating-symbol').textContent), ['✓', '✕'], 'a symbol');
+  assert.deepEqual(cells.map((cell) => cell.querySelector('.rating .sr-only')?.textContent.trim()), ['supports', 'conflicts'], 'its word named to a reader alone');
+  assert.deepEqual([...view.querySelectorAll('.rating-key .rating')].map((mark) => mark.textContent), ['✓ supports', '– neutral', '✕ conflicts'], 'a line above the table names each symbol');
   assert.deepEqual(cells.map((cell) => cell.querySelector('.rating-why').textContent), ['one read', 'many reads']);
   assert.equal(view.querySelector('.assessments thead th:nth-child(2)').textContent, 'Speed');
   const tones = cells.map((cell) => cell.querySelector('.rating').className);
   assert.equal(new Set(tones).size, 2, `each rating has its own colour: ${tones}`);
   assert.match([...view.querySelectorAll('details li')].map((item) => item.textContent).join('\n'), /Speed Fast reads/);
-  assert.equal(view.querySelector('.consequence-kind[data-kind="risk"] .consequence-heading').textContent, 'Risks');
-  assert.match(view.querySelector('.consequence-kind li').textContent, /A big file/);
+  assert.equal(view.querySelector('.consequence[data-kind="risk"] .consequence-kind').textContent, 'risk');
+  assert.match(view.querySelector('.consequence').textContent, /A big file/);
   assert.match(view.querySelector('.subject-line[data-role="affected"]').textContent, /^Affects: CMP-1\s+Shelf store/);
   assert.equal(view.querySelector('.subjects .chip, .consequences .chip'), null, 'no framed tag');
 });
@@ -501,7 +504,7 @@ test('a decision’s selected option comes first in its table, marked, each row 
   };
   const view = drawn(decisionView(report));
   const rows = [...view.querySelectorAll('.assessments tbody tr:not(.option-why)')];
-  assert.deepEqual(rows.map((row) => row.querySelector('th').textContent), ['Chosen', 'First']);
+  assert.deepEqual(rows.map((row) => row.querySelector('.option-open').textContent), ['Chosen', 'First']);
   assert.ok(rows[0].classList.contains('is-chosen'));
   const toggle = rows[0].querySelector('.option-open');
   const why = view.querySelector(`#${toggle.getAttribute('aria-controls')}`);
@@ -516,9 +519,9 @@ test('a decision’s selected option comes first in its table, marked, each row 
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
   assert.match(css, /\.assessments td:is\(:hover, :focus-visible\) \.rating-why \{ display: block; \}/);
   assert.match(css, /\.assessments tr\.is-chosen > th \{[^}]*box-shadow: inset 3px 0 0 var\(--signal\);/, 'a bar at its left');
-  assert.deepEqual([...view.querySelectorAll('.consequence-heading')].map((heading) => heading.textContent), ['Benefits', 'Costs']);
-  assert.deepEqual([...view.querySelectorAll('.consequence-kind[data-kind="benefit"] li')].map((item) => item.textContent), ['B1', 'B2']);
-  assert.deepEqual([...view.querySelectorAll('.subject-line')].map((line) => line.textContent.replace(/\s+/g, ' ').trim()), ['Affects: F-1 One · F-2 Two', 'Outcome: RQ-1 Out']);
+  assert.deepEqual([...view.querySelectorAll('ul.consequences > li.consequence')].map((item) => item.textContent), ['benefitB1', 'costC1', 'benefitB2'], 'one list, each led by its kind');
+  assert.match(css, /\.consequence-kind \{[^}]*color: var\(--muted\);/, 'its kind a small muted word');
+  assert.deepEqual([...view.querySelectorAll('.subject-line')].map((line) => line.textContent.replace(/\s+/g, ' ').trim()), ['Affects: F-1 One · F-2 Two', 'Stated as: RQ-1 Out']);
 });
 
 test('a decision that is not accepted shows its state, and a rejected one its rationale', () => {
@@ -627,4 +630,20 @@ test('panels that stand one beneath another in a column are as wide as one anoth
       assert.equal(held.x + held.width, holder.x + holder.width - holder.panel.pad, `${inner} spans ${outer}`);
     }
   }
+});
+
+test('a decision’s outcome comes first beneath its head, and its context and drivers are folded at its end', () => {
+  const view = drawn(
+    decisionView({ decision: { title: 'T', label: 'ADR-5', context: 'Why we chose', state: { kind: 'accepted', outcome: 'We chose A' }, drivers: [{ key: 'r', label: 'Speed' }], options: [{ key: 'a', title: 'A', selected: true }], assessments: [] } }),
+  );
+  const order = [...view.children].map((child) => child.className.split(' ').find((name) => ['decision-view-head', 'outcome', 'decision-matrix', 'decision-context', 'fold'].includes(name)) ?? child.className);
+  assert.equal(order[0], 'decision-view-head');
+  assert.equal(order[1], 'outcome', 'the outcome first');
+  assert.ok(order.indexOf('decision-matrix') > 1);
+  const context = view.querySelector('details.decision-context');
+  assert.equal(context?.open, false);
+  assert.equal(context?.querySelector('summary')?.textContent, 'Context');
+  assert.equal([...view.querySelectorAll('details')].at(-1)?.querySelector('summary')?.textContent, '1 driver');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.assessments th\[scope="row"\] \{ white-space: nowrap; \}/, 'an option’s title on one line');
 });

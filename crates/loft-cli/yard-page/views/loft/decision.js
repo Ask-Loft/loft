@@ -1,10 +1,12 @@
-// A `decision` view: the decision's title, label and state, its context and outcome, its
-// options with the selected one marked, a compact table of its assessments, each cell a rating
-// as a symbol and a word whose rationale shows on hover or focus and in the option's row opened,
-// the selected option's row first; its consequences under a heading for each kind, and its
-// subjects one line for each role.
+// A `decision` view: the decision's title, label and state, then its outcome; its options once,
+// as the rows of a compact table of its assessments, the selected one first and marked, each
+// cell a rating as a symbol in its colour whose rationale shows on hover or focus, each row
+// opening to the option's description and every rationale, a line above the table naming the
+// symbols; its consequences as one list, each led by its kind; its subjects one line for each
+// role; and its context and drivers each folded.
 
 import { h } from '../../lib/dom.js';
+import { count } from '../../lib/format.js';
 import * as kept from '../../lib/kept.js';
 import { chip, named, tag } from './index.js';
 
@@ -37,42 +39,35 @@ export function decisionView(report, _body, context = {}) {
       chip(state.kind ?? 'unknown', STATES[state.kind] ?? 'muted'),
       decision.label ? null : h('span', { class: 'unpublished' }, 'Not published yet: it has no label.'),
     ),
-    decision.context ? h('p', { class: 'context' }, decision.context) : null,
     state.outcome ? h('p', { class: 'outcome' }, h('strong', {}, 'Outcome: '), state.outcome) : null,
     state.rationale ? h('p', { class: 'rationale' }, h('strong', {}, 'Rationale: '), state.rationale) : null,
-    h(
-      'ul',
-      { class: 'decision-options' },
-      options.map((option) =>
-        h(
-          'li',
-          { class: ['decision-option', option.selected ? 'is-selected' : null] },
-          h('strong', {}, option.title),
-          option.selected ? h('span', { class: 'chosen-word' }, 'Selected') : null,
-          option.description ? h('p', {}, option.description) : null,
-        ),
-      ),
-    ),
-    drivers.length && options.length ? matrix(options, drivers, rating) : null,
+    options.length ? matrix(options, drivers, rating) : null,
+    consequencesOf(decision.consequences ?? []),
+    subjectsOf(decision.subjects ?? []),
+    decision.context
+      ? kept.details(
+          { path: context.key ? `${context.key}/context` : null, open: false },
+          { class: 'fold decision-context' },
+          h('summary', {}, 'Context'),
+          h('p', { class: 'context' }, decision.context),
+        )
+      : null,
     drivers.length
       ? kept.details(
           { path: context.key ? `${context.key}/drivers` : null, open: false },
           { class: 'fold' },
-          h('summary', {}, `${drivers.length} drivers`),
+          h('summary', {}, count(drivers.length, 'driver')),
           h('ul', {}, drivers.map((driver) => h('li', {}, h('strong', {}, driver.label ?? driver.kind), ' ', driver.statement ?? (driver.node ? named(driver.node) : '')))),
         )
       : null,
-    consequencesOf(decision.consequences ?? []),
-    subjectsOf(decision.subjects ?? []),
   ];
 }
 
 /** Each rating's symbol, beside its word. */
 const SYMBOLS = { supports: '✓', neutral: '–', conflicts: '✕' };
 
-/** The heading of each kind of consequence, and the word that heads each role of subject. */
-const KIND_HEADINGS = { benefit: 'Benefits', cost: 'Costs', obligation: 'Obligations', risk: 'Risks' };
-const ROLE_WORDS = { affected: 'Affects', outcome: 'Outcome', supersedes: 'Supersedes' };
+/** The word that heads each role of subject. */
+const ROLE_WORDS = { affected: 'Affects', outcome: 'Stated as', supersedes: 'Supersedes' };
 
 /**
  * The table of assessments: a row for each option, the selected one first, and a column for each
@@ -122,12 +117,12 @@ function matrix(options, drivers, rating) {
       h(
         'tr',
         { class: option.selected ? 'is-chosen' : null },
-        h('th', { scope: 'row' }, toggle),
+        h('th', { scope: 'row' }, toggle, option.selected ? h('span', { class: 'sr-only' }, ' (selected)') : null),
         cells.map(([, cell]) =>
           h(
             'td',
             { class: cell ? `rating--${cell.rating}` : null, tabindex: cell?.rationale ? 0 : null },
-            cell ? ratingMark(cell.rating) : '',
+            cell ? ratingMark(cell.rating, false) : '',
             cell?.rationale ? h('span', { class: 'rating-why', role: 'tooltip' }, cell.rationale) : null,
           ),
         ),
@@ -135,16 +130,18 @@ function matrix(options, drivers, rating) {
       opened,
     ];
   });
-  return h(
-    'div',
-    { class: 'table-wrap' },
-    h(
-      'table',
-      { class: 'assessments', onpointerover: place, onfocusin: place },
-      h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, 'Option'), drivers.map((driver) => h('th', { scope: 'col', title: driver.statement ?? '' }, driverName(driver))))),
-      h('tbody', {}, rows),
-    ),
+  const key = h(
+    'p',
+    { class: 'rating-key' },
+    Object.keys(SYMBOLS).flatMap((each, index) => [index ? ' ' : null, ratingMark(each)]),
   );
+  const table = h(
+    'table',
+    { class: 'assessments', onpointerover: place, onfocusin: place },
+    h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, 'Option'), drivers.map((driver) => h('th', { scope: 'col', title: driver.statement ?? '' }, driverName(driver))))),
+    h('tbody', {}, rows),
+  );
+  return h('div', { class: 'decision-matrix' }, drivers.length ? key : null, h('div', { class: 'table-wrap' }, table));
 }
 
 /**
@@ -164,30 +161,30 @@ function place(event) {
 }
 
 /**
- * A rating as its symbol and its word, in its colour.
+ * A rating as its symbol in its colour, and its word, shown or only named to a reader.
  * @param {string} rating
+ * @param {boolean} [word] whether the word is shown beside the symbol
  */
-function ratingMark(rating) {
-  return h('span', { class: ['rating', `rating-mark--${rating}`] }, h('span', { 'aria-hidden': 'true' }, SYMBOLS[/** @type {keyof typeof SYMBOLS} */ (rating)] ?? '·'), ' ', rating);
+function ratingMark(rating, word = true) {
+  return h(
+    'span',
+    { class: ['rating', `rating-mark--${rating}`] },
+    h('span', { class: 'rating-symbol', 'aria-hidden': 'true' }, SYMBOLS[/** @type {keyof typeof SYMBOLS} */ (rating)] ?? '·'),
+    h('span', { class: word ? null : 'sr-only' }, ` ${rating}`),
+  );
 }
 
 /**
- * The consequences under a heading for each of their kinds.
+ * The consequences as one list without bullets, each led by its kind in a small muted word.
  * @param {any[]} consequences
  */
 function consequencesOf(consequences) {
   if (!consequences.length) return null;
-  const kinds = [...new Set(consequences.map((consequence) => consequence.kind))];
   return h(
-    'div',
+    'ul',
     { class: 'consequences' },
-    kinds.map((kind) =>
-      h(
-        'section',
-        { class: 'consequence-kind', dataset: { kind } },
-        h('p', { class: 'consequence-heading' }, KIND_HEADINGS[/** @type {keyof typeof KIND_HEADINGS} */ (kind)] ?? capital(kind)),
-        h('ul', {}, consequences.filter((consequence) => consequence.kind === kind).map((consequence) => h('li', {}, consequence.statement))),
-      ),
+    consequences.map((consequence) =>
+      h('li', { class: 'consequence', dataset: { kind: consequence.kind } }, h('span', { class: 'consequence-kind' }, consequence.kind), h('span', {}, consequence.statement)),
     ),
   );
 }
