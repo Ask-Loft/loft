@@ -30948,6 +30948,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
         body: d7c2aa81605f120ce707a5a073ab56387d2e20b0b316d91d2926ff62078f73a7
+  - node: 01a1a893-5c27-75df-bb8a-f1e0eed36598
+    reviewed: cd2fcd592afbaffb900451abdb3cd99cf5e48c256b01fc826765e930db1949fe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a finding’s node without a label yet shows a muted mark that says it gets one at the publish, and a pair finding gives its second node beneath"
+        body: 7760ddfa396d48b951765d10e4973301aa765b9570a0480a2fb0389eb9e547d9
+  - node: 01a1a893-5c28-7461-a409-7c02df21cc76
+    reviewed: 3698385e76eb95eec39849debc0c02dff195885d9d62ee4745ae150f17479c88
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a finding’s node without a label yet shows a muted mark that says it gets one at the publish, and a pair finding gives its second node beneath"
+        body: 7760ddfa396d48b951765d10e4973301aa765b9570a0480a2fb0389eb9e547d9
   - node: 01a1646f-546d-7042-befd-ead6c6d6b941
     reviewed: 34e9d3d3aac34e4f380f6b66f30274ab91f55e302a1e1e7b6dc6d0e4e9a45621
     tests:
