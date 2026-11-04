@@ -177,8 +177,8 @@ export function placed(laid) {
     for (const child of node.children ?? []) {
       const x = dx + (child.x ?? 0);
       const y = dy + (child.y ?? 0);
-      if (child.group) groups.push({ id: child.id, title: child.title, x, y, width: child.width, height: child.height });
-      else nodes.push({ id: child.id, shape: child.shape, lines: child.lines, text: child.text, style: child.style, x, y, width: child.width, height: child.height });
+      if (child.group) groups.push({ id: child.id, title: child.title, panel: child.panel, x, y, width: child.width, height: child.height });
+      else nodes.push({ id: child.id, shape: child.shape, lines: child.lines, text: child.text, style: child.style, card: child.card, x, y, width: child.width, height: child.height });
       visit(child, x, y);
     }
     for (const edge of node.edges ?? []) {
@@ -186,8 +186,9 @@ export function placed(laid) {
       const label = edge.labels?.[0];
       edges.push({
         id: edge.id,
-        from: edge.sources?.[0],
-        to: edge.targets?.[0],
+        // An edge laid out against its direction keeps its own ends.
+        from: edge.from ?? edge.sources?.[0],
+        to: edge.to ?? edge.targets?.[0],
         points,
         pattern: edge.pattern,
         arrowEnd: Boolean(edge.arrowEnd),

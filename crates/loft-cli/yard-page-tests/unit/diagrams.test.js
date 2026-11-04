@@ -107,7 +107,7 @@ function folded() {
 /** A `loft` block of a spec-change view of `graph`, on the page. */
 function specChange(graph) {
   const report = { status: { base: { revision: 'develop', added: [{ kind: 'feature', name: 'x' }], changed: [], removed: [] } }, graph };
-  graph.diff = [{ key: 'x', kind: 'feature', label: null, name: 'x', change: 'added', words: { after: 'x' } }];
+  graph.diff = [...(graph.diff ?? []), { key: 'x', kind: 'feature', label: null, name: 'x', change: 'added', words: { after: 'x' } }];
   const article = h(
     'article',
     { class: 'block block--loft', dataset: { key: 'loft-key' } },
@@ -145,11 +145,12 @@ test('the expanded spec-change diagram is the one the page drew, with the Featur
   const open = [...block.querySelectorAll('.group-button')].find((button) => button.textContent.startsWith('FG-2'));
   open.click();
   await settled();
-  const onPage = drawnText(block.querySelector('.spec-diagram'));
-  assert.match(onPage, /Feature 2\.0/);
+  await settled(400);
+  const onPage = block.querySelector('.spec-diagram svg.flow')?.textContent;
+  assert.match(onPage ?? '', /Feature 2\.0/);
   block.querySelector('.spec-diagram .diagram-expand').click();
-  await settled();
-  assert.equal(drawnText(dialog().querySelector('.zoom-stage')), onPage);
+  await settled(400);
+  assert.equal(dialog().querySelector('.zoom-stage svg.flow')?.textContent, onPage);
   assert.equal(dialog().querySelector('.modal-head h2').textContent, 'Spec change');
 });
 
@@ -327,11 +328,47 @@ test('a flowchart that does not parse shows its source, with the line saying it 
   assert.equal(note.querySelector('.diagram pre')?.textContent, 'flowchart LR\n  A -->> B');
 });
 
-test('the diagrams the page builds itself are drawn by Mermaid', async () => {
+test('a spec-change view’s diagram is drawn by the page’s renderer, under a legend that counts each change', async () => {
+  const graph = folded();
+  graph.nodes = graph.nodes.slice(0, 6);
+  graph.nodes.push({ key: 'gone', kind: 'feature', label: 'F-9', name: 'Gone', parent: 'g0', change: 'removed' });
+  const block = specChange(graph);
+  await settled(400);
+  assert.ok(block.querySelector('.spec-diagram svg.flow .spec-panel'), 'the page’s own SVG, of panels');
+  const items = [...block.querySelectorAll('.spec-legend .spec-legend-item')];
+  assert.deepEqual(items.map((item) => item.textContent), ['4 new', '1 removed']);
+  assert.deepEqual(items.map((item) => item.querySelector('.spec-key')?.getAttribute('class')), ['spec-key spec-key--added', 'spec-key spec-key--removed']);
+});
+
+test('choosing a card, by the pointer or by Enter, unfolds the diff and brings that node’s entry into view, marked', async () => {
+  const graph = folded();
+  graph.nodes = graph.nodes.slice(0, 4);
+  graph.diff.push({ key: 'g0f1', kind: 'feature', label: null, name: 'Feature 0.1', change: 'added', words: { after: 'Feature 0.1' } });
+  const block = specChange(graph);
+  await settled(400);
+  const fold = /** @type {HTMLDetailsElement} */ (block.querySelector('details.diff'));
+  assert.equal(fold.open, false);
+  const card = /** @type {HTMLElement} */ (block.querySelector('.spec-diagram [data-key="g0f1"]'));
+  assert.equal(card.getAttribute('role'), 'button');
+  assert.equal(card.getAttribute('tabindex'), '0');
+  card.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  assert.equal(fold.open, true);
+  const marked = [...block.querySelectorAll('.diff li.is-marked')];
+  assert.deepEqual(marked.map((item) => /** @type {HTMLElement} */ (item).dataset.key), ['g0f1']);
+  assert.ok(!block.querySelector('.spec-diagram .spec-card--context[role="button"]'), 'a box drawn for context has no entry to choose');
+  const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+  assert.match(css, /\.change-tree li\.is-marked \{ outline: 2px solid var\(--signal\);/);
+});
+
+test('choosing a folded Feature Group’s box opens it, and its box counts its changed nodes', async () => {
   const block = specChange(folded());
-  await settled(200);
-  assert.ok(block.querySelector('.spec-diagram svg'), 'drawn');
-  assert.ok(!block.querySelector('.spec-diagram svg.flow'), 'not by the page’s renderer');
+  await settled(400);
+  const box = /** @type {HTMLElement} */ (block.querySelector('.spec-diagram [data-key="g2"]'));
+  assert.match(box.textContent ?? '', /9 changed/);
+  box.dispatchEvent(new Event('click', { bubbles: true }));
+  await settled(400);
+  assert.match(block.querySelector('.spec-diagram svg.flow')?.textContent ?? '', /Feature 2\.0/);
+  assert.ok(block.querySelector('.group-button.is-open')?.textContent?.startsWith('FG-2'), 'the picker says it is open');
 });
 
 test('the button that expands a diagram lies in a margin of its own, over none of the drawing', () => {

@@ -1505,3 +1505,72 @@ test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and
   await page.mouse.move(0, 0);
   await expect.poll(() => colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('1');
 });
+
+test('a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card', async ({ page }) => {
+  for (const scheme of /** @type {const} */ (['light', 'dark'])) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await page.goto(address());
+    if (await waitingModal(page).isVisible()) await closeWaiting(page);
+    await page.evaluate(async () => {
+      const { loftView } = await import('./views/loft/index.js');
+      const { add } = await import('./lib/dom.js');
+      const node = (key, kind, label, name, parent, change = null) => ({ key, kind, label, name, parent, change });
+      const nodes = [
+        node('p', 'product', 'P-1', 'Reading List', null),
+        node('g', 'feature_group', 'FG-2', 'Sharing', 'p'),
+        node('f', 'feature', 'F-3', 'Share a list', 'g', 'changed'),
+        node('r', 'requirement', 'RQ-7', 'While a list is shared, the shelf shall refuse edits made through the link.', 'f'),
+        node('c1', 'criterion', 'AC-21', 'An edit made through the link is refused, and the link says so.', 'r', 'changed'),
+        node('c2', 'criterion', null, 'A reader who follows the link sees the list as it is now.', 'r', 'added'),
+        node('c3', 'criterion', 'AC-22', 'The owner sees who opened the link.', 'r', 'removed'),
+        node('cmp', 'component', 'CMP-3', 'Link service', null, 'changed'),
+      ];
+      const report = {
+        status: { base: { revision: 'develop', commit: '0123456789abcdef', added: [], changed: [], removed: [] } },
+        graph: {
+          nodes,
+          decisions: [{ key: 'd', kind: 'decision', label: null, name: 'Links are read only', change: 'added' }],
+          edges: [{ from: 'f', to: 'cmp', kind: 'realizes' }, { from: 'd', to: 'r', kind: 'subject', role: 'outcome' }],
+          diff: nodes.filter((each) => each.change).map((each) => ({ ...each, words: { after: each.name } })),
+        },
+      };
+      document.getElementById('block-spec-test')?.remove();
+      const article = document.createElement('article');
+      article.id = 'block-spec-test';
+      article.className = 'block';
+      article.dataset.key = 'spec-test';
+      add(article, loftView({ view: 'spec-change', report, recorded: {}, reasons: [] }));
+      document.querySelector('#timeline, main, body')?.prepend(article);
+    });
+    const flow = page.locator('#block-spec-test svg.flow');
+    await expect(flow.locator('.spec-card')).toHaveCount(6, { timeout: 10_000 });
+    await expect(flow.locator('.spec-panel')).toHaveCount(3);
+    await expect(page.locator('#block-spec-test .spec-legend')).toHaveText(/^2 new3 changed1 removed$/);
+    // Its own size: a card's name is 13 pixels on the screen, and no card's text runs out of it.
+    expect(await colour(flow.locator('.spec-name').first(), 'font-size')).toBe('13px');
+    const fits = await flow.evaluate((svg) =>
+      [...svg.querySelectorAll('.spec-card')].every((card) => {
+        const frame = /** @type {SVGGraphicsElement} */ (card.querySelector('.spec-frame')).getBBox();
+        return [...card.querySelectorAll('text')].every((text) => {
+          const box = /** @type {SVGGraphicsElement} */ (text).getBBox();
+          return box.x >= frame.x && box.x + box.width <= frame.x + frame.width + 0.5 && box.y >= frame.y && box.y + box.height <= frame.y + frame.height + 0.5;
+        });
+      }),
+    );
+    expect(fits).toBe(true);
+    const bars = { light: ['rgb(25, 158, 112)', 'rgb(37, 106, 191)', 'rgb(227, 73, 72)'], dark: ['rgb(25, 158, 112)', 'rgb(57, 135, 229)', 'rgb(230, 103, 103)'] }[scheme];
+    expect(await colour(flow.locator('.spec-card--added .spec-bar'), 'fill')).toBe(bars[0]);
+    expect(await colour(flow.locator('.spec-card--changed .spec-bar'), 'fill')).toBe(bars[1]);
+    expect(await colour(flow.locator('.spec-card--removed .spec-bar'), 'fill')).toBe(bars[2]);
+    // Pointing at the decision brings forward the Requirement it settles and fades a criterion.
+    await flow.locator('.spec-card[data-key="d"]').hover();
+    await expect.poll(() => colour(flow.locator('.spec-card[data-key="c3"]'), 'opacity')).toBe('0.25');
+    expect(await colour(flow.locator('.spec-card--context'), 'opacity')).toBe('1');
+    await flow.locator('.spec-card[data-key="c1"]').click();
+    const entry = page.locator('#block-spec-test .diff li.is-marked');
+    await expect(entry).toHaveCount(1);
+    await expect(entry).toContainText('An edit made through the link');
+    await expect(entry).toBeInViewport();
+  }
+  await page.emulateMedia({ colorScheme: 'light' });
+});

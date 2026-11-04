@@ -84,6 +84,11 @@
   --kind-constraint: #a86b12;
   --kind-quality: #0f8b8d;
   --kind-component: #aab2ba;
+  /* The bars of change in a spec-change diagram: steps that pass the dataviz validator on this
+     surface, told apart by a word as well. */
+  --change-added: #199e70;
+  --change-changed: #256abf;
+  --change-removed: #e34948;
   --series-task: #468de5;
   --series-task-pale: #c4dbf7;
   --series-fix: #d23f74;
@@ -143,6 +148,9 @@
     --kind-constraint: #e0a84a;
     --kind-quality: #4fc3c5;
     --kind-component: #4a5561;
+    --change-added: #199e70;
+    --change-changed: #3987e5;
+    --change-removed: #e66767;
     --series-task: #468de5;
     --series-task-pale: #24405f;
     --series-fix: #e2578a;
@@ -775,6 +783,42 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .flow-pill rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
 .flow-pill-label { fill: var(--body); font-size: 12px; }
 .flow-group rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
+/* A spec-change diagram: nested panels and cards, each headed by its kind's square, its label and
+   its change, a bar at its left in its change's colour. */
+.spec-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; color: var(--body); font-size: 13px; }
+.spec-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.spec-key { width: 3px; height: 14px; background: var(--change); }
+.spec-key--changed, .spec-card--changed, .spec-panel--changed { --change: var(--change-changed); }
+.spec-key--removed, .spec-card--removed, .spec-panel--removed { --change: var(--change-removed); }
+.spec-key--added, .spec-card--added, .spec-panel--added { --change: var(--change-added); }
+.spec-frame { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
+.spec-card--context .spec-frame { fill: var(--side); }
+.spec-panel-frame { stroke: var(--line); stroke-width: 1px; }
+.spec-panel--even .spec-panel-frame { fill: var(--side); }
+.spec-panel--odd .spec-panel-frame { fill: var(--canvas); }
+.spec-card--removed .spec-frame, .spec-panel--removed .spec-panel-frame { stroke: var(--rail); stroke-dasharray: 4 3; }
+.spec-bar { fill: var(--change); }
+.spec-kind { fill: var(--rail); }
+.spec-kind--product { fill: var(--kind-product); }
+.spec-kind--feature_group { fill: var(--kind-group); }
+.spec-kind--feature { fill: var(--kind-feature); }
+.spec-kind--requirement { fill: var(--kind-requirement); }
+.spec-kind--criterion { fill: var(--kind-criterion); }
+.spec-kind--constraint { fill: var(--kind-constraint); }
+.spec-kind--quality_attribute { fill: var(--kind-quality); }
+.spec-kind--component { fill: var(--kind-component); }
+.flow .spec-label { font-family: var(--mono); font-size: 11.5px; fill: var(--body); }
+.flow .spec-word { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; fill: var(--muted); }
+.flow .spec-panel-name { font-size: 13px; font-weight: 600; fill: var(--ink); }
+.flow .spec-extra { font-size: 12px; fill: var(--muted); }
+.spec-card--context .spec-name { fill: var(--muted); }
+.flow-edge--tree { stroke: var(--rail); }
+.flow [role="button"] { cursor: pointer; }
+.flow [role="button"]:focus { outline: none; }
+.spec-card[role="button"]:is(:hover, :focus-visible) .spec-frame { stroke: var(--signal); }
+.spec-card[role="button"]:focus-visible .spec-frame { stroke-width: 2px; }
+.spec-panel[role="button"]:focus-visible .spec-panel-frame { stroke: var(--signal); stroke-width: 2px; }
+.change-tree li.is-marked { outline: 2px solid var(--signal); outline-offset: 4px; }
 .flow .flow-group-title { fill: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
 /* Pointing at a node brings it, its edges and its neighbours forward, and fades the rest. */
 .flow :is(.flow-node, .flow-edge, .flow-pill, .spec-card) { transition: opacity 120ms ease; }

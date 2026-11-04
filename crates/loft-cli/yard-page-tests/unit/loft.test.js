@@ -3,14 +3,18 @@
 import { forget } from './dom.js';
 
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
+import { gunzipSync } from 'node:zlib';
 
 import { add, h } from '../../yard-page/lib/dom.js';
 import { decisionView } from '../../yard-page/views/loft/decision.js';
 import { findingsView } from '../../yard-page/views/loft/findings.js';
 import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
-import { MOST_BOXES, boxes, boxText, source } from '../../yard-page/views/loft/spec-change.js';
+import { CARD, MOST_BOXES, boxes, extras, headOf, specGraph, wrap } from '../../yard-page/model/spec-graph.js';
+import { placed } from '../../yard-page/model/flowchart.js';
+import { flowchartSvg } from '../../yard-page/views/flowchart-svg.js';
 import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
 
 beforeEach(forget);
@@ -44,75 +48,152 @@ const criterion = { key: 'c1', kind: 'criterion', label: 'AC-21', name: 'An edit
 const group = { key: 'g', kind: 'feature_group', label: 'FG-2', name: 'Sharing', parent: 'p', change: null };
 const product = { key: 'p', kind: 'product', label: 'P-1', name: 'Reading List', parent: null, change: null };
 
-test('a spec change diagram shows each changed node with the Feature Group and the Product above it', () => {
-  const text = source({ nodes: [product, group, feature], decisions: [], edges: [] }, null);
-  assert.match(text, /n0\["P-1 Reading List"\]:::context/);
-  assert.match(text, /n1\["FG-2 Sharing"\]:::context/);
-  assert.match(text, /n0 --> n1/);
-  assert.match(text, /n1 --> n2/);
+/** The ELK the page server serves, run as the page runs it. */
+const ELK = (() => {
+  const code = gunzipSync(readFileSync(new URL('../../yard-page/vendor/elk.bundled.js.gz', import.meta.url))).toString('utf8');
+  const module = { exports: {} };
+  new Function('module', 'exports', code)(module, module.exports);
+  return /** @type {any} */ (module.exports);
+})();
+/** @type {any} */ (globalThis).ELK = ELK;
+
+/** A text's size at 7 pixels a character and 18 a line. @param {string[]} text */
+const measure = (text) => ({ width: Math.max(0, ...text.map((line) => line.length * 7)), height: text.length * 18 });
+
+/** The diagram of `graph`, laid out by ELK and placed. */
+async function laid(graph, open = null) {
+  return placed(await new ELK().layout(specGraph({ decisions: [], edges: [], ...graph }, open, measure)));
+}
+
+/** The card or panel of the node `key` in `layout`. */
+const at = (layout, key) => [...layout.nodes, ...layout.groups].find((each) => (each.card ?? each.panel)?.key === key);
+
+/** Whether the box `a` lies within the box `b`. */
+const within = (a, b) => a.x >= b.x && a.y >= b.y && a.x + a.width <= b.x + b.width && a.y + a.height <= b.y + b.height;
+
+const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
+
+test('a spec change diagram shows each changed node with the Feature Group and the Product above it', async () => {
+  const layout = await laid({ nodes: [product, group, feature] });
+  assert.ok(at(layout, 'p')?.panel, 'the Product is a panel');
+  assert.ok(within(at(layout, 'g'), at(layout, 'p')), 'that holds its Feature Group');
+  assert.ok(within(at(layout, 'f'), at(layout, 'g')), 'that holds its Feature');
 });
 
-test('a spec change diagram colours each box by how it changed, in the colours of the scheme it is drawn in', () => {
-  const colours = {
-    ink: '#000001',
-    muted: '#000002',
-    rail: '#000003',
-    surface2: '#000004',
-    done: '#000005',
-    doneSoft: '#000006',
-    wait: '#000007',
-    waitSoft: '#000008',
-    danger: '#000009',
-    dangerSoft: '#00000a',
-  };
-  const text = source({ nodes: [product, group, feature], decisions: [], edges: [] }, null, colours);
-  assert.match(text, /classDef added fill:#000006,stroke:#000005,color:#000001/);
-  assert.match(text, /classDef changed fill:#000008,stroke:#000007,color:#000001/);
-  assert.match(text, /classDef removed fill:#00000a,stroke:#000009,color:#000001,stroke-dasharray:4 3/);
-  assert.match(text, /classDef context fill:#000004,stroke:#000003,color:#000002/);
-  assert.doesNotMatch(text, /#e3f4e8|#fdf0d8|#fbe4e2|#f1f3f5/);
+test('each Product, Feature Group and Feature is a panel headed by its kind’s square, its label and its name', async () => {
+  const drawn = flowchartSvg(await laid({ nodes: [product, group, feature] }), 'p1');
+  const panels = [...drawn.querySelectorAll('.spec-panel')];
+  assert.deepEqual(panels.map((panel) => panel.querySelector('.spec-kind')?.getAttribute('class')), [
+    'spec-kind spec-kind--product',
+    'spec-kind spec-kind--feature_group',
+    'spec-kind spec-kind--feature',
+  ]);
+  assert.deepEqual(panels.map((panel) => [panel.querySelector('.spec-label')?.textContent, panel.querySelector('.spec-panel-name')?.textContent]), [
+    ['P-1', 'Reading List'],
+    ['FG-2', 'Sharing'],
+    ['F-3', 'Share a list'],
+  ]);
+  assert.match(css, /\.spec-panel-frame \{ stroke: var\(--line\); stroke-width: 1px; \}/, 'framed by a hairline');
 });
 
-test('a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name', () => {
-  const text = source({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion], decisions: [], edges: [] }, null);
-  assert.match(text, /n3\("RQ-7 While a list is shared, the shelf shall<br\/>refuse edits made through the link\.<br\/>added"\):::added/);
-  assert.match(text, /n4\(\["AC-21 An edit made through the link is<br\/>refused, and the link says so\.<br\/>changed"\]\):::changed/);
-  assert.match(text, /n2 --> n3/);
-  assert.match(text, /n3 --> n4/);
+test('a changed Requirement is drawn inside its Feature’s panel holding its statement, and a changed criterion to its right holding its name', async () => {
+  const second = { ...criterion, key: 'c2', label: 'AC-22', name: 'A second criterion of the same Requirement.' };
+  const layout = await laid({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion, second] });
+  const [held, first, next] = [at(layout, 'r'), at(layout, 'c1'), at(layout, 'c2')];
+  assert.ok(within(held, at(layout, 'f')));
+  assert.equal(held.card.lines.join(' '), requirement.name);
+  assert.equal(first.card.lines.join(' '), criterion.name);
+  assert.ok(first.x >= held.x + held.width, 'to its right');
+  assert.ok(Math.abs(first.x - next.x) < 1 && next.y >= first.y + first.height, 'its criteria stacked one beneath another');
+  const joining = layout.edges.filter((edge) => edge.pattern === 'tree');
+  assert.equal(joining.length, 2);
+  assert.ok(joining.every((edge) => !edge.arrowEnd && !edge.arrowStart && !edge.label), 'a plain line, no arrowhead');
 });
 
-test('a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count', () => {
-  const text = source({ nodes: [product, group, feature, requirement, criterion], decisions: [], edges: [] }, null);
-  assert.match(text, /n3\("RQ-7 [^"]*"\):::context/);
-  assert.doesNotMatch(boxText(requirement), /added|changed|removed/);
-  assert.equal(boxText(feature), 'F-3 Share a list<br/>changed');
+test('a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count', async () => {
+  const layout = await laid({ nodes: [product, group, feature, requirement, criterion] });
+  assert.equal(at(layout, 'r').card.change, null);
+  assert.equal(at(layout, 'r').card.word, null);
+  assert.deepEqual(extras(feature), []);
+  const drawn = flowchartSvg(layout, 'p2');
+  const context = drawn.querySelector('.spec-card--context');
+  assert.ok(context && !context.querySelector('.spec-bar, .spec-word'), 'no bar and no word');
+  assert.match(css, /\.spec-card--context \.spec-frame \{ fill: var\(--side\); \}/);
+  assert.match(css, /\.spec-card--context \.spec-name \{ fill: var\(--muted\); \}/);
 });
 
 test('a report recorded without the words counts a Feature box’s Requirements and criteria, and those added, changed or removed', () => {
-  assert.equal(boxText(counting), 'F-3 Share a list<br/>changed<br/>4 Requirements, 9 criteria<br/>1 Requirement added, 2 criteria added, 1 criterion changed');
+  assert.deepEqual(extras(counting), ['4 Requirements, 9 criteria', '1 Requirement added, 2 criteria added, 1 criterion changed']);
 });
 
-test('each box says how its node changed in a word, and a box drawn for context says neither', () => {
-  assert.match(boxText({ ...product, change: 'added' }), /added/);
-  assert.equal(boxText(product), 'P-1 Reading List');
+test('each box says how its node changed in a word, and a box drawn for context says neither', async () => {
+  assert.deepEqual(headOf({ ...product, change: 'added' }), { label: 'P-1', word: 'NEW' });
+  assert.deepEqual(headOf({ ...criterion, change: 'removed' }), { label: 'AC-21', word: 'REMOVED' });
+  assert.deepEqual(headOf(product), { label: 'P-1', word: null });
+  const drawn = flowchartSvg(await laid({ nodes: [product, group, feature, requirement, criterion] }), 'p3');
+  assert.equal(drawn.querySelector('.spec-card--changed .spec-word')?.textContent, 'CHANGED');
 });
 
-test('the diagram draws the realizes and decision subject edges between the nodes it shows', () => {
+test('a box gives its node’s label in monospace, or its kind’s name where the node has none yet', () => {
+  assert.equal(headOf({ ...criterion, label: null }).label, 'Criterion');
+  assert.equal(headOf({ key: 'd', kind: 'decision', label: null, name: 'x' }).label, 'Decision');
+  assert.match(css, /\.flow \.spec-label \{ font-family: var\(--mono\);/);
+});
+
+test('a box’s name is wrapped to its measured width, so that nothing is cut', async () => {
+  const lines = wrap(requirement.name, 220, measure);
+  assert.ok(lines.length > 1 && lines.every((line) => measure([line]).width <= 220));
+  assert.equal(lines.join(' '), requirement.name);
+  assert.deepEqual(wrap('a Supercalifragilisticexpialidocious b', 70, measure), ['a', 'Supercalifragilisticexpialidocious', 'b'], 'a word wider than the measure is never cut');
+  const card = at(await laid({ nodes: [product, group, feature, { ...requirement, change: 'added' }] }), 'r');
+  assert.ok(card.width >= measure(card.card.lines).width + 2 * CARD.pad + CARD.bar, 'wide enough');
+  assert.ok(card.height >= 2 * CARD.pad + CARD.head + CARD.gap + card.card.lines.length * 18, 'tall enough');
+});
+
+test('an added, changed or removed box carries a bar at its left in its change’s colour, and a removed one is outlined dashed', async () => {
+  const drawn = flowchartSvg(await laid({ nodes: [{ ...product, change: 'added' }, { ...group, change: 'removed' }, feature] }), 'p4');
+  for (const change of ['added', 'changed', 'removed']) {
+    const box = drawn.querySelector(`.spec-panel--${change}`);
+    const bar = box?.querySelector('.spec-bar');
+    assert.equal(bar?.getAttribute('x'), box?.querySelector('.spec-panel-frame')?.getAttribute('x'), `${change}: at its left`);
+    assert.equal(bar?.getAttribute('width'), '3');
+  }
+  assert.match(css, /\.spec-card--removed \.spec-frame, \.spec-panel--removed \.spec-panel-frame \{ stroke: var\(--rail\); stroke-dasharray: 4 3; \}/);
+  assert.match(css, /\.spec-bar \{ fill: var\(--change\); \}/);
+});
+
+test('the bars of change are the validated steps of green, blue and red in each scheme', () => {
+  const [light, dark] = css.split('@media (prefers-color-scheme: dark)');
+  for (const [scheme, colours] of [[light, ['#199e70', '#256abf', '#e34948']], [dark, ['#199e70', '#3987e5', '#e66767']]]) {
+    const [added, changed, removed] = colours;
+    assert.match(scheme, new RegExp(`--change-added: ${added};`));
+    assert.match(scheme, new RegExp(`--change-changed: ${changed};`));
+    assert.match(scheme, new RegExp(`--change-removed: ${removed};`));
+  }
+});
+
+test('the diagram draws the realizes and decision subject edges between the nodes it shows', async () => {
   const component = { key: 'c', kind: 'component', label: 'CMP-3', name: 'Link service', parent: null, change: 'changed' };
   const decision = { key: 'd', kind: 'decision', label: null, name: 'Keep links short', change: 'added' };
-  const text = source(
-    {
-      nodes: [product, group, feature, component],
-      decisions: [decision],
-      edges: [
-        { from: 'f', to: 'c', kind: 'realizes' },
-        { from: 'd', to: 'c', kind: 'subject', role: 'outcome' },
-      ],
-    },
-    null,
-  );
-  assert.match(text, /n2 -\. realizes \.-> n3/);
-  assert.match(text, /n4 -\. outcome \.-> n3/);
+  const layout = await laid({
+    nodes: [product, group, feature, component],
+    decisions: [decision],
+    edges: [
+      { from: 'f', to: 'c', kind: 'realizes' },
+      { from: 'd', to: 'c', kind: 'subject', role: 'outcome' },
+    ],
+  });
+  const id = (key) => at(layout, key).id;
+  const realizes = layout.edges.find((edge) => edge.label?.lines[0] === 'realizes');
+  const outcome = layout.edges.find((edge) => edge.label?.lines[0] === 'outcome');
+  assert.deepEqual([realizes.from, realizes.to, realizes.pattern, realizes.arrowEnd], [id('f'), id('c'), 'dotted', true]);
+  assert.deepEqual([outcome.from, outcome.to, outcome.pattern, outcome.arrowStart, outcome.arrowEnd], [id('d'), id('c'), 'dotted', true, false]);
+  // The arrowhead is drawn at the subject: the path ends where it starts at the Component.
+  const subject = at(layout, 'c');
+  const [start] = outcome.points;
+  assert.ok(Math.abs(start.x - subject.x) < 1 || Math.abs(start.x - (subject.x + subject.width)) < 1 || Math.abs(start.y - subject.y) < 1 || Math.abs(start.y - (subject.y + subject.height)) < 1, 'it leaves from the subject');
+  const right = at(layout, 'p').x + at(layout, 'p').width;
+  assert.ok(at(layout, 'd').x >= right && at(layout, 'c').x >= right, 'decisions and Components lie beside the panels, to their right');
 });
 
 test('a diagram of more than 30 boxes draws each Feature Group as one box that counts its changed nodes', () => {
@@ -126,7 +207,7 @@ test('a diagram of more than 30 boxes draws each Feature Group as one box that c
   assert.equal(folded.folded, true);
   assert.equal(folded.shown.length, 5);
   assert.equal(folded.groups.find((each) => each.key === 'g1').count, 9);
-  assert.match(boxText(folded.shown[2]), /9 changed/);
+  assert.deepEqual(extras(folded.shown[2]), ['9 changed', 'Open ›']);
 });
 
 test('opening a Feature Group draws its changed Features, Requirements and criteria in place of its box, and opening another closes the first', () => {

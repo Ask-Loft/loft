@@ -6,6 +6,7 @@
 
 import { svg } from '../lib/dom.js';
 import { PAD, TITLE, pathOf } from '../model/flowchart.js';
+import { cardSvg, panelSvg } from './spec-svg.js';
 
 /** The room around the flowchart, and the radius of an edge's elbows, in pixels. */
 const MARGIN = 8;
@@ -100,8 +101,9 @@ function markers(id) {
  * The flowchart `layout` gives, as an SVG of its own size.
  * @param {ReturnType<typeof import('../model/flowchart.js').placed>} layout
  * @param {string} id unique on the page, for the arrowheads' markers
+ * @param {string} [name] what the diagram is, for a reader
  */
-export function flowchartSvg(layout, id) {
+export function flowchartSvg(layout, id, name) {
   const width = layout.width + 2 * MARGIN;
   const height = layout.height + 2 * MARGIN;
   const marker = `${id}-arrow`;
@@ -115,11 +117,11 @@ export function flowchartSvg(layout, id) {
       width,
       height,
       role: 'img',
-      'aria-label': `Flowchart of ${layout.nodes.length} ${layout.nodes.length === 1 ? 'node' : 'nodes'}`,
+      'aria-label': name ?? `Flowchart of ${layout.nodes.length} ${layout.nodes.length === 1 ? 'node' : 'nodes'}`,
     },
     markers(marker),
     layout.groups.map((group) =>
-      svg(
+      group.panel ? panelSvg(group) : svg(
         'g',
         { class: 'flow-group', 'data-id': group.id },
         svg('rect', { x: group.x, y: group.y, width: group.width, height: group.height }),
@@ -127,7 +129,7 @@ export function flowchartSvg(layout, id) {
       ),
     ),
     edges.map((edge) => edge.path),
-    layout.nodes.map(nodeOf),
+    layout.nodes.map((node) => (node.card ? cardSvg(node) : nodeOf(node))),
     edges.map((edge) => edge.pill),
   );
 }
