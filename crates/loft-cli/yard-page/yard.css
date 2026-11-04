@@ -684,7 +684,8 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 }
 .modal--docked[open] { top: auto; height: var(--dock-height, 50vh); z-index: 10; }
 /* In the panel, text spans its width: the panel has less height to give it than the timeline. */
-.modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .goal, .banner) { max-width: none; }
+.consequence:not(.consequences > *) { max-width: 75ch; }
+.modal--docked :is(.prose > :not(.table-wrap, pre), .prompt, .consequence, .goal, .banner) { max-width: none; }
 .dock-edge { position: absolute; top: -5px; left: 0; right: 0; z-index: 1; height: 10px; cursor: row-resize; touch-action: none; }
 .dock-edge::after { content: ''; position: absolute; top: 3px; left: 50%; width: 48px; height: 4px; margin-left: -24px; background: var(--rail); }
 .dock-edge:hover::after, .dock-edge:focus-visible::after { background: var(--signal); }
@@ -780,7 +781,8 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .loft-view--decision > .decision-view-head + .outcome { margin-top: -8px; color: var(--ink); }
 .loft-view--decision > details.fold + details.fold { margin-top: -10px; }
 .consequences { gap: 6px; }
-.consequence { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 12px; align-items: baseline; }
+/* A Loft decision's consequences, each beside its kind; a Yard decision's consequence is a paragraph of its own. */
+.consequences > .consequence { display: grid; grid-template-columns: 7.5em minmax(0, 1fr); gap: 12px; align-items: baseline; }
 .consequence-kind { color: var(--muted); font-size: 13px; font-weight: 500; text-transform: capitalize; }
 .decision-matrix { display: grid; gap: 6px; }
 .rating-key { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted); font-size: 12.5px; }

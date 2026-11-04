@@ -537,7 +537,7 @@ test('a decision’s selected option comes first in its table, marked, each row 
   assert.deepEqual([...view.querySelectorAll('.subject-role-row')].map(roleRows), [['Affects', ['F-1 One', 'F-2 Two']], ['Stated as', ['RQ-1 Out']]], 'one subject to a line beside its role');
   assert.equal(view.querySelector('.subject')?.getAttribute('title'), 'F-1 One', 'its name whole on hover');
   assert.match(css, /\.subject-role-row \{ display: grid; grid-template-columns: 7\.5em minmax\(0, 1fr\);/, 'in the column of the consequences’ kinds');
-  assert.match(css, /\.consequence \{ display: grid; grid-template-columns: 7\.5em minmax\(0, 1fr\);/);
+  assert.match(css, /\.consequences > \.consequence \{ display: grid; grid-template-columns: 7\.5em minmax\(0, 1fr\);/);
   assert.match(css, /\.subject \{ min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; \}/, 'kept to one line');
 });
 
@@ -654,7 +654,8 @@ test('a decision’s parts stand on one rhythm, its head and outcome and its two
   assert.match(css, /\.loft-view--decision > \.decision-view-head \+ \.outcome \{ margin-top: -8px;/);
   assert.match(css, /\.loft-view--decision > details\.fold \+ details\.fold \{ margin-top: -10px; \}/);
   assert.match(css, /\.consequence-kind \{ color: var\(--muted\); font-size: 13px; font-weight: 500; text-transform: capitalize; \}/, 'not mono capitals');
-  assert.doesNotMatch(css, /\.consequence \{ max-width/, 'as wide as the outcome above them');
+  assert.match(css, /^\.consequences > \.consequence \{ display: grid;/m, 'the kind column only within a Loft decision’s list of consequences');
+  assert.doesNotMatch(css, /^\.consequence \{[^}]*grid/m, 'never on every consequence, which a Yard decision uses for its paragraph');
 });
 
 test('a decision’s outcome comes first beneath its head, and its context and drivers are folded at its end', () => {

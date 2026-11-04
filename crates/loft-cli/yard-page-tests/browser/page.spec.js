@@ -145,6 +145,21 @@ test('on a wide window the pane holds its stage within 900 pixels, and a note’
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+test('a decision’s consequence reads as a paragraph at the width of its block, not in a narrow column', async ({ page }) => {
+  write([
+    { id: 'wide-q', kind: 'question', stage: 'shape', prompt: 'Which way?', header: 'Way', options: [{ label: 'Left', recommended: true }, { label: 'Right' }] },
+    { id: 'wide-d', kind: 'decision', stage: 'shape', question: 'wide-q', title: 'Left it is', consequence: 'The option grid ends with a card lettered after the options that holds the text field, and choosing it chooses it as one choice among the others.' },
+  ]);
+  await page.setViewportSize({ width: 1600, height: 900 });
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="wide-q"]').click();
+  const consequence = page.locator('#block-wide-q .consequence > *').first();
+  await expect(consequence).toBeVisible();
+  expect((await steadyBox(consequence)).width).toBeGreaterThan(400);
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
 test('the splitter narrows and widens the list by the keyboard and by a drag, and the next visit keeps the width', async ({ page }) => {
   await page.goto(address());
   await closeWaiting(page);
