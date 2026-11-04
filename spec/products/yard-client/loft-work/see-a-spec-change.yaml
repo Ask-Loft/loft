@@ -45,9 +45,9 @@ requirements:
       - key: 01a1a814-5ac4-7523-9962-5acc70ed77b9
         name: "A Requirement's box and the boxes of its criteria stand in one row, the criteria stacked one beneath another to its right, each joined to it by a plain line without an arrowhead."
       - key: 01a1a814-5ac4-7523-9962-5acd501df9ef
-        name: "Expanded, each box is a flat card headed by its kind's coloured square and its label in monospace, or its kind's name where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
+        name: "Expanded, each box is a flat card headed by its kind's coloured square and its label in monospace, or its kind's label prefix, such as `RQ` or `AC`, where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
       - key: 01a1a836-8724-73ee-8657-ce8aec3a1302
-        name: "In its block, each box is a chip of one line: its kind's coloured square, its label or its kind's name, its name cut to the chip's measured width, and its change in a word."
+        name: "In its block, each box is a chip of one line: its kind's coloured square, its label or its kind's label prefix, its name cut to the chip's measured width, and its change in a word."
       - key: 01a1a836-8725-715c-9d62-b5b2deeb88a9
         name: "A chip whose name is cut gives its whole name to a reader and shows it while the pointer rests on the chip."
       - key: 01a1a814-5ac4-7523-9962-5ace0ee365c5
@@ -63,13 +63,17 @@ requirements:
       - key: 01a1a814-5ac4-7523-9962-5ad2905ffb74
         name: "A legend above the diagram keys each change the diagram holds by its bar, with the number of boxes and panels of each."
       - key: 01a1a814-5ac4-7523-9962-5ad3b612d689
-        name: "Pointing at a box brings forward it, its edges and the boxes they join, and fades the rest of the diagram."
+        name: "Pointing at a box outlines it and the boxes its edges join in action blue and draws those edges in action blue, and fades nothing."
       - key: 01a1a814-5ac4-7523-9962-5ad4d5b14101
         name: "Choosing a box, by the pointer or by the keyboard, unfolds the diff beneath and brings that node's entry into view, marked."
       - key: 01a1a814-5ac4-7523-9962-5ad53fd5ae24
         name: "A Feature Group folded into one box counts its changed nodes, and choosing its box opens it."
       - key: 01a1a814-5ac4-7523-9962-5ad662373fdb
         name: "The diagram is drawn at its own size and scrolls sideways where it is wider than its block."
+      - key: 01a1a84c-fa65-709e-91e3-3d059222f1ad
+        name: "Panels that stand one beneath another in a column are as wide as one another."
+      - key: 01a1a84c-fa65-709e-91e3-3d069edef07e
+        name: "A panel spans the width of the panel that holds it."
   - key: 01a1695a-dd72-7090-817b-abecf6ac6c9d
     statement:
       form: ubiquitous

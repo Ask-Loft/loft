@@ -464,7 +464,7 @@ requirements:
       - key: 01a1a814-5ac4-7523-9962-5ad7fadce012
         name: "A flowchart is drawn at its own size and never scaled down to fit its block: one wider than its block scrolls sideways within it, its text staying at 13 pixels."
       - key: 01a1a814-5ac4-7523-9962-5ad8e9672abc
-        name: "Pointing at a node brings forward the node, its edges and the nodes they join, and fades the rest of the flowchart until the pointer leaves it."
+        name: "Pointing at a node outlines it and the nodes its edges join in action blue and draws those edges in action blue until the pointer leaves it, and fades nothing."
   - key: 01a1646f-546d-7042-befd-eb4a816d5c07
     statement:
       form: state_driven
