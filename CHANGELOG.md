@@ -3,6 +3,16 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.3.0-alpha.5 (2026-11-04)
+
+The fifth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.5`. Since 2.3.0-alpha.4 it lets you try
+the Yard page in Loft Web's design, with spec changes and flowcharts drawn by the page itself,
+questions as cards, and findings and decisions that read at a glance; the yard skill followed
+without being asked, with a plan at a branch's start, an issue note for each stage that builds
+and waves; `loft skill install --server`; and the Yard page on Windows. The entries under
+Unreleased below list everything 2.3.0 will hold.
+
 ## 2.3.0-alpha.4 (2026-11-01)
 
 The fourth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
@@ -50,6 +60,15 @@ everything 2.3.0 will hold.
   scrolling on its own, with the stage and block chosen kept in the address and a splitter whose
   width the browser keeps. Labels, change chips and a decision's table follow Loft Web's marks,
   and only what floats over the page keeps a hard shadow.
+- The Yard page draws a `spec-change` view and each flowchart of a block's Markdown itself, laid
+  out by ELK in the page's own marks. A spec change is a compact map of nested panels and chips
+  in its block and full cards once expanded, each changed box saying how in a word and a colour,
+  and pointing at a box outlines what it joins. Questions are cards, three to a row, with the
+  person's own words beneath and a button that clears the choice. A `findings` view groups its
+  findings by rule, counting those new on the branch and those there before, one aligned line
+  each; a `decision` view lists its options once, as a compact table of ratings, with its outcome
+  first. The pane holds its stage within 900 pixels, and the list and the pane keep their scroll
+  while the Yard Log changes.
 - A document can be connected to a remote that publishes it for everyone who works on it.
   `loft remote set <address>` signs you in, connects the document (creating it on the remote and
   importing the states the repository has already published), and names the address in the
