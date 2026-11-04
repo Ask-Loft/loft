@@ -4,7 +4,7 @@
 
 import { layoutEngine, ruler } from './flowchart.js';
 import { placed } from '../model/flowchart.js';
-import { specGraph, trunks } from '../model/spec-graph.js';
+import { specGraph, trunks, unconstrained } from '../model/spec-graph.js';
 import { flowchartSvg } from '../views/flowchart-svg.js';
 
 /**
@@ -24,7 +24,10 @@ export async function drawSpecChange(graph, open, id, expanded = false) {
   } finally {
     done();
   }
-  const layout = trunks(placed(await (await layoutEngine()).layout(laid)));
+  const engine = await layoutEngine();
+  // Where ELK refuses the columns asked of it, the diagram is laid out without them.
+  const answer = await engine.layout(laid).catch(() => engine.layout(unconstrained(laid)));
+  const layout = trunks(placed(answer));
   return flowchartSvg(layout, id, 'Diagram of the specification’s change').outerHTML;
 }
 

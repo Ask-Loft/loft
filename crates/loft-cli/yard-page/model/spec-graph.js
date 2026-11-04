@@ -325,7 +325,29 @@ export function specGraph(graph, open, measure, compact = false) {
       labels: [{ text: word, lines: [word], width: Math.ceil(size.width + 16), height: Math.ceil(size.height + 4) }],
     });
   }
+  // ELK lets no edge lead on from a node of the last column, so a box that leads on, as a
+  // Component to the Components beneath it, is left to lie where its edges place it.
+  const leading = new Set(root.edges.map((edge) => edge.sources[0]));
+  for (const made of elkNodes.values()) {
+    if (leading.has(made.id) && made.layoutOptions?.['elk.layered.layering.layerConstraint']) {
+      const { 'elk.layered.layering.layerConstraint': _, ...rest } = made.layoutOptions;
+      made.layoutOptions = rest;
+    }
+  }
   return root;
+}
+
+/**
+ * `graph` without its layer constraints, for a layout ELK refuses with them.
+ * @param {any} graph
+ */
+export function unconstrained(graph) {
+  const strip = (/** @type {any} */ node) => {
+    const options = { ...(node.layoutOptions ?? {}) };
+    delete options['elk.layered.layering.layerConstraint'];
+    return { ...node, layoutOptions: options, children: (node.children ?? []).map(strip) };
+  };
+  return strip(graph);
 }
 
 /** How far right of its Requirement the trunk of its criteria's lines runs, in pixels. */

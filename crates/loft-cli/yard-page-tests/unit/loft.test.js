@@ -12,7 +12,7 @@ import { decisionView } from '../../yard-page/views/loft/decision.js';
 import { findingsView } from '../../yard-page/views/loft/findings.js';
 import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
-import { CARD, CHIP, MOST_BOXES, TRUNK, boxes, cut, extras, headOf, specGraph, trunks, wrap } from '../../yard-page/model/spec-graph.js';
+import { CARD, CHIP, MOST_BOXES, TRUNK, boxes, cut, extras, headOf, specGraph, trunks, unconstrained, wrap } from '../../yard-page/model/spec-graph.js';
 import { placed } from '../../yard-page/model/flowchart.js';
 import { flowchartSvg } from '../../yard-page/views/flowchart-svg.js';
 import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
@@ -526,4 +526,16 @@ test('in its block, each box is a chip of one line, its name cut to fit, and its
   assert.match(shown?.getAttribute('aria-label') ?? '', new RegExp(requirement.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.equal(shown?.querySelector('.spec-word')?.textContent, 'NEW');
   assert.equal(cut('short', 100, measure), 'short', 'a name that fits is not cut');
+});
+
+test('Components that nest are drawn, a chain of them running to the right, and a layout ELK refuses is drawn without its columns', async () => {
+  const top = { key: 'k1', kind: 'component', label: 'CMP-7', name: 'Science', parent: null, change: null };
+  const middle = { key: 'k2', kind: 'component', label: 'CMP-31', name: 'Sources', parent: 'k1', change: null };
+  const added = { key: 'k3', kind: 'component', label: null, name: 'Researched stars', parent: 'k2', change: 'added' };
+  for (const compact of [true, false]) {
+    const layout = placed(await new ELK().layout(specGraph({ nodes: [product, group, feature, top, middle, added], decisions: [], edges: [{ from: 'f', to: 'k3', kind: 'realizes' }] }, null, measure, compact)));
+    assert.ok(at(layout, 'k1').x < at(layout, 'k2').x && at(layout, 'k2').x < at(layout, 'k3').x, 'the chain runs to the right');
+  }
+  const pinned = { id: 'root', layoutOptions: {}, children: [{ id: 'a', layoutOptions: { 'elk.layered.layering.layerConstraint': 'LAST' } }], edges: [] };
+  assert.equal(unconstrained(pinned).children[0].layoutOptions['elk.layered.layering.layerConstraint'], undefined);
 });
