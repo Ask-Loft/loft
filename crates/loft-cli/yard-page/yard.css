@@ -408,7 +408,8 @@ button { font: inherit; }
 
 /* A Yard Log. */
 
-.yard-log { display: grid; gap: 22px; }
+/* Nothing a Yard Log draws widens it past the room it is given: what is wider scrolls within its own box. */
+.yard-log { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; min-width: 0; }
 .banners { display: grid; gap: 8px; }
 .banner { padding: 10px 14px; border-left: 3px solid var(--rail); background: var(--surface-2); max-width: 75ch; font-size: 14px; }
 .banner--closed { border-color: var(--done); background: var(--done-soft); }
@@ -471,14 +472,14 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .block-row > .kind { flex: none; width: 62px; font-size: 10px; }
 .block-row-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.stage { display: grid; gap: 16px; }
+.stage { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 .stage-head { display: grid; gap: 4px; }
 .pane-kicker { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; font-size: 14px; color: var(--body); }
 .stage > .stage-head .stage-title { font-size: 20px; line-height: 26px; font-weight: 700; letter-spacing: -0.015em; }
 .owner, .count { color: var(--muted); font-size: 13px; }
 .goal, .goal.prose { color: var(--body); max-width: 75ch; }
 .stage-times { color: var(--muted); font-size: 13px; }
-.blocks { display: grid; border-bottom: 1px solid var(--line); }
+.blocks { display: grid; grid-template-columns: minmax(0, 1fr); border-bottom: 1px solid var(--line); }
 @media (max-width: 860px) {
   .timeline { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 40%) 1px minmax(0, 1fr); }
   .splitter { cursor: auto; pointer-events: none; }
@@ -511,7 +512,7 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 
 /* The blocks. */
 
-.block { border-top: 1px solid var(--line); padding: 14px 14px 14px 16px; display: grid; gap: 8px; position: relative; }
+.block { border-top: 1px solid var(--line); padding: 14px 14px 14px 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; position: relative; }
 .block.is-new { box-shadow: inset 3px 0 0 var(--new); }
 .block.is-picked { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
 .block.is-waiting { background: var(--wait-soft); box-shadow: inset 3px 0 0 var(--wait); }
@@ -685,7 +686,7 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 
 /* The Loft views. */
 
-.loft-view { display: grid; gap: 8px; }
+.loft-view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .recorded, .base { color: var(--muted); font-size: 12px; }
 .clean { color: var(--done); font-weight: 600; }
 .chip { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 0 6px; line-height: 18px; border: 1px solid currentColor; }

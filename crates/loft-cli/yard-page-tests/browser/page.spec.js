@@ -1495,6 +1495,10 @@ test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and
   const scroll = page.locator('#block-wide-flow .diagram-scroll');
   const sizes = await scroll.evaluate((element) => ({ client: element.clientWidth, scroll: element.scrollWidth }));
   expect(sizes.scroll).toBeGreaterThan(sizes.client);
+  // It scrolls within its own box: neither the stage's pane nor the main column grows past the window.
+  const pane = await box(page.locator('.stage-pane'));
+  expect(pane.x + pane.width).toBeLessThanOrEqual(page.viewportSize().width + 0.5);
+  expect(await page.locator('#log').evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
   // Drawn at its own size: a label's 13 pixels are 13 on the screen.
   const label = flow.locator('.flow-label').first();
   expect(await label.evaluate((element) => /** @type {SVGGraphicsElement} */ (element).getBoundingClientRect().height)).toBeGreaterThan(12);
@@ -1540,10 +1544,13 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
       article.className = 'block';
       article.dataset.key = 'spec-test';
       add(article, loftView({ view: 'spec-change', report, recorded: {}, reasons: [] }));
-      document.querySelector('#timeline, main, body')?.prepend(article);
+      document.querySelector('.stage-pane .blocks, main, body')?.prepend(article);
     });
     const flow = page.locator('#block-spec-test svg.flow');
     await expect(flow.locator('.spec-card')).toHaveCount(6, { timeout: 10_000 });
+    // A diagram wider than its block scrolls within it: the block grows no wider than its pane.
+    const [held, pane] = [await box(page.locator('#block-spec-test')), await box(page.locator('.stage-pane'))];
+    expect(held.x + held.width).toBeLessThanOrEqual(pane.x + pane.width + 0.5);
     await expect(flow.locator('.spec-panel')).toHaveCount(3);
     await expect(page.locator('#block-spec-test .spec-legend')).toHaveText(/^2 new3 changed1 removed$/);
     // In its block, a compact map of one-line chips, none of whose text runs out of it.
