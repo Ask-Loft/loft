@@ -25726,14 +25726,14 @@ links:
         name: "a question that takes more than one option lets the person choose one or more"
         body: 1e7f2cfb69e58f8c6966f952cb363313a4b105694b480b0a4ecf717e4503c442
   - node: 01a1646f-546c-7521-9643-bbcb591fde24
-    reviewed: a42af0b175afd9c91c22ee1203a2305ae11eb3291ebc922e6f592774d32275f6
+    reviewed: 0a8c54f6f604cb9c532286dfdc2f00af081d91634b38feaf8f9b382b9285ce55
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "every question offers its own-words option with a text field after its named options"
         body: f4090fcb8e125bd63eef12b6c7de7879b8e17e8e58165aced3fed67e56277c65
       - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
-        name: "the person’s own words are the last card, lettered after the options and holding their text field"
-        body: 7c4c7cb7fc7059b97caef530050221d2699709d9a0aff792b045f998508a210a
+        name: "the person’s own words are a card of their own beneath the options’ cards, as wide as they are, lettered after them and holding their text field"
+        body: 6c407e76b6cb1bcf20f2f01ae0383b36ed739d02caf15f3aa27238006cdab8ae
   - node: 01a17fef-700e-72d2-a706-77312594a4f4
     reviewed: 8e8d2348d7f6247fea9df5f30ece6abd091a617bea9097f89375f11fa58a15b9
     tests:
@@ -25825,8 +25825,17 @@ links:
         name: "clearing a question’s choice deselects its options and its own words, and keeps the text the person typed"
         body: e337281d0844b61d82562cf4f44ac3382b94ca35e409934d06b4f05d20223753
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one"
-        body: f9f6b185b377b678880a27069105e98e610a98fbc98472cc1e8fbde909f1a9d7
+        name: "the cards of a question’s options stand side by side, at most three to a row, with the person’s own words beneath, and one beneath another in a narrow window"
+        body: 826ff4d4ab2a0793eb925d658488de294ef6b09b16bc46adfbb381109f7d93e4
+  - node: 01a1a823-8646-7346-9e17-367cc6db12b2
+    reviewed: 30b339cf4c392f2c8ff655846c008dfbbf91f35ac2dc860bceb5abd61c9bd505
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "a button beside the question’s state clears its choice, disabled while nothing is chosen"
+        body: c0748ab4dfbfc757f1f2d89c9b3dffbbf90e143f046b5380845a7563434ab853
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the cards of a question’s options stand side by side, at most three to a row, with the person’s own words beneath, and one beneath another in a narrow window"
+        body: 826ff4d4ab2a0793eb925d658488de294ef6b09b16bc46adfbb381109f7d93e4
   - node: 01a1646f-546c-7521-9643-bbce40187173
     reviewed: 0bc801b7ff85ad473c2af44ef14802b74923ebef0a4e387a6cc199a78954ca8f
     tests:
@@ -25883,7 +25892,7 @@ links:
         body: 196d1ff7894dd56fad2630fea89f51ffb053f74589e66e368324b5fcd86a798c
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page sends every answer of a submission at once, and shows them given on the page"
-        body: 5f27fd36a1ffc4850d0208ed16d38d71504eddb42d42dfa8b2a511f858ee8125
+        body: 99d305565a34748b1ea2d197d48bccfb1a7cef13ee87ccc2ff6277ed9776d6a3
   - node: 01a17fef-700e-72d2-a706-773bf0bde7e5
     reviewed: 5b370a348460635fad64bf639f1af68a57bfe55ba727a5c5752633a3a5c9bfdb
     tests:
@@ -25928,7 +25937,7 @@ links:
         body: 254e17cec834609c0276f884c89e96f38790afe94336b4fa60a19fde2ff5d27b
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page shows the first answer with the channel it came from"
-        body: 1cbaece256d223a3796d227f6c881356e51df32c2cff1c35ba151ee78cd334db
+        body: 36405b1c081dacb4544b52b573b417bf4e960f2433304d3600eb4b996c64f0ba
   - node: 01a1646f-546c-7521-9643-bbdaebd7935a
     reviewed: e053dbce0e71816086229ed45c6927c5329e67021d1ae4815db5fa6cc65addc8
     tests:
@@ -28688,7 +28697,25 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
         name: "a question’s prompt is its title, and its context lies beneath it"
-        body: e01b068fa7c2843b29e5f22cc11d80e6ad55027892a1c641b09047b340b9a8d8
+        body: 9c3c53cc915d6ef412244035b39ad65548fa6027a957f230aba21ccf4812c8d5
+  - node: 01a1a823-8647-71dc-a940-bd041c4a1e74
+    reviewed: 03ab501a4e317c5eb5496cd9f5e9ec5ba37d15b2cdfc6ff460eacbf63f3e1f97
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "a question’s prompt is set as a block’s title is, at 15 pixels and semibold"
+        body: 457038217aa5352883356e5aa82e5c0e1236deb91563f653625dc72206dcbce9
+  - node: 01a1a823-d964-77b1-8ed3-9bacdda8a798
+    reviewed: ba69d9ae242795f26bc3aadf156f02e968f172e59a2a3065b0857799bbc51732
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "a question’s header chip, its state, its options’ labels and its answer are no larger than 14 pixels"
+        body: 9ae69a99d3032790bbbb11c13fb385f7f048bad66fae18b8e16df22fb868b10f
+  - node: 01a1a823-d964-77b1-8ed3-9bad6d86d0bd
+    reviewed: ac129b57fa0e98ac93671e88a48a3ad1f1100205dbe5c8d98010e622a806c192
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "nothing in a question is bolder than semibold"
+        body: ff755150844fdba8cfc3e59faebe24d96ea6516efc41754219fa4daeaca92ccf
   - node: 01a1a7e1-2b66-70b4-981e-7a94b97d8ed1
     reviewed: 662ff25e2ddaf47942cd8090bda13d01ae92bfb4bb2116c59a49f4665c8a463a
     tests:
@@ -28696,14 +28723,14 @@ links:
         name: "each option is a card lettered A, B, C and on in a circle before its label, its detail beneath, a recommended one marked"
         body: 129338db47d7b8a277bc09553355e0af5ffddf46e8780b32ed894e694283850f
   - node: 01a1a7e1-2b66-70b4-981e-7a95a684080d
-    reviewed: 7c1a98935698f72536171fe5d5e8b170a0cd5758a298c022e52a2be442f8289c
+    reviewed: 7a11c6be1f70e3baa523abea1f44fe52265d6bcf55953fad3f6f8ba17469e2fa
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
-        name: "the cards of the options stand side by side as far as the width allows, and one beneath another when narrow"
-        body: 6577a6b590d964a80cb7e0c11402b92f640f623457a75260ee933f5c5d5f0476
+        name: "the cards of the options stand side by side, at most three to a row, and one beneath another when narrow"
+        body: 934d96d307b666952dd75667928aab5fa332b5f3d1775143be423e81e3d6d2dc
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one"
-        body: f9f6b185b377b678880a27069105e98e610a98fbc98472cc1e8fbde909f1a9d7
+        name: "the cards of a question’s options stand side by side, at most three to a row, with the person’s own words beneath, and one beneath another in a narrow window"
+        body: 826ff4d4ab2a0793eb925d658488de294ef6b09b16bc46adfbb381109f7d93e4
   - node: 01a1a7e1-2b66-70b4-981e-7a96621ff53a
     reviewed: b1c4d6df8eb904568801d64849f3dfb84f4178c04b131e9ecc6c61b325466d00
     tests:
@@ -28711,8 +28738,8 @@ links:
         name: "the card of a chosen option is outlined in action blue"
         body: 565cbef064a8bff89b4d59db631b2b35e0fe112b1f7a71ba9d94c036608d2b2c
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one"
-        body: f9f6b185b377b678880a27069105e98e610a98fbc98472cc1e8fbde909f1a9d7
+        name: "the cards of a question’s options stand side by side, at most three to a row, with the person’s own words beneath, and one beneath another in a narrow window"
+        body: 826ff4d4ab2a0793eb925d658488de294ef6b09b16bc46adfbb381109f7d93e4
   - node: 01a1a7e1-2b66-70b4-981e-7a9758c93481
     reviewed: 425b4ffe65f340e2835802fdc967580b8e7d2229c12de7af10eb5192344f0bf7
     tests:
@@ -28891,7 +28918,7 @@ links:
         name: "a group of a diagram is framed by a hairline on the page’s ground, and an edge’s label lies on the page’s ground"
         body: ce27b70263d0c106660f2d85e3f80a5b69c1379d059bfe8b161929cb15e489da
   - node: 01a1a7ee-1770-7572-ab19-cf2fb03c7189
-    reviewed: aafeaa41582cd9354c5c7c4fbd2743a0b666afc98804eabc7864770d4dc196e5
+    reviewed: 7c15a37bf4a907463ceb1956d20c2cb3e2f1a78376910c031eadeeae309e66c2
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
         name: "each node is a flat card with a hairline border on the sidebar’s ground, its label in the page’s face at 13 pixels in ink"
@@ -28901,7 +28928,7 @@ links:
         body: 6d0ef3124129d077ac8118e5e57aba586e15fb444f2d5d9015709370e8f70714
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
-        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+        body: 72852d81f52d155114ba48c705c2fc9e7efcd7d88c3c14a99b820a018de4d158
   - node: 01a1a7ee-1770-7572-ab19-cf3077c0957b
     reviewed: dd4e170cb786161da78c2a324f578bab74ec2bb1321f23cfb245a7fffa51f5fb
     tests:
@@ -28916,7 +28943,7 @@ links:
         body: 6ea9c891529bff18ad0e1fc4f42b6939bafa10e5edc8f8e36e240684a9d1c9d4
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
-        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+        body: 72852d81f52d155114ba48c705c2fc9e7efcd7d88c3c14a99b820a018de4d158
   - node: 01a1a7ee-1770-7572-ab19-cf32ceffe763
     reviewed: 16d24a16359f1a7e944811fef3fc66fb5c3c9633a5b00d32b4c43f0438efabaf
     tests:
@@ -28928,7 +28955,7 @@ links:
         body: 1fe3789923095ab38d8b245d183aedf99d423e87ec304917212f5ffdb1b6d466
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
-        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+        body: 72852d81f52d155114ba48c705c2fc9e7efcd7d88c3c14a99b820a018de4d158
   - node: 01a1a7ee-1770-7572-ab19-cf332567ff3f
     reviewed: 9e42de33cab307aac197af7cafff07df6da67fa95dc937458c4c110c770de6c2
     tests:
@@ -28943,16 +28970,16 @@ links:
         body: 20eff9c1bc416abe48395ed3bc29b0f677d2334e76b5a3d1456f4d38ca837f9c
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
-        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+        body: 72852d81f52d155114ba48c705c2fc9e7efcd7d88c3c14a99b820a018de4d158
   - node: 01a1a7ee-1770-7572-ab19-cf35dffbf659
-    reviewed: 60add326ce16afa669eaa2cc4f7ae2f55b638f93a41175fbe2e709784cacd2ac
+    reviewed: 056243a779380e2713ea4a35e26aef97e8d9e766fd884b045ca3eed2d0a20e08
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
-        name: "a subgraph is a panel titled in small text, holding its nodes"
-        body: d17397d36a2befbdd8a4e523f8f573ef806d54e5925427eef2dd9194f0dd6fb1
+        name: "a subgraph is a panel titled in small muted monospace capitals, holding its nodes"
+        body: e1376bef5cba69a96f21a1225adbd0c14c3a5a99c38615faff2ca540f0119a64
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
-        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+        body: 72852d81f52d155114ba48c705c2fc9e7efcd7d88c3c14a99b820a018de4d158
   - node: 01a1a7ee-1770-7572-ab19-cf365df5311d
     reviewed: 0f17fa304a25cf3dfdc2700146161ba5d542cae4cdefc318917b47612873c13b
     tests:
@@ -28974,18 +29001,30 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload"
         body: e2390767f22baaf5f36dec280e1caead9a8715a0abc2a4de240f2620a980c758
-  - node: 01a1a7ee-1770-7572-ab19-cf39bdd8c665
-    reviewed: a059a3410ca0eb9d373b62d552152ff9ccdd9c0e504c18b8dee042270792e839
+  - node: 01a1a814-5ac4-7523-9962-5ad7fadce012
+    reviewed: 6e8de6db4eeaee6d910d8694140a7ab678fe2c0867ea1ba8c5c6a679335594be
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
-        name: "the diagrams the page builds itself are drawn by Mermaid"
-        body: a78368cfb15e3772e7f5038a69ce6735998a213cc52e9042f00392d1091fb0b5
-      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
-        name: "a flowchart of a block’s Markdown is drawn by the page itself, and another kind by Mermaid"
-        body: 5c0c58a516cf22a640f21f800f7fc29d247a226adae7fc5297c8131e1d3ee401
+        name: "a flowchart is drawn at its own size within a box that scrolls sideways, and at its own size when expanded"
+        body: 5d0afa194e0f2102de8f401d70a64d30a59dce99cdd529dea119887eaf789d9e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
-        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+        name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join"
+        body: a7eb2e1bc5e0f5cb1d113aa10755c656b47636c066595c1d2609ad83394f3147
+  - node: 01a1a814-5ac4-7523-9962-5ad8e9672abc
+    reviewed: e45f69e1050b96d0a4217c4c2d3d97d0c7408313ff7626ba00ce866517ea6928
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
+        name: "pointing at a node brings forward it, its edges and their labels and the nodes they join, and nothing else"
+        body: 315c56bb82d28db0fbeb656bcd46e4576dbda388bf9725c4ffe8ec6786977d45
+      - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
+        name: "the rest fades until the pointer leaves the node, and moving within it keeps it forward"
+        body: 56379bcc433601632e6ded77c7a5b02fd14de96017d89e594b2abc774cb66ec0
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join"
+        body: a7eb2e1bc5e0f5cb1d113aa10755c656b47636c066595c1d2609ad83394f3147
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "each edge and its label name the nodes they join, for the hover layer"
+        body: 157cb12aba96299cda59f00a178416678fa27709b86e82b8f3957b197e04936e
   - node: 01a1646f-546d-7042-befd-eb4b0653b23d
     reviewed: b3065eac059925fa66c3d4992230182e1708cad803af938a863a98a7c5e0e7e5
     tests:
@@ -29022,9 +29061,6 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload"
         body: e2390767f22baaf5f36dec280e1caead9a8715a0abc2a4de240f2620a980c758
-      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a spec change diagram colours each box by how it changed, in the colours of the scheme it is drawn in"
-        body: bae5434beec339f4eec522e0f3d9e949a50b83f387393aad4b5f5bb9a1d28d2c
   - node: 01a1a7a4-51ce-73b8-bd34-87c1356d6448
     reviewed: 26ff214e14528fc25715295dd3e2bf7819c760ffe5c1b8f4b639903dbe5dc3cf
     tests:
@@ -29220,6 +29256,18 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "mixed waiting forms retain submission order through decisions and sending all question answers"
         body: baa3fb47281266bd2f3261e0872d23f1eae4596882a970529f3578ef6cbe05a8
+  - node: 01a1a82c-15aa-71db-b193-37675ce01170
+    reviewed: b2fe5c32b9e15d9fb8d8b4938bd4ea8e0d2cc9bc6a2699347c39ed5ba19270a1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "only the panel’s title says that blocks wait: a submission in it has no heading of its own"
+        body: 980ea88c7c6a1bac5c1bb57f3b126eb52507ef95553552d1fbdaa02158ce8f49
+  - node: 01a1a82c-15aa-71db-b193-37687bb90e93
+    reviewed: 1a335f2e75b694d75a4e173fa160268ae24fd727b9d6d87ed0e7816afa5c8c7a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "a question in the panel is headed by its prompt, above its header chip and its state, and its prompt names its choices"
+        body: 032a45b09dce55de9722c9a50fe400b74c3a77b26ac2166d1bf1ddcb82628dfc
   - node: 01a1646f-546d-7042-befd-eb648d58cd02
     reviewed: 1a8eac02d84faf9cd3417dbc2c9e8e79ec8001bb34d194331de6cff89cea8c64
     tests:
@@ -29234,7 +29282,7 @@ links:
         body: b055d044676d4a618cac22b6576461a1f7c03c5b213f6afc4cf41a2a4ca427c2
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
-        body: ce87af5088a1c98fab7b8448c4cdbd43287e29947e6cf22f61634e2342fdf0ff
+        body: 70d4ec9521c088d62bbf2dddc16bb1cae3fdf19d431252b22c252a8e38575b2b
   - node: 01a1693f-7b72-7290-8335-f1728dce2d53
     reviewed: 9995c1cbb4df05d728c889b6c23fd0e907b6291bcb0348439a9a166845053c50
     tests:
@@ -29243,7 +29291,7 @@ links:
         body: c0817cb0e6f33f4c3eb7e2d1dd401b0bad7459cec68ac06e759b7d7898033ae0
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
-        body: ce87af5088a1c98fab7b8448c4cdbd43287e29947e6cf22f61634e2342fdf0ff
+        body: 70d4ec9521c088d62bbf2dddc16bb1cae3fdf19d431252b22c252a8e38575b2b
   - node: 01a1693f-7b72-7290-8335-f17339a7026b
     reviewed: cfab7e77c29b1f1505debb826db238d7df771974a1726f39eabc8e3cffb1b2e4
     tests:
@@ -29252,7 +29300,7 @@ links:
         body: 19c600a1cea3294d7b7c4f314d29371e4a3f724c6104819e0b127926a17034f2
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page sends every answer of a submission at once, and shows them given on the page"
-        body: 5f27fd36a1ffc4850d0208ed16d38d71504eddb42d42dfa8b2a511f858ee8125
+        body: 99d305565a34748b1ea2d197d48bccfb1a7cef13ee87ccc2ff6277ed9776d6a3
   - node: 01a1693f-7b72-7290-8335-f1758a4c74e2
     reviewed: fc614609ae2d42c927055141a9843011d5b06ee09700af96ba93688bbf61c76b
     tests:
@@ -29348,7 +29396,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
-        body: ce87af5088a1c98fab7b8448c4cdbd43287e29947e6cf22f61634e2342fdf0ff
+        body: 70d4ec9521c088d62bbf2dddc16bb1cae3fdf19d431252b22c252a8e38575b2b
       - file: "crates/loft-cli/yard-page-tests/unit/modal.test.js"
         name: "a docked modal opens as a panel that leaves the page live, not as a modal over it"
         body: 209188cbb054d749168c50b371825bf8ce6b75b8e2c2bab055f332218d5ffb3d
@@ -29363,7 +29411,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Markdown, the prompt and the options of each block in the panel span the panel’s width, held to no narrower measure"
-        body: e6b8167a51600d2b811e9cd38090ec556f23a65445be57f9e9d0c5c7c4a859e1
+        body: 32b9e3b4817ceea5d81f16b46f208efe26ed167a82c8dd14c8c36f31cb179bb6
   - node: 01a1693f-7b72-7290-8335-f17f8d2e0087
     reviewed: f05a28fc80f36f9df51e8f1b0b4f9a9d0494aa54b0718ca933f36e3c09c03e78
     tests:
@@ -30082,8 +30130,8 @@ links:
     reviewed: 629d467f2c3c3ba294a9803bbca9ba3a93fba1925570a547372c172f9e6df3f0
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
-        name: "the expanded spec-change diagram is the one the page drew, with the Feature Group the person opened"
-        body: 6ed1995902ff3cccfabdc5fb80f1bfff2b8dea6951d08d932f7532ee44cfa5a8
+        name: "the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened"
+        body: 6befb808cb452711b83777e47ecae97d60109e588e5fad4ad34103a8976e7fe6
   - node: 01a1695a-dd72-7090-817b-ac0012610770
     reviewed: ccfa2af441ba4572c2cf2dc760919daafd0cf4d4747ea10e9c56ba801ad7ced5
     tests:
@@ -30368,10 +30416,10 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change diagram shows each changed node with the Feature Group and the Product above it"
-        body: 13cd964960d7f1089a7368b53d02eff573fcc39fd2db57466572b8efd65cd954
+        body: 2e7a4adfb5a55e4e20ebd9cc67def925e29703980f809084b4c37974e8ff8061
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
-        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
+        name: "a changed Requirement is drawn inside its Feature’s panel holding its statement, and a changed criterion to its right holding its name"
+        body: 984696dce1aca8e01a24e768756801f5c66a481e471a93ea27aab74b3615b6a9
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_spec_change_view_draws_a_changed_criterion_under_its_requirement_feature_feature_group_and_product"
         body: f3ff76bf3ae79d1a20490cbe68983f47160afb2f05b05febc65dcf4c7db56d7f
@@ -30380,25 +30428,25 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "the diagram draws the realizes and decision subject edges between the nodes it shows"
-        body: 52a3b37ba4a91240ef5e8d394892fb98ff4914503ffb2303a552900d38958cd6
+        body: f51b97110de62df6475f45fe8f8ab96a1034c19750094f55538a48bfae2a7002
   - node: 01a1646f-546d-7042-befd-eac271279597
-    reviewed: 263c384193d0b44ffd372f4d0ba19ce92d065c7c364f3be70c529c308c96a54c
+    reviewed: 74b7cba6d63762655ab819f4c61aa1e531e2938038c8e8d91be1debc86159c0c
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
-        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
+        name: "a changed Requirement is drawn inside its Feature’s panel holding its statement, and a changed criterion to its right holding its name"
+        body: 984696dce1aca8e01a24e768756801f5c66a481e471a93ea27aab74b3615b6a9
   - node: 01a16475-7fbc-7732-a78c-bc50ee43201f
-    reviewed: b814569b8851de4a223c2f77b235c52dbf9c9afdc8d26ca9b8418853196da2f7
+    reviewed: f0739380ced1eb930a05c9c22c267a77b2f1b9ff8faace94780142b4e1c0d8a8
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
-        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
+        name: "a changed Requirement is drawn inside its Feature’s panel holding its statement, and a changed criterion to its right holding its name"
+        body: 984696dce1aca8e01a24e768756801f5c66a481e471a93ea27aab74b3615b6a9
   - node: 01a1695a-dd72-7090-817b-abea7cf0c895
     reviewed: 6354ea4edd365237a916b0fe92b888bb76457ed3fefd1503ee99d9e393605d45
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count"
-        body: 610fca38b0ed2d18933350752b56e35045dc77156bf546173d8ddff9dd599d1c
+        body: 337f2fbbc598e4b39b5a142f29ae8b8b01834aeb1b1364ce672e414e5e8282d9
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_spec_change_view_draws_a_changed_criterion_under_its_requirement_feature_feature_group_and_product"
         body: f3ff76bf3ae79d1a20490cbe68983f47160afb2f05b05febc65dcf4c7db56d7f
@@ -30410,7 +30458,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count"
-        body: 610fca38b0ed2d18933350752b56e35045dc77156bf546173d8ddff9dd599d1c
+        body: 337f2fbbc598e4b39b5a142f29ae8b8b01834aeb1b1364ce672e414e5e8282d9
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_spec_change_view_draws_no_unchanged_requirement_and_counts_none_on_a_feature"
         body: 5592258d744130a8a237b2a740098df92a0782baf9fe437ced497430610f0fcd
@@ -30419,16 +30467,16 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "each box says how its node changed in a word, and a box drawn for context says neither"
-        body: 3ca78591e4b1484031046ca0865fe49e7a53c6f9338c799217b17bcb6ea25457
+        body: fd9837c4be59e79964a77f71c61192efb77837197bfaa225ea2bde93852391d9
   - node: 01a1646f-546d-7042-befd-eac47fbbbfb2
     reviewed: ab243427d554d742fbea2a1ce64c2a36d647532c218691cd6ffad0dd849bc3bf
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change diagram shows each changed node with the Feature Group and the Product above it"
-        body: 13cd964960d7f1089a7368b53d02eff573fcc39fd2db57466572b8efd65cd954
+        body: 2e7a4adfb5a55e4e20ebd9cc67def925e29703980f809084b4c37974e8ff8061
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a changed Requirement is drawn beneath its Feature holding its statement, and a changed criterion beneath its Requirement holding its name"
-        body: e8b8696483d010833886ffa3c9717ce7dbf83305152874308f8e4d99b92f9b60
+        name: "a changed Requirement is drawn inside its Feature’s panel holding its statement, and a changed criterion to its right holding its name"
+        body: 984696dce1aca8e01a24e768756801f5c66a481e471a93ea27aab74b3615b6a9
   - node: 01a1646f-546d-7042-befd-eac6d7f3526d
     reviewed: 4ed5abc236ae1444aadb7a591c678222470ee5f95f3e3788e366cf3bc508cd9e
     tests:
@@ -30441,6 +30489,150 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change view of no change says that the specification has not changed since the base revision"
         body: 4518e36f431f870d396db1c24a82dfaf912feb3100420bbf33ee4d44b808e141
+  - node: 01a1a814-5ac4-7523-9962-5acb7c0667ce
+    reviewed: 440d1d32186f2b692412b9d9c74e2119ce9651399d78be0dfdc1da8a0c1637e2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "each Product, Feature Group and Feature is a panel headed by its kind’s square, its label and its name"
+        body: b75859b63a53c75f2c5fd0e6aeabc2346ea59a5537b5cb6ead55d8d78beb49e8
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a spec change diagram shows each changed node with the Feature Group and the Product above it"
+        body: 2e7a4adfb5a55e4e20ebd9cc67def925e29703980f809084b4c37974e8ff8061
+  - node: 01a1a814-5ac4-7523-9962-5acc70ed77b9
+    reviewed: 6fca6fb94956de2a106f5afd6142d03f3ce60acbd9ad5d89e956401e6e45f99a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Requirement is drawn inside its Feature’s panel holding its statement, and a changed criterion to its right holding its name"
+        body: 984696dce1aca8e01a24e768756801f5c66a481e471a93ea27aab74b3615b6a9
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the lines from a Requirement to its criteria share one trunk, leaving and reaching each box at its head line"
+        body: 4d558330e893b56d844393a0a5d94564f0c3eb196534adab2c7c7000fdbea446
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the line joining a criterion to its Requirement runs from the Requirement’s right to the criterion’s left, inside their panel"
+        body: 1ee69e40174e41254231d93a1ed325924c7aa1562ba6b792c699289a2e37da7f
+  - node: 01a1a814-5ac4-7523-9962-5acd501df9ef
+    reviewed: 84879b537cddda9be9cb7aacb7a971d801a0d0146792780af6c20c6cc722289e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a box’s name is wrapped to its measured width, so that nothing is cut"
+        body: c7f4fef3b4a2ea55a38f213c23ee0f1e44f422966c7f669a41cbc52538f9d078
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a box gives its node’s label in monospace, or its kind’s name where the node has none yet"
+        body: 4e781bb5e414c325a8039445580551166028d8bc48f5179cbf3f726c19c740cd
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened"
+        body: 6befb808cb452711b83777e47ecae97d60109e588e5fad4ad34103a8976e7fe6
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+  - node: 01a1a836-8724-73ee-8657-ce8aec3a1302
+    reviewed: e26ec5c53fab4bbed2d9141c50a2a885fef97a86350c98d77a6aa42c62165d04
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "in its block, each box is a chip of one line, its name cut to fit, and its whole name given to a reader and under the pointer"
+        body: 8be8f29eca9b31c271f6aaf37214a3976aebb6e26c0c114730e09df2b8cd14ba
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened"
+        body: 6befb808cb452711b83777e47ecae97d60109e588e5fad4ad34103a8976e7fe6
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+  - node: 01a1a836-8725-715c-9d62-b5b2deeb88a9
+    reviewed: 83559a1890f06c972647bab666f3a695ececb0e927e27428f94b9dba70fa1075
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "in its block, each box is a chip of one line, its name cut to fit, and its whole name given to a reader and under the pointer"
+        body: 8be8f29eca9b31c271f6aaf37214a3976aebb6e26c0c114730e09df2b8cd14ba
+  - node: 01a1a814-5ac4-7523-9962-5ace0ee365c5
+    reviewed: 13d12c0eca80e7edbbade482ba0354e2666739c68b3a012b9864c43ba56815de
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "an added, changed or removed box carries a bar at its left in its change’s colour, and a removed one is outlined dashed"
+        body: 174de9a1331e0b1030470f1f84a3dff7dc128b7715d7f35c14054b5193fbccaf
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "each box says how its node changed in a word, and a box drawn for context says neither"
+        body: fd9837c4be59e79964a77f71c61192efb77837197bfaa225ea2bde93852391d9
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+  - node: 01a1a823-bcd4-7465-a368-65401608d872
+    reviewed: a932106d9bfbedd470dda661cc65ba7f7824ff3166be53056937bd3427446bbf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "an added, changed or removed box carries a bar at its left in its change’s colour, and a removed one is outlined dashed"
+        body: 174de9a1331e0b1030470f1f84a3dff7dc128b7715d7f35c14054b5193fbccaf
+  - node: 01a1a814-5ac4-7523-9962-5acfa4c34f20
+    reviewed: 64f3c81fdb76bec17c479af6d57f646eea77589cafe5ff43c15969d443c101cb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the bars of change are the validated steps of green, blue and red in each scheme"
+        body: 63cb157669f25f2edb30d634864e09a02eeed4f6cc04839c76c05280d9c33523
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+  - node: 01a1a814-5ac4-7523-9962-5ad00cc80371
+    reviewed: 54afa7dc5b49b386ae1e953b80d228e8416797079e9639e3c68c9944ff621173
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count"
+        body: 337f2fbbc598e4b39b5a142f29ae8b8b01834aeb1b1364ce672e414e5e8282d9
+  - node: 01a1a814-5ac4-7523-9962-5ad1ea6ba4e7
+    reviewed: ae4f2b1d20589b5619dc359d6c244834a826cbadc9c192547fe4a511a26e0f29
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "the diagram draws the realizes and decision subject edges between the nodes it shows"
+        body: f51b97110de62df6475f45fe8f8ab96a1034c19750094f55538a48bfae2a7002
+  - node: 01a1a814-5ac4-7523-9962-5ad2905ffb74
+    reviewed: 4e84319b7c32829b5b50ca0e3c6e704b37c0df2dbe3ac50fe6a01c4e1507d342
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a spec-change view’s diagram is drawn by the page’s renderer, under a legend that counts each change"
+        body: 14ab86fab5ecd96e795813560cf3506b0303ad0b7866bced1f5d1cc58a3c22aa
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+  - node: 01a1a814-5ac4-7523-9962-5ad3b612d689
+    reviewed: a5ded37d4db4707ee59f7deb49cefc93b3fb1655af6d9a650a55df6a08cb6cd2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
+        name: "pointing at a node brings forward it, its edges and their labels and the nodes they join, and nothing else"
+        body: 315c56bb82d28db0fbeb656bcd46e4576dbda388bf9725c4ffe8ec6786977d45
+      - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
+        name: "the rest fades until the pointer leaves the node, and moving within it keeps it forward"
+        body: 56379bcc433601632e6ded77c7a5b02fd14de96017d89e594b2abc774cb66ec0
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+  - node: 01a1a814-5ac4-7523-9962-5ad4d5b14101
+    reviewed: 517b6293b52b32385fa763e2a641a63d8d152f5dafe8bc03b86925393273bcf5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "choosing a card, by the pointer or by Enter, unfolds the diff and brings that node’s entry into view, marked"
+        body: 43595fa7abaa76c2db95aaf6f53e4fb185445d1addf20bf83bf3c5d0fadf965e
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a drawing the page builds is drawn once, whatever the scheme, and tells it which node the person chose"
+        body: 20bfbd02ac09bd1f29e2de8d5e54bd8a22261c395e97f662b88535ae7ce866df
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
+  - node: 01a1a814-5ac4-7523-9962-5ad53fd5ae24
+    reviewed: b3cc2e224d6cb25b1c45d458517c8a7ca41a9b4aebf4ecbe1bebe7f30f10cee9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "choosing a folded Feature Group’s box opens it, and its box counts its changed nodes"
+        body: f6cef6a0bee3ab953a1912e5b8d4a01090000873c24946abb684f7bdecc1c220
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a diagram of more than 30 boxes draws each Feature Group as one box that counts its changed nodes"
+        body: e9d376f22765d866fc8339256a436e8a49918ef856159823e279e1606962b400
+  - node: 01a1a814-5ac4-7523-9962-5ad662373fdb
+    reviewed: 6df225d09a7d853a324fd0718b881dfaa1d57276a205674b6e66795d16189917
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a flowchart is drawn at its own size within a box that scrolls sideways, and at its own size when expanded"
+        body: 5d0afa194e0f2102de8f401d70a64d30a59dce99cdd529dea119887eaf789d9e
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
+        body: f35879116894eb8c085cc5f972ebd1c34fed227d10ef0fef752fff45b19c78ec
   - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
     reviewed: 5e8a8d2490cd2c5b2f68bef2301663b81adf663d9c4fa6f7915d59c49262b6fb
     tests:
@@ -30512,7 +30704,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a report recorded without the words counts a Feature box’s Requirements and criteria, and those added, changed or removed"
-        body: c79e644f27a95332269ae30ccb5699175201398eb2def43c56c38018aa76e8af
+        body: ca5e747ab65d4282f10b6bdacffc02921be216cf6184d26d872d52e8d0477b0c
   - node: 01a1695a-dd72-7090-817b-abf4975045c0
     reviewed: 72cc7fc540128c26e5689faacd32c3868993aa25cd4fb64325124481fb31f4c4
     tests:
