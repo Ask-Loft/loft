@@ -1,8 +1,9 @@
 // A question as the page draws it, in the timeline and in the panel of what waits alike: a head
 // that gives its header as a chip and its state at the right, its prompt as its title with its
 // context beneath, and its options as cards side by side, each lettered A, B, C and on in a
-// circle before its label, a recommended one marked beneath its label, and its detail beneath.
-// The panel's cards choose; the timeline's only show.
+// circle before its label, a recommended one marked beneath its label, and its detail beneath,
+// at most three to a row; the person's own words are a card of their own beneath them. The
+// panel's cards choose, and a button beside the state clears the choice; the timeline's only show.
 
 import { h } from '../lib/dom.js';
 
@@ -21,14 +22,16 @@ export function letter(index) {
  * @param {string} header
  * @param {string} state
  * @param {string} [tone] `chosen`, `answered` or `waiting`
+ * @param {Node} [after] what follows the state, as the button that clears the choice
  */
-export function questionHead(header, state, tone) {
+export function questionHead(header, state, tone, after) {
   return h(
     'header',
     { class: 'block-head question-head' },
     h('span', { class: 'kind' }, 'Question'),
     header ? h('h4', { class: 'question-chip' }, header) : null,
     h('span', { class: ['question-state', tone ? `question-state--${tone}` : null], 'aria-live': 'polite' }, state),
+    after ?? null,
   );
 }
 

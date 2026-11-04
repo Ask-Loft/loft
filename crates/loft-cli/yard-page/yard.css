@@ -551,13 +551,19 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
    lettered in a circle, a recommended one marked beneath its label, a chosen one outlined in
    action blue. */
 .question-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-.question-chip { padding: 2px 8px; border: 1px solid var(--line); background: var(--side); color: var(--body); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; line-height: 18px; text-transform: uppercase; }
-.question-state { margin-left: auto; color: var(--muted); font-size: 13px; }
-.question-state--chosen { color: var(--signal); font-weight: 600; }
-.question-state--answered { color: var(--done); font-weight: 600; }
-.question-state--waiting { color: var(--wait); font-weight: 600; }
-.prompt { color: var(--ink); font-size: 18px; font-weight: 700; line-height: 26px; letter-spacing: -0.01em; max-width: 75ch; }
-.option-grid { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.question-head .question-chip { padding: 2px 8px; border: 1px solid var(--line); background: var(--side); color: var(--body); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; line-height: 18px; text-transform: uppercase; }
+.question-state { margin-left: auto; color: var(--muted); font-size: 13px; font-weight: 500; }
+.question-state--chosen { color: var(--signal); }
+.question-state--answered { color: var(--done); }
+.question-state--waiting { color: var(--wait); }
+/* Clearing a question's choice: a small secondary button beside its state. */
+.clear-choice { border: 1px solid var(--rail); background: var(--canvas); color: var(--ink); padding: 1px 10px; font: inherit; font-size: 12px; font-weight: 500; line-height: 20px; cursor: pointer; }
+.clear-choice:hover:not(:disabled) { background: var(--mist); border-color: var(--signal); }
+.clear-choice:disabled { color: var(--muted); border-color: var(--line); cursor: default; }
+/* A question's prompt is set as a block's title is. */
+.prompt { color: var(--ink); font-size: 15px; font-weight: 600; line-height: 22px; letter-spacing: -0.01em; max-width: 75ch; }
+/* At most three cards to a row: each at least a third of the row, less its gaps. */
+.option-grid { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(max(220px, calc((100% - 24px) / 3)), 1fr)); gap: 12px; }
 @media (max-width: 640px) { .option-grid { grid-template-columns: minmax(0, 1fr); } }
 .option-card { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; padding: 14px 16px; border: 1px solid var(--line); background: var(--canvas); }
 .option-card.is-chosen, .option-card:has(.option-input:checked) { outline: 2px solid var(--signal); outline-offset: -1px; }
@@ -568,7 +574,7 @@ label.option-card:hover, .own-words:hover { border-color: var(--rail); }
 .option-top .choice { display: flex; align-items: center; gap: 10px; }
 .option-letter { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid var(--rail); border-radius: 50%; color: var(--body); font-family: var(--mono); font-size: 12px; line-height: 1; }
 .option-card.is-chosen .option-letter, .option-card:has(.option-input:checked) .option-letter { border-color: var(--signal); background: var(--signal); color: var(--canvas); }
-:is(.option-label, .choice-label) { color: var(--ink); font-size: 15px; font-weight: 600; line-height: 22px; overflow-wrap: anywhere; }
+:is(.option-label, .choice-label) { color: var(--ink); font-size: 14px; font-weight: 600; line-height: 20px; overflow-wrap: anywhere; }
 :is(.option-detail, .choice-detail) { color: var(--body); font-size: 14px; max-width: none; }
 /* The radio button or checkbox of a card lies, unseen, over the card's letter, in reach of the
    pointer, the keyboard and a reader; the card itself shows what is chosen. */
@@ -578,12 +584,11 @@ label.option-card:hover, .own-words:hover { border-color: var(--rail); }
 .question-form { border: 1px solid var(--line); padding: 16px; margin: 0; display: grid; gap: 10px; min-width: 0; }
 .question-form.is-answered { box-shadow: inset 3px 0 0 var(--new); }
 .question-form > legend.prompt { float: left; width: 100%; padding: 0; }
-.question-foot { margin: 0; }
 .badge { font-family: var(--mono); font-size: 12px; font-weight: 400; padding: 0 6px; border: 1px solid currentColor; }
 .badge--recommended { border: 0; padding: 2px 6px; background: var(--done-soft); color: var(--done); font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
 .badge--chosen { color: var(--new); }
 .answer { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
-.answer-text { font-weight: 650; color: var(--done); }
+.answer-text { font-size: 14px; font-weight: 600; color: var(--done); }
 .byline { color: var(--muted); font-size: 13px; }
 .waits { color: var(--wait); font-weight: 600; font-size: 14px; }
 .link { border: 0; background: none; padding: 0; color: var(--signal); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; cursor: pointer; }
@@ -940,3 +945,6 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
   .tokens-table th[scope="row"] { min-width: 8em; }
   .page-head h1 { font-size: 24px; line-height: 28px; }
 }
+/* The person's own words lie beneath the cards of the options, as wide as they are. */
+.option-grid + .own-words { margin-top: 12px; }
+.question-form > .option-grid + .own-words { margin-top: 2px; }

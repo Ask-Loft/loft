@@ -1449,8 +1449,8 @@ test('a flowchart is drawn by the page in its own design, with orthogonal edges 
   await expect(page.locator('dialog.modal--diagram svg.flow')).toBeVisible();
 });
 
-test('the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one', async ({ page }) => {
-  write([{ id: 'cards-q', kind: 'question', stage: 'shape', header: 'Cards', prompt: 'Which card?', options: [{ label: 'Left', detail: 'a', recommended: true }, { label: 'Middle', detail: 'b' }, { label: 'Right', detail: 'c' }] }], ['--send']);
+test('the cards of a question’s options stand side by side, at most three to a row, with the person’s own words beneath, and one beneath another in a narrow window', async ({ page }) => {
+  write([{ id: 'cards-q', kind: 'question', stage: 'shape', header: 'Cards', prompt: 'Which card?', options: [{ label: 'Left', detail: 'a', recommended: true }, { label: 'Middle', detail: 'b' }, { label: 'Right', detail: 'c' }, { label: 'Fourth', detail: 'd' }] }], ['--send']);
   for (const [width, across] of [[1440, true], [560, false]]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(address());
@@ -1460,15 +1460,26 @@ test('the cards of a question’s options stand side by side in a wide window an
     const fold = page.getByRole('button', { name: 'Fold the sidebar' });
     if (!across && (await fold.isVisible())) await fold.click();
     const form = panel.locator('.question-card', { has: page.locator('legend', { hasText: 'Which card?' }) });
-    const cards = form.locator('.option-card');
+    const cards = form.locator('.option-grid > .option-card');
     await expect(cards).toHaveCount(4);
-    const [first, second] = [await box(cards.nth(0)), await box(cards.nth(1))];
+    const [first, second, third, fourth] = [await box(cards.nth(0)), await box(cards.nth(1)), await box(cards.nth(2)), await box(cards.nth(3))];
     expect(Math.abs(first.y - second.y) < 1).toBe(across);
+    if (across) {
+      expect(Math.abs(first.y - third.y) < 1, 'three to a row').toBe(true);
+      expect(fourth.y > first.y + first.height, 'the fourth on the next').toBe(true);
+    }
+    const own = await box(form.locator('.option-grid + .own-words'));
+    const grid = await box(form.locator('.option-grid'));
+    expect(own.y).toBeGreaterThan(grid.y + grid.height - 1);
+    expect(Math.abs(own.width - grid.width) < 1, 'as wide as the cards').toBe(true);
+    const clearing = form.locator('.question-head .clear-choice');
+    await expect(clearing).toBeDisabled();
     await form.locator('label.choice', { hasText: 'Middle' }).click();
     await expect(form.locator('.question-state')).toHaveText('Chosen: B');
     expect(await colour(cards.nth(1), 'outline-color')).toBe('rgb(20, 72, 143)');
-    await form.locator('.clear-choice').click();
+    await clearing.click();
     await expect(form.locator('.question-state')).toHaveText('Not chosen yet');
+    await expect(clearing).toBeDisabled();
   }
   await page.setViewportSize({ width: 1280, height: 900 });
 });

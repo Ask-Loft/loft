@@ -54,7 +54,28 @@ test('a question’s prompt is its title, and its context lies beneath it', () =
     assert.equal(prompt?.textContent, 'Which shelf?');
     assert.ok(prompt && prompt.compareDocumentPosition(/** @type {Node} */ (drawn.querySelector('.context'))) & Node.DOCUMENT_POSITION_FOLLOWING);
   }
-  assert.match(css, /\.prompt \{[^}]*font-size: 18px;[^}]*font-weight: 700;/);
+});
+
+test('a question’s prompt is set as a block’s title is, at 15 pixels and semibold', () => {
+  assert.match(css, /\.prompt \{[^}]*font-size: 15px; font-weight: 600;/);
+  assert.match(css, /\.block-head h4 \{ font-size: 15px; font-weight: 600;/, 'as a block’s title');
+});
+
+test('a question’s header chip, its state, its options’ labels and its answer are no larger than 14 pixels', () => {
+  const size = (rule) => Number(new RegExp(`${rule} \\{[^}]*font-size: (\\d+)px`).exec(css)?.[1]);
+  for (const rule of ['\\.question-head \\.question-chip', '\\.question-state', ':is\\(\\.option-label, \\.choice-label\\)', '\\.answer-text']) {
+    assert.ok(size(rule) <= 14, `${rule} at ${size(rule)}px`);
+  }
+  // The block's title rule does not outrank the chip's, which once made it a title's size.
+  assert.match(css, /\.question-head \.question-chip \{/);
+});
+
+test('nothing in a question is bolder than semibold', () => {
+  const rules = css.match(/^[^{}\n]*(?:question|prompt|option|choice|answer-text|clear-choice)[^{}\n]*\{[^}]*\}/gm) ?? [];
+  assert.ok(rules.length > 8);
+  for (const rule of rules) {
+    for (const [, weight] of rule.matchAll(/font-weight: (\d+)/g)) assert.ok(Number(weight) <= 600, rule);
+  }
 });
 
 test('each option is a card lettered A, B, C and on in a circle before its label, its detail beneath, a recommended one marked', () => {
@@ -73,20 +94,20 @@ test('each option is a card lettered A, B, C and on in a circle before its label
   assert.match(css, /\.option-letter \{[^}]*border-radius: 50%;/);
 });
 
-test('the person’s own words are the last card, lettered after the options and holding their text field', () => {
+test('the person’s own words are a card of their own beneath the options’ cards, as wide as they are, lettered after them and holding their text field', () => {
   const q = question('shelf', ['Top', 'Bottom']);
   const panel = panelOf(q);
-  const cards = [...panel.querySelectorAll('.option-grid > .option-card')];
-  const own = cards.at(-1);
-  assert.ok(own?.classList.contains('own-words'));
+  assert.ok(!panel.querySelector('.option-grid > .own-words'), 'not among the options’ cards');
+  const own = panel.querySelector('.option-grid + .own-words');
+  assert.ok(own?.classList.contains('option-card'), 'beneath them, a card of its own');
   assert.equal(own?.querySelector('.option-letter')?.textContent, 'C');
   assert.ok(own?.querySelector('textarea'), 'its text field inside it');
   /** @type {HTMLInputElement} */ (panel.querySelector(`#answer-${q.id}-words`)).click();
   assert.equal(panel.querySelector('.question-state')?.textContent, 'Chosen: C');
 });
 
-test('the cards of the options stand side by side as far as the width allows, and one beneath another when narrow', () => {
-  assert.match(css, /\.option-grid \{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(220px, 1fr\)\);/);
+test('the cards of the options stand side by side, at most three to a row, and one beneath another when narrow', () => {
+  assert.match(css, /\.option-grid \{[^}]*grid-template-columns: repeat\(auto-fit, minmax\(max\(220px, calc\(\(100% - 24px\) \/ 3\)\), 1fr\)\); gap: 12px;/);
   assert.match(css, /@media \(max-width: 640px\) \{ \.option-grid \{ grid-template-columns: minmax\(0, 1fr\); \} \}/, 'one beneath another in a narrow window');
 });
 
@@ -118,4 +139,18 @@ test('clearing a question’s choice deselects its options and its own words, an
   assert.ok(![...panel.querySelectorAll('.option-input')].some((input) => /** @type {HTMLInputElement} */ (input).checked), 'nothing chosen');
   assert.equal(words.value, 'Teal', 'the text kept');
   assert.equal(panel.querySelector('.question-state')?.textContent, 'Not chosen yet');
+});
+
+test('a button beside the question’s state clears its choice, disabled while nothing is chosen', () => {
+  const q = question('shelf', ['Top', 'Bottom']);
+  const panel = panelOf(q);
+  const button = /** @type {HTMLButtonElement} */ (panel.querySelector('.question-head .question-state + button.clear-choice'));
+  assert.ok(button, 'in the head, beside the state');
+  assert.equal(button.disabled, true);
+  /** @type {HTMLInputElement} */ (panel.querySelector('input[value="Top"]')).click();
+  assert.equal(button.disabled, false);
+  button.click();
+  assert.equal(button.disabled, true);
+  assert.equal(panel.querySelector('.question-state')?.textContent, 'Not chosen yet');
+  assert.ok(!panel.querySelector('.question-foot, .link.clear-choice'), 'no link beneath the options');
 });

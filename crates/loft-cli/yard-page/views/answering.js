@@ -157,7 +157,10 @@ function questionForm(block, key, update) {
   const type = body.multiple ? 'checkbox' : 'radio';
   const name = `answer-${block.id}`;
   const letters = stateOf(body, answer);
-  const head = questionHead(body.header, chosenState(letters), letters.length ? 'chosen' : undefined);
+  const clearing = /** @type {HTMLButtonElement} */ (
+    h('button', { type: 'button', class: 'clear-choice', disabled: !letters.length, onclick: () => { keep(key, clear(draftOf(key), block)); sync(); } }, 'Clear')
+  );
+  const head = questionHead(body.header, chosenState(letters), letters.length ? 'chosen' : undefined, clearing);
   const state = /** @type {HTMLElement} */ (head.querySelector('.question-state'));
   const sync = () => {
     const draft = draftOf(key);
@@ -170,6 +173,7 @@ function questionForm(block, key, update) {
     const chosen = stateOf(body, answer);
     state.textContent = chosenState(chosen);
     state.classList.toggle('question-state--chosen', chosen.length > 0);
+    clearing.disabled = !chosen.length;
     fieldset.classList.toggle('is-answered', isAnswered(draft, block));
     update();
   };
@@ -206,19 +210,15 @@ function questionForm(block, key, update) {
     h('legend', { class: 'prompt' }, body.prompt),
     body.contextHtml ? html(body.contextHtml, 'prose context') : null,
     body.multiple ? h('p', { class: 'hint' }, 'Choose one or more.') : null,
-    optionGrid([...cards, own]),
-    h(
-      'p',
-      { class: 'question-foot' },
-      h('button', { type: 'button', class: 'link clear-choice', onclick: () => { keep(key, clear(draftOf(key), block)); sync(); } }, 'Clear choice'),
-    ),
+    optionGrid(cards),
+    own,
   );
   const words = /** @type {HTMLTextAreaElement | null} */ (fieldset.querySelector('textarea'));
   if (words) words.value = answer.words ?? '';
   return h('div', { class: 'question-card' }, head, fieldset);
 }
 
-/** The person's own words, the last card of a question's options, lettered after them: its own
+/** The person's own words, a card of its own beneath a question's options, lettered after them: its own
  * selection control and a labelled text field, the text kept while it is not selected.
  * @param {import('../model/log.js').Block} block
  * @param {import('../model/answers.js').Answer} answer

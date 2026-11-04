@@ -143,15 +143,15 @@ function question(block, context) {
       after: [markdown(option.detailHtml, option.detail, 'option-detail')],
     }),
   );
-  if (answer?.words) {
-    cards.push(optionCard('div', { class: 'option own-words' }, {
+  const own = answer?.words
+    ? optionCard('div', { class: 'option own-words' }, {
       index: body.options.length,
       chosen: true,
       label: h('span', { class: 'option-label' }, 'In your own words'),
       after: [h('p', { class: 'option-detail' }, answer.words)],
-    }));
-  }
-  const options = optionGrid(cards);
+    })
+    : null;
+  const options = [optionGrid(cards), own];
   const context_ = body.contextHtml ? html(body.contextHtml, 'prose context') : null;
   const prompt = h('p', { class: 'prompt' }, body.prompt);
   const waiting = context.waiting.has(block.key);
