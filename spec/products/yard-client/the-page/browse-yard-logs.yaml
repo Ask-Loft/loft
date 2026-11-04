@@ -320,6 +320,24 @@ requirements:
         name: "An `approval` or a `plan` block shows its Markdown."
       - key: 01a16475-7fbd-7213-a7f7-927e63f98c39
         name: "Once decided, an `approval` or a `plan` block shows its outcome, with who decided it, when and on which channel."
+  - key: 01a1a7e1-2b66-70b4-981e-7a91b0d53bdc
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a question, in the timeline and in the panel of what waits alike, as a card headed by its header and its state, titled by its prompt, with its context beneath and its options as cards side by side."
+    criteria:
+      - key: 01a1a7e1-2b66-70b4-981e-7a921242b3f3
+        name: "The head of a question gives its header in small monospace capitals and, at its right, its state: not chosen yet, the options chosen, or its answer."
+      - key: 01a1a7e1-2b66-70b4-981e-7a9328745df3
+        name: "A question's prompt is its title, and its context lies beneath it."
+      - key: 01a1a7e1-2b66-70b4-981e-7a94b97d8ed1
+        name: "Each option is a card of its own, lettered A, B, C and on in a circle before its label, with its detail beneath, and a recommended option is marked as recommended beneath its label."
+      - key: 01a1a7e1-2b66-70b4-981e-7a95a684080d
+        name: "The cards of the options stand side by side as far as the width allows, and one beneath another in a narrow window."
+      - key: 01a1a7e1-2b66-70b4-981e-7a96621ff53a
+        name: "The card of a chosen option is outlined in action blue."
+      - key: 01a1a7e1-2b66-70b4-981e-7a9758c93481
+        name: "In the timeline, a question's cards offer no control that chooses an option."
       - key: 01a1646f-546d-7042-befd-eb3c782601a4
         name: "A decision shows its number, its title and its consequence."
       - key: 01a1646f-546d-7042-befd-eb3dabdc81f0
@@ -406,6 +424,10 @@ requirements:
         name: "A diagram that does not parse shows its source, with a line saying that it could not be drawn."
       - key: 01a1851a-2557-7721-ba02-488bef757a57
         name: "A diagram in a block that waits on the person is drawn in the panel of what waits, as it is in the timeline."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4bd4faa80d0
+        name: "A diagram is drawn in the page's design: square nodes on the sidebar's ground with hairline borders, its text in the page's face at 13 pixels, and its edges in muted ink with small arrowheads."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4be0079e32d
+        name: "A group of a diagram is framed by a hairline on the page's ground, and an edge's label lies on the page's ground."
   - key: 01a1646f-546d-7042-befd-eb4a816d5c07
     statement:
       form: state_driven

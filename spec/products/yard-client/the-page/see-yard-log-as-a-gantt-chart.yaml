@@ -185,3 +185,26 @@ requirements:
         name: "Each stretch of spec mode is shaded faintly and hatched across every lane of the chart, over each lane's background."
       - key: 01a1646f-546d-7042-befd-eb80ccffb25f
         name: "Each stretch of spec mode is labelled as spec mode, and gives its length on hover."
+  - key: 01a1a7e1-2b67-777d-ab6f-d4bf3e94624b
+    statement:
+      form: optional
+      where: "a session of Yard Log has stopped, unheard for 60 seconds"
+      system: "the page"
+      shall: "end what the session left going on at its last event in Yard Log, rather than at now."
+    criteria:
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c0f9768d94
+        name: "A turn, a stage it owns, a task it executes, a stretch of plan or spec mode, a subagent's run or a Loft run that a stopped session left with no end ends at that session's last event in Yard Log."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c1e29c6104
+        name: "While Yard Log is closed, or none of its sessions is heard and no submission is open, the chart ends at the end of its last record and does not grow as time passes."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c2646cddb9
+        name: "While a session of Yard Log is heard, what it has going on is drawn to now."
+  - key: 01a1a7e1-2b67-777d-ab6f-d4c3d14b496b
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "give with each session's activity whether the session has stopped."
+    criteria:
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c4b2f268dd
+        name: "A session never heard, or not heard for 60 seconds, is given as stopped."
+      - key: 01a1a7e1-2b67-777d-ab6f-d4c5ee134a0d
+        name: "A session heard within the last 60 seconds is given as not stopped."
