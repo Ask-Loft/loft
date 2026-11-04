@@ -2,10 +2,13 @@
 // each lane holding its stages with their tasks, Loft runs, Loft views, the runs of the subagents
 // that owned no stage and worked for them, waits on the person and the agent's own work between
 // them; the idle time outside the main agent's turns and the subagents' runs, folded where it is
-// long; the stretches of plan and spec mode; and where the time that was not idle went.
+// long; the stretches of plan and spec mode; and where the time that was not idle went. What has
+// no recorded end runs to now while its session is heard, and to its last event once it stopped
+// (`until.js`).
 
 import { agentKey, ms, who } from '../lib/format.js';
 import { blocksByKey } from './log.js';
+import { caps, until } from './until.js';
 
 /** Idle time longer than this, in milliseconds, is folded to a fixed width. */
 export const FOLD_AFTER = 45_000;
@@ -68,16 +71,18 @@ export function measure(spans) {
 }
 
 /**
- * The Gantt chart of `log` at `now`.
+ * The Gantt chart of `log` at `at`, drawn to the time `until` gives.
  * @param {any} log
- * @param {number} now
+ * @param {number} at
  */
-export function chart(log, now) {
+export function chart(log, at) {
+  const now = until(log, at);
+  const cap = caps(log, now);
   const sessions = activities(log, now);
   // Time is busy while the main agent's turns or any subagent's run go on.
   const turns = union(sessions.flatMap((activity) => [...activity.turns, ...activity.subagents]));
   const waits = submissionSpans(log, now);
-  const lanes = laneList(log, now, sessions, turns, waits);
+  const lanes = laneList(log, cap, sessions, turns, waits);
   const drawn = lanes.flatMap((lane) =>
     lane.rows.flatMap((row) => [row.stage, ...row.tasks, ...row.loft, ...row.subagents, ...row.submissions]),
   );
@@ -98,16 +103,20 @@ export function chart(log, now) {
 }
 
 /**
- * Each session's activity with its times in milliseconds, a stretch still going on ending now.
+ * Each session's activity with its times in milliseconds, a stretch still going on ending now, or
+ * at the session's last event once it stopped.
  * @param {any} log
  * @param {number} now
  */
 function activities(log, now) {
-  const span = (item) => ({
-    from: ms(item.started),
-    to: item.ended ? ms(item.ended) : now,
-  });
-  return (log?.activity ?? []).map((activity) => ({
+  const cap = caps(log, now);
+  return (log?.activity ?? []).map((activity) => {
+    const end = cap(activity);
+    const span = (item) => {
+      const from = ms(item.started);
+      return { from, to: item.ended ? ms(item.ended) : Math.max(from, end) };
+    };
+    return {
     session: activity.session,
     turns: (activity.turns ?? []).map((turn) => span(turn)),
     bands: [
@@ -127,7 +136,8 @@ function activities(log, now) {
       name: (run.commands ?? []).join(' '),
       failed: run.failed === true,
     })),
-  }));
+    };
+  });
 }
 
 /**
@@ -166,12 +176,12 @@ function submissionSpans(log, now) {
  * session first started work, then one for each subagent that owned a stage, in the order each
  * first started work. The run of a subagent that owned no stage lies in a stage's row.
  * @param {any} log
- * @param {number} now
+ * @param {(by: any) => number} cap the time an agent's unended work runs to
  * @param {ReturnType<typeof activities>} sessions
  * @param {Span[]} turns
  * @param {ReturnType<typeof submissionSpans>} waits
  */
-function laneList(log, now, sessions, turns, waits) {
+function laneList(log, cap, sessions, turns, waits) {
   /** @type {Map<string, { key: string, label: string, main: boolean, stages: any[] }>} */
   const lanes = new Map();
   for (const stage of log?.stages ?? []) {
@@ -194,9 +204,9 @@ function laneList(log, now, sessions, turns, waits) {
     const rows = stages.map((stage, index) => {
       const next = stages[index + 1];
       const from = ms(stage.times.started);
-      let to = stage.times.ended ? ms(stage.times.ended) : next ? ms(next.times.started) : now;
+      let to = stage.times.ended ? ms(stage.times.ended) : next ? ms(next.times.started) : cap(stage.owner);
       if (to < from) to = from;
-      return row(stage, { from, to }, agentKey(stage.owner), spans, now);
+      return row(stage, { from, to }, agentKey(stage.owner), spans, cap);
     });
     return { key: lane.key, label: lane.label, main: lane.main, sessions: lane.main ? sessionStarts(stages) : [], rows };
   });
@@ -242,19 +252,21 @@ function split(busy, { loft, subagents, tasks, waits }) {
  * @param {Span} span
  * @param {string} agent
  * @param {{ loft: any[], subagents: any[], waits: any[], turns: Span[] }} spans
- * @param {number} now
+ * @param {(by: any) => number} cap the time an agent's unended work runs to
  */
-function row(stage, span, agent, { loft, subagents, waits, turns }, now) {
+function row(stage, span, agent, { loft, subagents, waits, turns }, cap) {
   const tasks = (stage.blocks ?? [])
     .filter((block) => block.kind === 'task')
     .map((block) => {
       const times = block.times ?? {};
       const written = ms(block.version.act.at);
       const from = times.listed ? ms(times.listed) : written;
-      const to = times.listed ? (times.ended ? ms(times.ended) : now) : written;
+      const to = times.listed ? (times.ended ? ms(times.ended) : Math.max(from, cap(stage.owner))) : written;
       const executions = block.executions ?? (times.started ? [{ started: times.started, ended: times.ended }] : []);
       const active = executions.map((execution) => ({
-        from: ms(execution.started), to: execution.ended ? ms(execution.ended) : now, assignee: execution.assignee,
+        from: ms(execution.started),
+        to: execution.ended ? ms(execution.ended) : Math.max(ms(execution.started), cap(execution.assignee ?? stage.owner)),
+        assignee: execution.assignee,
       }));
       return {
         key: block.key,

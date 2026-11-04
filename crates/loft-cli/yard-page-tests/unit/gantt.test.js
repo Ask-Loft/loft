@@ -478,3 +478,38 @@ test('a Loft run of a subagent that owned no stage is drawn in the bar of the st
   assert.deepEqual(first.loft.map((each) => each.name), ['check']);
   assert.deepEqual(second.loft, []);
 });
+
+test('a stopped session’s unended turn, stage and task end at its last event, while a heard session’s run to now', () => {
+  const task = block('task', 'build', { title: 'Build', state: 'active' }, { more: { times: { listed: at(10), started: at(20) }, executions: [{ started: at(20), assignee: MAIN }] } });
+  const stopped = log([timed('shape', MAIN, 0, undefined, [task], 'active')], { activity: [activity({ turns: [span(0)], lastEnded: at(300), stopped: true })] });
+  const model = chart(stopped, T0 + 3_600_000);
+  const [row] = model.lanes[0].rows;
+  assert.equal(row.stage.to, T0 + 300_000, 'the stage ends at the last event');
+  assert.equal(row.tasks[0].to, T0 + 300_000);
+  assert.equal(row.tasks[0].active[0].to, T0 + 300_000);
+  assert.equal(model.end, T0 + 300_000, 'the chart ends at the last record');
+  const heard = log([timed('shape', MAIN, 0, undefined, [task], 'active')], { activity: [activity({ turns: [span(0)], lastEnded: at(300), stopped: false })] });
+  const live = chart(heard, T0 + 3_600_000);
+  assert.equal(live.lanes[0].rows[0].stage.to, T0 + 3_600_000, 'a heard session’s stage runs to now');
+  assert.equal(live.end, T0 + 3_600_000);
+});
+
+test('a closed Yard Log’s chart ends at its last record and does not grow as time passes', () => {
+  const shown = log([timed('shape', MAIN, 0, 120)], { activity: [activity({ turns: [span(0, 120), span(400)], lastEnded: at(400) })] });
+  shown.yardLog.closedBy = 'person';
+  const early = chart(shown, T0 + 1_000_000);
+  const late = chart(shown, T0 + 9_000_000);
+  assert.equal(early.end, T0 + 120_000, 'a turn begun after the last end and never ended adds nothing');
+  assert.equal(late.end, early.end, 'later, the chart is the same');
+  const open = { ...shown, yardLog: { ...shown.yardLog, closedBy: undefined } };
+  assert.equal(chart(open, T0 + 9_000_000).end, T0 + 9_000_000, 'an open Yard Log with a heard session runs to now');
+});
+
+test('a quiet Yard Log stops growing, unless a submission is open', () => {
+  // The stage's agent kept no activity here, so only the quiet Yard Log's end bounds it.
+  const elsewhere = { host: 'claude-code', session: 's9' };
+  const quiet = log([timed('shape', elsewhere, 0, undefined, [], 'active')], { activity: [activity({ turns: [span(0, 100)], lastEnded: at(200), stopped: true })] });
+  assert.equal(chart(quiet, T0 + 9_000_000).end, T0 + 200_000);
+  const asking = { ...quiet, sent: [{ key: 'sub', agent: elsewhere, blocks: [], state: 'open', changes: [{ what: 'sent', act: act(at(150), 2) }] }] };
+  assert.equal(chart(asking, T0 + 9_000_000).end, T0 + 9_000_000, 'an open submission still waits on the person');
+});

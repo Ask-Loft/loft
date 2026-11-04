@@ -2,7 +2,8 @@
 //! sends them. The tree's current branch's Yard Log reads as `loft yard read` gives it, with
 //! every version of each block; one carried from another branch reads the same way, marked as
 //! inherited, and takes no answer or decision. Answers are recorded through the same rules as
-//! `loft yard answer`, on the channel `page`.
+//! `loft yard answer`, on the channel `page`. Each session's activity says whether the session
+//! has stopped, unheard for a minute, so that the page ends what it left going on.
 
 use std::path::{Path, PathBuf};
 
@@ -27,6 +28,7 @@ use crate::yard::failure::Failure;
 use crate::yard::read::{SCHEMA as READ_SCHEMA, settler, shown};
 use crate::yard::render_log::Selection;
 use crate::yard::session_files;
+use crate::yard::sessions;
 
 const ANSWER_SCHEMA: &str = "loft-yard-answer/1";
 
@@ -81,8 +83,27 @@ pub fn read(home: &Home, tree: Option<&str>, branch: Option<&str>, port: u16) ->
         inherited(&place, &branch, beyond)
     };
     match read {
-        Ok(fields) => Response::json(200, &json::result(READ_SCHEMA, "read", fields, Vec::new())),
+        Ok(mut fields) => {
+            mark_stopped(&mut fields["activity"], home);
+            Response::json(200, &json::result(READ_SCHEMA, "read", fields, Vec::new()))
+        }
         Err(failure) => answer_failure(failure, READ_SCHEMA),
+    }
+}
+
+/// Marks each session's activity with whether the session has stopped: never heard, or not
+/// heard for [`sessions::STOPPED_AFTER`], by the machine's record of when each was last heard.
+fn mark_stopped(activity: &mut Value, home: &Home) {
+    let now = crate::yard::now().ok();
+    let Some(entries) = activity.as_array_mut() else {
+        return;
+    };
+    for entry in entries {
+        let host = entry["host"].as_str().unwrap_or("claude-code");
+        let session = entry["session"].as_str().unwrap_or_default();
+        let key = yardlog::identity::session_key(host, session);
+        let last = sessions::last_heard(home, &key).ok().flatten();
+        entry["stopped"] = json!(now.is_none_or(|now| sessions::stopped(last, now)));
     }
 }
 
