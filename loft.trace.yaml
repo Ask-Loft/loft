@@ -29008,20 +29008,20 @@ links:
         name: "a flowchart is drawn at its own size within a box that scrolls sideways, and at its own size when expanded"
         body: 5d0afa194e0f2102de8f401d70a64d30a59dce99cdd529dea119887eaf789d9e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join"
-        body: e01f90290c95800ac86c8c6ab36f533cf44492f0832eca9b76366dc12369d930
+        name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node outlines it and its neighbours in action blue and fades nothing"
+        body: 8d0773d03cff24c0cc0306db53dc29ee3c3a6c0888a94e84980a128f5543ecf1
   - node: 01a1a814-5ac4-7523-9962-5ad8e9672abc
-    reviewed: e45f69e1050b96d0a4217c4c2d3d97d0c7408313ff7626ba00ce866517ea6928
+    reviewed: c27764b16148c31b2159abf3daa9c36dfc21ec280de09f956a36fd00574a4a80
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
-        name: "pointing at a node brings forward it, its edges and their labels and the nodes they join, and nothing else"
-        body: 315c56bb82d28db0fbeb656bcd46e4576dbda388bf9725c4ffe8ec6786977d45
+        name: "pointing at a node marks it, its edges and their labels and the nodes they join, and nothing else"
+        body: 53dfc2a3f7904a90fdfe5a679b01a6437f9dcc88f15989f6d1fe0af8731c9b97
       - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
-        name: "the rest fades until the pointer leaves the node, and moving within it keeps it forward"
-        body: 56379bcc433601632e6ded77c7a5b02fd14de96017d89e594b2abc774cb66ec0
+        name: "the marks stay until the pointer leaves the node, moving within it keeps them, and nothing fades"
+        body: a5c8a300f193f83190ec15a96734049e2135349db3e5b16efe2e0233e0ff7181
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node fades the nodes it does not join"
-        body: e01f90290c95800ac86c8c6ab36f533cf44492f0832eca9b76366dc12369d930
+        name: "a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node outlines it and its neighbours in action blue and fades nothing"
+        body: 8d0773d03cff24c0cc0306db53dc29ee3c3a6c0888a94e84980a128f5543ecf1
       - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
         name: "each edge and its label name the nodes they join, for the hover layer"
         body: 157cb12aba96299cda59f00a178416678fa27709b86e82b8f3957b197e04936e
@@ -30180,6 +30180,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
         body: ea1af3bd0cc576fc3440b72b0e0687dd3e2c7ae904331da63086d98160e40f12
+  - node: 01a1a84c-fa66-73d3-855b-0ffcf388af46
+    reviewed: 12dc94b5c079037d74a7a251fb6aa6a9d204848e352f1695033d15240d713312
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "dragging the expanded diagram selects none of its text"
+        body: ddb130af78f52b1063456591ddf4a2938035e35e9293b0a85ca493a60ad3c95a
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1695a-dd72-7090-817b-ac06c2e927c9
     reviewed: 17a80b5f4c2c61261145a8e95003f841128107c2a7600504bd7712a28137c05d
     tests:
@@ -30511,22 +30520,22 @@ links:
         name: "the line joining a criterion to its Requirement runs from the Requirement’s right to the criterion’s left, inside their panel"
         body: 1ee69e40174e41254231d93a1ed325924c7aa1562ba6b792c699289a2e37da7f
   - node: 01a1a814-5ac4-7523-9962-5acd501df9ef
-    reviewed: 84879b537cddda9be9cb7aacb7a971d801a0d0146792780af6c20c6cc722289e
+    reviewed: 7922a74e503c0e559af733e3a06d460c59b0f416d4edcb37d1c21a69c5e8a29c
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a box’s name is wrapped to its measured width, so that nothing is cut"
         body: c7f4fef3b4a2ea55a38f213c23ee0f1e44f422966c7f669a41cbc52538f9d078
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "a box gives its node’s label in monospace, or its kind’s name where the node has none yet"
-        body: 4e781bb5e414c325a8039445580551166028d8bc48f5179cbf3f726c19c740cd
+        name: "a box gives its node’s label in monospace, or its kind’s label prefix where the node has none yet"
+        body: 8fa4472ec53075fbf16b6536518f851991fe0d203caa36a61cb213891988a95f
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened"
         body: 6befb808cb452711b83777e47ecae97d60109e588e5fad4ad34103a8976e7fe6
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1a836-8724-73ee-8657-ce8aec3a1302
-    reviewed: e26ec5c53fab4bbed2d9141c50a2a885fef97a86350c98d77a6aa42c62165d04
+    reviewed: d4c48ae2f9fca2c70b98afb1672e2f2024503ac81b539b7654aed74248f718f2
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "in its block, each box is a chip of one line, its name cut to fit, and its whole name given to a reader and under the pointer"
@@ -30535,8 +30544,8 @@ links:
         name: "the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened"
         body: 6befb808cb452711b83777e47ecae97d60109e588e5fad4ad34103a8976e7fe6
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1a836-8725-715c-9d62-b5b2deeb88a9
     reviewed: 83559a1890f06c972647bab666f3a695ececb0e927e27428f94b9dba70fa1075
     tests:
@@ -30553,8 +30562,8 @@ links:
         name: "each box says how its node changed in a word, and a box drawn for context says neither"
         body: fd9837c4be59e79964a77f71c61192efb77837197bfaa225ea2bde93852391d9
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1a823-bcd4-7465-a368-65401608d872
     reviewed: a932106d9bfbedd470dda661cc65ba7f7824ff3166be53056937bd3427446bbf
     tests:
@@ -30568,8 +30577,8 @@ links:
         name: "the bars of change are the validated steps of green, blue and red in each scheme"
         body: 63cb157669f25f2edb30d634864e09a02eeed4f6cc04839c76c05280d9c33523
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1a814-5ac4-7523-9962-5ad00cc80371
     reviewed: 54afa7dc5b49b386ae1e953b80d228e8416797079e9639e3c68c9944ff621173
     tests:
@@ -30589,20 +30598,20 @@ links:
         name: "a spec-change view’s diagram is drawn by the page’s renderer, under a legend that counts each change"
         body: 14ab86fab5ecd96e795813560cf3506b0303ad0b7866bced1f5d1cc58a3c22aa
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1a814-5ac4-7523-9962-5ad3b612d689
-    reviewed: a5ded37d4db4707ee59f7deb49cefc93b3fb1655af6d9a650a55df6a08cb6cd2
+    reviewed: e9fb570c6efdef36923ac7f76d9831ace1a220dca9a8b6b225b3928b1fab2445
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
-        name: "pointing at a node brings forward it, its edges and their labels and the nodes they join, and nothing else"
-        body: 315c56bb82d28db0fbeb656bcd46e4576dbda388bf9725c4ffe8ec6786977d45
+        name: "pointing at a node marks it, its edges and their labels and the nodes they join, and nothing else"
+        body: 53dfc2a3f7904a90fdfe5a679b01a6437f9dcc88f15989f6d1fe0af8731c9b97
       - file: "crates/loft-cli/yard-page-tests/unit/emphasis.test.js"
-        name: "the rest fades until the pointer leaves the node, and moving within it keeps it forward"
-        body: 56379bcc433601632e6ded77c7a5b02fd14de96017d89e594b2abc774cb66ec0
+        name: "the marks stay until the pointer leaves the node, moving within it keeps them, and nothing fades"
+        body: a5c8a300f193f83190ec15a96734049e2135349db3e5b16efe2e0233e0ff7181
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1a814-5ac4-7523-9962-5ad4d5b14101
     reviewed: 517b6293b52b32385fa763e2a641a63d8d152f5dafe8bc03b86925393273bcf5
     tests:
@@ -30613,8 +30622,8 @@ links:
         name: "a drawing the page builds is drawn once, whatever the scheme, and tells it which node the person chose"
         body: 20bfbd02ac09bd1f29e2de8d5e54bd8a22261c395e97f662b88535ae7ce866df
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
   - node: 01a1a814-5ac4-7523-9962-5ad53fd5ae24
     reviewed: b3cc2e224d6cb25b1c45d458517c8a7ca41a9b4aebf4ecbe1bebe7f30f10cee9
     tests:
@@ -30631,8 +30640,20 @@ links:
         name: "a flowchart is drawn at its own size within a box that scrolls sideways, and at its own size when expanded"
         body: 5d0afa194e0f2102de8f401d70a64d30a59dce99cdd529dea119887eaf789d9e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
-        name: "a spec-change diagram is drawn as nested panels and cards at its own size, fades what a card does not join, and opens the diff at a chosen card"
-        body: da06bc414ace12a01c591fa55f7922f43cb2751dee871790248668716e896276
+        name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
+        body: 45451c4dd64ec8c477ed1465d1b8ba99edb9be03e9ac32c458243f37a890733f
+  - node: 01a1a84c-fa65-709e-91e3-3d059222f1ad
+    reviewed: 6577fbbb8129985a670cd2bb6340e5a1689e1e4f2deef3f8ece809b2696981df
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "panels that stand one beneath another in a column are as wide as one another, and a panel spans the panel that holds it"
+        body: 39bab3a949df53f3749181d4a79f470543b3673bbd2aa22ff049af6aa637cce8
+  - node: 01a1a84c-fa65-709e-91e3-3d069edef07e
+    reviewed: dd466f3e38b114608b4b444e93016fdb0a4308ef65049dbe91311ecb152bd7cd
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "panels that stand one beneath another in a column are as wide as one another, and a panel spans the panel that holds it"
+        body: 39bab3a949df53f3749181d4a79f470543b3673bbd2aa22ff049af6aa637cce8
   - node: 01a1646f-546d-7042-befd-eac5a7afa6b1
     reviewed: 5e8a8d2490cd2c5b2f68bef2301663b81adf663d9c4fa6f7915d59c49262b6fb
     tests:
