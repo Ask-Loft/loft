@@ -154,3 +154,20 @@ test('a button beside the question’s state clears its choice, disabled while n
   assert.equal(panel.querySelector('.question-state')?.textContent, 'Not chosen yet');
   assert.ok(!panel.querySelector('.question-foot, .link.clear-choice'), 'no link beneath the options');
 });
+
+test('only the panel’s title says that blocks wait: a submission in it has no heading of its own', () => {
+  const panel = panelOf(question('shelf', ['Top', 'Bottom']));
+  assert.ok(!panel.querySelector('.submission-head h3, .submission-head h2'));
+  assert.doesNotMatch(panel.querySelector('.submission-head')?.textContent ?? '', /wait/i);
+  assert.match(panel.querySelector('.submission-head .sent')?.textContent ?? '', /^Sent by /);
+});
+
+test('a question in the panel is headed by its prompt, above its header chip and its state, and its prompt names its choices', () => {
+  const q = question('shelf', ['Top', 'Bottom']);
+  const panel = panelOf(q);
+  const card = panel.querySelector('.question-card');
+  assert.equal(card?.firstElementChild?.matches('h3.prompt'), true, 'the prompt first');
+  assert.equal(card?.firstElementChild?.nextElementSibling?.matches('.question-head'), true, 'then the head');
+  const prompt = /** @type {HTMLElement} */ (card?.firstElementChild);
+  assert.equal(card?.querySelector('fieldset')?.getAttribute('aria-labelledby'), prompt.id);
+});

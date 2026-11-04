@@ -381,7 +381,7 @@ test('the open submissions wait in a panel over a live page: not darkened, the p
   await page.goto(address());
   const panel = waitingModal(page);
   await expect(panel).toBeVisible();
-  await expect(panel.locator('.submission legend', { hasText: 'Which shelf?' })).toBeVisible();
+  await expect(panel.locator('.submission .prompt', { hasText: 'Which shelf?' })).toBeVisible();
   await expect(page.locator('#log .submission')).toHaveCount(0);
   expect(await panel.evaluate((dialog) => dialog.matches(':modal'))).toBe(false);
   // A stage's fold above the panel takes the click, and the pane scrolls under the wheel.
@@ -450,7 +450,7 @@ test('the Markdown, the prompt and the options of each block in the panel span t
     // Each text fills the box it lies in, and the box is most of the panel's width: far more than
     // a measure of 75 characters, about 700 pixels here. The plan, the question's prompt and
     // context, and each option's detail.
-    const texts = await panel.locator('.prose > p, .prompt, legend', { hasText: 'The plan reads' }).filter({ hasNot: page.locator('xpath=ancestor::*[contains(@class, "option-card")]') }).all();
+    const texts = await panel.locator('.prose > p, .prompt', { hasText: 'The plan reads' }).filter({ hasNot: page.locator('xpath=ancestor::*[contains(@class, "option-card")]') }).all();
     const spanning = [];
     for (const text of texts) if (!(await text.evaluate((element) => Boolean(element.closest('.option-card'))))) spanning.push(text);
     expect(spanning.length).toBeGreaterThanOrEqual(3);
@@ -459,7 +459,7 @@ test('the Markdown, the prompt and the options of each block in the panel span t
       expect((await box(text)).width).toBeGreaterThan(room * 0.8);
     }
     // The options stand as cards across the panel, each detail filling its card.
-    const grid = panel.locator('.question-form', { has: page.locator('legend', { hasText: 'The plan reads' }) }).locator('.option-grid');
+    const grid = panel.locator('.question-card', { has: page.locator('.prompt', { hasText: 'The plan reads' }) }).locator('.option-grid');
     expect((await box(grid)).width).toBeGreaterThan(room * 0.8);
     for (const card of await grid.locator('.option-card').all()) {
       const detail = card.locator('.choice-detail p').first();
@@ -604,7 +604,7 @@ test('an answer given in Claude Code shows within 2 seconds, and the count of wh
 
 test('the page sends every answer of a submission at once, and shows them given on the page', async ({ page }) => {
   await page.goto(address());
-  const panel = page.locator('.submission', { has: page.locator('legend', { hasText: 'Which colour?' }) });
+  const panel = page.locator('.submission', { has: page.locator('.prompt', { hasText: 'Which colour?' }) });
   const send = panel.getByRole('button', { name: 'Send answers' });
   await expect(send).toBeDisabled();
   await panel.locator('input[value="Blue"]').check();
@@ -623,7 +623,7 @@ test('the page shows the first answer with the channel it came from', async ({ p
   ask('q3', 'Which size?');
   await deaf(page);
   await page.goto(address());
-  const panel = page.locator('.submission', { has: page.locator('legend', { hasText: 'Which size?' }) });
+  const panel = page.locator('.submission', { has: page.locator('.prompt', { hasText: 'Which size?' }) });
   await expect(panel).toBeVisible();
   await panel.locator('input[value="Blue"]').check();
   answerInTerminal([{ block: 'q3', labels: ['Red'] }]);
@@ -1459,7 +1459,7 @@ test('the cards of a question’s options stand side by side, at most three to a
     // In a narrow window the open sidebar lies over the page; the person folds it to answer.
     const fold = page.getByRole('button', { name: 'Fold the sidebar' });
     if (!across && (await fold.isVisible())) await fold.click();
-    const form = panel.locator('.question-card', { has: page.locator('legend', { hasText: 'Which card?' }) });
+    const form = panel.locator('.question-card', { has: page.locator('.prompt', { hasText: 'Which card?' }) });
     const cards = form.locator('.option-grid > .option-card');
     await expect(cards).toHaveCount(4);
     const [first, second, third, fourth] = [await box(cards.nth(0)), await box(cards.nth(1)), await box(cards.nth(2)), await box(cards.nth(3))];

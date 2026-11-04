@@ -75,7 +75,6 @@ export function submissionPanel(submission, waiting, where) {
     h(
       'header',
       { class: 'submission-head' },
-      h('h3', {}, waiting.length === 1 ? 'Waits on you' : `${waiting.length} wait on you`),
       h('p', { class: 'sent' }, 'Sent by ', h('span', { class: 'who' }, who(submission.agent ?? submission.sent?.by)), ' at ', h('time', { datetime: submission.sent?.at }, when(submission.sent?.at))),
     ),
     waiting.map((block) => block.kind === 'question'
@@ -204,10 +203,11 @@ function questionForm(block, key, update) {
     keep(key, say(draftOf(key), block, event.target.value));
     sync();
   });
+  // The prompt heads the question, above its head, and names its choices for a reader.
+  const prompt = h('h3', { class: 'prompt', id: `prompt-${block.id}` }, body.prompt);
   const fieldset = h(
     'fieldset',
-    { class: ['question-form', isAnswered(draft, block) ? 'is-answered' : null], dataset: { key: block.key } },
-    h('legend', { class: 'prompt' }, body.prompt),
+    { class: ['question-form', isAnswered(draft, block) ? 'is-answered' : null], dataset: { key: block.key }, 'aria-labelledby': `prompt-${block.id}` },
     body.contextHtml ? html(body.contextHtml, 'prose context') : null,
     body.multiple ? h('p', { class: 'hint' }, 'Choose one or more.') : null,
     optionGrid(cards),
@@ -215,7 +215,7 @@ function questionForm(block, key, update) {
   );
   const words = /** @type {HTMLTextAreaElement | null} */ (fieldset.querySelector('textarea'));
   if (words) words.value = answer.words ?? '';
-  return h('div', { class: 'question-card' }, head, fieldset);
+  return h('div', { class: 'question-card' }, prompt, head, fieldset);
 }
 
 /** The person's own words, a card of its own beneath a question's options, lettered after them: its own
