@@ -28103,7 +28103,7 @@ links:
         body: 0a7c0e532ebd6575deab9a064e2634631f5a0e0fde3c3e79d7d71335464a77c6
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: 4a0904a0510927aadfa70d79385c31d2e55a610f761afcd275fa615f04b7b939
+        body: 9b8dadefdea615440746267c5839b987c470ffeab495bee1ea4047af414dddb6
   - node: 01a1a7a4-51ce-73b8-bd34-87b0c01d27ce
     reviewed: 592f75fbc5eb50001391888b000ec375d0c46716ef7030f797880d816eaa6c46
     tests:
@@ -29546,7 +29546,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: 4a0904a0510927aadfa70d79385c31d2e55a610f761afcd275fa615f04b7b939
+        body: 9b8dadefdea615440746267c5839b987c470ffeab495bee1ea4047af414dddb6
   - node: 01a1646f-546d-7042-befd-eb6a95402082
     reviewed: c5f20683f5e0c8667aeed4a6be61164f9ff1a0a0bd9f0dacbaa3d907a3e477b8
     tests:
@@ -29564,7 +29564,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: 4a0904a0510927aadfa70d79385c31d2e55a610f761afcd275fa615f04b7b939
+        body: 9b8dadefdea615440746267c5839b987c470ffeab495bee1ea4047af414dddb6
   - node: 01a168c0-7faa-72dc-8ad3-520ece07dbc3
     reviewed: 30ca4895b79672ad3c175e1335cfef5a0763f66dfdac930c1f4e85551feaeae9
     tests:
@@ -30410,31 +30410,61 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
-        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+        body: fbe468cc3ecee2d2db15b004c308691534beaf1565a977062971fd96dc8dd243
   - node: 01a1646f-546d-7042-befd-eab9f27ee1c1
-    reviewed: a0c88885dce71550dbfdbbd5a638fa208ecd51822d5a1943d2cec6b0bc3e453c
+    reviewed: c47a34a90c71cfe944169effbd558a2a0b6798c7a964e48216fe7322eaa5be1a
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
-        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+        body: fbe468cc3ecee2d2db15b004c308691534beaf1565a977062971fd96dc8dd243
+  - node: 01a1a86c-65d5-76fe-b38b-1c58b8ab8657
+    reviewed: 5d5ea359b796ebf17cdd7df477243e44fc37910e8bc1d840f3d7daa16c7147c2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
+        body: 526bf476a9d41a8221e3cf93f3ed16c28a0e3e54dfd4a7ebb8a0baa79b990c27
+  - node: 01a1a86c-65d5-76fe-b38b-1c59d4593b08
+    reviewed: ef7a2397b6ad09cdebb532f0d6adfe51b4a2bd675d8b53833e037f3b8621d9f9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
+        body: 526bf476a9d41a8221e3cf93f3ed16c28a0e3e54dfd4a7ebb8a0baa79b990c27
+  - node: 01a1a86c-65d5-76fe-b38b-1c5a6628183a
+    reviewed: ba585ac0c4d919cf635eebe9203bbbd027d1a71a2272550425e35da7576308e5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
+        body: 526bf476a9d41a8221e3cf93f3ed16c28a0e3e54dfd4a7ebb8a0baa79b990c27
   - node: 01a1646f-546d-7042-befd-eababcab5af2
     reviewed: 0d9fd5291d8784390b1f197255d6cfa5211f2b676f9a8af9e8643133badc5589
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
-        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+        body: fbe468cc3ecee2d2db15b004c308691534beaf1565a977062971fd96dc8dd243
   - node: 01a1646f-546d-7042-befd-eabbb57e9401
     reviewed: d2d3424d18c152652749b1def082d1935c0c58a9b64239f33e7bc9d0e23cf6fe
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
-        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+        body: fbe468cc3ecee2d2db15b004c308691534beaf1565a977062971fd96dc8dd243
+  - node: 01a1a86c-65d5-76fe-b38b-1c5b7e887d44
+    reviewed: 273b9ab1d65dc8659fb6a8031aa13de444d2b2f0628f5b019e42608b2a711a15
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
+        body: 526bf476a9d41a8221e3cf93f3ed16c28a0e3e54dfd4a7ebb8a0baa79b990c27
   - node: 01a1646f-546d-7042-befd-eabc540b4e07
     reviewed: f3fe2f71fb1d3a8c92815f3b4a1f50f685fca6206cd2eaec3700f1a3ff9559d7
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
-        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+        body: fbe468cc3ecee2d2db15b004c308691534beaf1565a977062971fd96dc8dd243
+  - node: 01a1a86c-65d5-76fe-b38b-1c5c68102d44
+    reviewed: 928e39ff87e14e670eed4be1a2195fae2b95ebe20adc351afb9159d4c6a3a063
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision’s selected option comes first in its table, marked, each row opens to its rationales, and a cell shows its rationale on hover or focus"
+        body: 526bf476a9d41a8221e3cf93f3ed16c28a0e3e54dfd4a7ebb8a0baa79b990c27
   - node: 01a1646f-546d-7042-befd-eabdd040918b
     reviewed: 2060621bb194fca44e1ea6e0d7846104f981b5ceba911fb4d5ebd7baa48e16b2
     tests:
@@ -30446,7 +30476,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision view shows the decision, its options with the selected one marked, and a table of its assessments"
-        body: a6a58a312e80e9d8cf2319be595d3eaf66c5e1a85c5a791595f3c939009dc898
+        body: fbe468cc3ecee2d2db15b004c308691534beaf1565a977062971fd96dc8dd243
   - node: 01a1646f-546d-7042-befd-eac1d09f5f92
     reviewed: 4608f5f9b322cc70d356f4a5668ab0702ac000ea0addf3edd71be758fcfa82a4
     tests:
@@ -30776,13 +30806,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
-        body: 4516d2dc8320e0e4b912187afbb991bcb73173006da10ae0acf905578a67d8e1
+        body: 6724c54d599e23b7be92ba1de760f4a33afd0a84a501cbb4dc23cd7d4dd1d58d
   - node: 01a1646f-546d-7042-befd-eace3bd53656
     reviewed: f4fec1e8af5d2127c115851e76af988226afbbeafffd6bf3cdedef74b8e45b4b
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
       - file: "crates/loft-cli/tests/yard_view_reports.rs"
         name: "a_findings_view_names_each_node_a_finding_names_by_its_label_and_name"
         body: 1a097780cc5de83fbf7ef5dc474d7f2e1b747a88f4b1de6153fffa9dd074be27
@@ -30791,7 +30821,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
   - node: 01a1646f-546d-7042-befd-ead0ef8802b7
     reviewed: 36232e19decf1e8b38659d5e02554b8e42222b6c9aa1811f77d27078d3ccaa6d
     tests:
@@ -30803,22 +30833,58 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
-        body: 4516d2dc8320e0e4b912187afbb991bcb73173006da10ae0acf905578a67d8e1
+        body: 6724c54d599e23b7be92ba1de760f4a33afd0a84a501cbb4dc23cd7d4dd1d58d
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
   - node: 01a1646f-546d-7042-befd-ead279dd7751
     reviewed: 14c726cdae8d1198ab4238abf00070bda0ee4c1c6cbcb3ce7ad72acf31a84ec5
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a finding names its node by label and name, is marked introduced or there before, and shows the reason it was left"
-        body: 4acda1bd32571cb6eccdec4f148da7567238c75068a6ffab70d641a501df04eb
+        body: 80d3a1f8cf4b6a2a50c6ddce3f377f5bfaaeb57f6b9ddaef45377d6e30039294
   - node: 01a1646f-546d-7042-befd-ead3b74268b1
     reviewed: 3928d58f5b021c0de939751fbf7b230b94954eca3d2534bd211cc4c1c17f3a83
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a findings view counts the errors and the findings at each severity, each with its rule, severity, message and place"
-        body: 4516d2dc8320e0e4b912187afbb991bcb73173006da10ae0acf905578a67d8e1
+        body: 6724c54d599e23b7be92ba1de760f4a33afd0a84a501cbb4dc23cd7d4dd1d58d
+  - node: 01a1a86c-65d5-76fe-b38b-1c5d653dc449
+    reviewed: baeeca683f58f99f5bec9d415c1948e7a8b570cac4fbfbf5acacea2579d7b6d2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+  - node: 01a1a86c-65d5-76fe-b38b-1c5e49a0f5b7
+    reviewed: 4479769c0e0e832e624706815ff25cbdd4f57bd8973d2b9a92c9aff42625d3f8
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+  - node: 01a1a86c-65d5-76fe-b38b-1c5f279f15ef
+    reviewed: a420d7af72e1de75e9c13a21d0c6f53ea6d526830524a3f87d48bbf6f0c3e862
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+  - node: 01a1a86c-65d5-76fe-b38b-1c6058d721e9
+    reviewed: 381392875dd0508b350d783ee0c402464efcfce964abf5d91c33b3d32a11ed39
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+  - node: 01a1a86c-65d5-76fe-b38b-1c618493bb5a
+    reviewed: 0b6d9c1605acce04e0cc65ff027a31710d53dac514f4a74b804f500cdfce38c7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
+  - node: 01a1a86c-65d5-76fe-b38b-1c622a453ff5
+    reviewed: 56f0b94fa7f95c8ca8e00dcebb7f5d51e5f1773f30a2298074ee460fbba2728c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "findings are grouped by rule from errors down to hints, each rule giving its message once and counting its new and older findings"
+        body: 097903f02febec64a018078541781a8a77aaee4abff8c18c2e49bd364337b961
   - node: 01a1646f-546d-7042-befd-ead6c6d6b941
     reviewed: 34e9d3d3aac34e4f380f6b66f30274ab91f55e302a1e1e7b6dc6d0e4e9a45621
     tests:
