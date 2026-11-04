@@ -539,3 +539,11 @@ test('Components that nest are drawn, a chain of them running to the right, and 
   const pinned = { id: 'root', layoutOptions: {}, children: [{ id: 'a', layoutOptions: { 'elk.layered.layering.layerConstraint': 'LAST' } }], edges: [] };
   assert.equal(unconstrained(pinned).children[0].layoutOptions['elk.layered.layering.layerConstraint'], undefined);
 });
+
+test('the boxes of one column start at one left edge, however wide each is', async () => {
+  const short = { ...requirement, key: 'r2', label: 'RQ-8', name: 'Short.', change: 'added' };
+  for (const compact of [true, false]) {
+    const layout = placed(await new ELK().layout(specGraph({ nodes: [product, group, feature, { ...requirement, change: 'added' }, criterion, short], decisions: [], edges: [] }, null, measure, compact)));
+    assert.equal(at(layout, 'r').x, at(layout, 'r2').x);
+  }
+});

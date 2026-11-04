@@ -292,6 +292,8 @@ export function specGraph(graph, open, measure, compact = false) {
     if (!holder(node) && !panel(node) && (node.kind === 'decision' || node.kind === 'component')) {
       made.layoutOptions = { ...made.layoutOptions, 'elk.layered.layering.layerConstraint': 'LAST' };
     }
+    // Boxes of one column start at one left edge, however wide each is.
+    made.layoutOptions = { ...made.layoutOptions, 'elk.alignment': 'LEFT' };
     elkNodes.set(node.key, made);
   }
   for (const { node } of byKey.values()) {
