@@ -28429,11 +28429,11 @@ links:
         name: "beneath a stage of the list, each block’s row gives its kind as a small light icon, named to a reader and on hover, and no word"
         body: da6fcde397bacb7c6f26199f753aad2a805277fdfe2c8743a0148eba69184807
   - node: 01a1a86a-2483-76c7-894e-d32912c94eba
-    reviewed: 155f3997554f82658752b1f47b4a879c19906b050f64ccbaea7f37ad0a5a5fe0
+    reviewed: df4d60bc9717c3518fb45a8465fc6b79777061bb8800037f173eac0eab98964c
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
-        name: "beneath a stage of the list, an active task’s row has a green dot in the margin before it, named to a reader, and no other row does"
-        body: 2e46b4b803f455622d13e38f6a22a5a9d34bd0503b54a2254f25029b187b1afe
+        name: "beneath a stage of the list, an active task’s row has a dot in the margin before it in the colour of the status active, named to a reader, and no other row does"
+        body: f61dec0a0c07f0a5626647af0e4e826962baf4b9181e7f1d656f356fa0f7e8b8
   - node: 01a1a7a4-51ce-73b8-bd34-87bda9d6693e
     reviewed: 15952e9c7e5554af4fa462411fca4ecc5158001b43c1202787fad1a2fce2c8dc
     tests:
