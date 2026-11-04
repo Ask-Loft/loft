@@ -802,20 +802,28 @@ test('the page keeps its width, the tabs of the views stay in place whichever vi
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
   await chooseStage(page, 'build');
   await expect(page.locator('#side [data-view]')).toHaveCount(0);
-  const before = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
+  // The head is drawn again at each change, so each box is read once it can be measured.
+  const before = { main: await steadyBox(main), entry: await steadyBox(timeline) };
   for (const view of ['Gantt chart', 'Tokens']) {
     await page.locator('#head .view-tab', { hasText: view }).click();
     await expect(page.locator(view === 'Tokens' ? '.tokens' : '.gantt')).toBeVisible();
-    const after = { main: await main.boundingBox(), entry: await timeline.boundingBox() };
-    expect(after.main?.width).toBe(before.main?.width);
-    expect(after.entry?.x).toBe(before.entry?.x);
-    expect(after.entry?.y).toBe(before.entry?.y);
+    const after = { main: await steadyBox(main), entry: await steadyBox(timeline) };
+    expect(after.main.width).toBe(before.main.width);
+    expect(after.entry.x).toBe(before.entry.x);
+    expect(after.entry.y).toBe(before.entry.y);
   }
   await timeline.click();
   await expect(page.locator('.stage-pane #block-build')).toBeVisible();
   expect(new URLSearchParams(new URL(page.url()).hash.slice(1)).get('stage')).toBe('build');
   await page.setViewportSize({ width: 1280, height: 900 });
 });
+
+/** The box of what `locator` finds, read again while it is being drawn anew and has none. */
+async function steadyBox(locator) {
+  let found = null;
+  await expect.poll(async () => (found = await locator.boundingBox())).not.toBeNull();
+  return /** @type {{ x: number, y: number, width: number, height: number }} */ (found);
+}
 
 /** The box of what `locator` finds, which must be drawn. */
 async function box(locator) {
