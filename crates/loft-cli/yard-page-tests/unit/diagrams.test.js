@@ -16,11 +16,15 @@ import { loftView } from '../../yard-page/views/loft/index.js';
 const window = /** @type {any} */ (globalThis.window);
 globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0);
 
+/** How many times the stub parsed a flowchart. */
+let parses = 0;
+
 /** @type {any} */ (globalThis).mermaid = {
   initialize() {},
   mermaidAPI: {
     /** A flowchart of `A --> B` links, as Mermaid's parser gives it. @param {string} text */
     async getDiagramFromText(text) {
+      parses += 1;
       if (text.includes('not a diagram') || text.includes('-->>')) throw new Error('Parse error');
       const links = [...text.matchAll(/(\w+)\s*-->\s*(\w+)/g)];
       const ids = [...new Set(links.flatMap(([, from, to]) => [from, to]))];
@@ -334,4 +338,23 @@ test('the button that expands a diagram lies in a margin of its own, over none o
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
   assert.match(css, /\.diagram\.is-drawn \{ padding-right: 48px; \}/);
   assert.match(css, /\.diagram-expand \{ position: absolute; top: 6px; right: 6px; width: 32px;/, 'narrower than the margin, at its right');
+});
+
+test('a flowchart drawn again, as a change of scheme draws it, is not laid out again', async () => {
+  const note = noteWith('Once', 'flowchart LR\n  X --> Y');
+  drawAll(note);
+  await settled(400);
+  const first = parses;
+  const before = globalThis.matchMedia;
+  // The browser now asks for the other scheme.
+  globalThis.matchMedia = /** @type {any} */ ((query) => ({ matches: !before?.(query)?.matches, addEventListener() {} }));
+  const again = noteWith('Once again', 'flowchart LR\n  X --> Y');
+  try {
+    drawAll(again);
+    await settled(100);
+  } finally {
+    globalThis.matchMedia = before;
+  }
+  assert.equal(parses, first, 'the drawing kept is reused, whatever the scheme');
+  assert.ok(again.querySelector('.diagram svg.flow'));
 });

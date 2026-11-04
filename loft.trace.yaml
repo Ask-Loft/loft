@@ -25726,11 +25726,14 @@ links:
         name: "a question that takes more than one option lets the person choose one or more"
         body: 1e7f2cfb69e58f8c6966f952cb363313a4b105694b480b0a4ecf717e4503c442
   - node: 01a1646f-546c-7521-9643-bbcb591fde24
-    reviewed: deddf3815054d81d33615a6e1869aef7d9620291fcd0bdf7c950d4d077bd2802
+    reviewed: a42af0b175afd9c91c22ee1203a2305ae11eb3291ebc922e6f592774d32275f6
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "every question offers its own-words option with a text field after its named options"
         body: f4090fcb8e125bd63eef12b6c7de7879b8e17e8e58165aced3fed67e56277c65
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "the person’s own words are the last card, lettered after the options and holding their text field"
+        body: 7c4c7cb7fc7059b97caef530050221d2699709d9a0aff792b045f998508a210a
   - node: 01a17fef-700e-72d2-a706-77312594a4f4
     reviewed: 8e8d2348d7f6247fea9df5f30ece6abd091a617bea9097f89375f11fa58a15b9
     tests:
@@ -25815,6 +25818,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
         name: "each option shows its detail and each recommended option is marked"
         body: 9182016a161ee10de40f99d5e7811693de93b74ed91f1587c4cc0e50ff184ea9
+  - node: 01a1a7e1-2b66-70b4-981e-7a9051f31e38
+    reviewed: e5d32c039569058db0fd2442f6e3944cb6ef327ea8b145a353bdb70fea7e95bf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "clearing a question’s choice deselects its options and its own words, and keeps the text the person typed"
+        body: e337281d0844b61d82562cf4f44ac3382b94ca35e409934d06b4f05d20223753
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one"
+        body: f9f6b185b377b678880a27069105e98e610a98fbc98472cc1e8fbde909f1a9d7
   - node: 01a1646f-546c-7521-9643-bbce40187173
     reviewed: 0bc801b7ff85ad473c2af44ef14802b74923ebef0a4e387a6cc199a78954ca8f
     tests:
@@ -28665,6 +28677,48 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page shows a block approved once the person approves it, and the count of what waits changes"
         body: 874db02fcbffec2b6a552d538dd378f53ba85a808792c949795c60f0e467af25
+  - node: 01a1a7e1-2b66-70b4-981e-7a921242b3f3
+    reviewed: f416a4019e13ba3af0315678e2420c32d0106cf5a2ec8f204cf7e7270bc4f160
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "the head of a question gives its header in small monospace capitals and, at its right, its state"
+        body: 3729d5beddc7f5e9df82b56584a4127ddaa06f9c0d6d05dc19b9435f3da8fac3
+  - node: 01a1a7e1-2b66-70b4-981e-7a9328745df3
+    reviewed: 022544c2a5b1f6296d787d474d0c0fffedd9cd96262c434b830730cdb6287418
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "a question’s prompt is its title, and its context lies beneath it"
+        body: e01b068fa7c2843b29e5f22cc11d80e6ad55027892a1c641b09047b340b9a8d8
+  - node: 01a1a7e1-2b66-70b4-981e-7a94b97d8ed1
+    reviewed: 662ff25e2ddaf47942cd8090bda13d01ae92bfb4bb2116c59a49f4665c8a463a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "each option is a card lettered A, B, C and on in a circle before its label, its detail beneath, a recommended one marked"
+        body: 129338db47d7b8a277bc09553355e0af5ffddf46e8780b32ed894e694283850f
+  - node: 01a1a7e1-2b66-70b4-981e-7a95a684080d
+    reviewed: 7c1a98935698f72536171fe5d5e8b170a0cd5758a298c022e52a2be442f8289c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "the cards of the options stand side by side as far as the width allows, and one beneath another when narrow"
+        body: 6577a6b590d964a80cb7e0c11402b92f640f623457a75260ee933f5c5d5f0476
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one"
+        body: f9f6b185b377b678880a27069105e98e610a98fbc98472cc1e8fbde909f1a9d7
+  - node: 01a1a7e1-2b66-70b4-981e-7a96621ff53a
+    reviewed: b1c4d6df8eb904568801d64849f3dfb84f4178c04b131e9ecc6c61b325466d00
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "the card of a chosen option is outlined in action blue"
+        body: 565cbef064a8bff89b4d59db631b2b35e0fe112b1f7a71ba9d94c036608d2b2c
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "the cards of a question’s options stand side by side in a wide window and one beneath another in a narrow one"
+        body: f9f6b185b377b678880a27069105e98e610a98fbc98472cc1e8fbde909f1a9d7
+  - node: 01a1a7e1-2b66-70b4-981e-7a9758c93481
+    reviewed: 425b4ffe65f340e2835802fdc967580b8e7d2229c12de7af10eb5192344f0bf7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/question-card.test.js"
+        name: "in the timeline, a question’s cards offer no control that chooses an option"
+        body: 608eaabf76145ce4fde510caa46ccb8ce4aa967ecfd0a4fd35bb788b8760eda8
   - node: 01a1646f-546d-7042-befd-eb3c782601a4
     reviewed: 11ae27cd8963f892dd55ee8d7a8c51c1475bda8cef885a2be3cddae0c74a8c51
     tests:
@@ -28820,7 +28874,118 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
         name: "a diagram in a waiting block is drawn in the panel, as it is in the timeline"
-        body: 79a460223597a290dc744f06afa5a57767aefe7e579ee3d977474204d0c65d01
+        body: 6dc3c715985de78357266653662e5c278cc949a7996d6b652e6bec6870e26fb0
+  - node: 01a1a7e1-2b67-777d-ab6f-d4bd4faa80d0
+    reviewed: bd459ebfdd56b7231d70651de524fc1e25027b4297857226e6187c40932c5a6a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a diagram is drawn in the page’s design: nodes on the sidebar’s ground with hairline borders, the page’s face at 13 pixels, muted edges"
+        body: 4878afd56f0851bc64cd08b3cada8851f1008e51c3e0c6c025cce482a0e1c082
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a flowchart of a block’s Markdown is drawn by the page itself, and another kind by Mermaid"
+        body: 5c0c58a516cf22a640f21f800f7fc29d247a226adae7fc5297c8131e1d3ee401
+  - node: 01a1a7e1-2b67-777d-ab6f-d4be0079e32d
+    reviewed: 313063f2e5e85a38c1363ef21f2f8652dfca55879fc221b235c2702d2d4820f7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a group of a diagram is framed by a hairline on the page’s ground, and an edge’s label lies on the page’s ground"
+        body: ce27b70263d0c106660f2d85e3f80a5b69c1379d059bfe8b161929cb15e489da
+  - node: 01a1a7ee-1770-7572-ab19-cf2fb03c7189
+    reviewed: aafeaa41582cd9354c5c7c4fbd2743a0b666afc98804eabc7864770d4dc196e5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "each node is a flat card with a hairline border on the sidebar’s ground, its label in the page’s face at 13 pixels in ink"
+        body: 473e11155d6d967e4e63e5438cf1a1852ebae1d2abaa267aea7398bbc82939de
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours"
+        body: 6d0ef3124129d077ac8118e5e57aba586e15fb444f2d5d9015709370e8f70714
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
+        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+  - node: 01a1a7ee-1770-7572-ab19-cf3077c0957b
+    reviewed: dd4e170cb786161da78c2a324f578bab74ec2bb1321f23cfb245a7fffa51f5fb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "a node keeps its shape: a rectangle, a rounded rectangle, a stadium, a diamond or a circle"
+        body: a2fa5360abfe9320de3e11adb401ad2cabc7d405200d9a5b18fbda5654b70739
+  - node: 01a1a7ee-1770-7572-ab19-cf314156af4b
+    reviewed: b2ba74ed4f4aa823ac32219acedfbcc7e31fa6fca1e385817bb5d65d41b99e3b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "each node is wide and tall enough for its label as measured, so that no label is cut"
+        body: 6ea9c891529bff18ad0e1fc4f42b6939bafa10e5edc8f8e36e240684a9d1c9d4
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
+        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+  - node: 01a1a7ee-1770-7572-ab19-cf32ceffe763
+    reviewed: 16d24a16359f1a7e944811fef3fc66fb5c3c9633a5b00d32b4c43f0438efabaf
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "each edge runs in horizontal and vertical segments that turn with rounded elbows"
+        body: 4d94d2e5026e581ce415e5bdb11e993bb2ea3f58ed90049e1c937b3c78d914ad
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "an edge ends in an arrowhead where its source gives one, a dotted edge is dashed and a thick one thicker"
+        body: 1fe3789923095ab38d8b245d183aedf99d423e87ec304917212f5ffdb1b6d466
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
+        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+  - node: 01a1a7ee-1770-7572-ab19-cf332567ff3f
+    reviewed: 9e42de33cab307aac197af7cafff07df6da67fa95dc937458c4c110c770de6c2
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "an edge ends in an arrowhead where its source gives one, a dotted edge is dashed and a thick one thicker"
+        body: 1fe3789923095ab38d8b245d183aedf99d423e87ec304917212f5ffdb1b6d466
+  - node: 01a1a7ee-1770-7572-ab19-cf34ed11577a
+    reviewed: 8b765ea87398812bb6bf928b8a50b82dc9dd61fd1f83dee33c4e98e682271c06
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "an edge’s label lies in a pill beside its edge"
+        body: 20eff9c1bc416abe48395ed3bc29b0f677d2334e76b5a3d1456f4d38ca837f9c
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
+        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+  - node: 01a1a7ee-1770-7572-ab19-cf35dffbf659
+    reviewed: 60add326ce16afa669eaa2cc4f7ae2f55b638f93a41175fbe2e709784cacd2ac
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "a subgraph is a panel titled in small text, holding its nodes"
+        body: d17397d36a2befbdd8a4e523f8f573ef806d54e5925427eef2dd9194f0dd6fb1
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
+        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
+  - node: 01a1a7ee-1770-7572-ab19-cf365df5311d
+    reviewed: 0f17fa304a25cf3dfdc2700146161ba5d542cae4cdefc318917b47612873c13b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "the flowchart keeps its direction"
+        body: f654c3b2f0ccf074cc78536aa44edbb3359643e0eb5d503adbb25083b7673a04
+  - node: 01a1a7ee-1770-7572-ab19-cf371ce2cf24
+    reviewed: 54514e58f8dafb5d43b991e7ca4e65807a75837d39382f59797787b2150080b0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/flowchart.test.js"
+        name: "a node’s own style or classDef keeps its fill, its stroke and its text colour"
+        body: 27a33535f6060edd635278888cead5fda759e0f659dcf4bf0e86b7b5e9e14f09
+  - node: 01a1a7ee-1770-7572-ab19-cf38e596f988
+    reviewed: 102f1946bb16fde1860b04bbc9bf42d8e67f7c36ba799b72541b268a8a660c82
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a flowchart drawn again, as a change of scheme draws it, is not laid out again"
+        body: e039a0fe9cb0f5ebd863d4c15bb07a657703936363bfe881d877c29823076002
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload"
+        body: e2390767f22baaf5f36dec280e1caead9a8715a0abc2a4de240f2620a980c758
+  - node: 01a1a7ee-1770-7572-ab19-cf39bdd8c665
+    reviewed: a059a3410ca0eb9d373b62d552152ff9ccdd9c0e504c18b8dee042270792e839
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "the diagrams the page builds itself are drawn by Mermaid"
+        body: a78368cfb15e3772e7f5038a69ce6735998a213cc52e9042f00392d1091fb0b5
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "a flowchart of a block’s Markdown is drawn by the page itself, and another kind by Mermaid"
+        body: 5c0c58a516cf22a640f21f800f7fc29d247a226adae7fc5297c8131e1d3ee401
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a flowchart is drawn by the page in its own design, with orthogonal edges and no label cut, and another kind by Mermaid"
+        body: 10c36a95c0387bcfdb76ba0dc07a46465eb95009e22bf36c61df135a8ef5c13e
   - node: 01a1646f-546d-7042-befd-eb4b0653b23d
     reviewed: b3065eac059925fa66c3d4992230182e1708cad803af938a863a98a7c5e0e7e5
     tests:
@@ -28832,13 +28997,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours"
-        body: 0dbf747500e42ff2dc5812549cc2248ddc6e31f04c68a001c7d131412149ad21
+        body: a43f0f12992f61962c6572ece8b292bde7cd8ac1eab4854c85fe3ddc936e2079
   - node: 01a16863-60a7-772b-980e-a07b441c8e43
     reviewed: b8421afc6d84aaa3de56f4b04ad54880fbc19dee0021c4874147871d316d8349
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours"
-        body: 80b61dc638311d720307ed1d9b5dcde4570aed221dc22d8adb71ab74e02f4658
+        body: 6d0ef3124129d077ac8118e5e57aba586e15fb444f2d5d9015709370e8f70714
   - node: 01a16863-60a7-772b-980e-a07c5f19ca60
     reviewed: fdbf2e48e5bf4ecf968f8c7a32b7858e949bbe03e27c1acec6e70d8cbdd9fa77
     tests:
@@ -29198,7 +29363,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Markdown, the prompt and the options of each block in the panel span the panel’s width, held to no narrower measure"
-        body: a628b31e54a18a0fa604e6480233241d1cea8003e918a3837e1e9a3ff9860c05
+        body: e6b8167a51600d2b811e9cd38090ec556f23a65445be57f9e9d0c5c7c4a859e1
   - node: 01a1693f-7b72-7290-8335-f17f8d2e0087
     reviewed: f05a28fc80f36f9df51e8f1b0b4f9a9d0494aa54b0718ca933f36e3c09c03e78
     tests:
@@ -29718,6 +29883,42 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
         name: "each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover"
         body: 7f2a8f2e6052afb72f692d148b83ad52f9a92b8286f054ac36eecb0928d41198
+  - node: 01a1a7e1-2b67-777d-ab6f-d4c0f9768d94
+    reviewed: 79ca99db616f8ae22122415971dd862fe4255655d46702d846af7b1ff85d42ec
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a stopped session’s unended turn, stage and task end at its last event, while a heard session’s run to now"
+        body: cdfa849b7f99cfe45cb307a87794b083de99981d54b6a81308d3fe679cc3338f
+  - node: 01a1a7e1-2b67-777d-ab6f-d4c1e29c6104
+    reviewed: 8b853b79c145067e4859280eff62f0d962e205d2c43875891fa4bd545761b5aa
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a closed Yard Log’s chart ends at its last record and does not grow as time passes"
+        body: b157c8a430acc376e3834fc9f0c3dd015d9b3cc5da8a515c1a3069814b4d136a
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a quiet Yard Log stops growing, unless a submission is open"
+        body: 76b347f719ab8a5e811f51f8dc51490551067500e02e3422c3bc82d32f20732a
+  - node: 01a1a7e1-2b67-777d-ab6f-d4c2646cddb9
+    reviewed: 5bd61bc7470137e7de1cceb7593daae723b954d868502d80f952d197ef36a45f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a stopped session’s unended turn, stage and task end at its last event, while a heard session’s run to now"
+        body: cdfa849b7f99cfe45cb307a87794b083de99981d54b6a81308d3fe679cc3338f
+      - file: "crates/loft-cli/yard-page-tests/unit/gantt.test.js"
+        name: "a closed Yard Log’s chart ends at its last record and does not grow as time passes"
+        body: b157c8a430acc376e3834fc9f0c3dd015d9b3cc5da8a515c1a3069814b4d136a
+  - node: 01a1a7e1-2b67-777d-ab6f-d4c4b2f268dd
+    reviewed: d674589dfd6345c42507b01d63151e18a5b3d4109a1e129549febdcd51c6251f
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "each_session_s_activity_says_whether_the_session_has_stopped"
+        body: 5e4d01afcdbb5e6bc7051d89d67cd9d078f3db12c3d76408c940fc6cbcc25839
+  - node: 01a1a7e1-2b67-777d-ab6f-d4c5ee134a0d
+    reviewed: 754c2795d93453980fcb047248ef5e201d065152ce5b244cc9f2028a89605a24
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "each_session_s_activity_says_whether_the_session_has_stopped"
+        body: 5e4d01afcdbb5e6bc7051d89d67cd9d078f3db12c3d76408c940fc6cbcc25839
   - node: 01a1646f-546d-7042-befd-eb83315a9b4a
     reviewed: 52d99de94924b969a84c11482d28b3e8248492b4e58fb1b5e11ac2da46b24688
     tests:
@@ -29816,7 +30017,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it"
-        body: 1381a475aadc2f6f0c73c2448b3d6bdb2f544e9792126e7b66b7ea0ab2134fce
+        body: 1fccd9075d667ce0acea11a7edaa833d8e6c0b1abfa4fead15b2f3b67e6c5874
   - node: 01a1695a-dd72-7090-817b-abf896e58a12
     reviewed: fc4c750f436071b62e15c4b8212987c72757c013ec5f4591a5f2e8bc483c70be
     tests:
@@ -29834,7 +30035,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "each diagram of a block’s Markdown shows a button, reached by the keyboard, that expands it"
-        body: 1381a475aadc2f6f0c73c2448b3d6bdb2f544e9792126e7b66b7ea0ab2134fce
+        body: 1fccd9075d667ce0acea11a7edaa833d8e6c0b1abfa4fead15b2f3b67e6c5874
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
         body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
@@ -29843,7 +30044,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "expanding a diagram opens it in a modal over the page, named by its block, with no button of its own"
-        body: 9da8be3abc00f158430e811f419eaed60d446690a0a40262f05bcf531146fca4
+        body: ca05ac61ac0626a2fd83d69e8724196982ede6c47a10213abd4b008d45a15aa7
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "expanding a diagram opens it in a modal, named by its block, over the viewport within its margin and the page darkened behind it, and fitted whole"
         body: a31f765557d3381959483fe1e45d6711d3bea72eed3da49197c79dc85672b2c9
@@ -29864,7 +30065,7 @@ links:
         body: a31f765557d3381959483fe1e45d6711d3bea72eed3da49197c79dc85672b2c9
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "the expanded diagram shows only once it is fitted to the modal"
-        body: a542f40bfe0bc0ba5c60751b65a55eb3a93dec57d47b92381553cd3058e4dedd
+        body: cedd16db1cb3de4edaa495ae795709307f11b3a7723794316ac611863fdb13db
       - file: "crates/loft-cli/yard-page-tests/unit/zoom.test.js"
         name: "fitting shows the whole diagram in the stage, centred in it"
         body: 9356bf8bb482bbddbfba238ff2d88b5d3185d6aceaf1a4961e99134aee5824f7
@@ -29873,7 +30074,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "expanding a diagram opens it in a modal over the page, named by its block, with no button of its own"
-        body: 9da8be3abc00f158430e811f419eaed60d446690a0a40262f05bcf531146fca4
+        body: ca05ac61ac0626a2fd83d69e8724196982ede6c47a10213abd4b008d45a15aa7
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "expanding a diagram opens it in a modal, named by its block, over the viewport within its margin and the page darkened behind it, and fitted whole"
         body: a31f765557d3381959483fe1e45d6711d3bea72eed3da49197c79dc85672b2c9
@@ -29891,7 +30092,7 @@ links:
         body: eddc43791a2b5b6e070815dc08e5cb3c21f9816d059ca76a057d6768efcc78c0
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "closing the expanded diagram gives the focus back to its button, even after the page drew the block again"
-        body: e0d65fbfe1e3d15d07fc3021ed6a3378bf3dc435d93766d4f964d0553bd25f37
+        body: 97b860f9b6b70e5f31f9204a4dcfe3a43e5df15f1bf23813f21c013d5ab3b116
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the keys and the buttons zoom, fit and pan the expanded diagram, and closing it gives the focus back to its button"
         body: 5ae32f994b45c61a967220ce54b7d4889efc6097882c24de6c5b77ce5c790c29
