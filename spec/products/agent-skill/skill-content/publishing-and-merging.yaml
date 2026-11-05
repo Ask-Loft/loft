@@ -1,7 +1,7 @@
 key: 01a13654-6e12-74a1-ad7f-e7f6231d2539
 slug: publishing-and-merging
 name: "Publishing and merging"
-body: "Publishing on the publish branch, checking the lock in CI, and merging `spec/` in git."
+body: "Publishing on the publish branch, checking the lock in CI, merging `spec/` in git, and connecting a document to a Loft server that it publishes through and pulls from."
 tags:
   - git
 realizes:
@@ -63,3 +63,19 @@ requirements:
         name: "The workflow tells the agent to rebase or merge with the merge driver installed and to settle each conflict once."
       - key: 01a154c3-02c1-74da-a483-d48efa6494da
         name: "The workflow tells the agent never to retry a failed git step that discards work without asking the user."
+  - key: 01a1a922-762b-74c0-854c-edd1ce4ec8ae
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach how a document is connected to a Loft server, published through it and brought up to its head."
+    criteria:
+      - key: 01a1a922-762b-74c0-854c-edd28012b7e8
+        name: "The workflow tells the agent to run `loft remote set <address>` only when the user asks, with the address the user gives, and never to invent one."
+      - key: 01a1a922-762b-74c0-854c-edd340d23301
+        name: "The workflow tells the agent to commit `spec/loftspec.yaml` after `loft remote set` or `loft remote remove`."
+      - key: 01a1a922-762b-74c0-854c-edd4d5a126cb
+        name: "The workflow tells the agent that a connected document's `loft publish` publishes through its remote, over a committed `spec/` on any branch, and takes its labels from the remote."
+      - key: 01a1a922-762b-74c0-854c-edd57d45f439
+        name: "The workflow tells the agent to run `loft pull` when a connected publish is refused because the remote has moved on, and to settle each conflict record the pull writes before publishing again."
+      - key: 01a1a922-762b-74c0-854c-edd6104ec8da
+        name: "The workflow tells the agent to ask the user to run `loft remote login` when a sign-in to the remote has lapsed, since the sign-in opens the user's browser."
