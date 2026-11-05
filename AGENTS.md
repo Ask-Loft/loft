@@ -340,8 +340,10 @@ A release happens only with the maintainer's approval, and in this order:
    with C code, shows here first.
 1. On a branch from `develop`, set the new version in every crate's `Cargo.toml`, in the
    workspace dependencies, in both plugin manifests and in `PLUGIN_VERSION` of the Claude Code
-   plugin's `hooks/adapter/index.tsx` (`tests/plugins.rs` fails until they agree), and turn `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`. Merge it
-   into `develop`, then `develop` into `main`.
+   plugin's `hooks/adapter/index.tsx` (`tests/plugins.rs` fails until they agree), and turn
+   `## Unreleased` in `CHANGELOG.md` into `## X.Y.Z (YYYY-MM-DD)`, moved above the entries of
+   that version's prereleases, which stay as they are, with a new empty `## Unreleased` above
+   it. Merge it into `develop`, then `develop` into `main`.
 2. On `main`, run `loft publish` over the committed `spec/`, commit `spec/labels.yaml` and
    `loft.lock.json` together as the publish commit, and check that `loft verify` passes. A second
    `loft publish` with nothing changed writes nothing; CI checks both on `main` only, since

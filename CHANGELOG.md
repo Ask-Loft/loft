@@ -108,9 +108,9 @@ everything 2.3.0 will hold.
   main agent's directory, and the yard skill says to open a stage in another worktree before
   working there.
 - The Loft plugin reaches the page server on the port `loft yard serve` reports. Where another
-  `loft` had started the page server on a port other than the plugin's `yardPort`, such as the
-  dogfood launcher's 7412, the plugin kept posting to its own port, and Yard recorded none of the
-  session's turns, requests, tool calls or tokens. The events kept meanwhile are posted once it
+  `loft` had started the page server on a port other than the plugin's `yardPort`, the plugin
+  kept posting to its own port, and Yard recorded none of the session's turns, requests, tool
+  calls or tokens. The events kept meanwhile are posted once it
   reaches the page server.
 - A `loft yard` command adds its worktree to those the page server serves before it gives the
   page's address, so the link it gives always opens. Sessions that run `loft` without the mod,
@@ -166,20 +166,16 @@ everything 2.3.0 will hold.
   `loft verify`: npm publishes it under the dist-tag of its identifier and GitHub marks it a
   prerelease, so neither offers it as the latest. `loft` orders a prerelease before the release
   of its numbers, in the update check and between page servers.
-
-- Tasks can be assigned to agents independently of stage ownership, including parallel subagents
-  within a main agent's stage. Claude task metadata and Codex plan-step prefixes bind native
-  progress to existing tasks. Reassignment guards protect progress; observed ends return active
-  work to open. The page shows assignees and separate execution attempts, and activity and tokens
-  follow the assigned task's stage where unambiguous without duplicating elapsed time.
-
-- Both dogfood launch commands rebuild Loft and restart the shared Yard server on port 7412
-  before starting the agent, including same-version rebuilds. Concurrent launches serialize;
-  existing sessions reconnect, and a failed build leaves the running server alone.
-- `loft yard serve --replace` asks the running page server to stop whatever its version and
-  serves in its place, with every tree it served; the dogfood launcher restarts the shared server
-  through it. A page server built before `--replace` stops only for a newer version, and the
-  replacing run fails naming its process.
+- A task can be assigned to an agent apart from who owns its stage, so parallel subagents can each
+  work a task of their main agent's stage. Claude Code's task metadata and Codex's plan-step
+  prefixes tie an agent's native progress to an existing task. A reassignment cannot overwrite
+  the progress made on a task, and a task whose agent is seen to end returns to open. The page
+  shows each task's assignee and each attempt at it apart, and an agent's activity and tokens
+  count toward its assigned task's stage where that stage is unambiguous, without counting
+  elapsed time twice.
+- `loft yard serve --replace` asks the running page server to stop, whatever its version, and
+  serves in its place, with every tree it served. A page server built before `--replace` stops
+  only for a newer version, and the replacing run then fails, naming its process.
 - `loft yard task <id> [--state --title --detail --type] [--mirror]` changes a task in place under
   Yard Log's lock, with no based-on revision, and `loft yard task --release` returns an agent's
   active tasks to open in one write. Both adapters mirror native task updates through it, so
@@ -189,44 +185,46 @@ everything 2.3.0 will hold.
   the open submissions and what was answered since it last read, as fields and as text of at
   most 2,000 characters. The Claude and Codex adapters both give it at session start and mark it
   read, and neither repeats it with each prompt.
-- Every part of Yard asks one working-stage rule where an agent's tokens, activity, mirrored
-  tasks and briefing belong. A subagent's own native tasks mirror into its working stage,
-  assigned to it where it does not own that stage.
-- The page server sums Yard Log's token totals for the page, and keeps each session's host and
-  last adapter descriptor, which adapters now send only with a session's first event and each
-  turn start. A compaction that reports no tokens leaves the accounting complete, and an
-  unusable token counter is unreported rather than dropping its event.
-- The Codex adapter decides at the source whether a cache-write count is measured: a zero it
-  cannot verify is left out of a request's tokens and kept under `usageSource.reported`, by one
-  rule that also classifies requests still queued when they are delivered. The page server counts
-  every host's tokens as given and keeps no host's rule.
-- Totals files name their format, `format: yardtokens/2`; a page server leaves a file of a newer
-  format as it is, and its sums leave it out.
-- `loft yard upgrade` settles token counts under the page server's lock: it moves old Codex zeros
-  in every event log of the machine, writes each Codex session's totals of an open Yard Log as
-  replaying its events counts them, brings older totals files to the current format, and reports
-  a failure to settle them beside what became of each Yard Log.
-- `loft` composes the `yard` skill packages from the source it embeds, as it does `loft-spec`.
-  The hidden maintainer command `loft skill package [--check]` writes or checks every plugin
-  package, refuses sources that differ from the ones it embeds, and `scripts/package-skill.sh`
-  runs it.
-- Yard's token details start collapsed while summary totals stay visible, with the fold choice
-  remembered separately for each Yard Log through live updates and reloads.
-- Yard's free-form answers have explicit radio buttons or checkboxes. Typing selects the
-  option, clearing text keeps it selected, and switching away retains text without sending it.
-- Yard's waiting panel preserves mixed question, plan and approval order, and same-second
-  submissions follow their local arrival order across callers.
-- Claude captures tasks, questions, plans and Yard tool calls in receipt order for each caller,
-  selects task stages before native creation and releases capture on interruption.
-- Yard cards distinguish their Created and Updated times while keeping their stored timeline
-  positions through edits, mode grouping and reversing the stage view.
-
-- Codex Yard observes latest-request token usage from an existing local app server during
-  identified native turns. Cached input is separated from fresh input, missing counters and
-  observation gaps stay unavailable, and reconnects import no historical totals. Stable event
-  identifiers prevent duplicate charges after delivery retries or page-server restarts.
-  `loft yard codex watch --app-server-socket ABSOLUTE_PATH` selects a custom local socket;
-  otherwise it uses the daemon socket under `CODEX_HOME` or `~/.codex` on Unix platforms.
+- Yard decides by one rule which stage is an agent's working stage, and files the agent's tokens,
+  activity, mirrored tasks and briefing there. A subagent's own native tasks mirror into its
+  working stage, assigned to it where it does not own that stage.
+- The page server adds up Yard Log's token totals for the page. It keeps each session's host and
+  the last description its adapter gave, which adapters now send only with a session's first
+  event and at the start of each turn. A compaction that reports no tokens no longer leaves the
+  totals incomplete, and an event whose token count cannot be used is kept with its tokens
+  unreported, where before it was dropped.
+- In Codex sessions, a cache-write count of zero that the adapter cannot verify is left out of
+  the request's tokens, rather than counted, and kept under `usageSource.reported`. The adapter
+  decides this as it records a request, by one rule that also covers requests still queued when
+  they are delivered, and the page server counts every host's tokens as given, with no rule of
+  its own for any host.
+- Token totals files name their format, `format: yardtokens/2`. A page server leaves a file of a
+  newer format untouched and out of its sums.
+- `loft yard upgrade` settles token counts, under the page server's lock: it takes the unverified
+  zeros that older Codex events counted out of their counts, in every event log on the machine;
+  rewrites each Codex session's totals in an open Yard Log as replaying its events counts them;
+  brings older totals files to the current format; and reports any failure to settle them beside
+  what became of each Yard Log.
+- On the Yard page, token details start folded while the summary totals stay in view, and the
+  page remembers whether each Yard Log's details are folded across live updates and reloads.
+- Each free-form answer on the Yard page has its own radio button or checkbox. Typing in it
+  selects that option, clearing the text leaves it selected, and choosing another option keeps
+  the text without sending it.
+- The Yard page's panel of what waits keeps questions, plans and approvals in the order they
+  were sent, however they are mixed, and submissions sent in the same second keep the order in
+  which they arrived on the machine, whichever agent sent them.
+- The Claude plugin records each agent's tasks, questions, plans and Yard tool calls in the order
+  it made them. It chooses a new task's stage before Claude Code creates the task, and an
+  interrupted call no longer holds up the ones after it.
+- Yard's cards show when a block was created and when it was last updated, and keep their place
+  in the timeline through edits, through grouping by mode and when a stage's order is reversed.
+- In Codex sessions, Yard reads each request's token usage from a Codex app server already running
+  on the machine, during the native turns it can identify. Cached input is counted apart from
+  fresh input; a missing counter or a gap in observation stays unavailable rather than zero, and a
+  reconnect imports no earlier totals. Each event has a stable identifier, so a retried delivery
+  or a restarted page server never counts it twice.
+  `loft yard codex watch --app-server-socket ABSOLUTE_PATH` names a socket of your own; otherwise
+  it uses the daemon socket under `CODEX_HOME` or `~/.codex`, on Unix.
 - Codex Yard delivers decisions: once every question, approval and plan of a submission has its
   answer on the page, `loft yard codex watch` tells the asking session's loaded thread through the
   same local app server, so the agent may end its turn after asking rather than wait. The
@@ -235,22 +233,25 @@ everything 2.3.0 will hold.
   sent again once acknowledged or read; interruption or the session's end disarms delivery until
   the person's next prompt, and a withdrawn submission sends none. Session context says whether
   notifications are available, and the agent waits explicitly where they are not.
-- The Codex plugin includes its Yard skill, composed from the shared workflow and Codex
-  instructions, and native hooks for local sessions. Questions and plans use the Yard page;
-  Codex's native modes and permissions stay authoritative. Review and trust the hooks after
-  installation. Native hooks provide activity; live usage comes from the local app server.
-- `loft yard codex hook` translates native Codex activity and mirrors successful `update_plan`
-  calls into the caller's active stage. `loft yard codex watch` owns session heartbeats, bounded
-  event delivery and page-server recovery. Unavailable usage and tool outcomes remain unknown.
-- `loft skill install --host codex|claude-code|all` selects the hosts to install, retaining both
-  as the default. Codex-only installation leaves Claude Code files and settings alone. This
-  repository exposes its canonical skill source through a Codex discovery link, which the
-  installer preserves and the packaging guard checks; invalid skill links are refused.
-- Yard has a host-neutral core and a native Claude adapter. Session identity includes the
-  host across ownership, continuations, liveness, event storage, stage accounting and the page.
-  Yard protocol 2 reports adapter capabilities and distinguishes unreported usage from zero;
-  incomplete totals are marked partial. The Claude adapter retains protocol 1 compatibility.
-  The Yard skill is composed from a shared workflow and Claude-specific instructions.
+- The Codex plugin includes its own Yard skill, composed from the shared workflow and Codex's
+  instructions, and native hooks for local sessions. Questions and plans go to the Yard page,
+  while Codex's own modes and permissions still decide. Review and trust the hooks once the
+  plugin is installed. The hooks record activity; live token usage comes from the local app
+  server.
+- `loft yard codex hook` records native Codex activity in Yard, and mirrors each successful
+  `update_plan` call into the caller's active stage. `loft yard codex watch` keeps each session's
+  heartbeat, delivers its events within set bounds and recovers when the page server goes away.
+  Where Codex reports no usage or no tool outcome, Yard leaves it unknown.
+- `loft skill install --host codex|claude-code|all` chooses the hosts to install for, both by
+  default. Installing for Codex alone leaves Claude Code's files and settings untouched. The
+  installer keeps a skill directory that is a link to the skill's source, and refuses an invalid
+  skill link.
+- Yard's core assumes no host, and Claude Code reaches it through a native adapter. A session is
+  identified together with its host wherever Yard uses it: ownership, continuations, liveness,
+  stored events, each stage's accounting and the page. Yard protocol 2 reports what an adapter
+  can do and tells unreported usage from zero, marking incomplete totals partial; the Claude
+  adapter stays compatible with protocol 1. The yard skill is composed from a shared workflow
+  and Claude Code's own instructions.
 - The Claude Code plugin no longer shows the Loft status pane: its pane, its status-line entry
   and `/loft-status` are gone, and no session runs `loft` every 10 seconds to draw them. Yard Log
   and its page show the work on a specification instead. `loft status` stays a command, and the
@@ -263,10 +264,11 @@ everything 2.3.0 will hold.
     `protocol`, `upgrade`, and `serve`, the page server on the loopback interface. Each acts for
     a session and, for a subagent, its agent; Yard Log's root records the base branch it is
     merged into (the one `write --base` names, else the local branch git's reflog says the branch
-    was cut from, else `--default-base`, else `develop`), and a read marks the revision read only with `--mark-read` and gives each `loft`
-    block's report by its size unless `--reports` is given; a write is applied whole or not at all, under a lock in
-    git's own directory; a `loft` block records a view of the specification's work from the
-    same report `status`, `check` or `reconcile` gives.
+    was cut from, else `--default-base`, else `develop`), and a read marks the revision read
+    only with `--mark-read` and gives each `loft` block's report by its size unless `--reports`
+    is given; a write is applied whole or not at all, under a lock in git's own directory; a
+    `loft` block records a view of the specification's work from the same report `status`,
+    `check` or `reconcile` gives.
   - `loft merge-driver` merges the files under `.yard/` record by record, and `--install`
     routes them to it; the next `loft yard` command settles what spans files.
   - The Yard page, served by `loft yard serve`: every Yard Log of the trees on the machine,
