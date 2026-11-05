@@ -1,6 +1,6 @@
 ---
 name: loft-spec
-description: Write, change and review a Loft specification in `spec/` with the `loft` command line. Use when the user asks to specify a product or feature, start a specification, write Requirements, acceptance criteria, Components, Constraints, Quality Attributes or decisions, change a product that a `spec/` already describes before changing its code, fix `loft check` findings, review a specification, or publish and merge one.
+description: Write, change and review a Loft specification in `spec/` with the `loft` command line. Use when the user asks to specify a product or feature, start a specification, write Requirements, acceptance criteria, Components, Constraints, Quality Attributes or decisions, change a product that a `spec/` already describes before changing its code, fix `loft check` findings, review a specification, publish and merge one, or connect one to a Loft server.
 ---
 
 # Loft specification
@@ -50,7 +50,8 @@ no second reading.
 - Read [`references/reviewing.md`](references/reviewing.md) for a review of a specification's
   quality beyond what `loft check` reports.
 - Read [`references/publishing-and-merging.md`](references/publishing-and-merging.md) for
-  `loft publish`, `loft verify`, merging `spec/` in git, or two publishes that meet.
+  `loft publish`, `loft verify`, merging `spec/` in git, two publishes that meet, or connecting
+  a document to a Loft server and `loft pull`.
 
 ## Keep to the approvals
 

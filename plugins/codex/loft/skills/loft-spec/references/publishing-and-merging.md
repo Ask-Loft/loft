@@ -1,14 +1,17 @@
 # Publishing and merging
 
-Use this workflow for starting and updating a branch, `loft publish`, `loft verify`, merging
-`spec/` in git, and two publishes that meet. It owns a branch's base, the publish branch, the lock
-and the merge driver. The edit cycle belongs to
-`the-loop.md`; what an error means to `lint-findings.md`. Never restate or override them here.
+Use this workflow for starting and updating a branch, connecting a document to a Loft server,
+`loft publish`, `loft pull`, `loft verify`, merging `spec/` in git, and two publishes that meet.
+It owns a branch's base, the publish branch, the lock, the document's remote and the merge
+driver. The edit cycle belongs to `the-loop.md`; what an error means to `lint-findings.md`. Never
+restate or override them here.
 
 ## Contents
 
 - Start a branch and bring it up to date
+- Connect to a Loft server
 - Publish
+- Pull from the remote
 - Verify in CI
 - Merge with the merge driver
 - Settle a conflict record
@@ -24,6 +27,19 @@ and the merge driver. The edit cycle belongs to
 - When a git step that discards work fails, such as a reset, a checkout over changes or a forced
   push, stop and report it; never retry it without asking the user.
 
+## Connect to a Loft server
+
+A document connected to a Loft server publishes through it: the server holds its published
+states in order and gives its labels, so a whole team publishes one document.
+
+- Run `loft remote set <address>` only when the user asks to connect the document, with the
+  address the user gives. Never invent or guess an address. The command signs the user in,
+  creates the document on the server and imports every state the repository has published.
+- After `loft remote set` or `loft remote remove`, commit `spec/loftspec.yaml`, which names the
+  remote and marks the document `connected: true`, or no longer does.
+- When a command reports that the sign-in to the remote has lapsed or been refused, ask the user
+  to run `loft remote login`: the sign-in opens the user's browser, so it is theirs to complete.
+
 ## Publish
 
 Run `loft publish` only when the user asks for it. It runs on the publish branch, `main` unless
@@ -33,10 +49,24 @@ pins the tree. Commit those two files together, and nothing else, as the publish
 `loft publish` with nothing changed writes nothing. Run `loft status` first: it reports the
 branch, any uncommitted path under `spec/`, and whether the tree matches the lock.
 
-A publish refuses on another branch, over uncommitted changes, over a tree with errors or a lock
-that does not read, where git cannot be run, and, for a connected document, where its remote
-cannot be reached or refuses the change. Read the refusal and report it rather than working
-around it.
+A connected document's `loft publish` publishes through its remote instead. It runs on any
+branch, over a `spec/` with no uncommitted change, and its labels come from the remote, which
+returns them with the lock; commit `spec/labels.yaml` and `loft.lock.json` together as for any
+publish.
+
+A publish refuses over uncommitted changes, over a tree with errors or a lock that does not read,
+where git cannot be run, off the publish branch for a document that is not connected, and, for a
+connected document, where its remote cannot be reached or refuses the change. Read the refusal
+and report it rather than working around it.
+
+## Pull from the remote
+
+When a connected publish is refused because the remote has moved on, run `loft pull`. It merges
+the remote's head into the tree three ways, from the state the lock names, and writes the head's
+labels and lock. Settle each conflict record it writes, as below, run the loop, commit the tree,
+and only then publish again. `loft pull --sequence <n>` and `loft pull --branch <name>` write a
+published state or a branch's draft over a tree still at its lock; run them only when the user
+asks.
 
 ## Verify in CI
 
