@@ -12,8 +12,12 @@ takes `--help`.
 | `loft find <query>` | Prints the key, label, kind, file and name of each node or decision a label, slug, key or name identifies |
 | `loft import v1 <export>` | Converts a Loft v1 export into `spec/` |
 | `loft import openspec [<dir>]` | Converts the main specs of an OpenSpec project into `spec/` |
-| `loft publish` | Allocates labels and writes the lock, on the publish branch |
+| `loft publish` | Allocates labels and writes the lock, on the publish branch; a connected document publishes through its Loft server instead, from any branch ([publishing and merging](publishing.md#connected-documents)) |
+| `loft pull [--sequence <n> \| --branch <name>]` | Brings a connected document's tree to its Loft server's head by a three-way merge, or writes a published state or a branch's draft over a tree still at its lock |
 | `loft verify` | Recomputes the roots and compares them with the lock |
+| `loft remote set <address> [--no-browser]` | Signs you in to the Loft server at the address, connects the document there, importing what the repository has published, and names the server in `spec/loftspec.yaml` |
+| `loft remote login` | Signs you in again to the document's Loft server, in a fresh clone or once a sign-in has lapsed |
+| `loft remote remove` | Disconnects the document from its Loft server and forgets your sign-in to it |
 | `loft status [--base <revision>]` | Reports the lock and whether the tree matches it, the repository's branch and uncommitted paths under `spec/`, and the nodes added, changed and removed since HEAD left the revision; it sends no telemetry |
 | `loft review [--base <revision>] [--node <node>] [--max-chars <n>] [--page <k>]` | Gathers the context each assertion under review is read against, as a JSON packet paged by whole units, and judges nothing; with `--base`, only what the branch added, changed, moved or removed |
 | `loft terms` | Lists the names the specification may be using for one concept, and the subjects of each Product's statements, for the term list to decide |

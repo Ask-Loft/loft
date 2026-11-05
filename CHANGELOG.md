@@ -96,6 +96,11 @@ everything 2.3.0 will hold.
   SHA-256 digest and length against it, and refuses an entry that is a link, holds an absolute
   path or a `..` segment, or is neither a file nor a directory, before anything is written. It
   enables no plugin and gives no setup report.
+- The `loft-spec` skill teaches an agent to connect a document to a Loft server when you ask,
+  with the address you give; to publish a connected document from any branch, with labels from
+  the server; to run `loft pull` when someone has published first; and to ask you to run
+  `loft remote login` when a sign-in lapses. The README and the publishing and command pages
+  describe connected documents.
 - An agent's work follows its working stage into another worktree, of the same repository or
   another. A session that worked in a worktree its host could not move it into recorded that
   work's plan, questions, tasks and token cost in the Yard Log of the worktree it started in.

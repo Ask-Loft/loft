@@ -64,6 +64,15 @@ Requirement or a new decision touches criteria, edges and citations elsewhere. T
 them, and `loft check` catches what it misses. A hand edit is held to the same checks, which
 suits a typo, not a feature.
 
+## Working as a team
+
+A team can connect its document to a Loft server, which then publishes it for everyone: "Connect
+this specification to our Loft server at <address>." The agent runs `loft remote set <address>`,
+which signs you in, brings over what the repository has already published, and records the
+server in `spec/loftspec.yaml` for every clone. From then on, "publish" works from any branch,
+the server gives the labels, and when someone else has published first, `loft pull` brings your
+tree up to date. More in [docs/publishing.md](docs/publishing.md#connected-documents).
+
 ## Yard
 
 The Yard page, at <http://127.0.0.1:7411/>, shows every branch's Yard Log on your machine, live.
@@ -78,7 +87,7 @@ More in [docs/yard.md](docs/yard.md).
 | --- | --- |
 | [Yard](docs/yard.md) | The page, answering, Claude Code and Codex, several agents on one stage |
 | [Commands](docs/commands.md) | Every `loft` command, the agent skill, exit codes and JSON output |
-| [Publishing and merging](docs/publishing.md) | Labels and the lock, the merge driver, two publishes that meet |
+| [Publishing and merging](docs/publishing.md) | Labels and the lock, connecting to a Loft server, the merge driver, two publishes that meet |
 | [Tracing](docs/tracing.md) | Linking tests to criteria with `loft.trace.yaml` and `loft reconcile` |
 | [Telemetry](docs/telemetry.md) | What `loft` sends, the update check, and how to switch both off |
 | [The Format](spec/) | The Loft Specification Format's own specification, written in the Format |
