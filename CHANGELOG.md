@@ -3,55 +3,9 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## 2.3.0-alpha.5 (2026-11-04)
-
-The fifth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.3.0-alpha.5`. Since 2.3.0-alpha.4 it lets you try
-the Yard page in Loft Web's design, with spec changes and flowcharts drawn by the page itself,
-questions as cards, and findings and decisions that read at a glance; the yard skill followed
-without being asked, with a plan at a branch's start, an issue note for each stage that builds
-and waves; `loft skill install --server`; and the Yard page on Windows. The entries under
-Unreleased below list everything 2.3.0 will hold.
-
-## 2.3.0-alpha.4 (2026-11-01)
-
-The fourth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.3.0-alpha.4`. Since 2.3.0-alpha.3 it lets you try
-the client side of connected documents: `loft remote set`, `login` and `remove`, a connected
-`loft publish`, and `loft pull`. It is a preview of the command line alone: no public remote
-accepts a connected document yet, so for now these commands reach only a remote you run
-yourself. The entries under Unreleased below list everything 2.3.0 will hold.
-
-## 2.3.0-alpha.3 (2026-10-30)
-
-The third prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.3.0-alpha.3`. Since 2.3.0-alpha.2 it lets you try an
-agent's work following its working stage into another worktree, of the same repository or
-another, so that the plan, questions, tasks and token cost of that work are recorded in that
-worktree's Yard Log; and the Loft plugin reaching a page server that another `loft` started on
-another port. The entries under Unreleased below list everything 2.3.0 will hold.
-
-## 2.3.0-alpha.2 (2026-10-29)
-
-The second prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.3.0-alpha.2`. Since 2.3.0-alpha.1 it lets you try
-sessions that run `loft` without the mod on the Yard page, such as those Claude Code Desktop
-starts in worktrees of their own; a free-form answer to every question on the page; the
-diagrams of what waits on you drawn in its panel; and the setup report that `loft init` and
-`loft skill install` end with, with the marketplace pinned to the running `loft`'s release. The
-entries under Unreleased below list everything 2.3.0 will hold.
-
-## 2.3.0-alpha.1 (2026-10-28)
-
-A prerelease of 2.3.0, for trying what `develop` holds before the release:
-`npm install @ask-loft/loft@alpha`, or `cargo install --locked loft-cli --version 2.3.0-alpha.1`.
-It lets you try Yard Client in Claude Code sessions signed in with a Team or Enterprise account
-and on machines with managed settings, a session that continues another after `/clear` or a
-resume and keeps its stages and tasks, a main agent's tasks staying active across its turns, and
-the `loft-spec` and `yard` skills brought up to date. The entries under Unreleased below list
-everything 2.3.0 will hold.
-
 ## Unreleased
+
+## 2.3.0 (2026-11-05)
 
 - The Yard page wears Loft Web's design. A sidebar lists the Yard Logs under Loft's wordmark and
   folds to a rail; beneath the branch shown lie its views, Timeline, Gantt chart and a new
@@ -515,6 +469,54 @@ everything 2.3.0 will hold.
   each stage that builds; and split large work into waves, branches cut from a parent branch that
   each run their own Yard cycle and end with a review (`/simplify`, then `/code-review` in Claude
   Code; `codex review --base <parent>` in Codex).
+
+## 2.3.0-alpha.5 (2026-11-04)
+
+The fifth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.5`. Since 2.3.0-alpha.4 it lets you try
+the Yard page in Loft Web's design, with spec changes and flowcharts drawn by the page itself,
+questions as cards, and findings and decisions that read at a glance; the yard skill followed
+without being asked, with a plan at a branch's start, an issue note for each stage that builds
+and waves; `loft skill install --server`; and the Yard page on Windows. The entries under
+Unreleased below list everything 2.3.0 will hold.
+
+## 2.3.0-alpha.4 (2026-11-01)
+
+The fourth prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.4`. Since 2.3.0-alpha.3 it lets you try
+the client side of connected documents: `loft remote set`, `login` and `remove`, a connected
+`loft publish`, and `loft pull`. It is a preview of the command line alone: no public remote
+accepts a connected document yet, so for now these commands reach only a remote you run
+yourself. The entries under Unreleased below list everything 2.3.0 will hold.
+
+## 2.3.0-alpha.3 (2026-10-30)
+
+The third prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.3`. Since 2.3.0-alpha.2 it lets you try an
+agent's work following its working stage into another worktree, of the same repository or
+another, so that the plan, questions, tasks and token cost of that work are recorded in that
+worktree's Yard Log; and the Loft plugin reaching a page server that another `loft` started on
+another port. The entries under Unreleased below list everything 2.3.0 will hold.
+
+## 2.3.0-alpha.2 (2026-10-29)
+
+The second prerelease of 2.3.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.3.0-alpha.2`. Since 2.3.0-alpha.1 it lets you try
+sessions that run `loft` without the mod on the Yard page, such as those Claude Code Desktop
+starts in worktrees of their own; a free-form answer to every question on the page; the
+diagrams of what waits on you drawn in its panel; and the setup report that `loft init` and
+`loft skill install` end with, with the marketplace pinned to the running `loft`'s release. The
+entries under Unreleased below list everything 2.3.0 will hold.
+
+## 2.3.0-alpha.1 (2026-10-28)
+
+A prerelease of 2.3.0, for trying what `develop` holds before the release:
+`npm install @ask-loft/loft@alpha`, or `cargo install --locked loft-cli --version 2.3.0-alpha.1`.
+It lets you try Yard Client in Claude Code sessions signed in with a Team or Enterprise account
+and on machines with managed settings, a session that continues another after `/clear` or a
+resume and keeps its stages and tasks, a main agent's tasks staying active across its turns, and
+the `loft-spec` and `yard` skills brought up to date. The entries under Unreleased below list
+everything 2.3.0 will hold.
 
 ## 2.2.1 (2026-10-21)
 
