@@ -15,6 +15,36 @@ nothing.
 Until a publish, nodes have keys but no labels (`RQ-12`, `AC-40`). Work on other branches is a
 candidate; the published state, the one the lock pins, is the contract.
 
+## Connected documents
+
+A document connected to a Loft server publishes through it. The server holds the document's
+published states in order and gives its labels, so a team publishes one document from any clone
+and any branch, and never meets the label collisions described below.
+
+`loft remote set <address>`, with the address your Loft server gives for the document, signs you
+in, creates the document on the server and imports every state the repository has already
+published, so every label keeps its node. It then names the server in `spec/loftspec.yaml`, as
+`remote` beside `connected: true`. Commit that file, and every clone shares the connection. The
+sign-in is standard OAuth in your browser (`--no-browser` prints the address to open instead).
+It is yours alone: `loft` keeps it by address in `loft/remotes.json` in your configuration
+directory, readable only by you, and refreshes it before it expires. Run `loft remote login` in
+a fresh clone, or once a sign-in has lapsed.
+
+`loft publish` of a connected document runs on any branch over a committed `spec/`. It sends the
+change since the state its lock names, and writes the labels and the lock the server returns;
+commit both together. A publish whose answer was lost is replayed safely. When someone else has
+published since your lock, the server refuses the publish, and `loft pull` brings your tree up to
+its head: it merges the head into your tree three ways, writes any conflict as a conflict record
+(see below), and writes the head's labels and lock. Settle any conflict, commit, and publish
+again. `loft pull --sequence <n>` writes an earlier published state, and
+`loft pull --branch <name>` a branch's draft from the server, over a tree still at its lock.
+
+`loft remote remove` disconnects the document and forgets your sign-in to the server; commit
+`spec/loftspec.yaml` again. In CI, `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` point a command
+at the server with a token of its own, without a sign-in; `LOFT_REMOTE_TIMEOUT` sets how long a
+call may take (30 seconds by default), and `LOFT_REMOTE_WAIT` how long a command may wait, once,
+when the server asks it to try again later.
+
 ## The merge driver
 
 `loft merge-driver --install`, run once in each clone, registers Loft as git's merge driver for
