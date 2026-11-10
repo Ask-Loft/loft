@@ -8,7 +8,8 @@ import type { EngineInterface, ModelUsage, On } from 'claude-code'
 
 import { relativeTo } from '../model'
 import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } from '../shared'
-import { HOST } from './contract'
+import { classOf, ordered, shellReads, type Class } from './consult'
+import { CONSULTS, HOST } from './contract'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
 import { actorKey, agentOf, continued, PLUGIN, state } from './state'
@@ -27,6 +28,38 @@ export function tokensOf(usage: ModelUsage) {
 /** The input field that names a file edit's file, by tool. */
 const EDITED: Record<string, string> = { Write: 'file_path', Edit: 'file_path', MultiEdit: 'file_path', NotebookEdit: 'notebook_path' }
 
+/** The input field that names the file a reading tool reads, or the directory it searches. */
+const READ: Record<string, string> = { Read: 'file_path', NotebookRead: 'notebook_path', Grep: 'path', Glob: 'path' }
+
+/** The directories a `Glob` pattern opens with, before its first wildcard. */
+function literalHead(pattern: string): string {
+  const parts = pattern.split('/')
+  const wild = parts.findIndex(part => /[*?[{]/.test(part))
+  return parts.slice(0, wild === -1 ? parts.length - 1 : wild).join('/')
+}
+
+/** What a tool call consults, as `reads` and `edits`, from the directory `dir` it runs in. */
+export function consultedBy(e: Record<string, unknown>, dir: string, trees: Iterable<string>): { reads?: Class[]; edits?: Class[] } {
+  const text = (field: string) => (typeof e[field] === 'string' ? (e[field] as string) : undefined)
+  const tool = String(e.tool)
+  const edited = EDITED[tool] ? text(EDITED[tool]) : undefined
+  if (edited !== undefined) return { edits: [classOf(edited, dir, trees)] }
+  if (tool === 'Bash') {
+    const reads = shellReads(text('command') ?? '', dir, trees)
+    return reads.length > 0 ? { reads } : {}
+  }
+  if (!READ[tool]) return {}
+  let path = text(READ[tool]) ?? (tool === 'Grep' || tool === 'Glob' ? '.' : undefined)
+  if (path === undefined) return {}
+  const pattern = text('pattern')
+  if (tool === 'Glob' && pattern !== undefined) {
+    const head = literalHead(pattern)
+    if (pattern.startsWith('/')) path = head || '/'
+    else if (head !== '') path = `${path}/${head}`
+  }
+  return { reads: ordered([classOf(path, dir, trees)]) }
+}
+
 /** Whether `path` lies under the `spec/` of the tree that holds it, where a known tree does. */
 export function isSpecEdit(path: string, trees: Iterable<string>): boolean | undefined {
   // The nearest tree is the one that leaves the shortest path.
@@ -41,15 +74,16 @@ let told: Promise<void> = Promise.resolve()
  * Records one event of the calling agent, as it stands when told, and posts what is kept; the
  * caller waits on neither. An event whose fields cannot be read is dropped.
  */
-export function tell($: EngineInterface, agentId: string | undefined, fields: Event) {
+export function tell($: EngineInterface, agentId: string | undefined, fields: Event | ((dir: string) => Event)) {
   if (!state.isOn) return
   const read = Promise.all([$.session.id(), $.session.cwd(), $.clock.now(), agentOf($, agentId)])
   told = Promise.all([told, read])
     .then(([, [session, dir, now, agent]]) => {
+      const told = typeof fields === 'function' ? fields(dir) : fields
       // The descriptor goes with the session's first event and each turn's start only.
-      const described = state.adapter !== undefined && (fields.kind === 'turn.start' || !state.described.has(session))
+      const described = state.adapter !== undefined && (told.kind === 'turn.start' || !state.described.has(session))
       if (described) state.described.add(session)
-      keep(state.box, { session, dir, at: timeOf(now), host: HOST, ...(described ? { adapter: state.adapter } : {}), ...(agent ? { agent } : {}), ...fields })
+      keep(state.box, { session, dir, at: timeOf(now), host: HOST, ...(described ? { adapter: state.adapter } : {}), ...(agent ? { agent } : {}), ...told })
       void flush($, state.box)
     })
     .catch(() => {})
@@ -112,7 +146,12 @@ export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, nex
   const spec = typeof path === 'string' ? isSpecEdit(path, state.server.trees) : undefined
   const command = e.tool === 'Bash' ? String((e as { command?: unknown }).command ?? '') : ''
   const loft = command === '' ? [] : loftSubcommands(command)
-  tell($, e.agentId, { kind: 'tool.start', tool: e.tool, call, ...(spec !== undefined ? { spec } : {}), ...(loft.length > 0 ? { loft } : {}) })
+  const start: Event = { kind: 'tool.start', tool: e.tool, call, ...(spec !== undefined ? { spec } : {}), ...(loft.length > 0 ? { loft } : {}) }
+  // Under protocol 3 the start also says what the call consults, worked out once the session's
+  // directory is read, so the call never waits on it.
+  const consults = (state.settings.protocol ?? 1) >= CONSULTS
+  const trees = [...state.server.trees]
+  tell($, e.agentId, consults ? dir => ({ ...start, ...consultedBy(e as Record<string, unknown>, dir, trees) }) : start)
   let failed = true
   try {
     const ran = await next(e)

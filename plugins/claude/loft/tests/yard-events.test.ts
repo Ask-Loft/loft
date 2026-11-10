@@ -403,3 +403,73 @@ test('a full post the page server does not take keeps the newest 1,000 events, a
   expect(box.queue.at(-1)).toMatchObject({ turn: 'late' })
   expect(box.dropped).toBe(1)
 })
+
+/** The `tool.start` events posted, by their call, with what each says it consults. */
+const consulted = (w: World) =>
+  Object.fromEntries(events(w).filter(event => event.kind === 'tool.start').map(({ call, reads, edits }) => [String(call), { reads, edits }]))
+
+test('under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/products/a.yaml`, tool_use_id: 'read' } as never)
+  await $.tool.call({ tool: 'NotebookRead', notebook_path: '/elsewhere/n.ipynb', tool_use_id: 'notebook' } as never)
+  await $.tool.call({ tool: 'Grep', pattern: 'shall', tool_use_id: 'grep' } as never)
+  await $.tool.call({ tool: 'Grep', pattern: 'shall', path: 'spec', tool_use_id: 'grep-spec' } as never)
+  await $.tool.call({ tool: 'Glob', pattern: 'spec/**/*.yaml', tool_use_id: 'glob' } as never)
+  await $.tool.call({ tool: 'Glob', pattern: '**/*.rs', tool_use_id: 'glob-all' } as never)
+  await $.tool.call({ tool: 'Bash', command: 'cat spec/a.yaml && rg todo', tool_use_id: 'bash' } as never)
+  await $.tool.call({ tool: 'Bash', command: 'cargo test', tool_use_id: 'build' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/src/main.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'edit' } as never)
+  await $.tool.call({ tool: 'Write', file_path: `${TREE}/spec/b.yaml`, content: '', tool_use_id: 'write' } as never)
+  await $.tool.call({ tool: 'mcp__loft__yard_read', tool_use_id: 'yard' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({
+    read: { reads: ['spec'], edits: undefined },
+    notebook: { reads: ['other'], edits: undefined },
+    grep: { reads: ['code'], edits: undefined },
+    'grep-spec': { reads: ['spec'], edits: undefined },
+    glob: { reads: ['spec'], edits: undefined },
+    'glob-all': { reads: ['code'], edits: undefined },
+    bash: { reads: ['spec', 'code'], edits: undefined },
+    build: { reads: undefined, edits: undefined },
+    edit: { reads: undefined, edits: ['code'] },
+    write: { reads: undefined, edits: ['spec'] },
+  })
+  expect(events(w).find(event => event.call === 'edit' && event.kind === 'tool.start')!.spec).toBe(false)
+})
+
+test('a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/secret-name.yaml`, tool_use_id: 'u1' } as never)
+  await $.tool.call({ tool: 'Grep', pattern: 'PRIVATE-PATTERN', path: 'crates', tool_use_id: 'u2' } as never)
+  await $.tool.call({ tool: 'Bash', command: 'grep PRIVATE-WORD spec/hidden.yaml', tool_use_id: 'u3' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/src/private-file.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'u4' } as never)
+  await w.clock.settle()
+  const posted = JSON.stringify(events(w))
+  for (const secret of ['secret-name', 'PRIVATE-PATTERN', 'crates', 'PRIVATE-WORD', 'hidden', 'private-file']) expect(posted).not.toContain(secret)
+})
+
+test('under protocol 2 no tool call says what it consults, and the descriptor declares no consults', async ($, on) => {
+  const w = world(on, { protocol: 2 })
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'u1' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/src/main.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'u2' } as never)
+  await w.clock.settle()
+  for (const event of events(w)) {
+    expect(event.reads).toBeUndefined()
+    expect(event.edits).toBeUndefined()
+  }
+  const adapter = events(w).find(event => event.kind === 'turn.start')!.adapter as { capabilities: Record<string, unknown> }
+  expect(adapter.capabilities.consults).toBeUndefined()
+})
+
+test('under protocol 3 the descriptor declares that the adapter classifies what each tool call consults', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await w.clock.settle()
+  const adapter = events(w).find(event => event.kind === 'turn.start')!.adapter as { capabilities: Record<string, unknown> }
+  expect(adapter.capabilities.consults).toBe(true)
+})

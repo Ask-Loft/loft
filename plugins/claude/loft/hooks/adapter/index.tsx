@@ -43,7 +43,7 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd)
   if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
   state.settings.protocol = protocol
-  state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION) : undefined
+  state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION, protocol) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
   const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
   if (home) state.box.tokenPath = `${home}/.yard/token`
