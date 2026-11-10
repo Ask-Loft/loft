@@ -14,12 +14,9 @@ use std::collections::BTreeMap;
 
 use crate::Time;
 use crate::totals::Who;
-use crate::usage::Counts;
 
-pub use estimate::Estimate;
+pub use estimate::{Attributed, Estimate, Live};
 pub use sums::{SessionSum, Sums};
-
-use estimate::Live;
 
 /// What a path a tool call reads or edits is: the specification, the code, or neither.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -238,8 +235,6 @@ pub struct Consultation {
     pub no_stage: Option<Stage>,
     /// Whether the estimate left out a request that lacked a count.
     pub partial: bool,
-    /// What the estimate needs between events, and no file holds.
-    live: Live,
 }
 
 impl Consultation {
@@ -266,10 +261,8 @@ impl Consultation {
         }
     }
 
-    /// Counts the start of `call` toward `stage`; says whether it counted. Every call is noted
-    /// for the estimate, counted or not.
+    /// Counts the start of `call` toward `stage`; says whether it counted.
     pub fn start(&mut self, call: &Call<'_>, stage: Option<&str>) -> bool {
-        self.live.started(call);
         let counts = Six::of(call);
         if counts == Six::default() {
             return false;
@@ -284,21 +277,19 @@ impl Consultation {
         true
     }
 
-    /// Notes the end of the call `id` of `who`, whose result the agent's next request reads.
-    pub fn end(&mut self, who: &Who, id: &str) {
-        self.live.ended(who, id);
-    }
-
-    /// Attributes the request of `who` that ended `at` with `tokens`, counted toward `stage`;
+    /// Keeps what the request of `who` that ended `at`, counted toward `stage`, attributed;
     /// says whether the file's text changed.
     pub fn request(
         &mut self,
         who: &Who,
         at: Time,
-        tokens: Option<Counts>,
+        attributed: Attributed,
         stage: Option<&str>,
     ) -> bool {
-        let (attributed, partial) = self.live.requested(who, tokens);
+        let Attributed {
+            estimate: attributed,
+            partial,
+        } = attributed;
         let any = attributed != Estimate::default();
         let changed = any || (partial && !self.partial);
         self.partial |= partial;

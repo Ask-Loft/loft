@@ -208,13 +208,90 @@ fn the_estimate_goes_on_from_the_event_log_after_the_page_server_is_replaced() {
     assert!(text.contains("estimate:\n  spec: 295\n"), "{text}");
     assert!(text.contains("lastEnded: 2026-01-01T10:00:04Z\n"), "{text}");
     drop(served);
+    // A third page server goes on from what the event log rebuilds: the counts so far, and the
+    // last request's prompt the next one is measured against.
     let served = Served::start(&yard, &["--tree", &tree]);
-    post(&served, &[event(&yard, "turn.end", 5, &json!({}))]);
-    assert_eq!(
-        consultation(&yard).unwrap(),
-        text,
-        "replay writes the same file"
+    post(
+        &served,
+        &[
+            started(&yard, "c2", 5, &json!({ "reads": ["code"] })),
+            event(&yard, "tool.end", 6, &json!({ "call": "c2" })),
+            request(7, 600),
+        ],
     );
+    let text = consultation(&yard).unwrap();
+    // 610 - (410 + 5) = 195 brought in by the call that read code.
+    assert!(
+        text.contains("counts:\n  specReads: 1\n  codeReads: 1\n"),
+        "{text}"
+    );
+    assert!(
+        text.contains("estimate:\n  spec: 295\n  code: 195\n"),
+        "{text}"
+    );
+}
+
+/// A subagent's model request at `second` whose prompt holds `read` cached tokens, posted from
+/// the directory of `yard`.
+fn sub_request(yard: &Yard, from: &Yard, second: u32, read: u64) -> Value {
+    let mut request = event(
+        yard,
+        "request",
+        second,
+        &json!({ "model": "opus", "tokens": tokens(10, read, 0, 5) }),
+    );
+    request["dir"] = json!(dir(from));
+    request["agent"] = json!({ "id": "a1", "type": "Explore" });
+    request
+}
+
+/// A subagent's call at `second` that reads `class`, started and ended in `yard`.
+fn sub_call(yard: &Yard, call: &str, second: u32, class: &str) -> [Value; 2] {
+    let mut start = started(yard, call, second, &json!({ "reads": [class] }));
+    let mut end = event(yard, "tool.end", second + 1, &json!({ "call": call }));
+    for event in [&mut start, &mut end] {
+        event["agent"] = json!({ "id": "a1", "type": "Explore" });
+    }
+    [start, end]
+}
+
+#[test]
+fn a_request_is_measured_against_its_agent_s_previous_request_whichever_yard_log_kept_it() {
+    let (yard, served) = open();
+    let other = Yard::new();
+    other.write("s1", ASK, &[]);
+    let mut events = vec![
+        described(&yard, true),
+        sub_request(&yard, &yard, 1, 100),
+        sub_request(&yard, &other, 2, 1000),
+    ];
+    events.extend(sub_call(&yard, "c1", 3, "spec"));
+    events.push(sub_request(&yard, &yard, 5, 1100));
+    let sent = post(&served, &events);
+    assert_eq!(sent["recorded"], 6, "{sent}");
+    let text = consultation(&yard).unwrap();
+    // 1110 - (1010 + 5) = 95, measured against the request the other Yard Log kept.
+    assert!(text.contains("estimate:\n  spec: 95\n"), "{text}");
+}
+
+#[test]
+fn a_request_after_one_no_yard_log_kept_attributes_nothing() {
+    let (yard, served) = open();
+    let nowhere = Yard::new();
+    let mut events = vec![
+        described(&yard, true),
+        sub_request(&yard, &yard, 1, 100),
+        sub_request(&yard, &nowhere, 2, 1000),
+    ];
+    events.extend(sub_call(&yard, "c1", 3, "spec"));
+    events.push(sub_request(&yard, &yard, 5, 1100));
+    events.extend(sub_call(&yard, "c2", 6, "code"));
+    events.push(sub_request(&yard, &yard, 8, 1200));
+    let sent = post(&served, &events);
+    assert_eq!(sent["skipped"], 1, "{sent}");
+    let text = consultation(&yard).unwrap();
+    // The request after the skipped one has no earlier one; the next: 1210 - (1110 + 5) = 95.
+    assert!(text.contains("estimate:\n  code: 95\n"), "{text}");
 }
 
 #[test]

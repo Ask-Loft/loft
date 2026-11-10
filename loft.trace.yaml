@@ -32270,19 +32270,19 @@ links:
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent"
-        body: 9a36e520e3db88049cc279bbe176ec331f8ba7602212158ec3f4919da8847f89
+        body: f35f47902735b17864e35bbd0d98f0aad58313436d27319130a8f4e473e5a811
       - file: "crates/loft-cli/src/yard/serve/consulted.rs"
         name: "a_consultation_file_reads_back_as_it_was_written"
-        body: 2c10187debe9438765558f271b09543a5b9f2a735424bcfc2efa9ab60ad4afe4
+        body: 5a2197ae7e8e80fff82750c0ea70b051246a112b7370ec386fb92ae4ea21f956
   - node: 01a1c361-e9c9-7789-a822-6c189b29c703
     reviewed: f94d2502f0cb712282c6db63f5753a3a8b1f161444181ce552b61efb94b244f4
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "the_file_holds_when_its_last_event_happened_for_a_merge_to_take_the_later_copy"
-        body: 100f12fd117c2ea96092463c34877686817c7e5267dabd6fea2d52d2027ca4b5
+        body: 3fd4ca34b2f0654b5a68fbb023da2b57695f9a3a7600a8a8374c720db42a7931
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "the_estimate_goes_on_from_the_event_log_after_the_page_server_is_replaced"
-        body: af3a626747d545149120e7813f4fe44826d772a462abe25793f72f190242fba5
+        body: 2e548358b1ce317de724903ebc0d8ed1008419e02fcd524dcacacc56c332dd63
       - file: "crates/loft-cli/tests/yard_merge_driver.rs"
         name: "a_session_s_consultation_file_is_taken_whole_from_the_later_copy_without_conflict"
         body: 668fc381e35bfc3d062b4aec9e25a70ec1e376215795e6202e29d2aa8eaf6be5
@@ -32294,7 +32294,7 @@ links:
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent"
-        body: 9a36e520e3db88049cc279bbe176ec331f8ba7602212158ec3f4919da8847f89
+        body: f35f47902735b17864e35bbd0d98f0aad58313436d27319130a8f4e473e5a811
   - node: 01a1c32b-8dbe-7792-8bde-87cb3f15b117
     reviewed: c47042f5ad7682f0ed4c58058dd70a516afb6be6d7be201550ab673acda8aa64
     tests:
@@ -32303,13 +32303,13 @@ links:
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent"
-        body: 9a36e520e3db88049cc279bbe176ec331f8ba7602212158ec3f4919da8847f89
+        body: f35f47902735b17864e35bbd0d98f0aad58313436d27319130a8f4e473e5a811
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_session_that_counted_no_call_has_no_file_to_write"
-        body: bbcc03d6f9866a125db144aca3f4033b6c7b8ab240fc341bf2b28f0f1b117f84
+        body: 17ee08faaf0fc12cadb84daf38b9df26e42e5ec640794448cffe288987caafbd
       - file: "crates/loft-cli/src/yard/serve/consulted.rs"
         name: "a_consultation_file_reads_back_as_it_was_written"
-        body: 2c10187debe9438765558f271b09543a5b9f2a735424bcfc2efa9ab60ad4afe4
+        body: 5a2197ae7e8e80fff82750c0ea70b051246a112b7370ec386fb92ae4ea21f956
   - node: 01a1c32b-8dbe-7792-8bde-87cc3f8bff29
     reviewed: f7b8971f68e2f9286a23aeaeccb07ed0cbf4025ca3dfa94d3171ea1d98cd4194
     tests:
@@ -32318,7 +32318,7 @@ links:
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent"
-        body: 9a36e520e3db88049cc279bbe176ec331f8ba7602212158ec3f4919da8847f89
+        body: f35f47902735b17864e35bbd0d98f0aad58313436d27319130a8f4e473e5a811
   - node: 01a1c32b-8dbe-7792-8bde-87cd87165b54
     reviewed: 3abdd8744101f65ce08691b94cbd0ed9dd142b289debef289c08d8bcb3b5c865
     tests:
@@ -32333,7 +32333,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_call_whose_reads_hold_two_classes_adds_one_to_the_reads_of_each"
-        body: e54f97b91b91b2d668bf819206d65f22e4281b4f8f6e1a4afe144bcea4f3c43e
+        body: a07d8cf6310243077897bd89f36cf2b200ae8726aaf230244039821bfc3030f5
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "a_session_s_calls_are_counted_in_all_by_stage_and_by_agent_and_change_no_revision"
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
@@ -32342,7 +32342,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_loft_read_adds_one_loft_read_and_other_loft_subcommands_add_none"
-        body: 67d2cfef7502c2813ee4d7f2c4a79e864292f6dc20317b2db356313769bb8cd9
+        body: 1699053cf2465e30d2d6bb7b7055e3a87b63cc5bdd1e09d7987be5ae92bfb2e6
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "a_session_s_calls_are_counted_in_all_by_stage_and_by_agent_and_change_no_revision"
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
@@ -32354,7 +32354,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_loft_read_adds_one_loft_read_and_other_loft_subcommands_add_none"
-        body: 67d2cfef7502c2813ee4d7f2c4a79e864292f6dc20317b2db356313769bb8cd9
+        body: 1699053cf2465e30d2d6bb7b7055e3a87b63cc5bdd1e09d7987be5ae92bfb2e6
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "a_session_that_made_no_counted_call_writes_no_consultation_file"
         body: 3b0495e7918478d2f76003e9c07b31ae52fe12951f2be93534cfae58314161d7
@@ -32363,7 +32363,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_session_that_counted_no_call_has_no_file_to_write"
-        body: bbcc03d6f9866a125db144aca3f4033b6c7b8ab240fc341bf2b28f0f1b117f84
+        body: 17ee08faaf0fc12cadb84daf38b9df26e42e5ec640794448cffe288987caafbd
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "a_session_that_made_no_counted_call_writes_no_consultation_file"
         body: 3b0495e7918478d2f76003e9c07b31ae52fe12951f2be93534cfae58314161d7
@@ -32396,7 +32396,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "the_estimate_goes_on_from_the_event_log_after_the_page_server_is_replaced"
-        body: af3a626747d545149120e7813f4fe44826d772a462abe25793f72f190242fba5
+        body: 2e548358b1ce317de724903ebc0d8ed1008419e02fcd524dcacacc56c332dd63
   - node: 01a1c361-317c-7261-ad5c-1638529070d0
     reviewed: 43553369f94b8771cf75d202e342e76f102484232e8e81ca530d8f8d52247738
     tests:
@@ -32408,16 +32408,16 @@ links:
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_counts_the_edits_of_code_made_before_the_specification_was_first_consulted"
-        body: d65e510d1863c55cedbbfd663d1bc57b2c36e831cae002ecc301f12cdf3f7dc3
+        body: 3fee91b9cf10f0198cb419d4e870ff9bb54a311d72ef01d7a27a73d333c87e68
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_whose_specification_was_consulted_first_counts_no_edit_before_it"
-        body: 724ea48e3f771d5114e1388d623f46ecf8039eb2a6dbc4e26f0d26c87914e438
+        body: d5f74040d2fdfaa86d3c5cc963110e7fd37f7e2a7a7eae9f9056524976bcbc60
   - node: 01a1c32b-8dbe-7792-8bde-87d9b82b091a
     reviewed: 54b27a8f7c41116c5216a95718d41f50b4490857011a365934b87a4514a70058
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_counts_the_edits_of_code_made_before_the_specification_was_first_consulted"
-        body: d65e510d1863c55cedbbfd663d1bc57b2c36e831cae002ecc301f12cdf3f7dc3
+        body: 3fee91b9cf10f0198cb419d4e870ff9bb54a311d72ef01d7a27a73d333c87e68
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "a_session_s_calls_are_counted_in_all_by_stage_and_by_agent_and_change_no_revision"
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
@@ -32426,7 +32426,7 @@ links:
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_counts_the_edits_of_code_made_before_the_specification_was_first_consulted"
-        body: d65e510d1863c55cedbbfd663d1bc57b2c36e831cae002ecc301f12cdf3f7dc3
+        body: 3fee91b9cf10f0198cb419d4e870ff9bb54a311d72ef01d7a27a73d333c87e68
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "a_session_s_calls_are_counted_in_all_by_stage_and_by_agent_and_change_no_revision"
         body: ce904b7a857d84a547482f369b22deb8c64a7a806191372f2a3c95b6b3d85ee0
@@ -32435,106 +32435,127 @@ links:
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_whose_specification_was_consulted_first_counts_no_edit_before_it"
-        body: 724ea48e3f771d5114e1388d623f46ecf8039eb2a6dbc4e26f0d26c87914e438
+        body: d5f74040d2fdfaa86d3c5cc963110e7fd37f7e2a7a7eae9f9056524976bcbc60
   - node: 01a1c32b-8dbe-7792-8bde-87dce5abace2
     reviewed: fd8d151d2362c5f9e0b5460c82ddf5cb0416c114cb7f9f5dacc554cff62e01ec
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_with_no_edit_of_code_or_no_consultation_holds_no_time_for_it"
-        body: 95a5d8641a83c687560102bd4737241b742158905bb6e2b22e3ade15015fa36b
+        body: 218edea239c0fa59fa982163dba17bde9031f22eaf244cb57620e7675fc57633
   - node: 01a1c32b-8dbe-7792-8bde-87dd1cecadde
     reviewed: 9f6f1686e17ea357922d98536850d89476d60cc2dd347e81edd3476fc050e52d
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_s_order_takes_every_agent_s_calls_and_an_agent_s_only_its_own"
-        body: 0df9146cfaaf372e2336e3b1d020c2468942579d47dbc7e5bbb005e7a23e0adf
+        body: 251ebbe616a5bee1c6c76d083c44c0aa806f64f4b1b3629e03198d36c42d9cf8
   - node: 01a1c32b-8dbe-7792-8bde-87dfd964ed23
     reviewed: fe71b5504303c55e1e725536954d14f3a9f6c5eb94c8e923d45dd77a1c123ccd
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ended_since"
-        body: b54cf9072341d31842ae6dd65bb15c05bcd4efeda8cac5845c260d75aacd323e
+        body: b89f133b20d1e1e6532f7096d53c3b871ef26bd7ac863b6fc7964a098b80023e
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_cache_write_a_request_does_not_report_counts_as_none"
-        body: d6e28c3e98631b811938124967b8d77f7282b6f9e2d8b68d5348088900735f25
+        body: 44723b5e4d21f00dcd7dff3615c23e7e68b62b237a851e9f97ce6ef1d6136ccd
   - node: 01a1c32b-8dbe-7792-8bde-87e0d17d94f5
     reviewed: 14a0c13ec8ae8d24a0b8a01c8c5e7444dd62fbe8c6d1db1813eb5734874c880c
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ended_since"
-        body: b54cf9072341d31842ae6dd65bb15c05bcd4efeda8cac5845c260d75aacd323e
+        body: b89f133b20d1e1e6532f7096d53c3b871ef26bd7ac863b6fc7964a098b80023e
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_subagent_s_calls_go_to_its_own_requests_not_the_main_agent_s"
-        body: 69a6cd357f93388906ca550b2cd71a77f4d7385b3b57803f983ea8f8f5bd8aeb
+        body: ec9b7c2a651aaccec7c33b5cb6fce62325282aeb9ec047eb4818e31ace9f1931
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_call_still_open_across_a_whole_request_is_let_go_and_one_open_across_none_is_kept"
-        body: c0a63810b03fa91ca64df83c9b1c02aa37fec0007b5e1867237080c63b03239d
+        body: a1ac0582fe2db9c9f95ac2ae290167a1e942ae2021520f7b1e7e9fd9770937b3
+      - file: "crates/yardlog/tests/consult.rs"
+        name: "each_agent_s_call_is_known_by_its_own_id_and_a_call_with_no_id_is_left_out"
+        body: b23cbe3c96d131520c9435bbc4bc9584c01c8995983197a839d801f414824b52
   - node: 01a1c32b-8dbe-7792-8bde-87e14193ae69
     reviewed: 4829aad8572f2af4962c4e789af18e9f551c8e81d9f28ef0a542a2f1023c0ec7
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ended_since"
-        body: b54cf9072341d31842ae6dd65bb15c05bcd4efeda8cac5845c260d75aacd323e
+        body: b89f133b20d1e1e6532f7096d53c3b871ef26bd7ac863b6fc7964a098b80023e
   - node: 01a1c32b-8dbe-7792-8bde-87e28b46b3cf
     reviewed: 9091ca3f66dbda081ce03ebeb7af1f9373cfa88ab26442cd5b517a5b6042f4cf
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ended_since"
-        body: b54cf9072341d31842ae6dd65bb15c05bcd4efeda8cac5845c260d75aacd323e
+        body: b89f133b20d1e1e6532f7096d53c3b871ef26bd7ac863b6fc7964a098b80023e
   - node: 01a1c32b-8dbe-7792-8bde-87e3b58b15bf
     reviewed: 8d1d6ba4f52a5c6bd8a00c3ecf58d743e4bf9461df59ac06ffe8097e54c67c9e
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "an_agent_s_first_request_a_growth_of_none_and_a_request_with_no_call_ended_attribute_nothing"
-        body: 7e4e0bddd4eb389e3b18a31a6543c0faadd4833a9501ad756b5ba278df431fd6
+        body: 3718f0d06cbbf455485fb87f8a1d60f3b9e89565e339cd89c599785c4b766aea
   - node: 01a1c32b-8dbe-7792-8bde-87e425d9dc9d
     reviewed: 03f231ffe1706209c79a52e03b3412d9767d551cf68dd0fb961664cd3e371016
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "an_agent_s_first_request_a_growth_of_none_and_a_request_with_no_call_ended_attribute_nothing"
-        body: 7e4e0bddd4eb389e3b18a31a6543c0faadd4833a9501ad756b5ba278df431fd6
+        body: 3718f0d06cbbf455485fb87f8a1d60f3b9e89565e339cd89c599785c4b766aea
+      - file: "crates/yardlog/tests/consult.rs"
+        name: "a_subagent_whose_run_ended_is_let_go_with_its_calls"
+        body: 352a9a968014e8571f1b2dd35b80e4441691b31ec364f1a0bf982beb27b5bfff
+  - node: 01a1c41a-0353-7192-92d7-45ce5d0d3c10
+    reviewed: ad43da8530a9e6390c260ecf284d68d7740b280e9e50677ffb595505a8820b60
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_consult.rs"
+        name: "a_request_is_measured_against_its_agent_s_previous_request_whichever_yard_log_kept_it"
+        body: 904e17da53a860f56b9bb2379849d925847d0f4d70cd6979a6649cca3ef37a1f
+  - node: 01a1c41a-0353-7192-92d7-45cfa555fb33
+    reviewed: d95f898c050f352688410642e4f718a813e1705e95c1858528af5ab583262642
+    tests:
+      - file: "crates/yardlog/tests/consult.rs"
+        name: "a_request_after_one_no_yard_log_kept_attributes_nothing_and_leaves_the_estimate_whole"
+        body: 0d76be8ab0b25ce7f9b314565485adfc9c12b7a199db74ae6acacc28561b749c
+      - file: "crates/loft-cli/tests/yard_serve_consult.rs"
+        name: "a_request_after_one_no_yard_log_kept_attributes_nothing"
+        body: f65dd86bf7b0fc115b3dce122f648eff7701c2fa80bcf251bb95d4f1387606c7
   - node: 01a1c32b-8dbe-7792-8bde-87e52b1f0e19
     reviewed: b04493093a9597d1efdd256038b770019002354b269400f0e7f19d8c1f5238ef
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_request_that_lacks_a_count_or_follows_one_that_does_attributes_nothing_and_marks_partial"
-        body: c18fdc7a7705e25611ae3a490b8967d7890e37416bb61612ebc6ffe1c1a5c1ac
+        body: 294cd32b2ae48c354f6ec2072569a63cd082517405f6ce971c31ffd2a850b559
   - node: 01a1c32b-8dbe-7792-8bde-87e62e8467c2
     reviewed: 537e093e41a0ced7d42a31e1cb651cb6c50e912bc388e9f7772861e93998e075
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ended_since"
-        body: b54cf9072341d31842ae6dd65bb15c05bcd4efeda8cac5845c260d75aacd323e
+        body: b89f133b20d1e1e6532f7096d53c3b871ef26bd7ac863b6fc7964a098b80023e
       - file: "crates/loft-cli/tests/yard_serve_consult.rs"
         name: "the_estimate_goes_on_from_the_event_log_after_the_page_server_is_replaced"
-        body: af3a626747d545149120e7813f4fe44826d772a462abe25793f72f190242fba5
+        body: 2e548358b1ce317de724903ebc0d8ed1008419e02fcd524dcacacc56c332dd63
   - node: 01a1c32b-8dbe-7792-8bde-87e8be888064
     reviewed: edf2d0803bc508ce0c750a0e4f47a986fff95358d2f2e1699a4926e76105e82b
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "the_sums_take_the_earliest_times_and_each_session_s_edits_before_the_specification"
-        body: 41c5233f33394ea7e7fc6bb69666db4c19844e9c8d39a55a32f283d0049289b6
+        body: 589e3c4da8661f310556f1c2ca216ed663bb59b71716868e9ff5f7664678f613
   - node: 01a1c32b-8dbe-7792-8bde-87e92dbaf3e7
     reviewed: 3e81aa7a7f5f4efc7238a2586d34cc9db0087711506a9e2a29d5b8e9c2fb8402
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "the_sums_take_the_earliest_times_and_each_session_s_edits_before_the_specification"
-        body: 41c5233f33394ea7e7fc6bb69666db4c19844e9c8d39a55a32f283d0049289b6
+        body: 589e3c4da8661f310556f1c2ca216ed663bb59b71716868e9ff5f7664678f613
   - node: 01a1c32b-8dbe-7792-8bde-87ea4e8cba03
     reviewed: a76aff02bba3e57e88cfb2f69df6c3e600f0e532562dd071b965a56af04ccfe8
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "the_sums_take_the_earliest_times_and_each_session_s_edits_before_the_specification"
-        body: 41c5233f33394ea7e7fc6bb69666db4c19844e9c8d39a55a32f283d0049289b6
+        body: 589e3c4da8661f310556f1c2ca216ed663bb59b71716868e9ff5f7664678f613
   - node: 01a1c32b-8dbe-7792-8bde-87eb9bc2fb13
     reviewed: 19bd513b4173555c4612d8bacf3f075645e86c5fd9987d2fc437c379e532e0c0
     tests:
       - file: "crates/yardlog/tests/consult.rs"
         name: "the_sums_take_the_earliest_times_and_each_session_s_edits_before_the_specification"
-        body: 41c5233f33394ea7e7fc6bb69666db4c19844e9c8d39a55a32f283d0049289b6
+        body: 589e3c4da8661f310556f1c2ca216ed663bb59b71716868e9ff5f7664678f613
       - file: "crates/yardlog/tests/consult.rs"
         name: "the_sums_by_agent_type_take_each_subagent_of_a_type_together"
-        body: c052ae485331d97a2cabafa00663d29f56c10188e50d86790df67411378fd000
+        body: 8eea29923cf817254623c7ce06008455142e3be0d77d5d83256388e589a8ac3f
   - node: 01a1c36e-0e5b-76ce-a046-ba0e89613c72
     reviewed: 9d9bbd0b46e671622e1e98130cfeee99e936e0446a3e8895cc87359356f2a169
     tests:

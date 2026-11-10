@@ -4,7 +4,7 @@
 
 use serde_json::{Value, json};
 use yardlog::Time;
-use yardlog::consult::{Call, Class, Consultation, Sums, reads_spec};
+use yardlog::consult::{Call, Class, Consultation, Estimate, Live, Sums, reads_spec};
 use yardlog::totals::Who;
 use yardlog::usage::Counts;
 
@@ -49,9 +49,58 @@ fn tokens(input: u64, read: u64, write: Option<u64>, output: u64) -> Counts {
     Counts::read(&usage)
 }
 
+/// A session's consultation file with the estimate state its page server keeps beside it.
+struct Session {
+    file: Consultation,
+    live: Live,
+}
+
+impl Session {
+    fn new(session: &str, host: &str) -> Self {
+        Self {
+            file: Consultation::new(session, host),
+            live: Live::default(),
+        }
+    }
+
+    fn start(&mut self, call: &Call<'_>, stage: Option<&str>) -> bool {
+        self.live.started(call);
+        self.file.start(call, stage)
+    }
+
+    fn end(&mut self, who: &Who, id: &str) {
+        self.live.ended(who, id);
+    }
+
+    fn request(
+        &mut self,
+        who: &Who,
+        at: Time,
+        tokens: Option<Counts>,
+        stage: Option<&str>,
+    ) -> bool {
+        let attributed = self.live.requested(who, tokens);
+        self.file.request(who, at, attributed, stage)
+    }
+}
+
+impl std::ops::Deref for Session {
+    type Target = Consultation;
+
+    fn deref(&self) -> &Consultation {
+        &self.file
+    }
+}
+
+impl std::ops::DerefMut for Session {
+    fn deref_mut(&mut self) -> &mut Consultation {
+        &mut self.file
+    }
+}
+
 #[test]
 fn a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     let sub = explore();
     assert!(consultation.start(&call(&MAIN, "c1", 1, &[Class::Spec], &[]), Some("shape")));
     assert!(consultation.start(&call(&sub, "c2", 2, &[Class::Code], &[]), Some("shape")));
@@ -77,7 +126,7 @@ fn a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent() {
 
 #[test]
 fn a_call_whose_reads_hold_two_classes_adds_one_to_the_reads_of_each() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.start(
         &call(
             &MAIN,
@@ -99,7 +148,7 @@ fn a_call_whose_reads_hold_two_classes_adds_one_to_the_reads_of_each() {
 fn a_loft_read_adds_one_loft_read_and_other_loft_subcommands_add_none() {
     assert!(reads_spec(["find", "check"]));
     assert!(!reads_spec(["publish", "fmt", "yard"]));
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     let mut loft = call(&MAIN, "c1", 1, &[], &[]);
     loft.loft_read = reads_spec(["find", "check"]);
     assert!(consultation.start(&loft, None));
@@ -112,7 +161,7 @@ fn a_loft_read_adds_one_loft_read_and_other_loft_subcommands_add_none() {
 
 #[test]
 fn a_session_that_counted_no_call_has_no_file_to_write() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     assert!(!consultation.start(&call(&MAIN, "c1", 1, &[], &[]), Some("shape")));
     assert!(!consultation.counted());
     consultation.start(&call(&MAIN, "c2", 5, &[Class::Code], &[]), Some("shape"));
@@ -134,7 +183,7 @@ fn a_session_that_counted_no_call_has_no_file_to_write() {
 
 #[test]
 fn a_stage_counts_the_edits_of_code_made_before_the_specification_was_first_consulted() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[], &[Class::Code]), Some("build"));
     consultation.start(&call(&MAIN, "c2", 2, &[], &[Class::Code]), Some("build"));
     consultation.start(&call(&MAIN, "c3", 3, &[Class::Spec], &[]), Some("build"));
@@ -148,7 +197,7 @@ fn a_stage_counts_the_edits_of_code_made_before_the_specification_was_first_cons
 
 #[test]
 fn a_stage_whose_specification_was_consulted_first_counts_no_edit_before_it() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     let mut loft = call(&MAIN, "c1", 1, &[], &[]);
     loft.loft_read = true;
     consultation.start(&loft, Some("build"));
@@ -160,7 +209,7 @@ fn a_stage_whose_specification_was_consulted_first_counts_no_edit_before_it() {
 
 #[test]
 fn a_stage_with_no_edit_of_code_or_no_consultation_holds_no_time_for_it() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[Class::Code], &[]), Some("shape"));
     let order = consultation.stages["shape"].all.order;
     assert_eq!((order.first_spec, order.first_code_edit), (None, None));
@@ -174,7 +223,7 @@ fn a_stage_with_no_edit_of_code_or_no_consultation_holds_no_time_for_it() {
 
 #[test]
 fn a_stage_s_order_takes_every_agent_s_calls_and_an_agent_s_only_its_own() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     let sub = explore();
     consultation.start(&call(&sub, "c1", 1, &[Class::Spec], &[]), Some("build"));
     consultation.start(&call(&MAIN, "c2", 2, &[], &[Class::Code]), Some("build"));
@@ -186,7 +235,7 @@ fn a_stage_s_order_takes_every_agent_s_calls_and_an_agent_s_only_its_own() {
 
 #[test]
 fn the_file_holds_when_its_last_event_happened_for_a_merge_to_take_the_later_copy() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[Class::Spec], &[]), Some("shape"));
     consultation.end(&MAIN, "c1");
     consultation.request(&MAIN, at(2), Some(tokens(10, 100, None, 5)), Some("shape"));
@@ -203,7 +252,7 @@ fn the_file_holds_when_its_last_event_happened_for_a_merge_to_take_the_later_cop
 
 #[test]
 fn a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ended_since() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.request(
         &MAIN,
         at(1),
@@ -236,7 +285,7 @@ fn a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ende
 
 #[test]
 fn an_agent_s_first_request_a_growth_of_none_and_a_request_with_no_call_ended_attribute_nothing() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[Class::Spec], &[]), None);
     consultation.end(&MAIN, "c1");
     assert!(!consultation.request(&MAIN, at(2), Some(tokens(10, 500, None, 50)), None));
@@ -250,7 +299,7 @@ fn an_agent_s_first_request_a_growth_of_none_and_a_request_with_no_call_ended_at
 
 #[test]
 fn a_request_that_lacks_a_count_or_follows_one_that_does_attributes_nothing_and_marks_partial() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.request(&MAIN, at(1), Some(tokens(10, 100, None, 5)), None);
     consultation.start(&call(&MAIN, "c1", 2, &[Class::Spec], &[]), None);
     consultation.end(&MAIN, "c1");
@@ -266,7 +315,7 @@ fn a_request_that_lacks_a_count_or_follows_one_that_does_attributes_nothing_and_
 
 #[test]
 fn a_cache_write_a_request_does_not_report_counts_as_none() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.request(&MAIN, at(1), Some(tokens(10, 100, None, 5)), None);
     consultation.start(&call(&MAIN, "c1", 2, &[Class::Code], &[]), None);
     consultation.end(&MAIN, "c1");
@@ -277,7 +326,7 @@ fn a_cache_write_a_request_does_not_report_counts_as_none() {
 
 #[test]
 fn a_subagent_s_calls_go_to_its_own_requests_not_the_main_agent_s() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     let sub = explore();
     consultation.request(&MAIN, at(1), Some(tokens(10, 100, None, 5)), Some("shape"));
     consultation.request(&sub, at(1), Some(tokens(10, 100, None, 5)), Some("shape"));
@@ -306,10 +355,10 @@ fn activity(session: &str, consults: bool) -> Value {
 
 #[test]
 fn the_sums_take_the_earliest_times_and_each_session_s_edits_before_the_specification() {
-    let mut first = Consultation::new("s1", "claude-code");
+    let mut first = Session::new("s1", "claude-code");
     first.start(&call(&MAIN, "c1", 5, &[], &[Class::Code]), Some("build"));
     first.start(&call(&MAIN, "c2", 6, &[Class::Spec], &[]), Some("build"));
-    let mut second = Consultation::new("s2", "claude-code");
+    let mut second = Session::new("s2", "claude-code");
     second.start(&call(&MAIN, "c1", 2, &[Class::Spec], &[]), Some("build"));
     second.start(&call(&MAIN, "c2", 3, &[], &[Class::Code]), Some("build"));
     second.partial = true;
@@ -337,7 +386,7 @@ fn the_sums_take_the_earliest_times_and_each_session_s_edits_before_the_specific
 
 #[test]
 fn the_sums_by_agent_type_take_each_subagent_of_a_type_together() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     let two = Who::Sub {
         id: "a2".into(),
         kind: "Explore".into(),
@@ -365,7 +414,7 @@ fn the_sums_leave_out_a_file_of_another_format_and_are_partial() {
 
 #[test]
 fn a_call_still_open_across_a_whole_request_is_let_go_and_one_open_across_none_is_kept() {
-    let mut consultation = Consultation::new("s1", "claude-code");
+    let mut consultation = Session::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "refused", 1, &[Class::Spec], &[]), None);
     consultation.request(&MAIN, at(2), Some(tokens(10, 100, None, 5)), None);
     consultation.start(&call(&MAIN, "late", 3, &[Class::Code], &[]), None);
@@ -377,4 +426,54 @@ fn a_call_still_open_across_a_whole_request_is_let_go_and_one_open_across_none_i
     consultation.request(&MAIN, at(5), Some(tokens(10, 300, None, 5)), None);
     assert_eq!(consultation.estimate.spec, 0);
     assert_eq!(consultation.estimate.code, 195);
+}
+
+#[test]
+fn each_agent_s_call_is_known_by_its_own_id_and_a_call_with_no_id_is_left_out() {
+    let mut consultation = Session::new("s1", "claude-code");
+    let sub = explore();
+    for who in [&MAIN, &sub] {
+        consultation.request(who, at(1), Some(tokens(10, 100, None, 5)), None);
+    }
+    consultation.start(&call(&MAIN, "c1", 2, &[Class::Spec], &[]), None);
+    consultation.start(&call(&sub, "c1", 2, &[Class::Code], &[]), None);
+    consultation.start(&call(&MAIN, "", 2, &[Class::Other], &[]), None);
+    consultation.end(&MAIN, "c1");
+    consultation.end(&sub, "c1");
+    consultation.end(&MAIN, "");
+    consultation.request(&MAIN, at(3), Some(tokens(10, 200, None, 5)), None);
+    consultation.request(&sub, at(3), Some(tokens(10, 200, None, 5)), None);
+    assert_eq!(consultation.estimate.spec, 95);
+    assert_eq!(consultation.estimate.code, 95);
+    assert_eq!(consultation.estimate.other, 0);
+    assert_eq!(consultation.counts.other_reads, 1);
+}
+
+#[test]
+fn a_request_after_one_no_yard_log_kept_attributes_nothing_and_leaves_the_estimate_whole() {
+    let mut consultation = Session::new("s1", "claude-code");
+    consultation.request(&MAIN, at(1), Some(tokens(10, 100, None, 5)), None);
+    consultation.start(&call(&MAIN, "c1", 2, &[Class::Spec], &[]), None);
+    consultation.end(&MAIN, "c1");
+    consultation.live.skipped(&MAIN);
+    assert!(!consultation.request(&MAIN, at(3), Some(tokens(10, 900, None, 5)), None));
+    consultation.start(&call(&MAIN, "c2", 4, &[Class::Code], &[]), None);
+    consultation.end(&MAIN, "c2");
+    consultation.request(&MAIN, at(5), Some(tokens(10, 1000, None, 5)), None);
+    assert_eq!(consultation.estimate.spec, 0);
+    assert_eq!(consultation.estimate.code, 95);
+    assert!(!consultation.partial);
+}
+
+#[test]
+fn a_subagent_whose_run_ended_is_let_go_with_its_calls() {
+    let mut consultation = Session::new("s1", "claude-code");
+    let sub = explore();
+    consultation.request(&sub, at(1), Some(tokens(10, 100, None, 5)), None);
+    consultation.start(&call(&sub, "c1", 2, &[Class::Spec], &[]), None);
+    consultation.live.forget(&sub);
+    consultation.end(&sub, "c1");
+    // Its id reused by a later run: nothing of the first run's is left to measure against.
+    assert!(!consultation.request(&sub, at(3), Some(tokens(10, 900, None, 5)), None));
+    assert_eq!(consultation.estimate, Estimate::default());
 }

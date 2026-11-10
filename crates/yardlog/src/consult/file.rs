@@ -138,11 +138,17 @@ impl Stage {
 }
 
 impl Consultation {
+    /// Whether the consultation file `file`, as JSON, is of the format `yardconsult/1`.
+    #[must_use]
+    pub fn of_this_format(file: &Value) -> bool {
+        file["format"] == FORMAT
+    }
+
     /// Reads a consultation file as JSON, as [`Consultation::text`] wrote it; none where it names
     /// a format other than `yardconsult/1`.
     #[must_use]
     pub fn read(file: &Value) -> Option<Self> {
-        if file["format"] != FORMAT {
+        if !Self::of_this_format(file) {
             return None;
         }
         let stages = file["stages"].as_array().into_iter().flatten();
@@ -159,7 +165,6 @@ impl Consultation {
             stages: stages.collect(),
             no_stage: file.get("noStage").map(Stage::read),
             partial: file["partial"].as_bool().unwrap_or_default(),
-            ..Self::default()
         })
     }
 

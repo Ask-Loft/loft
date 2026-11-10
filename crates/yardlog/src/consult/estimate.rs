@@ -118,54 +118,79 @@ struct Agent {
     requests: u64,
 }
 
-/// A call started and not yet ended: its agent, how many requests its agent had made when it
-/// started, and its classes.
+/// A call started and not yet ended: how many requests its agent had made when it started, and
+/// its classes.
 #[derive(Debug, Clone)]
 struct Open {
-    who: Who,
     requests: u64,
     classes: Vec<Option<Class>>,
 }
 
-/// What the estimate needs between events: the calls started and not yet ended, by their id,
-/// and each agent's state. No file holds it: replaying a session's events rebuilds it.
+/// What a model request attributes: the estimate it adds, and whether it left out a request
+/// that lacked a count.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct Attributed {
+    pub estimate: Estimate,
+    pub partial: bool,
+}
+
+/// What the estimate of one session needs between its events, whichever Yard Log keeps them: the
+/// calls started and not yet ended, by their agent and id, and each agent's state. No file holds
+/// it: replaying the session's events rebuilds it.
 #[derive(Debug, Clone, Default)]
-pub(super) struct Live {
-    calls: HashMap<String, Open>,
+pub struct Live {
+    calls: HashMap<(Who, String), Open>,
     agents: HashMap<Who, Agent>,
 }
 
 impl Live {
-    pub(super) fn started(&mut self, call: &Call<'_>) {
+    /// Notes the start of `call`, counted or not. A call with no id is not noted, as no end can
+    /// name it.
+    pub fn started(&mut self, call: &Call<'_>) {
+        if call.id.is_empty() {
+            return;
+        }
         let requests = self.agents.get(call.who).map_or(0, |agent| agent.requests);
         let open = Open {
-            who: call.who.clone(),
             requests,
             classes: classes(call),
         };
-        self.calls.insert(call.id.to_owned(), open);
+        self.calls
+            .insert((call.who.clone(), call.id.to_owned()), open);
     }
 
-    pub(super) fn ended(&mut self, who: &Who, id: &str) {
-        let Some(open) = self.calls.remove(id) else {
+    /// Notes the end of the call `id` of `who`, whose result the agent's next request reads.
+    pub fn ended(&mut self, who: &Who, id: &str) {
+        let Some(open) = self.calls.remove(&(who.clone(), id.to_owned())) else {
             return;
         };
-        // A call ends in the agent that started it; an end that names another is not its own.
-        if &open.who == who {
-            let agent = self.agents.entry(open.who).or_default();
-            agent.ended.push(open.classes);
+        let agent = self.agents.entry(who.clone()).or_default();
+        agent.ended.push(open.classes);
+    }
+
+    /// Notes a request of `who` that no Yard Log kept: the agent's next request has no earlier
+    /// one to be measured against, and the calls ended before it are let go.
+    pub fn skipped(&mut self, who: &Who) {
+        if let Some(agent) = self.agents.get_mut(who) {
+            agent.last = None;
+            agent.ended.clear();
         }
     }
 
-    /// What the request of `who` with `tokens` attributes, and whether it left out a request
-    /// that lacked a count.
-    pub(super) fn requested(&mut self, who: &Who, tokens: Option<Counts>) -> (Estimate, bool) {
+    /// Lets go of the subagent `who`, whose run ended and which makes no more requests.
+    pub fn forget(&mut self, who: &Who) {
+        self.agents.remove(who);
+        self.calls.retain(|(owner, _), _| owner != who);
+    }
+
+    /// What the request of `who` with `tokens` attributes.
+    pub fn requested(&mut self, who: &Who, tokens: Option<Counts>) -> Attributed {
         let agent = self.agents.entry(who.clone()).or_default();
         // A call of the agent still open across a whole request never ended: one the person
         // refused or interrupted. It is let go, so that what the page server keeps stays bounded.
         let made = agent.requests;
         self.calls
-            .retain(|_, open| &open.who != who || open.requests >= made);
+            .retain(|(owner, _), open| owner != who || open.requests >= made);
         agent.requests += 1;
         let ended = std::mem::take(&mut agent.ended);
         let now = Last::of(tokens);
@@ -179,18 +204,24 @@ impl Live {
         ) = (before, now)
         else {
             let partial = now == Last::Unknown || before == Some(Last::Unknown);
-            return (Estimate::default(), partial);
+            return Attributed {
+                partial,
+                ..Attributed::default()
+            };
         };
-        let mut estimate = Estimate::default();
         let growth = prompt.saturating_sub(was.saturating_add(output));
-        if growth == 0 || ended.is_empty() {
-            return (estimate, false);
+        let mut estimate = Estimate::default();
+        if growth == 0 {
+            return Attributed::default();
         }
         for (share, classes) in shares(growth, ended.len()).zip(&ended) {
             for (tokens, class) in shares(share, classes.len()).zip(classes) {
                 estimate.put(*class, tokens);
             }
         }
-        (estimate, false)
+        Attributed {
+            estimate,
+            partial: false,
+        }
     }
 }

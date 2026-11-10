@@ -1,11 +1,13 @@
 //! What a session's agents consulted, as the page server counts it from its events (the Feature
 //! "Count what the agents consulted"): a tool call's start adds its classes and its `loft` reads,
 //! its end readies its result for the agent's next request, and a model request attributes the
-//! growth of its prompt to the calls that ended before it. Only a session whose adapter's
-//! descriptor declares `consults` is counted.
+//! growth of its prompt to the calls that ended before it. The estimate's state is the session's,
+//! whichever Yard Log keeps its events, and a subagent's is let go as its run ends. Only a session
+//! whose adapter's descriptor declares `consults` is counted.
 
 use yardlog::adapter::Descriptor;
-use yardlog::consult::{Call, Class, Consultation, reads_spec};
+use yardlog::consult::{Call, Class, Consultation, Live, reads_spec};
+use yardlog::totals::Who;
 
 use crate::yard::event::{Event, strings};
 
@@ -17,10 +19,12 @@ fn classes(event: &Event, name: &str) -> Vec<Class> {
         .collect()
 }
 
-/// Counts `event` into `consultation` under the session's descriptor `adapter`, `stage` the stage
-/// it counts toward; says whether the file's text changed.
+/// Counts `event` into `consultation`, and the session's estimate state `live`, under the
+/// session's descriptor `adapter`, `stage` the stage it counts toward; says whether the file's
+/// text changed.
 pub fn count(
     consultation: &mut Consultation,
+    live: &mut Live,
     event: &Event,
     stage: Option<&str>,
     adapter: Option<&Descriptor>,
@@ -43,15 +47,23 @@ pub fn count(
                 edits: &edits,
                 loft_read: reads_spec(loft.iter().map(String::as_str)),
             };
+            live.started(&call);
             consultation.start(&call, stage)
         }
         "tool.end" => {
             if let Some(id) = event.call() {
-                consultation.end(&event.who, id);
+                live.ended(&event.who, id);
             }
             false
         }
-        "request" => consultation.request(&event.who, event.at, event.tokens(), stage),
+        "request" => {
+            let attributed = live.requested(&event.who, event.tokens());
+            consultation.request(&event.who, event.at, attributed, stage)
+        }
+        "subagent.end" if matches!(event.who, Who::Sub { .. }) => {
+            live.forget(&event.who);
+            false
+        }
         _ => false,
     }
 }
@@ -59,7 +71,7 @@ pub fn count(
 #[cfg(test)]
 mod tests {
     use yardlog::Time;
-    use yardlog::consult::{Call, Class, Consultation};
+    use yardlog::consult::{Call, Class, Consultation, Live};
     use yardlog::totals::Who;
     use yardlog::usage::Counts;
 
@@ -71,7 +83,7 @@ mod tests {
 
     #[test]
     fn a_consultation_file_reads_back_as_it_was_written() {
-        let mut consultation = Consultation::new("s1", "codex");
+        let (mut consultation, mut live) = (Consultation::new("s1", "codex"), Live::default());
         let sub = Who::Sub {
             id: "a1".to_owned(),
             kind: "Explore".to_owned(),
@@ -92,7 +104,8 @@ mod tests {
             (&Who::Main, "c2", Some("build"), &[], &[Class::Code]),
             (&sub, "c3", None, &[Class::Code, Class::Other], &[]),
         ];
-        consultation.request(&Who::Main, at(1), usage(100), Some("build"));
+        let main = live.requested(&Who::Main, usage(100));
+        consultation.request(&Who::Main, at(1), main, Some("build"));
         for (second, (who, id, stage, reads, edits)) in (2..).zip(calls) {
             let call = Call {
                 at: at(second),
@@ -102,11 +115,14 @@ mod tests {
                 edits,
                 loft_read: false,
             };
+            live.started(&call);
             consultation.start(&call, stage);
-            consultation.end(who, id);
+            live.ended(who, id);
         }
-        consultation.request(&Who::Main, at(8), usage(500), Some("build"));
-        consultation.request(&sub, at(9), None, None);
+        let main = live.requested(&Who::Main, usage(500));
+        consultation.request(&Who::Main, at(8), main, Some("build"));
+        let lacking = live.requested(&sub, None);
+        consultation.request(&sub, at(9), lacking, None);
         let text = consultation.text();
         let read = Consultation::read(&as_read(&text)).expect("a file of its own format");
         assert_eq!(read.text(), text);

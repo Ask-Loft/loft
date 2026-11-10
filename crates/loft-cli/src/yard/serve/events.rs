@@ -1,10 +1,15 @@
 //! The events the mod posts. Each is kept, where its agent's branch has its Yard Log open, in the
 //! session's event log on this machine, `~/.yard/events/<session id>.jsonl`, with the tree and
 //! branch its agent's directory is on as it arrives, the stage it counts toward and the
-//! submissions open; and what it starts or ends, or counts, is kept in the session's activity
-//! and token totals in that Yard Log's folder. The page server rebuilds a session's activity and
-//! totals from its event log the first time it hears of the session. A totals file of a newer
-//! totals format is left as it is, and the session's requests are counted into no file.
+//! submissions open; and what it starts or ends, or counts, is kept in the session's activity,
+//! token totals and consultation in that Yard Log's folder. The page server rebuilds a session's
+//! files, and the state its consultation estimate needs, from its event log the first time it
+//! hears of the session. A totals file of a newer totals format, or a consultation file of
+//! another format, is left as it is, and the session's events are counted into no file of it.
+//!
+//! A request no Yard Log keeps leaves its agent's next request with no earlier one to be
+//! measured against. A page server that rebuilds the session from its event log does not know of
+//! such a request, which the log never held.
 
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
@@ -18,8 +23,8 @@ use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
-use yardlog::consult::Consultation;
-use yardlog::totals::{Totals, TotalsFormat};
+use yardlog::consult::{Consultation, Live};
+use yardlog::totals::Totals;
 
 use super::activity::Activity;
 use super::consulted;
@@ -49,6 +54,9 @@ struct SessionKept {
     receipts: Receipts,
     /// The last descriptor the session posted, which each event that carries none is kept under.
     adapter: Option<Descriptor>,
+    /// What the session's consultation estimate needs between its events, whichever Yard Log
+    /// keeps them.
+    live: Live,
 }
 
 impl SessionKept {
@@ -60,8 +68,7 @@ impl SessionKept {
     }
 }
 
-/// Each session's activity and totals, by session, and the newest text written of each of their
-/// files.
+/// What each session keeps, by session, and the newest text written of each of its files.
 #[derive(Default)]
 pub struct Sessions {
     kept: Mutex<HashMap<String, SessionKept>>,
@@ -216,13 +223,15 @@ fn arrivals(
 }
 
 impl Kept {
-    /// Keeps what `event` adds, under its session's last descriptor `adapter`; gives the files
-    /// whose text changed. Their text is left to [`Kept::texts`], so that a replay renders none.
+    /// Keeps what `event` adds, under its session's last descriptor `adapter` and with its
+    /// session's estimate state `live`; gives the files whose text changed. Their text is left to
+    /// [`Kept::texts`], so that a replay renders none.
     fn apply(
         &mut self,
         event: &Event,
         arrival: (Option<&str>, &[String]),
         adapter: Option<&Descriptor>,
+        live: &mut Live,
     ) -> Vec<SessionFile> {
         let (stage, open) = arrival;
         let mut changed = Vec::new();
@@ -242,7 +251,7 @@ impl Kept {
         let consultation = self
             .consultation
             .get_or_insert_with(|| Consultation::new(&event.session, &event.host));
-        if consulted::count(consultation, event, stage, adapter) {
+        if consulted::count(consultation, live, event, stage, adapter) {
             changed.push(SessionFile::Consultation);
         }
         changed
@@ -286,6 +295,7 @@ fn replay(home: &Home, session: &str) -> SessionKept {
                 &logged.event,
                 (logged.stage, logged.open),
                 kept.adapter.as_ref(),
+                &mut kept.live,
             );
     });
     kept
@@ -330,6 +340,7 @@ impl Sessions {
         for ((index, event), arrival) in indices.into_iter().zip(&events).zip(arrived) {
             let Some(arrival) = arrival else {
                 skipped += 1;
+                skip(&mut kept, event);
                 continue;
             };
             match keep(home, &mut kept, event, &arrival) {
@@ -345,7 +356,7 @@ impl Sessions {
         // a post that writes after a later one leaves that one's newer text in place.
         drop(kept);
         for (path, ((index, generation), store, file, session, text)) in changed {
-            if foreign(&store, file, &session) {
+            if session_files::foreign(&store, file, &session) {
                 continue;
             }
             let wrote = self.written.write(&path, generation, || {
@@ -359,20 +370,6 @@ impl Sessions {
             200,
             &json!({ "recorded": recorded, "skipped": skipped, "rejected": rejected }),
         )
-    }
-}
-
-/// Whether session `session`'s `file` in the Yard Log of `store` is of a format this `loft` does
-/// not write, and so is left as it is: a totals file of a newer totals format or one it does not
-/// know, or a consultation file of a format other than its own.
-fn foreign(store: &YardStore, file: SessionFile, session: &str) -> bool {
-    let read = || session_files::one(store, file, session);
-    match file {
-        SessionFile::Tokens => {
-            read().is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
-        }
-        SessionFile::Consultation => read().is_some_and(|file| Consultation::read(&file).is_none()),
-        SessionFile::Activity => false,
     }
 }
 
@@ -398,6 +395,16 @@ fn note(
             text,
         );
         changed.insert(path, entry);
+    }
+}
+
+/// Notes `event`, which no Yard Log keeps, where it is a request of a session kept in memory: its
+/// agent's next request has no earlier one to be measured against.
+fn skip(kept: &mut HashMap<String, SessionKept>, event: &Event) {
+    if event.kind == "request"
+        && let Some(session) = kept.get_mut(&event.session_key())
+    {
+        session.live.skipped(&event.who);
     }
 }
 
@@ -448,6 +455,7 @@ fn keep(
         event,
         (arrival.stage.as_deref(), &arrival.open),
         session.adapter.as_ref(),
+        &mut session.live,
     );
     Ok(kept.texts(changed))
 }
