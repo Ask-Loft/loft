@@ -93,6 +93,10 @@ requirements:
         name: "A growth of zero or less, or one with no call ended between the two requests, attributes nothing."
       - key: 01a1c32b-8dbe-7792-8bde-87e425d9dc9d
         name: "An agent's first request in the session attributes nothing."
+      - key: 01a1c41a-0353-7192-92d7-45ce5d0d3c10
+        name: "The earlier request is the agent's previous request in the session, whichever Yard Log kept it."
+      - key: 01a1c41a-0353-7192-92d7-45cfa555fb33
+        name: "A request that follows a request of its agent that no Yard Log kept attributes nothing."
       - key: 01a1c32b-8dbe-7792-8bde-87e52b1f0e19
         name: "A request that lacks its input, cache read or output count, or follows one that lacks one, attributes nothing and marks the estimate partial."
       - key: 01a1c32b-8dbe-7792-8bde-87e62e8467c2
