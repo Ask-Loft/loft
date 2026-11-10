@@ -139,15 +139,17 @@ pub struct Order {
 }
 
 impl Order {
+    /// Notes a call at `at`. A call that both consults the specification and edits code, as
+    /// `loft check && apply_patch` does, consults it first: its edit comes after.
     fn note(&mut self, at: Time, consulted: bool, edited_code: bool) {
+        if consulted {
+            self.first_spec.get_or_insert(at);
+        }
         if edited_code {
             self.first_code_edit.get_or_insert(at);
             if self.first_spec.is_none() {
                 self.code_edits_before_spec += 1;
             }
-        }
-        if consulted {
-            self.first_spec.get_or_insert(at);
         }
     }
 

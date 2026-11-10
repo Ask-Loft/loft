@@ -82,6 +82,8 @@ export const CASES = /* consult-cases:start */ {
     { "command": "loft find RQ-12 && loft check", "dir": "/w/repo", "reads": [], "loft": ["find", "check"] },
     { "command": "~/.cargo/bin/loft status --base develop", "dir": "/w/repo", "reads": [], "loft": ["status"] },
     { "command": "L=target/debug/loft; $L render --markdown /tmp/s.md", "dir": "/w/repo", "reads": [], "loft": ["render"] },
+    { "command": "L=loft; ${L} check", "dir": "/w/repo", "reads": [], "loft": ["check"] },
+    { "command": "L=loft; $L} check", "dir": "/w/repo", "reads": [], "loft": [] },
     { "command": "echo 'loft check'", "dir": "/w/repo", "reads": [], "loft": [] },
     { "command": "loft find x | head -5", "dir": "/w/repo", "reads": [], "loft": ["find"] },
     { "command": "loft find x; cat spec/a.yaml", "dir": "/w/repo", "reads": ["spec"], "loft": ["find"] },

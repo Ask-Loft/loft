@@ -208,6 +208,17 @@ fn a_stage_whose_specification_was_consulted_first_counts_no_edit_before_it() {
 }
 
 #[test]
+fn a_call_that_consults_the_specification_and_edits_code_consults_it_first() {
+    let mut consultation = Session::new("s1", "codex");
+    let mut both = call(&MAIN, "c1", 1, &[], &[Class::Code]);
+    both.loft_read = true;
+    consultation.start(&both, Some("build"));
+    let order = consultation.stages["build"].all.order;
+    assert_eq!(order.code_edits_before_spec, 0);
+    assert_eq!(order.spec_first(), Some(true));
+}
+
+#[test]
 fn a_stage_with_no_edit_of_code_or_no_consultation_holds_no_time_for_it() {
     let mut consultation = Session::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[Class::Code], &[]), Some("shape"));

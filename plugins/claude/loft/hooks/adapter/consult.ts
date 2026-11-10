@@ -33,7 +33,8 @@ export function nearest(absolute: string, trees: Iterable<string>): string | und
   let within: string | undefined
   for (const tree of trees) {
     const root = resolve(tree, '/')!
-    const inside = absolute === root ? '' : absolute.startsWith(`${root === '/' ? '' : root}/`) ? absolute.slice(root.length + 1) : undefined
+    const base = root === '/' ? '' : root
+    const inside = absolute === root ? '' : absolute.startsWith(`${base}/`) ? absolute.slice(base.length + 1) : undefined
     // The nearest tree is the one that leaves the shortest path within it.
     if (inside !== undefined && (within === undefined || inside.length < within.length)) within = inside
   }

@@ -72,7 +72,7 @@ export function commandsOf(command: string): Word[][] {
       const close = source.indexOf(c, i + 1)
       const inner = close === -1 ? source.slice(i + 1) : source.slice(i + 1, close)
       word += inner
-      quoted = quoted || !(c === '"' && /^\$\{?[A-Za-z_][A-Za-z0-9_]*\}?$/.test(inner))
+      quoted = quoted || !(c === '"' && VARIABLE.test(inner))
       isWord = true
       i = close === -1 ? source.length : close
     } else if (c === ' ' || c === '\t') {
@@ -98,7 +98,7 @@ export function commandsOf(command: string): Word[][] {
 }
 
 const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s
-const VARIABLE = /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/
+const VARIABLE = /^\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))$/
 
 /** The number of words that open `words` by assigning shell variables. */
 export function assignments(words: Word[]): number {
@@ -124,7 +124,7 @@ export function loftSubcommands(command: string): string[] {
     }
     const first = words[n]!
     const variable = VARIABLE.exec(first.text)
-    const program = variable ? variables.get(variable[1]!) : first.quoted ? undefined : first.text
+    const program = variable ? variables.get((variable[1] ?? variable[2])!) : first.quoted ? undefined : first.text
     if (program === undefined || !isLoft(program)) continue
     const sub = words.slice(n + 1).find(word => !word.text.startsWith('-'))
     if (sub && !sub.quoted && LOFT_SUBCOMMANDS.includes(sub.text) && !names.includes(sub.text)) names.push(sub.text)

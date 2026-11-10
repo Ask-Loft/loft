@@ -32094,6 +32094,9 @@ links:
       - file: "crates/loft-cli/src/yard/consult/tests.rs"
         name: "each_path_of_the_shared_cases_takes_its_class"
         body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "a tree at the root of the file system keeps the whole path within it"
+        body: 92828609012d887f0ec7862804143c7371f749f8665cd352acb15c36e46a54c2
   - node: 01a1c32b-8dbe-7792-8bde-87ab3e8dab60
     reviewed: ab15d136914de4429d5b98209ddc45101507f16a3c0481a7477a53489faadda7
     tests:
@@ -32535,6 +32538,9 @@ links:
       - file: "crates/yardlog/tests/consult.rs"
         name: "a_stage_whose_specification_was_consulted_first_counts_no_edit_before_it"
         body: d5f74040d2fdfaa86d3c5cc963110e7fd37f7e2a7a7eae9f9056524976bcbc60
+      - file: "crates/yardlog/tests/consult.rs"
+        name: "a_call_that_consults_the_specification_and_edits_code_consults_it_first"
+        body: 7cfa8c3a3375093f9492fa895d41718f17b120bf2190056a2c6d0c0f0ea1b300
   - node: 01a1c32b-8dbe-7792-8bde-87dce5abace2
     reviewed: fd8d151d2362c5f9e0b5460c82ddf5cb0416c114cb7f9f5dacc554cff62e01ec
     tests:
