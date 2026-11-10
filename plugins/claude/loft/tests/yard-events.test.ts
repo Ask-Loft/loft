@@ -491,3 +491,39 @@ test('under protocol 3 the descriptor declares that the adapter classifies what 
   const adapter = events(w).find(event => event.kind === 'turn.start')!.adapter as { capabilities: Record<string, unknown> }
   expect(adapter.capabilities.consults).toBe(true)
 })
+
+test('under protocol 3 a path is classed against each tree the page server names, by its real path and by the session\'s spelling', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  w.state.answersBeat = true
+  w.state.servedTrees = ['/real/work/shelf']
+  w.state.registered = { tree: '/real/work/shelf', spelled: '/work/shelf', trees: ['/real/work/shelf'] }
+  w.state.cwd = `${TREE}/crates`
+  await start($, w.state.cwd)
+  await w.clock.settle()
+  // Another session registers its tree; the next beat's answer names it.
+  w.state.servedTrees = ['/real/work/shelf', '/work/other']
+  await w.clock.advance(5000)
+  await w.clock.settle()
+  await $.tool.call({ tool: 'Read', file_path: '/work/other/spec/a.yaml', tool_use_id: 'another' } as never)
+  await $.tool.call({ tool: 'Read', file_path: '/real/work/shelf/spec/a.yaml', tool_use_id: 'real' } as never)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'above' } as never)
+  await $.tool.call({ tool: 'Read', file_path: 'src/x.rs', tool_use_id: 'within' } as never)
+  await $.tool.call({ tool: 'Read', file_path: '/elsewhere/spec/a.yaml', tool_use_id: 'elsewhere' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({
+    another: { reads: ['spec'] },
+    real: { reads: ['spec'] },
+    above: { reads: ['spec'] },
+    within: { reads: ['code'] },
+    elsewhere: { reads: ['other'] },
+  })
+})
+
+test('until a page server answers, a path is classed against the trees the mod registered alone', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'Read', file_path: '/work/other/spec/a.yaml', tool_use_id: 'another' } as never)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'own' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({ another: { reads: ['other'] }, own: { reads: ['spec'] } })
+})

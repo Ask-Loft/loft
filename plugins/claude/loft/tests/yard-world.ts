@@ -138,6 +138,10 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     beats: [] as Doc[],
     /** Whether a page server answers the beat; where none does, the mod runs `loft yard serve`. */
     answersBeat: false,
+    /** The trees the page server names, by their real paths, in its answer to a beat. */
+    servedTrees: undefined as string[] | undefined,
+    /** What the page server answers a tree registered with, where a test names it. */
+    registered: undefined as Doc | undefined,
     /** The one port a page server listens on, where a test names one: a post to another is refused. */
     servedPort: undefined as number | undefined,
     /** The port `loft yard serve` reports for the page server that serves or runs. */
@@ -189,7 +193,12 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
       state.heardAt.push(e.url)
       state.beats.push(beat)
       const status = state.answersBeat ? 200 : 503
-      return { value: { status, ok: state.answersBeat, headers: {}, text: '{}' } as never }
+      const text = JSON.stringify({ session: beat.session, ...(state.servedTrees ? { trees: state.servedTrees } : {}) })
+      return { value: { status, ok: state.answersBeat, headers: {}, text } as never }
+    }
+    if (e.url.endsWith('/api/register') && state.registered !== undefined) {
+      state.posts.push({ url: e.url, headers: (e.init?.headers ?? {}) as Record<string, string>, events: [] })
+      return { value: { status: 200, ok: true, headers: {}, text: JSON.stringify(state.registered) } as never }
     }
     await state.answering
     const headers = (e.init?.headers ?? {}) as Record<string, string>

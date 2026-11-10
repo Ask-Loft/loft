@@ -11,17 +11,39 @@ import type { EngineInterface } from 'claude-code'
 import { QUIET, type Settings } from '../loft'
 import { parseDocument } from '../model'
 import { HOST } from './contract'
-import { postToServer, type Outbox } from './outbox'
+import { answerOf, type Outbox } from './outbox'
 import { argvOf } from './run'
 
 /** How often the mod tells the page server its session is live, in milliseconds. */
 export const BEAT = 5000
 
-/** What the mod knows of the page server: whether its own child serves, and the trees registered. */
-export type Server = { isServing: boolean; isBeating: boolean; trees: Set<string> }
+/**
+ * What the mod knows of the page server: whether its own child serves, the trees the mod
+ * registered as its session spells them, the top of each as the page server named it, by its real
+ * path and as spelled, and the real path of each tree served, as the last answer named them.
+ */
+export type Server = { isServing: boolean; isBeating: boolean; trees: Set<string>; tops: Set<string>; served: Set<string> }
 
 export function serverOf(): Server {
-  return { isServing: false, isBeating: false, trees: new Set() }
+  return { isServing: false, isBeating: false, trees: new Set(), tops: new Set(), served: new Set() }
+}
+
+/** Every tree the mod knows to class a path against, by each spelling it knows. */
+export function known(server: Server): Set<string> {
+  return new Set([...server.trees, ...server.tops, ...server.served])
+}
+
+/** The texts an answer's field `name` holds. */
+function textsOf(answer: Record<string, unknown>, name: string): string[] {
+  const value = answer[name]
+  const all = Array.isArray(value) ? value : [value]
+  return all.filter((each): each is string => typeof each === 'string')
+}
+
+/** Takes what an answer of the page server names of the trees it serves. */
+function learn(server: Server, answer: Record<string, unknown>) {
+  if (Array.isArray(answer.trees)) server.served = new Set(textsOf(answer, 'trees'))
+  for (const top of [...textsOf(answer, 'tree'), ...textsOf(answer, 'spelled')]) server.tops.add(top)
 }
 
 /** The port a `loft yard serve` document reports for the page server that serves or runs, if any. */
@@ -67,9 +89,11 @@ export function serve($: EngineInterface, settings: Settings, server: Server, bo
   })
 }
 
-/** Tells the page server that `session` is live; whether a page server took it. */
-export async function hear($: EngineInterface, box: Outbox, session: string, protocol = 1): Promise<boolean> {
-  return postToServer($, box, '/api/heard', { session, ...(protocol >= 2 ? { host: HOST } : {}) })
+/** Tells the page server that `session` is live, learning the trees it serves; whether it took it. */
+export async function hear($: EngineInterface, box: Outbox, session: string, protocol = 1, server?: Server): Promise<boolean> {
+  const answer = await answerOf($, box, '/api/heard', { session, ...(protocol >= 2 ? { host: HOST } : {}) })
+  if (answer !== undefined && server !== undefined) learn(server, answer)
+  return answer !== undefined
 }
 
 /**
@@ -78,8 +102,12 @@ export async function hear($: EngineInterface, box: Outbox, session: string, pro
  * tree itself, unless the mod's own child serves or the last run has yet to say what it did.
  */
 export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
-  if (await hear($, box, session, settings.protocol)) {
-    if (!server.trees.has(tree) && (await postToServer($, box, '/api/register', { tree }))) server.trees.add(tree)
+  if (await hear($, box, session, settings.protocol, server)) {
+    if (server.trees.has(tree)) return
+    const answer = await answerOf($, box, '/api/register', { tree })
+    if (answer === undefined) return
+    server.trees.add(tree)
+    learn(server, answer)
     return
   }
   if (server.isBeating || server.isServing) return

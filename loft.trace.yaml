@@ -32364,6 +32364,51 @@ links:
       - file: "crates/yardlog/tests/adapter.rs"
         name: "a_descriptor_that_holds_no_consults_reads_as_an_adapter_that_does_not_classify"
         body: 0a054f65861befe70d8f0e376a0eae8acdc2ffff8dedce71815402cc07bcee7e
+  - node: 01a1c4f2-a000-7601-8eae-ec9565f952b5
+    reviewed: cde8d15cda445b643457b7795be3a15e4f7edefe1e0837d48c5b2acd02c8416e
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "the_answer_to_a_session_heard_names_the_real_path_of_each_tree_served"
+        body: 87b8118ceeac254499e142bd6b8af909848b19b42ffbbe0f9434b010ab32739e
+  - node: 01a1c4f2-a000-7601-8eae-ec96f2e2bf8a
+    reviewed: 9e725f83ddc13b611dd1d45eeca253c5f8c54cffe4e222d2429c083fb0924cb2
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "the_answer_to_a_tree_registered_names_its_top_by_its_real_path_and_as_spelled"
+        body: 88bf6d7c949564d8498bbea967e43949fd11da4689d4f51adccaae080710b755
+  - node: 01a1c4f2-a000-7601-8eae-ec9750c12327
+    reviewed: 01361c8c13ba27dbeddfe19953d9d5f3890b9dddd6902bf6fd16f3aebc585c60
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "the_answer_to_a_tree_registered_names_its_top_by_its_real_path_and_as_spelled"
+        body: 88bf6d7c949564d8498bbea967e43949fd11da4689d4f51adccaae080710b755
+      - file: "crates/loft-cli/src/yard/serve/trees/tests.rs"
+        name: "the_top_of_a_worktree_is_spelled_as_the_directory_registered_spells_it"
+        body: 6831b144a71f175ab9448a1cce5807da393f847c02110e110258aa4635b99ddc
+  - node: 01a1c4f2-a000-7601-8eae-ec992bef006a
+    reviewed: a069d7c721307635b2aadf1d843ed4bba67bd99bd41cfcadf5b684eb26da854d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
+        body: b7557cc5d9fa537118baa670f673f42c17036e56eccbb31f8ebc1e981bfca363
+  - node: 01a1c4f2-a000-7601-8eae-ec9a6da8e599
+    reviewed: 826d3785c66e22caeabbed06540bf0f01a409a14caa77c9ea1cff7c9725c6bb1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
+        body: b7557cc5d9fa537118baa670f673f42c17036e56eccbb31f8ebc1e981bfca363
+  - node: 01a1c4f2-a000-7601-8eae-ec9b13a061e5
+    reviewed: 42067f2ccdf9499985e5cd287e2a441a56319545615a150860265f4b433437c8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
+        body: b7557cc5d9fa537118baa670f673f42c17036e56eccbb31f8ebc1e981bfca363
+  - node: 01a1c4f2-a000-7601-8eae-ec9c36957441
+    reviewed: fe9fd2822bc00214636d5c19d48134baf048a8e43bdcd3844345eb37127b0854
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "until a page server answers, a path is classed against the trees the mod registered alone"
+        body: 4587d34838b3a2e04051cac755fdda017bb3eaa1e93793a49fbd792147b2140b
   - node: 01a1c32b-8dbe-7792-8bde-87c9b9ea395a
     reviewed: 382c90a78f8b40645ad0e5a9993dca80201662a4a6cec56f526348364ed6154f
     tests:
