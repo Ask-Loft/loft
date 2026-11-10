@@ -7,6 +7,8 @@ body: |
   A search rooted at the tree itself, such as a repository-wide grep, reads the code: it is the code an agent searches when it does not reach for the specification. The rendered projection of the specification, `docs/spec.md`, is code by this rule, since it is not the tree the work is checked against.
 
   Shell commands are read by the same tokenizer that names their `loft` subcommands. The readers are a fixed list of programs, so that a command that writes, builds or tests is never taken for a read; a path a reader names inside quoted text is still a path, but no word of a heredoc is.
+
+  The known trees are not yet the same for every host. Codex's adapter, which is `loft` itself, knows every tree the page server serves and the git top level of its directory, by their real paths. The Claude Code mod, which can run neither git nor a resolution of paths, knows only the trees it registered, spelled as its session names them: a path in another worktree, or one named through another spelling of a symbolic link, is `other` there.
 realizes:
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
   - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
