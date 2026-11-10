@@ -4,6 +4,7 @@
 
 use serde_json::json;
 
+#[cfg(unix)]
 use crate::common::Scratch;
 use crate::served::Served;
 use crate::yard::Yard;
