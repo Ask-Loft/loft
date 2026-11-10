@@ -26715,9 +26715,6 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a tree a tool call reaches is registered with the page server once"
         body: 6efca2c58b6734331c6d095b8edd84ffac8e3ebaec24a95dabb2d9470e1ea14f
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the tree the mod's own loft yard serve registers is not posted again"
-        body: a99f5fbfa24de7244e90b97bf9dbaea631ca933f76598bb2155fd6e902e46f94
   - node: 01a18a3a-4833-7539-a772-a644d88830c8
     reviewed: fa0392af03f3d4e51906c9927c91c55f5638b03097400e904f2b9f4402f88d8b
     tests:
@@ -26729,13 +26726,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where loft yard serve reports a page server running on another port, it registers the tree there, and a tree the session moves into is registered with that page server"
-        body: 68d4fd1db8211910ff4a07e3b29269bb07c9e968d063e3967ef757906bea4841
+        body: 70270735888f196cf341ae38fbf6cac74d5bec45bd43f9120317a1c4b9866dfb
   - node: 01a18a3a-4833-7539-a772-a646e54a4320
     reviewed: 8c379a18a942f6331c202d36673abc6b46970ae59ab065b00aa687b9c13b32ab
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "the events kept while no page server answered are posted, in order, to the page server on the port loft yard serve reports"
-        body: 588625371bb102aa510f980873ffbbaafe9f294715c3855e2e0e6a5dea625e20
+        body: 4189c62afe7194a2890b76ce145ccea8cba55a2c2d0c972befb8079dc2804965
   - node: 01a18a3a-4833-7539-a772-a647df1c0223
     reviewed: 251f5874833a53616310f317f403110d413e425b2b6ff4ed46bdb5755b002d91
     tests:
@@ -28401,7 +28398,7 @@ links:
   - node: 01a16920-dde7-743a-aadb-655b2c318095
     reviewed: ef584b43409ce9315bc057bc6a9ff74113dbe127a14d361799c947f8851b0b23
     tests:
-      - file: "crates/loft-cli/src/yard/serve/trees.rs"
+      - file: "crates/loft-cli/src/yard/serve/trees/tests.rs"
         name: "the_page_server_forgets_what_it_read_of_a_yard_log_no_tree_holds_any_more"
         body: edf6f37c612d0ccaeb56c8d880a3c85b1727d45cacf058f9a348ff5df9797150
   - node: 01a1646f-546d-7042-befd-eb2917150250
@@ -29319,7 +29316,7 @@ links:
       - file: "crates/loft-cli/src/yard/render_log/tests.rs"
         name: "an_open_submission_exposes_the_local_arrival_of_its_current_send"
         body: 9c1eeab1e8221394701cc1f78848d7e6f986b4ec4f5021b8bea9bae65a904d6b
-      - file: "crates/loft-cli/src/yard/serve/trees.rs"
+      - file: "crates/loft-cli/src/yard/serve/trees/tests.rs"
         name: "same_second_waiting_submissions_follow_local_arrival_within_each_log"
         body: 2439268a3ac9840dbb147ad05c13e7b02589cb0123dc4b5e302db62630df021f
   - node: 01a1646f-546d-7042-befd-eb610be82633
@@ -32364,6 +32361,63 @@ links:
       - file: "crates/yardlog/tests/adapter.rs"
         name: "a_descriptor_that_holds_no_consults_reads_as_an_adapter_that_does_not_classify"
         body: 0a054f65861befe70d8f0e376a0eae8acdc2ffff8dedce71815402cc07bcee7e
+  - node: 01a1c4f2-a000-7601-8eae-ec9565f952b5
+    reviewed: cde8d15cda445b643457b7795be3a15e4f7edefe1e0837d48c5b2acd02c8416e
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "the_answer_to_a_session_heard_names_the_real_path_of_each_tree_served"
+        body: 87b8118ceeac254499e142bd6b8af909848b19b42ffbbe0f9434b010ab32739e
+  - node: 01a1c4f2-a000-7601-8eae-ec96f2e2bf8a
+    reviewed: 9e725f83ddc13b611dd1d45eeca253c5f8c54cffe4e222d2429c083fb0924cb2
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "the_answer_to_a_tree_registered_names_its_top_by_its_real_path_and_as_spelled"
+        body: 88bf6d7c949564d8498bbea967e43949fd11da4689d4f51adccaae080710b755
+  - node: 01a1c4f2-a000-7601-8eae-ec9750c12327
+    reviewed: 01361c8c13ba27dbeddfe19953d9d5f3890b9dddd6902bf6fd16f3aebc585c60
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "the_answer_to_a_tree_registered_names_its_top_by_its_real_path_and_as_spelled"
+        body: 88bf6d7c949564d8498bbea967e43949fd11da4689d4f51adccaae080710b755
+      - file: "crates/loft-cli/src/yard/serve/trees/tests.rs"
+        name: "the_top_of_a_worktree_is_spelled_as_the_directory_registered_spells_it"
+        body: 6831b144a71f175ab9448a1cce5807da393f847c02110e110258aa4635b99ddc
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "a_link_within_the_worktree_named_as_its_target_spells_no_top"
+        body: 7e17b3542836ecc532d89e0f7ffb6756c7327996e7f0eecfba62ba85868b6642
+  - node: 01a1c4f2-a000-7601-8eae-ec992bef006a
+    reviewed: a069d7c721307635b2aadf1d843ed4bba67bd99bd41cfcadf5b684eb26da854d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
+        body: b1611ff5787802b3a3f11cda5889037d745c9768e4285eff6506b8d730d323e6
+  - node: 01a1c4f2-a000-7601-8eae-ec9a6da8e599
+    reviewed: 826d3785c66e22caeabbed06540bf0f01a409a14caa77c9ea1cff7c9725c6bb1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
+        body: b1611ff5787802b3a3f11cda5889037d745c9768e4285eff6506b8d730d323e6
+  - node: 01a1c4f2-a000-7601-8eae-ec9b13a061e5
+    reviewed: 42067f2ccdf9499985e5cd287e2a441a56319545615a150860265f4b433437c8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
+        body: b1611ff5787802b3a3f11cda5889037d745c9768e4285eff6506b8d730d323e6
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 the top of a tree the mod's own loft yard serve registered is learned at the next beat"
+        body: 8ad67fe7fadfee77e26c614ba77a10a8689195dd669f71e5b3384a36aeb1e8a8
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the tree the mod's own loft yard serve registers is posted once more, to learn its top"
+        body: a15d853dffce73f80c45c79059d7c1e3ce1af3182f2af06fc155dc87f145d093
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a registration whose answer names no top is posted again at the next beat"
+        body: 7acf2dc05c4082f71c579cd45d29ecbe17aced6eddf12f4e5e9a2527c38eb67b
+  - node: 01a1c4f2-a000-7601-8eae-ec9c36957441
+    reviewed: fe9fd2822bc00214636d5c19d48134baf048a8e43bdcd3844345eb37127b0854
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "until a page server answers, a path is classed against the trees the mod registered alone"
+        body: 4587d34838b3a2e04051cac755fdda017bb3eaa1e93793a49fbd792147b2140b
   - node: 01a1c32b-8dbe-7792-8bde-87c9b9ea395a
     reviewed: 382c90a78f8b40645ad0e5a9993dca80201662a4a6cec56f526348364ed6154f
     tests:
