@@ -82,7 +82,7 @@ requirements:
       shall: "attribute the growth of the request's prompt over the earlier request's, less the earlier request's output, to the classes of the agent's tool calls that ended between the two requests."
     criteria:
       - key: 01a1c32b-8dbe-7792-8bde-87dfd964ed23
-        name: "A request's prompt is the sum of its input, cache read and cache write tokens."
+        name: "A request's prompt is the sum of its input, cache read and cache write tokens, a cache write it does not report counting as none."
       - key: 01a1c32b-8dbe-7792-8bde-87e0d17d94f5
         name: "The growth is shared equally among the calls that ended between the two requests, and a call's share equally among the classes of its `reads` and `edits`."
       - key: 01a1c32b-8dbe-7792-8bde-87e14193ae69
@@ -94,7 +94,7 @@ requirements:
       - key: 01a1c32b-8dbe-7792-8bde-87e425d9dc9d
         name: "An agent's first request in the session attributes nothing."
       - key: 01a1c32b-8dbe-7792-8bde-87e52b1f0e19
-        name: "A request that lacks a counter, or follows one that lacks it, attributes nothing and marks the estimate partial."
+        name: "A request that lacks its input, cache read or output count, or follows one that lacks one, attributes nothing and marks the estimate partial."
       - key: 01a1c32b-8dbe-7792-8bde-87e62e8467c2
         name: "The estimated tokens of each class, `spec`, `code`, `other` and unclassified, are kept in all, by stage and by agent within each stage, under the stage the later request counts toward."
   - key: 01a1c32b-8dbe-7792-8bde-87e7ea3c200d
