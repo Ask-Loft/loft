@@ -121,7 +121,8 @@ test('the events kept while no page server answered are posted, in order, to the
   await $.turn.start({ text: '', turnId: 't2' })
   await w.clock.advance(10000)
   expect(events(w).filter(event => event.kind === 'turn.start').map(event => event.turn)).toEqual(['t1', 't2'])
-  expect(new Set(w.state.posts.map(post => post.url))).toEqual(new Set(['http://127.0.0.1:7412/api/events']))
+  const posted = w.state.posts.filter(post => !post.url.endsWith('/api/register'))
+  expect(new Set(posted.map(post => post.url))).toEqual(new Set(['http://127.0.0.1:7412/api/events']))
   expect(events(w).some(event => 'dropped' in event)).toBe(false)
 })
 
@@ -526,4 +527,18 @@ test('until a page server answers, a path is classed against the trees the mod r
   await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'own' } as never)
   await w.clock.settle()
   expect(consulted(w)).toMatchObject({ another: { reads: ['other'] }, own: { reads: ['spec'] } })
+})
+
+test('under protocol 3 the top of a tree the mod\'s own loft yard serve registered is learned at the next beat', async ($, on) => {
+  const w = world(on, { protocol: 3, serve: 'serving' })
+  w.state.registered = { tree: '/real/work/shelf', spelled: '/work/shelf', trees: ['/real/work/shelf'] }
+  w.state.cwd = `${TREE}/crates`
+  await start($, w.state.cwd)
+  w.state.answersBeat = true
+  await w.clock.advance(5000)
+  await w.clock.settle()
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'above' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({ above: { reads: ['spec'] } })
+  w.state.serverStops.resolve()
 })
