@@ -112,5 +112,7 @@ requirements:
     criteria:
       - key: 01a1c32b-8dbe-7792-8bde-87c5220d0f22
         name: "The Claude and Codex adapters' descriptors each hold `consults: true`."
+      - key: 01a1c338-7d63-7408-bf96-f098bb443e15
+        name: "The Claude adapter declares `consults`, and gives a tool call's start `reads` and `edits`, only where the `loft` it runs speaks protocol 3."
       - key: 01a1c32b-8dbe-7792-8bde-87c63e0639b2
         name: "A descriptor that holds no `consults` reads as an adapter that does not classify tool calls."
