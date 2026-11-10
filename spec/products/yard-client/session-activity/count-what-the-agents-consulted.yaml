@@ -25,6 +25,8 @@ requirements:
     criteria:
       - key: 01a1c32b-8dbe-7792-8bde-87c9b9ea395a
         name: "The consultation file holds the session's id, its host, the format `yardconsult/1`, and when its first and last counted calls started."
+      - key: 01a1c361-e9c9-7789-a822-6c189b29c703
+        name: "The file holds, as `lastEnded`, when the last event it took in happened, by which a merge takes the later of two copies."
       - key: 01a1c32b-8dbe-7792-8bde-87ca9c426d33
         name: "The file holds six counts in all: reads of the specification, reads of code, other reads, `loft` reads, edits of the specification and edits of code."
       - key: 01a1c32b-8dbe-7792-8bde-87cb3f15b117
@@ -51,6 +53,8 @@ requirements:
         name: "A call whose agent works in another worktree is counted in the consultation file of that worktree's Yard Log."
       - key: 01a1c32b-8dbe-7792-8bde-87d66d41322e
         name: "Replaying a session's events after a page-server restart writes the same consultation file."
+      - key: 01a1c361-317c-7261-ad5c-1638529070d0
+        name: "A call of a session whose adapter's descriptor does not declare `consults` is not counted, so that the session writes no consultation file."
   - key: 01a1c32b-8dbe-7792-8bde-87d7ba908f65
     statement:
       form: event_driven
@@ -78,7 +82,7 @@ requirements:
       shall: "attribute the growth of the request's prompt over the earlier request's, less the earlier request's output, to the classes of the agent's tool calls that ended between the two requests."
     criteria:
       - key: 01a1c32b-8dbe-7792-8bde-87dfd964ed23
-        name: "A request's prompt is the sum of its input, cache read and cache write tokens."
+        name: "A request's prompt is the sum of its input, cache read and cache write tokens, a cache write it does not report counting as none."
       - key: 01a1c32b-8dbe-7792-8bde-87e0d17d94f5
         name: "The growth is shared equally among the calls that ended between the two requests, and a call's share equally among the classes of its `reads` and `edits`."
       - key: 01a1c32b-8dbe-7792-8bde-87e14193ae69
@@ -89,8 +93,12 @@ requirements:
         name: "A growth of zero or less, or one with no call ended between the two requests, attributes nothing."
       - key: 01a1c32b-8dbe-7792-8bde-87e425d9dc9d
         name: "An agent's first request in the session attributes nothing."
+      - key: 01a1c41a-0353-7192-92d7-45ce5d0d3c10
+        name: "The earlier request is the agent's previous request in the session, whichever Yard Log kept it."
+      - key: 01a1c41a-0353-7192-92d7-45cfa555fb33
+        name: "A request that follows a request of its agent that no Yard Log kept attributes nothing."
       - key: 01a1c32b-8dbe-7792-8bde-87e52b1f0e19
-        name: "A request that lacks a counter, or follows one that lacks it, attributes nothing and marks the estimate partial."
+        name: "A request that lacks its input, cache read or output count, or follows one that lacks one, attributes nothing and marks the estimate partial."
       - key: 01a1c32b-8dbe-7792-8bde-87e62e8467c2
         name: "The estimated tokens of each class, `spec`, `code`, `other` and unclassified, are kept in all, by stage and by agent within each stage, under the stage the later request counts toward."
   - key: 01a1c32b-8dbe-7792-8bde-87e7ea3c200d
@@ -107,3 +115,15 @@ requirements:
         name: "An estimate that is partial in a contributing file is partial in the sum."
       - key: 01a1c32b-8dbe-7792-8bde-87eb9bc2fb13
         name: "A session whose adapter's descriptor does not declare `consults` is listed as unmeasured, and adds nothing to the sums."
+  - key: 01a1c36e-0e5b-76ce-a046-ba0db0a1dcc5
+    statement:
+      form: unwanted
+      if: "a session's consultation file is of a format other than `yardconsult/1`"
+      system: "the page server"
+      shall: "leave that file as it was and count the session's calls into no file."
+    body: "As with the token totals, an older `loft` reads what it can of a newer format and never writes it."
+    criteria:
+      - key: 01a1c36e-0e5b-76ce-a046-ba0e89613c72
+        name: "The file keeps its bytes while the session's calls go on."
+      - key: 01a1c36e-0e5b-76ce-a046-ba0fe5b5aaac
+        name: "The sums leave the file out and mark the estimate partial."

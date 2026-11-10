@@ -20,7 +20,7 @@ pub(crate) fn open() -> (Yard, Served) {
 }
 
 /// The directory of `yard`'s tree, as an event names it.
-fn dir(yard: &Yard) -> String {
+pub(crate) fn dir(yard: &Yard) -> String {
     yard.scratch.0.canonicalize().unwrap().display().to_string()
 }
 

@@ -1,24 +1,6 @@
 //! The class of a path among the known trees, by its words alone.
 
-/// What a path a tool call reads or edits is: the specification, the code, or neither.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum Class {
-    Spec,
-    Code,
-    Other,
-}
-
-impl Class {
-    /// The class as an event names it.
-    #[must_use]
-    pub const fn name(self) -> &'static str {
-        match self {
-            Self::Spec => "spec",
-            Self::Code => "code",
-            Self::Other => "other",
-        }
-    }
-}
+pub use yardlog::consult::Class;
 
 /// The distinct classes of `classes`, in the order `spec`, `code`, `other`.
 pub fn ordered(classes: impl IntoIterator<Item = Class>) -> Vec<Class> {
