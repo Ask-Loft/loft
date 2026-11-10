@@ -3,6 +3,16 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.4.0-alpha.1 (2026-11-10)
+
+The first prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.0-alpha.1`. It lets you try measuring how far an
+agent's work is led by the specification: the Claude Code mod and the Codex hook class each call
+that reads or edits files as `spec`, `code` or `other`, `loft yard consultation` sums them by
+stage, session and agent with an estimate of the context each class brought in, and the Yard
+page shows a line beside each stage and a Consultation view. The entries under Unreleased below
+list everything 2.4.0 will hold.
+
 ## Unreleased
 
 - Yard measures how far an agent's work is led by the specification. The Claude Code mod and
