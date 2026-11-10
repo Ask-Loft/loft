@@ -1,5 +1,5 @@
-//! A session's consultation file as text, `yardconsult/1`, and back: the counts, the order and the
-//! estimate in all, by stage and within it by agent, and under no stage.
+//! A session's consultation file as text, `yardconsult/1`, and back: the counts and the estimate
+//! in all, and by stage, within it by agent, and under no stage, with each scope's order.
 
 use loft_common::yaml::{Out, write};
 use serde_json::Value;
@@ -9,51 +9,59 @@ use crate::Time;
 use crate::totals::Who;
 
 /// The format a consultation file names.
-pub const FORMAT: &str = "yardconsult/1";
+const FORMAT: &str = "yardconsult/1";
+
+/// The fields of `values` under `names`, each written, a zero too.
+fn counts_out<const N: usize>(
+    names: [&'static str; N],
+    values: [u64; N],
+) -> Vec<(&'static str, Out)> {
+    names
+        .into_iter()
+        .zip(values)
+        .map(|(name, value)| (name, Out::Integer(value)))
+        .collect()
+}
+
+/// The values `value` holds under `names`, an absent one zero.
+fn counts_in<const N: usize>(names: [&str; N], value: &Value) -> [u64; N] {
+    names.map(|name| value[name].as_u64().unwrap_or_default())
+}
 
 impl Six {
-    /// The six counts' fields, each written, a zero too.
-    #[must_use]
-    pub fn fields(self) -> Vec<(&'static str, Out)> {
-        [
-            ("specReads", self.spec_reads),
-            ("codeReads", self.code_reads),
-            ("otherReads", self.other_reads),
-            ("loftReads", self.loft_reads),
-            ("specEdits", self.spec_edits),
-            ("codeEdits", self.code_edits),
-        ]
-        .into_iter()
-        .map(|(name, count)| (name, Out::Integer(count)))
-        .collect()
+    fn fields(self) -> Vec<(&'static str, Out)> {
+        counts_out(Self::NAMES, self.values())
     }
 
-    /// Reads what [`Six::fields`] wrote, as JSON.
-    #[must_use]
-    pub fn from_fields(value: &Value) -> Self {
-        let field = |name: &str| value[name].as_u64().unwrap_or_default();
-        Self {
-            spec_reads: field("specReads"),
-            code_reads: field("codeReads"),
-            other_reads: field("otherReads"),
-            loft_reads: field("loftReads"),
-            spec_edits: field("specEdits"),
-            code_edits: field("codeEdits"),
-        }
+    fn read(value: &Value) -> Self {
+        Self::from_values(counts_in(Self::NAMES, value))
+    }
+}
+
+impl Estimate {
+    /// The estimate's fields, each class that took any tokens.
+    fn fields(self) -> Vec<(&'static str, Out)> {
+        let mut fields = counts_out(Self::NAMES, self.values());
+        fields.retain(|(_, tokens)| !matches!(tokens, Out::Integer(0)));
+        fields
+    }
+
+    fn read(value: &Value) -> Self {
+        Self::from_values(counts_in(Self::NAMES, value))
     }
 }
 
 impl Order {
     /// The order's fields: each time it holds, and the edits of code before the specification.
-    #[must_use]
-    pub fn fields(self) -> Vec<(&'static str, Out)> {
-        let mut fields = Vec::new();
-        if let Some(at) = self.first_spec {
-            fields.push(("firstSpec", Out::Token(at.to_string())));
-        }
-        if let Some(at) = self.first_code_edit {
-            fields.push(("firstCodeEdit", Out::Token(at.to_string())));
-        }
+    fn fields(self) -> Vec<(&'static str, Out)> {
+        let times = [
+            ("firstSpec", self.first_spec),
+            ("firstCodeEdit", self.first_code_edit),
+        ];
+        let mut fields: Vec<_> = times
+            .into_iter()
+            .filter_map(|(name, at)| Some((name, Out::Token(at?.to_string()))))
+            .collect();
         fields.push((
             "codeEditsBeforeSpec",
             Out::Integer(self.code_edits_before_spec),
@@ -61,9 +69,7 @@ impl Order {
         fields
     }
 
-    /// Reads what [`Order::fields`] wrote, as JSON.
-    #[must_use]
-    pub fn from_fields(value: &Value) -> Self {
+    fn read(value: &Value) -> Self {
         Self {
             first_spec: time(value, "firstSpec"),
             first_code_edit: time(value, "firstCodeEdit"),
@@ -76,88 +82,85 @@ fn time(value: &Value, name: &str) -> Option<Time> {
     value[name].as_str().and_then(|at| at.parse().ok())
 }
 
+/// The fields of the counts and the estimate, the estimate only where it took any tokens.
+fn tallies(counts: Six, estimate: Estimate) -> Vec<(&'static str, Out)> {
+    let mut fields = vec![("counts", Out::Mapping(counts.fields()))];
+    let estimate = estimate.fields();
+    if !estimate.is_empty() {
+        fields.push(("estimate", Out::Mapping(estimate)));
+    }
+    fields
+}
+
 impl Scope {
     /// The scope's fields: its counts, its order and its estimate where it took any tokens.
     fn fields(self) -> Vec<(&'static str, Out)> {
-        let mut fields = vec![
-            ("counts", Out::Mapping(self.counts.fields())),
-            ("order", Out::Mapping(self.order.fields())),
-        ];
-        let estimate = self.estimate.fields();
-        if !estimate.is_empty() {
-            fields.push(("estimate", Out::Mapping(estimate)));
-        }
+        let mut fields = tallies(self.counts, self.estimate);
+        fields.insert(1, ("order", Out::Mapping(self.order.fields())));
         fields
     }
 
-    /// Reads what [`Scope::fields`] wrote, as JSON.
-    #[must_use]
-    pub fn from_fields(value: &Value) -> Self {
+    fn read(value: &Value) -> Self {
         Self {
-            counts: Six::from_fields(&value["counts"]),
-            order: Order::from_fields(&value["order"]),
-            estimate: Estimate::from_fields(&value["estimate"]),
+            counts: Six::read(&value["counts"]),
+            order: Order::read(&value["order"]),
+            estimate: Estimate::read(&value["estimate"]),
         }
     }
 }
 
-/// One stage's entry: its key, where it has one, its scope in all, and each agent's.
-fn stage_out(stage: Option<&str>, counted: &Stage) -> Out {
-    let mut fields = Vec::new();
-    if let Some(stage) = stage {
-        fields.push(("stage", Out::Token(stage.to_owned())));
-    }
-    fields.extend(counted.all.fields());
-    let agents = counted.agents.iter().map(|(who, scope)| {
-        let mut fields = who.fields();
-        fields.extend(scope.fields());
-        Out::Mapping(fields)
-    });
-    fields.push(("agents", Out::Sequence(agents.collect())));
-    Out::Mapping(fields)
-}
-
 impl Stage {
-    /// Reads what `stage_out` wrote, as JSON.
-    #[must_use]
-    pub fn from_fields(value: &Value) -> Self {
+    /// The stage's entry: its key, where it has one, its scope in all, and each agent's.
+    fn out(&self, key: Option<&str>) -> Out {
+        let mut fields = Vec::new();
+        if let Some(key) = key {
+            fields.push(("stage", Out::Token(key.to_owned())));
+        }
+        fields.extend(self.all.fields());
+        let agents = self.agents.iter().map(|(who, scope)| {
+            let mut fields = who.fields();
+            fields.extend(scope.fields());
+            Out::Mapping(fields)
+        });
+        fields.push(("agents", Out::Sequence(agents.collect())));
+        Out::Mapping(fields)
+    }
+
+    fn read(value: &Value) -> Self {
         let agents = value["agents"].as_array().into_iter().flatten();
         Self {
-            all: Scope::from_fields(value),
+            all: Scope::read(value),
             agents: agents
-                .map(|agent| (Who::from_fields(agent), Scope::from_fields(agent)))
+                .map(|agent| (Who::from_fields(agent), Scope::read(agent)))
                 .collect(),
         }
     }
 }
 
 impl Consultation {
-    /// Reads a consultation file as JSON, as [`Consultation::text`] wrote it.
+    /// Reads a consultation file as JSON, as [`Consultation::text`] wrote it; none where it names
+    /// a format other than `yardconsult/1`.
     #[must_use]
-    pub fn read(file: &Value) -> Self {
-        let items = |name: &str| file[name].as_array().cloned().unwrap_or_default();
-        let stages = items("stages").into_iter().filter_map(|stage| {
-            Some((
-                stage["stage"].as_str()?.to_owned(),
-                Stage::from_fields(&stage),
-            ))
-        });
-        Self {
+    pub fn read(file: &Value) -> Option<Self> {
+        if file["format"] != FORMAT {
+            return None;
+        }
+        let stages = file["stages"].as_array().into_iter().flatten();
+        let stages = stages
+            .filter_map(|stage| Some((stage["stage"].as_str()?.to_owned(), Stage::read(stage))));
+        Some(Self {
             session: file["session"].as_str().unwrap_or_default().to_owned(),
             host: file["host"].as_str().unwrap_or_default().to_owned(),
             first_started: time(file, "firstStarted"),
             last_started: time(file, "lastStarted"),
             last_ended: time(file, "lastEnded"),
-            all: Scope {
-                counts: Six::from_fields(&file["counts"]),
-                order: Order::default(),
-                estimate: Estimate::from_fields(&file["estimate"]),
-            },
+            counts: Six::read(&file["counts"]),
+            estimate: Estimate::read(&file["estimate"]),
             stages: stages.collect(),
-            no_stage: file.get("noStage").map(Stage::from_fields),
+            no_stage: file.get("noStage").map(Stage::read),
             partial: file["partial"].as_bool().unwrap_or_default(),
             ..Self::default()
-        }
+        })
     }
 
     /// The consultation file's text.
@@ -178,23 +181,16 @@ impl Consultation {
                 fields.push((name, Out::Token(at.to_string())));
             }
         }
-        fields.push(("counts", Out::Mapping(self.all.counts.fields())));
-        let estimate = self.all.estimate.fields();
-        if !estimate.is_empty() {
-            fields.push(("estimate", Out::Mapping(estimate)));
-        }
+        fields.extend(tallies(self.counts, self.estimate));
         if self.partial {
             fields.push(("partial", Out::Plain(true.to_string())));
         }
         if !self.stages.is_empty() {
-            let stages = self
-                .stages
-                .iter()
-                .map(|(stage, counted)| stage_out(Some(stage), counted));
+            let stages = self.stages.iter().map(|(key, stage)| stage.out(Some(key)));
             fields.push(("stages", Out::Sequence(stages.collect())));
         }
-        if let Some(counted) = &self.no_stage {
-            fields.push(("noStage", stage_out(None, counted)));
+        if let Some(stage) = &self.no_stage {
+            fields.push(("noStage", stage.out(None)));
         }
         write(&Out::Mapping(fields))
     }

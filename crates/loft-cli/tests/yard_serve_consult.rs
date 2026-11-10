@@ -6,20 +6,16 @@
 use serde_json::{Value, json};
 
 use crate::served::Served;
-use crate::yard::{ASK, Yard};
+use crate::yard::{ASK, BRANCH, Yard};
 use crate::yard_serve_events::{dir, event, keys, open, post, session_file, tokens};
 
 /// A descriptor that declares `consults`, or one that does not.
 fn descriptor(consults: bool) -> Value {
-    let mut capabilities = json!({
-        "events": ["turn.start", "tool.start", "tool.end", "request"],
-        "usage": ["input", "cacheRead", "cacheWrite", "output"],
-        "nativeQuestions": false, "nativePlans": false, "taskMirroring": true,
-    });
+    let mut adapter = crate::yard_capabilities::descriptor(&["input", "cacheRead", "output"]);
     if consults {
-        capabilities["consults"] = json!(true);
+        adapter["capabilities"]["consults"] = json!(true);
     }
-    json!({"format": "yard-adapter/1", "version": "1.0.0", "capabilities": capabilities})
+    adapter
 }
 
 /// The turn's start that carries the session's descriptor.
@@ -210,10 +206,7 @@ fn the_estimate_goes_on_from_the_event_log_after_the_page_server_is_replaced() {
     let text = consultation(&yard).unwrap();
     // 410 - (110 + 5) = 295 brought in by the one call, which read the specification.
     assert!(text.contains("estimate:\n  spec: 295\n"), "{text}");
-    assert!(
-        text.contains("lastEnded: 2026-01-01T10:00:04Z\n"),
-        "{text}"
-    );
+    assert!(text.contains("lastEnded: 2026-01-01T10:00:04Z\n"), "{text}");
     drop(served);
     let served = Served::start(&yard, &["--tree", &tree]);
     post(&served, &[event(&yard, "turn.end", 5, &json!({}))]);
@@ -222,4 +215,22 @@ fn the_estimate_goes_on_from_the_event_log_after_the_page_server_is_replaced() {
         text,
         "replay writes the same file"
     );
+}
+
+#[test]
+fn a_consultation_file_of_another_format_keeps_its_bytes_while_the_session_s_calls_go_on() {
+    let (yard, served) = open();
+    let path = yard.folder(BRANCH).join("consultation/s1.yaml");
+    std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+    let newer = "format: yardconsult/2\nsession: s1\nhost: claude-code\n";
+    std::fs::write(&path, newer).unwrap();
+    let sent = post(
+        &served,
+        &[
+            described(&yard, true),
+            started(&yard, "c1", 1, &json!({ "reads": ["spec"] })),
+        ],
+    );
+    assert_eq!(sent["recorded"], 2, "{sent}");
+    assert_eq!(std::fs::read_to_string(&path).unwrap(), newer);
 }

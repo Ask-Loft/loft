@@ -4,7 +4,7 @@
 
 use serde_json::{Value, json};
 use yardlog::Time;
-use yardlog::consult::{Call, Class, Consultation, reads_spec, sums};
+use yardlog::consult::{Call, Class, Consultation, Sums, reads_spec};
 use yardlog::totals::Who;
 use yardlog::usage::Counts;
 
@@ -25,7 +25,6 @@ fn call<'a>(
     edits: &'a [Class],
 ) -> Call<'a> {
     Call {
-        host: "claude-code",
         at: at(second),
         who,
         id,
@@ -50,95 +49,16 @@ fn tokens(input: u64, read: u64, write: Option<u64>, output: u64) -> Counts {
     Counts::read(&usage)
 }
 
-/// Checks that the consultation's file reads back as it was written.
-fn round_trips(consultation: &Consultation) {
-    let read = Consultation::read(&json_of(consultation));
-    assert_eq!(
-        read.text(),
-        consultation.text(),
-        "the file reads back as it was written"
-    );
-}
-
-/// The consultation's file as JSON, built from its parts.
-fn json_of(consultation: &Consultation) -> Value {
-    let scope = |scope: &yardlog::consult::Scope| {
-        let mut fields = json!({ "counts": scope.counts.json(), "order": order(scope) });
-        let estimate = scope.estimate.json();
-        if estimate
-            .as_object()
-            .unwrap()
-            .values()
-            .any(|tokens| tokens != 0)
-        {
-            fields["estimate"] = estimate;
-        }
-        fields
-    };
-    let stage = |key: Option<&String>, stage: &yardlog::consult::Stage| {
-        let mut fields = scope(&stage.all);
-        if let Some(key) = key {
-            fields["stage"] = json!(key);
-        }
-        fields["agents"] = json!(
-            stage
-                .agents
-                .iter()
-                .map(|(who, agent)| {
-                    let mut fields = scope(agent);
-                    match who {
-                        Who::Main => fields["agent"] = json!("main"),
-                        Who::Sub { id, kind } => {
-                            fields["agent"] = json!(id);
-                            fields["type"] = json!(kind);
-                        }
-                    }
-                    fields
-                })
-                .collect::<Vec<_>>()
-        );
-        fields
-    };
-    let mut file = json!({
-        "session": consultation.session, "host": consultation.host,
-        "firstStarted": consultation.first_started.map(|at| at.to_string()),
-        "lastStarted": consultation.last_started.map(|at| at.to_string()),
-        "lastEnded": consultation.last_ended.map(|at| at.to_string()),
-        "counts": consultation.all.counts.json(),
-        "partial": consultation.partial,
-        "stages": consultation.stages.iter().map(|(key, counted)| stage(Some(key), counted)).collect::<Vec<_>>(),
-    });
-    let estimate = consultation.all.estimate.json();
-    if estimate
-        .as_object()
-        .unwrap()
-        .values()
-        .any(|tokens| tokens != 0)
-    {
-        file["estimate"] = estimate;
-    }
-    if let Some(none) = &consultation.no_stage {
-        file["noStage"] = stage(None, none);
-    }
-    file
-}
-
-fn order(scope: &yardlog::consult::Scope) -> Value {
-    let mut order = scope.order.json();
-    order.as_object_mut().unwrap().remove("specFirst");
-    order
-}
-
 #[test]
 fn a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     let sub = explore();
     assert!(consultation.start(&call(&MAIN, "c1", 1, &[Class::Spec], &[]), Some("shape")));
     assert!(consultation.start(&call(&sub, "c2", 2, &[Class::Code], &[]), Some("shape")));
     assert!(consultation.start(&call(&MAIN, "c3", 3, &[], &[Class::Code]), Some("build")));
-    assert_eq!(consultation.all.counts.spec_reads, 1);
-    assert_eq!(consultation.all.counts.code_reads, 1);
-    assert_eq!(consultation.all.counts.code_edits, 1);
+    assert_eq!(consultation.counts.spec_reads, 1);
+    assert_eq!(consultation.counts.code_reads, 1);
+    assert_eq!(consultation.counts.code_edits, 1);
     let shape = &consultation.stages["shape"];
     assert_eq!(shape.all.counts.spec_reads + shape.all.counts.code_reads, 2);
     assert_eq!(shape.agents[&MAIN].counts.spec_reads, 1);
@@ -153,12 +73,11 @@ fn a_call_adds_its_classes_to_the_six_counts_in_all_by_stage_and_by_agent() {
         text.contains("agent: a1\n") && text.contains("type: Explore\n"),
         "{text}"
     );
-    round_trips(&consultation);
 }
 
 #[test]
 fn a_call_whose_reads_hold_two_classes_adds_one_to_the_reads_of_each() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.start(
         &call(
             &MAIN,
@@ -169,7 +88,7 @@ fn a_call_whose_reads_hold_two_classes_adds_one_to_the_reads_of_each() {
         ),
         None,
     );
-    let counts = consultation.all.counts;
+    let counts = consultation.counts;
     assert_eq!(
         (counts.spec_reads, counts.code_reads, counts.other_reads),
         (1, 1, 1)
@@ -180,12 +99,12 @@ fn a_call_whose_reads_hold_two_classes_adds_one_to_the_reads_of_each() {
 fn a_loft_read_adds_one_loft_read_and_other_loft_subcommands_add_none() {
     assert!(reads_spec(["find", "check"]));
     assert!(!reads_spec(["publish", "fmt", "yard"]));
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     let mut loft = call(&MAIN, "c1", 1, &[], &[]);
     loft.loft_read = reads_spec(["find", "check"]);
     assert!(consultation.start(&loft, None));
-    assert_eq!(consultation.all.counts.loft_reads, 1);
-    assert_eq!(consultation.all.counts.spec_consultations(), 1);
+    assert_eq!(consultation.counts.loft_reads, 1);
+    assert_eq!(consultation.counts.spec_consultations(), 1);
     let mut other = call(&MAIN, "c2", 2, &[], &[]);
     other.loft_read = reads_spec(["publish"]);
     assert!(!consultation.start(&other, None));
@@ -193,7 +112,7 @@ fn a_loft_read_adds_one_loft_read_and_other_loft_subcommands_add_none() {
 
 #[test]
 fn a_session_that_counted_no_call_has_no_file_to_write() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     assert!(!consultation.start(&call(&MAIN, "c1", 1, &[], &[]), Some("shape")));
     assert!(!consultation.counted());
     consultation.start(&call(&MAIN, "c2", 5, &[Class::Code], &[]), Some("shape"));
@@ -215,7 +134,7 @@ fn a_session_that_counted_no_call_has_no_file_to_write() {
 
 #[test]
 fn a_stage_counts_the_edits_of_code_made_before_the_specification_was_first_consulted() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[], &[Class::Code]), Some("build"));
     consultation.start(&call(&MAIN, "c2", 2, &[], &[Class::Code]), Some("build"));
     consultation.start(&call(&MAIN, "c3", 3, &[Class::Spec], &[]), Some("build"));
@@ -224,28 +143,28 @@ fn a_stage_counts_the_edits_of_code_made_before_the_specification_was_first_cons
     assert_eq!(order.first_code_edit, Some(at(1)));
     assert_eq!(order.first_spec, Some(at(3)));
     assert_eq!(order.code_edits_before_spec, 2);
-    assert_eq!(order.json()["specFirst"], false);
+    assert_eq!(order.spec_first(), Some(false));
 }
 
 #[test]
 fn a_stage_whose_specification_was_consulted_first_counts_no_edit_before_it() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     let mut loft = call(&MAIN, "c1", 1, &[], &[]);
     loft.loft_read = true;
     consultation.start(&loft, Some("build"));
     consultation.start(&call(&MAIN, "c2", 2, &[], &[Class::Code]), Some("build"));
     let order = consultation.stages["build"].all.order;
     assert_eq!(order.code_edits_before_spec, 0);
-    assert_eq!(order.json()["specFirst"], true);
+    assert_eq!(order.spec_first(), Some(true));
 }
 
 #[test]
 fn a_stage_with_no_edit_of_code_or_no_consultation_holds_no_time_for_it() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[Class::Code], &[]), Some("shape"));
     let order = consultation.stages["shape"].all.order;
     assert_eq!((order.first_spec, order.first_code_edit), (None, None));
-    assert_eq!(order.json()["specFirst"], Value::Null);
+    assert_eq!(order.spec_first(), None);
     let text = consultation.text();
     assert!(
         !text.contains("firstSpec") && !text.contains("firstCodeEdit"),
@@ -255,7 +174,7 @@ fn a_stage_with_no_edit_of_code_or_no_consultation_holds_no_time_for_it() {
 
 #[test]
 fn a_stage_s_order_takes_every_agent_s_calls_and_an_agent_s_only_its_own() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     let sub = explore();
     consultation.start(&call(&sub, "c1", 1, &[Class::Spec], &[]), Some("build"));
     consultation.start(&call(&MAIN, "c2", 2, &[], &[Class::Code]), Some("build"));
@@ -267,7 +186,7 @@ fn a_stage_s_order_takes_every_agent_s_calls_and_an_agent_s_only_its_own() {
 
 #[test]
 fn the_file_holds_when_its_last_event_happened_for_a_merge_to_take_the_later_copy() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[Class::Spec], &[]), Some("shape"));
     consultation.end(&MAIN, "c1");
     consultation.request(&MAIN, at(2), Some(tokens(10, 100, None, 5)), Some("shape"));
@@ -284,7 +203,7 @@ fn the_file_holds_when_its_last_event_happened_for_a_merge_to_take_the_later_cop
 
 #[test]
 fn a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ended_since() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.request(
         &MAIN,
         at(1),
@@ -312,12 +231,12 @@ fn a_request_s_prompt_growth_less_the_last_output_is_shared_among_the_calls_ende
     assert_eq!(estimate.code, 98);
     assert_eq!(estimate.spec, 99 + 196);
     assert_eq!(estimate.unclassified, 197);
-    assert_eq!(consultation.all.estimate, estimate);
+    assert_eq!(consultation.estimate, estimate);
 }
 
 #[test]
 fn an_agent_s_first_request_a_growth_of_none_and_a_request_with_no_call_ended_attribute_nothing() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.start(&call(&MAIN, "c1", 1, &[Class::Spec], &[]), None);
     consultation.end(&MAIN, "c1");
     assert!(!consultation.request(&MAIN, at(2), Some(tokens(10, 500, None, 50)), None));
@@ -325,16 +244,13 @@ fn an_agent_s_first_request_a_growth_of_none_and_a_request_with_no_call_ended_at
     consultation.start(&call(&MAIN, "c2", 4, &[Class::Code], &[]), None);
     consultation.end(&MAIN, "c2");
     assert!(!consultation.request(&MAIN, at(5), Some(tokens(10, 900, None, 50)), None));
-    assert_eq!(
-        consultation.all.estimate.spec + consultation.all.estimate.code,
-        0
-    );
+    assert_eq!(consultation.estimate.spec + consultation.estimate.code, 0);
     assert!(!consultation.partial);
 }
 
 #[test]
 fn a_request_that_lacks_a_count_or_follows_one_that_does_attributes_nothing_and_marks_partial() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.request(&MAIN, at(1), Some(tokens(10, 100, None, 5)), None);
     consultation.start(&call(&MAIN, "c1", 2, &[Class::Spec], &[]), None);
     consultation.end(&MAIN, "c1");
@@ -344,87 +260,121 @@ fn a_request_that_lacks_a_count_or_follows_one_that_does_attributes_nothing_and_
     consultation.start(&call(&MAIN, "c2", 4, &[Class::Spec], &[]), None);
     consultation.end(&MAIN, "c2");
     consultation.request(&MAIN, at(5), Some(tokens(10, 900, None, 5)), None);
-    assert_eq!(consultation.all.estimate.spec, 0);
+    assert_eq!(consultation.estimate.spec, 0);
     assert!(consultation.text().contains("partial: true\n"));
 }
 
 #[test]
 fn a_cache_write_a_request_does_not_report_counts_as_none() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     consultation.request(&MAIN, at(1), Some(tokens(10, 100, None, 5)), None);
     consultation.start(&call(&MAIN, "c1", 2, &[Class::Code], &[]), None);
     consultation.end(&MAIN, "c1");
     consultation.request(&MAIN, at(3), Some(tokens(10, 145, None, 5)), None);
-    assert_eq!(consultation.all.estimate.code, 40);
+    assert_eq!(consultation.estimate.code, 40);
     assert!(!consultation.partial);
 }
 
 #[test]
 fn a_subagent_s_calls_go_to_its_own_requests_not_the_main_agent_s() {
-    let mut consultation = Consultation::new("s1");
+    let mut consultation = Consultation::new("s1", "claude-code");
     let sub = explore();
     consultation.request(&MAIN, at(1), Some(tokens(10, 100, None, 5)), Some("shape"));
     consultation.request(&sub, at(1), Some(tokens(10, 100, None, 5)), Some("shape"));
     consultation.start(&call(&sub, "c1", 2, &[Class::Spec], &[]), Some("shape"));
     consultation.end(&sub, "c1");
     consultation.request(&MAIN, at(3), Some(tokens(10, 200, None, 5)), Some("shape"));
-    assert_eq!(consultation.all.estimate.spec, 0);
+    assert_eq!(consultation.estimate.spec, 0);
     consultation.request(&sub, at(4), Some(tokens(10, 200, None, 5)), Some("shape"));
     assert_eq!(consultation.stages["shape"].agents[&sub].estimate.spec, 95);
 }
 
+/// The activity of session `session` under a descriptor that declares `consults`, or not.
+fn activity(session: &str, consults: bool) -> Value {
+    let mut capabilities = json!({
+        "events": [], "usage": [], "nativeQuestions": false, "nativePlans": false,
+        "taskMirroring": false,
+    });
+    if consults {
+        capabilities["consults"] = json!(true);
+    }
+    json!({
+        "session": session, "host": "claude-code",
+        "adapter": {"format": "yard-adapter/1", "version": "1.0.0", "capabilities": capabilities},
+    })
+}
+
 #[test]
 fn the_sums_take_the_earliest_times_and_each_session_s_edits_before_the_specification() {
-    let mut first = Consultation::new("s1");
+    let mut first = Consultation::new("s1", "claude-code");
     first.start(&call(&MAIN, "c1", 5, &[], &[Class::Code]), Some("build"));
     first.start(&call(&MAIN, "c2", 6, &[Class::Spec], &[]), Some("build"));
-    let mut second = Consultation::new("s2");
+    let mut second = Consultation::new("s2", "claude-code");
     second.start(&call(&MAIN, "c1", 2, &[Class::Spec], &[]), Some("build"));
     second.start(&call(&MAIN, "c2", 3, &[], &[Class::Code]), Some("build"));
     second.partial = true;
-    let activities = [
-        json!({"session": "s1", "host": "claude-code", "adapter": {"capabilities": {"consults": true}}}),
-        json!({"session": "s3", "host": "claude-code", "adapter": {"capabilities": {}}}),
-    ];
-    let summed = sums(&[json_of(&first), json_of(&second)], &activities);
-    let build = &summed["stages"][0];
-    assert_eq!(build["stage"], "build");
-    assert_eq!(build["order"]["firstSpec"], "2026-01-01T10:00:02Z");
-    assert_eq!(build["order"]["firstCodeEdit"], "2026-01-01T10:00:03Z");
-    assert_eq!(build["order"]["codeEditsBeforeSpec"], 1);
-    assert_eq!(build["order"]["specFirst"], false);
-    assert_eq!(build["counts"]["specReads"], 2);
-    assert_eq!(summed["all"]["counts"]["codeEdits"], 2);
-    assert_eq!(summed["partial"], true);
-    assert_eq!(summed["sessions"].as_array().unwrap().len(), 2);
-    assert_eq!(summed["agents"][0]["agent"], "main");
+    let mut summed = Sums::default();
+    summed.add(&first);
+    summed.add(&second);
+    summed.describe(&activity("s1", true));
+    summed.describe(&activity("s3", false));
+    let build = summed.stages["build"];
+    assert_eq!(build.order.first_spec, Some(at(2)));
+    assert_eq!(build.order.first_code_edit, Some(at(3)));
+    assert_eq!(build.order.code_edits_before_spec, 1);
+    assert_eq!(build.order.spec_first(), Some(false));
+    assert_eq!(build.counts.spec_reads, 2);
+    assert_eq!(summed.counts.code_edits, 2);
+    assert!(summed.partial);
+    assert_eq!(summed.sessions.len(), 2);
+    assert_eq!(summed.agents.keys().collect::<Vec<_>>(), ["main"]);
     assert_eq!(
-        summed["unmeasured"],
-        json!([{"session": "s3", "host": "claude-code"}])
+        summed.unmeasured,
+        [("s3".to_owned(), "claude-code".to_owned())]
     );
-    assert_eq!(summed["measured"], true);
+    assert!(summed.measured());
 }
 
 #[test]
 fn the_sums_by_agent_type_take_each_subagent_of_a_type_together() {
-    let mut consultation = Consultation::new("s1");
-    let (one, two) = (
-        explore(),
-        Who::Sub {
-            id: "a2".into(),
-            kind: "Explore".into(),
-        },
+    let mut consultation = Consultation::new("s1", "claude-code");
+    let two = Who::Sub {
+        id: "a2".into(),
+        kind: "Explore".into(),
+    };
+    consultation.start(
+        &call(&explore(), "c1", 1, &[Class::Spec], &[]),
+        Some("shape"),
     );
-    consultation.start(&call(&one, "c1", 1, &[Class::Spec], &[]), Some("shape"));
     consultation.start(&call(&two, "c2", 2, &[Class::Spec], &[]), None);
-    let summed = sums(&[json_of(&consultation)], &[]);
-    assert_eq!(
-        summed["agents"],
-        json!([{
-            "agent": "Explore",
-            "counts": {"specReads": 2, "codeReads": 0, "otherReads": 0, "loftReads": 0, "specEdits": 0, "codeEdits": 0},
-            "estimate": {"spec": 0, "code": 0, "other": 0, "unclassified": 0},
-        }])
-    );
-    assert_eq!(sums(&[], &[])["measured"], false);
+    let mut summed = Sums::default();
+    summed.add(&consultation);
+    assert_eq!(summed.agents.keys().collect::<Vec<_>>(), ["Explore"]);
+    assert_eq!(summed.agents["Explore"].counts.spec_reads, 2);
+    assert!(!Sums::default().measured());
+}
+
+#[test]
+fn the_sums_leave_out_a_file_of_another_format_and_are_partial() {
+    let newer = json!({"format": "yardconsult/2", "session": "s1", "counts": {"specReads": 4}});
+    let summed = Sums::of(&[newer], &[]);
+    assert!(summed.partial);
+    assert!(!summed.measured());
+    assert_eq!(summed.counts.spec_reads, 0);
+}
+
+#[test]
+fn a_call_still_open_across_a_whole_request_is_let_go_and_one_open_across_none_is_kept() {
+    let mut consultation = Consultation::new("s1", "claude-code");
+    consultation.start(&call(&MAIN, "refused", 1, &[Class::Spec], &[]), None);
+    consultation.request(&MAIN, at(2), Some(tokens(10, 100, None, 5)), None);
+    consultation.start(&call(&MAIN, "late", 3, &[Class::Code], &[]), None);
+    consultation.request(&MAIN, at(4), Some(tokens(10, 100, None, 5)), None);
+    // The refused call never ended, and was open across a whole request; the late one ends after
+    // the request it ran beside, as a host that hears usage apart from its calls may tell it.
+    consultation.end(&MAIN, "refused");
+    consultation.end(&MAIN, "late");
+    consultation.request(&MAIN, at(5), Some(tokens(10, 300, None, 5)), None);
+    assert_eq!(consultation.estimate.spec, 0);
+    assert_eq!(consultation.estimate.code, 195);
 }

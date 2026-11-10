@@ -36,7 +36,6 @@ pub fn count(
             let (reads, edits) = (classes(event, "reads"), classes(event, "edits"));
             let loft = event.loft();
             let call = Call {
-                host: &event.host,
                 at: event.at,
                 who: &event.who,
                 id,
@@ -54,5 +53,66 @@ pub fn count(
         }
         "request" => consultation.request(&event.who, event.at, event.tokens(), stage),
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use yardlog::Time;
+    use yardlog::consult::{Call, Class, Consultation};
+    use yardlog::totals::Who;
+    use yardlog::usage::Counts;
+
+    use crate::yard::session_files::as_read;
+
+    fn at(second: u32) -> Time {
+        format!("2026-01-01T10:00:{second:02}Z").parse().unwrap()
+    }
+
+    #[test]
+    fn a_consultation_file_reads_back_as_it_was_written() {
+        let mut consultation = Consultation::new("s1", "codex");
+        let sub = Who::Sub {
+            id: "a1".to_owned(),
+            kind: "Explore".to_owned(),
+        };
+        let usage = |read| {
+            Some(Counts::read(
+                &serde_json::json!({"input": 10, "cacheRead": read, "output": 5}),
+            ))
+        };
+        let calls = [
+            (
+                &Who::Main,
+                "c1",
+                Some("build"),
+                [Class::Spec].as_slice(),
+                [].as_slice(),
+            ),
+            (&Who::Main, "c2", Some("build"), &[], &[Class::Code]),
+            (&sub, "c3", None, &[Class::Code, Class::Other], &[]),
+        ];
+        consultation.request(&Who::Main, at(1), usage(100), Some("build"));
+        for (second, (who, id, stage, reads, edits)) in (2..).zip(calls) {
+            let call = Call {
+                at: at(second),
+                who,
+                id,
+                reads,
+                edits,
+                loft_read: false,
+            };
+            consultation.start(&call, stage);
+            consultation.end(who, id);
+        }
+        consultation.request(&Who::Main, at(8), usage(500), Some("build"));
+        consultation.request(&sub, at(9), None, None);
+        let text = consultation.text();
+        let read = Consultation::read(&as_read(&text)).expect("a file of its own format");
+        assert_eq!(read.text(), text);
+        assert!(
+            text.contains("partial: true\n") && text.contains("noStage:\n"),
+            "{text}"
+        );
     }
 }

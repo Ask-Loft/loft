@@ -29,6 +29,9 @@ pub enum SessionFile {
 }
 
 impl SessionFile {
+    /// Every file a session writes alone.
+    pub const ALL: [Self; 3] = [Self::Tokens, Self::Activity, Self::Consultation];
+
     #[must_use]
     pub const fn folder(self) -> &'static str {
         match self {

@@ -217,13 +217,13 @@ fn arrivals(
 
 impl Kept {
     /// Keeps what `event` adds, under its session's last descriptor `adapter`; gives the files
-    /// whose text changed.
+    /// whose text changed. Their text is left to [`Kept::texts`], so that a replay renders none.
     fn apply(
         &mut self,
         event: &Event,
         arrival: (Option<&str>, &[String]),
         adapter: Option<&Descriptor>,
-    ) -> Vec<(SessionFile, String)> {
+    ) -> Vec<SessionFile> {
         let (stage, open) = arrival;
         let mut changed = Vec::new();
         let activity = self
@@ -231,41 +231,46 @@ impl Kept {
             .get_or_insert_with(|| Activity::new(&event.session));
         if activity.apply(event, stage, adapter) {
             self.activity_written = true;
-            changed.push((SessionFile::Activity, activity.text()));
+            changed.push(SessionFile::Activity);
         }
         let totals = self
             .totals
             .get_or_insert_with(|| Totals::new(&event.session));
-        if totals::count(totals, event, stage, open) && totals.counted() {
-            changed.push((SessionFile::Tokens, totals.text()));
+        if totals::count(totals, event, stage, open) {
+            changed.push(SessionFile::Tokens);
         }
         let consultation = self
             .consultation
-            .get_or_insert_with(|| Consultation::new(&event.session));
-        if consulted::count(consultation, event, stage, adapter) && consultation.counted() {
-            changed.push((SessionFile::Consultation, consultation.text()));
+            .get_or_insert_with(|| Consultation::new(&event.session, &event.host));
+        if consulted::count(consultation, event, stage, adapter) {
+            changed.push(SessionFile::Consultation);
         }
         changed
     }
 
-    fn snapshot(&self) -> Vec<(SessionFile, String)> {
-        let mut files = Vec::new();
-        if self.activity_written
-            && let Some(activity) = &self.activity
-        {
-            files.push((SessionFile::Activity, activity.text()));
-        }
-        if let Some(totals) = &self.totals
-            && totals.counted()
-        {
-            files.push((SessionFile::Tokens, totals.text()));
-        }
-        if let Some(consultation) = &self.consultation
-            && consultation.counted()
-        {
-            files.push((SessionFile::Consultation, consultation.text()));
-        }
+    /// The text of each of `files` that is written.
+    fn texts(&self, files: impl IntoIterator<Item = SessionFile>) -> Vec<(SessionFile, String)> {
+        let text = |file| match file {
+            SessionFile::Activity => self
+                .activity
+                .as_ref()
+                .filter(|_| self.activity_written)
+                .map(Activity::text),
+            SessionFile::Tokens => self
+                .totals
+                .as_ref()
+                .filter(|totals| totals.counted())
+                .map(Totals::text),
+            SessionFile::Consultation => self
+                .consultation
+                .as_ref()
+                .filter(|consultation| consultation.counted())
+                .map(Consultation::text),
+        };
         files
+            .into_iter()
+            .filter_map(|file| Some((file, text(file)?)))
+            .collect()
     }
 }
 
@@ -340,7 +345,7 @@ impl Sessions {
         // a post that writes after a later one leaves that one's newer text in place.
         drop(kept);
         for (path, ((index, generation), store, file, session, text)) in changed {
-            if file == SessionFile::Tokens && newer_totals(&store, &session) {
+            if foreign(&store, file, &session) {
                 continue;
             }
             let wrote = self.written.write(&path, generation, || {
@@ -357,11 +362,18 @@ impl Sessions {
     }
 }
 
-/// Whether session `session`'s totals file in the Yard Log of `store` is of a totals format newer
-/// than this `loft`'s, or one it does not know.
-fn newer_totals(store: &YardStore, session: &str) -> bool {
-    session_files::one(store, SessionFile::Tokens, session)
-        .is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
+/// Whether session `session`'s `file` in the Yard Log of `store` is of a format this `loft` does
+/// not write, and so is left as it is: a totals file of a newer totals format or one it does not
+/// know, or a consultation file of a format other than its own.
+fn foreign(store: &YardStore, file: SessionFile, session: &str) -> bool {
+    let read = || session_files::one(store, file, session);
+    match file {
+        SessionFile::Tokens => {
+            read().is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
+        }
+        SessionFile::Consultation => read().is_some_and(|file| Consultation::read(&file).is_none()),
+        SessionFile::Activity => false,
+    }
 }
 
 /// A session's file a batch changed: the index of the event that last changed it with the
@@ -416,7 +428,7 @@ fn keep(
         return Ok(session
             .logs
             .get(&place_key)
-            .map_or_else(Vec::new, Kept::snapshot));
+            .map_or_else(Vec::new, |kept| kept.texts(SessionFile::ALL)));
     }
     let mut line = event.posted.clone();
     if let Some(receipt) = &event.receipt {
@@ -431,11 +443,13 @@ fn keep(
         .map_err(|error| error.to_string())?;
     session.receipts.keep(event.receipt.as_ref());
     session.describe(event);
-    Ok(session.logs.entry(place_key).or_default().apply(
+    let kept = session.logs.entry(place_key).or_default();
+    let changed = kept.apply(
         event,
         (arrival.stage.as_deref(), &arrival.open),
         session.adapter.as_ref(),
-    ))
+    );
+    Ok(kept.texts(changed))
 }
 
 /// Records each session a batch holds events of as heard: an event a mod posts tells the page

@@ -1,7 +1,8 @@
 //! The files each session writes alone in Yard Log's folder: its token totals under `tokens/`,
-//! its activity under `activity/` and what its agents consulted under `consultation/`. Only that session writes one, so two copies differ only where
-//! one has seen more of its events, and the merge driver takes one whole rather than joining
-//! them; all it reads of a copy is when its last event ended.
+//! its activity under `activity/` and what its agents consulted under `consultation/`. Only that
+//! session writes one, so two copies differ only where one has seen more of its events, and the
+//! merge driver takes one whole rather than joining them; all it reads of a copy is when its last
+//! event ended.
 
 use super::reader::{Fields, time};
 use super::{FileError, parse};
@@ -13,6 +14,8 @@ pub const TOKENS: &str = "tokens";
 pub const ACTIVITY: &str = "activity";
 /// The folder of what a session's agents consulted.
 pub const CONSULTATION: &str = "consultation";
+/// Every folder of the files a session writes alone.
+pub const FOLDERS: [&str; 3] = [TOKENS, ACTIVITY, CONSULTATION];
 /// The field that holds when a session's file's last event ended.
 pub const LAST_ENDED: &str = "lastEnded";
 

@@ -8,9 +8,6 @@
 
 use std::collections::HashMap;
 
-use loft_common::yaml::Out;
-use serde_json::Value;
-
 use super::{Call, Class};
 use crate::totals::Who;
 use crate::usage::Counts;
@@ -24,81 +21,62 @@ pub struct Estimate {
     pub unclassified: u64,
 }
 
-/// Where a share of a call's tokens goes.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum Bucket {
-    Spec,
-    Code,
-    Other,
-    Unclassified,
-}
-
 impl Estimate {
-    pub fn add(&mut self, other: Self) {
-        self.spec += other.spec;
-        self.code += other.code;
-        self.other += other.other;
-        self.unclassified += other.unclassified;
+    /// The names the classes are written under, in the order of [`Estimate::values`].
+    pub(super) const NAMES: [&str; 4] = ["spec", "code", "other", "unclassified"];
+
+    pub(super) const fn values(self) -> [u64; 4] {
+        [self.spec, self.code, self.other, self.unclassified]
     }
 
-    fn put(&mut self, bucket: Bucket, tokens: u64) {
-        match bucket {
-            Bucket::Spec => self.spec += tokens,
-            Bucket::Code => self.code += tokens,
-            Bucket::Other => self.other += tokens,
-            Bucket::Unclassified => self.unclassified += tokens,
-        }
-    }
-
-    /// The estimate's fields, each class that took any tokens.
-    #[must_use]
-    pub fn fields(self) -> Vec<(&'static str, Out)> {
-        [
-            ("spec", self.spec),
-            ("code", self.code),
-            ("other", self.other),
-            ("unclassified", self.unclassified),
-        ]
-        .into_iter()
-        .filter(|(_, tokens)| *tokens > 0)
-        .map(|(name, tokens)| (name, Out::Integer(tokens)))
-        .collect()
-    }
-
-    /// Reads what [`Estimate::fields`] wrote, as JSON.
-    #[must_use]
-    pub fn from_fields(value: &Value) -> Self {
-        let field = |name: &str| value[name].as_u64().unwrap_or_default();
+    pub(super) const fn from_values(values: [u64; 4]) -> Self {
+        let [spec, code, other, unclassified] = values;
         Self {
-            spec: field("spec"),
-            code: field("code"),
-            other: field("other"),
-            unclassified: field("unclassified"),
+            spec,
+            code,
+            other,
+            unclassified,
         }
+    }
+
+    pub fn add(&mut self, other: Self) {
+        let mut values = self.values();
+        for (value, more) in values.iter_mut().zip(other.values()) {
+            *value += more;
+        }
+        *self = Self::from_values(values);
+    }
+
+    /// Adds `tokens` to `class`, or to the unclassified where there is none.
+    fn put(&mut self, class: Option<Class>, tokens: u64) {
+        let slot = match class {
+            Some(Class::Spec) => &mut self.spec,
+            Some(Class::Code) => &mut self.code,
+            Some(Class::Other) => &mut self.other,
+            None => &mut self.unclassified,
+        };
+        *slot += tokens;
     }
 }
 
-/// The buckets a call's share of tokens goes to, each once.
-fn buckets(call: &Call<'_>) -> Vec<Bucket> {
-    let mut buckets: Vec<Bucket> = call
+/// The classes a call's share of tokens goes to, each once: none where it holds no class.
+fn classes(call: &Call<'_>) -> Vec<Option<Class>> {
+    let mut classes: Vec<Option<Class>> = call
         .reads
         .iter()
         .chain(call.edits)
-        .map(|class| match class {
-            Class::Spec => Bucket::Spec,
-            Class::Code => Bucket::Code,
-            Class::Other => Bucket::Other,
-        })
+        .copied()
+        .map(Some)
         .collect();
     if call.loft_read {
-        buckets.push(Bucket::Spec);
+        classes.push(Some(Class::Spec));
     }
-    if buckets.is_empty() {
-        buckets.push(Bucket::Unclassified);
+    if classes.is_empty() {
+        classes.push(None);
     }
-    buckets.sort_unstable();
-    buckets.dedup();
-    buckets
+    classes.sort_unstable();
+    classes.dedup();
+    classes
 }
 
 /// `total` shared among `parts` as equally as whole tokens allow, the first parts taking what is
@@ -121,13 +99,9 @@ impl Last {
         let Some(tokens) = tokens else {
             return Self::Unknown;
         };
-        match (
-            tokens.get("input"),
-            tokens.get("cacheRead"),
-            tokens.get("output"),
-        ) {
+        match (tokens.input(), tokens.cache_read(), tokens.output()) {
             (Some(input), Some(read), Some(output)) => Self::Known {
-                prompt: input + read + tokens.get("cacheWrite").unwrap_or_default(),
+                prompt: input + read + tokens.cache_write().unwrap_or_default(),
                 output,
             },
             _ => Self::Unknown,
@@ -135,38 +109,51 @@ impl Last {
     }
 }
 
-/// What one agent's estimate waits on: its last request, and the calls ended since.
+/// What one agent's estimate waits on: its last request, the calls ended since, and how many
+/// requests it made.
 #[derive(Debug, Clone, Default)]
 struct Agent {
     last: Option<Last>,
-    ended: Vec<Vec<Bucket>>,
+    ended: Vec<Vec<Option<Class>>>,
+    requests: u64,
+}
+
+/// A call started and not yet ended: its agent, how many requests its agent had made when it
+/// started, and its classes.
+#[derive(Debug, Clone)]
+struct Open {
+    who: Who,
+    requests: u64,
+    classes: Vec<Option<Class>>,
 }
 
 /// What the estimate needs between events: the calls started and not yet ended, by their id,
 /// and each agent's state. No file holds it: replaying a session's events rebuilds it.
 #[derive(Debug, Clone, Default)]
 pub(super) struct Live {
-    calls: HashMap<String, (Who, Vec<Bucket>)>,
+    calls: HashMap<String, Open>,
     agents: HashMap<Who, Agent>,
 }
 
 impl Live {
     pub(super) fn started(&mut self, call: &Call<'_>) {
-        self.calls
-            .insert(call.id.to_owned(), (call.who.clone(), buckets(call)));
+        let requests = self.agents.get(call.who).map_or(0, |agent| agent.requests);
+        let open = Open {
+            who: call.who.clone(),
+            requests,
+            classes: classes(call),
+        };
+        self.calls.insert(call.id.to_owned(), open);
     }
 
     pub(super) fn ended(&mut self, who: &Who, id: &str) {
-        let Some((started_by, buckets)) = self.calls.remove(id) else {
+        let Some(open) = self.calls.remove(id) else {
             return;
         };
         // A call ends in the agent that started it; an end that names another is not its own.
-        if &started_by == who {
-            self.agents
-                .entry(started_by)
-                .or_default()
-                .ended
-                .push(buckets);
+        if &open.who == who {
+            let agent = self.agents.entry(open.who).or_default();
+            agent.ended.push(open.classes);
         }
     }
 
@@ -174,6 +161,12 @@ impl Live {
     /// that lacked a count.
     pub(super) fn requested(&mut self, who: &Who, tokens: Option<Counts>) -> (Estimate, bool) {
         let agent = self.agents.entry(who.clone()).or_default();
+        // A call of the agent still open across a whole request never ended: one the person
+        // refused or interrupted. It is let go, so that what the page server keeps stays bounded.
+        let made = agent.requests;
+        self.calls
+            .retain(|_, open| &open.who != who || open.requests >= made);
+        agent.requests += 1;
         let ended = std::mem::take(&mut agent.ended);
         let now = Last::of(tokens);
         let before = agent.last.replace(now);
@@ -193,9 +186,9 @@ impl Live {
         if growth == 0 || ended.is_empty() {
             return (estimate, false);
         }
-        for (share, buckets) in shares(growth, ended.len()).zip(&ended) {
-            for (tokens, bucket) in shares(share, buckets.len()).zip(buckets) {
-                estimate.put(*bucket, tokens);
+        for (share, classes) in shares(growth, ended.len()).zip(&ended) {
+            for (tokens, class) in shares(share, classes.len()).zip(classes) {
+                estimate.put(*class, tokens);
             }
         }
         (estimate, false)

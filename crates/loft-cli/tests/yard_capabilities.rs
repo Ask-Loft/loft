@@ -10,7 +10,7 @@ use crate::yard_serve_events::{event, post, session_file};
 const PLANNED: &str =
     r#"[{"id": "later", "kind": "stage", "title": "Later", "status": "planned"}]"#;
 
-fn descriptor(usage: &[&str]) -> Value {
+pub(crate) fn descriptor(usage: &[&str]) -> Value {
     json!({"format":"yard-adapter/1", "version":"1.0.0", "capabilities": {
         "events":["turn.start", "turn.end", "request"], "usage":usage,
         "nativeQuestions":false, "nativePlans":false, "taskMirroring":true

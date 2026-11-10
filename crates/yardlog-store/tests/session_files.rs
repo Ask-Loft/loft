@@ -6,6 +6,7 @@
 use std::fs;
 
 use serde_json::json;
+use yardlog::codec::session::FOLDERS;
 use yardlog_store::session::{SessionFile, branches, is_session_id};
 
 use crate::common::{Tree, holding, write};
@@ -96,4 +97,9 @@ fn the_search_for_branches_goes_no_deeper_into_a_folder_that_holds_a_root() {
     )
     .unwrap();
     assert_eq!(branches(&tree.top()).unwrap(), ["main"]);
+}
+
+#[test]
+fn every_file_a_session_writes_alone_lies_in_a_folder_the_merge_driver_and_the_page_know() {
+    assert_eq!(SessionFile::ALL.map(SessionFile::folder), FOLDERS);
 }

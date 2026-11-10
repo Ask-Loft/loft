@@ -17,8 +17,7 @@ use crate::totals::Who;
 use crate::usage::Counts;
 
 pub use estimate::Estimate;
-pub use file::FORMAT;
-pub use sums::sums;
+pub use sums::{SessionSum, Sums};
 
 use estimate::Live;
 
@@ -44,12 +43,9 @@ impl Class {
     /// The class an event names, where it names one.
     #[must_use]
     pub fn named(name: &str) -> Option<Self> {
-        match name {
-            "spec" => Some(Self::Spec),
-            "code" => Some(Self::Code),
-            "other" => Some(Self::Other),
-            _ => None,
-        }
+        [Self::Spec, Self::Code, Self::Other]
+            .into_iter()
+            .find(|class| class.name() == name)
     }
 }
 
@@ -66,6 +62,46 @@ pub struct Six {
 }
 
 impl Six {
+    /// The names the counts are written under, in the order of [`Six::values`].
+    const NAMES: [&str; 6] = [
+        "specReads",
+        "codeReads",
+        "otherReads",
+        "loftReads",
+        "specEdits",
+        "codeEdits",
+    ];
+
+    const fn values(self) -> [u64; 6] {
+        [
+            self.spec_reads,
+            self.code_reads,
+            self.other_reads,
+            self.loft_reads,
+            self.spec_edits,
+            self.code_edits,
+        ]
+    }
+
+    const fn from_values(values: [u64; 6]) -> Self {
+        let [
+            spec_reads,
+            code_reads,
+            other_reads,
+            loft_reads,
+            spec_edits,
+            code_edits,
+        ] = values;
+        Self {
+            spec_reads,
+            code_reads,
+            other_reads,
+            loft_reads,
+            spec_edits,
+            code_edits,
+        }
+    }
+
     /// The counts of `call`.
     fn of(call: &Call<'_>) -> Self {
         let has = |classes: &[Class], class| u64::from(classes.contains(&class));
@@ -80,12 +116,11 @@ impl Six {
     }
 
     pub fn add(&mut self, other: Self) {
-        self.spec_reads += other.spec_reads;
-        self.code_reads += other.code_reads;
-        self.other_reads += other.other_reads;
-        self.loft_reads += other.loft_reads;
-        self.spec_edits += other.spec_edits;
-        self.code_edits += other.code_edits;
+        let mut values = self.values();
+        for (value, more) in values.iter_mut().zip(other.values()) {
+            *value += more;
+        }
+        *self = Self::from_values(values);
     }
 
     /// The consultations of the specification: its reads and the `loft` reads.
@@ -116,6 +151,14 @@ impl Order {
             self.first_spec.get_or_insert(at);
         }
     }
+
+    /// Whether the specification was consulted before the code was first edited, where the code
+    /// was edited at all.
+    #[must_use]
+    pub fn spec_first(self) -> Option<bool> {
+        self.first_code_edit
+            .map(|_| self.code_edits_before_spec == 0)
+    }
 }
 
 /// What counted toward one scope: a stage, an agent within one, or none.
@@ -127,25 +170,31 @@ pub struct Scope {
 }
 
 impl Scope {
-    fn count(&mut self, call: &Call<'_>, counts: Six) {
+    fn count(&mut self, at: Time, counts: Six) {
         self.counts.add(counts);
         let consulted = counts.spec_consultations() > 0;
-        self.order.note(call.at, consulted, counts.code_edits > 0);
+        self.order.note(at, consulted, counts.code_edits > 0);
     }
 }
 
-/// What counted toward one stage: in all, and by agent.
+/// What counted toward one stage, or toward none: in all, and by agent.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Stage {
     pub all: Scope,
     pub agents: BTreeMap<Who, Scope>,
 }
 
+impl Stage {
+    /// The stage's scope in all and its agent `who`'s.
+    fn scopes(&mut self, who: &Who) -> [&mut Scope; 2] {
+        let agent = self.agents.entry(who.clone()).or_default();
+        [&mut self.all, agent]
+    }
+}
+
 /// A tool call's start, as the consultation counts it.
 #[derive(Debug, Clone)]
 pub struct Call<'a> {
-    /// The agent host the session runs in.
-    pub host: &'a str,
     /// When it started.
     pub at: Time,
     pub who: &'a Who,
@@ -183,7 +232,8 @@ pub struct Consultation {
     pub last_started: Option<Time>,
     /// When the last event it took in happened, by which a merge takes the later copy.
     pub last_ended: Option<Time>,
-    pub all: Scope,
+    pub counts: Six,
+    pub estimate: Estimate,
     pub stages: BTreeMap<String, Stage>,
     pub no_stage: Option<Stage>,
     /// Whether the estimate left out a request that lacked a count.
@@ -194,17 +244,18 @@ pub struct Consultation {
 
 impl Consultation {
     #[must_use]
-    pub fn new(session: &str) -> Self {
+    pub fn new(session: &str, host: &str) -> Self {
         Self {
             session: session.to_owned(),
+            host: host.to_owned(),
             ..Self::default()
         }
     }
 
     /// Whether any call was counted, so that the file is written.
     #[must_use]
-    pub const fn counted(&self) -> bool {
-        self.first_started.is_some()
+    pub fn counted(&self) -> bool {
+        self.counts != Six::default()
     }
 
     /// What counted toward `stage`, or toward none.
@@ -223,17 +274,13 @@ impl Consultation {
         if counts == Six::default() {
             return false;
         }
-        if self.host.is_empty() {
-            call.host.clone_into(&mut self.host);
-        }
         self.first_started.get_or_insert(call.at);
-        self.last_started = Some(self.last_started.map_or(call.at, |last| last.max(call.at)));
-        self.last_ended = Some(self.last_ended.map_or(call.at, |last| last.max(call.at)));
-        self.all.counts.add(counts);
-        let counted = self.stage_mut(stage);
-        counted.all.count(call, counts);
-        let agent = counted.agents.entry(call.who.clone()).or_default();
-        agent.count(call, counts);
+        self.last_started = self.last_started.max(Some(call.at));
+        self.last_ended = self.last_ended.max(Some(call.at));
+        self.counts.add(counts);
+        for scope in self.stage_mut(stage).scopes(call.who) {
+            scope.count(call.at, counts);
+        }
         true
     }
 
@@ -243,7 +290,7 @@ impl Consultation {
     }
 
     /// Attributes the request of `who` that ended `at` with `tokens`, counted toward `stage`;
-    /// says whether the counts changed.
+    /// says whether the file's text changed.
     pub fn request(
         &mut self,
         who: &Who,
@@ -252,17 +299,17 @@ impl Consultation {
         stage: Option<&str>,
     ) -> bool {
         let (attributed, partial) = self.live.requested(who, tokens);
-        let changed = (partial && !self.partial) || attributed != Estimate::default();
+        let any = attributed != Estimate::default();
+        let changed = any || (partial && !self.partial);
         self.partial |= partial;
-        if attributed != Estimate::default() {
-            self.all.estimate.add(attributed);
-            let counted = self.stage_mut(stage);
-            counted.all.estimate.add(attributed);
-            let agent = counted.agents.entry(who.clone()).or_default();
-            agent.estimate.add(attributed);
+        if any {
+            self.estimate.add(attributed);
+            for scope in self.stage_mut(stage).scopes(who) {
+                scope.estimate.add(attributed);
+            }
         }
         if changed {
-            self.last_ended = Some(self.last_ended.map_or(at, |last| last.max(at)));
+            self.last_ended = self.last_ended.max(Some(at));
         }
         changed
     }

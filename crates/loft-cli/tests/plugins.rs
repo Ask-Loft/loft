@@ -471,6 +471,14 @@ fn loft_subcommands() -> Vec<String> {
 }
 
 #[test]
+fn each_loft_subcommand_counted_as_reading_the_specification_is_one_of_loft_s_own() {
+    let subcommands = loft_subcommands();
+    for name in yardlog::consult::LOFT_READS {
+        assert!(subcommands.iter().any(|known| known == name), "{name}");
+    }
+}
+
+#[test]
 fn the_mod_takes_a_subcommand_s_name_only_from_loft_s_own_list_of_subcommands() {
     let path = format!("{CLAUDE_ROOT}/hooks/adapter/shell.ts");
     let source =

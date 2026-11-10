@@ -66,11 +66,28 @@ impl Counts {
         self
     }
 
-    /// The counter `name`, one of [`COUNTERS`], where it is available.
+    /// The input tokens, where they are available.
     #[must_use]
-    pub fn get(self, name: &str) -> Option<u64> {
-        let n = COUNTERS.iter().position(|counter| *counter == name)?;
-        self.values[n]
+    pub const fn input(self) -> Option<u64> {
+        self.values[0]
+    }
+
+    /// The tokens read from the cache, where they are available.
+    #[must_use]
+    pub const fn cache_read(self) -> Option<u64> {
+        self.values[1]
+    }
+
+    /// The tokens written to the cache, where they are available.
+    #[must_use]
+    pub const fn cache_write(self) -> Option<u64> {
+        self.values[2]
+    }
+
+    /// The output tokens, where they are available.
+    #[must_use]
+    pub const fn output(self) -> Option<u64> {
+        self.values[3]
     }
 
     /// Whether any counter was actually measured, including a measured zero.
