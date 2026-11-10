@@ -29,7 +29,7 @@ export const LOFT_SUBCOMMANDS: readonly string[] = [
 /** A word of a shell command, and whether any of it was quoted. */
 export type Word = { text: string; quoted: boolean }
 
-const SEPARATORS = new Set([';', '&', '|', '(', ')', '\n'])
+const SEPARATORS = new Set([';', '&', '|', '\n'])
 
 /** The command with every heredoc's body left out. */
 function withoutHeredocs(command: string): string {
@@ -42,13 +42,18 @@ function withoutHeredocs(command: string): string {
       continue
     }
     kept.push(line)
-    const opened = /<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1/.exec(line)
+    // `<<<` is a here-string, which opens no heredoc.
+    const opened = /(?<!<)<<(?!<)-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1/.exec(line)
     if (opened) ending = opened[2]!
   }
   return kept.join('\n')
 }
 
-/** The simple commands of a shell command, each as its words, with every heredoc's body left out. */
+/**
+ * The simple commands of a shell command, each as its words, with every heredoc's body left out.
+ * A subshell's `(` and `)` are each a command of their own word, so that a reader can tell where a
+ * subshell's `cd` ends; an `&` within a redirection, as in `2>&1` or `&>`, stays in its word.
+ */
 export function commandsOf(command: string): Word[][] {
   const commands: Word[][] = [[]]
   let word = ''
@@ -72,6 +77,14 @@ export function commandsOf(command: string): Word[][] {
       i = close === -1 ? source.length : close
     } else if (c === ' ' || c === '\t') {
       end()
+    } else if (c === '&' && ((isWord && /[<>]$/.test(word)) || source[i + 1] === '>')) {
+      word += c
+      isWord = true
+    } else if (c === '(' || c === ')') {
+      end()
+      if (commands.at(-1)!.length > 0) commands.push([])
+      commands.at(-1)!.push({ text: c, quoted: false })
+      commands.push([])
     } else if (SEPARATORS.has(c)) {
       end()
       if (commands.at(-1)!.length > 0) commands.push([])

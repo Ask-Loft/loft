@@ -12,12 +12,12 @@ use yardlog_store::home::Home;
 
 use super::translate::{Hook, HookKind};
 use crate::yard::consult::{
-    Class, class_of, commands_of, holds, loft_names, ordered, patched, read_paths, runs,
+    Class, class_of, commands_of, loft_names, ordered, patched, read_paths, runs_in,
 };
 use crate::yard::serve::trees;
 
 /// The trees a path may lie in: those the page server serves, and the worktree that holds the
-/// hook's directory where none of those holds it.
+/// hook's directory, which may lie within one of them, as a linked worktree may.
 fn known_trees(dir: &str) -> Vec<String> {
     let mut known: Vec<String> = Home::from_env()
         .and_then(|home| trees::served(&home).ok())
@@ -25,9 +25,7 @@ fn known_trees(dir: &str) -> Vec<String> {
         .into_iter()
         .map(|tree| tree.display().to_string())
         .collect();
-    if !known.iter().any(|tree| holds(tree, dir))
-        && let Ok(top) = YardGit::default().top_level(Path::new(dir))
-    {
+    if let Ok(top) = YardGit::default().top_level(Path::new(dir)) {
         known.push(top.display().to_string());
     }
     known
@@ -57,18 +55,26 @@ pub fn fields(hook: &Hook) -> Map<String, Value> {
     let Some(text) = input_text(&hook.0["tool_input"]) else {
         return fields;
     };
-    let dir = hook.dir();
-    let (loft, read, edited) = match hook.0["tool_name"].as_str() {
+    // The trees are named as git names them, by their real paths, so the directory is too.
+    let dir = Path::new(hook.dir())
+        .canonicalize()
+        .map_or_else(|_| hook.dir().to_owned(), |dir| dir.display().to_string());
+    let dir = dir.as_str();
+    let (loft, read, edited, patched_in) = match hook.0["tool_name"].as_str() {
         Some("Bash") => {
             let commands = commands_of(text);
-            let edited = if runs(&commands, "apply_patch") {
-                patched(text)
-            } else {
-                Vec::new()
+            let (edited, patched_in) = match runs_in(&commands, dir, "apply_patch") {
+                Some(at) => (patched(text), at),
+                None => (Vec::new(), dir.to_owned()),
             };
-            (loft_names(&commands), read_paths(&commands, dir), edited)
+            (
+                loft_names(&commands),
+                read_paths(&commands, dir),
+                edited,
+                patched_in,
+            )
         }
-        Some("apply_patch") => (Vec::new(), Vec::new(), patched(text)),
+        Some("apply_patch") => (Vec::new(), Vec::new(), patched(text), dir.to_owned()),
         _ => return fields,
     };
     let trees = if read.is_empty() && edited.is_empty() {
@@ -77,7 +83,11 @@ pub fn fields(hook: &Hook) -> Map<String, Value> {
         known_trees(dir)
     };
     let reads = ordered(read.iter().map(|(path, from)| class_of(path, from, &trees)));
-    let edits = ordered(edited.iter().map(|path| class_of(path, dir, &trees)));
+    let edits = ordered(
+        edited
+            .iter()
+            .map(|path| class_of(path, &patched_in, &trees)),
+    );
     for (name, value, empty) in [
         ("loft", json!(loft), loft.is_empty()),
         ("reads", names(&reads), reads.is_empty()),

@@ -194,6 +194,41 @@ fn a_codex_patch_names_the_classes_of_the_files_it_edits() {
 }
 
 #[test]
+fn a_codex_patch_run_after_cd_names_its_files_from_where_it_runs() {
+    let yard = Yard::new();
+    let patch = "*** Begin Patch\n*** Update File: spec/a.yaml\n@@\n-a\n+b\n*** End Patch\n";
+    let shell = format!("cd crates && apply_patch <<'PATCH'\n{patch}PATCH\n");
+    let start = started(&yard, "after-cd", "Bash", &json!({"command":shell}));
+    assert_eq!(start["edits"], json!(["code"]), "{start}");
+    let shell = format!("(cd crates) && apply_patch <<'PATCH'\n{patch}PATCH\n");
+    let start = started(&yard, "after-subshell", "Bash", &json!({"command":shell}));
+    assert_eq!(start["edits"], json!(["spec"]), "{start}");
+}
+
+#[cfg(unix)]
+#[test]
+fn a_codex_hook_from_a_linked_directory_classes_its_paths_in_the_tree_it_leads_to() {
+    let yard = Yard::new();
+    let link = yard.scratch.home().join("linked");
+    std::os::unix::fs::symlink(yard.scratch.0.canonicalize().unwrap(), &link).unwrap();
+    let mut pre = event(&yard, "PreToolUse");
+    pre["cwd"] = json!(link);
+    pre["tool_name"] = json!("Bash");
+    pre["tool_use_id"] = json!("linked");
+    pre["tool_input"] = json!({"command":"cat spec/a.yaml"});
+    hook(&yard, &pre);
+    let kept = state(&yard);
+    let start = kept["events"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|event| event["call"] == "linked")
+        .cloned()
+        .unwrap();
+    assert_eq!(start["reads"], json!(["spec"]), "{start}");
+}
+
+#[test]
 fn the_codex_descriptor_declares_that_it_classifies_what_each_tool_call_consults() {
     let yard = Yard::new();
     hook(&yard, &event(&yard, "UserPromptSubmit"));

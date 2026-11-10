@@ -56,8 +56,13 @@ fn without_heredocs(command: &str) -> String {
 /// The word that ends the heredoc `line` opens, where it opens one: `<<END`, `<<-END`,
 /// `<<'END'` or `<<"END"`, at the first `<<` that opens one, as `shell.ts`'s pattern finds it.
 fn heredoc_end(line: &str) -> Option<String> {
-    line.match_indices("<<")
-        .find_map(|(at, _)| heredoc_at(&line[at + 2..]))
+    // `<<<` is a here-string, which opens no heredoc.
+    line.match_indices("<<").find_map(|(at, _)| {
+        let here_string = line[..at].ends_with('<') || line[at + 2..].starts_with('<');
+        (!here_string)
+            .then(|| heredoc_at(&line[at + 2..]))
+            .flatten()
+    })
 }
 
 /// The word that ends a heredoc whose `<<` `rest` follows, where it opens one.
@@ -104,6 +109,8 @@ fn variable_name(word: &str) -> Option<&str> {
 }
 
 /// The simple commands of a shell command, each as its words, with every heredoc's body left out.
+/// A subshell's `(` and `)` are each a command of their own word, so that a reader can tell where
+/// a subshell's `cd` ends; an `&` within a redirection, as in `2>&1` or `&>`, stays in its word.
 pub fn commands_of(command: &str) -> Vec<Vec<Word>> {
     let source: Vec<char> = without_heredocs(command).chars().collect();
     let mut commands: Vec<Vec<Word>> = vec![Vec::new()];
@@ -126,7 +133,27 @@ pub fn commands_of(command: &str) -> Vec<Vec<Word>> {
             i = close;
         } else if c == ' ' || c == '\t' {
             commands.last_mut().unwrap().extend(word.take());
-        } else if matches!(c, ';' | '&' | '|' | '(' | ')' | '\n') {
+        } else if c == '&'
+            && (word.as_ref().is_some_and(|w| w.text.ends_with(['<', '>']))
+                || source.get(i + 1) == Some(&'>'))
+        {
+            word.get_or_insert_with(|| Word {
+                text: String::new(),
+                quoted: false,
+            })
+            .text
+            .push(c);
+        } else if c == '(' || c == ')' {
+            commands.last_mut().unwrap().extend(word.take());
+            if !commands.last().unwrap().is_empty() {
+                commands.push(Vec::new());
+            }
+            commands.last_mut().unwrap().push(Word {
+                text: c.to_string(),
+                quoted: false,
+            });
+            commands.push(Vec::new());
+        } else if matches!(c, ';' | '&' | '|' | '\n') {
             commands.last_mut().unwrap().extend(word.take());
             if !commands.last().unwrap().is_empty() {
                 commands.push(Vec::new());
@@ -158,15 +185,6 @@ pub fn assignments(words: &[Word]) -> usize {
         .iter()
         .take_while(|word| !word.quoted && assignment(&word.text).is_some())
         .count()
-}
-
-/// Whether one of the simple commands runs the program `name`, by its name or a path.
-pub fn runs(commands: &[Vec<Word>], name: &str) -> bool {
-    commands.iter().any(|words| {
-        words[assignments(words)..]
-            .first()
-            .is_some_and(|first| !first.quoted && first.text.rsplit('/').next() == Some(name))
-    })
 }
 
 fn is_loft(word: &str) -> bool {

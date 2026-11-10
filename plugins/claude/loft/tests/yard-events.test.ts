@@ -443,6 +443,19 @@ test('under protocol 3 a reading tool call says the class of what it reads, a sh
   expect(events(w).find(event => event.call === 'edit' && event.kind === 'tool.start')!.spec).toBe(false)
 })
 
+test("under protocol 3 an edit's spec says what its edits say, a relative path resolved from the session's directory", async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'MultiEdit', file_path: 'spec/c.yaml', edits: [], tool_use_id: 'relative' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/spec/../src/x.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'climbs' } as never)
+  await w.clock.settle()
+  const starts = events(w).filter(event => event.kind === 'tool.start')
+  expect(starts.map(({ call, spec, edits }) => ({ call, spec, edits }))).toEqual([
+    { call: 'relative', spec: true, edits: ['spec'] },
+    { call: 'climbs', spec: false, edits: ['code'] },
+  ])
+})
+
 test('a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command', async ($, on) => {
   const w = world(on, { protocol: 3 })
   await start($)

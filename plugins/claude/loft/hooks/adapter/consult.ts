@@ -171,11 +171,18 @@ export function shellReads(command: string, dir: string, trees: Iterable<string>
   const known = [...trees]
   const classes: Class[] = []
   let here = dir
+  // The directories to return to as each subshell ends: a `cd` within one ends with it.
+  const saved: string[] = []
   for (const all of commandsOf(command)) {
     const { words, inputs } = redirections(all.slice(assignments(all)))
     if (words.length === 0) continue
     const program = programOf(words[0]!.text)
     const args = words.slice(1)
+    if (program === '(' || program === ')') {
+      if (program === '(') saved.push(here)
+      else here = saved.pop() ?? here
+      continue
+    }
     if (program === 'cd') {
       here = resolve(args[0]?.text ?? '~', here) ?? OUTSIDE
       continue
@@ -200,7 +207,8 @@ export function shellReads(command: string, dir: string, trees: Iterable<string>
     }
     paths.push(...inputs)
     if (paths.length === 0 && searches) paths.push('.')
-    for (const path of paths) classes.push(classOf(path, from, known))
+    // `-` is standard input, and a word that expands a variable names no path its words show.
+    for (const path of paths) if (path !== '-' && !path.startsWith('$')) classes.push(classOf(path, from, known))
   }
   return ordered(classes)
 }

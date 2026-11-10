@@ -31971,6 +31971,9 @@ links:
       - file: "crates/loft-cli/src/yard/consult/tests.rs"
         name: "each_path_of_the_shared_cases_takes_its_class"
         body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_hook_from_a_linked_directory_classes_its_paths_in_the_tree_it_leads_to"
+        body: 56e179358d3bb766845470698b2f9b92a7c5d156acc893026c03f58dee3b4bce
   - node: 01a1c32b-8dbe-7792-8bde-87aa9859e6ec
     reviewed: 7e40efa1c65d4683aeb93ae485637f9aa8a111fbb01c84591dc6904dc4cfdd3c
     tests:
@@ -32127,6 +32130,9 @@ links:
       - file: "crates/loft-cli/src/yard/consult/tests.rs"
         name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
         body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_patch_run_after_cd_names_its_files_from_where_it_runs"
+        body: 163141b618a742d948525d66b1263ad1406a3f13151d1465949793fed6b260dd
   - node: 01a1c32b-8dbe-7792-8bde-87bba630ba32
     reviewed: 2724f1ffc13dfa10d9728e428fd2aec2924188503f95cdb1c8ebaff1dbf9342b
     tests:
@@ -32181,6 +32187,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
         body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 an edit's spec says what its edits say, a relative path resolved from the session's directory"
+        body: bd18c583c5c3e0a59db4bba1f38425dd084406090bc9a6844beee45d41f11952
   - node: 01a1c32b-8dbe-7792-8bde-87c1f75d0077
     reviewed: 8a21abe2b7bb9d8d2ada8949d05972d690e136d99e353b38ca1d7b9d4b6db950
     tests:
@@ -32193,12 +32202,18 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_contract.rs"
         name: "real_codex_hooks_record_native_tool_activity_without_a_remote_model"
         body: 91c905bf6a80443a1061ad5ca4ab6ea07d38c44236411d42bcc50feade77250f
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_patch_run_after_cd_names_its_files_from_where_it_runs"
+        body: 163141b618a742d948525d66b1263ad1406a3f13151d1465949793fed6b260dd
   - node: 01a1c32b-8dbe-7792-8bde-87c28586388c
     reviewed: b4b06aa5ce0b8e66dfea51058cf73a36e9154cd270487541872f0a9e67cdf5cb
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
         body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 an edit's spec says what its edits say, a relative path resolved from the session's directory"
+        body: bd18c583c5c3e0a59db4bba1f38425dd084406090bc9a6844beee45d41f11952
   - node: 01a1c32b-8dbe-7792-8bde-87c3776bf8c0
     reviewed: c2389946bb06be780f9c68aeebe422650c8c8c428e0a73104189225cd4444991
     tests:

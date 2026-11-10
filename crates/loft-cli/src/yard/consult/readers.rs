@@ -336,46 +336,120 @@ fn git_paths(args: &[&Word]) -> Option<(Vec<String>, Option<String>)> {
     Some((paths, dir))
 }
 
+/// The directory a command's simple commands run in, as `cd` and subshells move it.
+struct Here {
+    dir: String,
+    /// The directories to return to as each subshell ends: a `cd` within one ends with it.
+    saved: Vec<String>,
+}
+
+impl Here {
+    fn new(dir: &str) -> Self {
+        Self {
+            dir: dir.to_owned(),
+            saved: Vec::new(),
+        }
+    }
+
+    /// Takes in the simple command `program` `args`: whether it only moves the directory.
+    fn moves(&mut self, program: &str, args: &[&Word]) -> bool {
+        match program {
+            "(" => self.saved.push(self.dir.clone()),
+            ")" => {
+                if let Some(dir) = self.saved.pop() {
+                    self.dir = dir;
+                }
+            }
+            "cd" => {
+                let to = args.first().map_or("~", |word| word.text.as_str());
+                self.dir = resolve(to, &self.dir).unwrap_or_else(|| OUTSIDE.to_owned());
+            }
+            _ => return false,
+        }
+        true
+    }
+}
+
+/// A simple command past its assignments and redirections.
+struct Simple<'a> {
+    /// The program it runs, by its name.
+    program: &'a str,
+    args: Vec<&'a Word>,
+    /// The files its input is redirected from.
+    inputs: Vec<String>,
+}
+
+/// The simple command `all` runs, where it runs one.
+fn simple(all: &[Word]) -> Option<Simple<'_>> {
+    let (words, inputs) = redirections(&all[assignments(all)..]);
+    let (first, args) = words.split_first()?;
+    let program = first.text.rsplit('/').next().unwrap_or_default();
+    Some(Simple {
+        program,
+        args: args.to_vec(),
+        inputs,
+    })
+}
+
+/// The directory the first simple command that runs the program `name` runs in, where one does.
+pub fn runs_in(commands: &[Vec<Word>], dir: &str, name: &str) -> Option<String> {
+    let mut here = Here::new(dir);
+    commands.iter().find_map(|all| {
+        let Simple { program, args, .. } = simple(all)?;
+        if here.moves(program, &args) {
+            return None;
+        }
+        (program == name).then(|| here.dir.clone())
+    })
+}
+
 /// The paths the simple commands' reading programs read, each with the directory it is read
-/// from, the commands run from `dir`.
+/// from, the commands run from `dir`. `-` is standard input, and a word that expands a variable
+/// names no path its words show.
 pub fn read_paths(commands: &[Vec<Word>], dir: &str) -> Vec<(String, String)> {
     let mut read = Vec::new();
-    let mut here = dir.to_owned();
+    let mut here = Here::new(dir);
     for all in commands {
-        let (words, inputs) = redirections(&all[assignments(all)..]);
-        let Some((first, args)) = words.split_first() else {
+        let Some(Simple {
+            program,
+            args,
+            inputs,
+        }) = simple(all)
+        else {
             continue;
         };
-        let program = first.text.rsplit('/').next().unwrap_or_default();
-        if program == "cd" {
-            let to = args.first().map_or("~", |word| word.text.as_str());
-            here = resolve(to, &here).unwrap_or_else(|| OUTSIDE.to_owned());
+        if here.moves(program, &args) {
             continue;
         }
-        let mut from = here.clone();
+        let mut from = here.dir.clone();
         let (mut paths, searches) = match program {
             "git" => {
-                let Some((paths, moved)) = git_paths(args) else {
+                let Some((paths, moved)) = git_paths(&args) else {
                     continue;
                 };
                 if let Some(moved) = moved {
-                    from = resolve(&moved, &here).unwrap_or_else(|| OUTSIDE.to_owned());
+                    from = resolve(&moved, &here.dir).unwrap_or_else(|| OUTSIDE.to_owned());
                 }
                 (paths, true)
             }
-            "find" => (find_paths(args), true),
+            "find" => (find_paths(&args), true),
             program => {
                 let Some(reader) = reader(program) else {
                     continue;
                 };
-                (reader_paths(reader, args), reader.searches)
+                (reader_paths(reader, &args), reader.searches)
             }
         };
         paths.extend(inputs);
         if paths.is_empty() && searches {
             paths.push(".".to_owned());
         }
-        read.extend(paths.into_iter().map(|path| (path, from.clone())));
+        read.extend(
+            paths
+                .into_iter()
+                .filter(|path| path != "-" && !path.starts_with('$'))
+                .map(|path| (path, from.clone())),
+        );
     }
     read
 }

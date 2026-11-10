@@ -7,7 +7,7 @@
 import type { EngineInterface, ModelUsage, On } from 'claude-code'
 
 import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } from '../shared'
-import { classOf, nearest, shellReads, type Class } from './consult'
+import { classOf, nearest, resolve, shellReads, type Class } from './consult'
 import { HOST } from './contract'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
@@ -82,9 +82,13 @@ function consultedBy({ edited, read, pattern, command }: Consulting, dir: string
   return { reads: [classOf(path, dir, trees)] }
 }
 
-/** Whether the absolute `path` lies under the `spec/` of the tree that holds it, where a known tree does. */
-export function isSpecEdit(path: string, trees: Iterable<string>): boolean | undefined {
-  const within = path.startsWith('/') ? nearest(path, trees) : undefined
+/**
+ * Whether `path` lies under the `spec/` of the tree that holds it, where a known tree does: a
+ * relative path only where the directory `dir` it is named from is known.
+ */
+export function isSpecEdit(path: string, trees: Iterable<string>, dir?: string): boolean | undefined {
+  const absolute = path.startsWith('/') || dir !== undefined ? resolve(path, dir ?? '/') : undefined
+  const within = absolute === undefined ? undefined : nearest(absolute, trees)
   return within === undefined || within === '' ? undefined : within.startsWith('spec/')
 }
 
@@ -166,11 +170,17 @@ export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, nex
   const spec = input?.edited === undefined ? undefined : isSpecEdit(input.edited, state.server.trees)
   const loft = input?.command === undefined ? [] : loftSubcommands(input.command)
   const start: Event = { kind: 'tool.start', tool: e.tool, call, ...(spec !== undefined ? { spec } : {}), ...(loft.length > 0 ? { loft } : {}) }
+  // An edit's `spec` and `edits` then come from one path, resolved from the session's directory.
+  const specFrom = (dir: string, trees: string[]) => {
+    const resolved = input?.edited === undefined ? undefined : isSpecEdit(input.edited, trees, dir)
+    const { spec: _, ...rest } = start
+    return resolved === undefined ? rest : { ...rest, spec: resolved }
+  }
   // Where the descriptor declares it, the start also says what the call consults, worked out
   // once the session's directory is read, so the call never waits on it.
   if (input !== undefined && state.adapter?.capabilities.consults === true) {
     const trees = [...state.server.trees]
-    tell($, e.agentId, dir => ({ ...start, ...consultedBy(input, dir, trees) }))
+    tell($, e.agentId, dir => ({ ...specFrom(dir, trees), ...consultedBy(input, dir, trees) }) as Event)
   } else tell($, e.agentId, start)
   let failed = true
   try {

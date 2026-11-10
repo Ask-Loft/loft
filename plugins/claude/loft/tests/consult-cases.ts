@@ -84,6 +84,15 @@ export const CASES = /* consult-cases:start */ {
     { "command": "L=target/debug/loft; $L render --markdown /tmp/s.md", "dir": "/w/repo", "reads": [], "loft": ["render"] },
     { "command": "echo 'loft check'", "dir": "/w/repo", "reads": [], "loft": [] },
     { "command": "loft find x | head -5", "dir": "/w/repo", "reads": [], "loft": ["find"] },
-    { "command": "loft find x; cat spec/a.yaml", "dir": "/w/repo", "reads": ["spec"], "loft": ["find"] }
+    { "command": "loft find x; cat spec/a.yaml", "dir": "/w/repo", "reads": ["spec"], "loft": ["find"] },
+    { "command": "grep x <<< foo\ncat spec/a.yaml", "dir": "/w/repo", "reads": ["spec"], "loft": [] },
+    { "command": "(cd /tmp && ls); cat spec/a.yaml", "dir": "/w/repo", "reads": ["spec", "other"], "loft": [] },
+    { "command": "(cd crates && loft check)", "dir": "/w/repo", "reads": [], "loft": ["check"] },
+    { "command": "cat -", "dir": "/w/repo", "reads": [], "loft": [] },
+    { "command": "cat spec/b.yaml | diff - spec/a.yaml", "dir": "/w/repo", "reads": ["spec"], "loft": [] },
+    { "command": "grep -n shall 2>&1 spec/a.yaml", "dir": "/w/repo", "reads": ["spec"], "loft": [] },
+    { "command": "cat crates/a.rs &> /tmp/log", "dir": "/w/repo", "reads": ["code"], "loft": [] },
+    { "command": "cat $(ls spec)", "dir": "/w/repo", "reads": ["spec"], "loft": [] },
+    { "command": "loft check 2>&1 | tail -5", "dir": "/w/repo", "reads": [], "loft": ["check"] }
   ]
 } /* consult-cases:end */
