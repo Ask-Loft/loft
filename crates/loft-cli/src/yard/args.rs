@@ -59,9 +59,21 @@ pub enum YardAction {
     },
     /// Bring every open Yard Log under the tree's `.yard/` up to this `loft`'s format.
     Upgrade(UpgradeArgs),
+    /// Report what the agents working on the branch consulted: the sums of its consultation
+    /// files in all, by stage, by session and by agent type.
+    Consultation(ConsultationArgs),
     /// Run the page server on the loopback interface, unless one of this `loft`'s version or a
     /// newer one already serves the port; record the session as heard and its tree as served.
     Serve(ServeArgs),
+}
+
+#[derive(Args)]
+pub struct ConsultationArgs {
+    /// A directory of the worktree whose Yard Log to report, in place of the command's own.
+    #[arg(long, value_name = "DIR")]
+    pub tree: Option<PathBuf>,
+    #[command(flatten)]
+    pub output: Output,
 }
 
 #[derive(Args)]

@@ -127,6 +127,7 @@ mod yard_codex_tasks;
 mod yard_codex_usage;
 mod yard_codex_watch;
 mod yard_commands;
+mod yard_consultation;
 mod yard_continue;
 mod yard_continued_holds;
 mod yard_delegation;

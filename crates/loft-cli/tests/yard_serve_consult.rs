@@ -19,7 +19,7 @@ fn descriptor(consults: bool) -> Value {
 }
 
 /// The turn's start that carries the session's descriptor.
-fn described(yard: &Yard, consults: bool) -> Value {
+pub(crate) fn described(yard: &Yard, consults: bool) -> Value {
     event(
         yard,
         "turn.start",
@@ -29,7 +29,7 @@ fn described(yard: &Yard, consults: bool) -> Value {
 }
 
 /// A tool call's start at `second`, with `more` fields.
-fn started(yard: &Yard, call: &str, second: u32, more: &Value) -> Value {
+pub(crate) fn started(yard: &Yard, call: &str, second: u32, more: &Value) -> Value {
     let mut fields = json!({ "call": call, "tool": "Read" });
     for (name, value) in more.as_object().unwrap() {
         fields[name] = value.clone();

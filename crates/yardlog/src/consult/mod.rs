@@ -60,7 +60,7 @@ pub struct Six {
 
 impl Six {
     /// The names the counts are written under, in the order of [`Six::values`].
-    const NAMES: [&str; 6] = [
+    pub const NAMES: [&str; 6] = [
         "specReads",
         "codeReads",
         "otherReads",
@@ -69,7 +69,9 @@ impl Six {
         "codeEdits",
     ];
 
-    const fn values(self) -> [u64; 6] {
+    /// The counts, in the order of [`Six::NAMES`].
+    #[must_use]
+    pub const fn values(self) -> [u64; 6] {
         [
             self.spec_reads,
             self.code_reads,
