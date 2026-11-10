@@ -66,6 +66,13 @@ impl Counts {
         self
     }
 
+    /// The counter `name`, one of [`COUNTERS`], where it is available.
+    #[must_use]
+    pub fn get(self, name: &str) -> Option<u64> {
+        let n = COUNTERS.iter().position(|counter| *counter == name)?;
+        self.values[n]
+    }
+
     /// Whether any counter was actually measured, including a measured zero.
     #[must_use]
     pub fn measured(self) -> bool {
