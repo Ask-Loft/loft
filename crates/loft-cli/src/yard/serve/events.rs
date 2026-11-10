@@ -18,9 +18,11 @@ use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
+use yardlog::consult::Consultation;
 use yardlog::totals::{Totals, TotalsFormat};
 
 use super::activity::Activity;
+use super::consulted;
 use super::http::Response;
 use super::newest::Newest;
 use crate::yard::event::{Event, Who};
@@ -35,6 +37,7 @@ struct Kept {
     activity: Option<Activity>,
     activity_written: bool,
     totals: Option<Totals>,
+    consultation: Option<Consultation>,
 }
 
 /// What one session keeps, by the tree and branch of each Yard Log it keeps it in.
@@ -236,6 +239,12 @@ impl Kept {
         if totals::count(totals, event, stage, open) && totals.counted() {
             changed.push((SessionFile::Tokens, totals.text()));
         }
+        let consultation = self
+            .consultation
+            .get_or_insert_with(|| Consultation::new(&event.session));
+        if consulted::count(consultation, event, stage, adapter) && consultation.counted() {
+            changed.push((SessionFile::Consultation, consultation.text()));
+        }
         changed
     }
 
@@ -250,6 +259,11 @@ impl Kept {
             && totals.counted()
         {
             files.push((SessionFile::Tokens, totals.text()));
+        }
+        if let Some(consultation) = &self.consultation
+            && consultation.counted()
+        {
+            files.push((SessionFile::Consultation, consultation.text()));
         }
         files
     }
