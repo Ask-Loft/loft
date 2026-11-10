@@ -8,7 +8,7 @@ body: |
 
   Shell commands are read by the same tokenizer that names their `loft` subcommands. The readers are a fixed list of programs, so that a command that writes, builds or tests is never taken for a read; a path a reader names inside quoted text is still a path, but no word of a heredoc is.
 
-  The known trees are not yet the same for every host. Codex's adapter, which is `loft` itself, knows every tree the page server serves and the git top level of its directory, by their real paths. The Claude Code mod, which can run neither git nor a resolution of paths, knows only the trees it registered, spelled as its session names them: a path in another worktree, or one named through another spelling of a symbolic link, is `other` there.
+  Every adapter knows the same trees: each tree the page server serves, by its real path. Codex's adapter, which is `loft` itself, also knows the git top level of its directory. The Claude Code mod, which can run neither git nor a resolution of paths, learns them from the page server's answers: the real path of each tree served, and the top of the tree it registers as its session spells it, so that a path named through a symbolic link is classed as the tree it lies in.
 realizes:
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
   - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
@@ -118,3 +118,30 @@ requirements:
         name: "The Claude adapter declares `consults`, and gives a tool call's start `reads` and `edits`, only where the `loft` it runs speaks protocol 3."
       - key: 01a1c32b-8dbe-7792-8bde-87c63e0639b2
         name: "A descriptor that holds no `consults` reads as an adapter that does not classify tool calls."
+  - key: 01a1c4f2-a000-7601-8eae-ec94b97b5862
+    statement:
+      form: event_driven
+      when: "the page server takes a tree a mod registers, or hears a mod's session"
+      system: "the page server"
+      shall: "answer with the real path of each tree it serves."
+    criteria:
+      - key: 01a1c4f2-a000-7601-8eae-ec9565f952b5
+        name: "The answer to a session heard names the real path of each tree the page server serves."
+      - key: 01a1c4f2-a000-7601-8eae-ec96f2e2bf8a
+        name: "The answer to a tree registered names the real path of each tree served, the one registered among them."
+      - key: 01a1c4f2-a000-7601-8eae-ec9750c12327
+        name: "The answer to a tree registered names the top of that tree's worktree as the request spelled it, where the directory the request named lies under that top by the same path."
+  - key: 01a1c4f2-a000-7601-8eae-ec98abd85e11
+    statement:
+      form: ubiquitous
+      system: "The Claude Code mod"
+      shall: "classify a path against each tree the page server's answers name, by each spelling they give, and against each tree it registered."
+    criteria:
+      - key: 01a1c4f2-a000-7601-8eae-ec992bef006a
+        name: "A path in a tree that another session registered is classed by that tree."
+      - key: 01a1c4f2-a000-7601-8eae-ec9a6da8e599
+        name: "A path named through the session's own spelling of a tree whose real path differs is classed by that tree."
+      - key: 01a1c4f2-a000-7601-8eae-ec9b13a061e5
+        name: "A path under the top of the session's worktree, outside the directory the session registered, is classed by that tree."
+      - key: 01a1c4f2-a000-7601-8eae-ec9c36957441
+        name: "Until a page server answers, the mod classes paths against the trees it registered."
