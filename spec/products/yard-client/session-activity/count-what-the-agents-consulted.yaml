@@ -25,6 +25,8 @@ requirements:
     criteria:
       - key: 01a1c32b-8dbe-7792-8bde-87c9b9ea395a
         name: "The consultation file holds the session's id, its host, the format `yardconsult/1`, and when its first and last counted calls started."
+      - key: 01a1c361-e9c9-7789-a822-6c189b29c703
+        name: "The file holds, as `lastEnded`, when the last event it took in happened, by which a merge takes the later of two copies."
       - key: 01a1c32b-8dbe-7792-8bde-87ca9c426d33
         name: "The file holds six counts in all: reads of the specification, reads of code, other reads, `loft` reads, edits of the specification and edits of code."
       - key: 01a1c32b-8dbe-7792-8bde-87cb3f15b117
