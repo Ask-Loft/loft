@@ -1,7 +1,8 @@
 //! What a Codex tool call consults, on its `tool.start`: the `loft` subcommands and the classes
 //! of what a shell command reads, and the classes of the files an `apply_patch` edits (the
-//! Features "Classify what a tool call consults" and "Codex Yard hook"). Only the names and the
-//! classes leave here, never the command or the patch.
+//! Features "Classify what a tool call consults" and "Codex Yard hook"). Codex runs
+//! `apply_patch` as a tool of its own or, as Codex 0.164 does, as a shell command whose heredoc
+//! holds the patch. Only the names and the classes leave here, never the command or the patch.
 
 use std::path::Path;
 
@@ -10,7 +11,9 @@ use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 
 use super::translate::Hook;
-use crate::yard::consult::{Class, class_of, loft_subcommands, ordered, patched, shell_reads};
+use crate::yard::consult::{
+    Class, class_of, loft_subcommands, ordered, patched, runs, shell_reads,
+};
 use crate::yard::serve::trees;
 
 /// The trees a path may lie in: those the page server serves, and the worktree that holds the
@@ -44,6 +47,19 @@ fn names(classes: &[Class]) -> Value {
     json!(classes.iter().map(|class| class.name()).collect::<Vec<_>>())
 }
 
+/// Adds `edits`, the classes of the files the patch in `text` edits, where it edits any.
+fn insert_edits(
+    fields: &mut serde_json::Map<String, Value>,
+    text: &str,
+    dir: &str,
+    trees: &[String],
+) {
+    let edits = ordered(patched(text).iter().map(|path| class_of(path, dir, trees)));
+    if !edits.is_empty() {
+        fields.insert("edits".into(), names(&edits));
+    }
+}
+
 /// Adds to the `tool.start` events of `hook` what its call consults, its paths classed among
 /// `trees`.
 pub fn add(events: &mut [Value], hook: &Hook, trees: &[String]) {
@@ -63,13 +79,11 @@ pub fn add(events: &mut [Value], hook: &Hook, trees: &[String]) {
             if !reads.is_empty() {
                 fields.insert("reads".into(), names(&reads));
             }
-        }
-        "apply_patch" => {
-            let edits = ordered(patched(text).iter().map(|path| class_of(path, dir, trees)));
-            if !edits.is_empty() {
-                fields.insert("edits".into(), names(&edits));
+            if runs(text, "apply_patch") {
+                insert_edits(&mut fields, text, dir, trees);
             }
         }
+        "apply_patch" => insert_edits(&mut fields, text, dir, trees),
         _ => {}
     }
     for event in events

@@ -14,7 +14,7 @@ mod words;
 pub use patch::patched;
 pub use paths::{Class, class_of, ordered};
 pub use readers::shell_reads;
-pub use words::loft_subcommands;
+pub use words::{loft_subcommands, runs};
 
 #[cfg(test)]
 mod tests;

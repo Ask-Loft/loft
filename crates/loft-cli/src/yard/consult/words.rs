@@ -175,6 +175,15 @@ pub fn assignments(words: &[Word]) -> usize {
         .count()
 }
 
+/// Whether one of the command's simple commands runs the program `name`, by its name or a path.
+pub fn runs(command: &str, name: &str) -> bool {
+    commands_of(command).iter().any(|words| {
+        words[assignments(words)..]
+            .first()
+            .is_some_and(|first| !first.quoted && first.text.rsplit('/').next() == Some(name))
+    })
+}
+
 fn is_loft(word: &str) -> bool {
     word == "loft"
         || ["/loft", "\\loft", "/loft.exe", "\\loft.exe"]

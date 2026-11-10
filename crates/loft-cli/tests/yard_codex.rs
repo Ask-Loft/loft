@@ -178,6 +178,18 @@ fn a_codex_patch_names_the_classes_of_the_files_it_edits() {
         assert_eq!(start["edits"], json!(["spec", "code"]), "{start}");
         assert!(start.get("reads").is_none());
     }
+    // Codex 0.164 runs a patch as a shell command whose heredoc holds it.
+    let shell = format!("apply_patch <<'PATCH'\n{patch}PATCH\n");
+    let start = started(&yard, "as-shell", "Bash", &json!({"command":shell}));
+    assert_eq!(start["edits"], json!(["spec", "code"]), "{start}");
+    assert!(start.get("reads").is_none(), "{start}");
+    let mention = started(
+        &yard,
+        "mention",
+        "Bash",
+        &json!({"command":"echo apply_patch"}),
+    );
+    assert!(mention.get("edits").is_none(), "{mention}");
     assert!(!state(&yard).to_string().contains("PRIVATE"));
 }
 
