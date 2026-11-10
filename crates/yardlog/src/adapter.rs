@@ -42,7 +42,8 @@ pub struct Descriptor {
 }
 
 impl Descriptor {
-    /// Reads the versioned wire declaration. Missing capabilities are unavailable.
+    /// Reads the versioned wire declaration. Missing capabilities are unavailable, and unknown ones
+    /// are left out.
     pub fn read(value: &Value) -> Result<Self, &'static str> {
         let object = value.as_object().ok_or("adapter must be an object")?;
         if object
@@ -58,21 +59,10 @@ impl Descriptor {
             .as_str()
             .filter(|text| !text.is_empty() && text.len() <= 64)
             .ok_or("adapter version must be nonempty and at most 64 bytes")?;
-        let capabilities = value["capabilities"]
-            .as_object()
-            .ok_or("adapter capabilities must be an object")?;
-        if capabilities.keys().any(|key| {
-            ![
-                "events",
-                "usage",
-                "nativeQuestions",
-                "nativePlans",
-                "taskMirroring",
-                "consults",
-            ]
-            .contains(&key.as_str())
-        }) {
-            return Err("adapter capabilities hold an unknown field");
+        // A capability this reader does not know is left out rather than refused, so that an
+        // adapter newer than its page server is still heard.
+        if !value["capabilities"].is_object() {
+            return Err("adapter capabilities must be an object");
         }
         let cap = &value["capabilities"];
         Ok(Self {

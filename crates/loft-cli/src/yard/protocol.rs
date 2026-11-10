@@ -15,8 +15,10 @@ const SCHEMA: &str = "loft-yard-protocol/1";
 const OUTCOME: &str = "reported";
 
 /// The protocol's version, raised with each release that changes the input or the output of a
-/// `loft yard` command in a way an earlier host cannot read.
-pub const PROTOCOL: u32 = 2;
+/// `loft yard` command in a way an earlier host cannot read, or that a host sends what an
+/// earlier page server would refuse: protocol 3 lets an adapter declare `consults` and give its
+/// tool calls the classes of what they consult.
+pub const PROTOCOL: u32 = 3;
 
 /// Every format this `loft` reads, oldest first: each up to the one it writes.
 fn reads() -> Vec<String> {

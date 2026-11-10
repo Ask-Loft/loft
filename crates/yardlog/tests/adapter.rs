@@ -82,3 +82,16 @@ fn a_consults_capability_that_is_not_a_boolean_is_refused() {
         assert!(Descriptor::read(&wire).is_err(), "{unusable}");
     }
 }
+
+#[test]
+fn a_capability_the_reader_does_not_know_is_kept_out_and_the_descriptor_reads() {
+    let wire = json!({"format":"yard-adapter/1", "version":"1", "capabilities":{
+        "taskMirroring":true, "future":{"anything":1}
+    }});
+    let descriptor = Descriptor::read(&wire).unwrap();
+    let normalized = descriptor.json();
+    assert_eq!(normalized["capabilities"]["taskMirroring"], true);
+    assert!(normalized["capabilities"].get("future").is_none());
+    let yaml = loft_common::yaml::write(&descriptor.yaml());
+    assert!(!yaml.contains("future"), "{yaml}");
+}
