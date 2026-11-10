@@ -117,6 +117,7 @@ mod yard_claude_hook;
 mod yard_close;
 mod yard_codex;
 mod yard_codex_cachewrite;
+mod yard_codex_consult;
 mod yard_codex_contract;
 mod yard_codex_delegation;
 mod yard_codex_notifications;

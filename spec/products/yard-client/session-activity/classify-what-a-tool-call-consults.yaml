@@ -33,6 +33,8 @@ requirements:
         name: "Where two known trees hold a path, the tree nearest to it decides its class."
       - key: 01a1c32b-8dbe-7792-8bde-87ab3e8dab60
         name: "A path that leaves its directory through `..` is classified where it leads."
+      - key: 01a1c332-5f5c-77bb-9cce-f57795eeda52
+        name: "A path that starts with `~` is `other`."
   - key: 01a1c32b-8dbe-7792-8bde-87ac80ce6aa2
     statement:
       form: event_driven
@@ -70,7 +72,13 @@ requirements:
       - key: 01a1c32b-8dbe-7792-8bde-87b8f624a294
         name: "The paths of `find` are its words before the first that starts with `-`, `(` or `!`."
       - key: 01a1c32b-8dbe-7792-8bde-87b9e9ea2709
-        name: "A reading program that names no path reads the directory the command runs in."
+        name: "`rg`, `ag`, `fd`, `find`, `ls`, `tree` and the `git` readers, naming no path, read the directory the command runs in."
+      - key: 01a1c332-5f5c-77bb-9cce-f578199d9c0d
+        name: "Any other reading program that names no path reads its standard input, and adds no class."
+      - key: 01a1c332-5f5c-77bb-9cce-f5791e9847cc
+        name: "The file a reading program's input is redirected from is a path it reads."
+      - key: 01a1c332-5f5c-77bb-9cce-f57ab29f75bc
+        name: "The file an output is redirected to is not a path the command reads."
       - key: 01a1c32b-8dbe-7792-8bde-87ba435ec11f
         name: "A command that changes its directory with `cd` resolves the paths after it against the directory it changed to."
       - key: 01a1c32b-8dbe-7792-8bde-87bba630ba32
@@ -104,5 +112,7 @@ requirements:
     criteria:
       - key: 01a1c32b-8dbe-7792-8bde-87c5220d0f22
         name: "The Claude and Codex adapters' descriptors each hold `consults: true`."
+      - key: 01a1c338-7d63-7408-bf96-f098bb443e15
+        name: "The Claude adapter declares `consults`, and gives a tool call's start `reads` and `edits`, only where the `loft` it runs speaks protocol 3."
       - key: 01a1c32b-8dbe-7792-8bde-87c63e0639b2
         name: "A descriptor that holds no `consults` reads as an adapter that does not classify tool calls."

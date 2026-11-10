@@ -25,7 +25,7 @@ import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './too
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
 export const PLUGIN_VERSION = '2.3.0'
 /** The oldest and the newest yard protocol this mod speaks. */
-export const PROTOCOLS = { oldest: 1, newest: 2 } as const
+export const PROTOCOLS = { oldest: 1, newest: 3 } as const
 
 function protocolRange({ oldest, newest }: { oldest: number; newest: number }): string {
   return `${oldest}${newest === oldest ? '' : `–${newest}`}`
@@ -43,7 +43,7 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd)
   if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
   state.settings.protocol = protocol
-  state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION) : undefined
+  state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION, protocol) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
   const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
   if (home) state.box.tokenPath = `${home}/.yard/token`

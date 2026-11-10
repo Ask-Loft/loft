@@ -16,16 +16,16 @@ test('a loft with no yard commands leaves Yard Client off, registers no tool and
   await start($)
   expect(w.state.tools).toEqual([])
   expect(w.state.toasts).toHaveLength(1)
-  expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–2, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
+  expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–3, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
   const denied = await $.tool.call({ tool: 'mcp__loft__yard_read' })
   expect(denied.deny ?? denied.text).toMatch(/Yard Client is off/)
 })
 
 test('a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update', async ($, on) => {
-  const w = world(on, { protocol: 3 })
+  const w = world(on, { protocol: 4 })
   await start($)
   expect(w.state.tools).toEqual([])
-  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 3\. To use Yard Client, bring the loft plugin up to date/)
+  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 4\. To use Yard Client, bring the loft plugin up to date/)
 })
 
 test('a loftCommand that cannot be run leaves Yard Client off and names the setting', async ($, on) => {

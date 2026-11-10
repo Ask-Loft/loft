@@ -103,6 +103,24 @@ fn malformed_descriptors_are_rejected_before_recording() {
     assert!(!yard.scratch.home().join(".yard/events/s1.jsonl").exists());
 }
 
+#[test]
+fn a_descriptor_that_declares_a_capability_the_page_server_does_not_know_is_kept_without_it() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let served = Served::start(&yard, &[]);
+    let adapter = json!({"format":"yard-adapter/1", "version":"1", "capabilities":{
+        "taskMirroring":true, "future":true
+    }});
+    let result = post(
+        &served,
+        &[event(&yard, "turn.start", 1, &json!({"adapter":adapter}))],
+    );
+    assert_eq!(result["recorded"], 1, "{result}");
+    let activity = session_file(&yard, "activity", "s1").unwrap();
+    assert!(activity.contains("taskMirroring: true"), "{activity}");
+    assert!(!activity.contains("future"), "{activity}");
+}
+
 /// A descriptor of `version` that reports every counter.
 fn described(version: &str) -> Value {
     let mut adapter = descriptor(&["input", "cacheRead", "cacheWrite", "output"]);

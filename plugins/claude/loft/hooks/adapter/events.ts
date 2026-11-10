@@ -6,8 +6,8 @@
 
 import type { EngineInterface, ModelUsage, On } from 'claude-code'
 
-import { relativeTo } from '../model'
 import type { ToolCallAnswer, ToolCallEvent, ToolCallNext, TurnCompleteEvent } from '../shared'
+import { classOf, nearest, resolve, shellReads, type Class } from './consult'
 import { HOST } from './contract'
 import { flush, keep, timeOf, type Event } from './outbox'
 import { loftSubcommands } from './shell'
@@ -27,11 +27,69 @@ export function tokensOf(usage: ModelUsage) {
 /** The input field that names a file edit's file, by tool. */
 const EDITED: Record<string, string> = { Write: 'file_path', Edit: 'file_path', MultiEdit: 'file_path', NotebookEdit: 'notebook_path' }
 
-/** Whether `path` lies under the `spec/` of the tree that holds it, where a known tree does. */
-export function isSpecEdit(path: string, trees: Iterable<string>): boolean | undefined {
-  // The nearest tree is the one that leaves the shortest path.
-  const relative = [...trees].flatMap(top => relativeTo(top, path) ?? []).sort((a, b) => a.length - b.length)[0]
-  return relative === undefined ? undefined : relative.startsWith('spec/')
+/**
+ * The input field that names the file a reading tool reads, or the directory it searches, and
+ * what it reads where the field is absent: a search runs in the agent's directory.
+ */
+const READ: Record<string, { field: string; otherwise?: string }> = {
+  Read: { field: 'file_path' },
+  NotebookRead: { field: 'notebook_path' },
+  Grep: { field: 'path', otherwise: '.' },
+  Glob: { field: 'path', otherwise: '.' },
+}
+
+/** What of a tool call's input decides what it consults, copied out of the input alone. */
+type Consulting = { edited?: string; read?: string; pattern?: string; command?: string }
+
+/** What decides what the tool call `e` consults, where it reads or edits files at all. */
+function consulting(e: Record<string, unknown>): Consulting | undefined {
+  const text = (field: string) => (typeof e[field] === 'string' ? (e[field] as string) : undefined)
+  const tool = String(e.tool)
+  if (EDITED[tool]) {
+    const edited = text(EDITED[tool])
+    return edited === undefined ? undefined : { edited }
+  }
+  if (tool === 'Bash') {
+    const command = text('command')
+    return command === undefined ? undefined : { command }
+  }
+  const reader = READ[tool]
+  if (!reader) return undefined
+  const read = text(reader.field) ?? reader.otherwise
+  return read === undefined ? undefined : { read, pattern: tool === 'Glob' ? text('pattern') : undefined }
+}
+
+/** The directories a `Glob` pattern opens with, before its first wildcard. */
+function literalHead(pattern: string): string {
+  const parts = pattern.split('/')
+  const wild = parts.findIndex(part => /[*?[{]/.test(part))
+  return parts.slice(0, wild === -1 ? parts.length - 1 : wild).join('/')
+}
+
+/** What a tool call consults, as `reads` and `edits`, from the directory `dir` it runs in. */
+function consultedBy({ edited, read, pattern, command }: Consulting, dir: string, trees: Iterable<string>): { reads?: Class[]; edits?: Class[] } {
+  if (edited !== undefined) return { edits: [classOf(edited, dir, trees)] }
+  if (command !== undefined) {
+    const reads = shellReads(command, dir, trees)
+    return reads.length > 0 ? { reads } : {}
+  }
+  let path = read!
+  if (pattern !== undefined) {
+    const head = literalHead(pattern)
+    if (pattern.startsWith('/')) path = head || '/'
+    else if (head !== '') path = `${path}/${head}`
+  }
+  return { reads: [classOf(path, dir, trees)] }
+}
+
+/**
+ * Whether `path` lies under the `spec/` of the tree that holds it, where a known tree does: a
+ * relative path only where the directory `dir` it is named from is known.
+ */
+export function isSpecEdit(path: string, trees: Iterable<string>, dir?: string): boolean | undefined {
+  const absolute = path.startsWith('/') || dir !== undefined ? resolve(path, dir ?? '/') : undefined
+  const within = absolute === undefined ? undefined : nearest(absolute, trees)
+  return within === undefined || within === '' ? undefined : within.startsWith('spec/')
 }
 
 /** The events told so far: each is kept once those told before it are. */
@@ -41,15 +99,16 @@ let told: Promise<void> = Promise.resolve()
  * Records one event of the calling agent, as it stands when told, and posts what is kept; the
  * caller waits on neither. An event whose fields cannot be read is dropped.
  */
-export function tell($: EngineInterface, agentId: string | undefined, fields: Event) {
+export function tell($: EngineInterface, agentId: string | undefined, fields: Event | ((dir: string) => Event)) {
   if (!state.isOn) return
   const read = Promise.all([$.session.id(), $.session.cwd(), $.clock.now(), agentOf($, agentId)])
   told = Promise.all([told, read])
     .then(([, [session, dir, now, agent]]) => {
+      const event = typeof fields === 'function' ? fields(dir) : fields
       // The descriptor goes with the session's first event and each turn's start only.
-      const described = state.adapter !== undefined && (fields.kind === 'turn.start' || !state.described.has(session))
+      const described = state.adapter !== undefined && (event.kind === 'turn.start' || !state.described.has(session))
       if (described) state.described.add(session)
-      keep(state.box, { session, dir, at: timeOf(now), host: HOST, ...(described ? { adapter: state.adapter } : {}), ...(agent ? { agent } : {}), ...fields })
+      keep(state.box, { session, dir, at: timeOf(now), host: HOST, ...(described ? { adapter: state.adapter } : {}), ...(agent ? { agent } : {}), ...event })
       void flush($, state.box)
     })
     .catch(() => {})
@@ -107,12 +166,22 @@ export async function eventsOfTurnEnd($: EngineInterface, e: TurnCompleteEvent) 
 export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, next: ToolCallNext): Promise<ToolCallAnswer> {
   if (next.origin.plugin === PLUGIN) return next(e)
   const call = e.tool_use_id ?? ''
-  const field = EDITED[String(e.tool)]
-  const path = field ? (e as Record<string, unknown>)[field] : undefined
-  const spec = typeof path === 'string' ? isSpecEdit(path, state.server.trees) : undefined
-  const command = e.tool === 'Bash' ? String((e as { command?: unknown }).command ?? '') : ''
-  const loft = command === '' ? [] : loftSubcommands(command)
-  tell($, e.agentId, { kind: 'tool.start', tool: e.tool, call, ...(spec !== undefined ? { spec } : {}), ...(loft.length > 0 ? { loft } : {}) })
+  const input = consulting(e as Record<string, unknown>)
+  const spec = input?.edited === undefined ? undefined : isSpecEdit(input.edited, state.server.trees)
+  const loft = input?.command === undefined ? [] : loftSubcommands(input.command)
+  const start: Event = { kind: 'tool.start', tool: e.tool, call, ...(spec !== undefined ? { spec } : {}), ...(loft.length > 0 ? { loft } : {}) }
+  // An edit's `spec` and `edits` then come from one path, resolved from the session's directory.
+  const specFrom = (dir: string, trees: string[]) => {
+    const resolved = input?.edited === undefined ? undefined : isSpecEdit(input.edited, trees, dir)
+    const { spec: _, ...rest } = start
+    return resolved === undefined ? rest : { ...rest, spec: resolved }
+  }
+  // Where the descriptor declares it, the start also says what the call consults, worked out
+  // once the session's directory is read, so the call never waits on it.
+  if (input !== undefined && state.adapter?.capabilities.consults === true) {
+    const trees = [...state.server.trees]
+    tell($, e.agentId, dir => ({ ...specFrom(dir, trees), ...consultedBy(input, dir, trees) }) as Event)
+  } else tell($, e.agentId, start)
   let failed = true
   try {
     const ran = await next(e)
