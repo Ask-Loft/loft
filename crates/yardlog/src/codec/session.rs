@@ -1,5 +1,5 @@
-//! The files each session writes alone in Yard Log's folder: its token totals under `tokens/` and
-//! its activity under `activity/`. Only that session writes one, so two copies differ only where
+//! The files each session writes alone in Yard Log's folder: its token totals under `tokens/`,
+//! its activity under `activity/` and what its agents consulted under `consultation/`. Only that session writes one, so two copies differ only where
 //! one has seen more of its events, and the merge driver takes one whole rather than joining
 //! them; all it reads of a copy is when its last event ended.
 
@@ -11,6 +11,8 @@ use crate::act::Time;
 pub const TOKENS: &str = "tokens";
 /// The folder of a session's activity.
 pub const ACTIVITY: &str = "activity";
+/// The folder of what a session's agents consulted.
+pub const CONSULTATION: &str = "consultation";
 /// The field that holds when a session's file's last event ended.
 pub const LAST_ENDED: &str = "lastEnded";
 

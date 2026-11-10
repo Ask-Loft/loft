@@ -20,7 +20,11 @@ fn a_session_s_file_is_written_whole_outside_yard_log_s_lock() {
     );
     let ready = tree.scratch.0.join("held");
     let mut holder = holding(&store.lock_path(), &ready);
-    for file in [SessionFile::Tokens, SessionFile::Activity] {
+    for file in [
+        SessionFile::Tokens,
+        SessionFile::Activity,
+        SessionFile::Consultation,
+    ] {
         store.write_session(file, "s1", b"session: s1\n").unwrap();
         let path = store.session_path(file, "s1");
         assert_eq!(fs::read(&path).unwrap(), b"session: s1\n");
@@ -35,6 +39,10 @@ fn a_session_s_file_is_written_whole_outside_yard_log_s_lock() {
     assert_eq!(
         store.session_path(SessionFile::Tokens, "s1"),
         store.folder().join("tokens/s1.yaml")
+    );
+    assert_eq!(
+        store.session_path(SessionFile::Consultation, "s1"),
+        store.folder().join("consultation/s1.yaml")
     );
 }
 

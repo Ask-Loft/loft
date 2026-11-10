@@ -1,4 +1,5 @@
-//! The files each session writes alone in Yard Log's folder, its token totals and its activity:
+//! The files each session writes alone in Yard Log's folder, its token totals, its activity and
+//! what its agents consulted:
 //! written whole to a temporary file beside the file and renamed into place, outside Yard Log's
 //! lock, since only that session's events change them and they change no revision. And the
 //! Yard Logs a worktree's `.yard/` holds, each branch's by its folder.
@@ -10,7 +11,7 @@ use std::path::{Path, PathBuf};
 use loft_ports::io_error;
 use loft_ports::sync::replace_synced;
 use yardlog::codec::ROOT;
-use yardlog::codec::session::{ACTIVITY, TOKENS};
+use yardlog::codec::session::{ACTIVITY, CONSULTATION, TOKENS};
 use yardlog::identity::SessionKey;
 
 use crate::files::YARD;
@@ -23,6 +24,8 @@ pub enum SessionFile {
     Tokens,
     /// The session's activity, `activity/<session id>.yaml`.
     Activity,
+    /// What the session's agents consulted, `consultation/<session id>.yaml`.
+    Consultation,
 }
 
 impl SessionFile {
@@ -31,6 +34,7 @@ impl SessionFile {
         match self {
             Self::Tokens => TOKENS,
             Self::Activity => ACTIVITY,
+            Self::Consultation => CONSULTATION,
         }
     }
 }
