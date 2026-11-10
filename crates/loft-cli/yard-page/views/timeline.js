@@ -76,7 +76,7 @@ export function chosenStage(list, chosen = {}) {
  * @param {TimelineContext} given
  */
 export function timeline(log, given) {
-  const context = { ...given, consulted: summary(log.consultationSums).byStage };
+  const context = { ...given, consulted: given.consulted ?? summary(log.consultationSums).byStage };
   const { list, line } = ordered(log.stages ?? [], context.order);
   if (!list.length) return h('p', { class: 'empty' }, 'No stage has been written yet.');
   const chosen = chosenStage(list, context.chosen);

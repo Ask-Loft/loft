@@ -34493,7 +34493,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_consultation.rs"
         name: "without_format_json_the_report_is_a_table_on_standard_error"
-        body: 34f5f3c73edd63d2ddfea93f8a10a86758b5ad302e805d810145cd29fb428d0c
+        body: 7a66fedef60ff2cfb425a870d180eded31a4a0dc271e90829e686c242dbd9032
   - node: 01a1c32b-8dbe-7792-8bde-87a1dce82f1c
     reviewed: 5fcdd4d9ffdc8504f0fb6295ac82278a2b938f17a61dd492ad32dc355a19cc94
     tests:

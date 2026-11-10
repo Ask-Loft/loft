@@ -179,13 +179,16 @@ fn without_format_json_the_report_is_a_table_on_standard_error() {
     let (stdout, stderr) = text(&yard);
     assert_eq!(stdout, "");
     let lines: Vec<&str> = stderr.lines().collect();
-    assert!(
-        lines[1].starts_with("stage") && lines[1].ends_with("spec first"),
-        "{stderr}"
+    let cells = |values: [&str; 6]| values.map(|value| format!("{value:>12}")).concat();
+    let head = ["spec", "loft", "code", "other", "spec edits", "code edits"];
+    assert_eq!(
+        lines[1],
+        format!("{:<32}{}  spec first", "stage", cells(head))
     );
-    assert!(
-        lines[2].starts_with("Shape it") && lines[2].ends_with("no (1 before)"),
-        "{stderr}"
+    let shape = cells(["1", "1", "1", "0", "0", "1"]);
+    assert_eq!(
+        lines[2],
+        format!("{:<32}{shape}  no (1 before)", "Shape it")
     );
     assert!(
         stderr.contains("Estimated context tokens (an estimate): spec 197, code 198"),

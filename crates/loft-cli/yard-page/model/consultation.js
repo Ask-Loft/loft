@@ -59,12 +59,12 @@ export function reads(counts) {
  */
 export function order(scope) {
   if (scope?.specFirst === true) {
-    return { kind: 'spec-first', mark: '✓', words: 'spec first', said: 'the specification was consulted before the code was first edited' };
+    return { kind: 'spec-first', glyph: '✓', mark: '✓', words: 'spec first', said: 'the specification was consulted before the code was first edited' };
   }
   if (scope?.specFirst === false) {
     const before = scope.codeEditsBeforeSpec ?? 0;
     const edits = count(before, 'edit');
-    return { kind: 'code-first', mark: `✗${before}`, words: `code first, ${edits}`, said: `${edits} of code came before the specification was consulted` };
+    return { kind: 'code-first', glyph: '✗', mark: `✗${before}`, words: `code first, ${edits}`, said: `${edits} of code came before the specification was consulted` };
   }
   return null;
 }

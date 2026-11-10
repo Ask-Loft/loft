@@ -50,7 +50,11 @@ fn document(root: &Path, args: &ConsultationArgs) -> Result<Value, Failure> {
     let git = YardGit::default();
     let place = Place::locate(&git, &dir)?;
     let branch = Branch::at(git, place, Beyond { port: DEFAULT_PORT })?;
-    let stages = titled(&branch.store.read()?);
+    // The titles only name the stages: a Yard Log that does not read still has its sums reported.
+    let stages = branch
+        .store
+        .read()
+        .map_or_else(|_| Vec::new(), |held| titled(&held));
     let activity = session_files::read(&branch.store, SessionFile::Activity);
     let mut fields = branch.located();
     if let Value::Object(located) = &mut fields {
@@ -132,7 +136,7 @@ fn stage_list(sums: &Sums, stages: &[(String, String)]) -> Vec<Value> {
 fn titled_scope(key: &str, title: Option<&String>, scope: &Scope) -> Value {
     let mut fields = scope.json();
     fields.insert("stage".to_owned(), json!(key));
-    if let Some(title) = title {
+    if let Some(title) = title.filter(|title| !title.is_empty()) {
         fields.insert("title".to_owned(), json!(title));
     }
     fields.into()
@@ -181,12 +185,13 @@ fn table(fields: &Value) -> Vec<String> {
         return lines;
     }
     let names = cells(COLUMNS.iter().map(|(name, _)| name));
-    let head = format!("{:<32}{names}{:>14}", "stage", "spec first");
+    let head = format!("{:<32}{names}  spec first", "stage");
     let mut lines = vec![format!("What the agents consulted on {branch}"), head];
     let stages = fields["stages"].as_array().into_iter().flatten();
     for stage in stages {
-        let name = stage["title"].as_str().or(stage["stage"].as_str());
-        lines.push(row(name.unwrap_or_default(), stage));
+        let title = stage["title"].as_str().filter(|title| !title.is_empty());
+        let name = title.or(stage["stage"].as_str()).unwrap_or_default();
+        lines.push(row(name, stage));
     }
     if let Some(none) = fields.get("noStage") {
         lines.push(row("(no stage)", none));
@@ -223,13 +228,18 @@ fn cells<T: std::fmt::Display>(values: impl Iterator<Item = T>) -> String {
 }
 
 fn row(name: &str, scope: &Value) -> String {
-    let counts = cells(COLUMNS.iter().map(|(_, count)| &scope["counts"][count]));
+    // A JSON value prints without padding, so each count is taken as a number first.
+    let counts = cells(
+        COLUMNS
+            .iter()
+            .map(|(_, count)| scope["counts"][count].as_u64().unwrap_or_default()),
+    );
     let first = match scope["specFirst"].as_bool() {
         Some(true) => "yes".to_owned(),
         Some(false) => format!("no ({} before)", scope["codeEditsBeforeSpec"]),
         None => String::new(),
     };
-    let line = format!("{:<32}{counts}{first:>14}", clipped(name, 31));
+    let line = format!("{:<32}{counts}  {first}", clipped(name, 31));
     line.trim_end().to_owned()
 }
 

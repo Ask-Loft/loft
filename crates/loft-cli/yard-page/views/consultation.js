@@ -31,7 +31,7 @@ export function consultationView(log) {
   // Each mark is named for a reader by its own label; the tip shows the same words to the eye.
   const tip = h('div', { class: 'consult-tip', 'aria-hidden': 'true', hidden: true });
   /** @type {Row[]} */
-  const stages = sums.stages.map((stage) => ({ name: stage.title ?? stage.stage, counts: stage.counts, order: stage }));
+  const stages = sums.stages.map((stage) => ({ name: stage.title || stage.stage, counts: stage.counts, order: stage }));
   if (sums.noStage) stages.push({ name: 'No stage', counts: sums.noStage.counts, order: sums.noStage });
   const agents = sums.agents.map((agent) => ({ name: agent.type === 'main' ? 'main agent' : `${agent.type} subagent`, counts: agent.counts }));
   const show = (/** @type {Event} */ event) => point(tip, /** @type {Element} */ (event.target));
@@ -102,7 +102,7 @@ function percent(part, whole) {
  */
 function orderMark(scope) {
   const first = order(scope);
-  return first ? h('span', { class: `consult-line--${first.kind}` }, `${first.mark.slice(0, 1)} ${first.words}`) : null;
+  return first ? h('span', { class: `consult-line--${first.kind}` }, `${first.glyph} ${first.words}`) : null;
 }
 
 /**
