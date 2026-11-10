@@ -9,7 +9,10 @@
 //! - `GET /api/log?tree=<dir>&branch=<name>[&base=<branch>]`: a branch's Yard Log.
 //! - `GET /api/stream`: the stream of changes.
 //! - `POST /api/answer`: the person's answers and decisions, `{ tree, branch, answers }`.
-//! - `POST /api/register`: a tree to serve, `{ tree }`.
+//! - `POST /api/register`: a tree to serve, `{ tree }`, answered with the top of its worktree by
+//!   its real path and as the request spelled it, and the real path of each tree served.
+//! - `POST /api/heard`: a session live, `{ session, host }`, answered with the real path of each
+//!   tree served.
 //! - `POST /api/events`: one of the mod's events, or a list of them.
 //!
 //! Each `POST` changes something, so it is taken only from the page or with the control token.
@@ -130,10 +133,16 @@ fn register(server: &Server, body: &[u8]) -> Response {
     let Some(tree) = sent["tree"].as_str() else {
         return Response::refused(400, "tree", "the request names no tree");
     };
-    match trees::register(&server.home, std::path::Path::new(tree)) {
-        Ok(tree) => {
+    let registered = trees::register(&server.home, std::path::Path::new(tree));
+    match registered.and_then(|registered| Ok((registered, served(server)?))) {
+        Ok((registered, trees)) => {
             server.changes.fetch_add(1, Ordering::SeqCst);
-            Response::json(200, &json!({ "tree": tree.display().to_string() }))
+            let mut answer =
+                json!({ "tree": registered.tree.display().to_string(), "trees": trees });
+            if let Some(spelled) = registered.spelled {
+                answer["spelled"] = json!(spelled.display().to_string());
+            }
+            Response::json(200, &answer)
         }
         Err(failure) => failed(failure),
     }
@@ -160,10 +169,21 @@ fn heard(server: &Server, body: &[u8]) -> Response {
         )?;
         Ok(at)
     });
-    match heard {
-        Ok(at) => Response::json(200, &json!({ "session": session, "heard": at.to_string() })),
+    match heard.and_then(|at| Ok((at, served(server)?))) {
+        Ok((at, trees)) => Response::json(
+            200,
+            &json!({ "session": session, "heard": at.to_string(), "trees": trees }),
+        ),
         Err(failure) => failed(failure),
     }
+}
+
+/// The real path of each tree the page server serves, as the mod classes paths against them.
+fn served(server: &Server) -> Result<Vec<String>, Failure> {
+    Ok(trees::served(&server.home)?
+        .iter()
+        .map(|tree| tree.display().to_string())
+        .collect())
 }
 
 fn failed(failure: Failure) -> Response {

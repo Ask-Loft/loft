@@ -50,13 +50,34 @@ impl Registry {
     }
 }
 
+/// A tree registered: the top of its worktree as git names it, by its real path, and as the
+/// request spelled it, where that spelling differs and can be told.
+pub struct Registered {
+    pub tree: PathBuf,
+    pub spelled: Option<PathBuf>,
+}
+
 /// Adds the worktree that holds `dir` to the trees served, once; drops the trees that no longer
-/// exist; gives its top.
-pub fn register(home: &Home, dir: &Path) -> Result<PathBuf, Failure> {
-    let dir = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
-    let tree = YardGit::default().top_level(&dir)?;
+/// exist; gives its top, by its real path and as `dir` spells it.
+pub fn register(home: &Home, dir: &Path) -> Result<Registered, Failure> {
+    let real = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
+    let tree = YardGit::default().top_level(&real)?;
     add(home, &tree)?;
-    Ok(tree)
+    let spelled = spelled_top(dir, &real, &tree).filter(|spelled| *spelled != tree);
+    Ok(Registered { tree, spelled })
+}
+
+/// The top `tree` of the worktree that holds `dir`, as `dir` spells it: `dir` less the components
+/// that lead from the top to it, where `dir` is absolute and ends with them; `real` is `dir`'s
+/// real path.
+fn spelled_top(dir: &Path, real: &Path, tree: &Path) -> Option<PathBuf> {
+    let within = real.strip_prefix(tree).ok()?;
+    if !dir.is_absolute() || !dir.ends_with(within) {
+        return None;
+    }
+    dir.ancestors()
+        .nth(within.components().count())
+        .map(Path::to_path_buf)
 }
 
 /// Adds the top of a worktree, `tree`, to the trees served, once; drops the trees that no longer
@@ -432,52 +453,4 @@ pub fn failure_value(failure: Failure) -> Value {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::collections::HashSet;
-    use std::path::PathBuf;
-
-    use serde_json::json;
-
-    use super::{Entries, Entry};
-
-    #[test]
-    fn same_second_waiting_submissions_follow_local_arrival_within_each_log() {
-        let wait = |tree, key, original, arrived| {
-            json!({
-                "tree": tree, "branch":"feat/shelf", "submission":key,
-                "sent":{"at":"2026-10-22T09:30:00Z","revision":original}, "sentReached":arrived,
-            })
-        };
-        let mut waits = vec![
-            wait("/a", "later", 1, 9),
-            wait("/b", "other", 1, 1),
-            wait("/a", "earlier", 80, 7),
-        ];
-        super::order_waiting(&mut waits);
-        assert_eq!(
-            waits
-                .iter()
-                .map(|w| w["submission"].as_str().unwrap())
-                .collect::<Vec<_>>(),
-            ["earlier", "later", "other"]
-        );
-    }
-
-    #[test]
-    fn the_page_server_forgets_what_it_read_of_a_yard_log_no_tree_holds_any_more() {
-        let entries = Entries::default();
-        let key = |tree: &str, branch: &str| (PathBuf::from(tree), branch.to_owned());
-        for (tree, branch) in [("/work/a", "main"), ("/work/a", "old"), ("/work/b", "main")] {
-            let entry = Entry {
-                stamp: (1, None),
-                inherited: false,
-                summary: json!({}),
-                waits: Vec::new(),
-            };
-            entries.0.lock().unwrap().insert(key(tree, branch), entry);
-        }
-        entries.keep_only(&HashSet::from([key("/work/a", "main")]));
-        let kept: Vec<_> = entries.0.lock().unwrap().keys().cloned().collect();
-        assert_eq!(kept, [key("/work/a", "main")]);
-    }
-}
+mod tests;

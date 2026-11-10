@@ -155,6 +155,7 @@ mod yard_serve_logs;
 mod yard_serve_page_data;
 mod yard_serve_spelling;
 mod yard_serve_subagents;
+mod yard_serve_trees;
 mod yard_serve_usage;
 mod yard_serve_working_tree;
 mod yard_settle;

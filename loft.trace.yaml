@@ -28401,7 +28401,7 @@ links:
   - node: 01a16920-dde7-743a-aadb-655b2c318095
     reviewed: ef584b43409ce9315bc057bc6a9ff74113dbe127a14d361799c947f8851b0b23
     tests:
-      - file: "crates/loft-cli/src/yard/serve/trees.rs"
+      - file: "crates/loft-cli/src/yard/serve/trees/tests.rs"
         name: "the_page_server_forgets_what_it_read_of_a_yard_log_no_tree_holds_any_more"
         body: edf6f37c612d0ccaeb56c8d880a3c85b1727d45cacf058f9a348ff5df9797150
   - node: 01a1646f-546d-7042-befd-eb2917150250
@@ -29319,7 +29319,7 @@ links:
       - file: "crates/loft-cli/src/yard/render_log/tests.rs"
         name: "an_open_submission_exposes_the_local_arrival_of_its_current_send"
         body: 9c1eeab1e8221394701cc1f78848d7e6f986b4ec4f5021b8bea9bae65a904d6b
-      - file: "crates/loft-cli/src/yard/serve/trees.rs"
+      - file: "crates/loft-cli/src/yard/serve/trees/tests.rs"
         name: "same_second_waiting_submissions_follow_local_arrival_within_each_log"
         body: 2439268a3ac9840dbb147ad05c13e7b02589cb0123dc4b5e302db62630df021f
   - node: 01a1646f-546d-7042-befd-eb610be82633
