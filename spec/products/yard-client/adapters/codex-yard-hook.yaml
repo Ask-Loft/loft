@@ -31,6 +31,8 @@ requirements:
         name: "UserPromptSubmit starts a turn while Stop or Interrupt ends the observed turn."
       - key: 01a1787c-f803-70b1-b946-b6f644f3357a
         name: "PreToolUse and PostToolUse retain the tool name and call identifier."
+      - key: 01a1c32e-6d96-73c5-93e3-8c2199ddd58c
+        name: "A shell command's PreToolUse names the `loft` subcommands it runs, by the rules the Claude adapter names them by."
       - key: 01a1787c-f803-70b1-b946-b6f717e44770
         name: "PostCompact records compaction without invented sizes or usage."
       - key: 01a1787c-f803-70b1-b946-b6f85d931b15
