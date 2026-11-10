@@ -3,6 +3,7 @@ slug: loft-yard-consultation
 name: "Report what the agents consulted"
 body: "`loft yard consultation` reports what the agents working on a branch consulted, from every consultation file in its Yard Log's folder, whichever machine wrote it. A person reads it at a terminal; a script, or a harness that runs agents on set tasks, reads its JSON."
 tags:
+  - needs-repository
   - yard-command
 realizes:
   - 01a16469-559e-73c4-85f2-71a7729da1ec
