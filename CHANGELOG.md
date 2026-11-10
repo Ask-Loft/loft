@@ -5,6 +5,18 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard measures how far an agent's work is led by the specification. The Claude Code mod and
+  the Codex hook give each tool call that reads or edits files the classes of what it touched,
+  `spec`, `code` or `other`, and name the `loft` subcommands a shell command runs; the yard
+  protocol is 3, and an adapter declares `consults` to be counted. The page server keeps each
+  session's consultation file beside its token totals: six counts in all, by stage and by agent,
+  whether a stage's specification was consulted before its code was first edited, and an
+  estimate of the context tokens each class brought in. `loft yard consultation` reports their
+  sums as a table or as JSON; the Yard page shows a line beside each stage, in the timeline and
+  the Gantt chart, and a Consultation view that charts them. The page server tells the Claude Code
+  mod the trees it serves, by their real paths and as its session spells their tops, so both
+  adapters class a path in any served worktree alike.
+
 ## 2.3.0 (2026-11-05)
 
 - The Yard page wears Loft Web's design. A sidebar lists the Yard Logs under Loft's wordmark and

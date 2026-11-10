@@ -121,7 +121,8 @@ test('the events kept while no page server answered are posted, in order, to the
   await $.turn.start({ text: '', turnId: 't2' })
   await w.clock.advance(10000)
   expect(events(w).filter(event => event.kind === 'turn.start').map(event => event.turn)).toEqual(['t1', 't2'])
-  expect(new Set(w.state.posts.map(post => post.url))).toEqual(new Set(['http://127.0.0.1:7412/api/events']))
+  const posted = w.state.posts.filter(post => !post.url.endsWith('/api/register'))
+  expect(new Set(posted.map(post => post.url))).toEqual(new Set(['http://127.0.0.1:7412/api/events']))
   expect(events(w).some(event => 'dropped' in event)).toBe(false)
 })
 
@@ -402,4 +403,145 @@ test('a full post the page server does not take keeps the newest 1,000 events, a
   expect(box.queue[0]).toMatchObject({ turn: 't1' })
   expect(box.queue.at(-1)).toMatchObject({ turn: 'late' })
   expect(box.dropped).toBe(1)
+})
+
+/** The `tool.start` events posted, by their call, with what each says it consults. */
+const consulted = (w: World) =>
+  Object.fromEntries(events(w).filter(event => event.kind === 'tool.start').map(({ call, reads, edits }) => [String(call), { reads, edits }]))
+
+test('under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/products/a.yaml`, tool_use_id: 'read' } as never)
+  await $.tool.call({ tool: 'NotebookRead', notebook_path: '/elsewhere/n.ipynb', tool_use_id: 'notebook' } as never)
+  await $.tool.call({ tool: 'Grep', pattern: 'shall', tool_use_id: 'grep' } as never)
+  await $.tool.call({ tool: 'Grep', pattern: 'shall', path: 'spec', tool_use_id: 'grep-spec' } as never)
+  await $.tool.call({ tool: 'Glob', pattern: 'spec/**/*.yaml', tool_use_id: 'glob' } as never)
+  await $.tool.call({ tool: 'Glob', pattern: '**/*.rs', tool_use_id: 'glob-all' } as never)
+  await $.tool.call({ tool: 'Bash', command: 'cat spec/a.yaml && rg todo', tool_use_id: 'bash' } as never)
+  await $.tool.call({ tool: 'Bash', command: 'cargo test', tool_use_id: 'build' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/src/main.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'edit' } as never)
+  await $.tool.call({ tool: 'Write', file_path: `${TREE}/spec/b.yaml`, content: '', tool_use_id: 'write' } as never)
+  await $.tool.call({ tool: 'MultiEdit', file_path: 'spec/c.yaml', edits: [], tool_use_id: 'multi' } as never)
+  await $.tool.call({ tool: 'NotebookEdit', notebook_path: `${TREE}/.yard/n.ipynb`, new_source: '', tool_use_id: 'cells' } as never)
+  await $.tool.call({ tool: 'mcp__loft__yard_read', tool_use_id: 'yard' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({
+    read: { reads: ['spec'], edits: undefined },
+    notebook: { reads: ['other'], edits: undefined },
+    grep: { reads: ['code'], edits: undefined },
+    'grep-spec': { reads: ['spec'], edits: undefined },
+    glob: { reads: ['spec'], edits: undefined },
+    'glob-all': { reads: ['code'], edits: undefined },
+    bash: { reads: ['spec', 'code'], edits: undefined },
+    build: { reads: undefined, edits: undefined },
+    edit: { reads: undefined, edits: ['code'] },
+    write: { reads: undefined, edits: ['spec'] },
+    multi: { reads: undefined, edits: ['spec'] },
+    cells: { reads: undefined, edits: ['other'] },
+    yard: { reads: undefined, edits: undefined },
+  })
+  expect(events(w).find(event => event.call === 'edit' && event.kind === 'tool.start')!.spec).toBe(false)
+})
+
+test("under protocol 3 an edit's spec says what its edits say, a relative path resolved from the session's directory", async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'MultiEdit', file_path: 'spec/c.yaml', edits: [], tool_use_id: 'relative' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/spec/../src/x.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'climbs' } as never)
+  await w.clock.settle()
+  const starts = events(w).filter(event => event.kind === 'tool.start')
+  expect(starts.map(({ call, spec, edits }) => ({ call, spec, edits }))).toEqual([
+    { call: 'relative', spec: true, edits: ['spec'] },
+    { call: 'climbs', spec: false, edits: ['code'] },
+  ])
+})
+
+test('a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/secret-name.yaml`, tool_use_id: 'u1' } as never)
+  await $.tool.call({ tool: 'Grep', pattern: 'PRIVATE-PATTERN', path: 'crates', tool_use_id: 'u2' } as never)
+  await $.tool.call({ tool: 'Bash', command: 'grep PRIVATE-WORD spec/hidden.yaml', tool_use_id: 'u3' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/src/private-file.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'u4' } as never)
+  await w.clock.settle()
+  const posted = JSON.stringify(events(w))
+  for (const secret of ['secret-name', 'PRIVATE-PATTERN', 'crates', 'PRIVATE-WORD', 'hidden', 'private-file']) expect(posted).not.toContain(secret)
+})
+
+test('under protocol 2 no tool call says what it consults, and the descriptor declares no consults', async ($, on) => {
+  const w = world(on, { protocol: 2 })
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'u1' } as never)
+  await $.tool.call({ tool: 'Edit', file_path: `${TREE}/src/main.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'u2' } as never)
+  await w.clock.settle()
+  for (const event of events(w)) {
+    expect(event.reads).toBeUndefined()
+    expect(event.edits).toBeUndefined()
+  }
+  const adapter = events(w).find(event => event.kind === 'turn.start')!.adapter as { capabilities: Record<string, unknown> }
+  expect(adapter.capabilities.consults).toBeUndefined()
+})
+
+test('under protocol 3 the descriptor declares that the adapter classifies what each tool call consults', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.turn.start({ text: 'go', turnId: 't1' })
+  await w.clock.settle()
+  const adapter = events(w).find(event => event.kind === 'turn.start')!.adapter as { capabilities: Record<string, unknown> }
+  expect(adapter.capabilities.consults).toBe(true)
+})
+
+test('under protocol 3 a path is classed against each tree the page server names, by its real path and by the session\'s spelling', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  w.state.answersBeat = true
+  w.state.servedTrees = ['/real/work/shelf']
+  w.state.registered = { tree: '/real/work/shelf', spelled: '/work/shelf', trees: ['/real/work/shelf'] }
+  w.state.cwd = `${TREE}/crates`
+  await start($, w.state.cwd)
+  await w.clock.settle()
+  // Another session registers its tree; the next beat's answer names it.
+  w.state.servedTrees = ['/real/work/shelf', '/work/other']
+  await w.clock.advance(5000)
+  await w.clock.settle()
+  await $.tool.call({ tool: 'Read', file_path: '/work/other/spec/a.yaml', tool_use_id: 'another' } as never)
+  await $.tool.call({ tool: 'Read', file_path: '/real/work/shelf/spec/a.yaml', tool_use_id: 'real' } as never)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'above' } as never)
+  await $.tool.call({ tool: 'Read', file_path: 'src/x.rs', tool_use_id: 'within' } as never)
+  await $.tool.call({ tool: 'Read', file_path: 'spec/fixture.yaml', tool_use_id: 'fixture' } as never)
+  await $.tool.call({ tool: 'Read', file_path: '/elsewhere/spec/a.yaml', tool_use_id: 'elsewhere' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({
+    another: { reads: ['spec'] },
+    real: { reads: ['spec'] },
+    above: { reads: ['spec'] },
+    within: { reads: ['code'] },
+    fixture: { reads: ['code'] },
+    elsewhere: { reads: ['other'] },
+  })
+  expect(w.state.posts.filter(post => post.url.endsWith('/api/register')).map(post => post.events)).toEqual([{ tree: `${TREE}/crates` }])
+})
+
+test('until a page server answers, a path is classed against the trees the mod registered alone', async ($, on) => {
+  const w = world(on, { protocol: 3 })
+  await start($)
+  await $.tool.call({ tool: 'Read', file_path: '/work/other/spec/a.yaml', tool_use_id: 'another' } as never)
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'own' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({ another: { reads: ['other'] }, own: { reads: ['spec'] } })
+})
+
+test('under protocol 3 the top of a tree the mod\'s own loft yard serve registered is learned at the next beat', async ($, on) => {
+  const w = world(on, { protocol: 3, serve: 'serving' })
+  w.state.registered = { tree: '/real/work/shelf', spelled: '/work/shelf', trees: ['/real/work/shelf'] }
+  w.state.cwd = `${TREE}/crates`
+  await start($, w.state.cwd)
+  w.state.answersBeat = true
+  await w.clock.advance(5000)
+  await w.clock.settle()
+  await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'above' } as never)
+  await w.clock.settle()
+  expect(consulted(w)).toMatchObject({ above: { reads: ['spec'] } })
+  w.state.serverStops.resolve()
 })

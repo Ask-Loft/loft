@@ -106,6 +106,14 @@ fn a_field_added_to_a_yard_schema_leaves_the_protocol_s_version_as_it_was() {
 }
 
 #[test]
-fn host_aware_callers_and_adapter_descriptors_use_protocol_two() {
-    assert_eq!(protocol(&Scratch::empty(), None)["protocol"], 2);
+fn host_aware_callers_and_adapter_descriptors_use_protocol_two_or_later() {
+    let version = protocol(&Scratch::empty(), None)["protocol"]
+        .as_u64()
+        .unwrap();
+    assert!(version >= 2, "{version}");
+}
+
+#[test]
+fn the_report_gives_protocol_three_for_consultation_classes() {
+    assert_eq!(protocol(&Scratch::empty(), None)["protocol"], 3);
 }

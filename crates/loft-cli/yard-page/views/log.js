@@ -3,7 +3,7 @@
 // controls of the view shown, the order of the stages and the count of what waits on the person,
 // which opens it in the modal. Beneath the head, whether it is closed, carried from another branch
 // or of a newer format, and the view chosen in the tabs along the head's foot: the timeline, the
-// Gantt chart or the tokens it took.
+// Gantt chart, the tokens it took or what its agents consulted.
 
 import { add, h, svg } from '../lib/dom.js';
 import { base, count, place, when } from '../lib/format.js';
@@ -21,6 +21,7 @@ import {
 import { gantt } from './gantt.js';
 import { timeline } from './timeline.js';
 import { tokensView } from './tokens.js';
+import { consultationView } from './consultation.js';
 import { waitingIn } from './waiting.js';
 
 /**
@@ -117,7 +118,9 @@ export function logView(log, context) {
       ? gantt(log, { width: context.width, now: context.now, onPick: context.onPick })
       : view === 'tokens'
         ? tokensView(log)
-        : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now, chosen: context.chosen, onChoose: context.onChoose }),
+        : view === 'consultation'
+          ? consultationView(log)
+          : timeline(log, { ...blockContext, order, modes: stretches(log), now: context.now, chosen: context.chosen, onChoose: context.onChoose }),
   );
   return section;
 }
@@ -169,13 +172,14 @@ export function logHead(log, context) {
   ];
 }
 
-/** @typedef {'timeline' | 'gantt' | 'tokens'} View */
+/** @typedef {'timeline' | 'gantt' | 'tokens' | 'consultation'} View */
 
 /** The views of a Yard Log, in their order, each with Loft Web's icon drawn on a square of 16. */
 export const VIEWS = /** @type {[View, string, string[]][]} */ ([
   ['timeline', 'Timeline', ['M3.5 3.5h2v2h-2zM3.5 7h2v2h-2zM3.5 10.5h2v2h-2z', 'M8 4.5h5.5M8 8h5.5M8 11.5h5.5']],
   ['gantt', 'Gantt chart', ['M2.5 4h6M5.5 8h7.5M8.5 12h5']],
   ['tokens', 'Tokens', ['M6 2.5l-1.5 11M11.5 2.5l-1.5 11M2.5 6h11M2 10h11']],
+  ['consultation', 'Consultation', ['M2.5 13.5h11', 'M4 11V7.5M8 11V3.5M12 11V9']],
 ]);
 
 /**

@@ -12,7 +12,7 @@ requirements:
       shall: "offer the timeline, the Gantt chart and the tokens as three views of Yard Log, and remember in this browser the one chosen."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb69ef96a504
-        name: "The tabs in the page's head choose the timeline, the Gantt chart or the tokens."
+        name: "The tabs in the page's head choose the timeline, the Gantt chart, the tokens or the consultation."
       - key: 01a16984-aadb-7721-9995-472440ea0ee8
         name: "Each view's tab shows an icon and the view's name, and the one shown is marked as current."
       - key: 01a168c0-7faa-72dc-8ad3-520c27488530
@@ -22,7 +22,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb6b4a34aab6
         name: "The Gantt chart follows Yard Log's changes as the timeline does."
       - key: 01a1646f-546d-7042-befd-eb6c59e28e31
-        name: "While the Gantt chart or the tokens are shown, the page keeps the width it has while the timeline is shown, in one pane beneath its head."
+        name: "While the Gantt chart, the tokens or the consultation are shown, the page keeps the width it has while the timeline is shown, in one pane beneath its head."
   - key: 01a168c0-7faa-72dc-8ad3-520deb7f6c75
     statement:
       form: ubiquitous

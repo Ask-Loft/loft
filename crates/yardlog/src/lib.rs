@@ -7,6 +7,7 @@ pub mod act;
 pub mod adapter;
 pub mod body;
 pub mod codec;
+pub mod consult;
 pub mod datum;
 pub mod delegation;
 pub mod format;

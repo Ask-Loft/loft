@@ -76,12 +76,13 @@ export function order() {
 }
 
 /**
- * The view of Yard Log: the `timeline` unless the person chose the `gantt` chart or the `tokens`.
- * @returns {'timeline' | 'gantt' | 'tokens'}
+ * The view of Yard Log: the `timeline` unless the person chose the `gantt` chart, the `tokens` or
+ * the `consultation`.
+ * @returns {'timeline' | 'gantt' | 'tokens' | 'consultation'}
  */
 export function view() {
   const chosen = get('view');
-  return chosen === 'gantt' || chosen === 'tokens' ? chosen : 'timeline';
+  return chosen === 'gantt' || chosen === 'tokens' || chosen === 'consultation' ? chosen : 'timeline';
 }
 
 /** Whether the list of Yard Logs is folded: open unless the person folded it. */

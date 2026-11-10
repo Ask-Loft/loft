@@ -10,7 +10,7 @@ use crate::yard_serve_events::{event, post, session_file};
 const PLANNED: &str =
     r#"[{"id": "later", "kind": "stage", "title": "Later", "status": "planned"}]"#;
 
-fn descriptor(usage: &[&str]) -> Value {
+pub(crate) fn descriptor(usage: &[&str]) -> Value {
     json!({"format":"yard-adapter/1", "version":"1.0.0", "capabilities": {
         "events":["turn.start", "turn.end", "request"], "usage":usage,
         "nativeQuestions":false, "nativePlans":false, "taskMirroring":true
@@ -101,6 +101,24 @@ fn malformed_descriptors_are_rejected_before_recording() {
     }
     assert!(session_file(&yard, "activity", "s1").is_none());
     assert!(!yard.scratch.home().join(".yard/events/s1.jsonl").exists());
+}
+
+#[test]
+fn a_descriptor_that_declares_a_capability_the_page_server_does_not_know_is_kept_without_it() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let served = Served::start(&yard, &[]);
+    let adapter = json!({"format":"yard-adapter/1", "version":"1", "capabilities":{
+        "taskMirroring":true, "future":true
+    }});
+    let result = post(
+        &served,
+        &[event(&yard, "turn.start", 1, &json!({"adapter":adapter}))],
+    );
+    assert_eq!(result["recorded"], 1, "{result}");
+    let activity = session_file(&yard, "activity", "s1").unwrap();
+    assert!(activity.contains("taskMirroring: true"), "{activity}");
+    assert!(!activity.contains("future"), "{activity}");
 }
 
 /// A descriptor of `version` that reports every counter.

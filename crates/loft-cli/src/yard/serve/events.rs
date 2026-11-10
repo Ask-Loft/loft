@@ -1,10 +1,15 @@
 //! The events the mod posts. Each is kept, where its agent's branch has its Yard Log open, in the
 //! session's event log on this machine, `~/.yard/events/<session id>.jsonl`, with the tree and
 //! branch its agent's directory is on as it arrives, the stage it counts toward and the
-//! submissions open; and what it starts or ends, or counts, is kept in the session's activity
-//! and token totals in that Yard Log's folder. The page server rebuilds a session's activity and
-//! totals from its event log the first time it hears of the session. A totals file of a newer
-//! totals format is left as it is, and the session's requests are counted into no file.
+//! submissions open; and what it starts or ends, or counts, is kept in the session's activity,
+//! token totals and consultation in that Yard Log's folder. The page server rebuilds a session's
+//! files, and the state its consultation estimate needs, from its event log the first time it
+//! hears of the session. A totals file of a newer totals format, or a consultation file of
+//! another format, is left as it is, and the session's events are counted into no file of it.
+//!
+//! A request no Yard Log keeps leaves its agent's next request with no earlier one to be
+//! measured against. A page server that rebuilds the session from its event log does not know of
+//! such a request, which the log never held.
 
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
@@ -18,9 +23,11 @@ use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
-use yardlog::totals::{Totals, TotalsFormat};
+use yardlog::consult::{Consultation, Live};
+use yardlog::totals::Totals;
 
 use super::activity::Activity;
+use super::consulted;
 use super::http::Response;
 use super::newest::Newest;
 use crate::yard::event::{Event, Who};
@@ -35,6 +42,7 @@ struct Kept {
     activity: Option<Activity>,
     activity_written: bool,
     totals: Option<Totals>,
+    consultation: Option<Consultation>,
 }
 
 /// What one session keeps, by the tree and branch of each Yard Log it keeps it in.
@@ -46,6 +54,9 @@ struct SessionKept {
     receipts: Receipts,
     /// The last descriptor the session posted, which each event that carries none is kept under.
     adapter: Option<Descriptor>,
+    /// What the session's consultation estimate needs between its events, whichever Yard Log
+    /// keeps them.
+    live: Live,
 }
 
 impl SessionKept {
@@ -57,8 +68,7 @@ impl SessionKept {
     }
 }
 
-/// Each session's activity and totals, by session, and the newest text written of each of their
-/// files.
+/// What each session keeps, by session, and the newest text written of each of its files.
 #[derive(Default)]
 pub struct Sessions {
     kept: Mutex<HashMap<String, SessionKept>>,
@@ -213,14 +223,16 @@ fn arrivals(
 }
 
 impl Kept {
-    /// Keeps what `event` adds, under its session's last descriptor `adapter`; gives the files
-    /// whose text changed.
+    /// Keeps what `event` adds, under its session's last descriptor `adapter` and with its
+    /// session's estimate state `live`; gives the files whose text changed. Their text is left to
+    /// [`Kept::texts`], so that a replay renders none.
     fn apply(
         &mut self,
         event: &Event,
         arrival: (Option<&str>, &[String]),
         adapter: Option<&Descriptor>,
-    ) -> Vec<(SessionFile, String)> {
+        live: &mut Live,
+    ) -> Vec<SessionFile> {
         let (stage, open) = arrival;
         let mut changed = Vec::new();
         let activity = self
@@ -228,30 +240,46 @@ impl Kept {
             .get_or_insert_with(|| Activity::new(&event.session));
         if activity.apply(event, stage, adapter) {
             self.activity_written = true;
-            changed.push((SessionFile::Activity, activity.text()));
+            changed.push(SessionFile::Activity);
         }
         let totals = self
             .totals
             .get_or_insert_with(|| Totals::new(&event.session));
-        if totals::count(totals, event, stage, open) && totals.counted() {
-            changed.push((SessionFile::Tokens, totals.text()));
+        if totals::count(totals, event, stage, open) {
+            changed.push(SessionFile::Tokens);
+        }
+        let consultation = self
+            .consultation
+            .get_or_insert_with(|| Consultation::new(&event.session, &event.host));
+        if consulted::count(consultation, live, event, stage, adapter) {
+            changed.push(SessionFile::Consultation);
         }
         changed
     }
 
-    fn snapshot(&self) -> Vec<(SessionFile, String)> {
-        let mut files = Vec::new();
-        if self.activity_written
-            && let Some(activity) = &self.activity
-        {
-            files.push((SessionFile::Activity, activity.text()));
-        }
-        if let Some(totals) = &self.totals
-            && totals.counted()
-        {
-            files.push((SessionFile::Tokens, totals.text()));
-        }
+    /// The text of each of `files` that is written.
+    fn texts(&self, files: impl IntoIterator<Item = SessionFile>) -> Vec<(SessionFile, String)> {
+        let text = |file| match file {
+            SessionFile::Activity => self
+                .activity
+                .as_ref()
+                .filter(|_| self.activity_written)
+                .map(Activity::text),
+            SessionFile::Tokens => self
+                .totals
+                .as_ref()
+                .filter(|totals| totals.counted())
+                .map(Totals::text),
+            SessionFile::Consultation => self
+                .consultation
+                .as_ref()
+                .filter(|consultation| consultation.counted())
+                .map(Consultation::text),
+        };
         files
+            .into_iter()
+            .filter_map(|file| Some((file, text(file)?)))
+            .collect()
     }
 }
 
@@ -267,6 +295,7 @@ fn replay(home: &Home, session: &str) -> SessionKept {
                 &logged.event,
                 (logged.stage, logged.open),
                 kept.adapter.as_ref(),
+                &mut kept.live,
             );
     });
     kept
@@ -311,6 +340,7 @@ impl Sessions {
         for ((index, event), arrival) in indices.into_iter().zip(&events).zip(arrived) {
             let Some(arrival) = arrival else {
                 skipped += 1;
+                skip(&mut kept, event);
                 continue;
             };
             match keep(home, &mut kept, event, &arrival) {
@@ -326,7 +356,7 @@ impl Sessions {
         // a post that writes after a later one leaves that one's newer text in place.
         drop(kept);
         for (path, ((index, generation), store, file, session, text)) in changed {
-            if file == SessionFile::Tokens && newer_totals(&store, &session) {
+            if session_files::foreign(&store, file, &session) {
                 continue;
             }
             let wrote = self.written.write(&path, generation, || {
@@ -341,13 +371,6 @@ impl Sessions {
             &json!({ "recorded": recorded, "skipped": skipped, "rejected": rejected }),
         )
     }
-}
-
-/// Whether session `session`'s totals file in the Yard Log of `store` is of a totals format newer
-/// than this `loft`'s, or one it does not know.
-fn newer_totals(store: &YardStore, session: &str) -> bool {
-    session_files::one(store, SessionFile::Tokens, session)
-        .is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
 }
 
 /// A session's file a batch changed: the index of the event that last changed it with the
@@ -372,6 +395,16 @@ fn note(
             text,
         );
         changed.insert(path, entry);
+    }
+}
+
+/// Notes `event`, which no Yard Log keeps, where it is a request of a session kept in memory: its
+/// agent's next request has no earlier one to be measured against.
+fn skip(kept: &mut HashMap<String, SessionKept>, event: &Event) {
+    if event.kind == "request"
+        && let Some(session) = kept.get_mut(&event.session_key())
+    {
+        session.live.skipped(&event.who);
     }
 }
 
@@ -402,7 +435,7 @@ fn keep(
         return Ok(session
             .logs
             .get(&place_key)
-            .map_or_else(Vec::new, Kept::snapshot));
+            .map_or_else(Vec::new, |kept| kept.texts(SessionFile::ALL)));
     }
     let mut line = event.posted.clone();
     if let Some(receipt) = &event.receipt {
@@ -417,11 +450,14 @@ fn keep(
         .map_err(|error| error.to_string())?;
     session.receipts.keep(event.receipt.as_ref());
     session.describe(event);
-    Ok(session.logs.entry(place_key).or_default().apply(
+    let kept = session.logs.entry(place_key).or_default();
+    let changed = kept.apply(
         event,
         (arrival.stage.as_deref(), &arrival.open),
         session.adapter.as_ref(),
-    ))
+        &mut session.live,
+    );
+    Ok(kept.texts(changed))
 }
 
 /// Records each session a batch holds events of as heard: an event a mod posts tells the page

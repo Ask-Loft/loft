@@ -16,16 +16,16 @@ test('a loft with no yard commands leaves Yard Client off, registers no tool and
   await start($)
   expect(w.state.tools).toEqual([])
   expect(w.state.toasts).toHaveLength(1)
-  expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–2, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
+  expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–3, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
   const denied = await $.tool.call({ tool: 'mcp__loft__yard_read' })
   expect(denied.deny ?? denied.text).toMatch(/Yard Client is off/)
 })
 
 test('a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update', async ($, on) => {
-  const w = world(on, { protocol: 3 })
+  const w = world(on, { protocol: 4 })
   await start($)
   expect(w.state.tools).toEqual([])
-  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 3\. To use Yard Client, bring the loft plugin up to date/)
+  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 4\. To use Yard Client, bring the loft plugin up to date/)
 })
 
 test('a loftCommand that cannot be run leaves Yard Client off and names the setting', async ($, on) => {
@@ -223,13 +223,13 @@ test('a registration the page server refuses is tried again at the next beat', a
   expect(registers(w)).toHaveLength(2)
 })
 
-test('the tree the mod\'s own loft yard serve registers is not posted again', async ($, on) => {
+test('the tree the mod\'s own loft yard serve registers is posted once more, to learn its top', async ($, on) => {
   const w = world(on, { serve: 'serving' })
   await start($)
   w.state.answersBeat = true
   await w.clock.advance(10000)
   expect(w.state.heard.length).toBeGreaterThan(1)
-  expect(registers(w)).toEqual([])
+  expect(registers(w).map(post => post.events)).toEqual([{ tree: TREE }])
 })
 
 test("the session whose mod's child is the page server is heard every five seconds too", async ($, on) => {
@@ -265,8 +265,8 @@ test('where loft yard serve reports a page server running on another port, it re
   expect(flagOf(w.state.runs.find(run => run.argv.includes('serve'))!.argv, '--tree')).toBe(TREE)
   w.state.cwd = '/work/other'
   await w.clock.advance(5000)
-  expect(registers(w).map(post => post.url)).toEqual(['http://127.0.0.1:7412/api/register'])
-  expect(registers(w).map(post => post.events)).toEqual([{ tree: '/work/other' }])
+  expect(registers(w).map(post => post.url)).toEqual(['http://127.0.0.1:7412/api/register', 'http://127.0.0.1:7412/api/register'])
+  expect(registers(w).map(post => post.events)).toEqual([{ tree: TREE }, { tree: '/work/other' }])
 })
 
 test('while the page server on the reported port answers, the mod starts no more loft yard serve', async ($, on) => {
@@ -371,4 +371,13 @@ test('a tool given a tree runs its command with --tree naming it, and a tool giv
   }
   const schemas = w.state.tools.map(each => each.inputSchema as { properties: Record<string, { type: string }> })
   for (const schema of schemas) expect(schema.properties.tree?.type).toBe('string')
+})
+
+test('a registration whose answer names no top is posted again at the next beat', async ($, on) => {
+  const w = world(on)
+  w.state.answersBeat = true
+  w.state.registered = {}
+  await start($)
+  await w.clock.advance(5000)
+  expect(registers(w)).toHaveLength(2)
 })

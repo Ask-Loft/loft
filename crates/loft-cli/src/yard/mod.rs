@@ -15,6 +15,8 @@ mod change;
 pub mod claude;
 mod close;
 pub mod codex;
+mod consult;
+mod consultation;
 mod continuation;
 mod digest;
 mod event;
@@ -70,6 +72,7 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Continue(args) => continuation::run(&args),
         YardAction::Protocol { output } => protocol::run(output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),
+        YardAction::Consultation(args) => consultation::run(root, &args),
         YardAction::Serve(args) => serve::run(&args),
     }
 }

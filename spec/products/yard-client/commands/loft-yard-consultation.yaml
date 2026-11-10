@@ -1,0 +1,37 @@
+key: 01a1c32b-8dbe-7792-8bde-87963dd33a56
+slug: loft-yard-consultation
+name: "Report what the agents consulted"
+body: "`loft yard consultation` reports what the agents working on a branch consulted, from every consultation file in its Yard Log's folder, whichever machine wrote it. A person reads it at a terminal; a script, or a harness that runs agents on set tasks, reads its JSON."
+tags:
+  - needs-repository
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+requirements:
+  - key: 01a1c32b-8dbe-7792-8bde-879779369571
+    statement:
+      form: event_driven
+      when: "a person or a host runs `loft yard consultation`"
+      system: "`loft yard consultation`"
+      shall: "report the sums of the branch's consultation files in all, by stage, by session and by agent type."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-8798b3f8fc94
+        name: "The report gives the six counts and the estimated tokens of each class in all."
+      - key: 01a1c32b-8dbe-7792-8bde-879955ed7a93
+        name: "The report lists each stage by its key and its title, with its six counts, its estimated tokens, when the specification was first consulted, when the code was first edited, and the number of edits of code that came before the first consultation of the specification."
+      - key: 01a1c32b-8dbe-7792-8bde-879a003d08be
+        name: "The report says of each stage whose code was edited whether the specification was consulted before its first edit of code."
+      - key: 01a1c32b-8dbe-7792-8bde-879b9ac27c18
+        name: "The report lists each session with its host, its six counts and its estimated tokens, and each unmeasured session apart."
+      - key: 01a1c32b-8dbe-7792-8bde-879c678f2738
+        name: "The report gives the six counts and the estimated tokens of the main agent and of each type of subagent."
+      - key: 01a1c32b-8dbe-7792-8bde-879d7e593e25
+        name: "The report says whether the estimate of tokens is partial."
+      - key: 01a1c32b-8dbe-7792-8bde-879e345dda87
+        name: "A branch whose Yard Log has no consultation file reports no counts and says that nothing has been measured, and exits 0."
+      - key: 01a1c32b-8dbe-7792-8bde-879f8c1f7962
+        name: "The report reads a closed Yard Log as it reads an open one."
+      - key: 01a1c32b-8dbe-7792-8bde-87a0dd9a8d8e
+        name: "Without `--format json`, the report is a table on standard error."
+      - key: 01a1c32b-8dbe-7792-8bde-87a1dce82f1c
+        name: "No file is written."

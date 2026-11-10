@@ -10,13 +10,7 @@ use serde_json::{Value, json};
 use super::Result;
 use super::commands::Caller;
 use super::translate::Hook;
-
-fn clipped(text: &str, maximum: usize) -> String {
-    if text.chars().count() <= maximum {
-        return text.to_owned();
-    }
-    format!("{}…", text.chars().take(maximum - 1).collect::<String>())
-}
+use crate::yard::briefing::clipped;
 
 /// The context as the caller starts, from the read of its `briefing`.
 pub fn start(hook: &Hook, caller: &Caller, briefing: &Result<Value>) -> Value {

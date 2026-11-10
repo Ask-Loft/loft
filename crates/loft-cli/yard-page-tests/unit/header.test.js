@@ -59,7 +59,11 @@ test('each view chosen in the head’s tabs is kept in the browser and drawn alo
   prefs.set('view', 'tokens');
   const tokens = page(shown);
   assert.ok(tokens.querySelector('.tokens'));
-  assert.ok(!tokens.querySelector('.timeline, .gantt'));
+  assert.ok(!tokens.querySelector('.timeline, .gantt, .consultation'));
+  prefs.set('view', 'consultation');
+  const consulted = page(shown);
+  assert.ok(consulted.querySelector('.yard-log.view--consultation .consultation'));
+  assert.ok(!consulted.querySelector('.timeline, .gantt, .tokens'));
 });
 
 test('the button that opens what waits lies in the page’s head', () => {
@@ -136,13 +140,13 @@ test('the page names no other mark than Loft’s wordmark and Yard', () => {
   assert.ok(!/\.(mark-word|dots)\b/.test(css), 'the stylesheet draws no other mark');
 });
 
-test('beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current', () => {
+test('beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current', () => {
   const shown = log([stage('s', 'S', 'active', [])]);
   prefs.set('view', 'gantt');
   const head = page(shown).querySelector('#head');
   const tabs = [...(head?.querySelectorAll('.view-tabs .view-tab') ?? [])];
-  assert.deepEqual(tabs.map((tab) => tab.textContent), ['Timeline', 'Gantt chart', 'Tokens']);
-  assert.deepEqual(tabs.map((tab) => tab.getAttribute('aria-current')), [null, 'page', null]);
+  assert.deepEqual(tabs.map((tab) => tab.textContent), ['Timeline', 'Gantt chart', 'Tokens', 'Consultation']);
+  assert.deepEqual(tabs.map((tab) => tab.getAttribute('aria-current')), [null, 'page', null, null]);
   assert.ok(tabs.every((tab) => tab.querySelector('svg')), 'each tab has its icon');
   const summary = head?.querySelector('.summary');
   assert.ok(summary && summary.compareDocumentPosition(tabs[0]) & Node.DOCUMENT_POSITION_FOLLOWING, 'the tabs follow the summary');
