@@ -23142,7 +23142,7 @@ links:
   - node: 01a1c32e-6d96-73c5-93e3-8c2199ddd58c
     reviewed: c2c32a9dcaf1f86f144730d387a7759972a3b6c7a7fc2f8575748d1b799319c5
     tests:
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
         body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
       - file: "crates/loft-cli/src/yard/consult/tests.rs"
@@ -31971,7 +31971,7 @@ links:
       - file: "crates/loft-cli/src/yard/consult/tests.rs"
         name: "each_path_of_the_shared_cases_takes_its_class"
         body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_hook_from_a_linked_directory_classes_its_paths_in_the_tree_it_leads_to"
         body: 56e179358d3bb766845470698b2f9b92a7c5d156acc893026c03f58dee3b4bce
   - node: 01a1c32b-8dbe-7792-8bde-87aa9859e6ec
@@ -32130,7 +32130,7 @@ links:
       - file: "crates/loft-cli/src/yard/consult/tests.rs"
         name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
         body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_patch_run_after_cd_names_its_files_from_where_it_runs"
         body: 163141b618a742d948525d66b1263ad1406a3f13151d1465949793fed6b260dd
   - node: 01a1c32b-8dbe-7792-8bde-87bba630ba32
@@ -32154,7 +32154,7 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
         body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
         body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
   - node: 01a1c32b-8dbe-7792-8bde-87bd90cf0ddc
@@ -32169,7 +32169,7 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
         body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
         body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
   - node: 01a1c32b-8dbe-7792-8bde-87bef71ba64c
@@ -32178,7 +32178,7 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command"
         body: 8f3b6a9d0e3bcdc79c04e79bb76f1c72680b7b8b71ca72a9dda82113da8de505
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
         body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
   - node: 01a1c32b-8dbe-7792-8bde-87c01c4ce488
@@ -32196,13 +32196,13 @@ links:
       - file: "crates/loft-cli/src/yard/consult/tests.rs"
         name: "a_patch_edits_each_file_it_adds_updates_deletes_or_moves_to"
         body: de1b3b5ca3c51e6dbc2d5af9092dc0aa7f7304b73fec649b0a699d1a31cb3789
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_patch_names_the_classes_of_the_files_it_edits"
         body: b963e4de80af0ca33970867ce1f9fb217341e4e9c9c5e4e61b38e02543c663e4
       - file: "crates/loft-cli/tests/yard_codex_contract.rs"
         name: "real_codex_hooks_record_native_tool_activity_without_a_remote_model"
         body: 91c905bf6a80443a1061ad5ca4ab6ea07d38c44236411d42bcc50feade77250f
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_patch_run_after_cd_names_its_files_from_where_it_runs"
         body: 163141b618a742d948525d66b1263ad1406a3f13151d1465949793fed6b260dd
   - node: 01a1c32b-8dbe-7792-8bde-87c28586388c
@@ -32220,7 +32220,7 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command"
         body: 8f3b6a9d0e3bcdc79c04e79bb76f1c72680b7b8b71ca72a9dda82113da8de505
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "a_codex_patch_names_the_classes_of_the_files_it_edits"
         body: b963e4de80af0ca33970867ce1f9fb217341e4e9c9c5e4e61b38e02543c663e4
   - node: 01a1c32b-8dbe-7792-8bde-87c5220d0f22
@@ -32229,7 +32229,7 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
         body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
-      - file: "crates/loft-cli/tests/yard_codex.rs"
+      - file: "crates/loft-cli/tests/yard_codex_consult.rs"
         name: "the_codex_descriptor_declares_that_it_classifies_what_each_tool_call_consults"
         body: 816fb41655397132c5e068e681f546a763507c1c1d6cf324dac156ce011b0294
       - file: "crates/yardlog/tests/adapter.rs"
