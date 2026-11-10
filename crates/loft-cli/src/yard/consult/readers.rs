@@ -2,8 +2,8 @@
 //! options that take a value, the pattern a searcher takes first, `find`'s expression, git's
 //! paths after `--`, redirections and `cd`, as `consult.ts` reads them.
 
-use super::paths::{Class, class_of, ordered, resolve};
-use super::words::{Word, assignments, commands_of};
+use super::paths::resolve;
+use super::words::{Word, assignments};
 
 /// How a reading program takes its words.
 struct Reader {
@@ -261,10 +261,7 @@ fn redirection(word: &str) -> Option<(&'static str, &str)> {
         .unwrap_or_else(|| word.trim_start_matches(|c: char| c.is_ascii_digit()));
     ["<<<", "<<-", "<<", ">>", "<", ">"]
         .into_iter()
-        .find_map(|operator| {
-            let attached = rest.strip_prefix(operator)?;
-            Some((if operator == "<<-" { "<<" } else { operator }, attached))
-        })
+        .find_map(|operator| Some((operator, rest.strip_prefix(operator)?)))
 }
 
 /// The paths a reading program's arguments name.
@@ -339,12 +336,13 @@ fn git_paths(args: &[&Word]) -> Option<(Vec<String>, Option<String>)> {
     Some((paths, dir))
 }
 
-/// The classes of what a shell command's reading programs read, run from `dir`.
-pub fn shell_reads(command: &str, dir: &str, trees: &[String]) -> Vec<Class> {
-    let mut classes = Vec::new();
+/// The paths the simple commands' reading programs read, each with the directory it is read
+/// from, the commands run from `dir`.
+pub fn read_paths(commands: &[Vec<Word>], dir: &str) -> Vec<(String, String)> {
+    let mut read = Vec::new();
     let mut here = dir.to_owned();
-    for all in commands_of(command) {
-        let (words, inputs) = redirections(&all[assignments(&all)..]);
+    for all in commands {
+        let (words, inputs) = redirections(&all[assignments(all)..]);
         let Some((first, args)) = words.split_first() else {
             continue;
         };
@@ -377,7 +375,7 @@ pub fn shell_reads(command: &str, dir: &str, trees: &[String]) -> Vec<Class> {
         if paths.is_empty() && searches {
             paths.push(".".to_owned());
         }
-        classes.extend(paths.iter().map(|path| class_of(path, &from, trees)));
+        read.extend(paths.into_iter().map(|path| (path, from.clone())));
     }
-    ordered(classes)
+    read
 }

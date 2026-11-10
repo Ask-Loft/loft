@@ -1,4 +1,4 @@
-//! What a Codex tool call consults, on its `tool.start`: the `loft` subcommands and the classes
+//! What a Codex tool call consults, for its `tool.start`: the `loft` subcommands and the classes
 //! of what a shell command reads, and the classes of the files an `apply_patch` edits (the
 //! Features "Classify what a tool call consults" and "Codex Yard hook"). Codex runs
 //! `apply_patch` as a tool of its own or, as Codex 0.164 does, as a shell command whose heredoc
@@ -6,29 +6,28 @@
 
 use std::path::Path;
 
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 
-use super::translate::Hook;
+use super::translate::{Hook, HookKind};
 use crate::yard::consult::{
-    Class, class_of, loft_subcommands, ordered, patched, runs, shell_reads,
+    Class, class_of, commands_of, holds, loft_names, ordered, patched, read_paths, runs,
 };
 use crate::yard::serve::trees;
 
 /// The trees a path may lie in: those the page server serves, and the worktree that holds the
 /// hook's directory where none of those holds it.
-pub fn known_trees(dir: &str) -> Vec<String> {
+fn known_trees(dir: &str) -> Vec<String> {
     let mut known: Vec<String> = Home::from_env()
         .and_then(|home| trees::served(&home).ok())
         .unwrap_or_default()
         .into_iter()
         .map(|tree| tree.display().to_string())
         .collect();
-    let held = known
-        .iter()
-        .any(|tree| class_of(dir, "/", std::slice::from_ref(tree)) != Class::Other);
-    if !held && let Ok(top) = YardGit::default().top_level(Path::new(dir)) {
+    if !known.iter().any(|tree| holds(tree, dir))
+        && let Ok(top) = YardGit::default().top_level(Path::new(dir))
+    {
         known.push(top.display().to_string());
     }
     known
@@ -47,51 +46,46 @@ fn names(classes: &[Class]) -> Value {
     json!(classes.iter().map(|class| class.name()).collect::<Vec<_>>())
 }
 
-/// Adds `edits`, the classes of the files the patch in `text` edits, where it edits any.
-fn insert_edits(
-    fields: &mut serde_json::Map<String, Value>,
-    text: &str,
-    dir: &str,
-    trees: &[String],
-) {
-    let edits = ordered(patched(text).iter().map(|path| class_of(path, dir, trees)));
-    if !edits.is_empty() {
-        fields.insert("edits".into(), names(&edits));
+/// The fields a `PreToolUse` hook's `tool.start` gains for what its call consults: each command
+/// parsed once, and the known trees looked up only where there is a path to class. Worked out
+/// before the session's lock is taken, since it may ask git for the worktree.
+pub fn fields(hook: &Hook) -> Map<String, Value> {
+    let mut fields = Map::new();
+    if hook.kind() != HookKind::PreToolUse {
+        return fields;
     }
-}
-
-/// Adds to the `tool.start` events of `hook` what its call consults, its paths classed among
-/// `trees`.
-pub fn add(events: &mut [Value], hook: &Hook, trees: &[String]) {
-    let dir = hook.0["cwd"].as_str().unwrap_or_default();
-    let tool = hook.0["tool_name"].as_str().unwrap_or_default();
     let Some(text) = input_text(&hook.0["tool_input"]) else {
-        return;
+        return fields;
     };
-    let mut fields = serde_json::Map::new();
-    match tool {
-        "Bash" => {
-            let loft = loft_subcommands(text);
-            if !loft.is_empty() {
-                fields.insert("loft".into(), json!(loft));
-            }
-            let reads = shell_reads(text, dir, trees);
-            if !reads.is_empty() {
-                fields.insert("reads".into(), names(&reads));
-            }
-            if runs(text, "apply_patch") {
-                insert_edits(&mut fields, text, dir, trees);
-            }
+    let dir = hook.dir();
+    let (loft, read, edited) = match hook.0["tool_name"].as_str() {
+        Some("Bash") => {
+            let commands = commands_of(text);
+            let edited = if runs(&commands, "apply_patch") {
+                patched(text)
+            } else {
+                Vec::new()
+            };
+            (loft_names(&commands), read_paths(&commands, dir), edited)
         }
-        "apply_patch" => insert_edits(&mut fields, text, dir, trees),
-        _ => {}
-    }
-    for event in events
-        .iter_mut()
-        .filter(|event| event["kind"] == "tool.start")
-    {
-        for (name, value) in &fields {
-            event[name] = value.clone();
+        Some("apply_patch") => (Vec::new(), Vec::new(), patched(text)),
+        _ => return fields,
+    };
+    let trees = if read.is_empty() && edited.is_empty() {
+        Vec::new()
+    } else {
+        known_trees(dir)
+    };
+    let reads = ordered(read.iter().map(|(path, from)| class_of(path, from, &trees)));
+    let edits = ordered(edited.iter().map(|path| class_of(path, dir, &trees)));
+    for (name, value, empty) in [
+        ("loft", json!(loft), loft.is_empty()),
+        ("reads", names(&reads), reads.is_empty()),
+        ("edits", names(&edits), edits.is_empty()),
+    ] {
+        if !empty {
+            fields.insert(name.to_owned(), value);
         }
     }
+    fields
 }

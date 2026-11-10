@@ -196,16 +196,25 @@ fn describe(event: &mut Value, state: &mut State) {
     }
 }
 
-/// The events a hook posts, the session's first and each turn's start with the descriptor.
-pub fn events(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
-    let mut events = translated(hook, state)?;
+/// The events a hook posts, the session's first and each turn's start with the descriptor, and
+/// a tool call's start with what it `consulted`.
+pub fn events(
+    hook: &Hook,
+    state: &mut State,
+    consulted: &serde_json::Map<String, Value>,
+) -> Result<Vec<Value>> {
+    let mut events = translated(hook, state, consulted)?;
     for event in &mut events {
         describe(event, state);
     }
     Ok(events)
 }
 
-fn translated(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
+fn translated(
+    hook: &Hook,
+    state: &mut State,
+    consulted: &serde_json::Map<String, Value>,
+) -> Result<Vec<Value>> {
     if hook.kind() == HookKind::SubagentStart
         && let (Some(id), Some(kind)) = (hook.0["agent_id"].as_str(), hook.0["agent_type"].as_str())
     {
@@ -264,6 +273,11 @@ fn translated(hook: &Hook, state: &mut State) -> Result<Vec<Value>> {
         };
         event["tool"] = json!(tool);
         event["call"] = json!(call);
+        if kind == "tool.start" {
+            for (name, value) in consulted {
+                event[name] = value.clone();
+            }
+        }
         if kind == "tool.end" {
             if let Some(code) = hook.0["tool_response"]["exit_code"].as_i64() {
                 event["failed"] = json!(code != 0);

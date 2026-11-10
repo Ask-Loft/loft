@@ -84,8 +84,15 @@ export function commandsOf(command: string): Word[][] {
   return commands.filter(words => words.length > 0)
 }
 
-export const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s
-export const VARIABLE = /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/
+const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s
+const VARIABLE = /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/
+
+/** The number of words that open `words` by assigning shell variables. */
+export function assignments(words: Word[]): number {
+  let n = 0
+  while (n < words.length && !words[n]!.quoted && ASSIGNMENT.test(words[n]!.text)) n++
+  return n
+}
 
 const isLoft = (word: string) => word === 'loft' || /[\\/]loft(\.exe)?$/.test(word)
 
@@ -94,8 +101,7 @@ export function loftSubcommands(command: string): string[] {
   const variables = new Map<string, string>()
   const names: string[] = []
   for (const words of commandsOf(command)) {
-    let n = 0
-    while (n < words.length && !words[n]!.quoted && ASSIGNMENT.test(words[n]!.text)) n++
+    const n = assignments(words)
     if (n === words.length) {
       for (const word of words) {
         const [, name, value] = ASSIGNMENT.exec(word.text)!

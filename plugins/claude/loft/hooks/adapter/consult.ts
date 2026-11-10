@@ -4,7 +4,7 @@
 // (the Feature "Classify what a tool call consults"). Nothing of a path or a command leaves here
 // but its classes. Pure: no file is read, so a path is classified by its words alone.
 
-import { ASSIGNMENT, commandsOf, type Word } from './shell'
+import { assignments, commandsOf, type Word } from './shell'
 
 export type Class = 'spec' | 'code' | 'other'
 
@@ -28,18 +28,22 @@ export function resolve(path: string, dir: string): string | undefined {
   return `/${parts.join('/')}`
 }
 
+/** `absolute` within the nearest of the known `trees` that holds it, empty for a tree itself. */
+export function nearest(absolute: string, trees: Iterable<string>): string | undefined {
+  let within: string | undefined
+  for (const tree of trees) {
+    const root = resolve(tree, '/')!
+    const inside = absolute === root ? '' : absolute.startsWith(`${root === '/' ? '' : root}/`) ? absolute.slice(root.length + 1) : undefined
+    // The nearest tree is the one that leaves the shortest path within it.
+    if (inside !== undefined && (within === undefined || inside.length < within.length)) within = inside
+  }
+  return within
+}
+
 /** The class of `path`, named by an agent in `dir`, among the known `trees`. */
 export function classOf(path: string, dir: string, trees: Iterable<string>): Class {
   const absolute = resolve(path, dir)
-  if (absolute === undefined) return 'other'
-  // The nearest tree is the one that leaves the shortest path within it.
-  const within = [...trees]
-    .flatMap(tree => {
-      const root = resolve(tree, '/')!
-      if (absolute === root) return ['']
-      return absolute.startsWith(`${root === '/' ? '' : root}/`) ? [absolute.slice(root.length + 1)] : []
-    })
-    .sort((a, b) => a.length - b.length)[0]
+  const within = absolute === undefined ? undefined : nearest(absolute, trees)
   if (within === undefined) return 'other'
   const top = within.split('/')[0]
   return top === 'spec' ? 'spec' : top === '.git' || top === '.yard' ? 'other' : 'code'
@@ -78,9 +82,8 @@ const READERS: Record<string, Reader> = {
   egrep: GREP,
   fgrep: GREP,
   rg: {
+    ...GREP,
     values: { '-e': 1, '-f': 1, '-g': 1, '-t': 1, '-T': 1, '-A': 1, '-B': 1, '-C': 1, '-m': 1, '-M': 1, '-j': 1, '--glob': 1, '--type': 1, '--type-not': 1, '--regexp': 1, '--file': 1 },
-    patternFirst: true,
-    patternOptions: ['-e', '-f', '--regexp', '--file'],
     searches: true,
   },
   ag: { values: { '-G': 1, '-A': 1, '-B': 1, '-C': 1, '-m': 1 }, patternFirst: true, searches: true },
@@ -169,9 +172,7 @@ export function shellReads(command: string, dir: string, trees: Iterable<string>
   const classes: Class[] = []
   let here = dir
   for (const all of commandsOf(command)) {
-    let n = 0
-    while (n < all.length && !all[n]!.quoted && ASSIGNMENT.test(all[n]!.text)) n++
-    const { words, inputs } = redirections(all.slice(n))
+    const { words, inputs } = redirections(all.slice(assignments(all)))
     if (words.length === 0) continue
     const program = programOf(words[0]!.text)
     const args = words.slice(1)

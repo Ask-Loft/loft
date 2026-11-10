@@ -3,7 +3,17 @@
 
 use serde_json::Value;
 
-use super::{Class, class_of, loft_subcommands, patched, shell_reads};
+use super::{Class, class_of, commands_of, loft_names, ordered, patched, read_paths};
+
+/// The classes of what a shell command's reading programs read, run from `dir`.
+fn shell_reads(command: &str, dir: &str, trees: &[String]) -> Vec<Class> {
+    let read = read_paths(&commands_of(command), dir);
+    ordered(read.iter().map(|(path, from)| class_of(path, from, trees)))
+}
+
+fn loft_subcommands(command: &str) -> Vec<String> {
+    loft_names(&commands_of(command))
+}
 
 /// The cases in `plugins/claude/loft/tests/consult-cases.ts`, which keeps them as JSON between
 /// two markers so that both suites read one table.

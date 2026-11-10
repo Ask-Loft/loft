@@ -51,6 +51,11 @@ pub fn resolve(path: &str, dir: &str) -> Option<String> {
     Some(format!("/{}", parts.join("/")))
 }
 
+/// Whether the tree `tree` holds the absolute path `path`.
+pub fn holds(tree: &str, path: &str) -> bool {
+    resolve(tree, "/").is_some_and(|root| within(path, &root).is_some())
+}
+
 /// `absolute` within the tree `root`, when the tree holds it: empty for the tree itself.
 fn within<'a>(absolute: &'a str, root: &str) -> Option<&'a str> {
     if absolute == root {

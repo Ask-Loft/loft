@@ -12,9 +12,9 @@ mod readers;
 mod words;
 
 pub use patch::patched;
-pub use paths::{Class, class_of, ordered};
-pub use readers::shell_reads;
-pub use words::{loft_subcommands, runs};
+pub use paths::{Class, class_of, holds, ordered};
+pub use readers::read_paths;
+pub use words::{commands_of, loft_names, runs};
 
 #[cfg(test)]
 mod tests;

@@ -84,46 +84,30 @@ fn heredoc_at(rest: &str) -> Option<String> {
     Some(name)
 }
 
-/// Whether `inner`, the text between double quotes, is only a variable: `$NAME` or `${NAME}`.
-fn is_variable(inner: &str) -> bool {
-    variable_name(inner).is_some()
+/// Whether `name` is a shell variable's name: a letter or `_`, then letters, digits and `_`.
+fn is_name(name: &str) -> bool {
+    let mut chars = name.chars();
+    chars
+        .next()
+        .is_some_and(|first| first.is_ascii_alphabetic() || first == '_')
+        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_')
 }
 
 /// The name of the variable that `word` is alone: `$NAME` or `${NAME}`.
-pub fn variable_name(word: &str) -> Option<&str> {
+fn variable_name(word: &str) -> Option<&str> {
     let body = word.strip_prefix('$')?;
     let name = match body.strip_prefix('{') {
         Some(braced) => braced.strip_suffix('}')?,
         None => body,
     };
-    let mut chars = name.chars();
-    let first = chars.next()?;
-    ((first.is_ascii_alphabetic() || first == '_')
-        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_'))
-    .then_some(name)
+    is_name(name).then_some(name)
 }
 
 /// The simple commands of a shell command, each as its words, with every heredoc's body left out.
 pub fn commands_of(command: &str) -> Vec<Vec<Word>> {
     let source: Vec<char> = without_heredocs(command).chars().collect();
     let mut commands: Vec<Vec<Word>> = vec![Vec::new()];
-    let mut word = String::new();
-    let mut quoted = false;
-    let mut is_word = false;
-    let end = |commands: &mut Vec<Vec<Word>>,
-               word: &mut String,
-               quoted: &mut bool,
-               is_word: &mut bool| {
-        if *is_word {
-            commands.last_mut().unwrap().push(Word {
-                text: std::mem::take(word),
-                quoted: *quoted,
-            });
-        }
-        word.clear();
-        *quoted = false;
-        *is_word = false;
-    };
+    let mut word: Option<Word> = None;
     let mut i = 0;
     while i < source.len() {
         let c = source[i];
@@ -131,40 +115,41 @@ pub fn commands_of(command: &str) -> Vec<Vec<Word>> {
             let close = source[i + 1..]
                 .iter()
                 .position(|&d| d == c)
-                .map(|at| i + 1 + at);
-            let inner: String = source[i + 1..close.unwrap_or(source.len())]
-                .iter()
-                .collect();
-            quoted = quoted || !(c == '"' && is_variable(&inner));
-            word.push_str(&inner);
-            is_word = true;
-            i = close.unwrap_or(source.len());
+                .map_or(source.len(), |at| i + 1 + at);
+            let inner: String = source[i + 1..close].iter().collect();
+            let building = word.get_or_insert_with(|| Word {
+                text: String::new(),
+                quoted: false,
+            });
+            building.quoted |= !(c == '"' && variable_name(&inner).is_some());
+            building.text.push_str(&inner);
+            i = close;
         } else if c == ' ' || c == '\t' {
-            end(&mut commands, &mut word, &mut quoted, &mut is_word);
+            commands.last_mut().unwrap().extend(word.take());
         } else if matches!(c, ';' | '&' | '|' | '(' | ')' | '\n') {
-            end(&mut commands, &mut word, &mut quoted, &mut is_word);
+            commands.last_mut().unwrap().extend(word.take());
             if !commands.last().unwrap().is_empty() {
                 commands.push(Vec::new());
             }
         } else {
-            word.push(c);
-            is_word = true;
+            word.get_or_insert_with(|| Word {
+                text: String::new(),
+                quoted: false,
+            })
+            .text
+            .push(c);
         }
         i += 1;
     }
-    end(&mut commands, &mut word, &mut quoted, &mut is_word);
+    commands.last_mut().unwrap().extend(word.take());
     commands.retain(|words| !words.is_empty());
     commands
 }
 
 /// The name and value of `word` where it assigns a shell variable: `NAME=value`.
-pub fn assignment(word: &str) -> Option<(&str, &str)> {
+fn assignment(word: &str) -> Option<(&str, &str)> {
     let (name, value) = word.split_once('=')?;
-    let mut chars = name.chars();
-    let first = chars.next()?;
-    ((first.is_ascii_alphabetic() || first == '_')
-        && chars.all(|c| c.is_ascii_alphanumeric() || c == '_'))
-    .then_some((name, value))
+    is_name(name).then_some((name, value))
 }
 
 /// The number of words that open `words` by assigning shell variables.
@@ -175,9 +160,9 @@ pub fn assignments(words: &[Word]) -> usize {
         .count()
 }
 
-/// Whether one of the command's simple commands runs the program `name`, by its name or a path.
-pub fn runs(command: &str, name: &str) -> bool {
-    commands_of(command).iter().any(|words| {
+/// Whether one of the simple commands runs the program `name`, by its name or a path.
+pub fn runs(commands: &[Vec<Word>], name: &str) -> bool {
+    commands.iter().any(|words| {
         words[assignments(words)..]
             .first()
             .is_some_and(|first| !first.quoted && first.text.rsplit('/').next() == Some(name))
@@ -191,12 +176,12 @@ fn is_loft(word: &str) -> bool {
             .any(|end| word.ends_with(end))
 }
 
-/// The `loft` subcommands the shell command runs, each named once, in the order they run.
-pub fn loft_subcommands(command: &str) -> Vec<String> {
+/// The `loft` subcommands the simple commands run, each named once, in the order they run.
+pub fn loft_names(commands: &[Vec<Word>]) -> Vec<String> {
     let mut variables: HashMap<String, String> = HashMap::new();
     let mut names: Vec<String> = Vec::new();
-    for words in commands_of(command) {
-        let n = assignments(&words);
+    for words in commands {
+        let n = assignments(words);
         if n == words.len() {
             let assigned = words.iter().filter_map(|word| assignment(&word.text));
             variables.extend(assigned.map(|(name, value)| (name.to_owned(), value.to_owned())));
