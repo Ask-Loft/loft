@@ -8,6 +8,7 @@
 
 mod estimate;
 mod file;
+mod json;
 mod sums;
 
 use std::collections::BTreeMap;
@@ -16,6 +17,7 @@ use crate::Time;
 use crate::totals::Who;
 
 pub use estimate::{Attributed, Estimate, Live};
+pub use json::tallies;
 pub use sums::{SessionSum, Sums};
 
 /// What a path a tool call reads or edits is: the specification, the code, or neither.
@@ -60,7 +62,7 @@ pub struct Six {
 
 impl Six {
     /// The names the counts are written under, in the order of [`Six::values`].
-    pub const NAMES: [&str; 6] = [
+    const NAMES: [&str; 6] = [
         "specReads",
         "codeReads",
         "otherReads",
@@ -69,9 +71,7 @@ impl Six {
         "codeEdits",
     ];
 
-    /// The counts, in the order of [`Six::NAMES`].
-    #[must_use]
-    pub const fn values(self) -> [u64; 6] {
+    const fn values(self) -> [u64; 6] {
         [
             self.spec_reads,
             self.code_reads,

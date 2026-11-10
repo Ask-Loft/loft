@@ -2,6 +2,8 @@
 // report `loft yard consultation` prints: in all, by stage, by session and by agent type. The page
 // sums no counts itself.
 
+import { count } from '../lib/format.js';
+
 /**
  * @typedef {{ specReads: number, codeReads: number, otherReads: number, loftReads: number, specEdits: number, codeEdits: number }} Counts
  * @typedef {{ spec: number, code: number, other: number, unclassified: number }} Estimate
@@ -45,6 +47,28 @@ export function total(counts) {
   return Object.values(counts).reduce((sum, count) => sum + count, 0);
 }
 
+/** The sum of `counts`' reads, as each stage's bar stacks them. @param {Counts} counts */
+export function reads(counts) {
+  return READS.reduce((sum, [key]) => sum + counts[key], 0);
+}
+
+/**
+ * Whether the specification was consulted before the code was first edited, where the code was
+ * edited: in brief, in words and in a sentence, or none where no code was edited.
+ * @param {{ specFirst?: boolean, codeEditsBeforeSpec?: number } | undefined} scope
+ */
+export function order(scope) {
+  if (scope?.specFirst === true) {
+    return { kind: 'spec-first', mark: '✓', words: 'spec first', said: 'the specification was consulted before the code was first edited' };
+  }
+  if (scope?.specFirst === false) {
+    const before = scope.codeEditsBeforeSpec ?? 0;
+    const edits = count(before, 'edit');
+    return { kind: 'code-first', mark: `✗${before}`, words: `code first, ${edits}`, said: `${edits} of code came before the specification was consulted` };
+  }
+  return null;
+}
+
 /**
  * The line beside a stage: its consultations of the specification, its reads of the
  * specification and its `loft` reads together, its reads of code, and where its code was edited
@@ -56,21 +80,8 @@ export function line(stage) {
   if (!stage || !total(stage.counts)) return null;
   const consulted = stage.counts.specReads + stage.counts.loftReads;
   const code = stage.counts.codeReads;
-  const before = stage.codeEditsBeforeSpec ?? 0;
-  const order = stage.specFirst === true ? 'spec-first' : stage.specFirst === false ? 'code-first' : null;
-  const edits = `${before} edit${before === 1 ? '' : 's'}`;
-  const ordered = order === 'spec-first' ? 'spec first' : order === 'code-first' ? `code first, ${edits}` : null;
-  const text = [`spec ${consulted}`, `code ${code}`, ordered].filter(Boolean).join(' · ');
-  const said = [
-    `${consulted} consultation${consulted === 1 ? '' : 's'} of the specification`,
-    `${code} read${code === 1 ? '' : 's'} of code`,
-    order === 'spec-first'
-      ? 'the specification was consulted before the code was first edited'
-      : order === 'code-first'
-        ? `${edits} of code came before the specification was consulted`
-        : null,
-  ]
-    .filter(Boolean)
-    .join('; ');
-  return { consulted, code, order, before, text, said };
+  const first = order(stage);
+  const text = [`spec ${consulted}`, `code ${code}`, first?.words].filter(Boolean).join(' · ');
+  const said = [count(consulted, 'consultation') + ' of the specification', count(code, 'read') + ' of code', first?.said].filter(Boolean).join('; ');
+  return { consulted, code, order: first, text, said };
 }

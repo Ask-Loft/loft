@@ -148,7 +148,8 @@ fn title(block: &Block) -> String {
 }
 
 /// `text` cut to `limit` characters, its last one an ellipsis where it is cut.
-fn clipped(text: &str, limit: usize) -> String {
+/// `text` cut to `limit` characters, the last of them an ellipsis where it was cut.
+pub(crate) fn clipped(text: &str, limit: usize) -> String {
     if text.chars().count() <= limit {
         return text.to_owned();
     }

@@ -139,31 +139,16 @@ fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<V
         submissions: matches!(&held, Held::Log(_)),
     };
     let continuations = Continuations::read(Home::from_env().as_ref())?;
+    let stages = consultation::titled(&held);
     let mut fields = shown(branch, held, &selection, &continuations)?.0;
     markdown::render_document(&mut fields);
     let activity = session_files::read(&branch.store, SessionFile::Activity);
     let totals = session_files::read(&branch.store, SessionFile::Tokens);
     fields["tokenSums"] = token_sums::sums(&totals, &activity);
-    fields["consultationSums"] = consultation::report(&branch.store, &titles(&fields["stages"]));
+    fields["consultationSums"] = consultation::report(&branch.store, &activity, &stages).into();
     fields["activity"] = Value::Array(activity);
     fields["inherited"] = json!(inherited);
     Ok(fields)
-}
-
-/// Each stage of a rendered Yard Log by its key, with its title, in their order.
-fn titles(stages: &Value) -> Vec<(String, String)> {
-    let text = |value: &Value| value.as_str().unwrap_or_default().to_owned();
-    stages
-        .as_array()
-        .into_iter()
-        .flatten()
-        .map(|stage| {
-            (
-                text(&stage["key"]),
-                text(&stage["version"]["body"]["title"]),
-            )
-        })
-        .collect()
 }
 
 /// Records the answers and decisions the page sent: `{ tree, branch, answers }`, each

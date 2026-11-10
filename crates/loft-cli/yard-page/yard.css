@@ -1100,7 +1100,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .consult-rows { display: grid; gap: 8px; }
 .consult-row { display: grid; grid-template-columns: minmax(8em, 14em) minmax(0, 1fr) minmax(7em, auto); align-items: center; gap: 12px; font-size: 13px; }
 .consult-name { overflow: hidden; color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
-.consult-total { display: flex; gap: 8px; color: var(--body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.consult-total { display: flex; gap: 8px; align-items: baseline; color: var(--body); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .consult-bar { display: block; overflow: visible; }
 .consult-mark { stroke: var(--canvas); stroke-width: 1px; cursor: default; }
 .consult-mark:focus-visible { outline: none; stroke: var(--ink); stroke-width: 2px; }
@@ -1109,9 +1109,6 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .consult--codeReads, .consult--code { color: var(--consult-code); fill: var(--consult-code); }
 .consult--otherReads, .consult--other { color: var(--consult-other); fill: var(--consult-other); }
 .consult--unclassified { color: var(--consult-none); fill: var(--consult-none); }
-.consult-order { font-size: 12px; }
-.consult-order--spec-first { color: var(--done); }
-.consult-order--code-first { color: var(--wait); }
 .consult-table summary { cursor: pointer; font-size: 12px; color: var(--muted); }
 .consult-partial, .consult-unmeasured { margin: 0; font-size: 13px; color: var(--body); }
 .consult-tip { position: absolute; z-index: 10; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font-size: 12px; white-space: nowrap; pointer-events: none; box-shadow: var(--float); }

@@ -112,12 +112,12 @@ test('each mark names its class, count and share when pointed at or focused, and
   assert.equal(mark.getAttribute('tabindex'), '0');
   assert.equal(mark.getAttribute('aria-label'), 'code reads: 7 of 10 (70%)');
   assert.ok(tip.hidden);
-  mark.dispatchEvent(new Event('focus'));
+  mark.dispatchEvent(new Event('focusin', { bubbles: true }));
   assert.equal(tip.hidden, false);
   assert.equal(tip.textContent, 'code reads: 7 of 10 (70%)');
-  mark.dispatchEvent(new Event('blur'));
+  mark.dispatchEvent(new Event('focusout', { bubbles: true }));
   assert.ok(tip.hidden);
-  mark.dispatchEvent(new Event('pointerenter'));
+  mark.dispatchEvent(new Event('pointerover', { bubbles: true }));
   assert.equal(tip.textContent, 'code reads: 7 of 10 (70%)');
 });
 
@@ -127,7 +127,7 @@ test('each chart has a table of its counts beneath it', () => {
   assert.equal(tables.length, 3);
   assert.ok(tables.every(Boolean));
   const building = [...(tables[0]?.querySelectorAll('tbody tr') ?? [])][1];
-  assert.deepEqual([...(building?.children ?? [])].map((cell) => cell.textContent), ['Building', '1', '1', '7', '1', '0', '3', '✗ code first, 2 edits']);
+  assert.deepEqual([...(building?.children ?? [])].map((cell) => cell.textContent), ['Building', '1', '1', '7', '1', '0', '3', 'code first, 2 edits']);
 });
 
 test('each class is drawn in one hue in every chart, in the light and the dark theme alike', () => {

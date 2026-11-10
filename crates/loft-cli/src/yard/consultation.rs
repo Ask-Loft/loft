@@ -7,15 +7,16 @@ use std::fmt::Write as _;
 use std::path::Path;
 
 use serde_json::{Map, Value, json};
-use yardlog::YardLog;
 use yardlog::body::Body;
-use yardlog::consult::{Estimate, Scope, SessionSum, Six, Sums};
+use yardlog::consult::{Estimate, Scope, SessionSum, Sums, tallies};
+use yardlog::log::StageFile;
 use yardlog_store::git::YardGit;
 use yardlog_store::session::SessionFile;
 use yardlog_store::{Held, Place, YardStore};
 
 use super::args::{Beyond, ConsultationArgs, DEFAULT_PORT};
 use super::branch::Branch;
+use super::briefing::clipped;
 use super::failure::Failure;
 use super::session_files;
 use super::working_tree::{Follows, target};
@@ -49,78 +50,67 @@ fn document(root: &Path, args: &ConsultationArgs) -> Result<Value, Failure> {
     let git = YardGit::default();
     let place = Place::locate(&git, &dir)?;
     let branch = Branch::at(git, place, Beyond { port: DEFAULT_PORT })?;
-    let stages = match branch.store.read()? {
-        Held::Log(log) => titled(&log),
-        Held::Absent | Held::Newer(_) => Vec::new(),
-    };
+    let stages = titled(&branch.store.read()?);
+    let activity = session_files::read(&branch.store, SessionFile::Activity);
     let mut fields = branch.located();
-    for (name, value) in as_object(report(&branch.store, &stages)) {
-        fields[name] = value;
+    if let Value::Object(located) = &mut fields {
+        located.extend(report(&branch.store, &activity, &stages));
     }
     Ok(fields)
 }
 
-fn as_object(value: Value) -> Map<String, Value> {
-    match value {
-        Value::Object(fields) => fields,
-        _ => Map::new(),
-    }
-}
-
-/// Each stage of `log` by its key, with its title, in Yard Log's order.
-pub fn titled(log: &YardLog) -> Vec<(String, String)> {
+/// Each stage of the Yard Log `held` by its key, with its title as it now stands, in Yard Log's
+/// order; none where there is no Yard Log this `loft` reads.
+pub fn titled(held: &Held) -> Vec<(String, String)> {
+    let Held::Log(log) = held else {
+        return Vec::new();
+    };
+    let title = |file: &StageFile| match &file.stage.current().body {
+        Body::Stage(stage) => stage.title.clone(),
+        _ => String::new(),
+    };
     log.root
         .stages
         .iter()
         .zip(&log.stages)
-        .map(|(entry, file)| {
-            let title = file
-                .stage
-                .versions
-                .last()
-                .and_then(|version| match &version.body {
-                    Body::Stage(stage) => Some(stage.title.clone()),
-                    _ => None,
-                });
-            (entry.key.to_string(), title.unwrap_or_default())
-        })
+        .map(|(entry, file)| (entry.key.to_string(), title(file)))
         .collect()
 }
 
-/// The sums of the consultation files in the Yard Log of `store`, each stage of `stages` by its
-/// key and title in their order, then any stage the files count toward that `stages` does not
-/// hold, by its key alone.
-pub fn report(store: &YardStore, stages: &[(String, String)]) -> Value {
+/// The sums of the consultation files in the Yard Log of `store`, whose sessions' activity files
+/// are `activity`: each stage of `stages` by its key and title in their order, then any stage the
+/// files count toward that `stages` does not hold, by its key alone. What was not measured gives
+/// no tallies in all and no stage.
+pub fn report(
+    store: &YardStore,
+    activity: &[Value],
+    stages: &[(String, String)],
+) -> Map<String, Value> {
     let sums = Sums::of(
         &session_files::read(store, SessionFile::Consultation),
-        &session_files::read(store, SessionFile::Activity),
+        activity,
     );
     let unmeasured: Vec<Value> = sums
         .unmeasured
         .iter()
         .map(|(session, host)| json!({ "session": session, "host": host }))
         .collect();
-    if !sums.measured() {
-        return json!({
-            "measured": false,
-            "partial": sums.partial,
-            "stages": [],
-            "sessions": [],
-            "unmeasured": unmeasured,
-            "agents": [],
-        });
+    let mut fields = Map::from_iter([
+        ("measured".to_owned(), json!(sums.measured())),
+        ("partial".to_owned(), json!(sums.partial)),
+        ("stages".to_owned(), json!(stage_list(&sums, stages))),
+        (
+            "sessions".to_owned(),
+            sums.sessions.iter().map(session).collect(),
+        ),
+        ("unmeasured".to_owned(), json!(unmeasured)),
+        ("agents".to_owned(), json!(agent_list(&sums))),
+    ]);
+    if sums.measured() {
+        fields.insert("all".to_owned(), tallies(sums.counts, sums.estimate).into());
     }
-    let mut fields = json!({
-        "measured": true,
-        "partial": sums.partial,
-        "all": tallies(sums.counts, sums.estimate),
-        "stages": stage_list(&sums, stages),
-        "sessions": sums.sessions.iter().map(session).collect::<Vec<_>>(),
-        "unmeasured": unmeasured,
-        "agents": agent_list(&sums),
-    });
     if let Some(scope) = &sums.no_stage {
-        fields["noStage"] = scoped(scope);
+        fields.insert("noStage".to_owned(), scope.json().into());
     }
     fields
 }
@@ -140,14 +130,12 @@ fn stage_list(sums: &Sums, stages: &[(String, String)]) -> Vec<Value> {
 }
 
 fn titled_scope(key: &str, title: Option<&String>, scope: &Scope) -> Value {
-    let mut fields = json!({ "stage": key });
+    let mut fields = scope.json();
+    fields.insert("stage".to_owned(), json!(key));
     if let Some(title) = title {
-        fields["title"] = json!(title);
+        fields.insert("title".to_owned(), json!(title));
     }
-    for (name, value) in as_object(scoped(scope)) {
-        fields[name] = value;
-    }
-    fields
+    fields.into()
 }
 
 /// The agent types, the main agent first.
@@ -158,54 +146,18 @@ fn agent_list(sums: &Sums) -> Vec<Value> {
         .chain(others)
         .map(|(kind, scope)| {
             let mut fields = tallies(scope.counts, scope.estimate);
-            fields["type"] = json!(kind);
-            fields
+            fields.insert("type".to_owned(), json!(kind));
+            fields.into()
         })
         .collect()
 }
 
 fn session(sum: &SessionSum) -> Value {
     let mut fields = tallies(sum.counts, sum.estimate);
-    fields["session"] = json!(sum.session);
-    fields["host"] = json!(sum.host);
-    fields["partial"] = json!(sum.partial);
-    fields
-}
-
-/// The fields of `values` under `names`.
-fn named<const N: usize>(names: [&str; N], values: [u64; N]) -> Value {
-    names
-        .into_iter()
-        .zip(values)
-        .map(|(name, value)| (name.to_owned(), json!(value)))
-        .collect::<Map<_, _>>()
-        .into()
-}
-
-fn tallies(counts: Six, estimate: Estimate) -> Value {
-    json!({
-        "counts": named(Six::NAMES, counts.values()),
-        "estimate": named(Estimate::NAMES, estimate.values()),
-    })
-}
-
-/// A scope's tallies and its order: the times it holds, the edits of code before the first
-/// consultation of the specification and, where code was edited, whether the specification was
-/// consulted first.
-fn scoped(scope: &Scope) -> Value {
-    let mut fields = tallies(scope.counts, scope.estimate);
-    let order = scope.order;
-    if let Some(at) = order.first_spec {
-        fields["firstSpec"] = json!(at.to_string());
-    }
-    if let Some(at) = order.first_code_edit {
-        fields["firstCodeEdit"] = json!(at.to_string());
-    }
-    fields["codeEditsBeforeSpec"] = json!(order.code_edits_before_spec);
-    if let Some(first) = order.spec_first() {
-        fields["specFirst"] = json!(first);
-    }
-    fields
+    fields.insert("session".to_owned(), json!(sum.session));
+    fields.insert("host".to_owned(), json!(sum.host));
+    fields.insert("partial".to_owned(), json!(sum.partial));
+    fields.into()
 }
 
 /// The columns of the table, each with the count it gives.
@@ -279,15 +231,6 @@ fn row(name: &str, scope: &Value) -> String {
     };
     let line = format!("{:<32}{counts}{first:>14}", clipped(name, 31));
     line.trim_end().to_owned()
-}
-
-fn clipped(name: &str, width: usize) -> String {
-    if name.chars().count() <= width {
-        return name.to_owned();
-    }
-    let mut kept: String = name.chars().take(width - 1).collect();
-    kept.push('…');
-    kept
 }
 
 fn unmeasured(fields: &Value) -> Vec<String> {

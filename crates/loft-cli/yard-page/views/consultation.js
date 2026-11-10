@@ -8,10 +8,12 @@
 // nothing: it draws the sums the page server gives.
 
 import { h, svg } from '../lib/dom.js';
-import { count } from '../lib/format.js';
-import { CLASSES, READS, summary } from '../model/consultation.js';
+import { count, tokens as amount } from '../lib/format.js';
+import { CLASSES, READS, order, reads, summary } from '../model/consultation.js';
 
 /** @typedef {import('../model/consultation.js').Counts} Counts */
+/** @typedef {{ key: string, words: string, value: number, said: string }} Part */
+/** @typedef {{ name: string, counts: Counts, order?: any }} Row */
 
 /**
  * The consultation view of `log`.
@@ -19,28 +21,27 @@ import { CLASSES, READS, summary } from '../model/consultation.js';
  */
 export function consultationView(log) {
   const sums = summary(log.consultationSums);
-  const unmeasured = unmeasuredNote(sums.unmeasured);
+  const section = h('section', { class: 'consultation', 'aria-label': 'What the agents consulted' });
   if (!sums.measured) {
-    return h(
-      'section',
-      { class: 'consultation', 'aria-label': 'What the agents consulted' },
-      h('p', { class: 'empty' }, 'Nothing has been measured yet: no session’s adapter counted what its agents consulted.'),
-      unmeasured,
-    );
+    section.append(h('p', { class: 'empty' }, 'Nothing has been measured yet: no session’s adapter counted what its agents consulted.'));
+    const unmeasured = unmeasuredNote(sums.unmeasured);
+    if (unmeasured) section.append(unmeasured);
+    return section;
   }
-  // Each mark is named for a reader by its own label; the tip is for the eye.
+  // Each mark is named for a reader by its own label; the tip shows the same words to the eye.
   const tip = h('div', { class: 'consult-tip', 'aria-hidden': 'true', hidden: true });
-  const title = (/** @type {any} */ stage) => stage.title ?? stage.stage;
-  return h(
-    'section',
-    { class: 'consultation', 'aria-label': 'What the agents consulted' },
-    legend(READS),
-    chart('By stage', [...sums.stages.map((stage) => ({ name: title(stage), counts: stage.counts, order: stage })), ...(sums.noStage ? [{ name: 'No stage', counts: sums.noStage.counts, order: sums.noStage }] : [])], tip),
-    chart('By agent', sums.agents.map((agent) => ({ name: agent.type === 'main' ? 'main agent' : `${agent.type} subagent`, counts: agent.counts })), tip),
-    estimate(sums.all?.estimate, sums.partial, tip),
-    unmeasured,
-    tip,
-  );
+  /** @type {Row[]} */
+  const stages = sums.stages.map((stage) => ({ name: stage.title ?? stage.stage, counts: stage.counts, order: stage }));
+  if (sums.noStage) stages.push({ name: 'No stage', counts: sums.noStage.counts, order: sums.noStage });
+  const agents = sums.agents.map((agent) => ({ name: agent.type === 'main' ? 'main agent' : `${agent.type} subagent`, counts: agent.counts }));
+  const show = (/** @type {Event} */ event) => point(tip, /** @type {Element} */ (event.target));
+  section.addEventListener('pointerover', show);
+  section.addEventListener('focusin', show);
+  section.addEventListener('pointerout', () => point(tip, null));
+  section.addEventListener('focusout', () => point(tip, null));
+  const parts = [legend(READS), chart('By stage', stages), chart('By agent', agents), estimate(sums.all?.estimate, sums.partial), unmeasuredNote(sums.unmeasured), tip];
+  for (const part of parts) if (part) section.append(part);
+  return section;
 }
 
 /**
@@ -56,15 +57,15 @@ function legend(classes) {
 }
 
 /**
- * Shows `text` in the tip beside `mark`, or hides it where `text` is none.
+ * Shows the label of `mark` in the tip beside it, or hides the tip where `mark` is no mark.
  * @param {HTMLElement} tip
- * @param {Element} mark
- * @param {string | null} text
+ * @param {Element | null} mark
  */
-function point(tip, mark, text) {
-  tip.hidden = !text;
-  tip.textContent = text ?? '';
-  if (!text) return;
+function point(tip, mark) {
+  const said = mark?.classList.contains('consult-mark') ? mark.getAttribute('aria-label') : null;
+  tip.hidden = !said;
+  tip.textContent = said ?? '';
+  if (!said || !mark) return;
   const view = tip.parentElement?.getBoundingClientRect();
   const at = mark.getBoundingClientRect();
   tip.style.left = `${Math.max(0, at.left - (view?.left ?? 0))}px`;
@@ -72,51 +73,22 @@ function point(tip, mark, text) {
 }
 
 /**
- * One bar of `parts`, each a segment as long as its share of `scale`, with a gap of the surface
- * between them; a segment names its class, count and share when pointed at or focused.
- * @param {{ key: string, words: string, value: number, said: string }[]} parts
+ * One bar of `parts`, each a segment as long as its share of `scale`, a stroke of the surface
+ * leaving a gap between them; each can be focused and is named by its words.
+ * @param {Part[]} parts
  * @param {number} scale
- * @param {HTMLElement} tip
  */
-function bar(parts, scale, tip) {
+function bar(parts, scale) {
   let x = 0;
   const segments = parts
     .filter((part) => part.value > 0)
     .map((part) => {
       const width = (part.value / scale) * 100;
-      const segment = svg('rect', {
-        class: `consult-mark consult--${part.key}`,
-        x: `${x}%`,
-        y: 0,
-        width: `${width}%`,
-        height: '100%',
-        rx: 2,
-        tabindex: 0,
-        role: 'img',
-        'aria-label': part.said,
-        onpointerenter: (/** @type {Event} */ event) => point(tip, /** @type {Element} */ (event.currentTarget), part.said),
-        onpointerleave: () => point(tip, tip, null),
-        onfocus: (/** @type {Event} */ event) => point(tip, /** @type {Element} */ (event.currentTarget), part.said),
-        onblur: () => point(tip, tip, null),
-      });
+      const segment = svg('rect', { class: `consult-mark consult--${part.key}`, x: `${x}%`, y: 0, width: `${width}%`, height: '100%', rx: 2, tabindex: 0, role: 'img', 'aria-label': part.said });
       x += width;
       return segment;
     });
   return svg('svg', { class: 'consult-bar', width: '100%', height: 16, 'aria-hidden': segments.length ? null : 'true' }, segments);
-}
-
-/**
- * The parts of one row of reads, each said in words with its share of the row.
- * @param {Counts} counts
- */
-function readParts(counts) {
-  const sum = READS.reduce((all, [key]) => all + counts[key], 0);
-  return READS.map(([key, words]) => ({
-    key,
-    words,
-    value: counts[key],
-    said: `${words}: ${counts[key]} of ${sum} (${percent(counts[key], sum)})`,
-  }));
 }
 
 /** @param {number} part @param {number} whole */
@@ -126,26 +98,23 @@ function percent(part, whole) {
 
 /**
  * The mark of whether a stage's specification was consulted before its code was first edited.
- * @param {{ specFirst?: boolean, codeEditsBeforeSpec?: number } | undefined} order
+ * @param {any} scope
  */
-function orderMark(order) {
-  if (order?.specFirst === true) return h('span', { class: 'consult-order consult-order--spec-first' }, '✓ spec first');
-  if (order?.specFirst === false) {
-    const before = order.codeEditsBeforeSpec ?? 0;
-    return h('span', { class: 'consult-order consult-order--code-first' }, `✗ code first, ${count(before, 'edit')}`);
-  }
-  return null;
+function orderMark(scope) {
+  const first = order(scope);
+  return first ? h('span', { class: `consult-line--${first.kind}` }, `${first.mark.slice(0, 1)} ${first.words}`) : null;
 }
 
 /**
  * A chart of stacked bars, a row to each of `rows`, all on one scale, with its table beneath.
  * @param {string} title
- * @param {{ name: string, counts: Counts, order?: any }[]} rows
- * @param {HTMLElement} tip
+ * @param {Row[]} rows
  */
-function chart(title, rows, tip) {
-  const totals = rows.map((row) => READS.reduce((all, [key]) => all + row.counts[key], 0));
+function chart(title, rows) {
+  const totals = rows.map((row) => reads(row.counts));
   const scale = Math.max(1, ...totals);
+  const columns = [...READS.map(([, words]) => words), 'spec edits', 'code edits'];
+  const ordered = rows.some((row) => row.order);
   return h(
     'figure',
     { class: 'consult-chart' },
@@ -154,65 +123,48 @@ function chart(title, rows, tip) {
     h(
       'div',
       { class: 'consult-rows' },
-      rows.map((row, index) =>
-        h(
+      rows.map((row, index) => {
+        const sum = totals[index];
+        const parts = READS.map(([key, words]) => ({ key, words, value: row.counts[key], said: `${words}: ${row.counts[key]} of ${sum} (${percent(row.counts[key], sum)})` }));
+        return h(
           'div',
           { class: 'consult-row' },
           h('span', { class: 'consult-name', title: row.name }, row.name),
-          bar(readParts(row.counts), scale, tip),
-          h('span', { class: 'consult-total' }, String(totals[index]), row.order ? orderMark(row.order) : null),
-        ),
-      ),
+          bar(parts, scale),
+          h('span', { class: 'consult-total' }, String(sum), row.order ? orderMark(row.order) : null),
+        );
+      }),
     ),
-    table(title, rows),
+    table(
+      `${title}, as a table`,
+      ordered ? [...columns, 'Order'] : columns,
+      rows.map((row) => {
+        const counts = [...READS.map(([key]) => row.counts[key]), row.counts.specEdits, row.counts.codeEdits].map(String);
+        return [row.name, ...counts, ...(ordered ? [order(row.order)?.words ?? ''] : [])];
+      }),
+    ),
   );
 }
 
 /**
- * The counts of a chart as a table, its text alternative.
- * @param {string} title
- * @param {{ name: string, counts: Counts, order?: any }[]} rows
+ * A table of `rows` under `columns`, folded beneath its chart: the chart's text alternative.
+ * @param {string} caption
+ * @param {string[]} columns
+ * @param {string[][]} rows each a row's name, then its cells
  */
-function table(title, rows) {
-  const ordered = rows.some((row) => row.order);
+function table(caption, columns, rows) {
   return h(
     'details',
     { class: 'consult-table' },
-    h('summary', {}, `${title}, as a table`),
+    h('summary', {}, caption),
     h(
       'div',
       { class: 'table-wrap' },
       h(
         'table',
         { class: 'tokens-table' },
-        h(
-          'thead',
-          {},
-          h(
-            'tr',
-            {},
-            h('td', {}),
-            READS.map(([, words]) => h('th', { scope: 'col', class: 'number' }, words)),
-            h('th', { scope: 'col', class: 'number' }, 'spec edits'),
-            h('th', { scope: 'col', class: 'number' }, 'code edits'),
-            ordered ? h('th', { scope: 'col' }, 'Order') : null,
-          ),
-        ),
-        h(
-          'tbody',
-          {},
-          rows.map((row) =>
-            h(
-              'tr',
-              {},
-              h('th', { scope: 'row' }, row.name),
-              READS.map(([key]) => h('td', { class: 'number' }, String(row.counts[key]))),
-              h('td', { class: 'number' }, String(row.counts.specEdits)),
-              h('td', { class: 'number' }, String(row.counts.codeEdits)),
-              ordered ? h('td', {}, orderMark(row.order)?.textContent ?? '') : null,
-            ),
-          ),
-        ),
+        h('thead', {}, h('tr', {}, h('td', {}), columns.map((column) => h('th', { scope: 'col', class: 'number' }, column)))),
+        h('tbody', {}, rows.map(([name, ...cells]) => h('tr', {}, h('th', { scope: 'row' }, name), cells.map((cell) => h('td', { class: 'number' }, cell))))),
       ),
     ),
   );
@@ -223,9 +175,8 @@ function table(title, rows) {
  * with its table; partial where a request lacked its counts.
  * @param {import('../model/consultation.js').Estimate | undefined} tokens
  * @param {boolean} partial
- * @param {HTMLElement} tip
  */
-function estimate(tokens, partial, tip) {
+function estimate(tokens, partial) {
   if (!tokens) return null;
   const sum = CLASSES.reduce((all, [key]) => all + tokens[key], 0);
   const parts = CLASSES.map(([key, words]) => ({
@@ -239,22 +190,24 @@ function estimate(tokens, partial, tip) {
     { class: 'consult-chart consult-estimate' },
     h('figcaption', {}, h('h4', {}, 'Share of the context each class brought in, an estimate')),
     legend(CLASSES),
-    sum ? h('div', { class: 'consult-rows' }, h('div', { class: 'consult-row' }, h('span', { class: 'consult-name' }, 'All agents'), bar(parts, sum, tip), h('span', { class: 'consult-total' }, `${sum.toLocaleString()} tokens`))) : h('p', { class: 'empty' }, 'No request has been estimated yet.'),
+    sum
+      ? h(
+          'div',
+          { class: 'consult-rows' },
+          h(
+            'div',
+            { class: 'consult-row' },
+            h('span', { class: 'consult-name' }, 'All agents'),
+            bar(parts, sum),
+            h('span', { class: 'consult-total', title: `${sum.toLocaleString()} tokens` }, `${amount(sum)} tokens`),
+          ),
+        )
+      : h('p', { class: 'empty' }, 'No request has been estimated yet.'),
     partial ? h('p', { class: 'consult-partial' }, 'The estimate is partial: a request lacked its counts, or a file of another format was left out.') : null,
-    h(
-      'details',
-      { class: 'consult-table' },
-      h('summary', {}, 'The estimate, as a table'),
-      h(
-        'div',
-        { class: 'table-wrap' },
-        h(
-          'table',
-          { class: 'tokens-table' },
-          h('thead', {}, h('tr', {}, h('td', {}), h('th', { scope: 'col', class: 'number' }, 'Tokens'), h('th', { scope: 'col', class: 'number' }, 'Share'))),
-          h('tbody', {}, parts.map((part) => h('tr', {}, h('th', { scope: 'row' }, part.words), h('td', { class: 'number' }, part.value.toLocaleString()), h('td', { class: 'number' }, percent(part.value, sum))))),
-        ),
-      ),
+    table(
+      'The estimate, as a table',
+      ['Tokens', 'Share'],
+      parts.map((part) => [part.words, part.value.toLocaleString(), percent(part.value, sum)]),
     ),
   );
 }

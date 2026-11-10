@@ -14,11 +14,11 @@ import { line } from '../model/consultation.js';
 export function consultLine(stage, options = {}) {
   const shown = line(stage);
   if (!shown) return null;
-  const mark = shown.order === 'spec-first' ? '✓' : shown.order === 'code-first' ? `✗${shown.before}` : null;
+  const mark = shown.order?.mark;
   return h(
     'span',
     {
-      class: ['consult-line', shown.order ? `consult-line--${shown.order}` : null, options.brief ? 'consult-line--brief' : null],
+      class: ['consult-line', shown.order ? `consult-line--${shown.order.kind}` : null, options.brief ? 'consult-line--brief' : null],
       title: `Consulted: ${shown.said}`,
     },
     options.brief

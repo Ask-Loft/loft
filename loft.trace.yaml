@@ -30413,13 +30413,13 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
         name: "each mark names its class, count and share when pointed at or focused, and can be focused"
-        body: 9268d374f6297dfdd4ffe60c4ddc26480c727ad65ca87687802f21c4a4d195e1
+        body: 0078426fa597b1dc0ae6318dc5610f2a07aef82e2fa2fc91a9d768f7f37a1549
   - node: 01a1c32b-8dbe-7792-8bde-87fd887786d6
     reviewed: 707461105464d564238cc276548a4f6ef1f97bea49fcf2eafc7f028707191fb6
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
         name: "each chart has a table of its counts beneath it"
-        body: 8b823811895f01dbd59504c6aa0b6dd2e92ce05604553af8b5216754519a449a
+        body: 1bf0f186571b0323b26422f3b8e577ce5326e33e84a56b1976e07e7990cdb0a7
   - node: 01a1c32b-8dbe-7792-8bde-87fe21c740fb
     reviewed: dde0a8e973413bbdd4ea750c8e956c59db82ff1deb7194cf03083e06fa669cb4
     tests:

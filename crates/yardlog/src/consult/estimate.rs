@@ -25,9 +25,7 @@ impl Estimate {
     /// The names the classes are written under, in the order of [`Estimate::values`].
     pub const NAMES: [&str; 4] = ["spec", "code", "other", "unclassified"];
 
-    /// The tokens, in the order of [`Estimate::NAMES`].
-    #[must_use]
-    pub const fn values(self) -> [u64; 4] {
+    pub(super) const fn values(self) -> [u64; 4] {
         [self.spec, self.code, self.other, self.unclassified]
     }
 
