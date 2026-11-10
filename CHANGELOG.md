@@ -13,8 +13,9 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   whether a stage's specification was consulted before its code was first edited, and an
   estimate of the context tokens each class brought in. `loft yard consultation` reports their
   sums as a table or as JSON; the Yard page shows a line beside each stage, in the timeline and
-  the Gantt chart, and a Consultation view that charts them. The Claude Code mod knows only the
-  trees it registered, so a path in another worktree is `other` there for now.
+  the Gantt chart, and a Consultation view that charts them. The page server tells the Claude Code
+  mod the trees it serves, by their real paths and as its session spells their tops, so both
+  adapters class a path in any served worktree alike.
 
 ## 2.3.0 (2026-11-05)
 
