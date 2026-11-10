@@ -28123,7 +28123,7 @@ links:
     reviewed: 87847c60e327267459f578e7a56909651fc9081679e8e4543b2368fd4aeda2a1
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
         body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
   - node: 01a1a7a4-51ce-73b8-bd34-87ae5dc1386d
     reviewed: 897a9299e4431158b80bc290833700f602dae401ac47fb7906fe9fc0b996b5c3
@@ -28132,7 +28132,7 @@ links:
         name: "the tab of the view shown is ink, underlined in action blue"
         body: 4021d588005863977d49f935a2d9e0788789cd30c5e45c2e7a408a169c939573
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
         body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
@@ -29590,7 +29590,7 @@ links:
         name: "the Gantt chart is chosen, kept for the next visit, follows changes, and fits the page as the window narrows"
         body: 46134f1ef0922ec28d59d15b06da20723e6cb4e528dd7cdb0acf1631943a21bc
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
         body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
         name: "choosing a view’s tab shows that view and keeps the stage chosen"
@@ -29602,7 +29602,7 @@ links:
     reviewed: c7a13f10307e14607d40cdf290c33dfd1819bc6ae10b986e5b7990a2ce797812
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
         body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
