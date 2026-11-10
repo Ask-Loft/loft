@@ -6,7 +6,7 @@
 
 use std::path::{Component, Path};
 
-use yardlog::codec::session::{ACTIVITY, TOKENS};
+use yardlog::codec::session::{ACTIVITY, CONSULTATION, TOKENS};
 use yardlog::codec::{FileError, ROOT};
 use yardlog::merge::{Taken, merge_file, take_session_file};
 
@@ -55,10 +55,11 @@ fn folder(file: &Path) -> &str {
         .unwrap_or_default()
 }
 
-/// Whether `file` is one a session writes alone: in a `tokens` or `activity` folder that is not
-/// itself a branch's Yard Log, as the folder of a branch named `x/tokens` would be.
+/// Whether `file` is one a session writes alone: in a `tokens`, `activity` or `consultation`
+/// folder that is not itself a branch's Yard Log, as the folder of a branch named `x/tokens` would
+/// be.
 fn is_session_file(root: &Path, file: &Path) -> bool {
-    [TOKENS, ACTIVITY].contains(&folder(file))
+    [TOKENS, ACTIVITY, CONSULTATION].contains(&folder(file))
         && file
             .parent()
             .is_some_and(|parent| !root.join(parent).join(ROOT).is_file())
