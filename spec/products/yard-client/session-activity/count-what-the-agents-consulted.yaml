@@ -51,6 +51,8 @@ requirements:
         name: "A call whose agent works in another worktree is counted in the consultation file of that worktree's Yard Log."
       - key: 01a1c32b-8dbe-7792-8bde-87d66d41322e
         name: "Replaying a session's events after a page-server restart writes the same consultation file."
+      - key: 01a1c361-317c-7261-ad5c-1638529070d0
+        name: "A call of a session whose adapter's descriptor does not declare `consults` is not counted, so that the session writes no consultation file."
   - key: 01a1c32b-8dbe-7792-8bde-87d7ba908f65
     statement:
       form: event_driven
