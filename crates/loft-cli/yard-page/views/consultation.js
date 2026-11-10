@@ -35,7 +35,7 @@ export function consultationView(log) {
     'section',
     { class: 'consultation', 'aria-label': 'What the agents consulted' },
     legend(READS),
-    chart('By stage', sums.stages.map((stage) => ({ name: title(stage), counts: stage.counts, order: stage })), tip),
+    chart('By stage', [...sums.stages.map((stage) => ({ name: title(stage), counts: stage.counts, order: stage })), ...(sums.noStage ? [{ name: 'No stage', counts: sums.noStage.counts, order: sums.noStage }] : [])], tip),
     chart('By agent', sums.agents.map((agent) => ({ name: agent.type === 'main' ? 'main agent' : `${agent.type} subagent`, counts: agent.counts })), tip),
     estimate(sums.all?.estimate, sums.partial, tip),
     unmeasured,
@@ -150,6 +150,7 @@ function chart(title, rows, tip) {
     'figure',
     { class: 'consult-chart' },
     h('figcaption', {}, h('h4', {}, title)),
+    rows.length ? null : h('p', { class: 'empty' }, 'No call has been counted here yet.'),
     h(
       'div',
       { class: 'consult-rows' },

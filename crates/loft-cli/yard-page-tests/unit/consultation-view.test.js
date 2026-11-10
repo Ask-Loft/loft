@@ -58,6 +58,16 @@ test('the view charts each stage’s reads in Yard Log’s order as one stacked 
   assert.deepEqual([...widths].map((mark) => mark.getAttribute('width')), ['10%', '10%', '70%', '10%'], 'one scale for every bar of the chart');
 });
 
+test('the calls counted toward no stage are charted last, as no stage', () => {
+  const log = shown();
+  log.consultationSums.noStage = { counts: counts({ otherReads: 2 }), estimate: { spec: 0, code: 0, other: 0, unclassified: 0 }, codeEditsBeforeSpec: 0 };
+  assert.deepEqual(rows(consultationView(log), 'By stage').map((row) => [row.name, row.total]), [
+    ['Shaping', '5'],
+    ['Building', '10✗ code first, 2 edits'],
+    ['No stage', '2'],
+  ]);
+});
+
 test('the view charts the same counts for the main agent and each type of subagent', () => {
   assert.deepEqual(rows(consultationView(shown()), 'By agent').map((row) => [row.name, row.total]), [
     ['main agent', '8'],
