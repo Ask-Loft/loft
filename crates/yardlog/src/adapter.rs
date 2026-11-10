@@ -22,15 +22,23 @@ pub const EVENTS: &[&str] = &[
     "plan.end",
 ];
 
+/// Which of the host's own dialogs the adapter answers through Yard Log.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct Native {
+    questions: bool,
+    plans: bool,
+}
+
 /// Validated metadata, independent of any host runtime or I/O.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Descriptor {
     version: String,
     events: Vec<String>,
     usage: Vec<String>,
-    native_questions: bool,
-    native_plans: bool,
+    native: Native,
     task_mirroring: bool,
+    /// Whether the adapter classifies what each tool call reads or edits; absent, it does not.
+    consults: bool,
 }
 
 impl Descriptor {
@@ -60,6 +68,7 @@ impl Descriptor {
                 "nativeQuestions",
                 "nativePlans",
                 "taskMirroring",
+                "consults",
             ]
             .contains(&key.as_str())
         }) {
@@ -70,19 +79,34 @@ impl Descriptor {
             version: version.to_owned(),
             events: names(cap.get("events"), EVENTS)?,
             usage: names(cap.get("usage"), &COUNTERS)?,
-            native_questions: flag(cap.get("nativeQuestions"))?,
-            native_plans: flag(cap.get("nativePlans"))?,
+            native: Native {
+                questions: flag(cap.get("nativeQuestions"))?,
+                plans: flag(cap.get("nativePlans"))?,
+            },
             task_mirroring: flag(cap.get("taskMirroring"))?,
+            consults: flag(cap.get("consults"))?,
         })
     }
 
-    /// The normalized descriptor that a caller reads, including empty capability lists.
+    /// Whether the adapter gives each tool call that reads or edits files the classes of what
+    /// it consults.
+    #[must_use]
+    pub const fn consults(&self) -> bool {
+        self.consults
+    }
+
+    /// The normalized descriptor that a caller reads, including empty capability lists; `consults`
+    /// only where the adapter classifies tool calls.
     #[must_use]
     pub fn json(&self) -> Value {
-        json!({"format":FORMAT, "version":self.version, "capabilities":{
-            "events":self.events, "usage":self.usage, "nativeQuestions":self.native_questions,
-            "nativePlans":self.native_plans, "taskMirroring":self.task_mirroring
-        }})
+        let mut value = json!({"format":FORMAT, "version":self.version, "capabilities":{
+            "events":self.events, "usage":self.usage, "nativeQuestions":self.native.questions,
+            "nativePlans":self.native.plans, "taskMirroring":self.task_mirroring
+        }});
+        if self.consults {
+            value["capabilities"]["consults"] = json!(true);
+        }
+        value
     }
 
     /// Canonical YAML data. Empty lists are omitted and read as unavailable.
@@ -91,11 +115,14 @@ impl Descriptor {
         let mut capabilities = vec![
             (
                 "nativeQuestions",
-                Out::Plain(self.native_questions.to_string()),
+                Out::Plain(self.native.questions.to_string()),
             ),
-            ("nativePlans", Out::Plain(self.native_plans.to_string())),
+            ("nativePlans", Out::Plain(self.native.plans.to_string())),
             ("taskMirroring", Out::Plain(self.task_mirroring.to_string())),
         ];
+        if self.consults {
+            capabilities.push(("consults", Out::Plain(true.to_string())));
+        }
         for (name, values) in [("events", &self.events), ("usage", &self.usage)] {
             if !values.is_empty() {
                 capabilities.push((
