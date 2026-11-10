@@ -8,6 +8,7 @@
 
 mod estimate;
 mod file;
+mod json;
 mod sums;
 
 use std::collections::BTreeMap;
@@ -16,6 +17,7 @@ use crate::Time;
 use crate::totals::Who;
 
 pub use estimate::{Attributed, Estimate, Live};
+pub use json::tallies;
 pub use sums::{SessionSum, Sums};
 
 /// What a path a tool call reads or edits is: the specification, the code, or neither.

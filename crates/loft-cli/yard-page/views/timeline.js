@@ -14,6 +14,8 @@ import * as prefs from '../lib/prefs.js';
 import { count, length, ms, when, who } from '../lib/format.js';
 import { drawnInQuestion, grouped, ordered } from '../model/log.js';
 import { card } from './blocks.js';
+import { consultLine } from './consult-line.js';
+import { summary } from '../model/consultation.js';
 
 const STATUS = { planned: 'Planned', active: 'Active', done: 'Done', dropped: 'Dropped' };
 
@@ -52,6 +54,7 @@ export const LIST = { width: 360, least: 240, most: 640, step: 16 };
  *   order: 'newest' | 'oldest', modes: any[], now: number,
  *   chosen?: { stage?: string, block?: string },
  *   onChoose?: (stage: string, block?: string) => void,
+ *   consulted?: Map<string, import('../model/consultation.js').StageSums>,
  * }} TimelineContext
  */
 
@@ -70,9 +73,10 @@ export function chosenStage(list, chosen = {}) {
 
 /**
  * @param {any} log
- * @param {TimelineContext} context
+ * @param {TimelineContext} given
  */
-export function timeline(log, context) {
+export function timeline(log, given) {
+  const context = { ...given, consulted: given.consulted ?? summary(log.consultationSums).byStage };
   const { list, line } = ordered(log.stages ?? [], context.order);
   if (!list.length) return h('p', { class: 'empty' }, 'No stage has been written yet.');
   const chosen = chosenStage(list, context.chosen);
@@ -296,6 +300,7 @@ function stageRow(stage, chosen, context) {
           owner ? h('span', { class: 'owner' }, owner.agent ? `${who(owner)} subagent` : 'main agent') : null,
           waits ? h('span', { class: 'waiting-count', title: `${waits} wait on you` }, `${waits} waiting`) : null,
           marked ? h('span', { class: 'changed-mark', title: `${marked} changed since your last visit` }, `${marked} new`) : null,
+          consultLine(context.consulted?.get(stage.key)),
         ],
       }),
     ),
@@ -357,6 +362,7 @@ function stagePane(stage, context) {
         h('span', { class: ['status', `status--${body.status}`] }, STATUS[body.status] ?? body.status),
         owner ? h('span', { class: 'owner' }, owner.agent ? `${who(owner)} subagent` : 'main agent') : null,
         h('span', { class: 'count' }, count(blocks.length, 'block')),
+        consultLine(context.consulted?.get(stage.key)),
       ),
       h('h2', { class: 'stage-title', id: 'stage-title' }, body.title),
       markdown(body.goalHtml, body.goal, 'goal'),

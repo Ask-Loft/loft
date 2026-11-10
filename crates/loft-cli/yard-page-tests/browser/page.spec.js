@@ -836,9 +836,10 @@ test('the page keeps its width, the tabs of the views stay in place whichever vi
   await expect(page.locator('#side [data-view]')).toHaveCount(0);
   // The head is drawn again at each change, so each box is read once it can be measured.
   const before = { main: await steadyBox(main), entry: await steadyBox(timeline) };
-  for (const view of ['Gantt chart', 'Tokens']) {
+  const drawn = { 'Gantt chart': '.gantt', Tokens: '.tokens', Consultation: '.consultation' };
+  for (const [view, selector] of Object.entries(drawn)) {
     await page.locator('#head .view-tab', { hasText: view }).click();
-    await expect(page.locator(view === 'Tokens' ? '.tokens' : '.gantt')).toBeVisible();
+    await expect(page.locator(selector)).toBeVisible();
     const after = { main: await steadyBox(main), entry: await steadyBox(timeline) };
     expect(after.main.width).toBe(before.main.width);
     expect(after.entry.x).toBe(before.entry.x);
@@ -1154,6 +1155,26 @@ test('an open page shows a counted request’s tokens within 2 seconds of the re
   const posted = await postAsMod('/api/events', events);
   expect(posted.status).toBe(200);
   await expect(page.locator('.token-totals dd').first()).toHaveAttribute('title', '4321', { timeout: LIVE });
+});
+
+test('an open page shows a counted call within 2 seconds of its start', async ({ page }) => {
+  await page.goto(address());
+  await page.locator('#head .view-tab', { hasText: 'Consultation' }).click();
+  await expect(page.locator('.consultation')).toBeVisible();
+  const adapter = {
+    format: 'yard-adapter/1',
+    version: '1.0.0',
+    capabilities: { events: ['turn.start', 'tool.start'], usage: [], nativeQuestions: false, nativePlans: false, taskMirroring: true, consults: true },
+  };
+  const events = [
+    { session: 'consulting', dir: setup.tree, at: since(-30), kind: 'turn.start', adapter },
+    { session: 'consulting', dir: setup.tree, at: since(-2), kind: 'tool.start', call: 'c1', tool: 'Read', reads: ['spec'] },
+    { session: 'consulting', dir: setup.tree, at: since(-1), kind: 'tool.start', call: 'c2', tool: 'Edit', edits: ['code'] },
+  ];
+  const posted = await postAsMod('/api/events', events);
+  expect(posted.status).toBe(200);
+  await expect(page.locator('.consult-mark.consult--specReads').first()).toBeVisible({ timeout: LIVE });
+  await page.screenshot({ path: test.info().outputPath('consultation.png'), fullPage: true });
 });
 
 test('the page draws the sidebar again only when the list, the Yard Log chosen, the view shown or the sidebar’s fold changes', async ({ page }) => {

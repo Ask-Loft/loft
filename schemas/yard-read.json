@@ -265,6 +265,10 @@
         },
         "context": {
           "$ref": "#/$defs/context"
+        },
+        "consultationSums": {
+          "description": "The page server's only: what the agents consulted, as `loft yard consultation` reports it",
+          "$ref": "#/$defs/consultationSums"
         }
       }
     },
@@ -1595,6 +1599,265 @@
           "description": "The briefing as text of at most 2,000 characters, naming no host's tools",
           "type": "string",
           "maxLength": 2000
+        }
+      }
+    },
+    "consultCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "consultCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "specReads",
+        "codeReads",
+        "otherReads",
+        "loftReads",
+        "specEdits",
+        "codeEdits"
+      ],
+      "properties": {
+        "specReads": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "codeReads": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "otherReads": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "loftReads": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "specEdits": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "codeEdits": {
+          "$ref": "#/$defs/consultCount"
+        }
+      }
+    },
+    "consultEstimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "spec",
+        "code",
+        "other",
+        "unclassified"
+      ],
+      "properties": {
+        "spec": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "code": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "other": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "unclassified": {
+          "$ref": "#/$defs/consultCount"
+        }
+      }
+    },
+    "consultTallies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "counts",
+        "estimate"
+      ],
+      "properties": {
+        "counts": {
+          "$ref": "#/$defs/consultCounts"
+        },
+        "estimate": {
+          "$ref": "#/$defs/consultEstimate"
+        }
+      }
+    },
+    "consultScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "counts",
+        "estimate",
+        "codeEditsBeforeSpec"
+      ],
+      "properties": {
+        "counts": {
+          "$ref": "#/$defs/consultCounts"
+        },
+        "estimate": {
+          "$ref": "#/$defs/consultEstimate"
+        },
+        "firstSpec": {
+          "type": "string",
+          "description": "A UTC time, as Yard Log writes one"
+        },
+        "firstCodeEdit": {
+          "type": "string",
+          "description": "A UTC time, as Yard Log writes one"
+        },
+        "codeEditsBeforeSpec": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "specFirst": {
+          "type": "boolean"
+        }
+      }
+    },
+    "consultStage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stage",
+        "counts",
+        "estimate",
+        "codeEditsBeforeSpec"
+      ],
+      "properties": {
+        "stage": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "counts": {
+          "$ref": "#/$defs/consultCounts"
+        },
+        "estimate": {
+          "$ref": "#/$defs/consultEstimate"
+        },
+        "firstSpec": {
+          "type": "string",
+          "description": "A UTC time, as Yard Log writes one"
+        },
+        "firstCodeEdit": {
+          "type": "string",
+          "description": "A UTC time, as Yard Log writes one"
+        },
+        "codeEditsBeforeSpec": {
+          "$ref": "#/$defs/consultCount"
+        },
+        "specFirst": {
+          "type": "boolean"
+        }
+      }
+    },
+    "consultSession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "host",
+        "counts",
+        "estimate",
+        "partial"
+      ],
+      "properties": {
+        "session": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "counts": {
+          "$ref": "#/$defs/consultCounts"
+        },
+        "estimate": {
+          "$ref": "#/$defs/consultEstimate"
+        },
+        "partial": {
+          "type": "boolean"
+        }
+      }
+    },
+    "consultUnmeasured": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session",
+        "host"
+      ],
+      "properties": {
+        "session": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        }
+      }
+    },
+    "consultAgent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "counts",
+        "estimate"
+      ],
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "counts": {
+          "$ref": "#/$defs/consultCounts"
+        },
+        "estimate": {
+          "$ref": "#/$defs/consultEstimate"
+        }
+      }
+    },
+    "consultationSums": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "measured",
+        "partial",
+        "stages",
+        "sessions",
+        "unmeasured",
+        "agents"
+      ],
+      "properties": {
+        "measured": {
+          "type": "boolean"
+        },
+        "partial": {
+          "type": "boolean"
+        },
+        "all": {
+          "$ref": "#/$defs/consultTallies"
+        },
+        "stages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/consultStage"
+          }
+        },
+        "noStage": {
+          "$ref": "#/$defs/consultScope"
+        },
+        "sessions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/consultSession"
+          }
+        },
+        "unmeasured": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/consultUnmeasured"
+          }
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/consultAgent"
+          }
         }
       }
     }

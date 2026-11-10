@@ -28123,8 +28123,8 @@ links:
     reviewed: 87847c60e327267459f578e7a56909651fc9081679e8e4543b2368fd4aeda2a1
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
-        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
+        body: ab0cd07ecae769f09d97304a82e9ec18f6610254c8e08fb581e319810b0977c8
   - node: 01a1a7a4-51ce-73b8-bd34-87ae5dc1386d
     reviewed: 897a9299e4431158b80bc290833700f602dae401ac47fb7906fe9fc0b996b5c3
     tests:
@@ -28132,8 +28132,8 @@ links:
         name: "the tab of the view shown is ink, underlined in action blue"
         body: 4021d588005863977d49f935a2d9e0788789cd30c5e45c2e7a408a169c939573
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
-        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
+        body: ab0cd07ecae769f09d97304a82e9ec18f6610254c8e08fb581e319810b0977c8
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
         body: 81dbc0cf40cd6116014cf92bf3ff921709f0b279b36a4884607a87bf3ec9e8a3
@@ -28148,10 +28148,10 @@ links:
         body: 0377aa8b96ef9a35685d682b4d10fb07eee1ad6a40cd017f36ac8b169f9302d1
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
         name: "each view chosen in the head’s tabs is kept in the browser and drawn alone"
-        body: 0a7c0e532ebd6575deab9a064e2634631f5a0e0fde3c3e79d7d71335464a77c6
+        body: b1107471cbf46e74a617799f78384391c9d1ab5af839b20cbf9cd48e8cc2ed0e
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: 9b8dadefdea615440746267c5839b987c470ffeab495bee1ea4047af414dddb6
+        body: 94fba4ded01aa65ab897ea3dd0368a77efae224d3bb5d7271dfead717a8a3c25
   - node: 01a1a7a4-51ce-73b8-bd34-87b0c01d27ce
     reviewed: 592f75fbc5eb50001391888b000ec375d0c46716ef7030f797880d816eaa6c46
     tests:
@@ -29584,26 +29584,26 @@ links:
         name: "the page title gives the count of blocks that wait on the person"
         body: e3d7cc9af84f82f634f11ef386e77e053e4ac8832c6b88a8f13e8782ef4fe394
   - node: 01a1646f-546d-7042-befd-eb69ef96a504
-    reviewed: 9e7b9a5c70ec6bee5abcf3792aa59ba8ffdf528e4b86dc4e9fd4bd6f947bca56
+    reviewed: 7d00bcdce09b6dd5dab712586658cefcd30d79e8d119059035a8c8efeb072ed2
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the Gantt chart is chosen, kept for the next visit, follows changes, and fits the page as the window narrows"
         body: 46134f1ef0922ec28d59d15b06da20723e6cb4e528dd7cdb0acf1631943a21bc
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
-        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
+        body: ab0cd07ecae769f09d97304a82e9ec18f6610254c8e08fb581e319810b0977c8
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
         name: "choosing a view’s tab shows that view and keeps the stage chosen"
         body: 0377aa8b96ef9a35685d682b4d10fb07eee1ad6a40cd017f36ac8b169f9302d1
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
         name: "each view chosen in the head’s tabs is kept in the browser and drawn alone"
-        body: 0a7c0e532ebd6575deab9a064e2634631f5a0e0fde3c3e79d7d71335464a77c6
+        body: b1107471cbf46e74a617799f78384391c9d1ab5af839b20cbf9cd48e8cc2ed0e
   - node: 01a16984-aadb-7721-9995-472440ea0ee8
     reviewed: c7a13f10307e14607d40cdf290c33dfd1819bc6ae10b986e5b7990a2ce797812
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/header.test.js"
-        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart and Tokens, the one shown current"
-        body: 5cadf50d58c9d132708f6a129eaffac4423ba592459938a8bd0b23776cad2cb9
+        name: "beneath the line that sums up the stages, the head holds the tabs Timeline, Gantt chart, Tokens and Consultation, the one shown current"
+        body: ab0cd07ecae769f09d97304a82e9ec18f6610254c8e08fb581e319810b0977c8
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue"
         body: 81dbc0cf40cd6116014cf92bf3ff921709f0b279b36a4884607a87bf3ec9e8a3
@@ -29615,7 +29615,7 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: 9b8dadefdea615440746267c5839b987c470ffeab495bee1ea4047af414dddb6
+        body: 94fba4ded01aa65ab897ea3dd0368a77efae224d3bb5d7271dfead717a8a3c25
   - node: 01a1646f-546d-7042-befd-eb6a95402082
     reviewed: c5f20683f5e0c8667aeed4a6be61164f9ff1a0a0bd9f0dacbaa3d907a3e477b8
     tests:
@@ -29629,11 +29629,11 @@ links:
         name: "the Gantt chart is chosen, kept for the next visit, follows changes, and fits the page as the window narrows"
         body: 46134f1ef0922ec28d59d15b06da20723e6cb4e528dd7cdb0acf1631943a21bc
   - node: 01a1646f-546d-7042-befd-eb6c59e28e31
-    reviewed: 7f90536f3b5c7ef866c241eaebdcde51e22fe70393f6895854e02f12f3340357
+    reviewed: 302c2d4627774fd984ace7985b673648bed96acd4e1ace0390b508ca62fce857
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the page keeps its width, the tabs of the views stay in place whichever view is shown, and the stage chosen stays chosen"
-        body: 9b8dadefdea615440746267c5839b987c470ffeab495bee1ea4047af414dddb6
+        body: 94fba4ded01aa65ab897ea3dd0368a77efae224d3bb5d7271dfead717a8a3c25
   - node: 01a168c0-7faa-72dc-8ad3-520ece07dbc3
     reviewed: 30ca4895b79672ad3c175e1335cfef5a0763f66dfdac930c1f4e85551feaeae9
     tests:
@@ -30327,6 +30327,105 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a pinch or the wheel with Ctrl held zooms about the pointer, the wheel and a drag pan, and neither the modal nor the page scrolls"
         body: ea1af3bd0cc576fc3440b72b0e0687dd3e2c7ae904331da63086d98160e40f12
+  - node: 01a1c32b-8dbe-7792-8bde-87ee096f8c62
+    reviewed: ca5791e398150d879610e072e9145cc16f61c272c423836f9abc368d5ff11df9
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_consult.rs"
+        name: "the_page_server_gives_the_page_the_sums_as_the_command_reports_them"
+        body: 0d1cd32baa9996ee78f0f5aacb70b0a03c185e74182812ced1c6fec0b1ac5ee6
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation.test.js"
+        name: "the page keys the page server’s sums by stage and sums nothing itself"
+        body: 2e8634915d079c17ef0902b9513874d1dbe084d03a17b7f5e0ed636a4f4dfff9
+  - node: 01a1c32b-8dbe-7792-8bde-87ef9366a63c
+    reviewed: 91e747b4be4f8373e4fdd26ee4b59e7f88fb9a9109a5f4d1ed1e679cd80ca42c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "an open page shows a counted call within 2 seconds of its start"
+        body: d77fd656464dc613964384b9b0715ae9cdd18167ad802df4819ac8f02d7299df
+  - node: 01a1c32b-8dbe-7792-8bde-87f150e2357f
+    reviewed: 92f6b7f86f718edbbeccef1524f80375bf696531279c5ff152a85410f1904298
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation.test.js"
+        name: "the line gives the consultations of the specification, the reads of code and which came first"
+        body: c2f45bfb8d7ae64f1a713f425e4e238c3fc4ef302a0a778729470af82965c3d3
+  - node: 01a1c32b-8dbe-7792-8bde-87f2745c669d
+    reviewed: 81c327563186f3feaeb3e8e9c7893b4cf21a7fcee243c57408a08cc763ba8883
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation.test.js"
+        name: "the line gives the consultations of the specification, the reads of code and which came first"
+        body: c2f45bfb8d7ae64f1a713f425e4e238c3fc4ef302a0a778729470af82965c3d3
+  - node: 01a1c32b-8dbe-7792-8bde-87f3d0f0a70a
+    reviewed: 3a40535a93cd8a8699dbfe6c53588940de05c85f0a6ae5e5f4dab3b5b23f7bb5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation.test.js"
+        name: "the line gives the consultations of the specification, the reads of code and which came first"
+        body: c2f45bfb8d7ae64f1a713f425e4e238c3fc4ef302a0a778729470af82965c3d3
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation.test.js"
+        name: "the timeline draws the line in each stage’s row and in the chosen stage’s head, and none for a stage that consulted nothing"
+        body: 768049d797735d5915eb30365ec1447b0162ed210092d513d9f742b318204f93
+  - node: 01a1c32b-8dbe-7792-8bde-87f49b4df4c3
+    reviewed: 4d960d217e4f20af0495d53fdac08b9659fd721b01e0966c3ff25b9ad552b914
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation.test.js"
+        name: "the timeline draws the line in each stage’s row and in the chosen stage’s head, and none for a stage that consulted nothing"
+        body: 768049d797735d5915eb30365ec1447b0162ed210092d513d9f742b318204f93
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation.test.js"
+        name: "the Gantt chart draws the line in brief beside each stage’s name, its words for a reader"
+        body: a21f9ca0809be0f53e680f766c692b1e6d9ca763de2e2a956e17875e532cf7ef
+  - node: 01a1c32b-8dbe-7792-8bde-87f6afb7f282
+    reviewed: c3aebf440a2b61bb443064d81f8b80d4318423a27f10f3ac25da17e626ae347e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "the view charts each stage’s reads in Yard Log’s order as one stacked bar, marked with which came first"
+        body: ce81e3dd5e69b6403b487132c23242eaaa0c5e77eb1421fa3536c3fe998cc51b
+  - node: 01a1c32b-8dbe-7792-8bde-87f7951f7e6f
+    reviewed: 162e4dd05ffac2e0227e6690f4b4bda9854ed213775f7bef52cfe3b3adf37505
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "the view charts each stage’s reads in Yard Log’s order as one stacked bar, marked with which came first"
+        body: ce81e3dd5e69b6403b487132c23242eaaa0c5e77eb1421fa3536c3fe998cc51b
+  - node: 01a1c32b-8dbe-7792-8bde-87f8c9dd6b88
+    reviewed: 059048fd6cb7e7332dfcb3770468e175e54b715f5ab65be841eda0609e740248
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "the view charts the same counts for the main agent and each type of subagent"
+        body: ce46a273c5f68dcb7d9f84e5de20e82caf0b04cb1fdb045dc166337f2c243b08
+  - node: 01a1c32b-8dbe-7792-8bde-87f97619b8aa
+    reviewed: 5f9be033138f764e8578900902c704d206c0b15334bee6f6275c95bec5f977fb
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "the view charts the share of the estimated tokens each class brought in, and names it an estimate"
+        body: 4bbbb803e0b5800c9ab58bd812e04efb596bb98baeb0a9745b138496f8edcf6c
+  - node: 01a1c32b-8dbe-7792-8bde-87fae9b840bb
+    reviewed: d57c3d8750ab5076b7776d5be6287fd86382f0bc603e6f38e0c5389bf250ec01
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "the view says when the estimate is partial, and which sessions are unmeasured"
+        body: e09fe8188d9201604f7ff0094f9b1656778e81a327dabaeb9881eefbf82c137d
+  - node: 01a1c32b-8dbe-7792-8bde-87fb0f889fd8
+    reviewed: eaca83388f70be0b1a620bc694ac689456c3fceabc964b396a78147e88213c21
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "each class is drawn in one hue in every chart, in the light and the dark theme alike"
+        body: c234b3a142c852337a191b219c45cd3ceb49fab59f51b74a15bfaf71b57ef760
+  - node: 01a1c32b-8dbe-7792-8bde-87fc7cdaf910
+    reviewed: 3c5dde44518a283e3c42010a3a8bf08cae68fe9a7020bc70e127d5070a3e5842
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "each mark names its class, count and share when pointed at or focused, and can be focused"
+        body: 0078426fa597b1dc0ae6318dc5610f2a07aef82e2fa2fc91a9d768f7f37a1549
+  - node: 01a1c32b-8dbe-7792-8bde-87fd887786d6
+    reviewed: 707461105464d564238cc276548a4f6ef1f97bea49fcf2eafc7f028707191fb6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "each chart has a table of its counts beneath it"
+        body: 1bf0f186571b0323b26422f3b8e577ce5326e33e84a56b1976e07e7990cdb0a7
+  - node: 01a1c32b-8dbe-7792-8bde-87fe21c740fb
+    reviewed: dde0a8e973413bbdd4ea750c8e956c59db82ff1deb7194cf03083e06fa669cb4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/consultation-view.test.js"
+        name: "where nothing has been measured, the view says so and draws no chart"
+        body: 323cc296c2bb370cb056fffba42588356f24f070f117aa731f93e294a507cc55
   - node: 01a1646f-546d-7042-befd-eaa32ea3a711
     reviewed: ef0fbe1d2d9aad2e1a3034ca3160a8f0acee76a1050b28e0d23fd43c958ab0ba
     tests:
@@ -34335,6 +34434,72 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_delegation.rs"
         name: "a_bound_change_applies_to_the_task_as_it_stands_without_a_read_first"
         body: cf31f84c66b70a37d3ee2f5d3d3d126ebcb07f40887cf0ab734e8ef97b1c72b7
+  - node: 01a1c32b-8dbe-7792-8bde-8798b3f8fc94
+    reviewed: 20da36627ff216a2d0af6aca5fe797d81b0efa355b3d184dd528a1bd0071c807
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "the_report_sums_the_files_in_all_by_stage_by_session_and_by_agent_type"
+        body: ac1242f459838386351766fdb735c79e1983348a6d91570adf62d27cd76e20e3
+  - node: 01a1c32b-8dbe-7792-8bde-879955ed7a93
+    reviewed: a88c899c6e00922e6089d47fe3e451fbcd86380777f7f6f72ed0ada15d343ff3
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "the_report_sums_the_files_in_all_by_stage_by_session_and_by_agent_type"
+        body: ac1242f459838386351766fdb735c79e1983348a6d91570adf62d27cd76e20e3
+  - node: 01a1c32b-8dbe-7792-8bde-879a003d08be
+    reviewed: fec869982f4d716fe21c6f9314f4635baaff3e6202f4be3321ec746b4f956d89
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "the_report_sums_the_files_in_all_by_stage_by_session_and_by_agent_type"
+        body: ac1242f459838386351766fdb735c79e1983348a6d91570adf62d27cd76e20e3
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "a_stage_whose_code_was_edited_only_after_the_specification_says_it_was_consulted_first"
+        body: 4f69cd0a205cbbe4d2c14e2995c1ae59c1a054206a91b296eeec8293e0caa00e
+  - node: 01a1c32b-8dbe-7792-8bde-879b9ac27c18
+    reviewed: cdcad300a207e632ebb736fec1f03c2b787404dce443ebf0b124cb26edee254a
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "the_report_sums_the_files_in_all_by_stage_by_session_and_by_agent_type"
+        body: ac1242f459838386351766fdb735c79e1983348a6d91570adf62d27cd76e20e3
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "an_unmeasured_session_is_listed_apart_and_a_partial_estimate_is_said_to_be"
+        body: 21f44a39286d055bec96325690b0f5ebc4b361f6ec60c4dbe32a1bf9ed8016ac
+  - node: 01a1c32b-8dbe-7792-8bde-879c678f2738
+    reviewed: ed2d874001c7b655203fb79db422a84815118dffb9dd54ca42580b3b2d62b1f9
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "the_report_sums_the_files_in_all_by_stage_by_session_and_by_agent_type"
+        body: ac1242f459838386351766fdb735c79e1983348a6d91570adf62d27cd76e20e3
+  - node: 01a1c32b-8dbe-7792-8bde-879d7e593e25
+    reviewed: de28f64e88e92685619df710f6388dfbf34b6a6b3ee596b2102bb6c50eab9cb9
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "an_unmeasured_session_is_listed_apart_and_a_partial_estimate_is_said_to_be"
+        body: 21f44a39286d055bec96325690b0f5ebc4b361f6ec60c4dbe32a1bf9ed8016ac
+  - node: 01a1c32b-8dbe-7792-8bde-879e345dda87
+    reviewed: dc0b3f5e60d25efcf77a250f804042d032e527e4c42da066442f52746cb43bd0
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "a_branch_with_no_consultation_file_reports_nothing_measured_and_exits_0"
+        body: b6bf89e14554568ab79629cf459fa26b43364ce8f668160aa425b8f0148457fc
+  - node: 01a1c32b-8dbe-7792-8bde-879f8c1f7962
+    reviewed: 134d11d241d992c4b673bb1656923f94f33e6ba71bff07de10e44d30e7b7df9b
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "a_closed_yard_log_is_reported_as_an_open_one"
+        body: 3fa981fa736fec3a32ec0b8e59602e0661129c702c7e33d10a8d3738944737d3
+  - node: 01a1c32b-8dbe-7792-8bde-87a0dd9a8d8e
+    reviewed: 3cc9683f6f7e98092c65b5f716918c64ffdf555393a42d2a068f0f1c67a88e2e
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "without_format_json_the_report_is_a_table_on_standard_error"
+        body: 7a66fedef60ff2cfb425a870d180eded31a4a0dc271e90829e686c242dbd9032
+  - node: 01a1c32b-8dbe-7792-8bde-87a1dce82f1c
+    reviewed: 5fcdd4d9ffdc8504f0fb6295ac82278a2b938f17a61dd492ad32dc355a19cc94
+    tests:
+      - file: "crates/loft-cli/tests/yard_consultation.rs"
+        name: "no_file_is_written"
+        body: 1decac606d2b7ea8b214759b61988376c5502e79594a150bedc012f655d8e907
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:

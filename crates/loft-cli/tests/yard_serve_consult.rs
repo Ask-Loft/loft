@@ -19,7 +19,7 @@ fn descriptor(consults: bool) -> Value {
 }
 
 /// The turn's start that carries the session's descriptor.
-fn described(yard: &Yard, consults: bool) -> Value {
+pub(crate) fn described(yard: &Yard, consults: bool) -> Value {
     event(
         yard,
         "turn.start",
@@ -29,7 +29,7 @@ fn described(yard: &Yard, consults: bool) -> Value {
 }
 
 /// A tool call's start at `second`, with `more` fields.
-fn started(yard: &Yard, call: &str, second: u32, more: &Value) -> Value {
+pub(crate) fn started(yard: &Yard, call: &str, second: u32, more: &Value) -> Value {
     let mut fields = json!({ "call": call, "tool": "Read" });
     for (name, value) in more.as_object().unwrap() {
         fields[name] = value.clone();
@@ -310,4 +310,34 @@ fn a_consultation_file_of_another_format_keeps_its_bytes_while_the_session_s_cal
     );
     assert_eq!(sent["recorded"], 2, "{sent}");
     assert_eq!(std::fs::read_to_string(&path).unwrap(), newer);
+}
+
+#[test]
+fn the_page_server_gives_the_page_the_sums_as_the_command_reports_them() {
+    let (yard, served) = open();
+    let tree = yard.scratch.0.canonicalize().unwrap().display().to_string();
+    let log = || {
+        let reply = served.get(&format!("/api/log?tree={tree}&branch={BRANCH}"));
+        let schema =
+            std::fs::read_to_string(crate::common::workspace().join("schemas/yard-read.json"))
+                .unwrap();
+        crate::schema::conforming(&reply.body, &schema)
+    };
+    assert_eq!(log()["consultationSums"]["measured"], false);
+    post(
+        &served,
+        &[
+            described(&yard, true),
+            started(&yard, "c1", 1, &json!({ "reads": ["spec"] })),
+        ],
+    );
+    let sums = log()["consultationSums"].clone();
+    assert_eq!(sums["stages"][0]["title"], "Shape it", "{sums}");
+    assert_eq!(sums["all"]["counts"]["specReads"], 1);
+    let reported = yard.run(&["consultation"]);
+    let mut reported: Value = serde_json::from_slice(&reported.stdout).unwrap();
+    for field in ["schema", "outcome", "errors", "tree", "branch", "commonDir"] {
+        reported.as_object_mut().unwrap().remove(field);
+    }
+    assert_eq!(sums, reported);
 }

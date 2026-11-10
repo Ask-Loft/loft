@@ -23,7 +23,7 @@ pub struct Estimate {
 
 impl Estimate {
     /// The names the classes are written under, in the order of [`Estimate::values`].
-    pub(super) const NAMES: [&str; 4] = ["spec", "code", "other", "unclassified"];
+    pub const NAMES: [&str; 4] = ["spec", "code", "other", "unclassified"];
 
     pub(super) const fn values(self) -> [u64; 4] {
         [self.spec, self.code, self.other, self.unclassified]
