@@ -22944,6 +22944,15 @@ links:
       - file: "crates/loft-cli/tests/yard_capabilities.rs"
         name: "malformed_descriptors_are_rejected_before_recording"
         body: dfe2c1a31d5581e6a8dc5d1443046b8d8e5b72e717e0495a32f8922a229ac93c
+  - node: 01a1c338-7d63-7408-bf96-f0960b278c92
+    reviewed: f0763544a02fabb3fac27f81b70d2412e54107009b5fd104799995abb7cd917d
+    tests:
+      - file: "crates/loft-cli/tests/yard_capabilities.rs"
+        name: "a_descriptor_that_declares_a_capability_the_page_server_does_not_know_is_kept_without_it"
+        body: 4291bf0c85eb0ea18c981f319150025cfd73fb07d54bef75beb3c57a77e0363e
+      - file: "crates/yardlog/tests/adapter.rs"
+        name: "a_capability_the_reader_does_not_know_is_kept_out_and_the_descriptor_reads"
+        body: f073a1366f76dfd8ce2f478f2ca6f82a0c817dc2d9e2995717604c26aa3c02c3
   - node: 01a177f9-8294-77e4-aa6e-707df5aba626
     reviewed: d2e1492e8101a387c4ea6f4196651e212c6271461b7142f3e0d371256edcd92f
     tests:
@@ -23130,6 +23139,18 @@ links:
       - file: "crates/loft-cli/tests/yard_codex.rs"
         name: "codex_activity_declares_coverage_without_retaining_native_words"
         body: 0403f34924414f467a1a743316d1730d47d97b84e781408230703196c8863f94
+  - node: 01a1c32e-6d96-73c5-93e3-8c2199ddd58c
+    reviewed: c2c32a9dcaf1f86f144730d387a7759972a3b6c7a7fc2f8575748d1b799319c5
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
+        body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+      - file: "crates/loft-cli/tests/yard_codex_contract.rs"
+        name: "real_codex_hooks_record_native_tool_activity_without_a_remote_model"
+        body: 91c905bf6a80443a1061ad5ca4ab6ea07d38c44236411d42bcc50feade77250f
   - node: 01a1787c-f803-70b1-b946-b6f717e44770
     reviewed: 5411df2e2f2cbf31eb3eaeed5fbc6b80a9448b386be0ca2de809cbc0f0391bcc
     tests:
@@ -27593,7 +27614,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
+        body: f23693847ef6cee106ce3e29f11bef04cd05557b586e72b7e92f604d18669338
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -27605,16 +27626,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
+        body: ee76e5b018fa5358244abbaca3c0b9293481415429a88a196f9083564c4b6a12
   - node: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
     reviewed: b2e92b9d8b9c74a9d59cd5659f907052d70f12b94cce8d1d02e27351878b33f4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
+        body: ee76e5b018fa5358244abbaca3c0b9293481415429a88a196f9083564c4b6a12
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
+        body: f23693847ef6cee106ce3e29f11bef04cd05557b586e72b7e92f604d18669338
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_mod_names_the_version_of_loft_as_its_own"
         body: 7ad10bfc924b0309c65bc3d6f8b7e88a14c37beb93e1caf74e0eb05a35feda9d
@@ -27623,10 +27644,10 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
+        body: ee76e5b018fa5358244abbaca3c0b9293481415429a88a196f9083564c4b6a12
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: f8f1cc1655da3c755ef0b2573ce6bbf51dbea884de60c18326600da90a228c46
+        body: f23693847ef6cee106ce3e29f11bef04cd05557b586e72b7e92f604d18669338
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -27635,7 +27656,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9818973def969d4fdad9f4d5a8fec063d2fdf692378e5f295bb80ed73db24eee
+        body: ee76e5b018fa5358244abbaca3c0b9293481415429a88a196f9083564c4b6a12
   - node: 01a1646f-546e-76cb-8b4f-f1fde62cb279
     reviewed: bc1bfca105244ab915945501c1d149f7e84b784c53afba66d2612967917a7561
     tests:
@@ -31588,11 +31609,14 @@ links:
         name: "a model request's event is posted once its response ends, with the model, the turn, the tools it asked for and its tokens; a subagent's start is posted as it is spawned, with its model"
         body: 4a42e98adf9e6e557f44ea060927cdd0ab87fd80471f72addd2e66c98f49d338
   - node: 01a1646f-546d-7042-befd-eb0881f33bd6
-    reviewed: 2b2a58e0ed6b39cc26999027f8b8cb6b61255e58c03c7fa379ec5d562a9c7a9d
+    reviewed: 7fff7834eb9219b76b39777c3b76bb506690409b6db889536c1386aee8cfc2ca
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "no event holds the prompt, the agent's text, a tool call's input or its result"
         body: f21b03cc389125501e561ab261627bf2476395270dbdb67b5eddba029328ee27
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command"
+        body: 8f3b6a9d0e3bcdc79c04e79bb76f1c72680b7b8b71ca72a9dda82113da8de505
   - node: 01a1646f-546d-7042-befd-eb09c697866e
     reviewed: 375b70828ffb90dca9d8a907688e0942900f2694d63259ad83e9b477eeeb97e8
     tests:
@@ -31893,6 +31917,324 @@ links:
       - file: "crates/loft-cli/src/yard/serve/token_sums/tests.rs"
         name: "a_counter_missing_from_every_contributing_totals_file_is_unavailable_in_the_sum"
         body: c567a69270c48bc6517796767b5cfd5221ee612d6c97c1fe4e0de35cc5ca21a8
+  - node: 01a1c32b-8dbe-7792-8bde-87a420f97222
+    reviewed: 96880d43729d2702b09df9cf787ea49f84252b0167782aaf2965f69729262156
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87a58315620f
+    reviewed: 2d0273e89a1f606d250e95ed9dcbe3ee9e8eacc10f356d6abd20b216589d541b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87a6f66188df
+    reviewed: 181132f66b23de959f17c26cfbe83ec69725114b2f239cf3041a848fae3785da
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87a796375e92
+    reviewed: ceb1a54e01cad0e7352df3ef7e2f2fecc375a33717ae4ed5fe3f22ffa5774578
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87a844ee0fc5
+    reviewed: f66eec6c59285da1a3b89c6a887c6987f527811636e9b9563284ac53ac1610fe
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87a917ff4718
+    reviewed: 1c14b78ad6aeda3f5768833044ce7d3570298910fecfd8b6c8b7150bc776c5d3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87aa9859e6ec
+    reviewed: 7e40efa1c65d4683aeb93ae485637f9aa8a111fbb01c84591dc6904dc4cfdd3c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87ab3e8dab60
+    reviewed: ab15d136914de4429d5b98209ddc45101507f16a3c0481a7477a53489faadda7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c332-5f5c-77bb-9cce-f57795eeda52
+    reviewed: 7609f57d34188342f78edfab6dbdc0cedc5d9475e4d3fd13126e933604c50ab6
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each path of the shared cases takes its class"
+        body: 0b417e87ce941d21f54fb781411d25a3c643678f6d5f3e30460fc13d6b9b2a0f
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_path_of_the_shared_cases_takes_its_class"
+        body: 61504bc6b26b511b3fba2517346c358f564f4f6b5af452f80186b1cadc4c818a
+  - node: 01a1c32b-8dbe-7792-8bde-87ad061b5511
+    reviewed: ae9cf3742e052483025c959d960971f0838cb08bdd795a14ca04ce214e7159c5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+  - node: 01a1c32b-8dbe-7792-8bde-87ae54f001f2
+    reviewed: acbeba7e279eb0c540ee89b3a76a369e92617a5314629c696333d84266d320a2
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+  - node: 01a1c32b-8dbe-7792-8bde-87afcd2fe473
+    reviewed: f926952e0a8dcb917917e3555f74fc4bc0e4007550413bbe4c487b14e1add923
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+  - node: 01a1c32b-8dbe-7792-8bde-87b05050d013
+    reviewed: badecd16d12508fc17d6192e21a2228b345c9a26ad46b0de833cb2d5092d583b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+  - node: 01a1c32b-8dbe-7792-8bde-87b102a27b8a
+    reviewed: 100b967186019250548e48f6c7591f015c6672dff62e5415778b80207ad0a252
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command"
+        body: 8f3b6a9d0e3bcdc79c04e79bb76f1c72680b7b8b71ca72a9dda82113da8de505
+  - node: 01a1c32b-8dbe-7792-8bde-87b31f7c625e
+    reviewed: bebf9fb81c4400ea56f43e3c53c539de44a521e93489922341a7e0d0570ce3bc
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87b4a6359f07
+    reviewed: b21c4ee5949dcf2d5e8e0dc9e1c9b960435982c20c3bec248e36200ffd56646a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87b52616cea7
+    reviewed: e1a3dec097d3c8112e5fdbd462cf4c323f77a73253892a4da7cef1dfc6ac6467
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87b61b2f1d5d
+    reviewed: 2a5974baa2983f9c02254f023a7f3e2c4c2b8266097d6deeb0c0be3b3db87225
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87b7a5b516ef
+    reviewed: 239f8dad98c99eaf6a8ff1558bc05a91dd54ac4a782df24f9cc9d1a1cde474b7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87b8f624a294
+    reviewed: 3d895b94eadfa1f457181e3c49235b524bf07b62e37be3145558bd600999a863
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87b9e9ea2709
+    reviewed: e6367f69184f243c91800f89dd940a59ef5eb3fc18c4739e2ebf6e60a7ba403d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c332-5f5c-77bb-9cce-f578199d9c0d
+    reviewed: 5fb8e1bb5fb2a69dc97a3924dad00072a4ad2eed9743a3ce628b6343c9d6e22d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c332-5f5c-77bb-9cce-f5791e9847cc
+    reviewed: f5754362a75afce45f423e03f93ecfe1bfcd848f6d483dcc4fc694f206bd0eb4
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c332-5f5c-77bb-9cce-f57ab29f75bc
+    reviewed: 13d4350595d47ecba786962f0d03ab48254c1fb8087c7acd58e782fed6a8928e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87ba435ec11f
+    reviewed: 8bf9804173b5349c851bec383b52480ad2b867bd1b9c9f1277830ce1a1e70ddb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87bba630ba32
+    reviewed: 2724f1ffc13dfa10d9728e428fd2aec2924188503f95cdb1c8ebaff1dbf9342b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+  - node: 01a1c32b-8dbe-7792-8bde-87bc249b6809
+    reviewed: b4808b573c3cb3c3821188bec5690229ed0ef178e4ee762849a57c6bbb9f96b9
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
+        body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
+  - node: 01a1c32b-8dbe-7792-8bde-87bd90cf0ddc
+    reviewed: a5ca165afb39377fd979eb961d975f4c79fb7fa3b80fd2346ff6f7d66de9a865
+    tests:
+      - file: "plugins/claude/loft/tests/yard-consult.test.ts"
+        name: "each shell command of the shared cases reads its classes and names its loft subcommands"
+        body: 7605e1a9af48b3956170e3b169c2b965fb4bd1357617d5d59c06545fc539fb8d
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "each_shell_command_of_the_shared_cases_reads_its_classes_and_names_its_loft_subcommands"
+        body: df9a89892bdb4036dbfee6aea06ba9b9cfd46cf8974dc2eea99f1166c7e67a99
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
+        body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
+  - node: 01a1c32b-8dbe-7792-8bde-87bef71ba64c
+    reviewed: 1724607167db041b50444bf7a63e3b5dd6a61b00324cfebdf5384c0259a24bad
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command"
+        body: 8f3b6a9d0e3bcdc79c04e79bb76f1c72680b7b8b71ca72a9dda82113da8de505
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read"
+        body: 945affc3d3ff43b2ae38b074390a3a3f36fc3ffb39aca33a62abadce3448fe8f
+  - node: 01a1c32b-8dbe-7792-8bde-87c01c4ce488
+    reviewed: 51614004c7d8a79092faf409e4a51c38bd697f281a43d30040ba644ca6d26610
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+  - node: 01a1c32b-8dbe-7792-8bde-87c1f75d0077
+    reviewed: 8a21abe2b7bb9d8d2ada8949d05972d690e136d99e353b38ca1d7b9d4b6db950
+    tests:
+      - file: "crates/loft-cli/src/yard/consult/tests.rs"
+        name: "a_patch_edits_each_file_it_adds_updates_deletes_or_moves_to"
+        body: de1b3b5ca3c51e6dbc2d5af9092dc0aa7f7304b73fec649b0a699d1a31cb3789
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_patch_names_the_classes_of_the_files_it_edits"
+        body: b963e4de80af0ca33970867ce1f9fb217341e4e9c9c5e4e61b38e02543c663e4
+      - file: "crates/loft-cli/tests/yard_codex_contract.rs"
+        name: "real_codex_hooks_record_native_tool_activity_without_a_remote_model"
+        body: 91c905bf6a80443a1061ad5ca4ab6ea07d38c44236411d42bcc50feade77250f
+  - node: 01a1c32b-8dbe-7792-8bde-87c28586388c
+    reviewed: b4b06aa5ce0b8e66dfea51058cf73a36e9154cd270487541872f0a9e67cdf5cb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 a reading tool call says the class of what it reads, a shell command the classes its readers read, and an edit the class of its file"
+        body: bf1aa78c3c70965b0ec38a7c275d486b3caab9deabd4efbb10acfa1d44c6fee4
+  - node: 01a1c32b-8dbe-7792-8bde-87c3776bf8c0
+    reviewed: c2389946bb06be780f9c68aeebe422650c8c8c428e0a73104189225cd4444991
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "a tool call that consults holds its classes alone, and nothing of its path, its pattern or its command"
+        body: 8f3b6a9d0e3bcdc79c04e79bb76f1c72680b7b8b71ca72a9dda82113da8de505
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "a_codex_patch_names_the_classes_of_the_files_it_edits"
+        body: b963e4de80af0ca33970867ce1f9fb217341e4e9c9c5e4e61b38e02543c663e4
+  - node: 01a1c32b-8dbe-7792-8bde-87c5220d0f22
+    reviewed: b7a4cc8d4129d28d3e7c1bf1de5c163dbf9c47bc2a3397062eee6a454b030f33
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
+        body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
+      - file: "crates/loft-cli/tests/yard_codex.rs"
+        name: "the_codex_descriptor_declares_that_it_classifies_what_each_tool_call_consults"
+        body: 816fb41655397132c5e068e681f546a763507c1c1d6cf324dac156ce011b0294
+      - file: "crates/yardlog/tests/adapter.rs"
+        name: "an_adapter_that_classifies_tool_calls_keeps_consults_through_json_and_yaml"
+        body: e6812f5fe56197951d68d49eafe505b0b23a7e2df07f8ce3c99bc2ffaa2169a9
+  - node: 01a1c338-7d63-7408-bf96-f098bb443e15
+    reviewed: 5a979fd05560b46165823e10eafad51efda54f3dd603956adf926f1c4bef541c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 2 no tool call says what it consults, and the descriptor declares no consults"
+        body: f11b75e6ec46f4dfbfe208b2a557f8a5ebcd2497f253b72c346e4b5c2baa37dd
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
+        body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
+  - node: 01a1c32b-8dbe-7792-8bde-87c63e0639b2
+    reviewed: c2c00c842799a402100313bed2edfbb767025dc27c305ae12590f9f8088eef42
+    tests:
+      - file: "crates/yardlog/tests/adapter.rs"
+        name: "a_descriptor_that_holds_no_consults_reads_as_an_adapter_that_does_not_classify"
+        body: 0a054f65861befe70d8f0e376a0eae8acdc2ffff8dedce71815402cc07bcee7e
   - node: 01a1646f-546c-7521-9643-bc13661fd11f
     reviewed: 1c48f667a539f795fccf1276cd4ed62ca7302e21ce64521297cafdccd589406b
     tests:
@@ -33307,13 +33649,19 @@ links:
         name: "the_report_gives_the_protocol_s_version_as_one_integer"
         body: 9ecd35de70b2762f403efdc8c93bdb67a24fc7d7cb00500978c31a3e1e949d29
   - node: 01a177f9-8295-7328-aa9b-0fa2869127b8
-    reviewed: b5e7963f2f5df37d4f5395df9388d4f44d7da0e3d7a32edb37c3f4ceec5d077b
+    reviewed: 477a8129bad52baa05058cc6929a23d37fefc8d3207dba5b6a3ab99091c4097e
     tests:
       - file: "crates/loft-cli/tests/yard_protocol.rs"
-        name: "host_aware_callers_and_adapter_descriptors_use_protocol_two"
-        body: 4d5bc8c632bf0f0d0fef725cb88e1869619f6e51c1a419619c42fa170351299a
+        name: "host_aware_callers_and_adapter_descriptors_use_protocol_two_or_later"
+        body: f1b8a3c667c95d4e5a06de8abaa48be41b2aba02f61b19edcafbe884db01fb4a
+  - node: 01a1c338-7d63-7408-bf96-f0973952951f
+    reviewed: d14be7e3b2efa003d695327afc749903a572ee992d57880e6e86ed5520b32035
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "the_report_gives_protocol_three_for_consultation_classes"
+        body: 901264ee898c5a5c696775d0618050dd62c90dc80c705a95f0960a51c2c25d85
   - node: 01a177f9-f61a-77e3-89ef-0d0bfe35cd61
-    reviewed: 380d159027a4e8262f5f2cba360fcc917e550906c3a124a1011a3bc6dd521d64
+    reviewed: 3079ad5248702c6781f5be156368c403a1fa5e6b521ed23f9124033b3e4b6ed4
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
@@ -33321,6 +33669,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "protocol one keeps the Claude arguments and events without adapter descriptors"
         body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
+        body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
   - node: 01a1646f-546d-7042-befd-ea43c0bb2e34
     reviewed: f9d7ec8d86cde32fd131534ed2250c2467037800d605df6ff6d1cc7923d2b0e4
     tests:

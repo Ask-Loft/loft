@@ -421,6 +421,8 @@ test('under protocol 3 a reading tool call says the class of what it reads, a sh
   await $.tool.call({ tool: 'Bash', command: 'cargo test', tool_use_id: 'build' } as never)
   await $.tool.call({ tool: 'Edit', file_path: `${TREE}/src/main.rs`, old_string: 'a', new_string: 'b', tool_use_id: 'edit' } as never)
   await $.tool.call({ tool: 'Write', file_path: `${TREE}/spec/b.yaml`, content: '', tool_use_id: 'write' } as never)
+  await $.tool.call({ tool: 'MultiEdit', file_path: 'spec/c.yaml', edits: [], tool_use_id: 'multi' } as never)
+  await $.tool.call({ tool: 'NotebookEdit', notebook_path: `${TREE}/.yard/n.ipynb`, new_source: '', tool_use_id: 'cells' } as never)
   await $.tool.call({ tool: 'mcp__loft__yard_read', tool_use_id: 'yard' } as never)
   await w.clock.settle()
   expect(consulted(w)).toMatchObject({
@@ -434,6 +436,9 @@ test('under protocol 3 a reading tool call says the class of what it reads, a sh
     build: { reads: undefined, edits: undefined },
     edit: { reads: undefined, edits: ['code'] },
     write: { reads: undefined, edits: ['spec'] },
+    multi: { reads: undefined, edits: ['spec'] },
+    cells: { reads: undefined, edits: ['other'] },
+    yard: { reads: undefined, edits: undefined },
   })
   expect(events(w).find(event => event.call === 'edit' && event.kind === 'tool.start')!.spec).toBe(false)
 })
