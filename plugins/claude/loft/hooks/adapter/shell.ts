@@ -26,7 +26,8 @@ export const LOFT_SUBCOMMANDS: readonly string[] = [
   'render',
 ]
 
-type Word = { text: string; quoted: boolean }
+/** A word of a shell command, and whether any of it was quoted. */
+export type Word = { text: string; quoted: boolean }
 
 const SEPARATORS = new Set([';', '&', '|', '(', ')', '\n'])
 
@@ -47,8 +48,8 @@ function withoutHeredocs(command: string): string {
   return kept.join('\n')
 }
 
-/** The simple commands of a shell command, each as its words. */
-function commandsOf(command: string): Word[][] {
+/** The simple commands of a shell command, each as its words, with every heredoc's body left out. */
+export function commandsOf(command: string): Word[][] {
   const commands: Word[][] = [[]]
   let word = ''
   let quoted = false
@@ -83,8 +84,8 @@ function commandsOf(command: string): Word[][] {
   return commands.filter(words => words.length > 0)
 }
 
-const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s
-const VARIABLE = /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/
+export const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s
+export const VARIABLE = /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/
 
 const isLoft = (word: string) => word === 'loft' || /[\\/]loft(\.exe)?$/.test(word)
 
