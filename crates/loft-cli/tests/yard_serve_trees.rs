@@ -41,3 +41,26 @@ fn the_answer_to_a_tree_registered_names_its_top_by_its_real_path_and_as_spelled
         .json();
     assert!(again.get("spelled").is_none(), "{again}");
 }
+
+#[cfg(unix)]
+#[test]
+fn a_link_within_the_worktree_named_as_its_target_spells_no_top() {
+    let mut yard = Yard::new();
+    yard.git = yard.git.clone().below("crates/");
+    std::fs::create_dir(yard.scratch.0.join("crates")).unwrap();
+    let served = Served::start(&yard, &[]);
+    // `<links>/crates` is `<tree>/crates`: its names end as the real path's do, but `<links>` is
+    // not the top.
+    let links = Scratch::empty();
+    let link = links.0.join("crates");
+    std::os::unix::fs::symlink(yard.scratch.0.join("crates"), &link).unwrap();
+    let reply = served
+        .post_as_mod(
+            "/api/register",
+            &json!({ "tree": link.display().to_string() }),
+        )
+        .json();
+    let real = yard.scratch.0.canonicalize().unwrap().display().to_string();
+    assert_eq!(reply["tree"], real.as_str(), "{reply}");
+    assert!(reply.get("spelled").is_none(), "{reply}");
+}

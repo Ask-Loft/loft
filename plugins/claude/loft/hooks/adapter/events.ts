@@ -168,7 +168,8 @@ export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, nex
   if (next.origin.plugin === PLUGIN) return next(e)
   const call = e.tool_use_id ?? ''
   const input = consulting(e as Record<string, unknown>)
-  const spec = input?.edited === undefined ? undefined : isSpecEdit(input.edited, known(state.server))
+  const trees = [...known(state.server)]
+  const spec = input?.edited === undefined ? undefined : isSpecEdit(input.edited, trees)
   const loft = input?.command === undefined ? [] : loftSubcommands(input.command)
   const start: Event = { kind: 'tool.start', tool: e.tool, call, ...(spec !== undefined ? { spec } : {}), ...(loft.length > 0 ? { loft } : {}) }
   // An edit's `spec` and `edits` then come from one path, resolved from the session's directory.
@@ -180,7 +181,6 @@ export async function eventsOfToolCall($: EngineInterface, e: ToolCallEvent, nex
   // Where the descriptor declares it, the start also says what the call consults, worked out
   // once the session's directory is read, so the call never waits on it.
   if (input !== undefined && state.adapter?.capabilities.consults === true) {
-    const trees = [...known(state.server)]
     tell($, e.agentId, dir => ({ ...specFrom(dir, trees), ...consultedBy(input, dir, trees) }) as Event)
   } else tell($, e.agentId, start)
   let failed = true

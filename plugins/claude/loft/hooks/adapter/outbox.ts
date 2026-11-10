@@ -3,6 +3,8 @@
 
 import type { EngineInterface } from 'claude-code'
 
+import { isObject } from '../model'
+
 /** The most events kept while the page server does not answer; past it the oldest is dropped. */
 export const MOST = 1000
 
@@ -78,7 +80,7 @@ export async function answerOf($: EngineInterface, box: Outbox, path: string, bo
 function objectOf(text: string): Record<string, unknown> {
   try {
     const doc: unknown = JSON.parse(text)
-    return typeof doc === 'object' && doc !== null && !Array.isArray(doc) ? (doc as Record<string, unknown>) : {}
+    return isObject(doc) ? doc : {}
   } catch {
     return {}
   }

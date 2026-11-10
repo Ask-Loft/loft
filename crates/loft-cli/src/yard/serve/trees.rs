@@ -63,7 +63,10 @@ pub fn register(home: &Home, dir: &Path) -> Result<Registered, Failure> {
     let real = dir.canonicalize().unwrap_or_else(|_| dir.to_owned());
     let tree = YardGit::default().top_level(&real)?;
     add(home, &tree)?;
-    let spelled = spelled_top(dir, &real, &tree).filter(|spelled| *spelled != tree);
+    // A link within the worktree that bears the name of what it links to would end the spelling
+    // with the same names, so the spelling counts only where it leads to the top itself.
+    let spelled = spelled_top(dir, &real, &tree)
+        .filter(|spelled| *spelled != tree && canonical(spelled) == canonical(&tree));
     Ok(Registered { tree, spelled })
 }
 

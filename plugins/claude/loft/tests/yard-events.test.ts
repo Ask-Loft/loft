@@ -509,6 +509,7 @@ test('under protocol 3 a path is classed against each tree the page server names
   await $.tool.call({ tool: 'Read', file_path: '/real/work/shelf/spec/a.yaml', tool_use_id: 'real' } as never)
   await $.tool.call({ tool: 'Read', file_path: `${TREE}/spec/a.yaml`, tool_use_id: 'above' } as never)
   await $.tool.call({ tool: 'Read', file_path: 'src/x.rs', tool_use_id: 'within' } as never)
+  await $.tool.call({ tool: 'Read', file_path: 'spec/fixture.yaml', tool_use_id: 'fixture' } as never)
   await $.tool.call({ tool: 'Read', file_path: '/elsewhere/spec/a.yaml', tool_use_id: 'elsewhere' } as never)
   await w.clock.settle()
   expect(consulted(w)).toMatchObject({
@@ -516,8 +517,10 @@ test('under protocol 3 a path is classed against each tree the page server names
     real: { reads: ['spec'] },
     above: { reads: ['spec'] },
     within: { reads: ['code'] },
+    fixture: { reads: ['code'] },
     elsewhere: { reads: ['other'] },
   })
+  expect(w.state.posts.filter(post => post.url.endsWith('/api/register')).map(post => post.events)).toEqual([{ tree: `${TREE}/crates` }])
 })
 
 test('until a page server answers, a path is classed against the trees the mod registered alone', async ($, on) => {

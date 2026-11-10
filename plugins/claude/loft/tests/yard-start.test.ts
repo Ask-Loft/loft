@@ -372,3 +372,12 @@ test('a tool given a tree runs its command with --tree naming it, and a tool giv
   const schemas = w.state.tools.map(each => each.inputSchema as { properties: Record<string, { type: string }> })
   for (const schema of schemas) expect(schema.properties.tree?.type).toBe('string')
 })
+
+test('a registration whose answer names no top is posted again at the next beat', async ($, on) => {
+  const w = world(on)
+  w.state.answersBeat = true
+  w.state.registered = {}
+  await start($)
+  await w.clock.advance(5000)
+  expect(registers(w)).toHaveLength(2)
+})

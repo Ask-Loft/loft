@@ -32382,30 +32382,36 @@ links:
       - file: "crates/loft-cli/src/yard/serve/trees/tests.rs"
         name: "the_top_of_a_worktree_is_spelled_as_the_directory_registered_spells_it"
         body: 6831b144a71f175ab9448a1cce5807da393f847c02110e110258aa4635b99ddc
+      - file: "crates/loft-cli/tests/yard_serve_trees.rs"
+        name: "a_link_within_the_worktree_named_as_its_target_spells_no_top"
+        body: 7e17b3542836ecc532d89e0f7ffb6756c7327996e7f0eecfba62ba85868b6642
   - node: 01a1c4f2-a000-7601-8eae-ec992bef006a
     reviewed: a069d7c721307635b2aadf1d843ed4bba67bd99bd41cfcadf5b684eb26da854d
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
-        body: b7557cc5d9fa537118baa670f673f42c17036e56eccbb31f8ebc1e981bfca363
+        body: b1611ff5787802b3a3f11cda5889037d745c9768e4285eff6506b8d730d323e6
   - node: 01a1c4f2-a000-7601-8eae-ec9a6da8e599
     reviewed: 826d3785c66e22caeabbed06540bf0f01a409a14caa77c9ea1cff7c9725c6bb1
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
-        body: b7557cc5d9fa537118baa670f673f42c17036e56eccbb31f8ebc1e981bfca363
+        body: b1611ff5787802b3a3f11cda5889037d745c9768e4285eff6506b8d730d323e6
   - node: 01a1c4f2-a000-7601-8eae-ec9b13a061e5
     reviewed: 42067f2ccdf9499985e5cd287e2a441a56319545615a150860265f4b433437c8
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 a path is classed against each tree the page server names, by its real path and by the session's spelling"
-        body: b7557cc5d9fa537118baa670f673f42c17036e56eccbb31f8ebc1e981bfca363
+        body: b1611ff5787802b3a3f11cda5889037d745c9768e4285eff6506b8d730d323e6
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "under protocol 3 the top of a tree the mod's own loft yard serve registered is learned at the next beat"
         body: 8ad67fe7fadfee77e26c614ba77a10a8689195dd669f71e5b3384a36aeb1e8a8
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "the tree the mod's own loft yard serve registers is posted once more, to learn its top"
         body: a15d853dffce73f80c45c79059d7c1e3ce1af3182f2af06fc155dc87f145d093
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a registration whose answer names no top is posted again at the next beat"
+        body: 7acf2dc05c4082f71c579cd45d29ecbe17aced6eddf12f4e5e9a2527c38eb67b
   - node: 01a1c4f2-a000-7601-8eae-ec9c36957441
     reviewed: fe9fd2822bc00214636d5c19d48134baf048a8e43bdcd3844345eb37127b0854
     tests:

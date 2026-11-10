@@ -197,14 +197,16 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
       return { value: { status, ok: state.answersBeat, headers: {}, text } as never }
     }
     if (e.url.endsWith('/api/register') && state.registered !== undefined) {
-      state.posts.push({ url: e.url, headers: (e.init?.headers ?? {}) as Record<string, string>, events: [] })
+      state.posts.push({ url: e.url, headers: (e.init?.headers ?? {}) as Record<string, string>, events: JSON.parse(String(e.init?.body ?? '{}')) as Doc[] })
       return { value: { status: 200, ok: true, headers: {}, text: JSON.stringify(state.registered) } as never }
     }
+    // Unless a test names its answer, a page server names the tree registered as its top.
+    const answer = e.url.endsWith('/api/register') ? JSON.stringify({ tree: JSON.parse(String(e.init?.body ?? '{}')).tree }) : '{"recorded":1}'
     await state.answering
     const headers = (e.init?.headers ?? {}) as Record<string, string>
     state.posts.push({ url: e.url, headers, events: JSON.parse(String(e.init?.body ?? '[]')) as Doc[] })
     const ok = state.postStatus >= 200 && state.postStatus < 300
-    return { value: { status: state.postStatus, ok, headers: {}, text: '{"recorded":1}' } as never }
+    return { value: { status: state.postStatus, ok, headers: {}, text: answer } as never }
   })
 
   on('process.run', async ($, e) => {

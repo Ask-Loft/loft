@@ -29,9 +29,14 @@ export function serverOf(): Server {
   return { isServing: false, isBeating: false, trees: new Set(), tops: new Map(), served: new Set() }
 }
 
-/** Every tree the mod knows to class a path against, by each spelling it knows. */
+/**
+ * Every tree the mod knows to class a path against, by each spelling it knows. A directory the
+ * mod registered stands for its tree only until the page server names the tree's top: a
+ * subdirectory's own `spec/` is not the specification.
+ */
 export function known(server: Server): Set<string> {
-  return new Set([...server.trees, ...[...server.tops.values()].flat(), ...server.served])
+  const unanswered = [...server.trees].filter(tree => (server.tops.get(tree) ?? []).length === 0)
+  return new Set([...unanswered, ...[...server.tops.values()].flat(), ...server.served])
 }
 
 /** The texts an answer's field `name` holds. */
@@ -109,8 +114,10 @@ export async function beat($: EngineInterface, settings: Settings, server: Serve
     const answer = await answerOf($, box, '/api/register', { tree })
     if (answer === undefined) return
     server.trees.add(tree)
-    server.tops.set(tree, [...textsOf(answer, 'tree'), ...textsOf(answer, 'spelled')])
     learn(server, answer)
+    // An answer that names no top, as from a page server that wrote no JSON, is asked again.
+    const tops = [...textsOf(answer, 'tree'), ...textsOf(answer, 'spelled')]
+    if (tops.length > 0) server.tops.set(tree, tops)
     return
   }
   if (server.isBeating || server.isServing) return
