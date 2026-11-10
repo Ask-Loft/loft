@@ -1,0 +1,109 @@
+key: 01a1c32b-8dbe-7792-8bde-87c761980c06
+slug: count-what-the-agents-consulted
+name: "Count what the agents consulted"
+body: |
+  Beside its token totals, each session keeps in Yard Log's folder a count of what its agents consulted: how often they read the specification, the code and other files, how often they asked `loft` about the specification, and how often they edited the specification and the code. The counts answer how much an agent leaned on the specification. When it did is answered by the order of the first consultation of the specification and the first edit of the code in each stage, and how much of the agent's context the specification took by an estimate of the tokens each class of read brought into it.
+
+  ```text
+  .yard/<branch>/consultation/<session id>.yaml
+  ```
+
+  A consultation of the specification is a read classed `spec` or a run of a `loft` subcommand that reads the specification: `check`, `find`, `terms`, `reconcile`, `verify`, `status`, `review` or `render`.
+
+  The token share is an estimate. A model request's prompt holds everything the agent's previous request held, its output, and what came back from the tool calls between them, so the growth of the prompt, less the previous output, is what those calls brought in. Where an adapter reports usage apart from its tool calls, as Codex's app-server observer does, a request may be heard out of order with the calls around it, and the estimate for that host is coarser.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71b305365c69
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+requirements:
+  - key: 01a1c32b-8dbe-7792-8bde-87c86231383d
+    statement:
+      form: event_driven
+      when: "the page server receives the start of a tool call that holds `reads` or `edits`, or that runs `loft`"
+      system: "the page server"
+      shall: "add the call to the session's consultation counts in `.yard/<branch>/consultation/<session id>.yaml`."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87c9b9ea395a
+        name: "The consultation file holds the session's id, its host, the format `yardconsult/1`, and when its first and last counted calls started."
+      - key: 01a1c32b-8dbe-7792-8bde-87ca9c426d33
+        name: "The file holds six counts in all: reads of the specification, reads of code, other reads, `loft` reads, edits of the specification and edits of code."
+      - key: 01a1c32b-8dbe-7792-8bde-87cb3f15b117
+        name: "The file holds the six counts of the calls counted toward each stage, by the stage's key, and of those counted toward none, under no stage."
+      - key: 01a1c32b-8dbe-7792-8bde-87cc3f8bff29
+        name: "The file holds, under each stage, the six counts of each agent whose calls counted toward it: the main agent, and each subagent by its id and type."
+      - key: 01a1c32b-8dbe-7792-8bde-87cd87165b54
+        name: "A call counts toward the stage that a model request of the same agent made at its start would count toward."
+      - key: 01a1c32b-8dbe-7792-8bde-87ce5642886f
+        name: "A call whose `reads` hold two classes adds one to the reads of each."
+      - key: 01a1c32b-8dbe-7792-8bde-87cf4d12e69d
+        name: "A shell command that runs one or more of the `loft` subcommands `check`, `find`, `terms`, `reconcile`, `verify`, `status`, `review` and `render` adds one `loft` read."
+      - key: 01a1c32b-8dbe-7792-8bde-87d05904ba69
+        name: "A shell command that runs only other `loft` subcommands adds no `loft` read."
+      - key: 01a1c32b-8dbe-7792-8bde-87d169f7064d
+        name: "The consultation file of a session that made no counted call is not written."
+      - key: 01a1c32b-8dbe-7792-8bde-87d28a43d1f2
+        name: "Writing the consultation file leaves Yard Log's revision as it was."
+      - key: 01a1c32b-8dbe-7792-8bde-87d35c2b4428
+        name: "The consultation file is written to a temporary file and renamed into place, outside Yard Log's lock."
+      - key: 01a1c32b-8dbe-7792-8bde-87d41830028d
+        name: "No call is counted once Yard Log is closed."
+      - key: 01a1c32b-8dbe-7792-8bde-87d5eb07ec3b
+        name: "A call whose agent works in another worktree is counted in the consultation file of that worktree's Yard Log."
+      - key: 01a1c32b-8dbe-7792-8bde-87d66d41322e
+        name: "Replaying a session's events after a page-server restart writes the same consultation file."
+  - key: 01a1c32b-8dbe-7792-8bde-87d7ba908f65
+    statement:
+      form: event_driven
+      when: "the page server counts a call toward a stage"
+      system: "the page server"
+      shall: "keep, for the stage and for the agent the call is counted under within it, when the specification was first consulted, when the code was first edited, and the number of edits of code that came before the first consultation of the specification."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87d8e4b2e9ea
+        name: "The first consultation of the specification is the start of the first call counted toward the stage that read the specification or ran a `loft` read."
+      - key: 01a1c32b-8dbe-7792-8bde-87d9b82b091a
+        name: "The first edit of code is the start of the first call counted toward the stage whose `edits` hold `code`."
+      - key: 01a1c32b-8dbe-7792-8bde-87daaf22742f
+        name: "A stage whose code was edited before any consultation of the specification counts each such edit."
+      - key: 01a1c32b-8dbe-7792-8bde-87db419ab3f7
+        name: "A stage whose specification was consulted before any edit of code counts no edit before it."
+      - key: 01a1c32b-8dbe-7792-8bde-87dce5abace2
+        name: "A stage with no edit of code, or no consultation of the specification, holds no time for it."
+      - key: 01a1c32b-8dbe-7792-8bde-87dd1cecadde
+        name: "The stage's times and count take the calls of every agent of the session counted toward it, and each agent's take only its own."
+  - key: 01a1c32b-8dbe-7792-8bde-87deed1ba43e
+    statement:
+      form: event_driven
+      when: "the page server counts a model request of an agent that made an earlier counted request in the session"
+      system: "the page server"
+      shall: "attribute the growth of the request's prompt over the earlier request's, less the earlier request's output, to the classes of the agent's tool calls that ended between the two requests."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87dfd964ed23
+        name: "A request's prompt is the sum of its input, cache read and cache write tokens."
+      - key: 01a1c32b-8dbe-7792-8bde-87e0d17d94f5
+        name: "The growth is shared equally among the calls that ended between the two requests, and a call's share equally among the classes of its `reads` and `edits`."
+      - key: 01a1c32b-8dbe-7792-8bde-87e14193ae69
+        name: "A share of a call that ran a `loft` read counts toward the specification."
+      - key: 01a1c32b-8dbe-7792-8bde-87e28b46b3cf
+        name: "A share of a call that holds no class and ran no `loft` read counts as unclassified."
+      - key: 01a1c32b-8dbe-7792-8bde-87e3b58b15bf
+        name: "A growth of zero or less, or one with no call ended between the two requests, attributes nothing."
+      - key: 01a1c32b-8dbe-7792-8bde-87e425d9dc9d
+        name: "An agent's first request in the session attributes nothing."
+      - key: 01a1c32b-8dbe-7792-8bde-87e52b1f0e19
+        name: "A request that lacks a counter, or follows one that lacks it, attributes nothing and marks the estimate partial."
+      - key: 01a1c32b-8dbe-7792-8bde-87e62e8467c2
+        name: "The estimated tokens of each class, `spec`, `code`, `other` and unclassified, are kept in all, by stage and by agent within each stage, under the stage the later request counts toward."
+  - key: 01a1c32b-8dbe-7792-8bde-87e7ea3c200d
+    statement:
+      form: ubiquitous
+      system: "Yard Log's model"
+      shall: "sum the consultation files of a Yard Log in all, by stage, by session and by agent type, by the rules that count one file."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87e8be888064
+        name: "A stage's sum takes the earliest first consultation of the specification and the earliest first edit of code among the files."
+      - key: 01a1c32b-8dbe-7792-8bde-87e92dbaf3e7
+        name: "A stage's count of edits of code before the first consultation of the specification is the sum of each session's count, since each session's agents consult with their own context."
+      - key: 01a1c32b-8dbe-7792-8bde-87ea4e8cba03
+        name: "An estimate that is partial in a contributing file is partial in the sum."
+      - key: 01a1c32b-8dbe-7792-8bde-87eb9bc2fb13
+        name: "A session whose adapter's descriptor does not declare `consults` is listed as unmeasured, and adds nothing to the sums."

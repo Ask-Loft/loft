@@ -1,0 +1,59 @@
+key: 01a1c32b-8dbe-7792-8bde-87ec764556d2
+slug: see-what-the-agents-consulted
+name: "See what the agents consulted"
+body: |
+  The page shows how far the branch's work was led by the specification: beside each stage, a line of what its agents consulted, and in a view of its own, charts that compare the stages, the agents and the classes of what they read.
+
+  The charts are drawn by the page itself as SVG, with no library, since the page loads nothing the page server does not serve. They follow one method: one hue for each class, the same in every chart and in both themes, `spec` the most prominent; a bar's length for each count; and each mark naming its value when pointed at.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - 01a16469-559e-73c4-85f2-71a94f0aa021
+requirements:
+  - key: 01a1c32b-8dbe-7792-8bde-87edbed409ca
+    statement:
+      form: ubiquitous
+      system: "The page server"
+      shall: "give the page the sums of the branch's consultation files, as `loft yard consultation` reports them."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87ee096f8c62
+        name: "The page shows the sums the page server gives, and sums no counts itself."
+      - key: 01a1c32b-8dbe-7792-8bde-87ef9366a63c
+        name: "An open page shows a counted call within 2 seconds of its start, without being reloaded."
+  - key: 01a1c32b-8dbe-7792-8bde-87f017be3b77
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "show beside each stage that its agents consulted or edited files the stage's consultations of the specification, its reads of code, and whether the specification was consulted before the code was first edited."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87f150e2357f
+        name: "The line beside a stage gives its consultations of the specification, the sum of its reads of the specification and its `loft` reads, and its reads of code."
+      - key: 01a1c32b-8dbe-7792-8bde-87f2745c669d
+        name: "The line marks a stage whose code was edited after its specification was consulted apart from one whose code was edited first, and gives the number of edits that came first."
+      - key: 01a1c32b-8dbe-7792-8bde-87f3d0f0a70a
+        name: "A stage whose agents consulted and edited no file shows no line."
+      - key: 01a1c32b-8dbe-7792-8bde-87f49b4df4c3
+        name: "The line shows in the timeline and in the Gantt chart."
+  - key: 01a1c32b-8dbe-7792-8bde-87f5a1824fbb
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "offer a consultation view that charts the consultation sums by stage, by agent type and by class, and the estimated tokens of each class."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87f6afb7f282
+        name: "The view charts, for each stage in Yard Log's order, its reads of the specification, its `loft` reads, its reads of code and its other reads as one stacked bar."
+      - key: 01a1c32b-8dbe-7792-8bde-87f7951f7e6f
+        name: "The view marks on each stage's bar whether the specification was consulted before the code was first edited."
+      - key: 01a1c32b-8dbe-7792-8bde-87f8c9dd6b88
+        name: "The view charts the same counts for the main agent and for each type of subagent."
+      - key: 01a1c32b-8dbe-7792-8bde-87f97619b8aa
+        name: "The view charts the share of the estimated tokens that each class brought into the agents' context, and names the share an estimate."
+      - key: 01a1c32b-8dbe-7792-8bde-87fae9b840bb
+        name: "The view says when the estimate is partial, and which sessions are unmeasured."
+      - key: 01a1c32b-8dbe-7792-8bde-87fb0f889fd8
+        name: "Each class is drawn in one hue in every chart of the view, in the light and the dark theme alike."
+      - key: 01a1c32b-8dbe-7792-8bde-87fc7cdaf910
+        name: "Each bar names its class, its count and its share when pointed at or focused."
+      - key: 01a1c32b-8dbe-7792-8bde-87fd887786d6
+        name: "Each chart has a text alternative that gives its counts."
+      - key: 01a1c32b-8dbe-7792-8bde-87fe21c740fb
+        name: "Where nothing has been measured, the view says so and draws no chart."

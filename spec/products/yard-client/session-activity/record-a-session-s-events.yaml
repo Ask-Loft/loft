@@ -67,7 +67,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb079e1b22d9
         name: "Events of a subagent's requests and tool calls are posted as those of the main agent are, each naming the subagent."
       - key: 01a1646f-546d-7042-befd-eb0881f33bd6
-        name: "No event holds the person's prompt, the agent's text, a tool call's input or a tool call's result, beyond the names of the `loft` subcommands a shell command runs and whether a file edit is under `spec/`."
+        name: "No event holds the person's prompt, the agent's text, a tool call's input or a tool call's result, beyond the names of the `loft` subcommands a shell command runs, whether a file edit is under `spec/`, and the classes of what a tool call reads or edits."
       - key: 01a1646f-546d-7042-befd-eb09c697866e
         name: "A shell command's start holds the names of the `loft` subcommands it runs."
       - key: 01a16475-7fbc-7732-a78c-bc5471862f2a

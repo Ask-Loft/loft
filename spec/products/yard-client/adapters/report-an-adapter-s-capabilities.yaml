@@ -2,7 +2,7 @@ key: 01a177f9-8294-77e4-aa6e-7076e270dd65
 slug: report-an-adapter-s-capabilities
 name: "Report an adapter's capabilities"
 body: |
-  The adapter descriptor is `adapter: { format: "yard-adapter/1", version, capabilities }` in a normalized event. Capabilities hold `events`, the supported normalized event kinds; `nativeQuestions`, `nativePlans` and `taskMirroring`, booleans; and `usage`, the supported counters among `input`, `cacheRead`, `cacheWrite` and `output`. The event's `host` identifies the adapter's host.
+  The adapter descriptor is `adapter: { format: "yard-adapter/1", version, capabilities }` in a normalized event. Capabilities hold `events`, the supported normalized event kinds; `nativeQuestions`, `nativePlans`, `taskMirroring` and `consults`, booleans; and `usage`, the supported counters among `input`, `cacheRead`, `cacheWrite` and `output`. The event's `host` identifies the adapter's host.
 
   A descriptor is a report of available integration, not permission to answer for the person. Missing descriptors mean unknown coverage; an unlisted capability in a descriptor means unavailable. Session activity keeps the descriptor, including when the session reports no counted model request, so a log copied to another machine retains its coverage. Events hold only identifiers, names, times and counts, never prompts, tool arguments or tool results.
 realizes:

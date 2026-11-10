@@ -84,6 +84,7 @@ featureGroups:
       - 01a1646f-546d-7042-befd-eb677bcc8418
       - 01a1646f-546d-7042-befd-eb813857071e
       - 01a1695a-dd72-7090-817b-abf55a3053cc
+      - 01a1c32b-8dbe-7792-8bde-87ec764556d2
   - key: 01a16469-55a3-716f-a42c-3a3c608676eb
     slug: loft-work
     name: "Loft work"
@@ -104,6 +105,8 @@ featureGroups:
       - 01a1646f-546d-7042-befd-eaefec18d7c5
       - 01a1646f-546d-7042-befd-eafb39a1e099
       - 01a1646f-546d-7042-befd-eb166bb457fe
+      - 01a1c32b-8dbe-7792-8bde-87a2fd521f0a
+      - 01a1c32b-8dbe-7792-8bde-87c761980c06
   - key: 01a16469-55a3-716f-a42c-3a3efe7ff9ba
     slug: claude-code-mod
     name: "Claude adapter"
@@ -126,6 +129,7 @@ featureGroups:
       - 01a1646f-546d-7042-befd-ea405aeffb3b
       - 01a1646f-546d-7042-befd-ea4a4433bbd3
       - 01a182b6-3c58-7235-ad04-3916200a0c81
+      - 01a1c32b-8dbe-7792-8bde-87963dd33a56
 constraints:
   - key: 01a16469-55a3-716f-a42c-3a407e6d0d19
     name: "Yard Client shall change the working tree only under `.yard/`."
