@@ -129,6 +129,69 @@ fn invalid_codex_hook_identity_changes_no_adapter_state() {
     assert!(!yard.scratch.home().join(".yard/codex").exists());
 }
 
+/// The `tool.start` event kept for a Codex `tool` call whose input is `input`.
+fn started(yard: &Yard, call: &str, tool: &str, input: &Value) -> Value {
+    let mut pre = event(yard, "PreToolUse");
+    pre["tool_name"] = json!(tool);
+    pre["tool_use_id"] = json!(call);
+    pre["tool_input"] = input.clone();
+    hook(yard, &pre);
+    state(yard)["events"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|event| event["kind"] == "tool.start" && event["call"] == call)
+        .cloned()
+        .unwrap()
+}
+
+#[test]
+fn a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read() {
+    let yard = Yard::new();
+    let start = started(
+        &yard,
+        "call-one",
+        "Bash",
+        &json!({"command":"loft find PRIVATE-LABEL && cat spec/PRIVATE-NAME.yaml && rg PRIVATE-WORD"}),
+    );
+    assert_eq!(start["loft"], json!(["find"]), "{start}");
+    assert_eq!(start["reads"], json!(["spec", "code"]), "{start}");
+    assert!(start.get("edits").is_none());
+    let build = started(&yard, "call-two", "Bash", &json!({"command":"cargo test"}));
+    assert!(
+        build.get("reads").is_none() && build.get("loft").is_none(),
+        "{build}"
+    );
+    assert!(!state(&yard).to_string().contains("PRIVATE"));
+}
+
+#[test]
+fn a_codex_patch_names_the_classes_of_the_files_it_edits() {
+    let yard = Yard::new();
+    let patch = "*** Begin Patch\n*** Update File: spec/PRIVATE-A.yaml\n@@\n-a\n+b\n\
+                 *** Add File: src/PRIVATE-B.rs\n+fn b() {}\n*** End Patch\n";
+    for (call, input) in [
+        ("as-text", json!(patch)),
+        ("as-command", json!({"command":patch})),
+    ] {
+        let start = started(&yard, call, "apply_patch", &input);
+        assert_eq!(start["edits"], json!(["spec", "code"]), "{start}");
+        assert!(start.get("reads").is_none());
+    }
+    assert!(!state(&yard).to_string().contains("PRIVATE"));
+}
+
+#[test]
+fn the_codex_descriptor_declares_that_it_classifies_what_each_tool_call_consults() {
+    let yard = Yard::new();
+    hook(&yard, &event(&yard, "UserPromptSubmit"));
+    let kept = state(&yard);
+    assert_eq!(
+        kept["events"][0]["adapter"]["capabilities"]["consults"],
+        true
+    );
+}
+
 #[test]
 fn codex_activity_declares_coverage_without_retaining_native_words() {
     let yard = Yard::new();

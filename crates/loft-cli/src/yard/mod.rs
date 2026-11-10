@@ -15,6 +15,7 @@ mod change;
 pub mod claude;
 mod close;
 pub mod codex;
+mod consult;
 mod continuation;
 mod digest;
 mod event;

@@ -3,6 +3,7 @@
 mod account;
 mod app_server;
 mod commands;
+mod consulted;
 mod context;
 mod notification_discovery;
 mod notification_hooks;
@@ -111,6 +112,12 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         return Ok(json!({}));
     }
     let files = state::Files::of(hook)?;
+    // The trees a tool call's paths are classed among, found before the session's lock is taken.
+    let trees = if hook.kind() == translate::HookKind::PreToolUse {
+        consulted::known_trees(hook.0["cwd"].as_str().unwrap_or_default())
+    } else {
+        Vec::new()
+    };
     // Serializes hooks and task mirrors for this session; the worker never holds this lock
     // while posting, so an unavailable page cannot delay a native tool.
     let (caller, disposition, ended) = files.update(|state| {
@@ -120,7 +127,8 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         if disposition == notification_hooks::Disposition::Cancelled {
             return Ok((caller, disposition, false));
         }
-        let events = translate::events(hook, state)?;
+        let mut events = translate::events(hook, state)?;
+        consulted::add(&mut events, hook, &trees);
         let key = caller.as_ref().map(task_writes::actor_key);
         if let Some(key) = &key {
             if hook.kind().starts() {

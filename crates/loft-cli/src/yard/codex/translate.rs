@@ -164,7 +164,7 @@ pub fn descriptor() -> &'static Value {
     DESCRIPTOR.get_or_init(|| {
         json!({"format":yardlog::adapter::FORMAT, "version":crate::version::VERSION, "capabilities":{
             "events":yardlog::adapter::EVENTS, "usage":yardlog::usage::COUNTERS,
-            "nativeQuestions":false, "nativePlans":false, "taskMirroring":true
+            "nativeQuestions":false, "nativePlans":false, "taskMirroring":true, "consults":true
         }})
     })
 }
