@@ -111,3 +111,15 @@ requirements:
         name: "An estimate that is partial in a contributing file is partial in the sum."
       - key: 01a1c32b-8dbe-7792-8bde-87eb9bc2fb13
         name: "A session whose adapter's descriptor does not declare `consults` is listed as unmeasured, and adds nothing to the sums."
+  - key: 01a1c36e-0e5b-76ce-a046-ba0db0a1dcc5
+    statement:
+      form: unwanted
+      if: "a session's consultation file is of a format other than `yardconsult/1`"
+      system: "the page server"
+      shall: "leave that file as it was and count the session's calls into no file."
+    body: "As with the token totals, an older `loft` reads what it can of a newer format and never writes it."
+    criteria:
+      - key: 01a1c36e-0e5b-76ce-a046-ba0e89613c72
+        name: "The file keeps its bytes while the session's calls go on."
+      - key: 01a1c36e-0e5b-76ce-a046-ba0fe5b5aaac
+        name: "The sums leave the file out and mark the estimate partial."
