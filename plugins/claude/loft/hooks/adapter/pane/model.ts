@@ -2,105 +2,30 @@
 // a whole read, then each read since the revision shown merged into it (the Feature "Follow Yard
 // Log in a pane"). Pure, so that each rule is tested on its own.
 
-import type { PaneActor, PaneBlock, PaneDiff, PaneFoot, PaneStage, PaneSubmission, PaneTimes, PaneView } from '../../../types'
+import type { PaneActor, PaneBlock, PaneStage, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
 import { isObject, records, textOf } from '../../model'
 import { pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
 
-type Act = { at?: unknown; by?: unknown }
-type Version = { act?: Act; number?: unknown }
-
-const timeOf = (act: Act | undefined) => (typeof act?.at === 'string' ? act.at : null)
-
-/**
- * What a card's foot says of a block: who wrote its current version, its number, and when it was
- * created, from its first version where the read gives every one, else from what the pane kept.
- */
-function footOf(block: Block, before: PaneFoot | undefined): PaneFoot {
-  const version = block.version as Version
-  const versions = (block as { versions?: Version[] }).versions
-  const number = typeof version.number === 'number' ? version.number : 1
-  const first = Array.isArray(versions) && versions.length > 0 ? timeOf(versions[0]!.act) : undefined
-  const created = first ?? before?.created ?? (number === 1 ? timeOf(version.act) : null)
-  const by = isObject(version.act?.by) ? (version.act.by as PaneActor) : null
-  return { by, number, created, updated: timeOf(version.act) }
-}
-
-function timesOf(block: Block): PaneTimes | undefined {
-  const times = (block as { times?: unknown }).times
-  if (!isObject(times)) return undefined
-  const kept: PaneTimes = {}
-  for (const name of ['listed', 'started', 'ended'] as const) if (typeof times[name] === 'string') kept[name] = times[name] as string
-  return kept
-}
-
-/** The most nodes of a `spec-change` report the pane keeps, and the most of each side's words. */
-const DIFF_NODES = 200
-const DIFF_WORDS = 2000
-
-const cut = (words: unknown) => {
-  const text = textOf(words)
-  if (text === '') return null
-  return text.length > DIFF_WORDS ? `${text.slice(0, DIFF_WORDS)}…` : text
-}
-
-/** Of a `spec-change` report, the nodes it names, before and after; none for another view or a block read without it. */
-function diffOf(body: Record<string, unknown>): PaneDiff | undefined {
-  const report = body.report
-  if (body.view !== 'spec-change' || !isObject(report) || !isObject(report.graph)) return undefined
-  const nodes = records(report.graph.diff)
-  return {
-    nodes: nodes.slice(0, DIFF_NODES).map(each => {
-      const words = isObject(each.words) ? each.words : {}
-      return { change: textOf(each.change), kind: textOf(each.kind), label: textOf(each.label) || null, before: cut(words.before), after: cut(words.after) }
-    }),
-    more: Math.max(0, nodes.length - DIFF_NODES),
-  }
-}
-
-/** Of a block, only what the pane draws; `before`, the block as the pane held it, where it did. */
-function kept(block: Block, before?: PaneBlock): PaneBlock {
-  const times = timesOf(block)
-  const { report: _report, ...body } = (block.version?.body ?? {}) as Record<string, unknown>
-  const diff = diffOf(block.version?.body ?? {}) ?? before?.diff
+/** Of a block, only what the pane draws. */
+function kept(block: Block): PaneBlock {
   return {
     id: block.id,
     key: block.key,
     kind: block.kind,
-    version: { body },
+    version: { body: block.version?.body ?? {} },
     ...(block.answer ? { answer: block.answer } : {}),
     ...(block.outcome ? { outcome: block.outcome } : {}),
-    foot: footOf(block, before?.foot),
-    ...(times ? { times } : {}),
-    ...(diff ? { diff } : {}),
   }
 }
 
 /** Of a stage, only what the pane draws, with the blocks the read gives of it. */
 function keptStage(stage: Stage, before?: PaneStage): PaneStage {
   return {
-    ...kept(stage, before),
+    ...kept(stage),
     owner: isObject(stage.owner) ? (stage.owner as PaneActor) : null,
     blocks: before ? merged(before.blocks, stage.blocks ?? []) : (stage.blocks ?? []).map(each => kept(each)),
   }
-}
-
-/** Every submission the read lists with `--submissions`, oldest first, with when it was sent and settled. */
-function submissionsOf(doc: Doc): PaneSubmission[] {
-  return records(doc.sent)
-    .map(each => {
-      const changes = records(each.changes)
-      const sent = changes.find(change => change.what === 'sent')
-      const settled = changes.filter(change => change.what !== 'sent').at(-1)
-      return {
-        key: String(each.key),
-        blocks: Array.isArray(each.blocks) ? each.blocks.map(String) : [],
-        sent: timeOf(sent?.act as Act | undefined),
-        settled: timeOf(settled?.act as Act | undefined),
-        isOpen: each.state === 'open',
-      }
-    })
-    .sort((one, other) => (one.sent ?? '').localeCompare(other.sent ?? ''))
 }
 
 const revisionOf = (doc: Doc, otherwise: number) => (typeof doc.revision === 'number' ? doc.revision : otherwise)
@@ -147,8 +72,6 @@ function whole(doc: Doc): PaneView {
     page: pageOf(doc) ?? null,
     stages: stagesOf(doc).map(stage => keptStage(stage)),
     sent: sentOf(doc),
-    asked: openOf(doc).map(each => each.key),
-    submissions: submissionsOf(doc),
   }
 }
 
@@ -157,7 +80,7 @@ function merged(blocks: readonly PaneBlock[], changed: readonly Block[]): PaneBl
   const replaced = new Map(changed.map(block => [block.key, block]))
   return blocks.map(block => {
     const fresh = replaced.get(block.key)
-    return fresh ? kept(fresh, block) : block
+    return fresh ? kept(fresh) : block
   })
 }
 
@@ -188,26 +111,19 @@ export function followed(view: PaneView | undefined, doc: Doc): PaneView | undef
   const revision = revisionOf(doc, view.revision)
   const page = pageOf(doc) ?? view.page
   const sent = sentOf(doc)
-  const asked = openOf(doc).map(each => each.key)
-  if (read.length === 0 && revision === view.revision && page === view.page && sameList(sent, view.sent) && sameList(asked, view.asked)) return view
+  if (read.length === 0 && revision === view.revision && page === view.page && sameList(sent, view.sent)) return view
   if (bringsNew(view, read)) return undefined
   const changed = new Map(read.map(stage => [stage.key, stage]))
   const stages = view.stages.map(stage => {
     const fresh = changed.get(stage.key)
     return fresh ? keptStage(fresh, stage) : stage
   })
-  return { ...view, revision, page, stages, sent, asked, submissions: submissionsOf(doc) }
+  return { ...view, revision, page, stages, sent }
 }
 
 /** The blocks of the open submissions that wait on the person, in the submissions' order. */
 export function waitingIn(view: PaneView): PaneBlock[] {
   return waitingAmong(new Map(view.stages.flatMap(stage => stage.blocks.map(block => [block.key, block] as const))), view.sent)
-}
-
-/** The channel a block was answered or decided on, once it was. */
-export function answeredOn(block: PaneBlock): string | undefined {
-  const given = block.answer ?? block.outcome
-  return given && typeof given.channel === 'string' ? given.channel : undefined
 }
 
 /**
@@ -219,7 +135,7 @@ export function linkOf(page: string): string {
 }
 
 /** A path's last part. */
-export const baseOf = (path: string) => path.split('/').filter(part => part !== '').at(-1) ?? path
+const baseOf = (path: string) => path.split('/').filter(part => part !== '').at(-1) ?? path
 
 /**
  * What the head names above the title, as the page does: the repository, the worktree where it is
@@ -242,58 +158,6 @@ export function summaryOf(view: PaneView): string {
   const tally = counts.filter(([status, n]) => n > 0 || status !== 'dropped').map(([status, n]) => `${n} ${status}`)
   const n = view.stages.length
   return `${n} ${n === 1 ? 'stage' : 'stages'}: ${tally.join(', ')}`
-}
-
-/** Where the planned stages begin among `stages`: the first of the planned ones that end the list. */
-export function plannedFrom(stages: readonly PaneStage[]): number {
-  let from = stages.length
-  while (from > 0 && stages[from - 1]!.version.body.status === 'planned') from--
-  return from
-}
-
-/** The stage chosen: the one the person chose, else the first `active` stage, else the first stage. */
-export function chosenOf(stages: readonly PaneStage[], chosen: string | null): PaneStage | undefined {
-  return stages.find(stage => stage.key === chosen) ?? stages.find(stage => stage.version.body.status === 'active') ?? stages[0]
-}
-
-/** The views of a `loft` block, in words, as the page names them. */
-export const VIEW_NAMES: Record<string, string> = {
-  'spec-change': 'Spec change',
-  findings: 'Check findings',
-  trace: 'Trace coverage',
-  decision: 'Decision',
-  publish: 'Publish state',
-}
-
-/** What a block's row on the rail calls it, by its kind, as the page does, a `loft` view in words. */
-export function blockTitle(block: PaneBlock): string {
-  const body = block.version.body
-  switch (block.kind) {
-    case 'question':
-      return textOf(body.header) || textOf(body.prompt) || block.id
-    case 'loft':
-      return VIEW_NAMES[textOf(body.view)] ?? (textOf(body.view) || block.id)
-    case 'note':
-      return textOf(body.title) || firstLine(textOf(body.markdown)) || block.id
-    default:
-      return textOf(body.title) || block.id
-  }
-}
-
-function firstLine(text: string): string {
-  const line = text.split('\n').find(each => each.trim() !== '') ?? ''
-  return line.replace(/[#*_`>]/g, '').trim().slice(0, 80)
-}
-
-/** A time as the page gives one: its hour and minute, as `02:00 PM`. */
-export function clockOf(at: string): string {
-  const date = new Date(at)
-  if (Number.isNaN(date.getTime())) return at
-  try {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-  } catch {
-    return at.slice(11, 16)
-  }
 }
 
 /** The agent that owns a stage, as the page names it: the main agent, or a subagent by its type. */
@@ -324,21 +188,6 @@ export function blockStateOf(block: PaneBlock, isWaiting: boolean): [string, str
     return ['Open', 'planned']
   }
   return null
-}
-
-/** Who acted, as the page names them: the person by name, a subagent by its type, else the main agent. */
-export function whoOf(by: PaneActor | null | undefined): string {
-  if (!by) return 'unknown'
-  if (textOf(by.name)) return textOf(by.name)
-  if (textOf(by.agentType)) return textOf(by.agentType)
-  return typeof by.agent === 'string' ? 'subagent' : 'main agent'
-}
-
-/** Where a block was answered or decided, in the page's words. */
-export function channelWords(channel: string | undefined): string {
-  if (channel === 'page') return 'on the page'
-  if (channel === 'terminal') return 'in the terminal'
-  return channel ? `on ${channel}` : ''
 }
 
 /** The letter of the option at `index`: A to Z, then AA, AB and on, as the page letters them. */

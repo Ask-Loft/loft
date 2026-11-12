@@ -1,8 +1,8 @@
 // What waits on the person, as the Yard page's panel shows it: every open submission, the oldest
 // first, each block it holds that still waits drawn ready to answer or decide. A question's options
 // are lettered cards that choose, its field beneath them takes the person's own words; an approval
-// or a plan has Approve, Reject and a field for the reason (the Feature "See Yard Log in the pane
-// as on the Yard page").
+// or a plan has Approve, Reject and a field for the reason (the Feature "Keep the Yard page beside
+// the session").
 
 import type { PaneBlock, PaneView, YardPaneDrafts } from '../../../types'
 import { records, textOf as text } from '../../model'
