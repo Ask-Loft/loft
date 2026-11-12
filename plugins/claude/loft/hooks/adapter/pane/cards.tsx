@@ -1,81 +1,16 @@
-// The cards of the Yard pane's blocks, by their kind, and the controls that answer what waits
-// (the Feature "See Yard Log in the pane as on the Yard page").
+// The cards of the Yard pane's blocks, by their kind, as the Yard page draws them (the Feature "See
+// Yard Log in the pane as on the Yard page").
 
-import type { PaneBlock, YardPaneDrafts } from '../../../types'
+import type { PaneBlock } from '../../../types'
 import { records, textOf as text } from '../../model'
-import { bodyOf, type Acts, type Drawing, type Table } from './kit'
+import { bodyOf, type Drawing } from './kit'
 import { answeredOn, blockStateOf, channelWords, clockOf, letterOf, VIEW_NAMES, whoOf } from './model'
 import { statusColour } from './theme'
-
-function options(t: Table, block: PaneBlock, kept: YardPaneDrafts, acts: Acts) {
-  const { Box, Text, Button } = t
-  const body = bodyOf(block)
-  const listed = Array.isArray(body.options) ? (body.options as Record<string, unknown>[]) : []
-  const ticked = kept.ticked[block.key] ?? []
-  return listed.map((option, n) => {
-    const label = text(option.label)
-    const named = option.recommended === true ? `${label} (recommended)` : label
-    const shown = body.multiple === true ? `${ticked.includes(label) ? '☑' : '☐'} ${named}` : named
-    return (
-      <Box flexDirection="column">
-        <Button key={`option-${block.key}-${n}`} label={shown} onPress={() => acts.choose(block, label)} />
-        {text(option.detail) ? <Text dimColor>{text(option.detail)}</Text> : null}
-      </Box>
-    )
-  })
-}
-
-/** The field for the person's own words, or a reason, on a surface that has one. */
-function field(t: Table, block: PaneBlock, kept: YardPaneDrafts, labels: { placeholder: string; submitLabel: string }, acts: Acts, onSubmit: (words: string) => void) {
-  const { Input } = t
-  if (!Input) return null
-  const prefix = block.kind === 'question' ? 'words' : 'reason'
-  return (
-    <Input
-      key={`${prefix}-${block.key}`}
-      placeholder={labels.placeholder}
-      submitLabel={labels.submitLabel}
-      value={kept.words[block.key] ?? ''}
-      onInput={words => acts.type(block, words)}
-      onSubmit={onSubmit}
-    />
-  )
-}
-
-/** A block that waits on the person, with what it asks and the controls that answer it. */
-export function asking(t: Table, block: PaneBlock, kept: YardPaneDrafts, acts: Acts) {
-  const { Box, Text, Button, Markdown } = t
-  const body = bodyOf(block)
-  if (block.kind === 'question') {
-    const ownWords = body.ownWords === false ? null : field(t, block, kept, { placeholder: 'Or your own words', submitLabel: 'send' }, acts, words => acts.send(block, words))
-    return (
-      <Box flexDirection="column" marginTop={1}>
-        <Text bold>{text(body.header)}</Text>
-        <Text>{text(body.prompt)}</Text>
-        {text(body.context) ? <Markdown text={text(body.context)} /> : null}
-        {options(t, block, kept, acts)}
-        {ownWords}
-        {body.multiple === true ? <Button key={`send-${block.key}`} label="Send" variant="primary" onPress={() => acts.send(block)} /> : null}
-      </Box>
-    )
-  }
-  return (
-    <Box flexDirection="column" marginTop={1}>
-      <Text bold>{text(body.title)}</Text>
-      <Markdown text={text(body.markdown)} />
-      <Box flexDirection="row" gap={1}>
-        <Button key={`approve-${block.key}`} label="Approve" variant="primary" onPress={() => acts.decide(block, true)} />
-        <Button key={`reject-${block.key}`} label="Reject" onPress={() => acts.decide(block, false)} />
-      </Box>
-      {field(t, block, kept, { placeholder: 'A reason, to reject', submitLabel: 'reject' }, acts, words => acts.decide(block, false, words))}
-    </Box>
-  )
-}
 
 const KINDS: Record<string, string> = { note: 'Note', question: 'Question', approval: 'Approval', plan: 'Plan', decision: 'Decision', task: 'Task', loft: 'Loft' }
 
 /** A card's head: its kind, a question's header as a chip or a fix's mark, and its state at the right. */
-function cardHead({ t, palette }: Drawing, block: PaneBlock, isWaiting: boolean) {
+export function cardHead({ t, palette }: Drawing, block: PaneBlock, isWaiting: boolean) {
   const { Box, Text } = t
   const body = bodyOf(block)
   const state = blockStateOf(block, isWaiting)
@@ -110,7 +45,7 @@ function cardHead({ t, palette }: Drawing, block: PaneBlock, isWaiting: boolean)
   )
 }
 
-function title({ t, palette }: Drawing, words: string) {
+export function title({ t, palette }: Drawing, words: string) {
   const { Text } = t
   return words ? (
     <Text color={palette.ink} weight="semibold">
@@ -119,7 +54,7 @@ function title({ t, palette }: Drawing, words: string) {
   ) : null
 }
 
-function markdownOf({ t }: Drawing, words: unknown) {
+export function markdownOf({ t }: Drawing, words: unknown) {
   const { Markdown } = t
   return text(words) ? <Markdown text={text(words)} /> : null
 }
@@ -280,7 +215,7 @@ export function card(drawing: Drawing, block: PaneBlock, isWaiting: boolean) {
               key={`${block.kind === 'question' ? 'answer' : 'decide'}-it-${block.key}`}
               plain
               label={asks}
-              onPress={() => acts.show('waiting')}
+              onPress={() => acts.answerAt(block)}
             />
           </Box>
         ) : null}

@@ -34301,7 +34301,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "once recorded, the block no longer shows as waiting on the person"
-        body: 14ec858935488b286e93741659e80939a2e3a49d25a7fd1b2dee9161421434d4
+        body: be90a8e55dbfa6b8f574dc9c23dfecbd39ee9fa3ef638cab34e96d933acefea8
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "what waits on the person is each unanswered block of an open submission, in the order the submission holds them"
         body: 1294ec53d339e4b2db49c48d8e07a481b7a6edf1e754cbff165094aeaa7af258
@@ -34316,7 +34316,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "a block answered elsewhere first keeps that answer, and the pane names where it was answered"
-        body: 7456de88228a69eb604f997c4bc331553bd20c2a0375eb490f364661300b04d2
+        body: 9623835bdddc6588e792822358bca4593b1e4c7f34413b24bc98435018d9b4a7
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "a block answered or decided names the channel it was answered on"
         body: f0fdc12cf44adc4aec9c23ab88ae135db2492de86ea112e683fb3cbe54c4ca7b
@@ -34325,7 +34325,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "a block answered elsewhere first keeps that answer, and the pane names where it was answered"
-        body: 7456de88228a69eb604f997c4bc331553bd20c2a0375eb490f364661300b04d2
+        body: 9623835bdddc6588e792822358bca4593b1e4c7f34413b24bc98435018d9b4a7
   - node: 01a1cfe2-478e-75d1-b104-05026550ba85
     reviewed: e7ebcff84d3412951cc21199744f7109c3b58cdea2eb94f88e6984d879866801
     tests:
@@ -34376,124 +34376,148 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "each stage's row shows a square and its status in the status's colour, its title, its owner and the count of what waits"
-        body: 6bb42aa5ccf05941d5849341cd2fb58b779526c6555bc6d3fe5c16d6d8e95aab
+        body: 0ad46f89e5b1ed94f9d688dbcf437a283e4fd9d583b3763ba339308a02dca29a
   - node: 01a1d06f-b09f-73ae-a356-c4a7e16b453e
     reviewed: 2a9ac14811ae8f6545579e1b4e1124f4a30fe3967aaac59d1b7c59553d489945
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a line marks where the planned stages begin"
-        body: 4aae7e3fe6e1008b61357d918ad31bcc17d24c2b3c512bde55518d94a471052d
+        body: 57ff102486a26e29ea9708345037304f9ad1a0fccb104c9588639138ac56c63b
   - node: 01a1cfe2-478e-75d1-b104-04e7839a3e69
     reviewed: 03581a882cd127b948664ca3cf37b31d716762e7a19efdd0c7bc4a9ec8e6b677
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
-        body: aa3910d791337ccc39cd93ce357aebf55cdf45cc86ab6bda5103666c177a29ce
+        body: c8372d4636f079bf3cfe79ff58cca14452feff8a7ae8499c0300c5fc6767b9fa
   - node: 01a1cfe2-478e-75d1-b104-04e8ffb8d768
     reviewed: ff04873d12aa232ae76e8ed8c06567f2a0482085438c04ad02f5935414fdd98d
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
-        body: aa3910d791337ccc39cd93ce357aebf55cdf45cc86ab6bda5103666c177a29ce
+        body: c8372d4636f079bf3cfe79ff58cca14452feff8a7ae8499c0300c5fc6767b9fa
   - node: 01a1d06f-b09f-73ae-a356-c4a8b44b6eec
     reviewed: 93e2c57d022df1895506f8ae177265571d6cab69b1da5bf30c1e4a78622f9de7
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the stage chosen is the first active one until the person chooses another, and shows in full"
-        body: 6336d14f4886b2293307299a4acfdde73463c18c3ccab76af063562b40ab7196
+        body: d4889d4b839e9d693169d2c8c5158a798b5370bc9c27fb30126980a16b75e2fd
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "with no active stage, the stage chosen is the first"
-        body: b794cd35f8ecc361a40af6bb8880492d4fbc9e5f44a6f35fc96943fa6924107d
+        body: e226de7d7d7573a62ad0cd7b2ce632835f76c2558ebc3cd8f03afab60a183f11
   - node: 01a1d06f-b09f-73ae-a356-c4a9e6f022c1
     reviewed: 6e533771a5065738c24646758f71c6d6b2475dd82f528eda5e2569c55579ce2c
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the stage chosen is the first active one until the person chooses another, and shows in full"
-        body: 6336d14f4886b2293307299a4acfdde73463c18c3ccab76af063562b40ab7196
+        body: d4889d4b839e9d693169d2c8c5158a798b5370bc9c27fb30126980a16b75e2fd
   - node: 01a1d06f-b09f-73ae-a356-c4aa2a04584e
     reviewed: 14602cc6a40c32f44789f577f8c4c94e7ebf4e5c30c4f329d17929333acbfb1c
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "from 100 columns the rail and the stage chosen stand side by side, and below that one above the other"
-        body: 7a1a05409d5be3c89da0728718cedcd51e550c19f1b9c12fc8495a7129001661
+        body: 79012b7e331aeb110497de683caeb2d847036ea905d17df44424353c6480f1b7
   - node: 01a1d06f-b09f-73ae-a356-c4ab4bffa5d7
     reviewed: c01867e7ee28be28909bf0b22767803d312107243758f177977619df9e218934
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "from 100 columns the rail and the stage chosen stand side by side, and below that one above the other"
-        body: 7a1a05409d5be3c89da0728718cedcd51e550c19f1b9c12fc8495a7129001661
+        body: 79012b7e331aeb110497de683caeb2d847036ea905d17df44424353c6480f1b7
   - node: 01a1d06f-b09f-73ae-a356-c4adb658297a
     reviewed: bc3b5191e16c83e118581078bc64cb6bb937176de5b693a0d46539807820133a
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a card's head names the block's kind, a question's header as a chip, and the block's state at the right"
-        body: 71c6b6039deae52bf4d1f4abd7dda6625bb12356a168d5e30592ef71b81d4aea
+        body: 79e15d2683a9ac0c94621f0ae4584632e6488df55d10ea25a14b4082a7ad0f15
   - node: 01a1d06f-b09f-73ae-a356-c4aecdbe19d5
     reviewed: 2977af34faba9576c8605809d3e5e73419aa93c4682399f090fa4f7066bffc05
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the card of a block that waits on the person stands on the waiting ground with a bar of the waiting colour, and says so"
-        body: a129bd1091cac33df6e99102f267db8adf66178cf7b9fba5588211d323cedc2f
+        body: 5cb97245eadc3919276e2172ef7e52e174d9c0cc3611b65fd37bfbead83e9580
   - node: 01a1cfe2-478e-75d1-b104-04f1651155ff
     reviewed: f57db84803947bbd585f20fc74553070182892bd4f03b57d42a957c150709607
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a question shows its prompt, its context as Markdown and each option as a card lettered A, B and on, the recommended one marked"
-        body: 35dadd4096ffea67a5b5af4c63b2de664abf80afb2a298e65232c31fd8674c5f
+        body: 21eaca36d10482e7649780cfc0c77626f1d64022dc2c0fd6619003a77e7c0d94
   - node: 01a1cfe2-478e-75d1-b104-04f2f2c33b76
     reviewed: a36d10f6455af73fce6927199da62bcb37bbe837f4f6560725a1796a833d584f
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a question shows its prompt, its context as Markdown and each option as a card lettered A, B and on, the recommended one marked"
-        body: 35dadd4096ffea67a5b5af4c63b2de664abf80afb2a298e65232c31fd8674c5f
+        body: 21eaca36d10482e7649780cfc0c77626f1d64022dc2c0fd6619003a77e7c0d94
   - node: 01a1d06f-b09f-73ae-a356-c4afef09bc37
     reviewed: 1b27036c5e3e701dde96097d707b1cc308a825bb97e9b0b3870d078718dac93e
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "an answered question shows the options chosen and the person's own words, and where it was answered"
-        body: 3db260cf766e752d5019166c1a9735aa2fbc4dc327abec052a5d5b7f6318b2f4
+        body: 17104a366c528cc1fce461ee2b93678f5c3d93477dafbfce980906a952ac444b
   - node: 01a1cfe2-478e-75d1-b104-04f3892200ab
     reviewed: 3b5d4e31d7e0dc273083a884321c901691dbcffacd20c9d71c0a6add41f75dfd
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "an approval or a plan shows its title and its Markdown, and once decided, Approved, or Rejected with the reason"
-        body: 967a6d54a41cc2d56ba15c19c2f7e0c91b0a1be07e86b7acd4ce776a38025aaf
+        body: af9454e5044fddc1a36bd919a3f33761a6d380a6430981c8efb17f54dbbacf85
   - node: 01a1cfe2-478e-75d1-b104-04e29d44498e
     reviewed: 3bb1fd05f0abd7cb429b08f94d187f283573e0728d390cb9ef1214a8ea9b9a85
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a task shows its title and its state, and a fix is marked Fix in the fix colour"
-        body: 2923cc249ce3172ef7ec79d5b9a6ff5f8272cffce369e5eff4070981929002ab
+        body: 40b8438218e251067ac1f395b81c0c6d40d8769357ba7c288f70fd37eb4665f4
   - node: 01a1cfe2-478e-75d1-b104-04e31b6ae5ad
     reviewed: e8d058bcbbed4a11ab37b676c1c64fa572470b477f06bca654f5084549d23956
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a task shows its title and its state, and a fix is marked Fix in the fix colour"
-        body: 2923cc249ce3172ef7ec79d5b9a6ff5f8272cffce369e5eff4070981929002ab
+        body: 40b8438218e251067ac1f395b81c0c6d40d8769357ba7c288f70fd37eb4665f4
   - node: 01a1cfe2-478e-75d1-b104-04e4f43589f1
     reviewed: 98a983efbe6ccff683772b1a7e8745ceec72893cba8838084fe6270fc163b92e
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a note shows its Markdown, a decision its consequence, and a loft block its view in words and its note, and no report"
-        body: 5a49261608d5d2b4788cda72cd86a8d1becb2a39ea9e40a950369febfd8b29fc
+        body: 25119a7935b93f4212c6cea4932c1b4ce29d7aed96aae139d15e28b112d4042f
   - node: 01a1cfe2-478e-75d1-b104-04e5b757bd92
     reviewed: fe8e30b1b441254876520353b20fc380b258ad40fd1ccc6f91489e9e7bd0a8b2
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a note shows its Markdown, a decision its consequence, and a loft block its view in words and its note, and no report"
-        body: 5a49261608d5d2b4788cda72cd86a8d1becb2a39ea9e40a950369febfd8b29fc
+        body: 25119a7935b93f4212c6cea4932c1b4ce29d7aed96aae139d15e28b112d4042f
   - node: 01a1cfe2-478e-75d1-b104-04e66ffb3c99
     reviewed: 531ac4a83caeab62483f4a25605681a5fb6944afd9cdb7c2210f6647ea9242ee
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a note shows its Markdown, a decision its consequence, and a loft block its view in words and its note, and no report"
-        body: 5a49261608d5d2b4788cda72cd86a8d1becb2a39ea9e40a950369febfd8b29fc
+        body: 25119a7935b93f4212c6cea4932c1b4ce29d7aed96aae139d15e28b112d4042f
   - node: 01a1d06f-b09f-73ae-a356-c4b099278c41
     reviewed: 0d53af88d4be5d60abbc6f3859ff943daeb29fda0504af96bfc4d9b721eabd36
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a card's foot names who wrote the block, its version, and when it was created and last updated"
-        body: 8cbfbe4de3193bd77bc839d6c976f5ef9790cd7a1209fc9a563f57d9d8485b69
+        body: a01dc73708ecbb93b4627506aee422011c7c14c8e13f666689be50d77ae2081f
+  - node: 01a1d06f-b09f-73ae-a356-c4b1a45edf1e
+    reviewed: 066c51d82674350c1230336a3dda058e95e55321d0bdbd0e921c8d0eec9a53d2
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "pressing Answer it or Decide it on a waiting card shows what waits, at that block"
+        body: 62c61e241b49639ffbff3bdda0ee1e4c1079bfa39f228abe1354f1be864868af
+  - node: 01a1d06f-b09f-73ae-a356-c4b2a44a0b62
+    reviewed: 8197546954f80fd1dc06afe7ceb8336f6024ef3873333ab4f90199cbfe8c99fb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "what waits shows by itself when a submission arrives that the pane has not shown, and not again once left"
+        body: 5a538a7255d516de63309c2e6c2b39fbb55dbe67464ae3da3ff42f154308d583
+  - node: 01a1d06f-b09f-73ae-a356-c4b36fdce731
+    reviewed: 5d9d3daa68644f223dd5b97c996433059ae032354bc8cdf6708469398d538353
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "once nothing waits on the person, the pane shows again the view it showed before"
+        body: e0da11557998e76b728cc6a62b6db02c594274cf11f5b37ec7de380a0df947c3
+  - node: 01a1d06f-b09f-73ae-a356-c4b42fb55400
+    reviewed: 1b1aef1797904d69b4e04a77890cf5d9ca438c32b801b33dd79bd4d3d99ee9e1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a question's lettered option cards choose its options, and a field beneath them takes the person's own words"
+        body: 044fe1d3b65b79aabf1439445b9730473643315845b0788f9a5d87cb8be00b5d
   - node: 01a1d06f-b09f-73ae-a356-c4c150ee429d
     reviewed: 65f3ce53498983b554dadacb6022b0ff6cf29a6f8abeb7c8a087309ec6b7c6d5
     tests:

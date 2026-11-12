@@ -5,7 +5,7 @@
 import type { PaneActor, PaneBlock, PaneFoot, PaneStage, PaneSubmission, PaneTimes, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
 import { isObject, records, textOf } from '../../model'
-import { openSubmissions, pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
+import { pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
 
 type Act = { at?: unknown; by?: unknown }
 type Version = { act?: Act; number?: unknown }
@@ -89,8 +89,23 @@ function repositoryOf(doc: Doc): string | null {
   return common.endsWith('/.git') ? common.slice(0, -'/.git'.length) : null
 }
 
+/** The open submissions, the oldest sent first, each with its blocks in its own order. */
+function openOf(doc: Doc): { key: string; blocks: string[] }[] {
+  return records(doc.submissions)
+    .flatMap(group => records(group.open))
+    .filter(each => each.state === undefined || each.state === 'open')
+    .map((each, n) => ({
+      key: String(each.key),
+      blocks: Array.isArray(each.blocks) ? each.blocks.map(String) : [],
+      at: isObject(each.sent) ? textOf(each.sent.at) : '',
+      n,
+    }))
+    .sort((one, other) => one.at.localeCompare(other.at) || one.n - other.n)
+    .map(({ key, blocks }) => ({ key, blocks }))
+}
+
 function sentOf(doc: Doc): string[] {
-  return openSubmissions(doc).flatMap(each => each.blocks)
+  return openOf(doc).flatMap(each => each.blocks)
 }
 
 /** The view of a whole read. */
@@ -105,6 +120,7 @@ function whole(doc: Doc): PaneView {
     page: pageOf(doc) ?? null,
     stages: stagesOf(doc).map(stage => keptStage(stage)),
     sent: sentOf(doc),
+    asked: openOf(doc).map(each => each.key),
     submissions: submissionsOf(doc),
   }
 }
@@ -145,14 +161,15 @@ export function followed(view: PaneView | undefined, doc: Doc): PaneView | undef
   const revision = revisionOf(doc, view.revision)
   const page = pageOf(doc) ?? view.page
   const sent = sentOf(doc)
-  if (read.length === 0 && revision === view.revision && page === view.page && sameList(sent, view.sent)) return view
+  const asked = openOf(doc).map(each => each.key)
+  if (read.length === 0 && revision === view.revision && page === view.page && sameList(sent, view.sent) && sameList(asked, view.asked)) return view
   if (bringsNew(view, read)) return undefined
   const changed = new Map(read.map(stage => [stage.key, stage]))
   const stages = view.stages.map(stage => {
     const fresh = changed.get(stage.key)
     return fresh ? keptStage(fresh, stage) : stage
   })
-  return { ...view, revision, page, stages, sent, submissions: submissionsOf(doc) }
+  return { ...view, revision, page, stages, sent, asked, submissions: submissionsOf(doc) }
 }
 
 /** The blocks of the open submissions that wait on the person, in the submissions' order. */

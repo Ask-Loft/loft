@@ -6,7 +6,7 @@ import { expect, test } from 'claude-code/testing'
 
 import { clockOf } from '../hooks/adapter/pane/model'
 import { DARK, isDark, LIGHT, paletteOf } from '../hooks/adapter/pane/theme'
-import { block, openPane, PAGE, paneMount, readDoc, SESSION, stage, world } from './yard-world'
+import { block, openPane, PAGE, paneMount, readDoc, SESSION, stage, world, type Engine } from './yard-world'
 
 const SURFACES = ['terminal', 'desktop', 'vscode', 'mobile'] as const
 
@@ -113,6 +113,13 @@ test("under a dark theme the pane wears the page's dark tokens", async ($, on) =
   await ui.unmount()
 })
 
+/** The pane mounted on `surface`, `columns` wide, showing the timeline. */
+async function timelineOf($: Engine, surface: Parameters<typeof paneMount>[0], columns?: number) {
+  const ui = await $.ui.mount(paneMount(surface, columns))
+  await ui.press({ key: 'tab-timeline' })
+  return ui
+}
+
 const RAIL = readDoc({
   stages: [
     { ...staged('shape', 'done', block('choice', 'decision', { title: 'Members only', consequence: 'Visitors wait' })), times: { started: '2026-10-22T08:00:00Z', ended: '2026-10-22T08:30:00Z' } },
@@ -136,7 +143,7 @@ test("each stage's row shows a square and its status in the status's colour, its
   w.state.read = RAIL
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect((await ui.findAll({ type: 'Text', text: '■' })).map(each => each.props.color)).toEqual([LIGHT.done, LIGHT.signal, LIGHT.rail])
     expect((await ui.find({ key: 'choose-k-build' }))?.text).toBe('Build the store')
     expect((await ui.find({ type: 'Text', text: 'Done' }))?.props.color).toBe(LIGHT.done)
@@ -152,7 +159,7 @@ test('a line marks where the planned stages begin', async ($, on) => {
   const w = world(on)
   w.state.read = RAIL
   await openPane($)
-  const ui = await $.ui.mount(paneMount('desktop'))
+  const ui = await timelineOf($, 'desktop')
   const texts = (await ui.findAll({})).map(each => each.text)
   const line = texts.indexOf('Planned from here on')
   expect(line).toBeGreaterThan(texts.indexOf('Build the store'))
@@ -165,7 +172,7 @@ test("the chosen stage's row is open to its blocks, the others folded, and a row
   w.state.read = RAIL
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect(await ui.find({ key: 'block-row-k-store' })).toBeDefined()
     expect((await ui.find({ key: 'block-state-k-store' }))?.text).toBe('Active')
     expect((await ui.find({ key: 'block-state-k-go' }))?.text).toBe('Waits on you')
@@ -188,7 +195,7 @@ test('the stage chosen is the first active one until the person chooses another,
   const w = world(on)
   w.state.read = RAIL
   await openPane($)
-  const ui = await $.ui.mount(paneMount('desktop'))
+  const ui = await timelineOf($, 'desktop')
   expect((await ui.find({ key: 'stage-title' }))?.text).toBe('Build the store')
   expect(await ui.find({ type: 'Text', text: 'The store holds the shelf' })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: '2 blocks' })).toBeDefined()
@@ -204,7 +211,7 @@ test('with no active stage, the stage chosen is the first', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [staged('shape', 'done'), staged('review', 'planned')] })
   await openPane($)
-  const ui = await $.ui.mount(paneMount('terminal'))
+  const ui = await timelineOf($, 'terminal')
   expect((await ui.find({ key: 'stage-title' }))?.text).toBe('Stage shape')
   await ui.unmount()
 })
@@ -214,10 +221,10 @@ test('from 100 columns the rail and the stage chosen stand side by side, and bel
   w.state.read = RAIL
   await openPane($)
   for (const surface of SURFACES) {
-    const wide = await $.ui.mount(paneMount(surface, 120))
+    const wide = await timelineOf($, surface, 120)
     expect((await wide.find({ key: 'timeline' }))?.props.flexDirection).toBe('row')
     await wide.unmount()
-    const narrow = await $.ui.mount(paneMount(surface, 60))
+    const narrow = await timelineOf($, surface, 60)
     expect((await narrow.find({ key: 'timeline' }))?.props.flexDirection).toBe('column')
     await narrow.unmount()
   }
@@ -278,7 +285,7 @@ test("a card's head names the block's kind, a question's header as a chip, and t
   w.state.read = CARDS
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     const head = await ui.find({ key: 'card-head-k-store' })
     expect(head?.props.justifyContent).toBe('space-between')
     expect(head?.text).toMatch(/^Task.*Active$/)
@@ -294,7 +301,7 @@ test('the card of a block that waits on the person stands on the waiting ground 
   w.state.read = CARDS
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     for (const key of ['k-readers', 'k-go']) {
       expect((await ui.find({ key: `card-${key}` }))?.props.backgroundColor).toBe(LIGHT.waitSoft)
       expect((await ui.find({ key: `wait-bar-${key}` }))?.props.backgroundColor).toBe(LIGHT.wait)
@@ -313,7 +320,7 @@ test('a question shows its prompt, its context as Markdown and each option as a 
   w.state.read = CARDS
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect(await ui.find({ type: 'Text', text: 'Which readers does the change serve?' })).toBeDefined()
     expect(await ui.find({ type: 'Markdown', text: 'Cards are **new**.' })).toBeDefined()
     expect((await ui.find({ key: 'card-option-k-readers-0' }))?.text).toMatch(/^A.*Members.*Recommended.*Readers who hold a card$/)
@@ -329,7 +336,7 @@ test("an answered question shows the options chosen and the person's own words, 
   w.state.read = SETTLED
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect(partsOf(await ui.find({ key: 'answer-k-readers' }))).toEqual(['Members, “and staff”', 'answered on the page'])
     expect((await ui.find({ key: 'card-option-k-readers-0' }))?.props.borderColor).toBe(LIGHT.signal)
     expect((await ui.find({ key: 'card-option-k-readers-1' }))?.props.borderColor).toBe(LIGHT.line)
@@ -344,7 +351,7 @@ test('an approval or a plan shows its title and its Markdown, and once decided, 
   w.state.read = SETTLED
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect(await ui.find({ type: 'Text', text: 'Approve the store' })).toBeDefined()
     expect(await ui.find({ type: 'Markdown', text: 'All.' })).toBeDefined()
     expect((await ui.find({ key: 'outcome-k-go' }))?.text).toBe('Approved in the terminal')
@@ -356,7 +363,7 @@ test('an approval or a plan shows its title and its Markdown, and once decided, 
   }
   w.state.read = CARDS
   await $.command.run({ command: 'yard-pane', args: '' } as never)
-  const ui = await $.ui.mount(paneMount('desktop'))
+  const ui = await timelineOf($, 'desktop')
   expect(await ui.find({ type: 'Markdown', text: 'The shelf holds **500** books.' })).toBeDefined()
   expect(await ui.find({ key: 'outcome-k-go' })).toBeUndefined()
   await ui.unmount()
@@ -367,7 +374,7 @@ test('a task shows its title and its state, and a fix is marked Fix in the fix c
   w.state.read = CARDS
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect((await ui.find({ key: 'card-k-store' }))?.text).toMatch(/Write the store/)
     expect((await ui.find({ key: 'card-head-k-store' }))?.text).toMatch(/Active$/)
     expect(await ui.find({ type: 'Markdown', text: 'In one file.' })).toBeDefined()
@@ -384,7 +391,7 @@ test("a note shows its Markdown, a decision its consequence, and a loft block it
   w.state.read = CARDS
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect((await ui.find({ key: 'card-k-result' }))?.text).toMatch(/What the store holds/)
     expect(await ui.find({ type: 'Markdown', text: 'Every **book** on the shelf.' })).toBeDefined()
     expect((await ui.find({ key: 'card-k-choice' }))?.text).toMatch(/Members only.*Visitors wait for the next change/)
@@ -401,9 +408,113 @@ test("a card's foot names who wrote the block, its version, and when it was crea
   w.state.read = CARDS
   await openPane($)
   for (const surface of SURFACES) {
-    const ui = await $.ui.mount(paneMount(surface))
+    const ui = await timelineOf($, surface)
     expect(partsOf(await ui.find({ key: 'foot-k-store' }))).toEqual(['main agent', 'version 2', `Created ${clockOf('2026-10-22T09:00:00Z')}`, `Updated ${clockOf('2026-10-22T09:20:00Z')}`])
     expect(partsOf(await ui.find({ key: 'foot-k-mend' }))).toEqual(['main agent', 'version 1', `Created ${clockOf('2026-10-22T09:00:00Z')}`])
     await ui.unmount()
   }
+})
+
+const recorded = (w: ReturnType<typeof world>) => w.state.runs.filter(run => run.argv.includes('answer')).map(run => JSON.parse(run.stdin ?? '[]'))
+
+/** `log` with one more open submission, `key`, of the approval `go` of stage `build`, at `revision`. */
+function asking(revision: number, key = 's-2') {
+  return readDoc({
+    revision,
+    stages: [
+      ...(LOG.stages as object[]).slice(0, 1),
+      staged('build', 'active', block('store', 'task', { title: 'Write the store', state: 'active' }), block('go', 'approval', { title: 'Approve the store', markdown: 'All.' })),
+      ...(LOG.stages as object[]).slice(2),
+    ],
+    submissions: [{ agent: OWNER, open: [{ key, state: 'open', blocks: ['k-go'] }] }],
+  })
+}
+
+test('pressing Answer it or Decide it on a waiting card shows what waits, at that block', async ($, on) => {
+  const w = world(on)
+  w.state.read = CARDS
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    await ui.press({ key: 'tab-timeline' })
+    expect(await ui.find({ key: 'view-waiting' })).toBeUndefined()
+    await ui.press({ key: 'decide-it-k-go' })
+    expect(await ui.find({ key: 'view-waiting' })).toBeDefined()
+    expect((await ui.find({ key: 'ask-k-go' }))?.props.borderColor).toBe(LIGHT.signal)
+    expect((await ui.find({ key: 'ask-k-readers' }))?.props.borderColor).toBe(LIGHT.waitLine)
+    await ui.press({ key: 'tab-timeline' })
+    await ui.press({ key: 'answer-it-k-readers' })
+    expect((await ui.find({ key: 'ask-k-readers' }))?.props.borderColor).toBe(LIGHT.signal)
+    await ui.unmount()
+  }
+})
+
+test('the button that counts what waits shows it, the oldest submission first', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({
+    stages: (CARDS.stages as object[]),
+    submissions: [
+      { agent: OWNER, open: [{ key: 's-new', state: 'open', blocks: ['k-readers'], sent: { at: '2026-10-22T10:00:00Z' } }] },
+      { agent: { ...OWNER, agent: 'sub-1' }, open: [{ key: 's-old', state: 'open', blocks: ['k-go'], sent: { at: '2026-10-22T09:00:00Z' } }] },
+    ],
+  })
+  await openPane($)
+  const ui = await $.ui.mount(paneMount('desktop'))
+  await ui.press({ key: 'tab-timeline' })
+  await ui.press({ key: 'wait-count' })
+  const asks = (await ui.findAll({})).flatMap(each => (each.key?.startsWith('ask-') ? [each.key] : []))
+  expect(asks).toEqual(['ask-k-go', 'ask-k-readers'])
+  expect((await ui.find({ key: 'waiting-title' }))?.text).toBe('2 blocks wait on you')
+  await ui.unmount()
+})
+
+test('what waits shows by itself when a submission arrives that the pane has not shown, and not again once left', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  await openPane($)
+  const ui = await $.ui.mount(paneMount('desktop'))
+  expect(await ui.find({ key: 'view-timeline' })).toBeDefined()
+  w.state.read = asking(5)
+  await w.clock.advance(1000)
+  expect(await ui.find({ key: 'view-waiting' })).toBeDefined()
+  await ui.press({ key: 'tab-timeline' })
+  w.state.read = asking(6)
+  await w.clock.advance(1000)
+  expect(await ui.find({ key: 'view-timeline' })).toBeDefined()
+  w.state.read = asking(7, 's-3')
+  await w.clock.advance(1000)
+  expect(await ui.find({ key: 'view-waiting' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('once nothing waits on the person, the pane shows again the view it showed before', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  await openPane($)
+  const ui = await $.ui.mount(paneMount('desktop'))
+  await ui.press({ key: 'tab-gantt' })
+  w.state.read = asking(5)
+  await w.clock.advance(1000)
+  expect(await ui.find({ key: 'view-waiting' })).toBeDefined()
+  expect((await ui.find({ key: 'tab-gantt' }))?.props.variant).toBe('secondary')
+  w.state.read = { ...asking(6), submissions: [] }
+  await w.clock.advance(1000)
+  expect(await ui.find({ key: 'view-gantt' })).toBeDefined()
+  expect((await ui.find({ key: 'tab-gantt' }))?.props.variant).toBe('primary')
+  await ui.unmount()
+})
+
+test("a question's lettered option cards choose its options, and a field beneath them takes the person's own words", async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  await openPane($)
+  const ui = await $.ui.mount(paneMount('desktop'))
+  expect(await ui.find({ key: 'view-waiting' })).toBeDefined()
+  expect((await ui.find({ key: 'pick-k-readers-0' }))?.text).toMatch(/^A.*Members.*Recommended/)
+  expect((await ui.find({ key: 'pick-k-readers-1' }))?.text).toMatch(/^B.*Visitors/)
+  const keys = (await ui.findAll({})).map(each => each.key)
+  expect(keys.indexOf('words-k-readers')).toBeGreaterThan(keys.indexOf('pick-k-readers-1'))
+  await ui.press({ key: 'option-k-readers-1' })
+  expect(recorded(w)).toEqual([[{ block: 'k-readers', labels: ['Visitors'] }]])
+  await ui.unmount()
 })

@@ -9,12 +9,13 @@ import type { Given } from '../answers'
 import { answerIn, decisionGiven, questionGiven } from './answer'
 import { draftsOf, paneOf, setDrafts } from './atoms'
 import { PANE } from './follow'
-import { asking } from './cards'
+import { shownIn } from './atoms'
 import { head } from './head'
 import { bodyOf, type Acts, type Drawing, type Table } from './kit'
 import { waitingIn } from './model'
 import { paletteOf } from './theme'
 import { timeline } from './timeline'
+import { whatWaits } from './waiting'
 
 /**
  * Whether each surface draws a text field, as the `Elements` it declares say: the mobile app's has
@@ -23,18 +24,6 @@ import { timeline } from './timeline'
  */
 const FIELDED: Record<RenderSurface, boolean> = { terminal: true, desktop: true, vscode: true, mobile: false }
 
-
-function waiting(t: Table, view: PaneView, kept: YardPaneDrafts, acts: Acts) {
-  const { Box, Text } = t
-  const blocks = waitingIn(view)
-  if (blocks.length === 0) return null
-  return (
-    <Box key="waiting" flexDirection="column" marginTop={1}>
-      <Text bold color="yellow">Waits on you</Text>
-      {blocks.map(each => asking(t, each, kept, acts))}
-    </Box>
-  )
-}
 
 function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: YardPaneDrafts, columns: number) {
   const { t, acts } = drawing
@@ -57,13 +46,16 @@ function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: Yard
       {head(drawing, view, waits.length, shown)}
       {failed}
       {noticed}
-      {shown === 'gantt' ? (
+      {shown === 'waiting' ? (
+        <Box key="view-waiting" flexDirection="column" marginTop={1}>
+          {whatWaits(drawing, view, kept)}
+        </Box>
+      ) : shown === 'gantt' ? (
         <Box key="view-gantt" flexDirection="column" marginTop={1}>
           <Text dimColor>Gantt chart</Text>
         </Box>
       ) : (
         <Box key="view-timeline" flexDirection="column">
-          {waiting(t, view, kept, acts)}
           {timeline(drawing, view, kept, new Set(waits.map(each => each.key)), columns)}
         </Box>
       )}
@@ -82,8 +74,11 @@ function actsOf($: EngineInterface): Acts {
     return { ticked: kept.ticked[block.key] ?? [], words: kept.words[block.key] }
   }
   return {
-    show: view =>
-      void setDrafts($, before => ({ ...before, shown: view, previous: view === 'waiting' ? (before.shown === 'waiting' ? before.previous : before.shown) : view })),
+    show: view => void setDrafts($, before => shownIn(before, view, null)),
+    answerAt: block =>
+      setDrafts($, before => shownIn(before, 'waiting', block.key)).then(() =>
+        $.ui.scroll({ to: { key: `ask-${block.key}` }, in: PANE, block: 'start' }).catch(() => undefined),
+      ),
     toggleFold: stage =>
       void setDrafts($, before => ({
         ...before,

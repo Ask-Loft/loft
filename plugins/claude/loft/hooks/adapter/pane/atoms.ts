@@ -6,11 +6,11 @@
 import { atom, read, update } from 'claude-code'
 import type { EngineInterface } from 'claude-code'
 
-import type { YardPane, YardPaneDrafts } from '../../../types'
+import type { PaneShown, YardPane, YardPaneDrafts } from '../../../types'
 
-const pane = atom({ plugin: 'loft', key: 'yardPane' } as const, { view: null, failure: null, notice: null, dark: false } as YardPane, { shape: 'yard-pane-5' })
+const pane = atom({ plugin: 'loft', key: 'yardPane' } as const, { view: null, failure: null, notice: null, dark: false } as YardPane, { shape: 'yard-pane-6' })
 
-const drafts = atom({ plugin: 'loft', key: 'yardPaneDrafts' } as const, { shown: 'timeline', previous: 'timeline', chosen: null, toggled: [], ticked: {}, words: {} } as YardPaneDrafts, { shape: 'yard-pane-drafts-3' })
+const drafts = atom({ plugin: 'loft', key: 'yardPaneDrafts' } as const, { shown: 'timeline', previous: 'timeline', at: null, seen: [], chosen: null, toggled: [], ticked: {}, words: {} } as YardPaneDrafts, { shape: 'yard-pane-drafts-4' })
 
 /** The pane's view and its last failure; read while drawing, it redraws the pane on a change. */
 export function paneOf($: EngineInterface) {
@@ -28,4 +28,13 @@ export function draftsOf($: EngineInterface) {
 
 export function setDrafts($: EngineInterface, next: (before: YardPaneDrafts) => YardPaneDrafts) {
   return update($, drafts, next)
+}
+
+/**
+ * The drafts with `view` shown, at the block `at`: the view shown before what waits is kept, to
+ * show again once nothing waits.
+ */
+export function shownIn(before: YardPaneDrafts, view: PaneShown, at: string | null): YardPaneDrafts {
+  const previous = view === 'waiting' ? (before.shown === 'waiting' ? before.previous : before.shown) : view
+  return { ...before, shown: view, previous, at }
 }

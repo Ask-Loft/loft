@@ -43,8 +43,10 @@ export type PaneView = {
   revision: number
   page: string | null
   stages: PaneStage[]
-  /** The blocks of the open submissions, by key, in each submission's order. */
+  /** The blocks of the open submissions, by key, the oldest submission first, each in its own order. */
   sent: string[]
+  /** The open submissions, by key, the oldest first. */
+  asked: string[]
   /** Every submission sent on the branch, oldest first. */
   submissions: PaneSubmission[]
 }
@@ -63,6 +65,10 @@ export type YardPaneDrafts = {
   /** The view shown, and the one to show again once nothing waits. */
   shown: PaneShown
   previous: PaneShown
+  /** The block what waits is shown at, by key, where the person asked for one. */
+  at: string | null
+  /** The open submissions the pane has shown, by key, so that only a new one shows what waits by itself. */
+  seen: string[]
   /** The stage the person chose, by key; none until they choose one. */
   chosen: string | null
   /** The stages whose row the person opened or folded, against its default: open for the stage chosen. */

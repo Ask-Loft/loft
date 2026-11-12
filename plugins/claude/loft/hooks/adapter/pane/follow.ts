@@ -7,7 +7,7 @@ import type { EngineInterface, On, Timer } from 'claude-code'
 
 import { callerArgs, failureOf, succeeded } from '../run'
 import { callerOf, run } from '../state'
-import { paneOf, setPane } from './atoms'
+import { draftsOf, paneOf, setDrafts, setPane, shownIn } from './atoms'
 import { followed } from './model'
 import { isDark } from './theme'
 
@@ -100,6 +100,15 @@ async function readOnce($: EngineInterface) {
   following.notice = undefined
   if (view === shown && failure === held.failure && notice === undefined) return
   await setPane($, before => ({ ...before, view: view ?? null, failure, notice: notice === undefined ? before.notice : notice }))
+  if (view) await showUnseen($, view.asked)
+}
+
+/** Shows what waits by itself where a submission is open that the pane has not shown yet. */
+async function showUnseen($: EngineInterface, asked: readonly string[]) {
+  const { seen } = await draftsOf($)
+  const unseen = asked.filter(key => !seen.includes(key))
+  if (unseen.length === 0) return
+  await setDrafts($, before => ({ ...shownIn(before, 'waiting', null), seen: [...before.seen, ...unseen] }))
 }
 
 /**

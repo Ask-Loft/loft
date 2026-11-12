@@ -14,6 +14,8 @@ export type Table = Pick<Elements['mobile'], 'Box' | 'Text' | 'Button' | 'Link' 
 export type Acts = {
   /** Shows a view, keeping the one shown to go back to once nothing waits. */
   show: (view: PaneShown) => void
+  /** Shows what waits, at `block`, settling once it is scrolled into view. */
+  answerAt: (block: PaneBlock) => Promise<unknown>
   /** Opens a stage's row on the rail, or folds it. */
   toggleFold: (stage: string) => void
   /** Chooses a stage, which the timeline then shows in full. */
