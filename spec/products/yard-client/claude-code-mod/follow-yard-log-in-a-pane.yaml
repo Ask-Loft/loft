@@ -34,9 +34,9 @@ requirements:
       shall: "show each change to the Yard Log it shows."
     criteria:
       - key: 01a1cfe2-478e-75d1-b104-04ead25bf4dc
-        name: "A block that any agent writes shows within 2 seconds of the write."
+        name: "A write of any agent that changes what the pane shows shows within 2 seconds of the write."
       - key: 01a1cfe2-478e-75d1-b104-04eb39d4b416
-        name: "An answer or a decision given on the page shows within 2 seconds."
+        name: "A block answered or decided on the page leaves what waits within 2 seconds."
       - key: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
         name: "The read the pane makes every second asks `loft yard read` only for what changed since the revision shown."
       - key: 01a1d007-2070-754c-bc33-f3cc6389cd12
