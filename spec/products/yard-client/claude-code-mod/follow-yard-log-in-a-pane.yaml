@@ -62,7 +62,11 @@ requirements:
       - key: 01a1cfe2-478e-75d1-b104-04eb39d4b416
         name: "An answer or a decision given on the page shows within 2 seconds."
       - key: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
-        name: "After the first, each read asks `loft yard read` only for what changed since the revision shown."
+        name: "The read the pane makes every second asks `loft yard read` only for what changed since the revision shown."
+      - key: 01a1d007-2070-754c-bc33-f3cc6389cd12
+        name: "The pane reads Yard Log whole after a read since only where that read names another Yard Log or brings a stage or a block the pane does not show yet."
+      - key: 01a1d006-ff66-7349-92b7-bad2a75a773e
+        name: "A stage or a block written after an earlier one shows after it, wherever it was placed."
       - key: 01a1cfe2-478e-75d1-b104-04ed5daac090
         name: "No read marks a revision as read for any agent."
       - key: 01a1cfe2-478e-75d1-b104-04ee292ec71b
