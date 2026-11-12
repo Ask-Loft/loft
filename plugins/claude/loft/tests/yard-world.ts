@@ -170,6 +170,13 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     commands: [] as Doc[],
     /** The panes open now, by id, as `$.ui.panes()` lists them; a test closes one by taking it out. */
     panes: [] as string[],
+    /** The surfaces the session draws on, as `$.session.surfaces()` gives them. */
+    surfaces: ['terminal'] as string[],
+    /**
+     * Claude Code Desktop's browser pane, as its MCP server `Claude_Browser` answers: its tabs by
+     * id and address, or `unreachable` where no such server answers.
+     */
+    browser: { tabs: new Map<string, string>(), unreachable: false, calls: [] as { tool: string; args: Record<string, unknown> }[] },
     /** Each `$.ui.open` the mod made. */
     opened: [] as Doc[],
     /** What a test has happen once `loft yard answer` records, as a wait then ending. */
@@ -200,6 +207,25 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     state.opened.push(e as Doc)
     if (!state.panes.includes(e.id)) state.panes.push(e.id)
     return { value: { isPlaced: true } }
+  })
+  on('session.surfaces', () => ({ value: state.surfaces }) as never)
+  on('mcp.call', (_$, e) => {
+    const { server, tool, args } = e as { server: string; tool: string; args: Record<string, unknown> }
+    const browser = state.browser
+    if (server !== 'Claude_Browser' || browser.unreachable) throw new Error(`MCP server ${server} is not connected`)
+    browser.calls.push({ tool, args })
+    const text = (words: string, isError = false) => ({ value: { content: [{ type: 'text', text: words }], isError } }) as never
+    if (tool === 'preview_start') {
+      const tabId = `tab-${browser.tabs.size + 1}`
+      browser.tabs.set(tabId, String(args.url))
+      return text(JSON.stringify({ tabId }))
+    }
+    if (tool === 'navigate') {
+      if (!browser.tabs.has(String(args.tabId))) return text(`No tab ${String(args.tabId)}`, true)
+      browser.tabs.set(String(args.tabId), String(args.url))
+      return text('Navigated.')
+    }
+    return text(`No tool ${tool}`, true)
   })
   on('ui.panes', () => ({ value: state.panes.map(id => ({ id, title: id, isShown: true, isPlaced: true })) as never }))
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))

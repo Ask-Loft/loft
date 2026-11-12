@@ -12,7 +12,8 @@ const TABS: [PaneShown, string][] = [
   ['gantt', 'Gantt chart'],
 ]
 
-export function head({ t, palette, acts }: Drawing, view: PaneView, waiting: number, shown: PaneShown) {
+/** The head; `isUnreached` where Desktop's browser pane could not be reached, which it then says beside the link. */
+export function head({ t, palette, acts }: Drawing, view: PaneView, waiting: number, shown: PaneShown, isUnreached = false) {
   const { Box, Text, Button, Link } = t
   const link = view.page ? linkOf(view.page) : null
   return (
@@ -33,6 +34,13 @@ export function head({ t, palette, acts }: Drawing, view: PaneView, waiting: num
             {summaryOf(view)}
           </Text>
           {link ? <Link href={link} label="Open the Yard page" /> : null}
+          {isUnreached ? (
+            <Box key="browser-unreachable">
+              <Text color={palette.muted} size="caption">
+                Desktop's browser pane could not be reached.
+              </Text>
+            </Box>
+          ) : null}
         </Box>
         {waiting > 0 ? (
           <Box flexDirection="column" alignItems="flex-end">

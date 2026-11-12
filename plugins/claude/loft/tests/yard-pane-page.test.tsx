@@ -634,3 +634,57 @@ test("a spec-change card shows each node its report names, added, changed or rem
     await ui.unmount()
   }
 })
+
+test("in Claude Code Desktop the command opens the Yard page at the session's tree and branch in Desktop's browser pane", async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['terminal', 'desktop']
+  await openPane($)
+  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['preview_start'])
+  expect(w.state.browser.calls[0]!.args.url).toBe(PAGE)
+  expect([...w.state.browser.tabs.values()]).toEqual([PAGE])
+})
+
+test("where Desktop's browser pane already shows the Yard page, the command shows that tab and opens no other", async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  await openPane($)
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['preview_start', 'navigate'])
+  expect(w.state.browser.calls[1]!.args).toEqual({ tabId: 'tab-1', url: PAGE })
+  expect(w.state.browser.tabs.size).toBe(1)
+  w.state.browser.tabs.clear()
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  expect(w.state.browser.calls.at(-1)!.tool).toBe('preview_start')
+  expect(w.state.browser.tabs.size).toBe(1)
+})
+
+test('the terminal, VS Code and the mobile app show the link in the head, and no browser pane is opened for them', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['terminal', 'vscode', 'mobile']
+  await openPane($)
+  expect(w.state.browser.calls).toEqual([])
+  for (const surface of ['terminal', 'vscode', 'mobile'] as const) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect((await ui.find({ type: 'Link' }))?.props.href).toBe(PAGE.replace('127.0.0.1', 'localhost'))
+    expect(await ui.find({ key: 'browser-unreachable' })).toBeUndefined()
+    await ui.unmount()
+  }
+})
+
+test("in Claude Code Desktop, where the browser pane cannot be reached, the pane shows the link and says so", async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  w.state.browser.unreachable = true
+  await openPane($)
+  const ui = await $.ui.mount(paneMount('desktop'))
+  expect((await ui.find({ type: 'Link' }))?.props.href).toBe(PAGE.replace('127.0.0.1', 'localhost'))
+  expect((await ui.find({ key: 'browser-unreachable' }))?.text).toBe("Desktop's browser pane could not be reached.")
+  await ui.unmount()
+  const terminal = await $.ui.mount(paneMount('terminal'))
+  expect(await terminal.find({ key: 'browser-unreachable' })).toBeUndefined()
+  await terminal.unmount()
+})

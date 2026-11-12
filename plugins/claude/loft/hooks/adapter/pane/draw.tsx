@@ -29,7 +29,7 @@ const FIELDED: Record<RenderSurface, boolean> = { terminal: true, desktop: true,
 const PICTURED: Record<RenderSurface, boolean> = { terminal: false, desktop: true, vscode: true, mobile: true }
 
 
-function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: YardPaneDrafts, columns: number, now: number) {
+function drawn(drawing: Drawing, { view, failure, notice, browser }: YardPane, kept: YardPaneDrafts, columns: number, now: number, isDesktop: boolean) {
   const { t, acts } = drawing
   const { Box, Text } = t
   const failed = failure ? <Text color={drawing.palette.danger}>{failure}</Text> : null
@@ -47,7 +47,7 @@ function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: Yard
   const shown: PaneShown = kept.shown === 'waiting' && waits.length === 0 ? kept.previous : kept.shown
   return (
     <Box flexDirection="column">
-      {head(drawing, view, waits.length, shown)}
+      {head(drawing, view, waits.length, shown, isDesktop && browser?.isReached === false)}
       {failed}
       {noticed}
       {shown === 'waiting' ? (
@@ -113,6 +113,6 @@ export function registerDraw(on: On) {
     const resolved = $.ui.resolve(e) as unknown as Table
     const t: Table = { ...resolved, Input: FIELDED[e.surface] ? resolved.Input : undefined, Svg: PICTURED[e.surface] ? resolved.Svg : undefined }
     const [held, kept, now] = await Promise.all([paneOf($), draftsOf($), $.clock.now()])
-    return drawn({ t, palette: PALETTE, acts: actsOf($) }, held, kept, e.props.bodyColumns, now)
+    return drawn({ t, palette: PALETTE, acts: actsOf($) }, held, kept, e.props.bodyColumns, now, e.surface === 'desktop')
   })
 }

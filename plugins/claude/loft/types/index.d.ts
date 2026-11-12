@@ -63,7 +63,10 @@ export type PaneView = {
  * The Yard pane: its view once read, why the last read failed, if it did, and why the last answer
  * was not recorded, if it was not, until the next answer.
  */
-export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null }
+/** Claude Code Desktop's browser pane, as the pane last left it: the tab showing the Yard page, and whether it was reached. */
+export type PaneBrowser = { tab: string | null; isReached: boolean }
+
+export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null; browser: PaneBrowser | null }
 
 /** The views of the Yard pane: the page's timeline and Gantt chart, and what waits on the person. */
 export type PaneShown = 'timeline' | 'gantt' | 'waiting'
