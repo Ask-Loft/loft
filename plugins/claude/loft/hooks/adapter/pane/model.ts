@@ -212,14 +212,23 @@ export function chosenOf(stages: readonly PaneStage[], chosen: string | null): P
   return stages.find(stage => stage.key === chosen) ?? stages.find(stage => stage.version.body.status === 'active') ?? stages[0]
 }
 
-/** What a block's row on the rail calls it, by its kind, as the page does. */
+/** The views of a `loft` block, in words, as the page names them. */
+export const VIEW_NAMES: Record<string, string> = {
+  'spec-change': 'Spec change',
+  findings: 'Check findings',
+  trace: 'Trace coverage',
+  decision: 'Decision',
+  publish: 'Publish state',
+}
+
+/** What a block's row on the rail calls it, by its kind, as the page does, a `loft` view in words. */
 export function blockTitle(block: PaneBlock): string {
   const body = block.version.body
   switch (block.kind) {
     case 'question':
       return textOf(body.header) || textOf(body.prompt) || block.id
     case 'loft':
-      return textOf(body.view) ? `${textOf(body.view)} view` : block.id
+      return VIEW_NAMES[textOf(body.view)] ?? (textOf(body.view) || block.id)
     case 'note':
       return textOf(body.title) || firstLine(textOf(body.markdown)) || block.id
     default:
@@ -271,4 +280,26 @@ export function blockStateOf(block: PaneBlock, isWaiting: boolean): [string, str
     return ['Open', 'planned']
   }
   return null
+}
+
+/** Who acted, as the page names them: the person by name, a subagent by its type, else the main agent. */
+export function whoOf(by: PaneActor | null | undefined): string {
+  if (!by) return 'unknown'
+  if (textOf(by.name)) return textOf(by.name)
+  if (textOf(by.agentType)) return textOf(by.agentType)
+  return typeof by.agent === 'string' ? 'subagent' : 'main agent'
+}
+
+/** Where a block was answered or decided, in the page's words. */
+export function channelWords(channel: string | undefined): string {
+  if (channel === 'page') return 'on the page'
+  if (channel === 'terminal') return 'in the terminal'
+  return channel ? `on ${channel}` : ''
+}
+
+/** The letter of the option at `index`: A to Z, then AA, AB and on, as the page letters them. */
+export function letterOf(index: number): string {
+  let text = ''
+  for (let n = index; n >= 0; n = Math.floor(n / 26) - 1) text = String.fromCharCode(65 + (n % 26)) + text
+  return text
 }

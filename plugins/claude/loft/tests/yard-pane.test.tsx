@@ -114,25 +114,6 @@ const LOG = readDoc({
   ],
 })
 
-test("a note's Markdown, a decision's consequence and a loft block's view and note are drawn, and no report", async ($, on) => {
-  const w = world(on)
-  w.state.read = LOG
-  await opened($, w)
-  for (const surface of SURFACES) {
-    const ui = await mount($, surface)
-    expect(await ui.find({ type: 'Text', text: 'What the store holds' })).toBeDefined()
-    expect((await ui.find({ type: 'Markdown', text: /book/ }))?.text).toBe('Every **book** on the shelf.')
-    expect(await ui.find({ type: 'Text', text: /spec-change/ })).toBeDefined()
-    expect(await ui.find({ type: 'Markdown', text: 'Two Requirements changed.' })).toBeDefined()
-    expect(await ui.find({ text: /THE WHOLE REPORT/ })).toBeUndefined()
-    await ui.press({ key: 'choose-k-shape' })
-    expect(await ui.find({ type: 'Text', text: /Members only/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: 'Visitors wait for the next change' })).toBeDefined()
-    await ui.press({ key: 'choose-k-build' })
-    await ui.unmount()
-  }
-})
-
 const ASKING = readDoc({
   stages: [
     staged(
@@ -216,7 +197,7 @@ test('a block an agent writes, and an answer given on the page, show within 2 se
   await w.clock.advance(1000)
   expect(await ui.find({ type: 'Markdown', text: 'Found a gap.' })).toBeDefined()
   expect(await ui.find({ key: 'option-k-readers-0' })).toBeUndefined()
-  expect(await ui.find({ type: 'Text', text: /Which readers.*answered on page/ })).toBeDefined()
+  expect((await ui.find({ key: 'answer-k-readers' }))?.text).toMatch(/^Members.*answered on the page$/)
   await ui.unmount()
 })
 
@@ -339,7 +320,7 @@ test('once recorded, the block no longer shows as waiting on the person', async 
   })
   await ui.press({ key: 'approve-k-go' })
   expect(await ui.find({ key: 'approve-k-go' })).toBeUndefined()
-  expect(await ui.find({ type: 'Text', text: /Approve the shape · answered on terminal/ })).toBeDefined()
+  expect((await ui.find({ key: 'outcome-k-go' }))?.text).toBe('Approved in the terminal')
   expect(await ui.find({ key: 'option-k-readers-0' })).toBeDefined()
   await ui.unmount()
 })
@@ -361,7 +342,7 @@ test('a block answered elsewhere first keeps that answer, and the pane names whe
   })
   await ui.press({ key: 'option-k-readers-1' })
   expect(await ui.find({ type: 'Text', text: /answered first on the page/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /Which readers.*answered on page/ })).toBeDefined()
+  expect((await ui.find({ key: 'answer-k-readers' }))?.text).toMatch(/^Members.*answered on the page$/)
   expect(answered(w)).toHaveLength(1)
   await ui.unmount()
 })

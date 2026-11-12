@@ -6,7 +6,7 @@
 
 import type { PaneBlock, PaneStage, PaneView, YardPaneDrafts } from '../../../types'
 import { textOf as text } from '../../model'
-import { held } from './cards'
+import { card } from './cards'
 import { bodyOf, type Drawing } from './kit'
 import { blockStateOf, blockTitle, chosenOf, clockOf, ownerOf, plannedFrom } from './model'
 import { statusColour } from './theme'
@@ -104,7 +104,7 @@ function rail(drawing: Drawing, view: PaneView, chosen: PaneStage | undefined, k
   )
 }
 
-function detail(drawing: Drawing, stage: PaneStage) {
+function detail(drawing: Drawing, stage: PaneStage, waits: ReadonlySet<string>) {
   const { t, palette } = drawing
   const { Box, Text } = t
   const body = bodyOf(stage)
@@ -134,7 +134,7 @@ function detail(drawing: Drawing, stage: PaneStage) {
         <Text color={palette.muted} size="caption">{`Started ${clockOf(times.started)}${times.ended ? `, ended ${clockOf(times.ended)}` : ''}`}</Text>
       ) : null}
       <Box flexDirection="column" gap={1} marginTop={1}>
-        {stage.blocks.map(block => held(t, block))}
+        {stage.blocks.map(block => card(drawing, block, waits.has(block.key)))}
       </Box>
     </Box>
   )
@@ -151,7 +151,7 @@ export function timeline(drawing: Drawing, view: PaneView, kept: YardPaneDrafts,
       <Box flexDirection="column" width={isWide ? Math.min(44, Math.floor(columns * 0.4)) : undefined} flexShrink={0}>
         {rail(drawing, view, chosen, kept, waits)}
       </Box>
-      {chosen ? detail(drawing, chosen) : null}
+      {chosen ? detail(drawing, chosen, waits) : null}
     </Box>
   )
 }

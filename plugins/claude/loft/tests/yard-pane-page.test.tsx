@@ -4,6 +4,7 @@
 import type { FoundElement } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
+import { clockOf } from '../hooks/adapter/pane/model'
 import { DARK, isDark, LIGHT, paletteOf } from '../hooks/adapter/pane/theme'
 import { block, openPane, PAGE, paneMount, readDoc, SESSION, stage, world } from './yard-world'
 
@@ -219,5 +220,190 @@ test('from 100 columns the rail and the stage chosen stand side by side, and bel
     const narrow = await $.ui.mount(paneMount(surface, 60))
     expect((await narrow.find({ key: 'timeline' }))?.props.flexDirection).toBe('column')
     await narrow.unmount()
+  }
+})
+
+const v = (at: string, number: number, by: Record<string, unknown> = OWNER) => ({ act: { at, by, revision: 1 }, number })
+
+/** A block as a whole read with `--versions` gives it, its versions written at `ats`. */
+function written(id: string, kind: string, body: Record<string, unknown>, ats = ['2026-10-22T09:00:00Z']) {
+  const versions = ats.map((at, n) => ({ ...v(at, n + 1), body }))
+  return { ...block(id, kind, body), version: versions.at(-1)!, versions, versionCount: versions.length }
+}
+
+const READERS = { prompt: 'Which readers does the change serve?', header: 'Readers', context: 'Cards are **new**.', options: [{ label: 'Members', detail: 'Readers who hold a card', recommended: true }, { label: 'Visitors', detail: 'Anyone at the desk' }] }
+
+const CARDS = readDoc({
+  stages: [
+    {
+      ...staged(
+        'build',
+        'active',
+        written('readers', 'question', READERS),
+        written('go', 'approval', { title: 'Approve the store', markdown: 'The shelf holds **500** books.' }),
+        written('store', 'task', { title: 'Write the store', state: 'active', detail: 'In one file.' }, ['2026-10-22T09:00:00Z', '2026-10-22T09:20:00Z']),
+        written('mend', 'task', { title: 'Mend the reload', state: 'open', type: 'fix' }),
+        written('result', 'note', { title: 'What the store holds', markdown: 'Every **book** on the shelf.' }),
+        written('choice', 'decision', { title: 'Members only', consequence: 'Visitors wait for the next change' }),
+        written('change', 'loft', { view: 'spec-change', note: 'Two Requirements changed.', report: { text: 'THE WHOLE REPORT' } }),
+      ),
+    },
+  ],
+  submissions: [{ agent: OWNER, open: [{ key: 's-1', state: 'open', blocks: ['k-readers', 'k-go'] }] }],
+})
+
+const SETTLED = readDoc({
+  stages: [
+    staged(
+      'shape',
+      'active',
+      { ...written('readers', 'question', READERS), answer: { labels: ['Members'], words: 'and staff', channel: 'page' } },
+      { ...written('go', 'approval', { title: 'Approve the store', markdown: 'All.' }), outcome: { verdict: 'approved', channel: 'terminal' } },
+      { ...written('no', 'approval', { title: 'Approve the reload', markdown: 'All.' }), outcome: { verdict: 'rejected', reason: 'Too wide', channel: 'page' } },
+      { ...written('nay', 'plan', { title: 'The plan', markdown: 'Steps.' }), outcome: { verdict: 'rejected', channel: 'page' } },
+    ),
+  ],
+})
+
+/** The text an element description holds: its strings, and its children's, in order. */
+type Described = { children?: unknown[] }
+const textIn = (node: unknown): string =>
+  typeof node === 'string' ? node : typeof node === 'object' && node !== null ? ((node as Described).children ?? []).map(textIn).join('') : ''
+
+/** The texts of the elements an element holds, each apart. */
+const partsOf = (found: FoundElement | undefined) => (found?.children ?? []).map(textIn)
+
+test("a card's head names the block's kind, a question's header as a chip, and the block's state at the right", async ($, on) => {
+  const w = world(on)
+  w.state.read = CARDS
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    const head = await ui.find({ key: 'card-head-k-store' })
+    expect(head?.props.justifyContent).toBe('space-between')
+    expect(head?.text).toMatch(/^Task.*Active$/)
+    expect((await ui.find({ key: 'card-head-k-readers' }))?.text).toMatch(/^Question.*Readers.*Waits on you$/)
+    expect((await ui.find({ key: 'chip-k-readers' }))?.props.backgroundColor).toBe(LIGHT.surface)
+    expect((await ui.find({ key: 'card-head-k-result' }))?.text).toBe('Note')
+    await ui.unmount()
+  }
+})
+
+test('the card of a block that waits on the person stands on the waiting ground with a bar of the waiting colour, and says so', async ($, on) => {
+  const w = world(on)
+  w.state.read = CARDS
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    for (const key of ['k-readers', 'k-go']) {
+      expect((await ui.find({ key: `card-${key}` }))?.props.backgroundColor).toBe(LIGHT.waitSoft)
+      expect((await ui.find({ key: `wait-bar-${key}` }))?.props.backgroundColor).toBe(LIGHT.wait)
+    }
+    expect((await ui.find({ key: 'card-k-store' }))?.props.backgroundColor).toBeUndefined()
+    expect(await ui.find({ key: 'wait-bar-k-store' })).toBeUndefined()
+    expect(await ui.findAll({ type: 'Text', text: 'This waits on you.' })).toHaveLength(2)
+    expect((await ui.find({ key: 'answer-it-k-readers' }))?.props.label).toBe('Answer it')
+    expect((await ui.find({ key: 'decide-it-k-go' }))?.props.label).toBe('Decide it')
+    await ui.unmount()
+  }
+})
+
+test('a question shows its prompt, its context as Markdown and each option as a card lettered A, B and on, the recommended one marked', async ($, on) => {
+  const w = world(on)
+  w.state.read = CARDS
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect(await ui.find({ type: 'Text', text: 'Which readers does the change serve?' })).toBeDefined()
+    expect(await ui.find({ type: 'Markdown', text: 'Cards are **new**.' })).toBeDefined()
+    expect((await ui.find({ key: 'card-option-k-readers-0' }))?.text).toMatch(/^A.*Members.*Recommended.*Readers who hold a card$/)
+    expect((await ui.find({ key: 'card-option-k-readers-1' }))?.text).toMatch(/^B.*Visitors.*Anyone at the desk$/)
+    expect((await ui.find({ key: 'card-option-k-readers-1' }))?.text).not.toContain('Recommended')
+    expect((await ui.find({ key: 'card-option-k-readers-0' }))?.props.borderStyle).toBe('single')
+    await ui.unmount()
+  }
+})
+
+test("an answered question shows the options chosen and the person's own words, and where it was answered", async ($, on) => {
+  const w = world(on)
+  w.state.read = SETTLED
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect(partsOf(await ui.find({ key: 'answer-k-readers' }))).toEqual(['Members, “and staff”', 'answered on the page'])
+    expect((await ui.find({ key: 'card-option-k-readers-0' }))?.props.borderColor).toBe(LIGHT.signal)
+    expect((await ui.find({ key: 'card-option-k-readers-1' }))?.props.borderColor).toBe(LIGHT.line)
+    expect((await ui.find({ key: 'card-option-k-readers-2' }))?.text).toMatch(/^C.*In your own words.*and staff$/)
+    expect((await ui.find({ key: 'card-head-k-readers' }))?.text).toMatch(/Answered$/)
+    await ui.unmount()
+  }
+})
+
+test('an approval or a plan shows its title and its Markdown, and once decided, Approved, or Rejected with the reason', async ($, on) => {
+  const w = world(on)
+  w.state.read = SETTLED
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect(await ui.find({ type: 'Text', text: 'Approve the store' })).toBeDefined()
+    expect(await ui.find({ type: 'Markdown', text: 'All.' })).toBeDefined()
+    expect((await ui.find({ key: 'outcome-k-go' }))?.text).toBe('Approved in the terminal')
+    expect(colourIn(await ui.find({ key: 'outcome-k-go' }))).toBe(LIGHT.done)
+    expect((await ui.find({ key: 'outcome-k-no' }))?.text).toBe('Rejected on the page: Too wide')
+    expect(colourIn(await ui.find({ key: 'outcome-k-no' }))).toBe(LIGHT.danger)
+    expect((await ui.find({ key: 'outcome-k-nay' }))?.text).toBe('Rejected on the page, with no reason given')
+    await ui.unmount()
+  }
+  w.state.read = CARDS
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  const ui = await $.ui.mount(paneMount('desktop'))
+  expect(await ui.find({ type: 'Markdown', text: 'The shelf holds **500** books.' })).toBeDefined()
+  expect(await ui.find({ key: 'outcome-k-go' })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('a task shows its title and its state, and a fix is marked Fix in the fix colour', async ($, on) => {
+  const w = world(on)
+  w.state.read = CARDS
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect((await ui.find({ key: 'card-k-store' }))?.text).toMatch(/Write the store/)
+    expect((await ui.find({ key: 'card-head-k-store' }))?.text).toMatch(/Active$/)
+    expect(await ui.find({ type: 'Markdown', text: 'In one file.' })).toBeDefined()
+    expect((await ui.find({ key: 'card-head-k-mend' }))?.text).toMatch(/^Task.*Fix.*Open$/)
+    expect((await ui.find({ key: 'fix-k-mend' }))?.props.backgroundColor).toBe(LIGHT.fixPale)
+    expect(colourIn(await ui.find({ key: 'fix-k-mend' }))).toBe(LIGHT.fix)
+    expect(await ui.find({ key: 'fix-k-store' })).toBeUndefined()
+    await ui.unmount()
+  }
+})
+
+test("a note shows its Markdown, a decision its consequence, and a loft block its view in words and its note, and no report", async ($, on) => {
+  const w = world(on)
+  w.state.read = CARDS
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect((await ui.find({ key: 'card-k-result' }))?.text).toMatch(/What the store holds/)
+    expect(await ui.find({ type: 'Markdown', text: 'Every **book** on the shelf.' })).toBeDefined()
+    expect((await ui.find({ key: 'card-k-choice' }))?.text).toMatch(/Members only.*Visitors wait for the next change/)
+    expect((await ui.find({ key: 'card-k-change' }))?.text).toMatch(/^Loft.*Spec change.*Two Requirements changed\./)
+    expect(await ui.find({ type: 'Markdown', text: 'Two Requirements changed.' })).toBeDefined()
+    expect(await ui.find({ text: /THE WHOLE REPORT/ })).toBeUndefined()
+    expect(await ui.find({ text: /spec-change/ })).toBeUndefined()
+    await ui.unmount()
+  }
+})
+
+test("a card's foot names who wrote the block, its version, and when it was created and last updated", async ($, on) => {
+  const w = world(on)
+  w.state.read = CARDS
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect(partsOf(await ui.find({ key: 'foot-k-store' }))).toEqual(['main agent', 'version 2', `Created ${clockOf('2026-10-22T09:00:00Z')}`, `Updated ${clockOf('2026-10-22T09:20:00Z')}`])
+    expect(partsOf(await ui.find({ key: 'foot-k-mend' }))).toEqual(['main agent', 'version 1', `Created ${clockOf('2026-10-22T09:00:00Z')}`])
+    await ui.unmount()
   }
 })
