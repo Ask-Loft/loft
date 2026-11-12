@@ -34,12 +34,13 @@ export function readDoc(fields: Doc = {}): Doc {
     outcome: 'read',
     errors: [],
     tree: TREE,
+    commonDir: `${TREE}/.git`,
     branch: 'feat/shelf',
     revision: 4,
     lastRead: 4,
     ignored: false,
     page: { available: true, port: 7411, url: PAGE },
-    yardLog: { key: 'yard-log-1', closedBy: 'open' },
+    yardLog: { key: 'yard-log-1', title: 'feat/shelf', closedBy: 'open' },
     stages: [],
     submissions: [],
     ...fields,
@@ -171,6 +172,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     panes: [] as string[],
     /** Each `$.ui.open` the mod made. */
     opened: [] as Doc[],
+    /** Claude Code's `theme` setting, as `$.config.list()` gives it. */
+    theme: 'light',
     /** What a test has happen once `loft yard answer` records, as a wait then ending. */
     onAnswer: undefined as (() => void) | undefined,
   }
@@ -200,6 +203,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     if (!state.panes.includes(e.id)) state.panes.push(e.id)
     return { value: { isPlaced: true } }
   })
+  on('config.list', () => ({ value: [{ key: 'theme', label: 'Theme', kind: 'choice', value: state.theme, provider: { kind: 'core' } }] as never }))
   on('ui.panes', () => ({ value: state.panes.map(id => ({ id, title: id, isShown: true, isPlaced: true })) as never }))
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))
   on('fs.read', ($, e) => (state.hasToken && e.path === `${state.home ?? `${HOME}/.yard`}/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
@@ -331,3 +335,19 @@ export const writesOf = (w: World) =>
 
 /** The id of the question the mod wrote last. */
 export const askedId = (w: World) => String(writesOf(w).at(-1)?.find(each => each.kind === 'question')?.id)
+
+/** The Yard pane as Claude Code mounts it to draw, `columns` wide. */
+export const paneMount = (surface: 'terminal' | 'desktop' | 'vscode' | 'mobile', columns = 80) =>
+  ({
+    plugin: 'loft',
+    component: 'Pane',
+    requestId: 'yard',
+    surface,
+    props: { title: 'Yard', isFocused: false, bodyColumns: columns, placement: 'dock', scroll: { offset: 0, bodyRows: 40 }, view: {} },
+  }) as never
+
+/** Starts the session and opens the Yard pane with `/yard-pane`. */
+export async function openPane($: Engine) {
+  await start($)
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+}

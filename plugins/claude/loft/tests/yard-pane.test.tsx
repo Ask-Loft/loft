@@ -114,18 +114,6 @@ const LOG = readDoc({
   ],
 })
 
-test('the header names the branch, the revision shown and the Yard page', async ($, on) => {
-  const w = world(on)
-  w.state.read = LOG
-  await opened($, w)
-  for (const surface of SURFACES) {
-    const ui = await mount($, surface)
-    expect((await ui.find({ type: 'Text', text: /feat\/shelf/ }))?.text).toContain('revision 4')
-    expect((await ui.find({ type: 'Link' }))?.props.href).toBe(PAGE.replace('127.0.0.1', 'localhost'))
-    await ui.unmount()
-  }
-})
-
 test('each stage shows its title, status and goal, and its tasks their title and state, a fix marked', async ($, on) => {
   const w = world(on)
   w.state.read = LOG

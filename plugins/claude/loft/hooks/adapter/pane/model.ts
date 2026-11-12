@@ -83,14 +83,24 @@ function identityOf(doc: Doc) {
   return { tree: textOf(doc.tree), branch: textOf(doc.branch), log }
 }
 
+/** The repository's main worktree: the folder that holds git's common directory, where it is `.git`. */
+function repositoryOf(doc: Doc): string | null {
+  const common = textOf(doc.commonDir)
+  return common.endsWith('/.git') ? common.slice(0, -'/.git'.length) : null
+}
+
 function sentOf(doc: Doc): string[] {
   return openSubmissions(doc).flatMap(each => each.blocks)
 }
 
 /** The view of a whole read. */
 function whole(doc: Doc): PaneView {
+  const identity = identityOf(doc)
+  const title = isObject(doc.yardLog) && typeof doc.yardLog.title === 'string' ? doc.yardLog.title : identity.branch
   return {
-    ...identityOf(doc),
+    ...identity,
+    repository: repositoryOf(doc),
+    title,
     revision: revisionOf(doc, 0),
     page: pageOf(doc) ?? null,
     stages: stagesOf(doc).map(stage => keptStage(stage)),
@@ -162,4 +172,30 @@ export function answeredOn(block: PaneBlock): string | undefined {
  */
 export function linkOf(page: string): string {
   return page.replace(/^http:\/\/127\.0\.0\.1([:/])/, 'http://localhost$1')
+}
+
+/** A path's last part. */
+export const baseOf = (path: string) => path.split('/').filter(part => part !== '').at(-1) ?? path
+
+/**
+ * What the head names above the title, as the page does: the repository, the worktree where it is
+ * not the main one, and the branch where the title is not its name.
+ */
+export function kickerOf(view: PaneView): string[] {
+  const repository = view.repository ?? view.tree
+  return [
+    baseOf(repository),
+    ...(view.repository !== null && view.tree !== view.repository ? [baseOf(view.tree)] : []),
+    ...(view.title !== view.branch ? [view.branch] : []),
+  ]
+}
+
+const STATUSES = ['done', 'active', 'planned', 'dropped'] as const
+
+/** The head's line that sums up the stages, as `3 stages: 2 done, 1 active, 0 planned`; dropped only where any is. */
+export function summaryOf(view: PaneView): string {
+  const counts = STATUSES.map(status => [status, view.stages.filter(stage => stage.version.body.status === status).length] as const)
+  const tally = counts.filter(([status, n]) => n > 0 || status !== 'dropped').map(([status, n]) => `${n} ${status}`)
+  const n = view.stages.length
+  return `${n} ${n === 1 ? 'stage' : 'stages'}: ${tally.join(', ')}`
 }

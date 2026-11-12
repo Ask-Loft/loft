@@ -33,7 +33,11 @@ export type PaneSubmission = { key: string; blocks: string[]; sent: string | nul
 /** What the Yard pane shows: which Yard Log, at which revision, and its stages. */
 export type PaneView = {
   tree: string
+  /** The repository's main worktree, where the read names git's common directory beside it. */
+  repository: string | null
   branch: string
+  /** The Yard Log's title: the branch's name unless it was given another. */
+  title: string
   /** The key of the Yard Log shown; none where the branch has no Yard Log yet. */
   log: string | null
   revision: number
@@ -49,10 +53,16 @@ export type PaneView = {
  * The Yard pane: its view once read, why the last read failed, if it did, and why the last answer
  * was not recorded, if it was not, until the next answer.
  */
-export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null }
+export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null; dark: boolean }
+
+/** The views of the Yard pane: the page's timeline and Gantt chart, and what waits on the person. */
+export type PaneShown = 'timeline' | 'gantt' | 'waiting'
 
 /** What the person has set in the Yard pane and not sent: the stages unfolded, options ticked, words typed. */
 export type YardPaneDrafts = {
+  /** The view shown, and the one to show again once nothing waits. */
+  shown: PaneShown
+  previous: PaneShown
   unfolded: string[]
   ticked: Record<string, string[]>
   words: Record<string, string>

@@ -2,18 +2,18 @@
 // revision and the Yard page; what waits on the person; then the stages in order, a stage that is
 // `done` or `dropped` folded until the person unfolds it (the Feature "Follow Yard Log in a pane").
 
-import type { EngineInterface, Elements, On, RenderSurface } from 'claude-code'
+import type { EngineInterface, On, RenderSurface } from 'claude-code'
 
-import type { PaneBlock, PaneStage, PaneView, YardPane, YardPaneDrafts } from '../../../types'
+import type { PaneBlock, PaneShown, PaneStage, PaneView, YardPane, YardPaneDrafts } from '../../../types'
 import { textOf as text } from '../../model'
 import type { Given } from '../answers'
 import { answerIn, decisionGiven, questionGiven } from './answer'
 import { draftsOf, paneOf, setDrafts } from './atoms'
 import { PANE } from './follow'
-import { answeredOn, linkOf, waitingIn } from './model'
-
-/** The elements every surface draws; `Input` only where the surface has a text field. */
-export type Table = Pick<Elements['mobile'], 'Box' | 'Text' | 'Button' | 'Link' | 'Markdown'> & { Input?: Elements['desktop']['Input'] }
+import { head } from './head'
+import { bodyOf, type Acts, type Drawing, type Table } from './kit'
+import { answeredOn, waitingIn } from './model'
+import { paletteOf } from './theme'
 
 /**
  * Whether each surface draws a text field, as the `Elements` it declares say: the mobile app's has
@@ -22,31 +22,7 @@ export type Table = Pick<Elements['mobile'], 'Box' | 'Text' | 'Button' | 'Link' 
  */
 const FIELDED: Record<RenderSurface, boolean> = { terminal: true, desktop: true, vscode: true, mobile: false }
 
-/** What a press or a submit in the pane does. */
-type Acts = {
-  toggleFold: (stage: string) => void
-  /** An option pressed: recorded for a question that takes one, ticked or unticked for one that takes more. */
-  choose: (block: PaneBlock, label: string) => void
-  /** The options ticked and the words typed, sent; or words submitted in the field, with what is ticked. */
-  send: (block: PaneBlock, words?: string) => void
-  /** The words in a block's field, kept as the person types. */
-  type: (block: PaneBlock, words: string) => void
-  decide: (block: PaneBlock, isApproved: boolean, reason?: string) => void
-}
-
-const bodyOf = (block: PaneBlock) => block.version.body
 const FOLDED = new Set(['done', 'dropped'])
-
-function header(t: Table, view: PaneView) {
-  const { Box, Text, Link } = t
-  const link = view.page ? linkOf(view.page) : null
-  return (
-    <Box flexDirection="column">
-      <Text bold>{`Yard Log of ${view.branch} · revision ${view.revision}`}</Text>
-      {link ? <Link href={link} label={link} /> : null}
-    </Box>
-  )
-}
 
 function options(t: Table, block: PaneBlock, kept: YardPaneDrafts, acts: Acts) {
   const { Box, Text, Button } = t
@@ -186,10 +162,11 @@ function stageOf(t: Table, stage: PaneStage, unfolded: readonly string[], acts: 
 }
 
 /** The pane's tree for what it holds. */
-function drawn(t: Table, { view, failure, notice }: YardPane, kept: YardPaneDrafts, acts: Acts) {
+function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: YardPaneDrafts) {
+  const { t, acts } = drawing
   const { Box, Text } = t
-  const failed = failure ? <Text color="red">{failure}</Text> : null
-  const noticed = notice ? <Text color="yellow">{notice}</Text> : null
+  const failed = failure ? <Text color={drawing.palette.danger}>{failure}</Text> : null
+  const noticed = notice ? <Text color={drawing.palette.wait}>{notice}</Text> : null
   if (view === null) return <Box flexDirection="column">{failed ?? <Text dimColor>Reading Yard Log…</Text>}</Box>
   if (view.log === null) {
     return (
@@ -199,13 +176,23 @@ function drawn(t: Table, { view, failure, notice }: YardPane, kept: YardPaneDraf
       </Box>
     )
   }
+  const waits = waitingIn(view)
+  const shown: PaneShown = kept.shown === 'waiting' && waits.length === 0 ? kept.previous : kept.shown
   return (
     <Box flexDirection="column">
-      {header(t, view)}
+      {head(drawing, view, waits.length, shown)}
       {failed}
       {noticed}
-      {waiting(t, view, kept, acts)}
-      {view.stages.map(each => stageOf(t, each, kept.unfolded, acts))}
+      {shown === 'gantt' ? (
+        <Box key="view-gantt" flexDirection="column" marginTop={1}>
+          <Text dimColor>Gantt chart</Text>
+        </Box>
+      ) : (
+        <Box key="view-timeline" flexDirection="column">
+          {waiting(t, view, kept, acts)}
+          {view.stages.map(each => stageOf(t, each, kept.unfolded, acts))}
+        </Box>
+      )}
     </Box>
   )
 }
@@ -221,6 +208,8 @@ function actsOf($: EngineInterface): Acts {
     return { ticked: kept.ticked[block.key] ?? [], words: kept.words[block.key] }
   }
   return {
+    show: view =>
+      void setDrafts($, before => ({ ...before, shown: view, previous: view === 'waiting' ? (before.shown === 'waiting' ? before.previous : before.shown) : view })),
     toggleFold: stage =>
       void setDrafts($, before => ({
         ...before,
@@ -249,7 +238,7 @@ export function registerDraw(on: On) {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const resolved = $.ui.resolve(e) as unknown as Table
     const t: Table = FIELDED[e.surface] ? resolved : { ...resolved, Input: undefined }
-    const kept = await draftsOf($)
-    return drawn(t, await paneOf($), kept, actsOf($))
+    const [held, kept] = await Promise.all([paneOf($), draftsOf($)])
+    return drawn({ t, palette: paletteOf(held.dark), acts: actsOf($) }, held, kept)
   })
 }
