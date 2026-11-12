@@ -2,6 +2,7 @@
 // of its blocks to a dialog, the options of a long question over several dialogs, and what an
 // answered dialog records (the Feature "Answer a sent submission in either place"). Pure.
 
+import { textOf } from '../model'
 import type { Given } from './answers'
 import type { Block } from './log'
 
@@ -32,8 +33,6 @@ export type Dialog = {
   asks: { block: Block; question: string; labels: Map<string, string>; from: number; more: boolean }[]
 }
 
-const text = (value: unknown) => (typeof value === 'string' ? value : '')
-
 /** The next dialog for the blocks that still wait; null where none waits. */
 export function dialogOf(waiting: readonly Block[], paging: Paging, who?: string): Dialog | null {
   const blocks = waiting.slice(0, MOST)
@@ -44,7 +43,7 @@ export function dialogOf(waiting: readonly Block[], paging: Paging, who?: string
     const body = block.version.body
     const by = who ? ` (${who})` : ''
     if (block.kind !== 'question') {
-      const question = unique(`${text(body.title)}${by}`, used)
+      const question = unique(`${textOf(body.title)}${by}`, used)
       asks.push({ block, question, labels: new Map([[APPROVE, APPROVE], [REJECT, REJECT]]), from: 0, more: false })
       return {
         question,
@@ -61,12 +60,12 @@ export function dialogOf(waiting: readonly Block[], paging: Paging, who?: string
     const left = options.slice(from)
     const more = left.length > MOST
     const shown = more ? left.slice(0, MOST - 1) : left
-    const question = unique(`${text(body.prompt)}${by}`, used)
+    const question = unique(`${textOf(body.prompt)}${by}`, used)
     const labelOf = (option: Option) => (option.recommended ? `${option.label} (Recommended)` : option.label)
     asks.push({ block, question, labels: new Map(shown.map(option => [labelOf(option), option.label])), from, more })
     return {
       question,
-      header: (text(body.header) || 'Question').slice(0, HEADER),
+      header: (textOf(body.header) || 'Question').slice(0, HEADER),
       multiSelect: body.multiple === true,
       options: [
         ...shown.map(option => ({ label: labelOf(option), description: option.detail ?? '' })),

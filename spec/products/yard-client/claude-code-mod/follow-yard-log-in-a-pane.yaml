@@ -1,0 +1,134 @@
+key: 01a1cfe2-478e-75d1-b104-04d8469599d2
+slug: follow-yard-log-in-a-pane
+name: "Follow Yard Log in a pane"
+body: |
+  The Yard page lives in a browser, beside the agent rather than in it. The pane brings the branch's Yard Log into Claude Code itself, in the terminal and in Claude Code Desktop alike: its stages and tasks as they move, the notes and decisions, and what waits on the person, which they can answer where they already are.
+
+  The pane reaches Yard Log only through `loft yard read` and `loft yard answer`, as the rest of the mod does, and reads only what changed since the revision it shows.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a609a6b01d
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+requirements:
+  - key: 01a1cfe2-478e-75d1-b104-04d941a331c1
+    statement:
+      form: event_driven
+      when: "the person runs the command `/yard-pane`"
+      system: "the Loft mod"
+      shall: "open a pane that shows the Yard Log of the session's working tree."
+    criteria:
+      - key: 01a1cfe2-478e-75d1-b104-04da77492dde
+        name: "The command `/yard-pane` is offered once Yard Client is on in the session."
+      - key: 01a1cfe2-478e-75d1-b104-04db8a13b084
+        name: "The command `/yard-pane` is not offered while Yard Client is off in the session."
+      - key: 01a1cfe2-478e-75d1-b104-04dc2834a13d
+        name: "The command opens the pane while the agent's turn runs, without waiting for the turn to end."
+      - key: 01a1cfe2-478e-75d1-b104-04dd17b426cf
+        name: "Running the command while the pane is open shows the same pane, and opens no second one."
+      - key: 01a1cfe2-478e-75d1-b104-04de2a2db6e9
+        name: "Where the session's working tree holds no Yard Log, the pane says so and names the branch."
+  - key: 01a1cfe2-478e-75d1-b104-04df60256262
+    statement:
+      form: ubiquitous
+      system: "The pane"
+      shall: "show the branch's Yard Log as its stages, in their order, under a header that names the branch."
+    criteria:
+      - key: 01a1cfe2-478e-75d1-b104-04e08deef20b
+        name: "The header shows the branch, the revision shown and the address of the Yard page."
+      - key: 01a1cfe2-478e-75d1-b104-04e15b4516b0
+        name: "Each stage shows its title, its status and its goal."
+      - key: 01a1cfe2-478e-75d1-b104-04e29d44498e
+        name: "Each task shows its title and its state."
+      - key: 01a1cfe2-478e-75d1-b104-04e31b6ae5ad
+        name: "A task of the type `fix` is marked as a fix."
+      - key: 01a1cfe2-478e-75d1-b104-04e4f43589f1
+        name: "A note shows its title and its Markdown, drawn as Markdown."
+      - key: 01a1cfe2-478e-75d1-b104-04e5b757bd92
+        name: "A decision shows its title and its consequence."
+      - key: 01a1cfe2-478e-75d1-b104-04e66ffb3c99
+        name: "A `loft` block shows its view and its note, and no report."
+      - key: 01a1cfe2-478e-75d1-b104-04e7839a3e69
+        name: "A stage `done` or `dropped` shows its title and status alone until the person unfolds it."
+      - key: 01a1cfe2-478e-75d1-b104-04e8ffb8d768
+        name: "A stage `planned` or `active` shows its blocks."
+  - key: 01a1cfe2-478e-75d1-b104-04e9379b7127
+    statement:
+      form: state_driven
+      while: "the pane is open"
+      system: "the Loft mod"
+      shall: "show each change to the Yard Log it shows."
+    criteria:
+      - key: 01a1cfe2-478e-75d1-b104-04ead25bf4dc
+        name: "A block that any agent writes shows within 2 seconds of the write."
+      - key: 01a1cfe2-478e-75d1-b104-04eb39d4b416
+        name: "An answer or a decision given on the page shows within 2 seconds."
+      - key: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
+        name: "The read the pane makes every second asks `loft yard read` only for what changed since the revision shown."
+      - key: 01a1d007-2070-754c-bc33-f3cc6389cd12
+        name: "The pane reads Yard Log whole after a read since only where that read names another Yard Log or brings a stage or a block the pane does not show yet."
+      - key: 01a1d006-ff66-7349-92b7-bad2a75a773e
+        name: "A stage or a block written after an earlier one shows after it, wherever it was placed."
+      - key: 01a1cfe2-478e-75d1-b104-04ed5daac090
+        name: "No read marks a revision as read for any agent."
+      - key: 01a1cfe2-478e-75d1-b104-04ee292ec71b
+        name: "A checkout of another branch in the working tree shows that branch's Yard Log within 2 seconds."
+      - key: 01a1cfe2-478e-75d1-b104-04efb1c2e815
+        name: "While the pane is closed, the Loft mod reads nothing for it."
+  - key: 01a1cfe2-478e-75d1-b104-04f05a5573bc
+    statement:
+      form: ubiquitous
+      system: "The pane"
+      shall: "show, above the stages, each block of an open submission that waits on the person."
+    criteria:
+      - key: 01a1cfe2-478e-75d1-b104-04f1651155ff
+        name: "A question shows its header, its prompt, its context drawn as Markdown, and each option's label and detail."
+      - key: 01a1cfe2-478e-75d1-b104-04f2f2c33b76
+        name: "The option a question recommends is marked."
+      - key: 01a1cfe2-478e-75d1-b104-04f3892200ab
+        name: "An approval or a plan shows its title and its Markdown, drawn as Markdown."
+      - key: 01a1cfe2-478e-75d1-b104-04f4e90e6960
+        name: "Where no block waits on the person, the pane shows no such list."
+  - key: 01a1cfe2-478e-75d1-b104-04f5f977ef24
+    statement:
+      form: event_driven
+      when: "the person answers or decides a block in the pane"
+      system: "the Loft mod"
+      shall: "record the answer or the decision with `loft yard answer` and the channel `terminal`."
+    criteria:
+      - key: 01a1cfe2-478e-75d1-b104-04f6166ca30a
+        name: "Choosing an option of a question that takes one option records that option."
+      - key: 01a1cfe2-478e-75d1-b104-04f7754f2648
+        name: "A question that takes more than one option records the options the person ticked once they send it."
+      - key: 01a1cfe2-478e-75d1-b104-04f8dcb8f19e
+        name: "Words the person typed in a question's field and sent are recorded as their own words."
+      - key: 01a1cfe2-478e-75d1-b104-04f9fa5c2fa8
+        name: "`Approve` records the block as `approved`."
+      - key: 01a1cfe2-478e-75d1-b104-04fa5d52bd00
+        name: "`Reject` records the block as `rejected`, with the words the person typed as its reason."
+      - key: 01a1cfe2-478e-75d1-b104-04fb73a62dec
+        name: "`Reject` with no words typed records the block as `rejected` with no reason."
+      - key: 01a1cfe2-478e-75d1-b104-04fc44d47b01
+        name: "Once recorded, the block no longer shows as waiting on the person."
+      - key: 01a1cfe2-478e-75d1-b104-04fdedc77daa
+        name: "A dialog of Claude Code that asks the same submission closes within 2 seconds of the pane's last answer to it."
+  - key: 01a1cfe2-478e-75d1-b104-04fea300df8d
+    statement:
+      form: unwanted
+      if: "a block the person answers in the pane was answered or decided elsewhere first"
+      system: "the Loft mod"
+      shall: "keep the first answer and show the block as answered there."
+    criteria:
+      - key: 01a1cfe2-478e-75d1-b104-04ffa640ae28
+        name: "The pane names the channel the block was answered on."
+      - key: 01a1cfe2-478e-75d1-b104-0500223a2689
+        name: "The answer given first is kept unchanged."
+  - key: 01a1cfe2-478e-75d1-b104-0501b025982f
+    statement:
+      form: optional
+      where: "the surface that draws the pane has no text field"
+      system: "the pane"
+      shall: "offer each question's options and the two decisions alone."
+    criteria:
+      - key: 01a1cfe2-478e-75d1-b104-05026550ba85
+        name: "A question is answered by its options alone."
+      - key: 01a1cfe2-478e-75d1-b104-050333a2c655
+        name: "`Reject` records the block as `rejected` with no reason."

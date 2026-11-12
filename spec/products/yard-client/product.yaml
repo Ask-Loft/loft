@@ -120,6 +120,7 @@ featureGroups:
       - 01a1646f-546c-7521-9643-bc69fcfce2ec
       - 01a1646f-546c-7521-9643-bc7c4e7a1936
       - 01a1646f-546c-7521-9643-bca6524c277a
+      - 01a1cfe2-478e-75d1-b104-04d8469599d2
   - key: 01a16469-55a3-716f-a42c-3a3f523be88e
     slug: commands
     name: "Yard commands"

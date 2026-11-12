@@ -165,6 +165,14 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     spawning: 'a9',
     /** Whether a page server has made `~/.yard/token` yet. */
     hasToken: true,
+    /** The slash commands the mod registered. */
+    commands: [] as Doc[],
+    /** The panes open now, by id, as `$.ui.panes()` lists them; a test closes one by taking it out. */
+    panes: [] as string[],
+    /** Each `$.ui.open` the mod made. */
+    opened: [] as Doc[],
+    /** What a test has happen once `loft yard answer` records, as a wait then ending. */
+    onAnswer: undefined as (() => void) | undefined,
   }
 
   on('session.id', () => ({ value: state.session }))
@@ -183,6 +191,16 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     state.tools.push({ name: e.name, inputSchema: e.inputSchema })
     return { value: { tool: `mcp__loft__${e.name}` } }
   })
+  on('command.register', ($, e) => {
+    state.commands.push(e as Doc)
+    return { value: { command: e.name } }
+  })
+  on('ui.open', ($, e) => {
+    state.opened.push(e as Doc)
+    if (!state.panes.includes(e.id)) state.panes.push(e.id)
+    return { value: { isPlaced: true } }
+  })
+  on('ui.panes', () => ({ value: state.panes.map(id => ({ id, title: id, isShown: true, isPlaced: true })) as never }))
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))
   on('fs.read', ($, e) => (state.hasToken && e.path === `${state.home ?? `${HOME}/.yard`}/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
   on('http.fetch', async ($, e) => {
@@ -226,8 +244,13 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
         return out({ schema: 'loft-yard-protocol/2', outcome: 'ok', errors: [], protocol: state.protocol, loft: '2.2.1', formats: {}, ...(state.home === undefined ? {} : { home: state.home }) })
       case 'read':
         await state.reading
-        if (!e.argv.includes('--context') || 'context' in state.read) return out(state.read)
-        return out({ ...state.read, context: briefingOf(state.read, e.argv) })
+        {
+          // A read since a revision says so; a whole read names none.
+          const { since, ...whole } = state.read
+          const read = e.argv.includes('--since') || since === undefined ? state.read : whole
+          if (!e.argv.includes('--context') || 'context' in read) return out(read)
+          return out({ ...read, context: briefingOf(read, e.argv) })
+        }
       case 'task':
         return out({ outcome: e.argv.includes('--release') ? 'released' : 'changed', errors: [], revision: 5 })
       case 'write': {
@@ -243,6 +266,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
         })
       }
       case 'answer':
+        state.onAnswer?.()
         return out({ outcome: 'answered', errors: [] })
       default:
         return out({ outcome: sub === 'close' ? 'closed' : `${sub ?? ''}ed`, errors: [] })
