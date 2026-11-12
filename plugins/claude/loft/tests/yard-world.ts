@@ -171,6 +171,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     panes: [] as string[],
     /** Each `$.ui.open` the mod made. */
     opened: [] as Doc[],
+    /** What a test has happen once `loft yard answer` records, as a wait then ending. */
+    onAnswer: undefined as (() => void) | undefined,
   }
 
   on('session.id', () => ({ value: state.session }))
@@ -264,6 +266,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
         })
       }
       case 'answer':
+        state.onAnswer?.()
         return out({ outcome: 'answered', errors: [] })
       default:
         return out({ outcome: sub === 'close' ? 'closed' : `${sub ?? ''}ed`, errors: [] })

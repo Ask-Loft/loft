@@ -30,8 +30,11 @@ export type PaneView = {
   sent: string[]
 }
 
-/** The Yard pane: its view once read, and why the last read or answer failed, if one did. */
-export type YardPane = { view: PaneView | null; failure: string | null }
+/**
+ * The Yard pane: its view once read, why the last read failed, if it did, and why the last answer
+ * was not recorded, if it was not, until the next answer.
+ */
+export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null }
 
 /** What the person has set in the Yard pane and not sent: the stages unfolded, options ticked, words typed. */
 export type YardPaneDrafts = {

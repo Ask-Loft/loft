@@ -1,4 +1,4 @@
-import { expect, test } from 'claude-code/testing'
+import { expect, test, type Mounted } from 'claude-code/testing'
 
 import { block, PAGE, readDoc, stage, start, world, yardRuns, type Engine, type World } from './yard-world'
 
@@ -76,6 +76,7 @@ test('once the pane is closed, the mod reads nothing for it', async ($, on) => {
 })
 
 const SURFACES = ['terminal', 'desktop', 'vscode', 'mobile'] as const
+const FIELDED = ['terminal', 'desktop'] as const
 
 const PANE = {
   plugin: 'loft',
@@ -86,6 +87,9 @@ const PANE = {
 
 /** Mounts the pane on `surface`, as Claude Code draws it there. */
 const mount = ($: Engine, surface: (typeof SURFACES)[number]) => $.ui.mount({ ...PANE, surface } as never)
+
+/** Mounts the pane on a surface that draws a text field, typing into it as the person would. */
+const mountFielded = ($: Engine, surface: (typeof FIELDED)[number]) => $.ui.mount({ ...PANE, surface } as never) as unknown as Promise<Mounted<'desktop'>>
 
 function staged(id: string, status: string, goal: string, ...blocks: ReturnType<typeof block>[]) {
   const held = stage(id, status, OWNER)
@@ -257,5 +261,176 @@ test('a block an agent writes, and an answer given on the page, show within 2 se
   expect(await ui.find({ type: 'Markdown', text: 'Found a gap.' })).toBeDefined()
   expect(await ui.find({ key: 'option-k-readers-0' })).toBeUndefined()
   expect(await ui.find({ type: 'Text', text: /Which readers.*answered on page/ })).toBeDefined()
+  await ui.unmount()
+})
+
+const MULTIPLE = readDoc({
+  stages: [
+    staged(
+      'shape',
+      'active',
+      'Shape it',
+      block('shelves', 'question', {
+        prompt: 'Which shelves?',
+        header: 'Shelves',
+        multiple: true,
+        options: [
+          { label: 'North', recommended: false },
+          { label: 'South', recommended: false },
+          { label: 'East', recommended: false },
+        ],
+      }),
+    ),
+  ],
+  submissions: [{ agent: OWNER, open: [{ key: 's-2', state: 'open', blocks: ['k-shelves'] }] }],
+})
+
+/** What each `loft yard answer` was given, with the words after `yard` but the port and format. */
+const answered = (w: World) =>
+  w.state.runs
+    .filter(run => run.argv.includes('answer'))
+    .map(run => ({ args: run.argv.slice(run.argv.indexOf('yard') + 1).join(' ').replace(' --port 7411 --format json', ''), given: JSON.parse(run.stdin ?? '[]') }))
+
+test('choosing an option of a question that takes one records it with loft yard answer, for the tree the pane shows', async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  await opened($, w)
+  for (const surface of SURFACES) {
+    const before = answered(w).length
+    const ui = await mount($, surface)
+    await ui.press({ key: 'option-k-readers-1' })
+    expect(answered(w).slice(before)).toEqual([{ args: 'answer --input - --session session-1 --tree /work/shelf', given: [{ block: 'k-readers', labels: ['Visitors'] }] }])
+    await ui.unmount()
+  }
+})
+
+test('a question that takes more than one option records the options ticked once sent', async ($, on) => {
+  const w = world(on)
+  w.state.read = MULTIPLE
+  await opened($, w)
+  const ui = await mount($, 'mobile')
+  await ui.press({ key: 'option-k-shelves-0' })
+  await ui.press({ key: 'option-k-shelves-2' })
+  await ui.press({ key: 'option-k-shelves-1' })
+  await ui.press({ key: 'option-k-shelves-1' })
+  expect((await ui.find({ key: 'option-k-shelves-0' }))?.text).toBe('☑ North')
+  expect((await ui.find({ key: 'option-k-shelves-1' }))?.text).toBe('☐ South')
+  expect(answered(w)).toEqual([])
+  await ui.press({ key: 'send-k-shelves' })
+  expect(answered(w).map(each => each.given)).toEqual([[{ block: 'k-shelves', labels: ['North', 'East'] }]])
+  await ui.unmount()
+})
+
+test("words typed in a question's field and sent are recorded as the person's own words", async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  await opened($, w)
+  for (const surface of FIELDED) {
+    const before = answered(w).length
+    const ui = await mountFielded($, surface)
+    await ui.input({ key: 'words-k-readers', text: 'Members and their ', kind: 'change' })
+    await ui.input({ key: 'words-k-readers', text: 'Members and their guests' })
+    expect(answered(w).slice(before).map(each => each.given)).toEqual([[{ block: 'k-readers', words: 'Members and their guests' }]])
+    await ui.unmount()
+  }
+})
+
+test('Approve records the block approved, and Reject rejected with the words typed as its reason, or with none', async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  await opened($, w)
+  for (const surface of FIELDED) {
+    const before = answered(w).length
+    const ui = await mountFielded($, surface)
+    await ui.press({ key: 'approve-k-go' })
+    await ui.input({ key: 'reason-k-go', text: 'Too many books', kind: 'change' })
+    await ui.press({ key: 'reject-k-go' })
+    await ui.press({ key: 'reject-k-go' })
+    await ui.input({ key: 'reason-k-go', text: 'Say why' })
+    expect(answered(w).slice(before).map(each => each.given)).toEqual([
+      [{ block: 'k-go', verdict: 'approved' }],
+      [{ block: 'k-go', verdict: 'rejected', reason: 'Too many books' }],
+      [{ block: 'k-go', verdict: 'rejected' }],
+      [{ block: 'k-go', verdict: 'rejected', reason: 'Say why' }],
+    ])
+    await ui.unmount()
+  }
+})
+
+test('where the surface has no text field, a question is answered by its options and Reject records no reason', async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  await opened($, w)
+  const ui = await mount($, 'mobile')
+  expect(await ui.findAll({ type: 'Input' })).toEqual([])
+  await ui.press({ key: 'reject-k-go' })
+  expect(answered(w).map(each => each.given)).toEqual([[{ block: 'k-go', verdict: 'rejected' }]])
+  await ui.unmount()
+})
+
+test('once recorded, the block no longer shows as waiting on the person', async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  await opened($, w)
+  const ui = await mount($, 'desktop')
+  w.state.read = readDoc({
+    revision: 5,
+    since: 4,
+    stages: [
+      staged('shape', 'active', 'Shape it', { ...block('go', 'approval', { title: 'Approve the shape', markdown: '' }), outcome: { verdict: 'approved', channel: 'terminal' } }),
+    ],
+    submissions: [{ agent: OWNER, open: [{ key: 's-1', state: 'open', blocks: ['k-readers', 'k-go'] }] }],
+  })
+  await ui.press({ key: 'approve-k-go' })
+  expect(await ui.find({ key: 'approve-k-go' })).toBeUndefined()
+  expect(await ui.find({ type: 'Text', text: /Approve the shape · answered on terminal/ })).toBeDefined()
+  expect(await ui.find({ key: 'option-k-readers-0' })).toBeDefined()
+  await ui.unmount()
+})
+
+test('a block answered elsewhere first keeps that answer, and the pane names where it was answered', async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  w.state.answers.answer = {
+    doc: { outcome: 'answered elsewhere', errors: [{ message: 'block `readers` was answered first on the page; its answer is kept' }], revision: 5 },
+    exitCode: 1,
+  }
+  await opened($, w)
+  const ui = await mount($, 'desktop')
+  w.state.read = readDoc({
+    revision: 5,
+    since: 4,
+    stages: [staged('shape', 'active', 'Shape it', { ...block('readers', 'question', { prompt: 'Which readers does the change serve?', options: [] }), answer: { labels: ['Members'], channel: 'page' } })],
+    submissions: [{ agent: OWNER, open: [{ key: 's-1', state: 'open', blocks: ['k-readers', 'k-go'] }] }],
+  })
+  await ui.press({ key: 'option-k-readers-1' })
+  expect(await ui.find({ type: 'Text', text: /answered first on the page/ })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: /Which readers.*answered on page/ })).toBeDefined()
+  expect(answered(w)).toHaveLength(1)
+  await ui.unmount()
+})
+
+test("Claude Code's dialog for the same submission closes once the pane has answered the last of it", async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  let asked = 0
+  w.state.terminal.AskUserQuestion = () => {
+    asked++
+    return new Promise(() => {})
+  }
+  await start($)
+  const waited = $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 's-1' })
+  await w.clock.settle()
+  expect(asked).toBe(1)
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  const ui = await mount($, 'desktop')
+  // loft yard wait ends once the pane's answer leaves nothing of the submission waiting.
+  w.state.onAnswer = () => w.state.page.resolve({ outcome: 'answered', errors: [], blocks: [], takenUp: true, waited: 1 })
+  await ui.press({ key: 'approve-k-go' })
+  const ran = await waited
+  await w.clock.settle()
+  expect(JSON.parse(String(ran.result)).outcome).toBe('answered')
+  expect(asked).toBe(1)
+  expect(yardRuns(w).filter(run => run.startsWith('answer'))).toHaveLength(1)
   await ui.unmount()
 })

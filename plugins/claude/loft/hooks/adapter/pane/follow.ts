@@ -8,7 +8,6 @@ import type { EngineInterface, On, Timer } from 'claude-code'
 import { callerArgs, failureOf, succeeded } from '../run'
 import { continued, run } from '../state'
 import { paneOf, setPane } from './atoms'
-import { registerDraw } from './draw'
 import { followed, sinceOf } from './model'
 
 /** The pane's id, which its `ui.render` hook names as `requestId`. */
@@ -27,7 +26,7 @@ export async function registerCommand($: EngineInterface) {
 
 /** Opens the pane, or shows it again, read whole, and follows Yard Log while it stays open. */
 export async function openPane($: EngineInterface) {
-  await setPane($, () => ({ view: null, failure: null }))
+  await setPane($, () => ({ view: null, failure: null, notice: null }))
   const opened = await $.ui.open({ id: PANE, title: 'Yard' })
   await readPane($)
   following.timer ??= $.clock.every(FOLLOW, () => void tick($))
@@ -60,7 +59,7 @@ export async function readPane($: EngineInterface) {
       view = succeeded(ran) ? followed(undefined, ran.doc) : undefined
     }
     const failure = succeeded(ran) ? null : failureOf(ran)
-    await setPane($, before => ({ view: view ?? before.view, failure }))
+    await setPane($, before => ({ ...before, view: view ?? before.view, failure }))
   } finally {
     following.isReading = false
   }
@@ -81,5 +80,4 @@ export function registerPane(on: On) {
     const opened = await openPane($)
     return { text: opened.isPlaced ? "Yard Log's pane is open." : "Yard Log's pane opens once there is room for it." }
   })
-  registerDraw(on)
 }

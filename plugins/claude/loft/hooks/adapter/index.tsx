@@ -15,6 +15,7 @@ import { capture, checkCapture } from './capture'
 import { descriptor } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
+import { registerDraw } from './pane/draw'
 import { registerCommand, registerPane } from './pane/follow'
 import { failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
@@ -182,4 +183,5 @@ export function registerYard(on: On, options: PluginOptions) {
 
   registerEvents(on)
   registerPane(on)
+  registerDraw(on)
 }
