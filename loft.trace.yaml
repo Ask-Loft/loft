@@ -34152,6 +34152,255 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "output cut short is never read as a document, even where the bytes kept would read as one"
         body: 8c5509be9a614d07cb3e5ad721a6d7173519c12355c2bb91d8b811d8c599942d
+  - node: 01a1cfe2-478e-75d1-b104-04da77492dde
+    reviewed: c37747d9710ef601711cafc2b1e8462ccd159ef5ef7417e8a7e0d4682079d209
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command /yard-pane is offered once Yard Client is on, and runs while a turn runs"
+        body: 7d2f00fb32bba60a513eca53da68c6c731f9c7097a79047f3e2390fd87a7d3b0
+  - node: 01a1cfe2-478e-75d1-b104-04db8a13b084
+    reviewed: 49bb0a04f6871afbf434191271d86646f10096fbfc1a9e2d69b894e4f1a167ab
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command /yard-pane is not offered while Yard Client is off"
+        body: 4b1de870da1a79a1ec1abffb9a9367e17968d224b7bec722b4bf3f12b7103e96
+  - node: 01a1cfe2-478e-75d1-b104-04dc2834a13d
+    reviewed: c266ee2298bc23d9106bd6d7cf2a278e04ae67339579f518adfa39c007efd92b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command /yard-pane is offered once Yard Client is on, and runs while a turn runs"
+        body: 7d2f00fb32bba60a513eca53da68c6c731f9c7097a79047f3e2390fd87a7d3b0
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command opens the pane and reads Yard Log whole, for the session, marking nothing read"
+        body: 3f89adf38270607668d8a67f70f8644c96306ed18890dedcde5c585787a977fe
+  - node: 01a1cfe2-478e-75d1-b104-04dd17b426cf
+    reviewed: 87dec0c7700fa906267806a3110fbbe3302baf6e1ef085834ce009e57a530671
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "running the command again shows the same pane, read whole again, and keeps one follow going"
+        body: 509b21b7ee1442183c24686311d6af8524de7fd6665b657f71b383739a82c417
+  - node: 01a1cfe2-478e-75d1-b104-04de2a2db6e9
+    reviewed: 78be96748d1ae96ff8ab0ad4e342bd7624416ac8d3bd229f88d95b92231202ff
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "where the working tree holds no Yard Log, the pane says so and names the branch"
+        body: 6e481fc74c9ac1c16ff337c81228f79cd8e5577a14c6cd7351b3045550e241c1
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a branch with no Yard Log gives a view that says so, with its branch"
+        body: 7220de34f3e76a8c10ffe064b3f8c73b3384093f5d18283b8c38a7276493c7d8
+  - node: 01a1cfe2-478e-75d1-b104-04e08deef20b
+    reviewed: 5b287847f52a67868e318a3d4edf3dcd2245da4f287d48bc10338b2a16395356
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the header names the branch, the revision shown and the Yard page"
+        body: 294a5214f37b0cda3a5f68ec798c61b3b6966010ba6414ce2cedc65da3a870dd
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "the Yard page's loopback address is linked as localhost, which Claude Code Desktop links"
+        body: c19debb6a1a6a9e028ecdf8d13d70bf392e1bf569cd41e52df8d96f15295d85c
+  - node: 01a1cfe2-478e-75d1-b104-04e15b4516b0
+    reviewed: 5c6828aec5bb747d244d3f961d97bbba6c055f7aa57334949ca1537b610dfaa9
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "each stage shows its title, status and goal, and its tasks their title and state, a fix marked"
+        body: ef48b92d63ae9399ca3a76d6bd44dc715beafac83142df4097f403ee1171cd0d
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a first read gives the stages in their order, each with its blocks, at its revision"
+        body: b34178ca9f034d16f827406752fcb7375bfbd4cf45964ec582fb5a78772d556a
+  - node: 01a1cfe2-478e-75d1-b104-04e29d44498e
+    reviewed: caf6cc04277d49bd662d1c9aec04177a542ea67ab9d68b9d6c631f3f99525100
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "each stage shows its title, status and goal, and its tasks their title and state, a fix marked"
+        body: ef48b92d63ae9399ca3a76d6bd44dc715beafac83142df4097f403ee1171cd0d
+  - node: 01a1cfe2-478e-75d1-b104-04e31b6ae5ad
+    reviewed: 54643dd2c28b57b46ddf75341daa76e20081efdc73c37485af76ac3563689c56
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "each stage shows its title, status and goal, and its tasks their title and state, a fix marked"
+        body: ef48b92d63ae9399ca3a76d6bd44dc715beafac83142df4097f403ee1171cd0d
+  - node: 01a1cfe2-478e-75d1-b104-04e4f43589f1
+    reviewed: 98a983efbe6ccff683772b1a7e8745ceec72893cba8838084fe6270fc163b92e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a note's Markdown, a decision's consequence and a loft block's view and note are drawn, and no report"
+        body: 9e749203d8b1f64317ee9c477da0eca25b578eb354a894e815cae1a956479449
+  - node: 01a1cfe2-478e-75d1-b104-04e5b757bd92
+    reviewed: fe8e30b1b441254876520353b20fc380b258ad40fd1ccc6f91489e9e7bd0a8b2
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a note's Markdown, a decision's consequence and a loft block's view and note are drawn, and no report"
+        body: 9e749203d8b1f64317ee9c477da0eca25b578eb354a894e815cae1a956479449
+  - node: 01a1cfe2-478e-75d1-b104-04e66ffb3c99
+    reviewed: 2a34339fb58faf79c4289c69380e3664a5b5a6cf6a59533b25d0373dfcd0cd32
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a note's Markdown, a decision's consequence and a loft block's view and note are drawn, and no report"
+        body: 9e749203d8b1f64317ee9c477da0eca25b578eb354a894e815cae1a956479449
+  - node: 01a1cfe2-478e-75d1-b104-04e7839a3e69
+    reviewed: 47d5cce050896d0c031a8c3a7bb9f8319848e0f214bc61ee8c436950962b8988
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a stage done or dropped shows its title and status alone until unfolded, and a planned stage its blocks"
+        body: 1313d398bd3cd888bcd1af0af84a6e50e1380b6a42098a8cca6cc7f02e52d0db
+  - node: 01a1cfe2-478e-75d1-b104-04e8ffb8d768
+    reviewed: 2eddf7b2317da2797bf830423c954b3a1b0fed2a7680217f7b1050c137361434
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a stage done or dropped shows its title and status alone until unfolded, and a planned stage its blocks"
+        body: 1313d398bd3cd888bcd1af0af84a6e50e1380b6a42098a8cca6cc7f02e52d0db
+  - node: 01a1cfe2-478e-75d1-b104-04ead25bf4dc
+    reviewed: 8c8e5ead0bd2fb99c809dff870e0a29d2754c0fff6c5900fdd5505198146cd49
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a block an agent writes, and an answer given on the page, show within 2 seconds"
+        body: 806349bdc48bfe0182a42a3e7c9cc674ee691085809a9d233eedd6b785a76d8b
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read since the revision shown replaces each changed block and stage in place, and adds a new block last"
+        body: ec7a2001cc9ede3d4e552b39573799c6d7eed613f406b561ee3fd322348ecf25
+  - node: 01a1cfe2-478e-75d1-b104-04eb39d4b416
+    reviewed: 6d7b92b6321875f3be74544ec0187d8acf550488a26781ac2c928e2383c24d71
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a block an agent writes, and an answer given on the page, show within 2 seconds"
+        body: 806349bdc48bfe0182a42a3e7c9cc674ee691085809a9d233eedd6b785a76d8b
+  - node: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
+    reviewed: cf126e25a5931fbe390b79ff258ca895f6f918c5b6939cba9da4808a64d2bbd9
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
+        body: d033f935ca9c8b1eca246eb6393d3439e16b06b9c4b57dcfc48f700e66c16247
+  - node: 01a1cfe2-478e-75d1-b104-04ed5daac090
+    reviewed: 878ce16e085240e2fb7ce339447cf53d15496246ff6ba917be91d9de49907240
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command opens the pane and reads Yard Log whole, for the session, marking nothing read"
+        body: 3f89adf38270607668d8a67f70f8644c96306ed18890dedcde5c585787a977fe
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
+        body: d033f935ca9c8b1eca246eb6393d3439e16b06b9c4b57dcfc48f700e66c16247
+  - node: 01a1cfe2-478e-75d1-b104-04ee292ec71b
+    reviewed: 58b4f6108ff01000db1a8b25381476aa04170ca02498d314ec293e38c325e21b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a checkout of another branch is read whole at once"
+        body: d0b9726a5b74ee0256f020b4afa04be2f47c81bc275b0aac4a4fa97623c8f9c8
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read of another branch, tree or Yard Log asks for a whole read"
+        body: e3d130ce3adb96d61a37f1ef18ebdcd9aebd38c09c8078d1d5d8a4bfd962a279
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a whole read of another branch starts the view over"
+        body: 3c7a8cdf82accb83f21a352ce3a97e697ff6764bce27da886dd4bee37ba6ea3d
+  - node: 01a1cfe2-478e-75d1-b104-04efb1c2e815
+    reviewed: ab35498221456d2dab8c9f7f6bd6b7e7f528cf4475c1b8039aa616ab63784371
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "once the pane is closed, the mod reads nothing for it"
+        body: 08e6a891d7ea60f8341f17d99c8bec6d0b089457c9d73cd18e9503f8306d39f3
+  - node: 01a1cfe2-478e-75d1-b104-04f1651155ff
+    reviewed: 46d7f5ca7c0efd394634c360e77acc001edcc4b826118b9a4a9b77cacb049164
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "what waits on the person shows above the stages: questions with their options, approvals with their Markdown"
+        body: 8d5665487050c46d5f371503dd7a183a06836736761772e7003a735ee52ebbeb
+  - node: 01a1cfe2-478e-75d1-b104-04f2f2c33b76
+    reviewed: d2f04f88ef3ab65befe80025f5249680b1273871bca399a8d3f89220c8d1ff43
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "what waits on the person shows above the stages: questions with their options, approvals with their Markdown"
+        body: 8d5665487050c46d5f371503dd7a183a06836736761772e7003a735ee52ebbeb
+  - node: 01a1cfe2-478e-75d1-b104-04f3892200ab
+    reviewed: a1405f2e15c9511afdc406b7b77b6b09d5130f4862f1fbb9500eef0d0dda5f48
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "what waits on the person shows above the stages: questions with their options, approvals with their Markdown"
+        body: 8d5665487050c46d5f371503dd7a183a06836736761772e7003a735ee52ebbeb
+  - node: 01a1cfe2-478e-75d1-b104-04f4e90e6960
+    reviewed: 30632c6a761466c7757c055f412626dcfc63d28ebb01ce3dc2a41500b68e6a80
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "where nothing waits on the person, the pane shows no such list"
+        body: 2d618d88d60474d90a0cf3428e761e331a66733213607e0a031df1470a70782c
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "nothing waits where no submission is open"
+        body: 1d047db67c493dcccbd0fdc5c5ebf2c311987edb39975780072f1b17668ae558
+  - node: 01a1cfe2-478e-75d1-b104-04f6166ca30a
+    reviewed: b79ddb2fbffec1f36512d9bc6aa906036aa87248ef7a83ffe4494b806e9a7fdf
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "choosing an option of a question that takes one records it with loft yard answer, for the tree the pane shows"
+        body: 1e975aa90f9af5bcb60c3102d358d6486d77683dcb9359dbee79357c79827200
+  - node: 01a1cfe2-478e-75d1-b104-04f7754f2648
+    reviewed: fc50d68681895a337e109dc4dca5a0443ca7fe82f67ee78b4d857f6ebc6d6812
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a question that takes more than one option records the options ticked once sent"
+        body: f1dcc810a5188901cb336c3ec3cf8341ea6aadf8ce85f3d9885960969cef5fd8
+  - node: 01a1cfe2-478e-75d1-b104-04f8dcb8f19e
+    reviewed: 9f1d3132640bf51ba6d51a11258fa79d67d5225260f1a3d6ea8915cbe5bc7b3d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "words typed in a question's field and sent are recorded as the person's own words"
+        body: cc1e21a10593912b271bb53285225abcce04ba4d4feaae2d89a9f887edc013f7
+  - node: 01a1cfe2-478e-75d1-b104-04f9fa5c2fa8
+    reviewed: cda5f6783f0a88ca28d2ad409c9ad97453cb849ef41237d5e21a411c157a6929
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Approve records the block approved, and Reject rejected with the words typed as its reason, or with none"
+        body: 0282107849b9338d5c1327ae947b18d7af2a790041374defc03be927c548dccd
+  - node: 01a1cfe2-478e-75d1-b104-04fa5d52bd00
+    reviewed: 8d5db362fed7758f30189fe002edd2f6380a6f90ed46fe79c415a991a64ecac8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Approve records the block approved, and Reject rejected with the words typed as its reason, or with none"
+        body: 0282107849b9338d5c1327ae947b18d7af2a790041374defc03be927c548dccd
+  - node: 01a1cfe2-478e-75d1-b104-04fb73a62dec
+    reviewed: 11650543bee01cc9e4f056680c9b51e0a7cf63b79b9b869cbdd8fc89a5b72789
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Approve records the block approved, and Reject rejected with the words typed as its reason, or with none"
+        body: 0282107849b9338d5c1327ae947b18d7af2a790041374defc03be927c548dccd
+  - node: 01a1cfe2-478e-75d1-b104-04fc44d47b01
+    reviewed: 91fed78bd808182aeb44e7b5f2ff56d635b5a51e74b28385348316b8ee2708ce
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "once recorded, the block no longer shows as waiting on the person"
+        body: ad1aaaec9f6255262c1f02930e0bb56fe1b73cf2e343fccf09d1dd5c67cd7fbe
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "what waits on the person is each unanswered block of an open submission, in the order the submission holds them"
+        body: e1fa22b0db0bcd082febe77dcaa96bfaf5a3362381b8cf35d02486c9cf424e86
+  - node: 01a1cfe2-478e-75d1-b104-04fdedc77daa
+    reviewed: cee70f34c41887f00ea64f75fb60d5e52b8662cdd7c59df4b269a5a00f6620a7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Claude Code's dialog for the same submission closes once the pane has answered the last of it"
+        body: e9a230c656445ca401492663e14a8cb741c28f830224ef566c16651b5159fc1c
+  - node: 01a1cfe2-478e-75d1-b104-04ffa640ae28
+    reviewed: 6ff0e806731e2c6923f57c15a42755bc937049ee805da8425e7e472c869a8444
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a block answered elsewhere first keeps that answer, and the pane names where it was answered"
+        body: e184dda22e100d525dc6b907aa964f3887dbdf6aaa1f1bddb7b82df15ded917f
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a block answered or decided names the channel it was answered on"
+        body: f0fdc12cf44adc4aec9c23ab88ae135db2492de86ea112e683fb3cbe54c4ca7b
+  - node: 01a1cfe2-478e-75d1-b104-0500223a2689
+    reviewed: 60905014b31cd6164f23cd1e465cee343d5bd94b939e98a7ef4f3f449f33ca2c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a block answered elsewhere first keeps that answer, and the pane names where it was answered"
+        body: e184dda22e100d525dc6b907aa964f3887dbdf6aaa1f1bddb7b82df15ded917f
+  - node: 01a1cfe2-478e-75d1-b104-05026550ba85
+    reviewed: e7ebcff84d3412951cc21199744f7109c3b58cdea2eb94f88e6984d879866801
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "where the surface has no text field, a question is answered by its options and Reject records no reason"
+        body: bcacfc4b016f2c694bbd74d3ccc2573da5b75c76e19a1da943807385175a39bf
+  - node: 01a1cfe2-478e-75d1-b104-050333a2c655
+    reviewed: c735ad7cacb80a2a343ced43bde54938e501d520f3685ce314d4f6abb1f446be
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "where the surface has no text field, a question is answered by its options and Reject records no reason"
+        body: bcacfc4b016f2c694bbd74d3ccc2573da5b75c76e19a1da943807385175a39bf
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: dfff3712569ee5acbd91eb8568e09a5d008e81f0cc1694a7c5838530827e3236
     tests:
