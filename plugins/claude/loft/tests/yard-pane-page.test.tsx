@@ -640,8 +640,8 @@ test("in Claude Code Desktop the command opens the Yard page at the session's tr
   w.state.read = LOG
   w.state.surfaces = ['terminal', 'desktop']
   await openPane($)
-  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['preview_start'])
-  expect(w.state.browser.calls[0]!.args.url).toBe(PAGE)
+  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['tabs_context', 'preview_start'])
+  expect(w.state.browser.calls[1]!.args.url).toBe(PAGE)
   expect([...w.state.browser.tabs.values()]).toEqual([PAGE])
 })
 
@@ -651,12 +651,38 @@ test("where Desktop's browser pane already shows the Yard page, the command show
   w.state.surfaces = ['desktop']
   await openPane($)
   await $.command.run({ command: 'yard-pane', args: '' } as never)
-  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['preview_start', 'navigate'])
-  expect(w.state.browser.calls[1]!.args).toEqual({ tabId: 'tab-1', url: PAGE })
+  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['tabs_context', 'preview_start', 'tabs_context', 'navigate'])
+  expect(w.state.browser.calls[3]!.args).toEqual({ tabId: 'tab-1', url: PAGE })
   expect(w.state.browser.tabs.size).toBe(1)
   w.state.browser.tabs.clear()
   await $.command.run({ command: 'yard-pane', args: '' } as never)
-  expect(w.state.browser.calls.at(-1)!.tool).toBe('preview_start')
+  expect(w.state.browser.calls.slice(4).map(call => call.tool)).toEqual(['tabs_context', 'preview_start'])
+  expect(w.state.browser.tabs.size).toBe(1)
+})
+
+test('where the browser shows the page in another tab than the one asked for, the next command shows the tab it named', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  w.state.browser.tabs.set('tab-1', PAGE)
+  w.state.browser.movesTo = 'seed'
+  await openPane($)
+  w.state.browser.movesTo = null
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  expect(w.state.browser.calls.filter(call => call.tool === 'navigate').map(call => call.args.tabId)).toEqual(['tab-1', 'seed'])
+})
+
+test('a tab of the Yard page the person opened in the browser pane is shown, and the tab it names kept', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  w.state.browser.tabs.set('seed', 'http://127.0.0.1:7411/')
+  await openPane($)
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  expect(w.state.browser.calls.filter(call => call.tool !== 'tabs_context')).toEqual([
+    { tool: 'navigate', args: { tabId: 'seed', url: PAGE } },
+    { tool: 'navigate', args: { tabId: 'seed', url: PAGE } },
+  ])
   expect(w.state.browser.tabs.size).toBe(1)
 })
 

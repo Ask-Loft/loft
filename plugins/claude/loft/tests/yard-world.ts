@@ -176,7 +176,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
      * Claude Code Desktop's browser pane, as its MCP server `Claude_Browser` answers: its tabs by
      * id and address, or `unreachable` where no such server answers.
      */
-    browser: { tabs: new Map<string, string>(), unreachable: false, calls: [] as { tool: string; args: Record<string, unknown> }[] },
+    browser: { tabs: new Map<string, string>(), unreachable: false, movesTo: null as string | null, calls: [] as { tool: string; args: Record<string, unknown> }[] },
     /** Each `$.ui.open` the mod made. */
     opened: [] as Doc[],
     /** What a test has happen once `loft yard answer` records, as a wait then ending. */
@@ -215,15 +215,24 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     if (server !== 'Claude_Browser' || browser.unreachable) throw new Error(`MCP server ${server} is not connected`)
     browser.calls.push({ tool, args })
     const text = (words: string, isError = false) => ({ value: { content: [{ type: 'text', text: words }], isError } }) as never
+    // As Desktop's browser answers: JSON first, then words for the agent.
+    const answer = (fields: object) => text(`${JSON.stringify(fields, null, 2)}\nBrowser pane opened.`)
     if (tool === 'preview_start') {
       const tabId = `tab-${browser.tabs.size + 1}`
       browser.tabs.set(tabId, String(args.url))
-      return text(JSON.stringify({ tabId }))
+      return answer({ tabId, reused: false, navOk: true })
+    }
+    if (tool === 'tabs_context') {
+      const tabs = [...browser.tabs].map(([tabId, url]) => ({ tabId, origin: new URL(url).origin, isActive: false }))
+      return text(`${JSON.stringify({ browserOpen: true, tabs }, null, 2)}\nThe Browser pane is currently displayed.`)
     }
     if (tool === 'navigate') {
-      if (!browser.tabs.has(String(args.tabId))) return text(`No tab ${String(args.tabId)}`, true)
-      browser.tabs.set(String(args.tabId), String(args.url))
-      return text('Navigated.')
+      if (!browser.tabs.has(String(args.tabId))) return text(`navigation to ${new URL(String(args.url)).origin} was denied or failed`, true)
+      // A browser may show the page in another tab than the one asked for, and names it.
+      const tabId = browser.movesTo ?? String(args.tabId)
+      if (browser.movesTo !== null) browser.tabs.delete(String(args.tabId))
+      browser.tabs.set(tabId, String(args.url))
+      return answer({ tabId, reused: true, navOk: true })
     }
     return text(`No tool ${tool}`, true)
   })
