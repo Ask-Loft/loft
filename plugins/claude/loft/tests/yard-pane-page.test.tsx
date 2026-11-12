@@ -193,6 +193,7 @@ test("the chosen stage's row is open to its blocks, the others folded, and a row
     expect(colourIn(await ui.find({ key: 'chosen-k-build' }))).toBe(PALETTE.signal)
     expect(await ui.find({ key: 'chosen-k-shape' })).toBeUndefined()
     expect(await ui.find({ key: 'block-row-k-choice' })).toBeUndefined()
+    expect(await ui.find({ text: /▌/ })).toBeUndefined()
     await ui.press({ key: 'fold-k-shape' })
     expect((await ui.find({ key: 'block-row-k-choice' }))?.text).toContain('Members only')
     await ui.press({ key: 'fold-k-shape' })

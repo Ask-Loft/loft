@@ -34388,13 +34388,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
-        body: f75404406279ecf748907b7fd620f6897d0f41d74a5afb99b20df9a64ee67f2e
+        body: 2668f9f700837e74659e7e9f250380e8267d4e8590cc7ed28b1650e4df0299b0
   - node: 01a1cfe2-478e-75d1-b104-04e8ffb8d768
     reviewed: ff04873d12aa232ae76e8ed8c06567f2a0482085438c04ad02f5935414fdd98d
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
-        body: f75404406279ecf748907b7fd620f6897d0f41d74a5afb99b20df9a64ee67f2e
+        body: 2668f9f700837e74659e7e9f250380e8267d4e8590cc7ed28b1650e4df0299b0
   - node: 01a1d06f-b09f-73ae-a356-c4a8b44b6eec
     reviewed: 93e2c57d022df1895506f8ae177265571d6cab69b1da5bf30c1e4a78622f9de7
     tests:

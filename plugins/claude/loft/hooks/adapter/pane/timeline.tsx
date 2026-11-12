@@ -28,7 +28,6 @@ function blockRow({ t, palette, acts }: Drawing, stage: PaneStage, block: PaneBl
   const state = blockStateOf(block, isWaiting)
   return (
     <Box flexDirection="row" gap={1}>
-      <Text color={isWaiting ? palette.wait : palette.line}>▌</Text>
       <Text color={glyph === '●' ? palette.signal : palette.muted}>{glyph}</Text>
       <Box flexShrink={1}>
         <Button key={`block-row-${block.key}`} plain dimColor label={blockTitle(block)} onPress={() => acts.pick(stage.key)} />
