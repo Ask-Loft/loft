@@ -18,6 +18,8 @@ TREE=${0:A:h:h}
 PORT=7412
 LOFT="$TREE/target/release/loft"
 WRAPPER="$TREE/.loft/yard-dogfood/bin/loft"
+# The machine home of the dogfood loft and its page server, apart from the installed one's ~/.yard/.
+DOGFOOD_HOME="$HOME/.yard-dogfood"
 AGENT_COMMAND=claude
 if [[ ${1-} == codex || ${1-} == claude || ${1-} == desktop ]]; then
   AGENT_COMMAND=$1
@@ -46,15 +48,11 @@ if [[ ${1-} == resume ]]; then
   fi
 fi
 
-python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT"
+python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT" "$DOGFOOD_HOME"
 
-# The session's loft: this worktree's build, keeping its machine home in ~/.yard-dogfood/.
-DOGFOOD_HOME="$HOME/.yard-dogfood"
+# The session's loft: this worktree's build, under the dogfood machine home.
 mkdir -p "${WRAPPER:h}"
-print -r -- "#!/bin/sh
-LOFT_YARD_HOME=${(qq)DOGFOOD_HOME}
-export LOFT_YARD_HOME
-exec ${(qq)LOFT} \"\$@\"" > "$WRAPPER"
+print -rl -- '#!/bin/sh' "export LOFT_YARD_HOME=${(qq)DOGFOOD_HOME}" "exec ${(qq)LOFT} \"\$@\"" > "$WRAPPER"
 chmod 755 "$WRAPPER"
 
 if [[ $AGENT_COMMAND == desktop ]]; then

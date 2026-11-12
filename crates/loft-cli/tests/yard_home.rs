@@ -2,125 +2,53 @@
 //! `~/.yard/`, so that a page server kept there runs beside one kept elsewhere; an empty or
 //! relative value is ignored.
 
-use std::net::TcpStream;
-use std::path::{Path, PathBuf};
-use std::process::{Child, Stdio};
-use std::time::Duration;
+use std::path::PathBuf;
 
-use serde_json::Value;
-use software_plant::Clock;
+use crate::served::{Served, free_port};
+use crate::yard::Yard;
 
-use crate::common::{EPOCH, Scratch};
-use crate::served::{first_document, free_port, within};
-
-/// A page server started by `loft yard serve` on `port`, with `LOFT_YARD_HOME` set to `home`
-/// where given; killed when dropped.
-struct Server {
-    child: Child,
-    started: Value,
+/// A directory outside `~/.yard/` for `yard`'s runs to keep the machine's files in.
+fn moved(yard: &Yard) -> PathBuf {
+    yard.scratch.home().join("elsewhere/yard-dev")
 }
 
-impl Server {
-    fn start(scratch: &Scratch, port: u16, home: Option<&str>) -> Self {
-        let mut command = scratch.command(None, &Clock::fixed(EPOCH));
-        if let Some(home) = home {
-            command.env("LOFT_YARD_HOME", home);
-        }
-        let mut child = command
-            .args([
-                "yard",
-                "serve",
-                "--port",
-                &port.to_string(),
-                "--format",
-                "json",
-            ])
-            .stdout(Stdio::piped())
-            .spawn()
-            .unwrap();
-        let started = first_document(&mut child);
-        Self { child, started }
-    }
-
-    fn is_running(&mut self) -> bool {
-        self.child.try_wait().unwrap().is_none()
-    }
-}
-
-impl Drop for Server {
-    fn drop(&mut self) {
-        let _ = self.child.kill();
-        let _ = self.child.wait();
-    }
-}
-
-fn answers(port: u16) -> bool {
-    TcpStream::connect(("127.0.0.1", port)).is_ok()
-}
-
-fn files_of(dir: &Path) -> Vec<String> {
-    let mut names: Vec<String> = std::fs::read_dir(dir)
-        .map(|entries| {
-            entries
-                .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
-                .collect()
-        })
-        .unwrap_or_default();
-    names.sort();
-    names
-}
-
-fn moved(scratch: &Scratch, name: &str) -> PathBuf {
-    scratch.home().join("elsewhere").join(name)
+/// A page server started with `LOFT_YARD_HOME` set to `home`.
+fn serve_under(yard: &Yard, home: &str) -> Served {
+    Served::start_with(yard, free_port(), &[("LOFT_YARD_HOME", home)], &[])
 }
 
 #[test]
 fn a_moved_home_holds_the_files_of_the_machine_and_nothing_is_written_to_the_default_one() {
-    let scratch = Scratch::empty();
-    let home = moved(&scratch, "yard-dev");
-    let server = Server::start(&scratch, free_port(), Some(home.to_str().unwrap()));
-    assert_eq!(server.started["outcome"], "serving", "{}", server.started);
-    let files = files_of(&home);
+    let yard = Yard::new();
+    let home = moved(&yard);
+    let _served = serve_under(&yard, home.to_str().unwrap());
     for name in ["server.json", "server.lock", "token"] {
-        assert!(files.contains(&name.to_string()), "{name} in {files:?}");
+        assert!(home.join(name).exists(), "{name}");
     }
-    assert!(
-        !scratch.home().join(".yard").exists(),
-        "{:?}",
-        files_of(&scratch.home().join(".yard"))
-    );
+    assert!(!yard.scratch.home().join(".yard").exists());
 }
 
 #[test]
 fn page_servers_kept_in_two_homes_serve_beside_each_other() {
-    let scratch = Scratch::empty();
-    let (first_port, second_port) = (free_port(), free_port());
-    let mut first = Server::start(&scratch, first_port, None);
-    assert_eq!(first.started["outcome"], "serving", "{}", first.started);
-    let home = moved(&scratch, "yard-dev");
-    let mut second = Server::start(&scratch, second_port, Some(home.to_str().unwrap()));
-    assert_eq!(second.started["outcome"], "serving", "{}", second.started);
-    assert!(
-        !within(Duration::from_secs(2), || !first.is_running()),
-        "the first page server stopped"
-    );
-    assert!(first.is_running() && second.is_running());
-    assert!(answers(first_port) && answers(second_port));
-    assert!(!scratch.home().join(".yard/stop.json").exists());
+    let yard = Yard::new();
+    let first = Served::start(&yard, &[]);
+    let home = moved(&yard);
+    let second = serve_under(&yard, home.to_str().unwrap());
+    assert_eq!(first.get("/api/version").status, 200);
+    assert_eq!(second.get("/api/version").status, 200);
+    assert!(!yard.scratch.home().join(".yard/stop.json").exists());
     assert!(!home.join("stop.json").exists());
 }
 
 #[test]
 fn an_empty_or_relative_yard_home_is_ignored_and_the_default_one_is_used() {
     for value in ["", "relative/yard"] {
-        let scratch = Scratch::empty();
-        let server = Server::start(&scratch, free_port(), Some(value));
-        assert_eq!(server.started["outcome"], "serving", "{value:?}");
+        let yard = Yard::new();
+        let _served = serve_under(&yard, value);
         assert!(
-            scratch.home().join(".yard/server.json").exists(),
-            "{value:?}: {:?}",
-            files_of(&scratch.home().join(".yard"))
+            yard.scratch.home().join(".yard/server.json").exists(),
+            "{value:?}"
         );
-        assert!(!scratch.0.join("relative").exists(), "{value:?}");
+        assert!(!yard.scratch.0.join("relative").exists(), "{value:?}");
     }
 }

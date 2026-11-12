@@ -12,12 +12,8 @@ import tempfile
 import unittest
 
 
-WORKSPACE = Path(__file__).resolve().parents[3]
-RECORD = '''import json, os, sys
-from pathlib import Path
-with Path(os.environ["CALLS"]).open("a") as f:
-    f.write(json.dumps({"program": Path(sys.argv[0]).name, "args": sys.argv[1:], "cwd": os.getcwd()}) + "\\n")
-'''
+from yard_dogfood_launch_test import RECORD, WORKSPACE
+
 CLAUDE = '''import json, os, sys
 from pathlib import Path
 args, cwd = sys.argv[1:], Path(os.getcwd())
@@ -113,16 +109,15 @@ class DesktopTests(unittest.TestCase):
                                     cwd=self.other, stdout=stdout, stderr=subprocess.PIPE, text=True,
                                     env=dict(self.env, OUT=str(out)), timeout=20)
         self.assertEqual(result.returncode, 0, result.stderr + out.read_text())
-        records = [json.loads(line) for line in self.calls.read_text().splitlines()][start:]
-        return records, out.read_text()
+        return [json.loads(line) for line in self.calls.read_text().splitlines()][start:]
 
     def local(self, project):
         return json.loads((project / ".claude/settings.local.json").read_text())["enabledPlugins"]
 
     def test_desktop_switches_only_the_project_to_this_worktree_s_plugin(self):
-        records, _ = self.launch(str(self.project))
+        records = self.launch(str(self.project))
         self.assertEqual(records[0]["program"], "yard-dogfood-server.py")
-        self.assertEqual(records[0]["args"], [str(self.tree), "7412"])
+        self.assertEqual(records[0]["args"], [str(self.tree), "7412", str(self.home / ".yard-dogfood")])
         # The marketplace holds the plugin itself: Claude Code refuses a hooks module that a link
         # takes outside the marketplace's directory.
         market = self.tree / "plugins"
@@ -155,7 +150,7 @@ class DesktopTests(unittest.TestCase):
         self.assertEqual(settings["pluginConfigs"]["loft@ask-loft"], {"options": {"yardPort": 7411}})
 
     def test_each_change_to_the_settings_is_printed_before_it_is_made(self):
-        records, _ = self.launch(str(self.project))
+        records = self.launch(str(self.project))
         expected = {"add": "Add the marketplace yard-dogfood", "install": "Install loft@yard-dogfood",
                     "disable": "Disable loft@ask-loft", "configure": "Set loft@yard-dogfood's options"}
         made = changes(records)
@@ -168,20 +163,20 @@ class DesktopTests(unittest.TestCase):
         self.launch(str(self.project))
         before = (self.user_settings.read_text(),
                   (self.project / ".claude/settings.local.json").read_text())
-        records, _ = self.launch(str(self.project))
+        records = self.launch(str(self.project))
         self.assertEqual(changes(records), [])
         self.assertEqual(before, (self.user_settings.read_text(),
                                   (self.project / ".claude/settings.local.json").read_text()))
 
     def test_sessions_in_any_other_project_keep_the_installed_plugin(self):
-        records, _ = self.launch(str(self.project))
+        records = self.launch(str(self.project))
         self.assertTrue(all(record["cwd"] == str(self.project) for record in changes(records)))
         self.assertEqual((self.other / ".claude/settings.local.json").read_text(),
                          self.other_settings)
 
     def test_undo_returns_the_project_to_the_installed_plugin_and_leaves_others_alone(self):
         self.launch(str(self.project))
-        records, _ = self.launch("--undo", str(self.project))
+        records = self.launch("--undo", str(self.project))
         self.assertNotIn("yard-dogfood-server.py", [record["program"] for record in records])
         made = [(record["args"], record["cwd"]) for record in changes(records)]
         self.assertEqual(made, [

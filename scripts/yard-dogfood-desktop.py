@@ -37,11 +37,11 @@ def say(text):
     print(text, flush=True)
 
 
-def read_json(path, empty):
+def read_json(path):
     try:
         return json.loads(path.read_text())
     except FileNotFoundError:
-        return empty
+        return {}
 
 
 def keep_marketplace(tree):
@@ -67,7 +67,7 @@ def keep_marketplace(tree):
 
 def local_enabled(project):
     """The plugins the project's local settings enable or disable, by id."""
-    settings = read_json(project / ".claude/settings.local.json", {})
+    settings = read_json(project / ".claude/settings.local.json")
     return settings.get("enabledPlugins", {})
 
 
@@ -86,10 +86,10 @@ def switch(project, plugin, enable):
     claude(["plugin", verb, plugin, "--scope", "local"], project)
 
 
-def configure(project, home, options):
+def configure(project, options):
     """Sets the options of `loft@yard-dogfood` in the person's user settings, where they differ.
     Claude Code finds a plugin installed at a local scope only from within its project."""
-    current = read_json(home / ".claude/settings.json", {})
+    current = read_json(Path.home() / ".claude/settings.json")
     stored = current.get("pluginConfigs", {}).get(DEV, {}).get("options", {})
     if all(str(stored.get(key)) == value for key, value in options.items()):
         return
@@ -97,23 +97,22 @@ def configure(project, home, options):
     claude(["plugin", "configure", DEV, "--values-stdin"], project, stdin=json.dumps(options))
 
 
-def desktop(tree, port, command, project, home):
+def desktop(tree, port, command, project):
     market = keep_marketplace(tree)
     listed = json.loads(claude(["plugin", "marketplace", "list", "--json"], project) or "[]")
     known = next((entry for entry in listed if entry.get("name") == MARKETPLACE), None)
     if known is None:
         say(f"Add the marketplace {MARKETPLACE} from {market} to your user settings")
         claude(["plugin", "marketplace", "add", str(market)], project)
-    elif Path(known.get("path", known.get("installLocation", market))) != market:
-        raise DesktopError(f"the marketplace {MARKETPLACE} is already added from "
-                           f"{known.get('path') or known.get('installLocation')}; remove it with "
-                           f"`claude plugin marketplace remove {MARKETPLACE}` first")
+    elif (added := known.get("path") or known.get("installLocation")) and Path(added) != market:
+        raise DesktopError(f"the marketplace {MARKETPLACE} is already added from {added}; "
+                           f"remove it with `claude plugin marketplace remove {MARKETPLACE}` first")
     if not installed_here(project):
         say(f"Install {DEV} in {project}'s local settings")
         claude(["plugin", "install", DEV, "--scope", "local"], project)
     switch(project, DEV, True)
     switch(project, INSTALLED, False)
-    configure(project, home, {"loftCommand": command, "yardPort": str(port), "baseBranch": "develop"})
+    configure(project, {"loftCommand": command, "yardPort": str(port), "baseBranch": "develop"})
     say(f"{project} now runs this worktree's Loft plugin; Yard page: http://127.0.0.1:{port}/")
     say("Start a new session there, or run /reload-plugins in an open one.")
 
@@ -126,18 +125,18 @@ def undo(project):
 
 def main(argv):
     try:
-        tree, port, command, project = Path(argv[0]).resolve(), int(argv[1]), argv[2], argv[3]
-        project = Path(project).resolve()
+        if len(argv) not in (4, 5) or argv[4:] not in ([], ["--undo"]):
+            raise DesktopError(f"usage: {Path(__file__).name} TREE PORT LOFT-COMMAND PROJECT [--undo]")
+        tree, port, command = Path(argv[0]).resolve(), int(argv[1]), argv[2]
+        project = Path(argv[3]).resolve()
         if not project.is_dir():
             raise DesktopError(f"no project directory {project}")
-        if argv[4:] == ["--undo"]:
+        if argv[4:]:
             undo(project)
-        elif argv[4:] == []:
-            desktop(tree, port, command, project, Path.home())
         else:
-            raise DesktopError(f"unexpected arguments {argv[4:]}")
+            desktop(tree, port, command, project)
         return 0
-    except (DesktopError, OSError, ValueError, IndexError) as error:
+    except (DesktopError, OSError, ValueError) as error:
         print(f"yard-dogfood desktop: {error}", file=sys.stderr)
         return 1
 

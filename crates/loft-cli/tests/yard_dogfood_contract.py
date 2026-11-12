@@ -24,8 +24,15 @@ sys.argv = sys.argv[:1]
 WORKSPACE = Path(__file__).resolve().parents[3]
 
 
+def free_port():
+    with socket.socket() as port:
+        port.bind(("127.0.0.1", 0))
+        return port.getsockname()[1]
+
+
 def without_yard_home(env):
-    """The launcher's own environment: the helper itself names the dogfood home."""
+    """`env` with no `LOFT_YARD_HOME`: the installed loft's, and the launcher's own, so that the
+    helper is seen to name the dogfood home to the `loft` it starts by itself."""
     return {key: value for key, value in env.items() if key != "LOFT_YARD_HOME"}
 
 
@@ -59,9 +66,7 @@ class ContractTests(unittest.TestCase):
                         LOFT_YARD_HOME=str(self.home / ".yard-dogfood"))
         self.runtime = server.Runtime(self.home / ".yard-dogfood")
         self.runtime.env = self.env
-        with socket.socket() as port:
-            port.bind(("127.0.0.1", 0))
-            self.port = port.getsockname()[1]
+        self.port = free_port()
         self.children = []
         self.addCleanup(self.stop_servers)
 
@@ -93,13 +98,14 @@ class ContractTests(unittest.TestCase):
                 pass
         raise AssertionError("local process/socket did not become ready")
 
-    def initial_server(self):
-        child = self.runtime.spawn(self.binary, self.port, self.tree)
+    def initial_server(self, runtime=None, port=None):
+        runtime = runtime or self.runtime
+        child = runtime.spawn(self.binary, port or self.port, self.tree)
         self.children.append(child)
 
         def ready():
-            current = self.runtime.running()
-            return current and current.pid == child.pid and self.runtime.ready(current, current.version)
+            current = runtime.running()
+            return current and current.pid == child.pid and runtime.ready(current, current.version)
 
         self.within(ready)
         return child
@@ -107,7 +113,7 @@ class ContractTests(unittest.TestCase):
     def helper(self, **env):
         child = subprocess.Popen([
             sys.executable, str(WORKSPACE / "scripts/yard-dogfood-server.py"),
-            str(self.source), str(self.port),
+            str(self.source), str(self.port), str(self.runtime.home),
         ], cwd=self.tree, env=without_yard_home(dict(self.env, **env)), stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, text=True)
         self.children.append(child)
@@ -170,13 +176,7 @@ class ContractTests(unittest.TestCase):
     def test_the_page_server_kept_in_the_default_home_keeps_running_through_a_restart(self):
         installed = server.Runtime(self.home / ".yard")
         installed.env = without_yard_home(self.env)
-        with socket.socket() as port:
-            port.bind(("127.0.0.1", 0))
-            other_port = port.getsockname()[1]
-        stable = installed.spawn(self.binary, other_port, self.tree)
-        self.children.append(stable)
-        self.within(lambda: installed.running() and installed.ready(installed.running(),
-                                                                    installed.running().version))
+        stable = self.initial_server(installed, free_port())
         before = installed.running()
         self.initial_server()
         self.finished(self.helper())

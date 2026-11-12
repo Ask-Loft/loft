@@ -77,13 +77,12 @@ def start(runtime, clock, tree, port, cwd):
         return replace(runtime, clock, binary, port, cwd, version)
 
 
-# The machine home the dogfood `loft` keeps apart from the installed one's `~/.yard/`.
-DOGFOOD_HOME = ".yard-dogfood"
-
-
 class Runtime:
-    def __init__(self, home=None):
-        self.home = (home if home is not None else Path.home() / DOGFOOD_HOME).resolve()
+    """What the helper does to the machine: `home` is the machine home the dogfood `loft` keeps
+    apart from the installed one's `~/.yard/`, which the launcher names."""
+
+    def __init__(self, home):
+        self.home = Path(home).resolve()
         self.home.mkdir(parents=True, exist_ok=True)
         self.log = self.home / "dogfood-server.log"
         self.env = dict(os.environ, LOFT_TELEMETRY="off", LOFT_UPDATE_CHECK="off",
@@ -179,7 +178,7 @@ class Runtime:
 
 
 def main():
-    runtime = Runtime()
+    runtime = Runtime(sys.argv[3])
     try:
         tree = Path(sys.argv[1]).resolve()
         port = int(sys.argv[2])
