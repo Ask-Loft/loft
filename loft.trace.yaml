@@ -31773,6 +31773,15 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a post carries no Origin, so the page server tells the mod from a page"
         body: be75fd9790c04a38e35eafa27d171096d45cf3f764294158c78a7f2683c53565
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc1709e17563
+    reviewed: 2f0432cf2ccf7f03cdf4e2ca8c8a202cbb263b1b3bbec5c01a766fda8262d023
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the token is read from the home that loft yard protocol reports"
+        body: 9f1d070a32f9ee5ad1abe550d007ba203fab107ca47dce3e69924e3b2fa60971
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the token is read from the home directory"
+        body: 7742f31a59b82efac08877f6556c51829c355c28d78ec1004f32ab35faae79c8
   - node: 01a1646f-546d-7042-befd-eb0bdf72490b
     reviewed: 52bde84706af67ee53aa0f2c4d5557ca4cb4fa0a182c334669c75f363ddb6779
     tests:

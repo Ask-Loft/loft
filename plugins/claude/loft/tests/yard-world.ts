@@ -107,13 +107,15 @@ export type World = ReturnType<typeof world>
 /** Settles the clock of the world the running test made last, as a session's start does. */
 let settle: (() => Promise<unknown>) | undefined
 
-export function world(on: On, options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running' } = {}) {
+export function world(on: On, options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running'; home?: string } = {}) {
   const clock = mock.clock(on, { now: Date.UTC(2026, 9, 22, 9, 30, 0) })
   mock.env(on, { HOME })
   const state = {
     session: SESSION,
     cwd: TREE,
     protocol: options.protocol ?? 1,
+    /** The machine home `loft yard protocol` reports, if any; the token lies in it, else in `~/.yard/`. */
+    home: options.home,
     serve: options.serve ?? 'running',
     read: readDoc(),
     /** What each command answers, over the defaults, by subcommand. */
@@ -182,7 +184,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     return { value: { tool: `mcp__loft__${e.name}` } }
   })
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))
-  on('fs.read', ($, e) => (state.hasToken && e.path === `${HOME}/.yard/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
+  on('fs.read', ($, e) => (state.hasToken && e.path === `${state.home ?? `${HOME}/.yard`}/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))
   on('http.fetch', async ($, e) => {
     if (state.servedPort !== undefined && new URL(e.url).port !== String(state.servedPort)) {
       return { deny: `connection refused: ${e.url}` }
@@ -221,7 +223,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     if (given) return out(given.doc, given.exitCode ?? 0)
     switch (sub) {
       case 'protocol':
-        return out({ schema: 'loft-yard-protocol/1', outcome: 'ok', errors: [], protocol: state.protocol, loft: '2.2.1', formats: {} })
+        return out({ schema: 'loft-yard-protocol/2', outcome: 'ok', errors: [], protocol: state.protocol, loft: '2.2.1', formats: {}, ...(state.home === undefined ? {} : { home: state.home }) })
       case 'read':
         await state.reading
         if (!e.argv.includes('--context') || 'context' in state.read) return out(state.read)
