@@ -2,9 +2,9 @@ key: 01a1cfe2-478e-75d1-b104-04d8469599d2
 slug: follow-yard-log-in-a-pane
 name: "Follow Yard Log in a pane"
 body: |
-  The Yard page lives in a browser, beside the agent rather than in it. The pane brings the branch's Yard Log into Claude Code itself, in the terminal and in Claude Code Desktop alike: its stages and tasks as they move, the notes and decisions, and what waits on the person, which they can answer where they already are.
+  The Yard page lives in a browser, beside the agent rather than in it. The pane brings the branch's Yard Log into Claude Code itself, in the terminal and in Claude Code Desktop alike: where the work stands as it moves, and what waits on the person, which they can answer where they already are.
 
-  The pane reaches Yard Log only through `loft yard read` and `loft yard answer`, as the rest of the mod does, and reads only what changed since the revision it shows. How it draws Yard Log, as the Yard page does, is the Feature "See Yard Log in the pane as on the Yard page".
+  The pane reaches Yard Log only through `loft yard read` and `loft yard answer`, as the rest of the mod does, and reads only what changed since the revision it shows. How it stands beside the Yard page, and what it draws, is the Feature "Keep the Yard page beside the session".
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
