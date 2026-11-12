@@ -24,6 +24,8 @@ requirements:
         name: "With `--format json`, the result gives the tree, the branch and `page` with `available`, `port` and `url`."
       - key: 01a1d123-dd40-7261-9ea6-093488d97c8c
         name: "No file of the tree is written."
+      - key: 01a1d131-2a10-7406-8c5c-c49970d8f822
+        name: "Where the page server already serves the tree, nothing is written in the machine's home, so a run that may not write there, as in a sandbox, still gives the address."
   - key: 01a1d123-dd40-7261-9ea6-093511ef9482
     statement:
       form: unwanted

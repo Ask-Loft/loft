@@ -73,7 +73,7 @@ requirements:
       - key: 01a1d123-dd3f-7153-9249-3a3a511372e5
         name: "The skill is packaged under the Codex plugin's `skills/yard-page/`, so the person invokes it as `$loft:yard-page`."
       - key: 01a1d123-dd3f-7153-9249-3a3ba0959f58
-        name: "The skill has the agent run `loft yard page` once and give its words, the address included, adding nothing."
+        name: "The skill has the agent run `loft yard page` once, with no options and no caller's identity, and give its words, the address included, adding nothing."
       - key: 01a1d123-dd3f-7153-9249-3a3cec086406
         name: "Where `loft yard page` says no page server serves the page, the skill has the agent relay that and run nothing more."
       - key: 01a1d123-dd3f-7153-9249-3a3da64435d6
