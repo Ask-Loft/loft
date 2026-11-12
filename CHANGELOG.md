@@ -38,6 +38,9 @@ list everything 2.4.0 will hold.
   shows its tab again on the next run; elsewhere the pane links the page, and the command answers
   with the page's address and a suggestion to open it. The pane's colours follow each surface's
   light or dark.
+- `loft yard page` prints the Yard page's address for the worktree and its branch, with a line on
+  what the page shows, or says that no page server serves it. In Codex, which offers a plugin no
+  command of its own, the skill `$loft:yard-page` has the agent run it and relay its words.
 
 ## 2.3.0 (2026-11-05)
 
