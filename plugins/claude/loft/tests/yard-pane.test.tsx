@@ -176,7 +176,7 @@ test('where the working tree holds no Yard Log, the pane says so and names the b
   }
 })
 
-test('a block an agent writes, and an answer given on the page, show within 2 seconds', async ($, on) => {
+test('a write that changes what the pane shows, and an answer given on the page, show within 2 seconds', async ($, on) => {
   const w = world(on)
   w.state.read = ASKING
   await opened($, w)
@@ -190,15 +190,14 @@ test('a block an agent writes, and an answer given on the page, show within 2 se
         'active',
         'Shape it',
         { ...block('readers', 'question', { prompt: 'Which readers does the change serve?', header: 'Readers', options: [] }), answer: { labels: ['Members'], channel: 'page' } },
-        block('found', 'note', { markdown: 'Found a gap.' }),
+        block('found', 'task', { title: 'Close the gap', state: 'active' }),
       ),
     ],
     submissions: [{ agent: OWNER, open: [{ key: 's-1', state: 'open', blocks: ['k-readers', 'k-go'] }] }],
   })
   await w.clock.advance(1000)
-  expect(await ui.find({ type: 'Markdown', text: 'Found a gap.' })).toBeDefined()
+  expect((await ui.find({ key: 'task-k-found' }))?.text).toContain('Close the gap')
   expect(await ui.find({ key: 'option-k-readers-0' })).toBeUndefined()
-  expect((await ui.find({ key: 'answer-k-readers' }))?.text).toMatch(/^Members.*answered on the page$/)
   await ui.unmount()
 })
 
@@ -322,8 +321,6 @@ test('once recorded, the block no longer shows as waiting on the person', async 
   await ui.press({ key: 'approve-k-go' })
   expect(await ui.find({ key: 'approve-k-go' })).toBeUndefined()
   expect(await ui.find({ key: 'option-k-readers-0' })).toBeDefined()
-  await ui.press({ key: 'tab-timeline' })
-  expect((await ui.find({ key: 'outcome-k-go' }))?.text).toBe('Approved in the terminal')
   await ui.unmount()
 })
 
@@ -344,8 +341,7 @@ test('a block answered elsewhere first keeps that answer, and the pane names whe
   })
   await ui.press({ key: 'option-k-readers-1' })
   expect(await ui.find({ type: 'Text', text: /answered first on the page/ })).toBeDefined()
-  await ui.press({ key: 'tab-timeline' })
-  expect((await ui.find({ key: 'answer-k-readers' }))?.text).toMatch(/^Members.*answered on the page$/)
+  expect(await ui.find({ key: 'option-k-readers-0' })).toBeUndefined()
   expect(answered(w)).toHaveLength(1)
   await ui.unmount()
 })

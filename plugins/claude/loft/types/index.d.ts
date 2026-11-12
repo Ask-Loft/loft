@@ -68,22 +68,8 @@ export type PaneBrowser = { tab: string | null; isReached: boolean }
 
 export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null; browser: PaneBrowser | null }
 
-/** The views of the Yard pane: the page's timeline and Gantt chart, and what waits on the person. */
-export type PaneShown = 'timeline' | 'gantt' | 'waiting'
-
 /** What the person has set in the Yard pane and not sent: the stages unfolded, options ticked, words typed. */
 export type YardPaneDrafts = {
-  /** The view shown, and the one to show again once nothing waits. */
-  shown: PaneShown
-  previous: PaneShown
-  /** The block what waits is shown at, by key, where the person asked for one. */
-  at: string | null
-  /** The open submissions the pane has shown, by key, so that only a new one shows what waits by itself. */
-  seen: string[]
-  /** The stage the person chose, by key; none until they choose one. */
-  chosen: string | null
-  /** The stages whose row the person opened or folded, against its default: open for the stage chosen. */
-  toggled: string[]
   ticked: Record<string, string[]>
   words: Record<string, string>
 }

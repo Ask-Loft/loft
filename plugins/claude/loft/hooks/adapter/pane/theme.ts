@@ -3,7 +3,7 @@
 // Code's own colours, which each surface resolves to its own appearance, and the Yard page's hues
 // mark status alone, in shades that read on a light ground and on a dark one: action blue for
 // what is in hand, teal for what is done, rust for what waits on the person and rose for a fix the
-// person asked for (the Feature "See Yard Log in the pane as on the Yard page"). Pure.
+// person asked for (the Feature "Keep the Yard page beside the session"). Pure.
 
 import type { ThemeKey } from 'claude-code'
 

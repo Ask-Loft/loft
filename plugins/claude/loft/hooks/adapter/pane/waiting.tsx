@@ -92,8 +92,8 @@ function askCard(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
   const { t, palette } = drawing
   const { Box } = t
   return (
-    <Box key={`ask-${block.key}`} flexDirection="row" borderStyle="single" borderColor={kept.at === block.key ? palette.signal : palette.wait}>
-      <Box width={1} backgroundColor={palette.wait} />
+    <Box key={`ask-${block.key}`} flexDirection="row" borderStyle="single" borderColor={palette.wait}>
+      <Box key={`wait-bar-${block.key}`} width={1} backgroundColor={palette.wait} />
       <Box flexDirection="column" flexGrow={1} flexShrink={1} paddingX={1} gap={1}>
         {cardHead(drawing, block, true)}
         {controls(drawing, block, kept)}

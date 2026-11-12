@@ -34195,7 +34195,7 @@ links:
     reviewed: 8c8e5ead0bd2fb99c809dff870e0a29d2754c0fff6c5900fdd5505198146cd49
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
-        name: "a block an agent writes, and an answer given on the page, show within 2 seconds"
+        name: "a write that changes what the pane shows, and an answer given on the page, show within 2 seconds"
         body: 2dfba658214ceb3f7f799bb807e7ea0dc8e2778339ca9113977e8233dd6a49c3
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "a read since the revision shown replaces each changed block and stage in place"
@@ -34204,7 +34204,7 @@ links:
     reviewed: 6d7b92b6321875f3be74544ec0187d8acf550488a26781ac2c928e2383c24d71
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
-        name: "a block an agent writes, and an answer given on the page, show within 2 seconds"
+        name: "a write that changes what the pane shows, and an answer given on the page, show within 2 seconds"
         body: 2dfba658214ceb3f7f799bb807e7ea0dc8e2778339ca9113977e8233dd6a49c3
   - node: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
     reviewed: 4df9aca82e250018d38308e5c126838fc5354653380f5e9deab4da08c68abfe5
