@@ -22801,17 +22801,17 @@ links:
         name: "after_skill_package_runs_each_package_equals_its_composition"
         body: a57414ba6bb9a969c781401be16652d9fcd39dd8cb362c0aa4fe245dc83d7bd3
   - node: 01a1d123-dd3f-7153-9249-3a3ba0959f58
-    reviewed: e68b9ad16e7ad07c7fedae261f2aa8c136d39ee84ca237aafdc47bcdc0c2d92b
+    reviewed: f016b21d0ad04342cedbee073f4d58213a356a7710a434da155eb74e4ea1e295
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words"
-        body: 4ce462539db7920e35c756fb5831819c6e3e3b4cd1598aec39fc0850351ae7e0
+        body: 18420a00047225dc61e9db6cdae41c9dce036467cce881014e725b91bc83a65d
   - node: 01a1d123-dd3f-7153-9249-3a3cec086406
     reviewed: b34c054aaddbb58c9646361b8649e7968242844b45245635ed11a5b17b10b7f6
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words"
-        body: 4ce462539db7920e35c756fb5831819c6e3e3b4cd1598aec39fc0850351ae7e0
+        body: 18420a00047225dc61e9db6cdae41c9dce036467cce881014e725b91bc83a65d
   - node: 01a1d123-dd3f-7153-9249-3a3da64435d6
     reviewed: eff86685b2b2e5c3c49029ea7be63cd8dd3d56d33b9499f7462e747d2701dd82
     tests:
@@ -35130,6 +35130,18 @@ links:
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "the_page_command_writes_no_file_of_the_tree"
         body: 35c7120b9e08ec8c230c7367a20854770526754aab9989bc166cd842b5d5467f
+  - node: 01a1d131-2a10-7406-8c5c-c49970d8f822
+    reviewed: 40c6b610ee846267ae8cd6856f585472d76ebbbccbff107bcb942f3ed2151049
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_the_page_server_already_serves_the_tree_a_run_that_may_not_write_the_home_gives_the_address"
+        body: 9552a1d234520d90999eeadb39bef12ebab7d19546b7b0d1a22bd3e6a435107c
+      - file: "crates/yardlog-store/tests/lock_probe.rs"
+        name: "a_lock_file_the_prober_may_not_write_still_reads_as_held_while_held_and_free_once_let_go"
+        body: 9e45044c5e957d0202ddeda9988a03cc109d7d912c83ddb4e0fadd81b540491f
+      - file: "crates/yardlog-store/tests/lock_probe.rs"
+        name: "a_missing_lock_file_is_held_by_no_one_and_probing_it_creates_nothing"
+        body: 9a87db0323ad97d44d906cc88ec8018195384947e49d71662fd6c70b4ff28440
   - node: 01a1d123-dd40-7261-9ea6-0936f8c5acc8
     reviewed: ce3d3c3b7de07531b9b75102d0d9c5a2e2e31e6dbd3f9b4b79a86e5f388276de
     tests:

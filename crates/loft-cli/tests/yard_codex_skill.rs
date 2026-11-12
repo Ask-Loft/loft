@@ -295,9 +295,16 @@ fn the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its
     assert_eq!(package, read("crates/loft-cli/skill/yard-page/SKILL.md"));
     assert!(package.starts_with("---\nname: yard-page\ndescription: "));
     let words = package.split_whitespace().collect::<Vec<_>>().join(" ");
-    assert!(words.contains("Run `loft yard page` once"), "{words}");
     assert!(
-        words.contains("give the person the words it prints as they are, the address included"),
+        words.contains("Run exactly `loft yard page` once"),
+        "{words}"
+    );
+    assert!(
+        words.contains("with no options: it needs no caller, so give it no `--host`, `--session` or other identity"),
+        "{words}"
+    );
+    assert!(
+        words.contains("Give the person the words it prints as they are, the address included"),
         "{words}"
     );
     assert!(words.contains("run nothing more"), "{words}");

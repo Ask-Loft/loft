@@ -7,6 +7,7 @@
 //! holder lets go; only a holder that was killed leaves its name, for the next to replace.
 
 use std::fs::{self, File, OpenOptions, TryLockError};
+use std::io;
 use std::path::{Path, PathBuf};
 
 use loft_ports::io_error;
@@ -87,13 +88,24 @@ pub fn try_lock(path: &Path) -> Result<Option<Locked>, YardStoreError> {
     }
 }
 
-/// Whether another holds the lock on `path` now.
+/// Whether another holds the lock on `path` now. The probe only reads: it opens the file for
+/// reading and lets the lock go at once, so a prober that may not write there, as in a sandbox,
+/// still learns it, and a file that is missing is held by no one and is not created.
 ///
 /// # Errors
 ///
-/// The file cannot be created, opened or locked.
+/// The file cannot be opened or locked.
 pub fn is_held(path: &Path) -> Result<bool, YardStoreError> {
-    Ok(try_lock(path)?.is_none())
+    let file = match File::open(path) {
+        Ok(file) => file,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
+        Err(error) => return Err(io_error(path)(error).into()),
+    };
+    match file.try_lock() {
+        Ok(()) => Ok(false),
+        Err(TryLockError::WouldBlock) => Ok(true),
+        Err(TryLockError::Error(error)) => Err(io_error(path)(error).into()),
+    }
 }
 
 /// The file beside a lock that names its holder. It is a file of its own, not the lock's, since

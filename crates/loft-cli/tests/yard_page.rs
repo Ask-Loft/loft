@@ -3,6 +3,8 @@
 
 use std::collections::BTreeMap;
 use std::fs;
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::process::Output;
 
@@ -105,4 +107,35 @@ fn where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serv
     );
     assert!(printed.contains("`loft yard serve`"), "{printed}");
     assert!(!printed.contains("http"), "{printed}");
+}
+
+#[cfg(unix)]
+fn set_mode(path: &Path, mode: u32) {
+    fs::set_permissions(path, fs::Permissions::from_mode(mode)).unwrap();
+}
+
+#[cfg(unix)]
+#[test]
+fn where_the_page_server_already_serves_the_tree_a_run_that_may_not_write_the_home_gives_the_address()
+ {
+    let yard = Yard::new();
+    let home = yard.scratch.home().join(".yard");
+    name_server(&yard, 7500);
+    let tree = yard.scratch.0.canonicalize().unwrap();
+    let trees = serde_json::json!({ "trees": [tree.display().to_string()] });
+    fs::write(home.join("trees.json"), format!("{trees:#}\n")).unwrap();
+    let held = lock::lock(&home.join("server.lock")).unwrap();
+    for file in ["server.json", "server.lock", "trees.json"] {
+        set_mode(&home.join(file), 0o444);
+    }
+    set_mode(&home, 0o555);
+    let output = yard.run(&["page"]);
+    set_mode(&home, 0o755);
+    for file in ["server.json", "server.lock", "trees.json"] {
+        set_mode(&home.join(file), 0o644);
+    }
+    drop(held);
+    let page = document("page", &output);
+    assert_eq!(page["outcome"], "page", "{page}");
+    assert_eq!(page["page"]["port"], 7500);
 }
