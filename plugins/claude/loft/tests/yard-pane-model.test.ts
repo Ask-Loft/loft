@@ -1,6 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
-import { answeredOn, followed, sinceOf, waitingOf, type PaneView } from '../hooks/adapter/pane/model'
+import { answeredOn, followed, linkOf, sinceOf, waitingOf, type PaneView } from '../hooks/adapter/pane/model'
 import { block, readDoc, stage, TREE } from './yard-world'
 
 const OWNER = { host: 'claude-code', session: 'session-1' }
@@ -118,4 +118,9 @@ test('the view keeps of each block only what the pane draws', () => {
   const read = readDoc({ stages: [withBlocks('s', 'active', { ...block('n', 'note', { markdown: 'x' }), reached: 3, versionCount: 2 } as never)] })
   const kept = (followed(undefined, read) as PaneView).stages[0]!.blocks[0]!
   expect(Object.keys(kept).sort()).toEqual(['id', 'key', 'kind', 'version'])
+})
+
+test("the Yard page's loopback address is linked as localhost, which Claude Code Desktop links", () => {
+  expect(linkOf('http://127.0.0.1:7411/#tree=%2Fw')).toBe('http://localhost:7411/#tree=%2Fw')
+  expect(linkOf('https://yard.example/#x')).toBe('https://yard.example/#x')
 })

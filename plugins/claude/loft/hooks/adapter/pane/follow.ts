@@ -3,12 +3,12 @@
 // revision it shows, and stops once the pane is closed. It never marks a revision read (the
 // Feature "Follow Yard Log in a pane").
 
-import { atom, read, update } from 'claude-code'
 import type { EngineInterface, On, Timer } from 'claude-code'
 
-import type { YardPane } from '../../../types'
 import { callerArgs, failureOf, succeeded } from '../run'
 import { continued, run } from '../state'
+import { paneOf, setPane } from './atoms'
+import { registerDraw } from './draw'
 import { followed, sinceOf } from './model'
 
 /** The pane's id, which its `ui.render` hook names as `requestId`. */
@@ -16,9 +16,6 @@ export const PANE = 'yard'
 export const COMMAND = 'yard-pane'
 /** How often an open pane reads what changed. */
 export const FOLLOW = 1000
-
-// Change the tag when the view's fields change: a reload then declines what an earlier version kept.
-export const pane = atom({ plugin: 'loft', key: 'yardPane' } as const, { view: null, failure: null } as YardPane, { shape: 'yard-pane-1' })
 
 /** What the module keeps of the follow: its timer, and whether a read is under way. */
 const following: { timer: Timer | undefined; isReading: boolean } = { timer: undefined, isReading: false }
@@ -30,7 +27,7 @@ export async function registerCommand($: EngineInterface) {
 
 /** Opens the pane, or shows it again, read whole, and follows Yard Log while it stays open. */
 export async function openPane($: EngineInterface) {
-  await update($, pane, () => ({ view: null, failure: null }))
+  await setPane($, () => ({ view: null, failure: null }))
   const opened = await $.ui.open({ id: PANE, title: 'Yard' })
   await readPane($)
   following.timer ??= $.clock.every(FOLLOW, () => void tick($))
@@ -55,7 +52,7 @@ export async function readPane($: EngineInterface) {
   if (following.isReading) return
   following.isReading = true
   try {
-    const shown = (await read($, pane)).view ?? undefined
+    const shown = (await paneOf($)).view ?? undefined
     let ran = await readSince($, sinceOf(shown))
     let view = succeeded(ran) ? followed(shown, ran.doc) : undefined
     if (succeeded(ran) && view === undefined) {
@@ -63,7 +60,7 @@ export async function readPane($: EngineInterface) {
       view = succeeded(ran) ? followed(undefined, ran.doc) : undefined
     }
     const failure = succeeded(ran) ? null : failureOf(ran)
-    await update($, pane, before => ({ view: view ?? before.view, failure }))
+    await setPane($, before => ({ view: view ?? before.view, failure }))
   } finally {
     following.isReading = false
   }
@@ -84,4 +81,5 @@ export function registerPane(on: On) {
     const opened = await openPane($)
     return { text: opened.isPlaced ? "Yard Log's pane is open." : "Yard Log's pane opens once there is room for it." }
   })
+  registerDraw(on)
 }

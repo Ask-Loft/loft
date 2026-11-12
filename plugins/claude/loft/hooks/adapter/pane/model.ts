@@ -107,3 +107,11 @@ export function answeredOn(block: PaneBlock): string | undefined {
   const given = block.answer ?? block.outcome
   return given && typeof given.channel === 'string' ? given.channel : undefined
 }
+
+/**
+ * The Yard page's address as a link a surface makes of it: Claude Code Desktop links plain http
+ * only to `localhost`, which the page server answers as it answers 127.0.0.1.
+ */
+export function linkOf(page: string): string {
+  return page.replace(/^http:\/\/127\.0\.0\.1([:/])/, 'http://localhost$1')
+}
