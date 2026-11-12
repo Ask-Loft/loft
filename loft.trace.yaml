@@ -34518,6 +34518,63 @@ links:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a question's lettered option cards choose its options, and a field beneath them takes the person's own words"
         body: 044fe1d3b65b79aabf1439445b9730473643315845b0788f9a5d87cb8be00b5d
+  - node: 01a1d06f-b09f-73ae-a356-c4b61dc50199
+    reviewed: 32e48b80efa712a2e8c93623ebd6de048146a02d433f52e6d9e7d8874dc5b87b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "each stage that started is a row from when it started to when it ended, or to now"
+        body: a8cb73e1ea81d5ad67adbe9c753e34ed662db0aaf7b2909d7f9460bfc37407f4
+  - node: 01a1d06f-b09f-73ae-a356-c4b7742f2242
+    reviewed: 0989b777fb90037e9a5f59d3c9e31b81560e3988b9d0e4de0598fb0b36108dfd
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "each task whose work started is a row beneath its stage, to when it ended or now, a fix in the fix tone"
+        body: 44b1697ac97067ea92588512b6affaa49f4ba20fb7861515e4dda2aef004504e
+  - node: 01a1d06f-b09f-73ae-a356-c4b895904f7d
+    reviewed: a3166a10204a9418234c9da8f480cde540781002deae0ed30a7e56fc24d8d6e8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "each wait lies on its stage's bar, from when its submission was sent to when it was settled, or to now"
+        body: cee79b44adb2e36ba4ee0a54994c0380f8647d6d764b700b4598081abfbf92a2
+  - node: 01a1d06f-b09f-73ae-a356-c4b9c7dc861a
+    reviewed: bda0125840b65e2b291dfec092e331e53bb9b9a9846945f2da85253ce78f61c0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "the axis marks whole steps of time between the start and the end of the chart"
+        body: 64db949a8000c02d8cdc16209fca54d00dde7c77484bf46bbe8c253872f3ed99
+  - node: 01a1d06f-b09f-73ae-a356-c4ba008e06ce
+    reviewed: d9fe256c22c939ae27bc2c3647ffa338bd741a76ffe7c6cdadd68d7a571f38a2
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "choosing a stage in the Gantt chart shows it, chosen, in the timeline"
+        body: 20f0c6afb5bc9834e4c69676c5ca5f5f88cd1d902b99ee2983718883ae20cdfc
+  - node: 01a1d06f-b09f-73ae-a356-c4bc44c83836
+    reviewed: c361de375fe07ca1f95b5ceb511271b3978747458b66617b654378015d2a7413
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "Claude Code Desktop, VS Code and the mobile app draw the Gantt chart as one SVG image, named in words for who cannot see it"
+        body: cb1d063ddc0c7e3c29441ae0b00e440ca6a39a4afdc798526265ac52ad00148d
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "the SVG image draws each row in its tone, escapes its titles and stays within the size a surface draws"
+        body: 64696131033bed06080975e4e8524e464d635baef3a625fe30a889c0800ac5d0
+  - node: 01a1d06f-b09f-73ae-a356-c4bd3e13dbd8
+    reviewed: e9ab31c0f7b8ee5028df161edbc9b9e34d938dcdfb0f9725ebb84712b97f861e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "the text alternative names each stage and how long it ran"
+        body: 1c8b3991503f20b80526ac4ef0d23b07f4b01545c98bd5ec3676fbe7f9884dbd
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "Claude Code Desktop, VS Code and the mobile app draw the Gantt chart as one SVG image, named in words for who cannot see it"
+        body: cb1d063ddc0c7e3c29441ae0b00e440ca6a39a4afdc798526265ac52ad00148d
+  - node: 01a1d06f-b09f-73ae-a356-c4bf8898cc5b
+    reviewed: f97710865b05b269a75d096b21a4ff10b9afb35a15cbeeb09c1b770b7a552b56
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "on the terminal each row's bar starts and ends at the columns of its times along the chart"
+        body: 153d7ce4dfe356de3693cf267dbb3b128ca87b70ee868f8ba96674127c96a4bb
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the terminal draws the Gantt chart as a bar of block characters for each row, in its colour"
+        body: ef3cdb301b838fb91ba666df4b3442a9ac0c30984211f62bd14ef24a617b7c85
   - node: 01a1d06f-b09f-73ae-a356-c4c150ee429d
     reviewed: 65f3ce53498983b554dadacb6022b0ff6cf29a6f8abeb7c8a087309ec6b7c6d5
     tests:
@@ -34536,6 +34593,21 @@ links:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "under a dark theme the pane wears the page's dark tokens"
         body: 847c07e441a549d84cce002b3fa151b2ac558094d875e6091d3eff57e79b0db2
+  - node: 01a1d06f-b09f-73ae-a356-c4c3dc81b156
+    reviewed: fe7a88d21b6e00211715edf71f9bef9e739d85d7fee8fb8e7146ca142d2e64f1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "Claude Code's dark themes take the page's dark tokens, and every other theme its light ones"
+        body: 42f8a54b24825f9236063fd302ccc9cbde377143fb901a25b71eafbd5167a9f0
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "each stage's row shows a square and its status in the status's colour, its title, its owner and the count of what waits"
+        body: 0ad46f89e5b1ed94f9d688dbcf437a283e4fd9d583b3763ba339308a02dca29a
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the head counts what waits on the person in a button of the waiting colour, and shows none where nothing waits"
+        body: 9eb8a4dc0cbb5372d6e79a4acc41881e8d6f6ae4f609af838d0c3f2cc9aeaa14
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a task shows its title and its state, and a fix is marked Fix in the fix colour"
+        body: 40b8438218e251067ac1f395b81c0c6d40d8769357ba7c288f70fd37eb4665f4
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: dfff3712569ee5acbd91eb8568e09a5d008e81f0cc1694a7c5838530827e3236
     tests:

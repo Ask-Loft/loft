@@ -10,11 +10,15 @@ import { block, openPane, PAGE, paneMount, readDoc, SESSION, stage, world, type 
 
 const SURFACES = ['terminal', 'desktop', 'vscode', 'mobile'] as const
 
-/** The colour of the first Text an element holds. */
-function colourIn(found: FoundElement | undefined): unknown {
-  const first = found?.children.find(child => typeof child === 'object' && child !== null) as FoundElement | undefined
-  if (!first) return undefined
-  return first.type === 'Text' ? first.props.color : colourIn(first)
+/** The colour of the first coloured Text an element holds. */
+function colourIn(found: { props?: Record<string, unknown>; type?: string; children?: unknown[] } | undefined): unknown {
+  if (!found) return undefined
+  if (found.type === 'Text' && found.props?.color !== undefined) return found.props.color
+  for (const child of found.children ?? []) {
+    const colour = typeof child === 'object' && child !== null ? colourIn(child as FoundElement) : undefined
+    if (colour !== undefined) return colour
+  }
+  return undefined
 }
 const OWNER = { host: 'claude-code', session: SESSION }
 
@@ -517,4 +521,64 @@ test("a question's lettered option cards choose its options, and a field beneath
   await ui.press({ key: 'option-k-readers-1' })
   expect(recorded(w)).toEqual([[{ block: 'k-readers', labels: ['Visitors'] }]])
   await ui.unmount()
+})
+
+const TIMED = readDoc({
+  stages: [
+    { ...staged('shape', 'done'), times: { started: '2026-10-22T08:00:00Z', ended: '2026-10-22T08:30:00Z' } },
+    {
+      ...staged('build', 'active', { ...block('store', 'task', { title: 'Write the store', state: 'done' }), times: { started: '2026-10-22T08:45:00Z', ended: '2026-10-22T09:10:00Z' } } as ReturnType<typeof block>),
+      times: { started: '2026-10-22T08:40:00Z' },
+    },
+    staged('review', 'planned'),
+  ],
+})
+
+test('Claude Code Desktop, VS Code and the mobile app draw the Gantt chart as one SVG image, named in words for who cannot see it', async ($, on) => {
+  const w = world(on)
+  w.state.read = TIMED
+  await openPane($)
+  for (const surface of ['desktop', 'vscode', 'mobile'] as const) {
+    const ui = await $.ui.mount(paneMount(surface))
+    await ui.press({ key: 'tab-gantt' })
+    const images = await ui.findAll({ type: 'Svg' })
+    expect(images).toHaveLength(1)
+    expect(String(images[0]!.props.source)).toMatch(/^<svg /)
+    expect(String(images[0]!.props.source)).toContain(LIGHT.done)
+    expect(images[0]!.props.alt).toContain('Stage shape ran 30 min.')
+    expect(images[0]!.props.alt).toMatch(/Stage build has run .*, and goes on\./)
+    expect(await ui.find({ key: 'gantt-bar-k-shape' })).toBeUndefined()
+    await ui.unmount()
+  }
+})
+
+test('the terminal draws the Gantt chart as a bar of block characters for each row, in its colour', async ($, on) => {
+  const w = world(on)
+  w.state.read = TIMED
+  await openPane($)
+  const ui = await $.ui.mount(paneMount('terminal', 80))
+  await ui.press({ key: 'tab-gantt' })
+  expect(await ui.find({ type: 'Svg' })).toBeUndefined()
+  expect((await ui.find({ key: 'gantt-bar-k-shape' }))?.text).toMatch(/^ *█+ *$/)
+  expect(colourIn(await ui.find({ key: 'gantt-bar-k-shape' }))).toBe(LIGHT.done)
+  expect((await ui.find({ key: 'gantt-bar-k-store' }))?.text).toMatch(/^ *▬+ *$/)
+  expect(colourIn(await ui.find({ key: 'gantt-bar-k-store' }))).toBe(LIGHT.task)
+  expect(await ui.find({ key: 'gantt-bar-k-review' })).toBeUndefined()
+  await ui.unmount()
+})
+
+test('choosing a stage in the Gantt chart shows it, chosen, in the timeline', async ($, on) => {
+  const w = world(on)
+  w.state.read = TIMED
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    await ui.press({ key: 'tab-gantt' })
+    await ui.press({ key: 'gantt-stage-k-shape' })
+    expect(await ui.find({ key: 'view-timeline' })).toBeDefined()
+    expect((await ui.find({ key: 'stage-title' }))?.text).toBe('Stage shape')
+    expect((await ui.find({ key: 'row-k-shape' }))?.props.backgroundColor).toBe(LIGHT.mist)
+    await ui.press({ key: 'choose-k-build' })
+    await ui.unmount()
+  }
 })

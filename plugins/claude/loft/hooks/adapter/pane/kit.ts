@@ -7,8 +7,11 @@ import type { Elements } from 'claude-code'
 import type { PaneBlock, PaneShown } from '../../../types'
 import type { Palette } from './theme'
 
-/** The elements every surface draws; `Input` only where the surface has a text field. */
-export type Table = Pick<Elements['mobile'], 'Box' | 'Text' | 'Button' | 'Link' | 'Markdown'> & { Input?: Elements['desktop']['Input'] }
+/** The elements every surface draws; `Input` only where the surface has a text field, `Svg` where it draws SVG. */
+export type Table = Pick<Elements['mobile'], 'Box' | 'Text' | 'Button' | 'Link' | 'Markdown'> & {
+  Input?: Elements['desktop']['Input']
+  Svg?: Elements['desktop']['Svg']
+}
 
 /** What a press or a submit in the pane does. */
 export type Acts = {

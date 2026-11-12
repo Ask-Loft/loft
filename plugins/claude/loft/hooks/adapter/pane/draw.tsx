@@ -14,6 +14,7 @@ import { head } from './head'
 import { bodyOf, type Acts, type Drawing, type Table } from './kit'
 import { waitingIn } from './model'
 import { paletteOf } from './theme'
+import { chart } from './chart'
 import { timeline } from './timeline'
 import { whatWaits } from './waiting'
 
@@ -24,8 +25,11 @@ import { whatWaits } from './waiting'
  */
 const FIELDED: Record<RenderSurface, boolean> = { terminal: true, desktop: true, vscode: true, mobile: false }
 
+/** Whether each surface draws SVG, as the `Elements` it declares say: all but the terminal. */
+const PICTURED: Record<RenderSurface, boolean> = { terminal: false, desktop: true, vscode: true, mobile: true }
 
-function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: YardPaneDrafts, columns: number) {
+
+function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: YardPaneDrafts, columns: number, now: number) {
   const { t, acts } = drawing
   const { Box, Text } = t
   const failed = failure ? <Text color={drawing.palette.danger}>{failure}</Text> : null
@@ -52,7 +56,7 @@ function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: Yard
         </Box>
       ) : shown === 'gantt' ? (
         <Box key="view-gantt" flexDirection="column" marginTop={1}>
-          <Text dimColor>Gantt chart</Text>
+          {chart(drawing, view, now, columns)}
         </Box>
       ) : (
         <Box key="view-timeline" flexDirection="column">
@@ -107,8 +111,8 @@ function actsOf($: EngineInterface): Acts {
 export function registerDraw(on: On) {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const resolved = $.ui.resolve(e) as unknown as Table
-    const t: Table = FIELDED[e.surface] ? resolved : { ...resolved, Input: undefined }
-    const [held, kept] = await Promise.all([paneOf($), draftsOf($)])
-    return drawn({ t, palette: paletteOf(held.dark), acts: actsOf($) }, held, kept, e.props.bodyColumns)
+    const t: Table = { ...resolved, Input: FIELDED[e.surface] ? resolved.Input : undefined, Svg: PICTURED[e.surface] ? resolved.Svg : undefined }
+    const [held, kept, now] = await Promise.all([paneOf($), draftsOf($), $.clock.now()])
+    return drawn({ t, palette: paletteOf(held.dark), acts: actsOf($) }, held, kept, e.props.bodyColumns, now)
   })
 }
