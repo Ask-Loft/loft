@@ -2,29 +2,15 @@
 // a whole read, then each read since the revision shown merged into it (the Feature "Follow Yard
 // Log in a pane"). Pure, so that each rule is tested on its own.
 
+import type { PaneBlock, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
 import { isObject } from '../../model'
 import { blocksByKey, openSubmissions, pageOf, stagesOf, waits, type Block } from '../log'
 
-/** A stage as the pane keeps it: its own block and its blocks, in order. */
-export type PaneStage = Block & { blocks: Block[] }
-
-/** What the pane shows: which Yard Log, at which revision, and its stages. */
-export type PaneView = {
-  tree: string
-  branch: string
-  /** The key of Yard Log shown; none where the branch has no Yard Log yet. */
-  log: string | null
-  hasLog: boolean
-  revision: number
-  page: string | null
-  stages: PaneStage[]
-  /** The blocks of the open submissions, by key, in each submission's order. */
-  sent: string[]
-}
+export type { PaneView }
 
 /** Of a block, only what the pane draws. */
-function kept(block: Block): Block {
+function kept(block: Block): PaneBlock {
   return {
     id: block.id,
     key: block.key,
@@ -60,7 +46,7 @@ function whole(doc: Doc): PaneView {
 }
 
 /** `blocks` with each of `changed` in place of the block of its key, and each new one last. */
-function merged(blocks: readonly Block[], changed: readonly Block[]): Block[] {
+function merged(blocks: readonly PaneBlock[], changed: readonly Block[]): PaneBlock[] {
   const next = [...blocks]
   for (const block of changed.map(kept)) {
     const at = next.findIndex(each => each.key === block.key)
@@ -108,7 +94,7 @@ export function sinceOf(view: PaneView | undefined): number | undefined {
 }
 
 /** The blocks of the open submissions that wait on the person, in the submissions' order. */
-export function waitingOf(view: PaneView): Block[] {
+export function waitingOf(view: PaneView): PaneBlock[] {
   const blocks = blocksByKey({ outcome: 'read', stages: view.stages })
   return view.sent.flatMap(key => {
     const block = blocks.get(key)
@@ -117,7 +103,7 @@ export function waitingOf(view: PaneView): Block[] {
 }
 
 /** The channel a block was answered or decided on, once it was. */
-export function answeredOn(block: Block): string | undefined {
+export function answeredOn(block: PaneBlock): string | undefined {
   const given = block.answer ?? block.outcome
   return given && typeof given.channel === 'string' ? given.channel : undefined
 }
