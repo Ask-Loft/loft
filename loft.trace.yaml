@@ -34194,6 +34194,18 @@ links:
       - file: "crates/loft-cli/tests/yard_protocol.rs"
         name: "the_report_lists_every_format_it_reads_and_names_the_one_it_writes"
         body: aefd9213c4f650d28c2e49e98fa3c4607e21410c9670d8047f9ae638c002ac85
+  - node: 01a1cf7a-0eb7-770e-800d-7eb43bb22cf2
+    reviewed: 9c5a9cc9769f2338ebe351021e0eef1b6497d1884af180318638bf08d62c47c0
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "the_report_names_the_home_directory_and_the_one_loft_yard_home_moves_it_to"
+        body: f6aed86c57583f6dd8752f6ac6ade7c0292e86a3e0eb86d21a21eed10e09b999
+  - node: 01a1cf7a-0eb7-770e-800d-7eb53956f7b6
+    reviewed: 69ba835a7c2d191737b710f53f893d3cdbc360238721585095c1598385618119
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "the_report_gives_no_home_where_no_home_directory_is_known"
+        body: f143c0e9befecd3384042ad23971c169c148f4d3b7b30ca74bbbaed716206fa7
   - node: 01a1646f-546d-7042-befd-ea45ec21ca68
     reviewed: 41d76351b9e36ab128440d3f4e66f87370b22431903c4a66918d6c95abca5521
     tests:

@@ -59,6 +59,41 @@ fn the_report_is_the_same_inside_and_outside_a_git_repository_and_writes_no_file
     assert!(!scratch.home().join(".yard").exists());
 }
 
+/// The report of a run with `variables` set in its environment.
+fn protocol_with(scratch: &Scratch, variables: &[(&str, &str)]) -> Value {
+    let mut command = scratch.command(None, &Clock::fixed(EPOCH));
+    command.envs(variables.iter().copied());
+    let output = command
+        .args(["yard", "protocol", "--format", "json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0));
+    document("protocol", &output)
+}
+
+#[test]
+fn the_report_names_the_home_directory_and_the_one_loft_yard_home_moves_it_to() {
+    let scratch = Scratch::empty();
+    let report = protocol(&scratch, None);
+    let default = scratch.home().join(".yard");
+    assert_eq!(report["home"], default.to_str().unwrap());
+    let moved = scratch.home().join("elsewhere/yard-dev");
+    let report = protocol_with(&scratch, &[("LOFT_YARD_HOME", moved.to_str().unwrap())]);
+    assert_eq!(report["home"], moved.to_str().unwrap());
+    assert!(!moved.exists(), "the report wrote its home");
+}
+
+#[test]
+fn the_report_gives_no_home_where_no_home_directory_is_known() {
+    let scratch = Scratch::empty();
+    let report = protocol_with(
+        &scratch,
+        &[("HOME", "relative"), ("USERPROFILE", "relative")],
+    );
+    assert!(report.get("home").is_none(), "{report}");
+    assert!(report["protocol"].as_u64().is_some());
+}
+
 /// The fields each version of the protocol promised, under `testdata/yard/protocol/`.
 fn promised(version: u64) -> Vec<String> {
     let path = workspace().join(format!("testdata/yard/protocol/{version}.txt"));
