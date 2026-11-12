@@ -2,7 +2,7 @@
 // a whole read, then each read since the revision shown merged into it (the Feature "Follow Yard
 // Log in a pane"). Pure, so that each rule is tested on its own.
 
-import type { PaneBlock, PaneStage, PaneView } from '../../../types'
+import type { PaneActor, PaneBlock, PaneStage, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
 import { isObject, textOf } from '../../model'
 import { openSubmissions, pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
@@ -20,8 +20,12 @@ function kept(block: Block): PaneBlock {
 }
 
 /** Of a stage, only what the pane draws, with the blocks the read gives of it. */
-function keptStage(stage: Stage): PaneStage {
-  return { ...kept(stage), blocks: (stage.blocks ?? []).map(kept) }
+function keptStage(stage: Stage, before?: PaneStage): PaneStage {
+  return {
+    ...kept(stage),
+    owner: isObject(stage.owner) ? (stage.owner as PaneActor) : null,
+    blocks: before ? merged(before.blocks, stage.blocks ?? []) : (stage.blocks ?? []).map(kept),
+  }
 }
 
 const revisionOf = (doc: Doc, otherwise: number) => (typeof doc.revision === 'number' ? doc.revision : otherwise)
@@ -31,17 +35,28 @@ function identityOf(doc: Doc) {
   return { tree: textOf(doc.tree), branch: textOf(doc.branch), log }
 }
 
+/** The repository's main worktree: the folder that holds git's common directory, where it is `.git`. */
+function repositoryOf(doc: Doc): string | null {
+  const common = textOf(doc.commonDir)
+  return common.endsWith('/.git') ? common.slice(0, -'/.git'.length) : null
+}
+
+/** The blocks of the open submissions, the oldest submission first, each in its own order. */
 function sentOf(doc: Doc): string[] {
   return openSubmissions(doc).flatMap(each => each.blocks)
 }
 
 /** The view of a whole read. */
 function whole(doc: Doc): PaneView {
+  const identity = identityOf(doc)
+  const title = isObject(doc.yardLog) && typeof doc.yardLog.title === 'string' ? doc.yardLog.title : identity.branch
   return {
-    ...identityOf(doc),
+    ...identity,
+    repository: repositoryOf(doc),
+    title,
     revision: revisionOf(doc, 0),
     page: pageOf(doc) ?? null,
-    stages: stagesOf(doc).map(keptStage),
+    stages: stagesOf(doc).map(stage => keptStage(stage)),
     sent: sentOf(doc),
   }
 }
@@ -84,7 +99,7 @@ export function followed(view: PaneView | undefined, doc: Doc): PaneView | undef
   const changed = new Map(read.map(stage => [stage.key, stage]))
   const stages = view.stages.map(stage => {
     const fresh = changed.get(stage.key)
-    return fresh ? { ...kept(fresh), blocks: merged(stage.blocks, fresh.blocks ?? []) } : stage
+    return fresh ? keptStage(fresh, stage) : stage
   })
   return { ...view, revision, page, stages, sent }
 }
@@ -94,16 +109,49 @@ export function waitingIn(view: PaneView): PaneBlock[] {
   return waitingAmong(new Map(view.stages.flatMap(stage => stage.blocks.map(block => [block.key, block] as const))), view.sent)
 }
 
-/** The channel a block was answered or decided on, once it was. */
-export function answeredOn(block: PaneBlock): string | undefined {
-  const given = block.answer ?? block.outcome
-  return given && typeof given.channel === 'string' ? given.channel : undefined
-}
-
 /**
  * The Yard page's address as a link a surface makes of it: Claude Code Desktop links plain http
  * only to `localhost`, which the page server answers as it answers 127.0.0.1.
  */
 export function linkOf(page: string): string {
   return page.replace(/^http:\/\/127\.0\.0\.1([:/])/, 'http://localhost$1')
+}
+
+/** A path's last part. */
+const baseOf = (path: string) => path.split('/').filter(part => part !== '').at(-1) ?? path
+
+/**
+ * What the head names above the title, as the page does: the repository, the worktree where it is
+ * not the main one, and the branch where the title is not its name.
+ */
+export function kickerOf(view: PaneView): string[] {
+  const repository = view.repository ?? view.tree
+  return [
+    baseOf(repository),
+    ...(view.repository !== null && view.tree !== view.repository ? [baseOf(view.tree)] : []),
+    ...(view.title !== view.branch ? [view.branch] : []),
+  ]
+}
+
+const STATUSES = ['done', 'active', 'planned', 'dropped'] as const
+
+/** The head's line that sums up the stages, as `3 stages: 2 done, 1 active, 0 planned`; dropped only where any is. */
+export function summaryOf(view: PaneView): string {
+  const counts = STATUSES.map(status => [status, view.stages.filter(stage => stage.version.body.status === status).length] as const)
+  const tally = counts.filter(([status, n]) => n > 0 || status !== 'dropped').map(([status, n]) => `${n} ${status}`)
+  const n = view.stages.length
+  return `${n} ${n === 1 ? 'stage' : 'stages'}: ${tally.join(', ')}`
+}
+
+/** The agent that owns a stage, as the page names it: the main agent, or a subagent by its type. */
+export function ownerOf(owner: PaneStage['owner']): string | null {
+  if (!owner) return null
+  return typeof owner.agent === 'string' ? `${textOf(owner.agentType) || 'a'} subagent` : 'main agent'
+}
+
+/** The letter of the option at `index`: A to Z, then AA, AB and on, as the page letters them. */
+export function letterOf(index: number): string {
+  let text = ''
+  for (let n = index; n >= 0; n = Math.floor(n / 26) - 1) text = String.fromCharCode(65 + (n % 26)) + text
+  return text
 }

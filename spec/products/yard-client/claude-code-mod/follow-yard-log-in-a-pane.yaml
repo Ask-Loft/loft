@@ -2,9 +2,9 @@ key: 01a1cfe2-478e-75d1-b104-04d8469599d2
 slug: follow-yard-log-in-a-pane
 name: "Follow Yard Log in a pane"
 body: |
-  The Yard page lives in a browser, beside the agent rather than in it. The pane brings the branch's Yard Log into Claude Code itself, in the terminal and in Claude Code Desktop alike: its stages and tasks as they move, the notes and decisions, and what waits on the person, which they can answer where they already are.
+  The Yard page lives in a browser, beside the agent rather than in it. The pane brings the branch's Yard Log into Claude Code itself, in the terminal and in Claude Code Desktop alike: where the work stands as it moves, and what waits on the person, which they can answer where they already are.
 
-  The pane reaches Yard Log only through `loft yard read` and `loft yard answer`, as the rest of the mod does, and reads only what changed since the revision it shows.
+  The pane reaches Yard Log only through `loft yard read` and `loft yard answer`, as the rest of the mod does, and reads only what changed since the revision it shows. How it stands beside the Yard page, and what it draws, is the Feature "Keep the Yard page beside the session".
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
@@ -26,30 +26,6 @@ requirements:
         name: "Running the command while the pane is open shows the same pane, and opens no second one."
       - key: 01a1cfe2-478e-75d1-b104-04de2a2db6e9
         name: "Where the session's working tree holds no Yard Log, the pane says so and names the branch."
-  - key: 01a1cfe2-478e-75d1-b104-04df60256262
-    statement:
-      form: ubiquitous
-      system: "The pane"
-      shall: "show the branch's Yard Log as its stages, in their order, under a header that names the branch."
-    criteria:
-      - key: 01a1cfe2-478e-75d1-b104-04e08deef20b
-        name: "The header shows the branch, the revision shown and the address of the Yard page."
-      - key: 01a1cfe2-478e-75d1-b104-04e15b4516b0
-        name: "Each stage shows its title, its status and its goal."
-      - key: 01a1cfe2-478e-75d1-b104-04e29d44498e
-        name: "Each task shows its title and its state."
-      - key: 01a1cfe2-478e-75d1-b104-04e31b6ae5ad
-        name: "A task of the type `fix` is marked as a fix."
-      - key: 01a1cfe2-478e-75d1-b104-04e4f43589f1
-        name: "A note shows its title and its Markdown, drawn as Markdown."
-      - key: 01a1cfe2-478e-75d1-b104-04e5b757bd92
-        name: "A decision shows its title and its consequence."
-      - key: 01a1cfe2-478e-75d1-b104-04e66ffb3c99
-        name: "A `loft` block shows its view and its note, and no report."
-      - key: 01a1cfe2-478e-75d1-b104-04e7839a3e69
-        name: "A stage `done` or `dropped` shows its title and status alone until the person unfolds it."
-      - key: 01a1cfe2-478e-75d1-b104-04e8ffb8d768
-        name: "A stage `planned` or `active` shows its blocks."
   - key: 01a1cfe2-478e-75d1-b104-04e9379b7127
     statement:
       form: state_driven
@@ -58,9 +34,9 @@ requirements:
       shall: "show each change to the Yard Log it shows."
     criteria:
       - key: 01a1cfe2-478e-75d1-b104-04ead25bf4dc
-        name: "A block that any agent writes shows within 2 seconds of the write."
+        name: "A write of any agent that changes what the pane shows shows within 2 seconds of the write."
       - key: 01a1cfe2-478e-75d1-b104-04eb39d4b416
-        name: "An answer or a decision given on the page shows within 2 seconds."
+        name: "A block answered or decided on the page leaves what waits within 2 seconds."
       - key: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
         name: "The read the pane makes every second asks `loft yard read` only for what changed since the revision shown."
       - key: 01a1d007-2070-754c-bc33-f3cc6389cd12
@@ -73,20 +49,6 @@ requirements:
         name: "A checkout of another branch in the working tree shows that branch's Yard Log within 2 seconds."
       - key: 01a1cfe2-478e-75d1-b104-04efb1c2e815
         name: "While the pane is closed, the Loft mod reads nothing for it."
-  - key: 01a1cfe2-478e-75d1-b104-04f05a5573bc
-    statement:
-      form: ubiquitous
-      system: "The pane"
-      shall: "show, above the stages, each block of an open submission that waits on the person."
-    criteria:
-      - key: 01a1cfe2-478e-75d1-b104-04f1651155ff
-        name: "A question shows its header, its prompt, its context drawn as Markdown, and each option's label and detail."
-      - key: 01a1cfe2-478e-75d1-b104-04f2f2c33b76
-        name: "The option a question recommends is marked."
-      - key: 01a1cfe2-478e-75d1-b104-04f3892200ab
-        name: "An approval or a plan shows its title and its Markdown, drawn as Markdown."
-      - key: 01a1cfe2-478e-75d1-b104-04f4e90e6960
-        name: "Where no block waits on the person, the pane shows no such list."
   - key: 01a1cfe2-478e-75d1-b104-04f5f977ef24
     statement:
       form: event_driven

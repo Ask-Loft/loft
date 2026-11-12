@@ -1,20 +1,15 @@
 import { expect, test } from 'claude-code/testing'
 
 import type { PaneView } from '../types'
-import { answeredOn, followed, linkOf, waitingIn } from '../hooks/adapter/pane/model'
-import { block, readDoc, SESSION, stage, TREE } from './yard-world'
+import { followed, linkOf, waitingIn } from '../hooks/adapter/pane/model'
+import { block, OWNER, readDoc, staged, TREE } from './yard-world'
 
-const OWNER = { host: 'claude-code', session: SESSION }
-
-function withBlocks(id: string, status: string, ...blocks: ReturnType<typeof block>[]) {
-  return { ...stage(id, status, OWNER), blocks }
-}
 
 const FIRST = readDoc({
   revision: 4,
   stages: [
-    withBlocks('shape', 'done', block('choice', 'decision', { title: 'Members only', consequence: 'Visitors wait' })),
-    withBlocks('build', 'active', block('store', 'task', { title: 'The store', state: 'active' })),
+    staged('shape', 'done', block('choice', 'decision', { title: 'Members only', consequence: 'Visitors wait' })),
+    staged('build', 'active', block('store', 'task', { title: 'The store', state: 'active' })),
   ],
 })
 
@@ -34,7 +29,7 @@ test('a read since the revision shown replaces each changed block and stage in p
   const since = readDoc({
     revision: 6,
     since: 4,
-    stages: [withBlocks('build', 'active', block('store', 'task', { title: 'The store', state: 'done' }))],
+    stages: [staged('build', 'active', block('store', 'task', { title: 'The store', state: 'done' }))],
   })
   const view = followed(first(), since)!
   expect(view.revision).toBe(6)
@@ -45,7 +40,7 @@ test('a read since the revision shown replaces each changed block and stage in p
 })
 
 test('a changed stage keeps the blocks it held before', () => {
-  const since = readDoc({ revision: 5, since: 4, stages: [withBlocks('shape', 'dropped')] })
+  const since = readDoc({ revision: 5, since: 4, stages: [staged('shape', 'dropped')] })
   const view = followed(first(), since)!
   expect(view.stages[0]!.version.body.status).toBe('dropped')
   expect(view.stages[0]!.blocks.map(each => each.id)).toEqual(['choice'])
@@ -53,10 +48,10 @@ test('a changed stage keeps the blocks it held before', () => {
 
 test('a read since that brings a stage or a block the view does not hold asks for a whole read, which places it', () => {
   const view = first()
-  expect(followed(view, readDoc({ revision: 5, since: 4, stages: [withBlocks('build', 'active', block('result', 'note', { markdown: 'Built.' }))] }))).toBe(undefined)
-  expect(followed(view, readDoc({ revision: 5, since: 4, stages: [withBlocks('opened', 'active')] }))).toBe(undefined)
+  expect(followed(view, readDoc({ revision: 5, since: 4, stages: [staged('build', 'active', block('result', 'note', { markdown: 'Built.' }))] }))).toBe(undefined)
+  expect(followed(view, readDoc({ revision: 5, since: 4, stages: [staged('opened', 'active')] }))).toBe(undefined)
   // A stage opened after the last unplanned one, before a planned one, shows there once read whole.
-  const read = readDoc({ revision: 5, stages: [withBlocks('shape', 'done'), withBlocks('opened', 'active'), withBlocks('build', 'planned')] })
+  const read = readDoc({ revision: 5, stages: [staged('shape', 'done'), staged('opened', 'active'), staged('build', 'planned')] })
   expect(followed(undefined, read)!.stages.map(each => each.id)).toEqual(['shape', 'opened', 'build'])
 })
 
@@ -68,7 +63,7 @@ test('a read of another branch, tree or Yard Log asks for a whole read', () => {
 })
 
 test('a whole read of another branch starts the view over', () => {
-  const other = readDoc({ branch: 'feat/other', revision: 2, stages: [withBlocks('only', 'active')] })
+  const other = readDoc({ branch: 'feat/other', revision: 2, stages: [staged('only', 'active')] })
   const view = followed(first(), other)!
   expect(view.branch).toBe('feat/other')
   expect(view.stages.map(each => each.id)).toEqual(['only'])
@@ -83,7 +78,7 @@ test('a branch with no Yard Log gives a view that says so, with its branch', () 
 const ASKING = readDoc({
   revision: 7,
   stages: [
-    withBlocks(
+    staged(
       'shape',
       'active',
       block('readers', 'question', { prompt: 'Which readers?', header: 'Readers', options: [] }),
@@ -99,20 +94,30 @@ test('what waits on the person is each unanswered block of an open submission, i
   expect(waitingIn(view).map(each => each.id)).toEqual(['go', 'readers'])
 })
 
+test('open submissions sent in the same second wait in the order the Yard page lists them: by the revision each reached, then by key', () => {
+  const at = '2026-10-22T09:00:00Z'
+  const doc = readDoc({
+    stages: [staged('shape', 'active', ...['a', 'b', 'c'].map(id => block(id, 'approval', { title: id, markdown: '' })))],
+    submissions: [
+      {
+        agent: OWNER,
+        open: [
+          { key: 's-b', state: 'open', blocks: ['k-b'], sent: { at, revision: 3 } },
+          { key: 's-c', state: 'open', blocks: ['k-c'], sent: { at, revision: 2 } },
+          { key: 's-a', state: 'open', blocks: ['k-a'], sent: { at, revision: 3 } },
+        ],
+      },
+    ],
+  })
+  expect(waitingIn(followed(undefined, doc)!).map(each => each.id)).toEqual(['c', 'a', 'b'])
+})
+
 test('nothing waits where no submission is open', () => {
   expect(waitingIn(first())).toEqual([])
 })
 
-test('a block answered or decided names the channel it was answered on', () => {
-  const view = followed(undefined, ASKING)!
-  const blocks = view.stages[0]!.blocks
-  expect(answeredOn(blocks.find(each => each.id === 'old')!)).toBe('page')
-  expect(answeredOn(blocks.find(each => each.id === 'go')!)).toBe(undefined)
-  expect(answeredOn({ ...blocks[1]!, outcome: { verdict: 'approved', channel: 'terminal' } })).toBe('terminal')
-})
-
 test('the view keeps of each block only what the pane draws', () => {
-  const read = readDoc({ stages: [withBlocks('s', 'active', { ...block('n', 'note', { markdown: 'x' }), reached: 3, versionCount: 2 } as never)] })
+  const read = readDoc({ stages: [staged('s', 'active', { ...block('n', 'note', { markdown: 'x' }), reached: 3, versionCount: 2 } as never)] })
   const kept = (followed(undefined, read) as PaneView).stages[0]!.blocks[0]!
   expect(Object.keys(kept).sort()).toEqual(['id', 'key', 'kind', 'version'])
 })
@@ -126,4 +131,8 @@ test('a read since the revision shown that changed nothing gives the view shown,
   const view = first()
   expect(followed(view, readDoc({ revision: 4, since: 4, stages: [] }))).toBe(view)
   expect(followed(view, readDoc({ revision: 5, since: 4, stages: [] }))).not.toBe(view)
+})
+
+test("a whole read keeps the agent that owns each stage, which the stage in hand names", () => {
+  expect(first().stages[1]!.owner).toEqual(OWNER)
 })

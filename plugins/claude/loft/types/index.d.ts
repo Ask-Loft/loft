@@ -3,6 +3,9 @@
 /** The page's address for the branch's Yard Log, as the last `loft yard` command gave it. */
 export type YardPage = string | null
 
+/** Who acted, as `loft yard read` names them: an agent by its host and session, or the person by name. */
+export type PaneActor = Record<string, unknown>
+
 /** A block as the Yard pane keeps it: only what the pane draws. */
 export type PaneBlock = {
   id: string
@@ -13,19 +16,23 @@ export type PaneBlock = {
   outcome?: Record<string, unknown> | null
 }
 
-/** A stage as the Yard pane keeps it: its own block and its blocks, in order. */
-export type PaneStage = PaneBlock & { blocks: PaneBlock[] }
+/** A stage as the Yard pane keeps it: its own block, the agent that owns it and its blocks, in order. */
+export type PaneStage = PaneBlock & { owner: PaneActor | null; blocks: PaneBlock[] }
 
 /** What the Yard pane shows: which Yard Log, at which revision, and its stages. */
 export type PaneView = {
   tree: string
+  /** The repository's main worktree, where the read names git's common directory beside it. */
+  repository: string | null
   branch: string
+  /** The Yard Log's title: the branch's name unless it was given another. */
+  title: string
   /** The key of the Yard Log shown; none where the branch has no Yard Log yet. */
   log: string | null
   revision: number
   page: string | null
   stages: PaneStage[]
-  /** The blocks of the open submissions, by key, in each submission's order. */
+  /** The blocks of the open submissions, by key, the oldest submission first, each in its own order. */
   sent: string[]
 }
 
@@ -35,9 +42,11 @@ export type PaneView = {
  */
 export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null }
 
-/** What the person has set in the Yard pane and not sent: the stages unfolded, options ticked, words typed. */
+/** Claude Code Desktop's browser pane, as `/yard-pane` last left it: the tab showing the Yard page, and whether it was reached. */
+export type PaneBrowser = { tab: string | null; isReached: boolean }
+
+/** What the person has set in the Yard pane and not sent: options ticked, words typed. */
 export type YardPaneDrafts = {
-  unfolded: string[]
   ticked: Record<string, string[]>
   words: Record<string, string>
 }
@@ -47,6 +56,7 @@ declare module 'claude-code' {
     loft: {
       yardPage: YardPage
       yardPane: Shaped<YardPane>
+      yardPaneBrowser: Shaped<PaneBrowser | null>
       yardPaneDrafts: Shaped<YardPaneDrafts>
     }
   }

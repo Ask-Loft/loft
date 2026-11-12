@@ -30,10 +30,13 @@ list everything 2.4.0 will hold.
   place of `~/.yard/`, so a `loft` under development runs a page server and session records of
   its own beside an installed one. `loft yard protocol` reports that directory as `home`
   (schema `loft-yard-protocol/2`).
-- `/yard-pane` in Claude Code, terminal or Desktop, opens a pane on the branch's Yard Log: its
-  stages, tasks, notes and decisions as they change, and what waits on you, which you can answer
-  there. Answers are recorded on the channel `terminal`, as in Claude Code's own dialog, and a
-  block answered first elsewhere keeps that answer.
+- `/yard-pane` in Claude Code opens a pane on the branch's Yard Log, the Yard page's companion: the
+  stage in hand with its active tasks, and what waits on you, oldest first, with lettered option
+  cards to answer there. Answers are recorded on the channel `terminal`, as in Claude Code's own
+  dialog, and a block answered first elsewhere keeps that answer. In Claude Code Desktop the
+  command also opens the Yard page itself in Desktop's browser pane, at the session's branch, and
+  shows its tab again on the next run; elsewhere the pane links the page. The pane's colours
+  follow each surface's light or dark.
 
 ## 2.3.0 (2026-11-05)
 
