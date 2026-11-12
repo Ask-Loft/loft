@@ -5,35 +5,33 @@
 
 import type { EngineInterface } from 'claude-code'
 
-import type { PaneBlock } from '../../../types'
 import type { Given } from '../answers'
-import { callerArgs, failureOf, succeeded } from '../run'
-import { continued, run } from '../state'
-import { paneOf, setDrafts, setPane } from './atoms'
+import { record } from '../asking'
+import { failureOf, succeeded } from '../run'
+import { callerOf } from '../state'
+import { paneOf, setDrafts } from './atoms'
 import { readPane } from './follow'
 
 /** The answer to a question: the labels chosen, and the person's own words where they typed some. */
-export function questionGiven(block: PaneBlock, labels: readonly string[], words: string | undefined): Given | undefined {
+export function questionGiven(key: string, labels: readonly string[], words: string | undefined): Given | undefined {
   const typed = words?.trim() ?? ''
   if (labels.length === 0 && typed === '') return undefined
-  return { block: block.key, ...(labels.length > 0 ? { labels: [...labels] } : {}), ...(typed !== '' ? { words: typed } : {}) }
+  return { block: key, ...(labels.length > 0 ? { labels: [...labels] } : {}), ...(typed !== '' ? { words: typed } : {}) }
 }
 
 /** The decision of an approval or a plan: `rejected` with the words typed as its reason, where any. */
-export function decisionGiven(block: PaneBlock, isApproved: boolean, reason: string | undefined): Given {
+export function decisionGiven(key: string, isApproved: boolean, reason: string | undefined): Given {
+  if (isApproved) return { block: key, verdict: 'approved' }
   const typed = reason?.trim() ?? ''
-  if (isApproved) return { block: block.key, verdict: 'approved' }
-  return { block: block.key, verdict: 'rejected', ...(typed !== '' ? { reason: typed } : {}) }
+  return { block: key, verdict: 'rejected', ...(typed !== '' ? { reason: typed } : {}) }
 }
 
-/** Records `given` for the Yard Log the pane shows, then reads what changed. */
-export async function record($: EngineInterface, given: Given) {
+/** Records `given` for the Yard Log the pane shows, forgets what was set for it, and reads what changed. */
+export async function answerIn($: EngineInterface, given: Given) {
   const view = (await paneOf($)).view
   if (view === null) return
-  const session = await continued($)
-  const ran = await run($, await $.session.cwd(), ['answer', '--input', '-', ...callerArgs({ session, tree: view.tree })], JSON.stringify([given]))
-  const notice = succeeded(ran) ? null : failureOf(ran)
-  await setPane($, before => ({ ...before, notice }))
+  const [caller, cwd] = await Promise.all([callerOf($, undefined), $.session.cwd()])
+  const ran = await record($, cwd, { ...caller, tree: view.tree }, [given])
   await setDrafts($, before => {
     const ticked = { ...before.ticked }
     const words = { ...before.words }
@@ -41,5 +39,5 @@ export async function record($: EngineInterface, given: Given) {
     delete words[given.block]
     return { ...before, ticked, words }
   })
-  await readPane($)
+  await readPane($, succeeded(ran) ? null : failureOf(ran))
 }

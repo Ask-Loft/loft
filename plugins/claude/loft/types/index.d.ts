@@ -22,7 +22,6 @@ export type PaneView = {
   branch: string
   /** The key of the Yard Log shown; none where the branch has no Yard Log yet. */
   log: string | null
-  hasLog: boolean
   revision: number
   page: string | null
   stages: PaneStage[]

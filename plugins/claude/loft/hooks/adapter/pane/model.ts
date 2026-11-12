@@ -2,12 +2,10 @@
 // a whole read, then each read since the revision shown merged into it (the Feature "Follow Yard
 // Log in a pane"). Pure, so that each rule is tested on its own.
 
-import type { PaneBlock, PaneView } from '../../../types'
+import type { PaneBlock, PaneStage, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
-import { isObject } from '../../model'
-import { blocksByKey, openSubmissions, pageOf, stagesOf, waits, type Block } from '../log'
-
-export type { PaneView }
+import { isObject, textOf } from '../../model'
+import { openSubmissions, pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
 
 /** Of a block, only what the pane draws. */
 function kept(block: Block): PaneBlock {
@@ -21,7 +19,12 @@ function kept(block: Block): PaneBlock {
   }
 }
 
-const textOf = (value: unknown) => (typeof value === 'string' ? value : '')
+/** Of a stage, only what the pane draws, with the blocks the read gives of it. */
+function keptStage(stage: Stage): PaneStage {
+  return { ...kept(stage), blocks: (stage.blocks ?? []).map(kept) }
+}
+
+const revisionOf = (doc: Doc, otherwise: number) => (typeof doc.revision === 'number' ? doc.revision : otherwise)
 
 function identityOf(doc: Doc) {
   const log = isObject(doc.yardLog) && typeof doc.yardLog.key === 'string' ? doc.yardLog.key : null
@@ -34,13 +37,11 @@ function sentOf(doc: Doc): string[] {
 
 /** The view of a whole read. */
 function whole(doc: Doc): PaneView {
-  const identity = identityOf(doc)
   return {
-    ...identity,
-    hasLog: identity.log !== null,
-    revision: typeof doc.revision === 'number' ? doc.revision : 0,
+    ...identityOf(doc),
+    revision: revisionOf(doc, 0),
     page: pageOf(doc) ?? null,
-    stages: stagesOf(doc).map(stage => ({ ...kept(stage), blocks: (stage.blocks ?? []).map(kept) })),
+    stages: stagesOf(doc).map(keptStage),
     sent: sentOf(doc),
   }
 }
@@ -56,50 +57,43 @@ function merged(blocks: readonly PaneBlock[], changed: readonly Block[]): PaneBl
   return next
 }
 
+const sameList = (one: readonly string[], other: readonly string[]) => one.length === other.length && one.every((each, n) => each === other[n])
+
 /**
  * The view after a read: a whole read starts it over; a read since the revision shown is merged
  * in, a changed stage keeping its blocks and a new stage going after the one before it in the read.
- * Undefined where a read since names another tree, branch or Yard Log: the pane then reads it whole.
+ * A read that changed nothing gives the view shown, the same object. Undefined where a read since
+ * names another tree, branch or Yard Log: the pane then reads it whole.
  */
 export function followed(view: PaneView | undefined, doc: Doc): PaneView | undefined {
-  if (typeof doc.since !== 'number' || view === undefined) return typeof doc.since === 'number' ? undefined : whole(doc)
+  if (typeof doc.since !== 'number') return whole(doc)
+  if (view === undefined) return undefined
   const identity = identityOf(doc)
   if (identity.tree !== view.tree || identity.branch !== view.branch || identity.log !== view.log) return undefined
+  const read = stagesOf(doc)
+  const revision = revisionOf(doc, view.revision)
+  const page = pageOf(doc) ?? view.page
+  const sent = sentOf(doc)
+  if (read.length === 0 && revision === view.revision && page === view.page && sameList(sent, view.sent)) return view
   const stages = [...view.stages]
   let before: string | undefined
-  for (const read of stagesOf(doc)) {
-    const at = stages.findIndex(each => each.key === read.key)
+  for (const stage of read) {
+    const at = stages.findIndex(each => each.key === stage.key)
     if (at === -1) {
       const after = before === undefined ? -1 : stages.findIndex(each => each.key === before)
-      const stage = { ...kept(read), blocks: (read.blocks ?? []).map(kept) }
-      if (after === -1) stages.push(stage)
-      else stages.splice(after + 1, 0, stage)
+      if (after === -1) stages.push(keptStage(stage))
+      else stages.splice(after + 1, 0, keptStage(stage))
     } else {
-      stages[at] = { ...kept(read), blocks: merged(stages[at]!.blocks, read.blocks ?? []) }
+      stages[at] = { ...kept(stage), blocks: merged(stages[at]!.blocks, stage.blocks ?? []) }
     }
-    before = read.key
+    before = stage.key
   }
-  return {
-    ...view,
-    revision: typeof doc.revision === 'number' ? doc.revision : view.revision,
-    page: pageOf(doc) ?? view.page,
-    stages,
-    sent: sentOf(doc),
-  }
-}
-
-/** The revision a read since asks from: the one shown; none before the first read. */
-export function sinceOf(view: PaneView | undefined): number | undefined {
-  return view?.revision
+  return { ...view, revision, page, stages, sent }
 }
 
 /** The blocks of the open submissions that wait on the person, in the submissions' order. */
-export function waitingOf(view: PaneView): PaneBlock[] {
-  const blocks = blocksByKey({ outcome: 'read', stages: view.stages })
-  return view.sent.flatMap(key => {
-    const block = blocks.get(key)
-    return block && waits(block) ? [block] : []
-  })
+export function waitingIn(view: PaneView): PaneBlock[] {
+  return waitingAmong(new Map(view.stages.flatMap(stage => stage.blocks.map(block => [block.key, block] as const))), view.sent)
 }
 
 /** The channel a block was answered or decided on, once it was. */

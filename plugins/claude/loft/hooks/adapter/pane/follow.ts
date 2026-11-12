@@ -1,20 +1,20 @@
 // The Yard pane's command and its follow of Yard Log: `/yard-pane` opens the pane, which reads the
 // Yard Log of the session's working tree whole, then every second only what changed since the
-// revision it shows, and stops once the pane is closed. It never marks a revision read (the
-// Feature "Follow Yard Log in a pane").
+// revision it shows, while a surface draws it, and stops once the pane is closed. It never marks a
+// revision read (the Feature "Follow Yard Log in a pane").
 
 import type { EngineInterface, On, Timer } from 'claude-code'
 
 import { callerArgs, failureOf, succeeded } from '../run'
-import { continued, run } from '../state'
+import { callerOf, run } from '../state'
 import { paneOf, setPane } from './atoms'
-import { followed, sinceOf } from './model'
+import { followed } from './model'
 
 /** The pane's id, which its `ui.render` hook names as `requestId`. */
 export const PANE = 'yard'
-export const COMMAND = 'yard-pane'
+const COMMAND = 'yard-pane'
 /** How often an open pane reads what changed. */
-export const FOLLOW = 1000
+const FOLLOW = 1000
 
 /** What the module keeps of the follow: its timer, and whether a read is under way. */
 const following: { timer: Timer | undefined; isReading: boolean } = { timer: undefined, isReading: false }
@@ -25,7 +25,7 @@ export async function registerCommand($: EngineInterface) {
 }
 
 /** Opens the pane, or shows it again, read whole, and follows Yard Log while it stays open. */
-export async function openPane($: EngineInterface) {
+async function openPane($: EngineInterface) {
   await setPane($, () => ({ view: null, failure: null, notice: null }))
   const opened = await $.ui.open({ id: PANE, title: 'Yard' })
   await readPane($)
@@ -34,32 +34,38 @@ export async function openPane($: EngineInterface) {
 }
 
 async function tick($: EngineInterface) {
-  const isOpen = (await $.ui.panes()).some(each => each.id === PANE)
-  if (!isOpen) {
+  const open = (await $.ui.panes()).find(each => each.id === PANE)
+  if (!open) {
     following.timer?.cancel()
     following.timer = undefined
     return
   }
-  await readPane($)
+  if (open.isPlaced) await readPane($)
 }
 
 /**
  * Reads what changed since the revision shown, or Yard Log whole where nothing is shown yet or
- * the read names another tree, branch or Yard Log than the one shown.
+ * the read names another tree, branch or Yard Log than the one shown; and keeps `notice`, where
+ * an answer gives one, in the same write. A read that changes nothing writes nothing.
  */
-export async function readPane($: EngineInterface) {
-  if (following.isReading) return
+export async function readPane($: EngineInterface, notice?: string | null) {
+  if (following.isReading) {
+    if (notice !== undefined) await setPane($, before => ({ ...before, notice }))
+    return
+  }
   following.isReading = true
   try {
-    const shown = (await paneOf($)).view ?? undefined
-    let ran = await readSince($, sinceOf(shown))
+    const held = await paneOf($)
+    const shown = held.view ?? undefined
+    let ran = await readSince($, shown?.revision)
     let view = succeeded(ran) ? followed(shown, ran.doc) : undefined
     if (succeeded(ran) && view === undefined) {
       ran = await readSince($, undefined)
       view = succeeded(ran) ? followed(undefined, ran.doc) : undefined
     }
     const failure = succeeded(ran) ? null : failureOf(ran)
-    await setPane($, before => ({ ...before, view: view ?? before.view, failure }))
+    if (view === shown && failure === held.failure && notice === undefined) return
+    await setPane($, before => ({ view: view ?? before.view, failure, notice: notice === undefined ? before.notice : notice }))
   } finally {
     following.isReading = false
   }
@@ -67,9 +73,8 @@ export async function readPane($: EngineInterface) {
 
 /** One `loft yard read` for the session's main agent, since `since` where given. */
 async function readSince($: EngineInterface, since: number | undefined) {
-  const session = await continued($)
-  const cwd = await $.session.cwd()
-  return run($, cwd, ['read', ...callerArgs({ session }), ...(since === undefined ? [] : ['--since', String(since)])])
+  const [caller, cwd] = await Promise.all([callerOf($, undefined), $.session.cwd()])
+  return run($, cwd, ['read', ...callerArgs(caller), ...(since === undefined ? [] : ['--since', String(since)])])
 }
 
 /** Hooks `/yard-pane`, and starts the follow over for a module just loaded. */

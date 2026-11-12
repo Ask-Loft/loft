@@ -1,8 +1,8 @@
 import { expect, test, type Mounted } from 'claude-code/testing'
 
-import { block, PAGE, readDoc, stage, start, world, yardRuns, type Engine, type World } from './yard-world'
+import { block, PAGE, readDoc, SESSION, stage, start, world, yardRuns, type Engine, type World } from './yard-world'
 
-const OWNER = { host: 'claude-code', session: 'session-1' }
+const OWNER = { host: 'claude-code', session: SESSION }
 
 /** The `loft yard read` runs, as the words after `yard` but the port and the format every run names. */
 const reads = (w: World) =>
@@ -93,7 +93,7 @@ const mountFielded = ($: Engine, surface: (typeof FIELDED)[number]) => $.ui.moun
 
 function staged(id: string, status: string, goal: string, ...blocks: ReturnType<typeof block>[]) {
   const held = stage(id, status, OWNER)
-  return { ...held, version: { body: { ...held.version.body, title: `Stage ${id}`, goal } }, blocks }
+  return { ...held, version: { body: { ...held.version.body, goal } }, blocks }
 }
 
 const LOG = readDoc({

@@ -94,15 +94,18 @@ export function waits(block: Block): boolean {
   return ASKED.has(block.kind) && !block.answer && !block.outcome
 }
 
-/** The blocks of a submission that still wait on the person, in the submission's order. */
-export function waitingOf(doc: Doc, submission: string): Block[] {
-  const sent = openSubmissions(doc).find(each => each.key === submission)
-  if (!sent) return []
-  const blocks = blocksByKey(doc)
-  return sent.blocks.flatMap(key => {
+/** The blocks of `keys` that still wait on the person, in that order. */
+export function waitingAmong<B extends Block>(blocks: ReadonlyMap<string, B>, keys: readonly string[]): B[] {
+  return keys.flatMap(key => {
     const block = blocks.get(key)
     return block && waits(block) ? [block] : []
   })
+}
+
+/** The blocks of a submission that still wait on the person, in the submission's order. */
+export function waitingOf(doc: Doc, submission: string): Block[] {
+  const sent = openSubmissions(doc).find(each => each.key === submission)
+  return sent ? waitingAmong(blocksByKey(doc), sent.blocks) : []
 }
 
 /** The page's address for the branch's own Yard Log, where a page server serves it. */

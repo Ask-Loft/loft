@@ -34187,7 +34187,7 @@ links:
         body: 6e481fc74c9ac1c16ff337c81228f79cd8e5577a14c6cd7351b3045550e241c1
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "a branch with no Yard Log gives a view that says so, with its branch"
-        body: 7220de34f3e76a8c10ffe064b3f8c73b3384093f5d18283b8c38a7276493c7d8
+        body: 6cf3f2e8a0e6d4670c0b26ff83f2573e4b5755e31301b68a4131dd7481ca3b06
   - node: 01a1cfe2-478e-75d1-b104-04e08deef20b
     reviewed: 5b287847f52a67868e318a3d4edf3dcd2245da4f287d48bc10338b2a16395356
     tests:
@@ -34205,7 +34205,7 @@ links:
         body: ef48b92d63ae9399ca3a76d6bd44dc715beafac83142df4097f403ee1171cd0d
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "a first read gives the stages in their order, each with its blocks, at its revision"
-        body: b34178ca9f034d16f827406752fcb7375bfbd4cf45964ec582fb5a78772d556a
+        body: 4f959fa5eba2fdfc5fa2a04873d307d57497e0604a55dfab5657d061197aa7e4
   - node: 01a1cfe2-478e-75d1-b104-04e29d44498e
     reviewed: caf6cc04277d49bd662d1c9aec04177a542ea67ab9d68b9d6c631f3f99525100
     tests:
@@ -34322,7 +34322,7 @@ links:
         body: 2d618d88d60474d90a0cf3428e761e331a66733213607e0a031df1470a70782c
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "nothing waits where no submission is open"
-        body: 1d047db67c493dcccbd0fdc5c5ebf2c311987edb39975780072f1b17668ae558
+        body: 44d2876ee2019204b20158ce020c008e1d6e3f5549471808bdfdea19a6d052fd
   - node: 01a1cfe2-478e-75d1-b104-04f6166ca30a
     reviewed: b79ddb2fbffec1f36512d9bc6aa906036aa87248ef7a83ffe4494b806e9a7fdf
     tests:
@@ -34367,7 +34367,7 @@ links:
         body: ad1aaaec9f6255262c1f02930e0bb56fe1b73cf2e343fccf09d1dd5c67cd7fbe
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "what waits on the person is each unanswered block of an open submission, in the order the submission holds them"
-        body: e1fa22b0db0bcd082febe77dcaa96bfaf5a3362381b8cf35d02486c9cf424e86
+        body: 1294ec53d339e4b2db49c48d8e07a481b7a6edf1e754cbff165094aeaa7af258
   - node: 01a1cfe2-478e-75d1-b104-04fdedc77daa
     reviewed: cee70f34c41887f00ea64f75fb60d5e52b8662cdd7c59df4b269a5a00f6620a7
     tests:

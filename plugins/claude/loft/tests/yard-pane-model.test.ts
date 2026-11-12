@@ -1,9 +1,10 @@
 import { expect, test } from 'claude-code/testing'
 
-import { answeredOn, followed, linkOf, sinceOf, waitingOf, type PaneView } from '../hooks/adapter/pane/model'
-import { block, readDoc, stage, TREE } from './yard-world'
+import type { PaneView } from '../types'
+import { answeredOn, followed, linkOf, waitingIn } from '../hooks/adapter/pane/model'
+import { block, readDoc, SESSION, stage, TREE } from './yard-world'
 
-const OWNER = { host: 'claude-code', session: 'session-1' }
+const OWNER = { host: 'claude-code', session: SESSION }
 
 function withBlocks(id: string, status: string, ...blocks: ReturnType<typeof block>[]) {
   return { ...stage(id, status, OWNER), blocks }
@@ -24,11 +25,9 @@ test('a first read gives the stages in their order, each with its blocks, at its
   expect(view.branch).toBe('feat/shelf')
   expect(view.tree).toBe(TREE)
   expect(view.revision).toBe(4)
-  expect(view.hasLog).toBe(true)
+  expect(view.log).toBe('yard-log-1')
   expect(view.stages.map(each => each.id)).toEqual(['shape', 'build'])
   expect(view.stages[1]!.blocks.map(each => each.id)).toEqual(['store'])
-  expect(sinceOf(view)).toBe(4)
-  expect(sinceOf(undefined)).toBe(undefined)
 })
 
 test('a read since the revision shown replaces each changed block and stage in place, and adds a new block last', () => {
@@ -79,7 +78,7 @@ test('a whole read of another branch starts the view over', () => {
 
 test('a branch with no Yard Log gives a view that says so, with its branch', () => {
   const view = followed(undefined, readDoc({ yardLog: { title: 'feat/new', branch: 'feat/new' }, branch: 'feat/new', stages: [], revision: 0 }))!
-  expect(view.hasLog).toBe(false)
+  expect(view.log).toBe(null)
   expect(view.branch).toBe('feat/new')
 })
 
@@ -99,11 +98,11 @@ const ASKING = readDoc({
 
 test('what waits on the person is each unanswered block of an open submission, in the order the submission holds them', () => {
   const view = followed(undefined, ASKING)!
-  expect(waitingOf(view).map(each => each.id)).toEqual(['go', 'readers'])
+  expect(waitingIn(view).map(each => each.id)).toEqual(['go', 'readers'])
 })
 
 test('nothing waits where no submission is open', () => {
-  expect(waitingOf(first())).toEqual([])
+  expect(waitingIn(first())).toEqual([])
 })
 
 test('a block answered or decided names the channel it was answered on', () => {
@@ -123,4 +122,10 @@ test('the view keeps of each block only what the pane draws', () => {
 test("the Yard page's loopback address is linked as localhost, which Claude Code Desktop links", () => {
   expect(linkOf('http://127.0.0.1:7411/#tree=%2Fw')).toBe('http://localhost:7411/#tree=%2Fw')
   expect(linkOf('https://yard.example/#x')).toBe('https://yard.example/#x')
+})
+
+test('a read since the revision shown that changed nothing gives the view shown, so the pane is not drawn again', () => {
+  const view = first()
+  expect(followed(view, readDoc({ revision: 4, since: 4, stages: [] }))).toBe(view)
+  expect(followed(view, readDoc({ revision: 5, since: 4, stages: [] }))).not.toBe(view)
 })

@@ -8,11 +8,9 @@ import type { EngineInterface } from 'claude-code'
 
 import type { YardPane, YardPaneDrafts } from '../../../types'
 
-const pane = atom({ plugin: 'loft', key: 'yardPane' } as const, { view: null, failure: null, notice: null } as YardPane, { shape: 'yard-pane-2' })
+const pane = atom({ plugin: 'loft', key: 'yardPane' } as const, { view: null, failure: null, notice: null } as YardPane, { shape: 'yard-pane-3' })
 
-const NO_DRAFTS: YardPaneDrafts = { unfolded: [], ticked: {}, words: {} }
-
-const drafts = atom({ plugin: 'loft', key: 'yardPaneDrafts' } as const, NO_DRAFTS, { shape: 'yard-pane-drafts-1' })
+const drafts = atom({ plugin: 'loft', key: 'yardPaneDrafts' } as const, { unfolded: [], ticked: {}, words: {} } as YardPaneDrafts, { shape: 'yard-pane-drafts-1' })
 
 /** The pane's view and its last failure; read while drawing, it redraws the pane on a change. */
 export function paneOf($: EngineInterface) {
