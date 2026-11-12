@@ -39,8 +39,12 @@ list everything 2.4.0 will hold.
   with the page's address and a suggestion to open it. The pane's colours follow each surface's
   light or dark.
 - `loft yard page` prints the Yard page's address for the worktree and its branch, with a line on
-  what the page shows, or says that no page server serves it. In Codex, which offers a plugin no
-  command of its own, the skill `$loft:yard-page` has the agent run it and relay its words.
+  what the page shows, or says that no page server runs, or that one runs but does not serve the
+  tree yet. In Codex, which offers a plugin no command of its own, the skill `$loft:yard-page` has
+  the agent run it and relay its words.
+- Every `loft yard` command gives the page's address where the run may not write the machine's
+  home, as in Codex's sandbox, once the page server serves the tree: finding the page server only
+  reads its lock, and a tree already served writes nothing.
 
 ## 2.3.0 (2026-11-05)
 
