@@ -29,7 +29,7 @@ requirements:
   - key: 01a1d123-dd40-7261-9ea6-093511ef9482
     statement:
       form: unwanted
-      if: "no page server serves the page"
+      if: "no page server runs"
       system: "`loft yard page`"
       shall: "say that none does, name `loft yard serve`, and exit 1."
     criteria:
@@ -37,3 +37,16 @@ requirements:
         name: "The words give no address and name `loft yard serve`."
       - key: 01a1d123-dd40-7261-9ea6-09375f70aceb
         name: "The command exits 1 with the outcome `unavailable`, and its result gives `page` with `available` false."
+  - key: 01a1d144-b628-7658-b662-a69dbc462864
+    statement:
+      form: unwanted
+      if: "a page server runs but cannot serve the tree, as where a run may not write the machine's home"
+      system: "`loft yard page`"
+      shall: "say that the page server on its port does not serve the tree yet, and exit 1."
+    criteria:
+      - key: 01a1d144-b628-7658-b662-a69ef5586fb3
+        name: "The words name the page server's port and say that it does not serve the tree yet."
+      - key: 01a1d144-e9d4-70fd-a1b7-0b4389f764df
+        name: "The words give no address and do not name `loft yard serve`."
+      - key: 01a1d144-b628-7658-b662-a69f71c808d2
+        name: "The command exits 1 with the outcome `unavailable`, and its result gives `page` with `available` false and the running page server's port."

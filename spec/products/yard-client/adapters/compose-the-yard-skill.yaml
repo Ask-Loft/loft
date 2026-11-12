@@ -30,6 +30,8 @@ requirements:
         name: "The Codex package is the shared source followed by its Codex adaptation in one SKILL.md of at most 500 lines."
       - key: 01a1787c-f803-70b1-b946-b71b18646046
         name: "The Codex adaptation names caller identity, revision handling, all six Yard CLI operations, task mirroring and page-based submissions."
+      - key: 01a1d144-b627-70b3-a7fa-119f826bb1a9
+        name: "The Codex adaptation gives the caller's identity and `--format json` to its six Yard CLI operations alone, not to every `loft yard` command."
       - key: 01a1787c-f803-70b1-b946-b71c877ab0bd
         name: "The Codex adaptation keeps native mode and permission controls separate from page approval."
   - key: 01a1795d-05c7-708c-baca-726db6233a60
@@ -75,7 +77,7 @@ requirements:
       - key: 01a1d123-dd3f-7153-9249-3a3ba0959f58
         name: "The skill has the agent run `loft yard page` once, with no options and no caller's identity, and give its words, the address included, adding nothing."
       - key: 01a1d123-dd3f-7153-9249-3a3cec086406
-        name: "Where `loft yard page` says no page server serves the page, the skill has the agent relay that and run nothing more."
+        name: "Where `loft yard page` says the page has no address, the skill has the agent relay its words and run nothing more."
       - key: 01a1d123-dd3f-7153-9249-3a3da64435d6
         name: "The Claude Code plugin carries no `yard-page` skill, and `loft skill install` installs it nowhere."
       - key: 01a1d123-dd3f-7153-9249-3a3ee9543cc8
