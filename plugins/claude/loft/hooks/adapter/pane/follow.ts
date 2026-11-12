@@ -5,6 +5,8 @@
 
 import type { EngineInterface, On, Timer } from 'claude-code'
 
+import type { YardPane } from '../../../types'
+
 import { callerArgs, failureOf, succeeded } from '../run'
 import { callerOf, run } from '../state'
 import { browserOf, paneOf, setBrowser, setPane } from './atoms'
@@ -18,19 +20,24 @@ const COMMAND = 'yard-pane'
 const FOLLOW = 1000
 
 /**
- * What the module keeps of the follow: its timer; whether a read is under way and whether another
+ * What the module keeps of the follow: its timer; the read under way, if one is, and whether another
  * is asked for after it; the epoch, which an open moves on so that a read begun before it writes
- * nothing; the notice an answer left for the next write; and whether an open asked for the Yard
- * page in Desktop's browser pane that no read has yet brought the address of.
+ * nothing; the notice an answer left for the next write; whether an open asked for the Yard
+ * page in Desktop's browser pane that no read has yet brought the address of; and the view and
+ * failure the last read ended with, which a caller of `readPane` is given.
  */
 const following = {
   timer: undefined as Timer | undefined,
-  isReading: false,
+  reading: undefined as Promise<void> | undefined,
   again: false,
   epoch: 0,
   notice: undefined as string | null | undefined,
   isPageAsked: false,
+  read: { view: null, failure: null } as Read,
 }
+
+/** What a read of Yard Log ended with: the view, and why the read failed, if it did. */
+type Read = Pick<YardPane, 'view' | 'failure'>
 
 /** Offers `/yard-pane` for the session, to run even while a turn runs. */
 export async function registerCommand($: EngineInterface) {
@@ -44,11 +51,12 @@ export async function registerCommand($: EngineInterface) {
 async function openPane($: EngineInterface) {
   following.epoch++
   following.isPageAsked = true
+  following.read = { view: null, failure: null }
   await setPane($, () => ({ view: null, failure: null, notice: null }))
   const opened = await $.ui.open({ id: PANE, title: 'Yard' })
-  await readPane($)
+  const read = await readPane($)
   following.timer ??= $.clock.every(FOLLOW, () => void tick($))
-  return opened
+  return { opened, read }
 }
 
 /** Shows the Yard page in Desktop's browser pane, without holding up the read that brought it. */
@@ -74,21 +82,23 @@ async function tick($: EngineInterface) {
 
 /**
  * Reads what changed since the revision shown, and keeps `notice`, where an answer gives one, for
- * the same write. A read asked for while one is under way runs once that one ends.
+ * the same write. A read asked for while one is under way runs once that one ends; either way, it
+ * settles once Yard Log is read as the caller asked, with what that read ended with.
  */
-export async function readPane($: EngineInterface, notice?: string | null) {
+export function readPane($: EngineInterface, notice?: string | null): Promise<Read> {
   if (notice !== undefined) following.notice = notice
   following.again = true
-  if (following.isReading) return
-  following.isReading = true
-  try {
-    while (following.again) {
-      following.again = false
-      await readOnce($)
+  following.reading ??= (async () => {
+    try {
+      while (following.again) {
+        following.again = false
+        await readOnce($)
+      }
+    } finally {
+      following.reading = undefined
     }
-  } finally {
-    following.isReading = false
-  }
+  })()
+  return following.reading.then(() => following.read)
 }
 
 /**
@@ -112,6 +122,7 @@ async function readOnce($: EngineInterface) {
     return
   }
   const failure = succeeded(ran) ? null : failureOf(ran)
+  following.read = { view: view ?? null, failure }
   if (following.isPageAsked && view?.page) askBrowser($, view.page)
   const notice = following.notice
   following.notice = undefined
@@ -128,10 +139,10 @@ async function readSince($: EngineInterface, since: number | undefined) {
 /** Hooks `/yard-pane`, and starts the follow over for a module just loaded. */
 export function registerPane(on: On) {
   following.timer?.cancel()
-  Object.assign(following, { timer: undefined, isReading: false, again: false, epoch: 0, notice: undefined, isPageAsked: false })
+  Object.assign(following, { timer: undefined, reading: undefined, again: false, epoch: 0, notice: undefined, isPageAsked: false, read: { view: null, failure: null } })
   on('command.run', { command: COMMAND }, async $ => {
-    const opened = await openPane($)
-    const [{ view }, surfaces] = await Promise.all([paneOf($), $.session.surfaces()])
-    return { text: answerOf(view, opened.isPlaced, surfaces.includes('desktop')) }
+    const { opened, read } = await openPane($)
+    const isDesktop = (await $.session.surfaces()).includes('desktop')
+    return { text: answerOf(read, opened.isPlaced, isDesktop) }
   })
 }

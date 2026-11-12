@@ -361,10 +361,12 @@ test('running the command while a read is under way reads Yard Log whole once th
   const held = deferred<void>()
   w.state.reading = held.promise
   await w.clock.advance(1000)
-  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  const ran = $.command.run({ command: 'yard-pane', args: '' } as never)
   held.resolve()
+  await ran
   await w.clock.settle()
-  expect(reads(w).slice(-2)).toEqual(['read --session session-1 --since 4', 'read --session session-1'])
+  // After the open's own whole read: the read under way, then a whole read once it ends.
+  expect(reads(w).slice(1, 3)).toEqual(['read --session session-1 --since 4', 'read --session session-1'])
 })
 
 test('a read since that brings a block the pane does not show is followed by a whole read', async ($, on) => {

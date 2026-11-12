@@ -5,6 +5,7 @@
 import type { FoundElement } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
+import { linkOf } from '../hooks/adapter/pane/model'
 import { PALETTE } from '../hooks/adapter/pane/theme'
 import { answersOf, block, deferred, goaled, openPane, OWNER, PAGE, paneMount, readDoc, staged, start, SURFACES, world, type Engine, type World } from './yard-world'
 
@@ -250,8 +251,7 @@ async function answersWithAddress($: Engine, w: World, surface: 'terminal' | 'vs
   w.state.read = LOG
   w.state.surfaces = [surface]
   const text = await answered($)
-  expect(text).toContain(PAGE)
-  expect(PAGE).toContain('tree=%2Fwork%2Fshelf&branch=feat%2Fshelf')
+  expect(text).toContain('http://localhost:7411/#tree=%2Fwork%2Fshelf&branch=feat%2Fshelf')
   expect(text).toContain('The Yard page for feat/shelf shows its Yard Log in full')
   expect(text).toContain('Open it in your browser.')
   expect(text).toContain("Yard Log's pane is open.")
@@ -275,9 +275,28 @@ test("in Claude Code Desktop the command's answer says the page opens in Desktop
   w.state.read = LOG
   w.state.surfaces = ['desktop']
   const text = await answered($)
-  expect(text).toContain(PAGE)
-  expect(text).toContain("It opens in Desktop's browser pane.")
-  expect(text).not.toContain('Open it in your browser.')
+  expect(text).toContain(linkOf(PAGE))
+  expect(text).toContain("It opens in Desktop's browser pane; if it doesn't, open it in your browser.")
+})
+
+test('run while a read is under way, the command waits for that read and answers with the address', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  await openPane($)
+  const held = deferred<void>()
+  w.state.reading = held.promise
+  await w.clock.advance(1000)
+  const ran = $.command.run({ command: 'yard-pane', args: '' } as never)
+  held.resolve()
+  expect(String(((await ran) as { text?: string }).text)).toContain(linkOf(PAGE))
+})
+
+test('where Yard Log cannot be read, the command says so and that the address is not known', async ($, on) => {
+  const w = world(on)
+  w.state.answers.read = { doc: { outcome: 'error', errors: [{ message: 'HEAD is detached' }] }, exitCode: 1 }
+  const text = await answered($)
+  expect(text).toContain("Yard Log could not be read, so the Yard page's address is not known.")
+  expect(text).not.toContain('http')
 })
 
 test('where no page server serves the Yard page, the command says so and gives no address', async ($, on) => {
@@ -391,9 +410,10 @@ test('run while a read is under way, the command still shows the page once that 
   const held = deferred<void>()
   w.state.reading = held.promise
   await w.clock.advance(1000)
-  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  const ran = $.command.run({ command: 'yard-pane', args: '' } as never)
   w.state.reading = Promise.resolve()
   held.resolve()
+  await ran
   await w.clock.settle()
   expect(w.state.browser.calls.slice(2).map(call => call.tool)).toEqual(['tabs_context', 'navigate'])
 })

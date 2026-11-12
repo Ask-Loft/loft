@@ -2,7 +2,7 @@
 // a whole read, then each read since the revision shown merged into it (the Feature "Follow Yard
 // Log in a pane"). Pure, so that each rule is tested on its own.
 
-import type { PaneActor, PaneBlock, PaneStage, PaneView } from '../../../types'
+import type { PaneActor, PaneBlock, PaneStage, PaneView, YardPane } from '../../../types'
 import type { Doc } from '../../loft'
 import { isObject, textOf } from '../../model'
 import { openSubmissions, pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
@@ -157,15 +157,15 @@ export function letterOf(index: number): string {
 }
 
 /**
- * What `/yard-pane` answers: that the pane is open, or opens once there is room; then, once a read
- * gave the view, the Yard page's address for its tree and branch with a line on what it shows,
- * opening in Desktop's browser pane on Desktop, or that no page server serves it. With no view
- * read yet, the pane's line alone (the Feature "Keep the Yard page beside the session").
+ * What `/yard-pane` answers: that the pane is open, or opens once there is room; then the Yard
+ * page's address for the view's tree and branch, as a surface links it, with a line on what it
+ * shows, opening in Desktop's browser pane on Desktop; or that no page server serves it, or that
+ * Yard Log could not be read (the Feature "Keep the Yard page beside the session").
  */
-export function answerOf(view: PaneView | null, isPlaced: boolean, isDesktop: boolean): string {
+export function answerOf({ view, failure }: Pick<YardPane, 'view' | 'failure'>, isPlaced: boolean, isDesktop: boolean): string {
   const pane = isPlaced ? "Yard Log's pane is open." : "Yard Log's pane opens once there is room for it."
-  if (view === null) return pane
+  if (view === null) return failure === null ? pane : `${pane} Yard Log could not be read, so the Yard page's address is not known.`
   if (view.page === null) return `${pane} No page server serves the Yard page yet.`
-  const where = isDesktop ? "It opens in Desktop's browser pane." : 'Open it in your browser.'
-  return `${pane}\nThe Yard page for ${view.branch} shows its Yard Log in full: ${view.page}\n${where}`
+  const where = isDesktop ? "It opens in Desktop's browser pane; if it doesn't, open it in your browser." : 'Open it in your browser.'
+  return `${pane}\nThe Yard page for ${view.branch || view.title} shows its Yard Log in full: ${linkOf(view.page)}\n${where}`
 }

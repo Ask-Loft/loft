@@ -34181,7 +34181,7 @@ links:
         body: 36dbfa88c17cecffcf5c999c909606fa1f2e4b1faafb460805f9b8250f5575eb
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "running the command while a read is under way reads Yard Log whole once that read ends"
-        body: ac2dea55021ccc3dc9f31e89d47e8c6637e600eb0a55542941b7118d2228e617
+        body: 9144d54327017fb4ec034a68726794d0a57e40c25db420a03d31df7f2ba48801
   - node: 01a1cfe2-478e-75d1-b104-04de2a2db6e9
     reviewed: 78be96748d1ae96ff8ab0ad4e342bd7624416ac8d3bd229f88d95b92231202ff
     tests:
@@ -34343,7 +34343,7 @@ links:
         body: aed0da0067f70a6eb140185d5e710ac47be08ccbce358e5cbee896d987b84564
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "run while a read is under way, the command still shows the page once that read ends"
-        body: bcb02b6bf43da0b7166254a9a5f893097da2aef983798391d3ee37e0e6464751
+        body: b34216543776b7729900238cdc55a549396bbaa7087c20bb35069dbbf5447fdd
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the command answers without waiting on a browser pane that does not answer"
         body: 617022b909cf627e7b3dc296afb8eb982a1907a621e750f94273e003525f703b
@@ -34394,13 +34394,19 @@ links:
         body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "in Claude Code Desktop the command's answer says the page opens in Desktop's browser pane"
-        body: 037783d7d765be3f407e6a9bdb002be64219f965db89e9bdfdc770b22390af86
+        body: c613d382f3baa466df5beb0f185db220a0d1234ba062bdaca336a32e3430641c
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "run while a read is under way, the command waits for that read and answers with the address"
+        body: 8f9c348e350e4426698a3aa8833eccccae3d68819dd68734a86989e5ea5d4bf8
   - node: 01a1d115-a1c7-75e3-82bb-0f281f42f8f8
     reviewed: e0e408752e7ecdbb806983cc2104a9e0e7d9ff35f905bea75c17adba3d98e9c6
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it"
         body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "where the read names no branch, the command's answer names the Yard Log by its title"
+        body: 18b1b8d50a3656b808e7394211ea63da6abe9a8d3d42d61b6522d4e93086efa0
   - node: 01a1d115-a1c7-75e3-82bb-0f293f5fc03e
     reviewed: 74f815c6105bbb669c7756719a270c27e00029ea55008a6a2a9adf413b2bf576
     tests:
@@ -34418,13 +34424,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "in Claude Code Desktop the command's answer says the page opens in Desktop's browser pane"
-        body: 037783d7d765be3f407e6a9bdb002be64219f965db89e9bdfdc770b22390af86
+        body: c613d382f3baa466df5beb0f185db220a0d1234ba062bdaca336a32e3430641c
   - node: 01a1d115-a1c7-75e3-82bb-0f2bc4f3bda5
     reviewed: 300b417cf352dd298dc357c5b3ecac4756c337a4fc115e67e7ecede9e0abd883
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "where no page server serves the Yard page, the command says so and gives no address"
         body: ce6abd6621426074df86b18b9e16c9c936c3afc4cf246b51ca02945f417dcfab
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "where Yard Log cannot be read, the command says so and that the address is not known"
+        body: 0da02dfc78bc4cd722e230679f85f9f779adaa58d88c61756357bd7851a08cb1
   - node: 01a1cfe2-478e-75d1-b104-04e08deef20b
     reviewed: b2a5f6637d4242eedc87ac5c2187a315e762228aa090f3688a7c8bb3a5529cd8
     tests:
