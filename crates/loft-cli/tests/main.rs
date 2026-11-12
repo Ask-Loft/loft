@@ -139,6 +139,7 @@ mod yard_hosts;
 mod yard_merge_contract;
 mod yard_merge_driver;
 mod yard_newer;
+mod yard_page;
 mod yard_page_browser;
 mod yard_protocol;
 mod yard_published;

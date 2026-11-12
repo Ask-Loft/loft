@@ -7,7 +7,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::{Child, Output, Stdio};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use software_plant::{Clock, GitScenario};
 
 use crate::base::based_on_now;
@@ -184,3 +184,11 @@ pub const ASK: &str = r#"[
 
 /// [`EPOCH`] as Yard Log writes it.
 pub const EPOCH_TEXT: &str = "2026-01-01T00:00:00Z";
+
+/// Writes `~/.yard/server.json` naming a server on `port`.
+pub fn name_server(yard: &Yard, port: u16) {
+    let dir = yard.scratch.home().join(".yard");
+    fs::create_dir_all(&dir).unwrap();
+    let server = json!({ "port": port, "pid": 1, "version": "2.2.1", "formats": ["yardlog/1"] });
+    fs::write(dir.join("server.json"), server.to_string()).unwrap();
+}
