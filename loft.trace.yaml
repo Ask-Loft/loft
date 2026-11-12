@@ -23372,7 +23372,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
+        body: ebf5a03212c4a2dc85e4568df5d4df3be0f5fb3a2f9529251f9441211c30e0d4
   - node: 01a17989-a8b9-74b1-9049-07443fdd010e
     reviewed: cb64361c8ed7d4ba1bd954c0cc5d7aab4b7c55d5609cb4e989cf4d1bc260b592
     tests:
@@ -34307,13 +34307,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
+        body: ebf5a03212c4a2dc85e4568df5d4df3be0f5fb3a2f9529251f9441211c30e0d4
   - node: 01a1646f-546d-7042-befd-ea4d859a6f03
     reviewed: e3639f6455b24eed94333fa4a304d289dad64e278b5fe2a3600e553338402675
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
+        body: ebf5a03212c4a2dc85e4568df5d4df3be0f5fb3a2f9529251f9441211c30e0d4
   - node: 01a1646f-546d-7042-befd-ea4ee183f9f9
     reviewed: 4f39839ca98658c67ed14e7fda627fafe4db01d0e8edd9c689870b33d4b509f4
     tests:
