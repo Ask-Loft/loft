@@ -35,8 +35,9 @@ list everything 2.4.0 will hold.
   cards to answer there. Answers are recorded on the channel `terminal`, as in Claude Code's own
   dialog, and a block answered first elsewhere keeps that answer. In Claude Code Desktop the
   command also opens the Yard page itself in Desktop's browser pane, at the session's branch, and
-  shows its tab again on the next run; elsewhere the pane links the page. The pane's colours
-  follow each surface's light or dark.
+  shows its tab again on the next run; elsewhere the pane links the page, and the command answers
+  with the page's address and a suggestion to open it. The pane's colours follow each surface's
+  light or dark.
 
 ## 2.3.0 (2026-11-05)
 

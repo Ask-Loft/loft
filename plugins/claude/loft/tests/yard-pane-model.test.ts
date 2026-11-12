@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import type { PaneView } from '../types'
-import { followed, linkOf, waitingIn } from '../hooks/adapter/pane/model'
+import { answerOf, followed, linkOf, waitingIn } from '../hooks/adapter/pane/model'
 import { block, OWNER, readDoc, staged, TREE } from './yard-world'
 
 
@@ -135,4 +135,9 @@ test('a read since the revision shown that changed nothing gives the view shown,
 
 test("a whole read keeps the agent that owns each stage, which the stage in hand names", () => {
   expect(first().stages[1]!.owner).toEqual(OWNER)
+})
+
+test("where the read names no branch, the command's answer names the Yard Log by its title", () => {
+  const view = followed(undefined, readDoc({ branch: '', yardLog: { key: 'yard-log-1', title: 'Shelf work', closedBy: 'open' } }))!
+  expect(answerOf({ view, failure: null }, true, false)).toContain('The Yard page for Shelf work shows its Yard Log in full')
 })
