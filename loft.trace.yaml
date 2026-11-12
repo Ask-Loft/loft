@@ -34450,14 +34450,14 @@ links:
     reviewed: 1b27036c5e3e701dde96097d707b1cc308a825bb97e9b0b3870d078718dac93e
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
-        name: "an answered question shows the options chosen and the person's own words, and where it was answered"
-        body: 43b2520da0693b6a80c005d45ba126d4e0e1cf8dd473d8007bcc509b25e7a02a
+        name: "an answered question shows the options chosen and the person's own words, and where it was answered, in one line"
+        body: de1adfee59846cadc86b2800863f973f1f9675e68d11b6513ca9fce99af1da73
   - node: 01a1cfe2-478e-75d1-b104-04f3892200ab
     reviewed: 3b5d4e31d7e0dc273083a884321c901691dbcffacd20c9d71c0a6add41f75dfd
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
-        name: "an approval or a plan shows its title and its Markdown, and once decided, Approved, or Rejected with the reason"
-        body: 6282cac94fef819b0389f047f5b983e9b19b8e6455ad0be2b7feee8195c7db72
+        name: "an approval or a plan shows its title and its Markdown, and once decided, Approved, or Rejected with the reason, in one line"
+        body: a46674f68255fc383e76e62d89f47fef44566fd658179562b5c63afaa2511eaa
   - node: 01a1cfe2-478e-75d1-b104-04e29d44498e
     reviewed: 3bb1fd05f0abd7cb429b08f94d187f283573e0728d390cb9ef1214a8ea9b9a85
     tests:

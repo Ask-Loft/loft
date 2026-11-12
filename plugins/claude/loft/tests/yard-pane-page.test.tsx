@@ -345,13 +345,13 @@ test('a question shows its prompt, its context as Markdown and each option as a 
   }
 })
 
-test("an answered question shows the options chosen and the person's own words, and where it was answered", async ($, on) => {
+test("an answered question shows the options chosen and the person's own words, and where it was answered, in one line", async ($, on) => {
   const w = world(on)
   w.state.read = SETTLED
   await openPane($)
   for (const surface of SURFACES) {
     const ui = await timelineOf($, surface)
-    expect(partsOf(await ui.find({ key: 'answer-k-readers' }))).toEqual(['Members, “and staff”', 'answered on the page'])
+    expect(partsOf(await ui.find({ key: 'answer-k-readers' }))).toEqual(['Members, “and staff” answered on the page'])
     expect((await ui.find({ key: 'card-option-k-readers-0' }))?.props.borderColor).toBe(PALETTE.signal)
     expect((await ui.find({ key: 'card-option-k-readers-1' }))?.props.borderColor).toBe(PALETTE.line)
     expect((await ui.find({ key: 'card-option-k-readers-2' }))?.text).toMatch(/^C.*In your own words.*and staff$/)
@@ -360,7 +360,7 @@ test("an answered question shows the options chosen and the person's own words, 
   }
 })
 
-test('an approval or a plan shows its title and its Markdown, and once decided, Approved, or Rejected with the reason', async ($, on) => {
+test('an approval or a plan shows its title and its Markdown, and once decided, Approved, or Rejected with the reason, in one line', async ($, on) => {
   const w = world(on)
   w.state.read = SETTLED
   await openPane($)
@@ -368,9 +368,9 @@ test('an approval or a plan shows its title and its Markdown, and once decided, 
     const ui = await timelineOf($, surface)
     expect(await ui.find({ type: 'Text', text: 'Approve the store' })).toBeDefined()
     expect(await ui.find({ type: 'Markdown', text: 'All.' })).toBeDefined()
-    expect((await ui.find({ key: 'outcome-k-go' }))?.text).toBe('Approved in the terminal')
+    expect(partsOf(await ui.find({ key: 'outcome-k-go' }))).toEqual(['Approved in the terminal'])
     expect(colourIn(await ui.find({ key: 'outcome-k-go' }))).toBe(PALETTE.done)
-    expect((await ui.find({ key: 'outcome-k-no' }))?.text).toBe('Rejected on the page: Too wide')
+    expect(partsOf(await ui.find({ key: 'outcome-k-no' }))).toEqual(['Rejected on the page: Too wide'])
     expect(colourIn(await ui.find({ key: 'outcome-k-no' }))).toBe(PALETTE.danger)
     expect((await ui.find({ key: 'outcome-k-nay' }))?.text).toBe('Rejected on the page, with no reason given')
     await ui.unmount()

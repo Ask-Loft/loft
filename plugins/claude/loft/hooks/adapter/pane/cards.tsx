@@ -98,11 +98,13 @@ function question(drawing: Drawing, block: PaneBlock) {
   return [
     <Text color={palette.ink}>{text(body.prompt)}</Text>,
     answer ? (
-      <Box key={`answer-${block.key}`} flexDirection="row" gap={1}>
-        <Text color={palette.ink} weight="semibold">
-          {answered}
+      <Box key={`answer-${block.key}`}>
+        <Text>
+          <Text color={palette.ink} weight="semibold">
+            {answered}
+          </Text>
+          <Text color={palette.muted}>{` answered ${channelWords(answeredOn(block))}`.trimEnd()}</Text>
         </Text>
-        <Text color={palette.muted}>{`answered ${channelWords(answeredOn(block))}`.trim()}</Text>
       </Box>
     ) : null,
     markdownOf(drawing, body.context),
@@ -127,11 +129,13 @@ function decidable(drawing: Drawing, block: PaneBlock) {
   return [
     title(drawing, text(body.title)),
     outcome ? (
-      <Box key={`outcome-${block.key}`} flexDirection="row">
-        <Text color={isApproved ? palette.done : palette.danger} weight="semibold">
-          {isApproved ? 'Approved' : 'Rejected'}
+      <Box key={`outcome-${block.key}`}>
+        <Text>
+          <Text color={isApproved ? palette.done : palette.danger} weight="semibold">
+            {isApproved ? 'Approved' : 'Rejected'}
+          </Text>
+          <Text color={palette.body}>{`${where ? ` ${where}` : ''}${why}`}</Text>
         </Text>
-        <Text color={palette.body}>{`${where ? ` ${where}` : ''}${why}`}</Text>
       </Box>
     ) : null,
     text(body.path) ? (
