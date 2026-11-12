@@ -2,13 +2,41 @@
 // a whole read, then each read since the revision shown merged into it (the Feature "Follow Yard
 // Log in a pane"). Pure, so that each rule is tested on its own.
 
-import type { PaneBlock, PaneStage, PaneView } from '../../../types'
+import type { PaneActor, PaneBlock, PaneFoot, PaneStage, PaneSubmission, PaneTimes, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
-import { isObject, textOf } from '../../model'
+import { isObject, records, textOf } from '../../model'
 import { openSubmissions, pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
 
-/** Of a block, only what the pane draws. */
-function kept(block: Block): PaneBlock {
+type Act = { at?: unknown; by?: unknown }
+type Version = { act?: Act; number?: unknown }
+
+const timeOf = (act: Act | undefined) => (typeof act?.at === 'string' ? act.at : null)
+
+/**
+ * What a card's foot says of a block: who wrote its current version, its number, and when it was
+ * created, from its first version where the read gives every one, else from what the pane kept.
+ */
+function footOf(block: Block, before: PaneFoot | undefined): PaneFoot {
+  const version = block.version as Version
+  const versions = (block as { versions?: Version[] }).versions
+  const number = typeof version.number === 'number' ? version.number : 1
+  const first = Array.isArray(versions) && versions.length > 0 ? timeOf(versions[0]!.act) : undefined
+  const created = first ?? before?.created ?? (number === 1 ? timeOf(version.act) : null)
+  const by = isObject(version.act?.by) ? (version.act.by as PaneActor) : null
+  return { by, number, created, updated: timeOf(version.act) }
+}
+
+function timesOf(block: Block): PaneTimes | undefined {
+  const times = (block as { times?: unknown }).times
+  if (!isObject(times)) return undefined
+  const kept: PaneTimes = {}
+  for (const name of ['listed', 'started', 'ended'] as const) if (typeof times[name] === 'string') kept[name] = times[name] as string
+  return kept
+}
+
+/** Of a block, only what the pane draws; `before`, the block as the pane held it, where it did. */
+function kept(block: Block, before?: PaneBlock): PaneBlock {
+  const times = timesOf(block)
   return {
     id: block.id,
     key: block.key,
@@ -16,12 +44,36 @@ function kept(block: Block): PaneBlock {
     version: { body: block.version?.body ?? {} },
     ...(block.answer ? { answer: block.answer } : {}),
     ...(block.outcome ? { outcome: block.outcome } : {}),
+    foot: footOf(block, before?.foot),
+    ...(times ? { times } : {}),
   }
 }
 
 /** Of a stage, only what the pane draws, with the blocks the read gives of it. */
-function keptStage(stage: Stage): PaneStage {
-  return { ...kept(stage), blocks: (stage.blocks ?? []).map(kept) }
+function keptStage(stage: Stage, before?: PaneStage): PaneStage {
+  return {
+    ...kept(stage, before),
+    owner: isObject(stage.owner) ? (stage.owner as PaneActor) : null,
+    blocks: before ? merged(before.blocks, stage.blocks ?? []) : (stage.blocks ?? []).map(each => kept(each)),
+  }
+}
+
+/** Every submission the read lists with `--submissions`, oldest first, with when it was sent and settled. */
+function submissionsOf(doc: Doc): PaneSubmission[] {
+  return records(doc.sent)
+    .map(each => {
+      const changes = records(each.changes)
+      const sent = changes.find(change => change.what === 'sent')
+      const settled = changes.filter(change => change.what !== 'sent').at(-1)
+      return {
+        key: String(each.key),
+        blocks: Array.isArray(each.blocks) ? each.blocks.map(String) : [],
+        sent: timeOf(sent?.act as Act | undefined),
+        settled: timeOf(settled?.act as Act | undefined),
+        isOpen: each.state === 'open',
+      }
+    })
+    .sort((one, other) => (one.sent ?? '').localeCompare(other.sent ?? ''))
 }
 
 const revisionOf = (doc: Doc, otherwise: number) => (typeof doc.revision === 'number' ? doc.revision : otherwise)
@@ -41,15 +93,19 @@ function whole(doc: Doc): PaneView {
     ...identityOf(doc),
     revision: revisionOf(doc, 0),
     page: pageOf(doc) ?? null,
-    stages: stagesOf(doc).map(keptStage),
+    stages: stagesOf(doc).map(stage => keptStage(stage)),
     sent: sentOf(doc),
+    submissions: submissionsOf(doc),
   }
 }
 
 /** `blocks` with each of `changed` in place of the block of its key. */
 function merged(blocks: readonly PaneBlock[], changed: readonly Block[]): PaneBlock[] {
-  const replaced = new Map(changed.map(block => [block.key, kept(block)]))
-  return blocks.map(block => replaced.get(block.key) ?? block)
+  const replaced = new Map(changed.map(block => [block.key, block]))
+  return blocks.map(block => {
+    const fresh = replaced.get(block.key)
+    return fresh ? kept(fresh, block) : block
+  })
 }
 
 /**
@@ -84,9 +140,9 @@ export function followed(view: PaneView | undefined, doc: Doc): PaneView | undef
   const changed = new Map(read.map(stage => [stage.key, stage]))
   const stages = view.stages.map(stage => {
     const fresh = changed.get(stage.key)
-    return fresh ? { ...kept(fresh), blocks: merged(stage.blocks, fresh.blocks ?? []) } : stage
+    return fresh ? keptStage(fresh, stage) : stage
   })
-  return { ...view, revision, page, stages, sent }
+  return { ...view, revision, page, stages, sent, submissions: submissionsOf(doc) }
 }
 
 /** The blocks of the open submissions that wait on the person, in the submissions' order. */

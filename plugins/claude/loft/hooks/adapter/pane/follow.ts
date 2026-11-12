@@ -100,10 +100,14 @@ async function readOnce($: EngineInterface) {
   await setPane($, before => ({ view: view ?? null, failure, notice: notice === undefined ? before.notice : notice }))
 }
 
-/** One `loft yard read` for the session's main agent, since `since` where given. */
+/**
+ * One `loft yard read` for the session's main agent, with every submission's history: since
+ * `since` where given, else whole with every version of each block, for the cards' feet.
+ */
 async function readSince($: EngineInterface, since: number | undefined) {
   const [caller, cwd] = await Promise.all([callerOf($, undefined), $.session.cwd()])
-  return run($, cwd, ['read', ...callerArgs(caller), ...(since === undefined ? [] : ['--since', String(since)])])
+  const which = since === undefined ? ['--versions'] : ['--since', String(since)]
+  return run($, cwd, ['read', ...callerArgs(caller), ...which, '--submissions'])
 }
 
 /** Hooks `/yard-pane`, and starts the follow over for a module just loaded. */
