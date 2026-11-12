@@ -47,7 +47,7 @@ class Launch:
             tool = tools / name
             tool.write_text(f"#!{sys.executable}\n" + RECORD + (
                 'if sys.argv[1:4] == ["app-server", "daemon", "version"]:\n'
-                '    print(\'{"status":"stopped"}\')\n'
+                '    print(\'{"status":"running","socketPath":"/tmp/codex.sock"}\')\n'
             ))
             tool.chmod(0o755)
         self.caller = root / "caller tree"
@@ -120,6 +120,8 @@ class LaunchTests(unittest.TestCase):
                     command = hooks["hooks"]["SessionStart"][0]["hooks"][0]["command"]
                     self.assertEqual(shlex.split(command)[:4], [wrapper, "yard", "codex", "hook"],
                                      command)
+                    # A running daemon's shells would not find the wrapper first on their path.
+                    self.assertNotIn("--remote", agent["args"])
 
     def test_restart_failure_prevents_both_hosts_from_starting(self):
         for host in ["claude", "codex"]:

@@ -111,32 +111,9 @@ PY
   export PATH="${WRAPPER:h}:$PATH"
   export LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off
   codex "${CODEX_OPTIONS[@]}" plugin add loft@yard-dogfood --json >/dev/null
-  CODEX_CONNECTION=()
-  CODEX_AUTO_CONNECTION=true
-  CODEX_EXPLICIT_CWD=false
-  for argument in "$@"; do
-    case "$argument" in
-      --remote|--remote=*|--no-daemon) CODEX_AUTO_CONNECTION=false ;;
-      --cd|--cd=*|-C|-C?*) CODEX_EXPLICIT_CWD=true ;;
-    esac
-  done
-  if $CODEX_AUTO_CONNECTION; then
-    # The version command exits nonzero when no daemon is listening.
-    CODEX_DAEMON=$(codex app-server daemon version 2>/dev/null) || CODEX_DAEMON='{}'
-    CODEX_SOCKET=$(print -r -- "$CODEX_DAEMON" | python3 -c '
-import json, sys
-daemon = json.load(sys.stdin)
-print(daemon.get("socketPath", "") if daemon.get("status") == "running" else "")
-')
-    if [[ -n $CODEX_SOCKET ]]; then
-      # Config overrides otherwise select an embedded server, even without --no-daemon.
-      CODEX_CONNECTION=(--remote "unix://$CODEX_SOCKET")
-      if ! $CODEX_EXPLICIT_CWD; then
-        CODEX_CONNECTION+=(--cd "$PWD")
-      fi
-    fi
-  fi
-  exec codex "${CODEX_CONNECTION[@]}" "${CODEX_OPTIONS[@]}" "$@"
+  # Codex starts a server of its own, never a running daemon's: only this process's search path,
+  # with the wrapper first, makes the session's own `loft yard` commands the dogfood loft's.
+  exec codex "${CODEX_OPTIONS[@]}" "$@"
 fi
 
 SETTINGS=$(cat <<JSON
