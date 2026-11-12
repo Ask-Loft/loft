@@ -34,6 +34,12 @@ list everything 2.4.0 will hold.
   stages, tasks, notes and decisions as they change, and what waits on you, which you can answer
   there. Answers are recorded on the channel `terminal`, as in Claude Code's own dialog, and a
   block answered first elsewhere keeps that answer.
+- The Yard pane looks and works as the Yard page does, in the page's colours, light or dark as
+  Claude Code's theme is. The timeline's rail and the stage chosen in full stand side by side from
+  100 columns. Each block is a card of its kind with its author and times. What waits on you has
+  a view of its own, with lettered option cards, and opens by itself for a new submission. The
+  Gantt chart of stages, tasks and waits is an SVG image in Desktop, VS Code and the mobile app,
+  and block characters in the terminal.
 
 ## 2.3.0 (2026-11-05)
 
