@@ -1,6 +1,6 @@
 //! `loft skill package`: the maintainer's command that writes every plugin package under
 //! `plugins/` from the skill sources `loft` embeds, each host's `loft-spec` package and, for a
-//! host with a Yard adapter, its `yard` package; or, with `--check`, writes nothing and names
+//! host with a Yard adapter, its `yard` package, and for Codex its `yard-page` package; or, with `--check`, writes nothing and names
 //! each package file that differs from its composition. It runs at the root of the repository of
 //! `loft`, and refuses while the repository's Codex discovery entry is not the link to the
 //! canonical skill source, or while a source it embeds differs from the repository's.

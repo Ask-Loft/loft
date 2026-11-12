@@ -2,7 +2,7 @@
 //! composed for each agent host and written into a project by `loft skill install` and
 //! `loft init`, which also enable the Claude Code plugin `loft@ask-loft` beside it unless
 //! `--no-plugin` is given. `loft skill package` writes the plugins' packages from it, and from
-//! the `yard` skill's source beside it.
+//! the sources of the `yard` and `yard-page` skills beside it.
 
 mod compose;
 mod discovery;

@@ -35129,13 +35129,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "the_page_command_writes_no_file_of_the_tree"
-        body: 35c7120b9e08ec8c230c7367a20854770526754aab9989bc166cd842b5d5467f
+        body: 52d8203b3d0e7fbc5e9546a11d27d3240d84cb697eaa070dc66603709e20e9d9
   - node: 01a1d131-2a10-7406-8c5c-c49970d8f822
     reviewed: 40c6b610ee846267ae8cd6856f585472d76ebbbccbff107bcb942f3ed2151049
     tests:
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "where_the_page_server_already_serves_the_tree_a_run_that_may_not_write_the_home_gives_the_address"
-        body: 9552a1d234520d90999eeadb39bef12ebab7d19546b7b0d1a22bd3e6a435107c
+        body: e605495a7bf104035cf297163d41566622e787f2014b834c5318d5b793d7171f
       - file: "crates/yardlog-store/tests/lock_probe.rs"
         name: "a_lock_file_the_prober_may_not_write_still_reads_as_held_while_held_and_free_once_let_go"
         body: 9e45044c5e957d0202ddeda9988a03cc109d7d912c83ddb4e0fadd81b540491f

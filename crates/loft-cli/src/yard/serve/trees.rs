@@ -83,18 +83,10 @@ fn spelled_top(dir: &Path, real: &Path, tree: &Path) -> Option<PathBuf> {
         .map(Path::to_path_buf)
 }
 
-/// Adds the top of a worktree, `tree`, to the trees served, once, dropping as it does the trees
-/// that no longer exist; a tree already served, or an add that changes nothing, writes nothing.
+/// Adds the top of a worktree, `tree`, to the trees served, once; drops the trees that no longer
+/// exist; writes nothing where that changes nothing.
 pub fn add(home: &Home, tree: &Path) -> Result<(), Failure> {
     let shown = tree.display().to_string();
-    // Read first, without the home's lock: a run that may not write the home, as in a sandbox,
-    // still finds a tree already served.
-    if Registry::read(home.read(HomeFile::Trees)?.as_deref())
-        .trees
-        .contains(&shown)
-    {
-        return Ok(());
-    }
     home.update(HomeFile::Trees, |bytes| {
         let mut registry = Registry::read(bytes.as_deref());
         let before = registry.bytes();
