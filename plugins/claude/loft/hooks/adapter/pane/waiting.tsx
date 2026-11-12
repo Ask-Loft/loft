@@ -28,8 +28,8 @@ function options(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
           </Text>
           <Button key={`option-${block.key}-${n}`} plain label={isMultiple ? `${isTicked ? '☑' : '☐'} ${label}` : label} onPress={() => acts.choose(block, label)} />
           {option.recommended === true ? (
-            <Box backgroundColor={palette.recommendedSoft} paddingX={1}>
-              <Text color={palette.recommended} size="caption">
+            <Box>
+              <Text color={palette.recommended} size="caption" weight="semibold">
                 Recommended
               </Text>
             </Box>
@@ -92,7 +92,7 @@ function askCard(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
   const { t, palette } = drawing
   const { Box } = t
   return (
-    <Box key={`ask-${block.key}`} flexDirection="row" borderStyle="single" borderColor={kept.at === block.key ? palette.signal : palette.waitLine} backgroundColor={palette.waitSoft}>
+    <Box key={`ask-${block.key}`} flexDirection="row" borderStyle="single" borderColor={kept.at === block.key ? palette.signal : palette.wait}>
       <Box width={1} backgroundColor={palette.wait} />
       <Box flexDirection="column" flexGrow={1} flexShrink={1} paddingX={1} gap={1}>
         {cardHead(drawing, block, true)}

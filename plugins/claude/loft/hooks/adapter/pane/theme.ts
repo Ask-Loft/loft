@@ -1,107 +1,55 @@
-// The Yard page's colours, as the pane wears them: the tokens of `yard.css`, light and dark, drawn
-// again here since the mod shares no code with the page. Action blue marks what is in hand, teal
-// what is done, rust what waits on the person, lilac plan mode and rose a fix the person asked for
-// (the Feature "See Yard Log in the pane as on the Yard page"). Pure.
+// The pane's colours. No mod can tell whether a surface is drawn light or dark, and Claude Code
+// Desktop may be light while the terminal is dark, so text, muted text and lines take Claude
+// Code's own colours, which each surface resolves to its own appearance, and the Yard page's hues
+// mark status alone, in shades that read on a light ground and on a dark one: action blue for
+// what is in hand, teal for what is done, rust for what waits on the person and rose for a fix the
+// person asked for (the Feature "See Yard Log in the pane as on the Yard page"). Pure.
 
-/** The tokens the pane draws with, by their names on the page. */
+import type { ThemeKey } from 'claude-code'
+
+/** The colours the pane draws with: Claude Code's own for its neutrals, a fixed shade for each status. */
 export type Palette = {
-  canvas: string
-  surface: string
-  mist: string
-  ink: string
-  body: string
-  muted: string
-  line: string
-  rail: string
+  ink: ThemeKey
+  body: ThemeKey
+  muted: ThemeKey
+  line: ThemeKey
+  /** A planned stage's mark. */
+  rail: ThemeKey
+  danger: ThemeKey
   signal: string
   done: string
   wait: string
-  waitSoft: string
-  waitLine: string
   drop: string
-  danger: string
+  fix: string
+  task: string
   plan: string
   spec: string
-  button: string
-  onButton: string
-  task: string
-  taskPale: string
-  fix: string
-  fixPale: string
-  waitBar: string
   recommended: string
-  recommendedSoft: string
+  /** Text on a button filled with a status colour. */
+  onButton: string
 }
 
-export const LIGHT: Palette = {
-  canvas: '#ffffff',
-  surface: '#f6f9fb',
-  mist: '#e5f6ff',
-  ink: '#0e141d',
-  body: '#424b56',
-  muted: '#5c646f',
-  line: '#e4e9ee',
-  rail: '#aab2ba',
-  signal: '#14488f',
-  done: '#0a756c',
-  wait: '#a8480c',
-  waitSoft: '#fbeee4',
-  waitLine: '#c8642a',
-  drop: '#5c646f',
-  danger: '#b42318',
-  plan: '#62359c',
-  spec: '#7a5600',
-  button: '#14488f',
+export const PALETTE: Palette = {
+  ink: 'text',
+  body: 'text',
+  muted: 'inactive',
+  line: 'subtle',
+  rail: 'inactive',
+  danger: 'error',
+  signal: '#468de5',
+  done: '#169c8a',
+  wait: '#e0662a',
+  drop: '#8a939c',
+  fix: '#d9487c',
+  task: '#468de5',
+  plan: '#8b57be',
+  spec: '#b8860b',
+  recommended: '#169c8a',
   onButton: '#ffffff',
-  task: '#468de5',
-  taskPale: '#c4dbf7',
-  fix: '#d23f74',
-  fixPale: '#f6cddc',
-  waitBar: '#eb6834',
-  recommended: '#0a756c',
-  recommendedSoft: '#e3f4f1',
 }
 
-export const DARK: Palette = {
-  canvas: '#0c1117',
-  surface: '#10161d',
-  mist: '#132233',
-  ink: '#e8eef4',
-  body: '#b8c2cc',
-  muted: '#95a0ab',
-  line: '#222c37',
-  rail: '#4a5561',
-  signal: '#8ec5f2',
-  done: '#5ed3c0',
-  wait: '#f2a36e',
-  waitSoft: '#33210f',
-  waitLine: '#b8642e',
-  drop: '#95a0ab',
-  danger: '#ff8f84',
-  plan: '#c3a2ec',
-  spec: '#e8b64a',
-  button: '#8ec5f2',
-  onButton: '#0c1117',
-  task: '#468de5',
-  taskPale: '#24405f',
-  fix: '#e2578a',
-  fixPale: '#4d2033',
-  waitBar: '#d95926',
-  recommended: '#5ed3c0',
-  recommendedSoft: '#0f2e2a',
-}
-
-/**
- * Whether Claude Code's `theme` setting is a dark one (`dark`, `dark-daltonized`, `dark-ansi`). A
- * theme that follows the system, or none, takes the page's own default, the light one.
- */
-export function isDark(theme: unknown): boolean {
-  return typeof theme === 'string' && theme.startsWith('dark')
-}
-
-export function paletteOf(dark: boolean): Palette {
-  return dark ? DARK : LIGHT
-}
+/** The shades that mark status, each of which reads on a light ground and on a dark one. */
+export const STATUS_SHADES = ['signal', 'done', 'wait', 'drop', 'fix', 'task', 'plan', 'spec'] as const
 
 /** The colour of a stage's or a block's status, as the page marks it. */
 export function statusColour(palette: Palette, status: string): string {

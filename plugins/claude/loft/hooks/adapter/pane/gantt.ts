@@ -123,13 +123,20 @@ export function toneColour(palette: Palette, tone: Tone | 'wait'): string {
     case 'fix':
       return palette.fix
     case 'wait':
-      return palette.waitBar
+      return palette.wait
     default:
       return palette.signal
   }
 }
 
 const escaped = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+/**
+ * The chart's text and rules, in the page's ink and lines for the appearance the surface draws
+ * the image in: an image takes no colour of Claude Code's, but resolves the colour scheme itself.
+ */
+const STYLE =
+  '<style>.ink{fill:#0e141d}.muted{fill:#5c646f}.rule{stroke:#e4e9ee}@media (prefers-color-scheme: dark){.ink{fill:#e8eef4}.muted{fill:#95a0ab}.rule{stroke:#222c37}}</style>'
 
 const WIDTH = 720
 const LABEL = 180
@@ -143,7 +150,7 @@ export function svgOf(chart: Gantt, palette: Palette): string {
   const w = (span: Span) => Math.max(2, ((span.to - span.from) / (chart.end - chart.start)) * plot).toFixed(1)
   const axis = ticksOf(chart, 6).map(
     tick =>
-      `<line x1="${x(tick)}" x2="${x(tick)}" y1="${AXIS - 6}" y2="100%" stroke="${palette.line}"/><text x="${x(tick)}" y="14" fill="${palette.muted}" text-anchor="middle">${escaped(clockOf(new Date(tick).toISOString()))}</text>`,
+      `<line x1="${x(tick)}" x2="${x(tick)}" y1="${AXIS - 6}" y2="100%" class="rule"/><text x="${x(tick)}" y="14" class="muted" text-anchor="middle">${escaped(clockOf(new Date(tick).toISOString()))}</text>`,
   )
   const drawn: string[] = []
   let size = axis.join('').length + 600
@@ -151,11 +158,11 @@ export function svgOf(chart: Gantt, palette: Palette): string {
   for (const row of chart.rows) {
     const y = AXIS + shown * ROW
     const isStage = row.kind === 'stage'
-    const label = `<text x="${isStage ? 4 : 16}" y="${y + 15}" fill="${isStage ? palette.ink : palette.muted}"${isStage ? ' font-weight="600"' : ''}>${escaped(row.title.slice(0, 26))}</text>`
+    const label = `<text x="${isStage ? 4 : 16}" y="${y + 15}" class="${isStage ? 'ink' : 'muted'}"${isStage ? ' font-weight="600"' : ''}>${escaped(row.title.slice(0, 26))}</text>`
     const bar = isStage
       ? `<rect x="${x(row.from)}" y="${y + 5}" width="${w(row)}" height="12" fill="${toneColour(palette, row.tone)}"/>`
       : `<rect x="${x(row.from)}" y="${y + 7}" width="${w(row)}" height="8" fill="${toneColour(palette, row.tone)}"/>`
-    const waits = row.waits.map(wait => `<rect x="${x(wait.from)}" y="${y + 5}" width="${w(wait)}" height="12" fill="${palette.waitBar}"/>`).join('')
+    const waits = row.waits.map(wait => `<rect x="${x(wait.from)}" y="${y + 5}" width="${w(wait)}" height="12" fill="${palette.wait}"/>`).join('')
     const piece = `<g>${label}${bar}${waits}</g>`
     if (size + piece.length > MAX_SVG - 400) break
     drawn.push(piece)
@@ -163,9 +170,9 @@ export function svgOf(chart: Gantt, palette: Palette): string {
     shown++
   }
   const more = chart.rows.length - shown
-  const tail = more > 0 ? `<text x="4" y="${AXIS + shown * ROW + 15}" fill="${palette.muted}">${more} more rows</text>` : ''
+  const tail = more > 0 ? `<text x="4" y="${AXIS + shown * ROW + 15}" class="muted">${more} more rows</text>` : ''
   const height = AXIS + (shown + (more > 0 ? 1 : 0)) * ROW + 4
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}" font-family="system-ui, -apple-system, sans-serif" font-size="12">${axis.join('')}${drawn.join('')}${tail}</svg>`
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${height}" viewBox="0 0 ${WIDTH} ${height}" font-family="system-ui, -apple-system, sans-serif" font-size="12">${STYLE}${axis.join('')}${drawn.join('')}${tail}</svg>`
 }
 
 /** A stretch of a terminal bar in one tone, or blank. */

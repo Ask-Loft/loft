@@ -34343,7 +34343,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the head names the repository above the Yard Log's title, set larger, sums up its stages and links the page"
-        body: a227031ee4b90fe286d8200511476bd82f8c08f451da0799736eee57565c59de
+        body: 32426d15691ffcb98a41921999db4a47147e49d7524c67b5cec6406e33df3f4d
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "the Yard page's loopback address is linked as localhost, which Claude Code Desktop links"
         body: c19debb6a1a6a9e028ecdf8d13d70bf392e1bf569cd41e52df8d96f15295d85c
@@ -34352,19 +34352,19 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the head names the repository above the Yard Log's title, set larger, sums up its stages and links the page"
-        body: a227031ee4b90fe286d8200511476bd82f8c08f451da0799736eee57565c59de
+        body: 32426d15691ffcb98a41921999db4a47147e49d7524c67b5cec6406e33df3f4d
   - node: 01a1d06f-b09f-73ae-a356-c4a40bdf34c9
     reviewed: e516eac33dde8207f925a13e71c41737d54302bd1dbd9c062a0a43aa7401eaf2
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the head counts what waits on the person in a button of the waiting colour, and shows none where nothing waits"
-        body: 9eb8a4dc0cbb5372d6e79a4acc41881e8d6f6ae4f609af838d0c3f2cc9aeaa14
+        body: 66e92762507004bd2639f68875fbe34bcb1226f64fc653cffd3992fcb51b7b6a
   - node: 01a1cfe2-478e-75d1-b104-04f4e90e6960
     reviewed: 74103e1e68026bde10d3e5a5ba4889a3f1f1f727da612a501af21da89b8ffffc
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the head counts what waits on the person in a button of the waiting colour, and shows none where nothing waits"
-        body: 9eb8a4dc0cbb5372d6e79a4acc41881e8d6f6ae4f609af838d0c3f2cc9aeaa14
+        body: 66e92762507004bd2639f68875fbe34bcb1226f64fc653cffd3992fcb51b7b6a
   - node: 01a1d06f-b09f-73ae-a356-c4a55773bdf0
     reviewed: 9717e0a78094fcb08576259594e8793e1b95deab7566de6d58114bd4081af131
     tests:
@@ -34376,7 +34376,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "each stage's row shows a square and its status in the status's colour, its title, its owner and the count of what waits"
-        body: 0ad46f89e5b1ed94f9d688dbcf437a283e4fd9d583b3763ba339308a02dca29a
+        body: 0565bf7e2db80a0fdf45b3c661c23c85ddf8db4dbd051dff6f5eaabfd0dfaa51
   - node: 01a1d06f-b09f-73ae-a356-c4a7e16b453e
     reviewed: 2a9ac14811ae8f6545579e1b4e1124f4a30fe3967aaac59d1b7c59553d489945
     tests:
@@ -34388,13 +34388,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
-        body: c8372d4636f079bf3cfe79ff58cca14452feff8a7ae8499c0300c5fc6767b9fa
+        body: f75404406279ecf748907b7fd620f6897d0f41d74a5afb99b20df9a64ee67f2e
   - node: 01a1cfe2-478e-75d1-b104-04e8ffb8d768
     reviewed: ff04873d12aa232ae76e8ed8c06567f2a0482085438c04ad02f5935414fdd98d
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
-        body: c8372d4636f079bf3cfe79ff58cca14452feff8a7ae8499c0300c5fc6767b9fa
+        body: f75404406279ecf748907b7fd620f6897d0f41d74a5afb99b20df9a64ee67f2e
   - node: 01a1d06f-b09f-73ae-a356-c4a8b44b6eec
     reviewed: 93e2c57d022df1895506f8ae177265571d6cab69b1da5bf30c1e4a78622f9de7
     tests:
@@ -34427,13 +34427,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a card's head names the block's kind, a question's header as a chip, and the block's state at the right"
-        body: 79e15d2683a9ac0c94621f0ae4584632e6488df55d10ea25a14b4082a7ad0f15
+        body: 8255defbc82a8dfda8d4abad21b62e193d09b6d8516733722d61739aa3d5bd53
   - node: 01a1d06f-b09f-73ae-a356-c4aecdbe19d5
-    reviewed: 2977af34faba9576c8605809d3e5e73419aa93c4682399f090fa4f7066bffc05
+    reviewed: 1c54cc85338c0d7a7391d3c1c6ecbbe5e0576190d47b7c3d893b504a771b94ef
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the card of a block that waits on the person stands on the waiting ground with a bar of the waiting colour, and says so"
-        body: 5cb97245eadc3919276e2172ef7e52e174d9c0cc3611b65fd37bfbead83e9580
+        body: 0ea382607a2406ff8f19e6c90bc2a836e853fff52e47a659b8e1bcdbbb184246
   - node: 01a1cfe2-478e-75d1-b104-04f1651155ff
     reviewed: f57db84803947bbd585f20fc74553070182892bd4f03b57d42a957c150709607
     tests:
@@ -34451,25 +34451,25 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "an answered question shows the options chosen and the person's own words, and where it was answered"
-        body: 17104a366c528cc1fce461ee2b93678f5c3d93477dafbfce980906a952ac444b
+        body: 43b2520da0693b6a80c005d45ba126d4e0e1cf8dd473d8007bcc509b25e7a02a
   - node: 01a1cfe2-478e-75d1-b104-04f3892200ab
     reviewed: 3b5d4e31d7e0dc273083a884321c901691dbcffacd20c9d71c0a6add41f75dfd
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "an approval or a plan shows its title and its Markdown, and once decided, Approved, or Rejected with the reason"
-        body: af9454e5044fddc1a36bd919a3f33761a6d380a6430981c8efb17f54dbbacf85
+        body: 6282cac94fef819b0389f047f5b983e9b19b8e6455ad0be2b7feee8195c7db72
   - node: 01a1cfe2-478e-75d1-b104-04e29d44498e
     reviewed: 3bb1fd05f0abd7cb429b08f94d187f283573e0728d390cb9ef1214a8ea9b9a85
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a task shows its title and its state, and a fix is marked Fix in the fix colour"
-        body: 40b8438218e251067ac1f395b81c0c6d40d8769357ba7c288f70fd37eb4665f4
+        body: dd9f3b5526fd22bc00c38ff6c9a89f0408bad5483997f708b1a922450d9892ff
   - node: 01a1cfe2-478e-75d1-b104-04e31b6ae5ad
     reviewed: e8d058bcbbed4a11ab37b676c1c64fa572470b477f06bca654f5084549d23956
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a task shows its title and its state, and a fix is marked Fix in the fix colour"
-        body: 40b8438218e251067ac1f395b81c0c6d40d8769357ba7c288f70fd37eb4665f4
+        body: dd9f3b5526fd22bc00c38ff6c9a89f0408bad5483997f708b1a922450d9892ff
   - node: 01a1cfe2-478e-75d1-b104-04e4f43589f1
     reviewed: 98a983efbe6ccff683772b1a7e8745ceec72893cba8838084fe6270fc163b92e
     tests:
@@ -34483,7 +34483,7 @@ links:
         name: "a note shows its Markdown, a decision its consequence, and a loft block its view in words and its note, and no report"
         body: 25119a7935b93f4212c6cea4932c1b4ce29d7aed96aae139d15e28b112d4042f
   - node: 01a1cfe2-478e-75d1-b104-04e66ffb3c99
-    reviewed: 531ac4a83caeab62483f4a25605681a5fb6944afd9cdb7c2210f6647ea9242ee
+    reviewed: 88ecff3e0bfb885cf6edf4dc59bed11e9aab9a312a2f0fa7e93722f341a67abd
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a note shows its Markdown, a decision its consequence, and a loft block its view in words and its note, and no report"
@@ -34499,7 +34499,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "pressing Answer it or Decide it on a waiting card shows what waits, at that block"
-        body: 62c61e241b49639ffbff3bdda0ee1e4c1079bfa39f228abe1354f1be864868af
+        body: 9ff3ad8eb1ea5c6a03aaaa5845a1694d73c670c373c97e2eb1117128b35b1d92
   - node: 01a1d06f-b09f-73ae-a356-c4b2a44a0b62
     reviewed: 8197546954f80fd1dc06afe7ceb8336f6024ef3873333ab4f90199cbfe8c99fb
     tests:
@@ -34547,16 +34547,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "choosing a stage in the Gantt chart shows it, chosen, in the timeline"
-        body: 20f0c6afb5bc9834e4c69676c5ca5f5f88cd1d902b99ee2983718883ae20cdfc
+        body: 04bd4e6e7fc2e9ad810a086238103ae16e085563fcdf7b20bdfd337942389285
   - node: 01a1d06f-b09f-73ae-a356-c4bc44c83836
     reviewed: c361de375fe07ca1f95b5ceb511271b3978747458b66617b654378015d2a7413
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "Claude Code Desktop, VS Code and the mobile app draw the Gantt chart as one SVG image, named in words for who cannot see it"
-        body: cb1d063ddc0c7e3c29441ae0b00e440ca6a39a4afdc798526265ac52ad00148d
+        body: f763738e493f37337389d77be62d1a262222a0043cdc2893529d33360d596b96
       - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
         name: "the SVG image draws each row in its tone, escapes its titles and stays within the size a surface draws"
-        body: 64696131033bed06080975e4e8524e464d635baef3a625fe30a889c0800ac5d0
+        body: 2da10169831875c380149d4e34ec39467247f1483fa68af8acd6ea4dc25f83ed
   - node: 01a1d06f-b09f-73ae-a356-c4bd3e13dbd8
     reviewed: e9ab31c0f7b8ee5028df161edbc9b9e34d938dcdfb0f9725ebb84712b97f861e
     tests:
@@ -34565,7 +34565,7 @@ links:
         body: 1c8b3991503f20b80526ac4ef0d23b07f4b01545c98bd5ec3676fbe7f9884dbd
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "Claude Code Desktop, VS Code and the mobile app draw the Gantt chart as one SVG image, named in words for who cannot see it"
-        body: cb1d063ddc0c7e3c29441ae0b00e440ca6a39a4afdc798526265ac52ad00148d
+        body: f763738e493f37337389d77be62d1a262222a0043cdc2893529d33360d596b96
   - node: 01a1d06f-b09f-73ae-a356-c4bf8898cc5b
     reviewed: f97710865b05b269a75d096b21a4ff10b9afb35a15cbeeb09c1b770b7a552b56
     tests:
@@ -34574,40 +34574,40 @@ links:
         body: 153d7ce4dfe356de3693cf267dbb3b128ca87b70ee868f8ba96674127c96a4bb
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the terminal draws the Gantt chart as a bar of block characters for each row, in its colour"
-        body: ef3cdb301b838fb91ba666df4b3442a9ac0c30984211f62bd14ef24a617b7c85
+        body: 3577a11f7289dca1c1c75937bbd8bfd9880514b69e15186321d89c7a20fde426
   - node: 01a1d06f-b09f-73ae-a356-c4c150ee429d
-    reviewed: 65f3ce53498983b554dadacb6022b0ff6cf29a6f8abeb7c8a087309ec6b7c6d5
+    reviewed: f7961de02579ea38fe7fc6a8d36da7fee1d11c6313830a30000a60bf9e61395a
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
-        name: "Claude Code's dark themes take the page's dark tokens, and every other theme its light ones"
-        body: 42f8a54b24825f9236063fd302ccc9cbde377143fb901a25b71eafbd5167a9f0
+        name: "text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one"
+        body: 34d2cec8dd889f409f5c1ec67199b6c98a123e3bb18d98e2330fc8664c1783c6
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
-        name: "the head counts what waits on the person in a button of the waiting colour, and shows none where nothing waits"
-        body: 9eb8a4dc0cbb5372d6e79a4acc41881e8d6f6ae4f609af838d0c3f2cc9aeaa14
+        name: "on every surface the pane draws its text in Claude Code's own colours, and no tinted ground but the rust of what waits"
+        body: 417db08241647ff141238911939fa5f983e009c4b5387a35ca4d51935fb438a7
+      - file: "plugins/claude/loft/tests/yard-pane-gantt.test.ts"
+        name: "the SVG image draws each row in its tone, escapes its titles and stays within the size a surface draws"
+        body: 2da10169831875c380149d4e34ec39467247f1483fa68af8acd6ea4dc25f83ed
   - node: 01a1d06f-b09f-73ae-a356-c4c236afe1c5
-    reviewed: 1d3032f9480b3d9f9ab8dd99cfedd699aebe1d90006b377c7fec88e097159b11
+    reviewed: 5d10c56f57ec8f92394ae9f55ca22334a6569b7aa3d9f79cbc7df83d781f1842
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
-        name: "Claude Code's dark themes take the page's dark tokens, and every other theme its light ones"
-        body: 42f8a54b24825f9236063fd302ccc9cbde377143fb901a25b71eafbd5167a9f0
-      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
-        name: "under a dark theme the pane wears the page's dark tokens"
-        body: 847c07e441a549d84cce002b3fa151b2ac558094d875e6091d3eff57e79b0db2
+        name: "text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one"
+        body: 34d2cec8dd889f409f5c1ec67199b6c98a123e3bb18d98e2330fc8664c1783c6
   - node: 01a1d06f-b09f-73ae-a356-c4c3dc81b156
     reviewed: fe7a88d21b6e00211715edf71f9bef9e739d85d7fee8fb8e7146ca142d2e64f1
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
-        name: "Claude Code's dark themes take the page's dark tokens, and every other theme its light ones"
-        body: 42f8a54b24825f9236063fd302ccc9cbde377143fb901a25b71eafbd5167a9f0
+        name: "text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one"
+        body: 34d2cec8dd889f409f5c1ec67199b6c98a123e3bb18d98e2330fc8664c1783c6
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "each stage's row shows a square and its status in the status's colour, its title, its owner and the count of what waits"
-        body: 0ad46f89e5b1ed94f9d688dbcf437a283e4fd9d583b3763ba339308a02dca29a
+        body: 0565bf7e2db80a0fdf45b3c661c23c85ddf8db4dbd051dff6f5eaabfd0dfaa51
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the head counts what waits on the person in a button of the waiting colour, and shows none where nothing waits"
-        body: 9eb8a4dc0cbb5372d6e79a4acc41881e8d6f6ae4f609af838d0c3f2cc9aeaa14
+        body: 66e92762507004bd2639f68875fbe34bcb1226f64fc653cffd3992fcb51b7b6a
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a task shows its title and its state, and a fix is marked Fix in the fix colour"
-        body: 40b8438218e251067ac1f395b81c0c6d40d8769357ba7c288f70fd37eb4665f4
+        body: dd9f3b5526fd22bc00c38ff6c9a89f0408bad5483997f708b1a922450d9892ff
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: dfff3712569ee5acbd91eb8568e09a5d008e81f0cc1694a7c5838530827e3236
     tests:

@@ -5,7 +5,7 @@ import { expect, test } from 'claude-code/testing'
 
 import type { PaneBlock, PaneStage, PaneView } from '../types'
 import { altOf, barsOf, ganttOf, MAX_SVG, svgOf, ticksOf } from '../hooks/adapter/pane/gantt'
-import { LIGHT } from '../hooks/adapter/pane/theme'
+import { PALETTE } from '../hooks/adapter/pane/theme'
 
 const at = (hhmm: string) => `2026-10-22T${hhmm}:00Z`
 const ms = (hhmm: string) => Date.parse(at(hhmm))
@@ -89,16 +89,17 @@ test('the text alternative names each stage and how long it ran', () => {
 })
 
 test('the SVG image draws each row in its tone, escapes its titles and stays within the size a surface draws', () => {
-  const svg = svgOf(ganttOf(VIEW, NOW), LIGHT)
+  const svg = svgOf(ganttOf(VIEW, NOW), PALETTE)
   expect(svg.startsWith('<svg')).toBe(true)
-  expect(svg).toContain(`fill="${LIGHT.done}"`)
-  expect(svg).toContain(`fill="${LIGHT.fix}"`)
-  expect(svg).toContain(`fill="${LIGHT.waitBar}"`)
+  expect(svg).toContain('@media (prefers-color-scheme: dark)')
+  expect(svg).toContain(`fill="${PALETTE.done}"`)
+  expect(svg).toContain(`fill="${PALETTE.fix}"`)
+  expect(svg).toContain(`fill="${PALETTE.wait}"`)
   const many: PaneView = {
     ...VIEW,
     stages: [stage('<&>', 'active', { started: at('08:00') }, Array.from({ length: 3000 }, (_, n) => task(`t${n}`, { state: 'done' }, { started: at('08:01'), ended: at('08:02') })))],
   }
-  const big = svgOf(ganttOf(many, NOW), LIGHT)
+  const big = svgOf(ganttOf(many, NOW), PALETTE)
   expect(big.length).toBeLessThanOrEqual(MAX_SVG)
   expect(big).toContain('Stage &lt;&amp;&gt;')
   expect(big).not.toContain('Stage <&>')

@@ -53,8 +53,14 @@ function stageRow(drawing: Drawing, stage: PaneStage, isChosen: boolean, isOpen:
   const waiting = stage.blocks.filter(block => waits.has(block.key)).length
   return (
     <Box flexDirection="column">
-      <Box key={`row-${stage.key}`} flexDirection="row" gap={1} backgroundColor={isChosen ? palette.mist : undefined}>
-        <Text color={isChosen ? palette.signal : palette.canvas}>▌</Text>
+      <Box key={`row-${stage.key}`} flexDirection="row" gap={1}>
+        {isChosen ? (
+          <Box key={`chosen-${stage.key}`}>
+            <Text color={palette.signal}>●</Text>
+          </Box>
+        ) : (
+          <Text> </Text>
+        )}
         <Text color={colour}>■</Text>
         <Button key={`fold-${stage.key}`} plain dimColor label={isOpen ? '⌄' : '›'} onPress={() => acts.toggleFold(stage.key)} />
         <Box flexDirection="column" flexShrink={1}>

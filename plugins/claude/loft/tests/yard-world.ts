@@ -172,8 +172,6 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     panes: [] as string[],
     /** Each `$.ui.open` the mod made. */
     opened: [] as Doc[],
-    /** Claude Code's `theme` setting, as `$.config.list()` gives it. */
-    theme: 'light',
     /** What a test has happen once `loft yard answer` records, as a wait then ending. */
     onAnswer: undefined as (() => void) | undefined,
   }
@@ -203,7 +201,6 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     if (!state.panes.includes(e.id)) state.panes.push(e.id)
     return { value: { isPlaced: true } }
   })
-  on('config.list', () => ({ value: [{ key: 'theme', label: 'Theme', kind: 'choice', value: state.theme, provider: { kind: 'core' } }] as never }))
   on('ui.panes', () => ({ value: state.panes.map(id => ({ id, title: id, isShown: true, isPlaced: true })) as never }))
   on('agent.list', () => ({ value: state.agents.map(agent => ({ ...agent, status: 'running' })) as never }))
   on('fs.read', ($, e) => (state.hasToken && e.path === `${state.home ?? `${HOME}/.yard`}/token` ? { value: 'token-1\n' } : { deny: `no file ${e.path}` }))

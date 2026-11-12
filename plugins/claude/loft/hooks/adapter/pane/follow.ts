@@ -9,7 +9,6 @@ import { callerArgs, failureOf, succeeded } from '../run'
 import { callerOf, run } from '../state'
 import { draftsOf, paneOf, setDrafts, setPane, shownIn } from './atoms'
 import { followed } from './model'
-import { isDark } from './theme'
 
 /** The pane's id, which its `ui.render` hook names as `requestId`. */
 export const PANE = 'yard'
@@ -38,8 +37,7 @@ export async function registerCommand($: EngineInterface) {
 /** Opens the pane, or shows it again, read whole, and follows Yard Log while it stays open. */
 async function openPane($: EngineInterface) {
   following.epoch++
-  const dark = await themeIsDark($)
-  await setPane($, () => ({ view: null, failure: null, notice: null, dark }))
+  await setPane($, () => ({ view: null, failure: null, notice: null }))
   const opened = await $.ui.open({ id: PANE, title: 'Yard' })
   await readPane($)
   following.timer ??= $.clock.every(FOLLOW, () => void tick($))
@@ -121,15 +119,6 @@ async function readSince($: EngineInterface, since: number | undefined) {
   return run($, cwd, ['read', ...callerArgs(caller), ...which, '--submissions'])
 }
 
-/** Whether Claude Code's `theme` setting is a dark one, which the pane's colours follow. */
-async function themeIsDark($: EngineInterface): Promise<boolean> {
-  try {
-    return isDark((await $.config.list()).find(row => row.key === 'theme')?.value)
-  } catch {
-    return false
-  }
-}
-
 /** Hooks `/yard-pane`, and starts the follow over for a module just loaded. */
 export function registerPane(on: On) {
   following.timer?.cancel()
@@ -137,10 +126,5 @@ export function registerPane(on: On) {
   on('command.run', { command: COMMAND }, async $ => {
     const opened = await openPane($)
     return { text: opened.isPlaced ? "Yard Log's pane is open." : "Yard Log's pane opens once there is room for it." }
-  })
-  on('config.set', { key: 'theme' }, async ($, e, next) => {
-    const set = await next(e)
-    await setPane($, before => ({ ...before, dark: isDark(e.value) }))
-    return set
   })
 }

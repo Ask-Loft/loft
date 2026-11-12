@@ -8,7 +8,7 @@ import type { EngineInterface } from 'claude-code'
 
 import type { PaneShown, YardPane, YardPaneDrafts } from '../../../types'
 
-const pane = atom({ plugin: 'loft', key: 'yardPane' } as const, { view: null, failure: null, notice: null, dark: false } as YardPane, { shape: 'yard-pane-6' })
+const pane = atom({ plugin: 'loft', key: 'yardPane' } as const, { view: null, failure: null, notice: null } as YardPane, { shape: 'yard-pane-7' })
 
 const drafts = atom({ plugin: 'loft', key: 'yardPaneDrafts' } as const, { shown: 'timeline', previous: 'timeline', at: null, seen: [], chosen: null, toggled: [], ticked: {}, words: {} } as YardPaneDrafts, { shape: 'yard-pane-drafts-4' })
 

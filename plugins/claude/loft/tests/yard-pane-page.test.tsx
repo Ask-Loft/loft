@@ -5,7 +5,7 @@ import type { FoundElement } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
 import { clockOf } from '../hooks/adapter/pane/model'
-import { DARK, isDark, LIGHT, paletteOf } from '../hooks/adapter/pane/theme'
+import { PALETTE, STATUS_SHADES } from '../hooks/adapter/pane/theme'
 import { block, openPane, PAGE, paneMount, readDoc, SESSION, stage, world, type Engine } from './yard-world'
 
 const SURFACES = ['terminal', 'desktop', 'vscode', 'mobile'] as const
@@ -42,17 +42,22 @@ const ASKING = readDoc({
   submissions: [{ agent: OWNER, open: [{ key: 's-1', state: 'open', blocks: ['k-readers', 'k-go'] }] }],
 })
 
-test("Claude Code's dark themes take the page's dark tokens, and every other theme its light ones", () => {
-  expect(isDark('dark')).toBe(true)
-  expect(isDark('dark-daltonized')).toBe(true)
-  expect(isDark('light')).toBe(false)
-  expect(isDark('auto')).toBe(false)
-  expect(paletteOf(true)).toBe(DARK)
-  expect(paletteOf(false)).toBe(LIGHT)
-  expect(LIGHT.done).toBe('#0a756c')
-  expect(LIGHT.signal).toBe('#14488f')
-  expect(LIGHT.wait).toBe('#a8480c')
-  expect(LIGHT.fix).toBe('#d23f74')
+/** The contrast of two `#rrggbb` colours, as WCAG measures it. */
+function contrast(one: string, other: string) {
+  const luminance = (hex: string) => {
+    const [r, g, b] = [1, 3, 5].map(at => parseInt(hex.slice(at, at + 2), 16) / 255).map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+    return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
+  }
+  const [high, low] = [luminance(one), luminance(other)].sort((a, b) => b - a)
+  return (high! + 0.05) / (low! + 0.05)
+}
+
+test("text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one", () => {
+  expect([PALETTE.ink, PALETTE.body, PALETTE.muted, PALETTE.line]).toEqual(['text', 'text', 'inactive', 'subtle'])
+  for (const shade of STATUS_SHADES) {
+    expect(contrast(PALETTE[shade], '#ffffff')).toBeGreaterThanOrEqual(3)
+    expect(contrast(PALETTE[shade], '#0c1117')).toBeGreaterThanOrEqual(3)
+  }
 })
 
 test("the head names the repository above the Yard Log's title, set larger, sums up its stages and links the page", async ($, on) => {
@@ -62,7 +67,7 @@ test("the head names the repository above the Yard Log's title, set larger, sums
   for (const surface of SURFACES) {
     const ui = await $.ui.mount(paneMount(surface))
     expect(await ui.find({ key: 'head-kicker' })).toBeDefined()
-    expect((await ui.find({ type: 'Text', text: 'shelf' }))?.props.color).toBe(LIGHT.muted)
+    expect((await ui.find({ type: 'Text', text: 'shelf' }))?.props.color).toBe(PALETTE.muted)
     expect((await ui.find({ type: 'Text', text: 'feat/shelf' }))?.props.size).toBe('title')
     expect(await ui.find({ type: 'Text', text: '3 stages: 1 done, 1 active, 1 planned' })).toBeDefined()
     expect((await ui.find({ type: 'Link' }))?.props.href).toBe(PAGE.replace('127.0.0.1', 'localhost'))
@@ -77,7 +82,7 @@ test('the head counts what waits on the person in a button of the waiting colour
   for (const surface of SURFACES) {
     const ui = await $.ui.mount(paneMount(surface))
     expect((await ui.find({ key: 'wait-count' }))?.text).toBe('2 wait on you')
-    expect((await ui.find({ key: 'wait-control' }))?.props.backgroundColor).toBe(LIGHT.wait)
+    expect((await ui.find({ key: 'wait-control' }))?.props.backgroundColor).toBe(PALETTE.wait)
     expect(await ui.find({ type: 'Text', text: 'Asked of you' })).toBeDefined()
     await ui.unmount()
   }
@@ -106,15 +111,19 @@ test('the tabs Timeline and Gantt chart choose the view, and the tab of the view
   }
 })
 
-test("under a dark theme the pane wears the page's dark tokens", async ($, on) => {
+test('on every surface the pane draws its text in Claude Code\'s own colours, and no tinted ground but the rust of what waits', async ($, on) => {
   const w = world(on)
   w.state.read = ASKING
-  w.state.theme = 'dark'
   await openPane($)
-  const ui = await $.ui.mount(paneMount('desktop'))
-  expect((await ui.find({ key: 'wait-control' }))?.props.backgroundColor).toBe(DARK.wait)
-  expect((await ui.find({ type: 'Text', text: 'shelf' }))?.props.color).toBe(DARK.muted)
-  await ui.unmount()
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect((await ui.find({ type: 'Text', text: 'feat/shelf' }))?.props.color).toBe('text')
+    expect((await ui.find({ type: 'Text', text: 'shelf' }))?.props.color).toBe('inactive')
+    await ui.press({ key: 'tab-timeline' })
+    const grounds = (await ui.findAll({})).flatMap(each => (each.props.backgroundColor === undefined ? [] : [each.props.backgroundColor]))
+    expect(new Set(grounds)).toEqual(new Set([PALETTE.wait]))
+    await ui.unmount()
+  }
 })
 
 /** The pane mounted on `surface`, `columns` wide, showing the timeline. */
@@ -148,13 +157,13 @@ test("each stage's row shows a square and its status in the status's colour, its
   await openPane($)
   for (const surface of SURFACES) {
     const ui = await timelineOf($, surface)
-    expect((await ui.findAll({ type: 'Text', text: '■' })).map(each => each.props.color)).toEqual([LIGHT.done, LIGHT.signal, LIGHT.rail])
+    expect((await ui.findAll({ type: 'Text', text: '■' })).map(each => each.props.color)).toEqual([PALETTE.done, PALETTE.signal, PALETTE.rail])
     expect((await ui.find({ key: 'choose-k-build' }))?.text).toBe('Build the store')
-    expect((await ui.find({ type: 'Text', text: 'Done' }))?.props.color).toBe(LIGHT.done)
-    expect((await ui.find({ type: 'Text', text: 'Active' }))?.props.color).toBe(LIGHT.signal)
-    expect((await ui.find({ type: 'Text', text: /^Planned$/ }))?.props.color).toBe(LIGHT.rail)
+    expect((await ui.find({ type: 'Text', text: 'Done' }))?.props.color).toBe(PALETTE.done)
+    expect((await ui.find({ type: 'Text', text: 'Active' }))?.props.color).toBe(PALETTE.signal)
+    expect((await ui.find({ type: 'Text', text: /^Planned$/ }))?.props.color).toBe(PALETTE.rail)
     expect(await ui.findAll({ type: 'Text', text: 'main agent' })).not.toHaveLength(0)
-    expect((await ui.find({ type: 'Text', text: '1 waiting' }))?.props.color).toBe(LIGHT.wait)
+    expect((await ui.find({ type: 'Text', text: '1 waiting' }))?.props.color).toBe(PALETTE.wait)
     await ui.unmount()
   }
 })
@@ -180,9 +189,9 @@ test("the chosen stage's row is open to its blocks, the others folded, and a row
     expect(await ui.find({ key: 'block-row-k-store' })).toBeDefined()
     expect((await ui.find({ key: 'block-state-k-store' }))?.text).toBe('Active')
     expect((await ui.find({ key: 'block-state-k-go' }))?.text).toBe('Waits on you')
-    expect(colourIn(await ui.find({ key: 'block-state-k-go' }))).toBe(LIGHT.wait)
-    expect((await ui.find({ key: 'row-k-build' }))?.props.backgroundColor).toBe(LIGHT.mist)
-    expect((await ui.find({ key: 'row-k-shape' }))?.props.backgroundColor).toBeUndefined()
+    expect(colourIn(await ui.find({ key: 'block-state-k-go' }))).toBe(PALETTE.wait)
+    expect(colourIn(await ui.find({ key: 'chosen-k-build' }))).toBe(PALETTE.signal)
+    expect(await ui.find({ key: 'chosen-k-shape' })).toBeUndefined()
     expect(await ui.find({ key: 'block-row-k-choice' })).toBeUndefined()
     await ui.press({ key: 'fold-k-shape' })
     expect((await ui.find({ key: 'block-row-k-choice' }))?.text).toContain('Members only')
@@ -294,7 +303,7 @@ test("a card's head names the block's kind, a question's header as a chip, and t
     expect(head?.props.justifyContent).toBe('space-between')
     expect(head?.text).toMatch(/^Task.*Active$/)
     expect((await ui.find({ key: 'card-head-k-readers' }))?.text).toMatch(/^Question.*Readers.*Waits on you$/)
-    expect((await ui.find({ key: 'chip-k-readers' }))?.props.backgroundColor).toBe(LIGHT.surface)
+    expect((await ui.find({ key: 'chip-k-readers' }))?.props.borderColor).toBe(PALETTE.line)
     expect((await ui.find({ key: 'card-head-k-result' }))?.text).toBe('Note')
     await ui.unmount()
   }
@@ -307,10 +316,11 @@ test('the card of a block that waits on the person stands on the waiting ground 
   for (const surface of SURFACES) {
     const ui = await timelineOf($, surface)
     for (const key of ['k-readers', 'k-go']) {
-      expect((await ui.find({ key: `card-${key}` }))?.props.backgroundColor).toBe(LIGHT.waitSoft)
-      expect((await ui.find({ key: `wait-bar-${key}` }))?.props.backgroundColor).toBe(LIGHT.wait)
+      expect((await ui.find({ key: `card-${key}` }))?.props.borderColor).toBe(PALETTE.wait)
+      expect((await ui.find({ key: `card-${key}` }))?.props.backgroundColor).toBeUndefined()
+      expect((await ui.find({ key: `wait-bar-${key}` }))?.props.backgroundColor).toBe(PALETTE.wait)
     }
-    expect((await ui.find({ key: 'card-k-store' }))?.props.backgroundColor).toBeUndefined()
+    expect((await ui.find({ key: 'card-k-store' }))?.props.borderColor).toBe(PALETTE.line)
     expect(await ui.find({ key: 'wait-bar-k-store' })).toBeUndefined()
     expect(await ui.findAll({ type: 'Text', text: 'This waits on you.' })).toHaveLength(2)
     expect((await ui.find({ key: 'answer-it-k-readers' }))?.props.label).toBe('Answer it')
@@ -342,8 +352,8 @@ test("an answered question shows the options chosen and the person's own words, 
   for (const surface of SURFACES) {
     const ui = await timelineOf($, surface)
     expect(partsOf(await ui.find({ key: 'answer-k-readers' }))).toEqual(['Members, “and staff”', 'answered on the page'])
-    expect((await ui.find({ key: 'card-option-k-readers-0' }))?.props.borderColor).toBe(LIGHT.signal)
-    expect((await ui.find({ key: 'card-option-k-readers-1' }))?.props.borderColor).toBe(LIGHT.line)
+    expect((await ui.find({ key: 'card-option-k-readers-0' }))?.props.borderColor).toBe(PALETTE.signal)
+    expect((await ui.find({ key: 'card-option-k-readers-1' }))?.props.borderColor).toBe(PALETTE.line)
     expect((await ui.find({ key: 'card-option-k-readers-2' }))?.text).toMatch(/^C.*In your own words.*and staff$/)
     expect((await ui.find({ key: 'card-head-k-readers' }))?.text).toMatch(/Answered$/)
     await ui.unmount()
@@ -359,9 +369,9 @@ test('an approval or a plan shows its title and its Markdown, and once decided, 
     expect(await ui.find({ type: 'Text', text: 'Approve the store' })).toBeDefined()
     expect(await ui.find({ type: 'Markdown', text: 'All.' })).toBeDefined()
     expect((await ui.find({ key: 'outcome-k-go' }))?.text).toBe('Approved in the terminal')
-    expect(colourIn(await ui.find({ key: 'outcome-k-go' }))).toBe(LIGHT.done)
+    expect(colourIn(await ui.find({ key: 'outcome-k-go' }))).toBe(PALETTE.done)
     expect((await ui.find({ key: 'outcome-k-no' }))?.text).toBe('Rejected on the page: Too wide')
-    expect(colourIn(await ui.find({ key: 'outcome-k-no' }))).toBe(LIGHT.danger)
+    expect(colourIn(await ui.find({ key: 'outcome-k-no' }))).toBe(PALETTE.danger)
     expect((await ui.find({ key: 'outcome-k-nay' }))?.text).toBe('Rejected on the page, with no reason given')
     await ui.unmount()
   }
@@ -383,8 +393,8 @@ test('a task shows its title and its state, and a fix is marked Fix in the fix c
     expect((await ui.find({ key: 'card-head-k-store' }))?.text).toMatch(/Active$/)
     expect(await ui.find({ type: 'Markdown', text: 'In one file.' })).toBeDefined()
     expect((await ui.find({ key: 'card-head-k-mend' }))?.text).toMatch(/^Task.*Fix.*Open$/)
-    expect((await ui.find({ key: 'fix-k-mend' }))?.props.backgroundColor).toBe(LIGHT.fixPale)
-    expect(colourIn(await ui.find({ key: 'fix-k-mend' }))).toBe(LIGHT.fix)
+    expect((await ui.find({ key: 'fix-k-mend' }))?.props.backgroundColor).toBeUndefined()
+    expect(colourIn(await ui.find({ key: 'fix-k-mend' }))).toBe(PALETTE.fix)
     expect(await ui.find({ key: 'fix-k-store' })).toBeUndefined()
     await ui.unmount()
   }
@@ -444,11 +454,11 @@ test('pressing Answer it or Decide it on a waiting card shows what waits, at tha
     expect(await ui.find({ key: 'view-waiting' })).toBeUndefined()
     await ui.press({ key: 'decide-it-k-go' })
     expect(await ui.find({ key: 'view-waiting' })).toBeDefined()
-    expect((await ui.find({ key: 'ask-k-go' }))?.props.borderColor).toBe(LIGHT.signal)
-    expect((await ui.find({ key: 'ask-k-readers' }))?.props.borderColor).toBe(LIGHT.waitLine)
+    expect((await ui.find({ key: 'ask-k-go' }))?.props.borderColor).toBe(PALETTE.signal)
+    expect((await ui.find({ key: 'ask-k-readers' }))?.props.borderColor).toBe(PALETTE.wait)
     await ui.press({ key: 'tab-timeline' })
     await ui.press({ key: 'answer-it-k-readers' })
-    expect((await ui.find({ key: 'ask-k-readers' }))?.props.borderColor).toBe(LIGHT.signal)
+    expect((await ui.find({ key: 'ask-k-readers' }))?.props.borderColor).toBe(PALETTE.signal)
     await ui.unmount()
   }
 })
@@ -544,7 +554,7 @@ test('Claude Code Desktop, VS Code and the mobile app draw the Gantt chart as on
     const images = await ui.findAll({ type: 'Svg' })
     expect(images).toHaveLength(1)
     expect(String(images[0]!.props.source)).toMatch(/^<svg /)
-    expect(String(images[0]!.props.source)).toContain(LIGHT.done)
+    expect(String(images[0]!.props.source)).toContain(PALETTE.done)
     expect(images[0]!.props.alt).toContain('Stage shape ran 30 min.')
     expect(images[0]!.props.alt).toMatch(/Stage build has run .*, and goes on\./)
     expect(await ui.find({ key: 'gantt-bar-k-shape' })).toBeUndefined()
@@ -560,9 +570,9 @@ test('the terminal draws the Gantt chart as a bar of block characters for each r
   await ui.press({ key: 'tab-gantt' })
   expect(await ui.find({ type: 'Svg' })).toBeUndefined()
   expect((await ui.find({ key: 'gantt-bar-k-shape' }))?.text).toMatch(/^ *█+ *$/)
-  expect(colourIn(await ui.find({ key: 'gantt-bar-k-shape' }))).toBe(LIGHT.done)
+  expect(colourIn(await ui.find({ key: 'gantt-bar-k-shape' }))).toBe(PALETTE.done)
   expect((await ui.find({ key: 'gantt-bar-k-store' }))?.text).toMatch(/^ *▬+ *$/)
-  expect(colourIn(await ui.find({ key: 'gantt-bar-k-store' }))).toBe(LIGHT.task)
+  expect(colourIn(await ui.find({ key: 'gantt-bar-k-store' }))).toBe(PALETTE.task)
   expect(await ui.find({ key: 'gantt-bar-k-review' })).toBeUndefined()
   await ui.unmount()
 })
@@ -577,7 +587,7 @@ test('choosing a stage in the Gantt chart shows it, chosen, in the timeline', as
     await ui.press({ key: 'gantt-stage-k-shape' })
     expect(await ui.find({ key: 'view-timeline' })).toBeDefined()
     expect((await ui.find({ key: 'stage-title' }))?.text).toBe('Stage shape')
-    expect((await ui.find({ key: 'row-k-shape' }))?.props.backgroundColor).toBe(LIGHT.mist)
+    expect(await ui.find({ key: 'chosen-k-shape' })).toBeDefined()
     await ui.press({ key: 'choose-k-build' })
     await ui.unmount()
   }

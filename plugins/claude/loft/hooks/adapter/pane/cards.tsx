@@ -22,14 +22,14 @@ export function cardHead({ t, palette }: Drawing, block: PaneBlock, isWaiting: b
           {KINDS[block.kind] ?? block.kind}
         </Text>
         {header ? (
-          <Box key={`chip-${block.key}`} backgroundColor={palette.surface} paddingX={1}>
-            <Text color={palette.body} size="caption">
+          <Box key={`chip-${block.key}`} borderStyle="single" borderColor={palette.line} paddingX={1}>
+            <Text color={palette.muted} size="caption">
               {header}
             </Text>
           </Box>
         ) : null}
         {block.kind === 'task' && body.type === 'fix' ? (
-          <Box key={`fix-${block.key}`} backgroundColor={palette.fixPale} paddingX={1}>
+          <Box key={`fix-${block.key}`}>
             <Text color={palette.fix} size="caption" weight="semibold">
               Fix
             </Text>
@@ -70,8 +70,8 @@ function optionCard({ t, palette }: Drawing, key: string, index: number, label: 
         </Text>
         <Text color={palette.ink}>{label}</Text>
         {isRecommended ? (
-          <Box backgroundColor={palette.recommendedSoft} paddingX={1}>
-            <Text color={palette.recommended} size="caption">
+          <Box>
+            <Text color={palette.recommended} size="caption" weight="semibold">
               Recommended
             </Text>
           </Box>
@@ -201,8 +201,7 @@ export function card(drawing: Drawing, block: PaneBlock, isWaiting: boolean) {
       key={`card-${block.key}`}
       flexDirection="row"
       borderStyle="single"
-      borderColor={isWaiting ? palette.waitLine : palette.line}
-      backgroundColor={isWaiting ? palette.waitSoft : undefined}
+      borderColor={isWaiting ? palette.wait : palette.line}
     >
       {isWaiting ? <Box key={`wait-bar-${block.key}`} width={1} backgroundColor={palette.wait} /> : null}
       <Box flexDirection="column" flexGrow={1} flexShrink={1} paddingX={1}>

@@ -13,7 +13,7 @@ import { shownIn } from './atoms'
 import { head } from './head'
 import { bodyOf, type Acts, type Drawing, type Table } from './kit'
 import { waitingIn } from './model'
-import { paletteOf } from './theme'
+import { PALETTE } from './theme'
 import { chart } from './chart'
 import { timeline } from './timeline'
 import { whatWaits } from './waiting'
@@ -113,6 +113,6 @@ export function registerDraw(on: On) {
     const resolved = $.ui.resolve(e) as unknown as Table
     const t: Table = { ...resolved, Input: FIELDED[e.surface] ? resolved.Input : undefined, Svg: PICTURED[e.surface] ? resolved.Svg : undefined }
     const [held, kept, now] = await Promise.all([paneOf($), draftsOf($), $.clock.now()])
-    return drawn({ t, palette: paletteOf(held.dark), acts: actsOf($) }, held, kept, e.props.bodyColumns, now)
+    return drawn({ t, palette: PALETTE, acts: actsOf($) }, held, kept, e.props.bodyColumns, now)
   })
 }
