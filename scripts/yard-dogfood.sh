@@ -50,10 +50,12 @@ fi
 
 python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT" "$DOGFOOD_HOME"
 
-# The session's loft: this worktree's build, under the dogfood machine home.
+# The session's loft: this worktree's build, under the dogfood machine home. Written beside it
+# and renamed into place, since sessions already open may be running it.
 mkdir -p "${WRAPPER:h}"
-print -rl -- '#!/bin/sh' "export LOFT_YARD_HOME=${(qq)DOGFOOD_HOME}" "exec ${(qq)LOFT} \"\$@\"" > "$WRAPPER"
-chmod 755 "$WRAPPER"
+print -rl -- '#!/bin/sh' "export LOFT_YARD_HOME=${(qq)DOGFOOD_HOME}" "exec ${(qq)LOFT} \"\$@\"" > "$WRAPPER.$$"
+chmod 755 "$WRAPPER.$$"
+mv -f "$WRAPPER.$$" "$WRAPPER"
 
 if [[ $AGENT_COMMAND == desktop ]]; then
   exec "${DESKTOP[@]}" "$1"

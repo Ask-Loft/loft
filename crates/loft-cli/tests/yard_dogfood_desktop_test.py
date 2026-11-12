@@ -46,6 +46,8 @@ elif args[:2] == ["plugin", "install"] and args[3:] == ["--scope", "local"]:
     state["installed"].append({"id": args[2], "scope": "local", "projectPath": str(cwd), "enabled": True})
     enable(args[2], True)
 elif args[:2] in (["plugin", "enable"], ["plugin", "disable"]) and args[3:] == ["--scope", "local"]:
+    if not any(entry["id"] == args[2] for entry in state["installed"]):
+        sys.exit(f'Plugin "{args[2]}" is not installed.')
     enable(args[2], args[1] == "enable")
 elif args[:2] == ["plugin", "configure"] and args[3:] == ["--values-stdin"]:
     if not any(entry["id"] == args[2] and entry["projectPath"] == str(cwd) for entry in state["installed"]):
@@ -96,9 +98,12 @@ class DesktopTests(unittest.TestCase):
         self.other_settings = '{"enabledPlugins": {"loft@ask-loft": true}}'
         (self.other / ".claude/settings.local.json").write_text(self.other_settings)
         self.calls = self.root / "calls.jsonl"
+        self.state = self.root / "claude-state.json"
+        self.state.write_text(json.dumps({"markets": [], "installed": [
+            {"id": "loft@ask-loft", "scope": "user", "enabled": True}]}))
         self.wrapper = str(self.tree / ".loft/yard-dogfood/bin/loft")
         self.env = dict(os.environ, PATH=str(tools) + os.pathsep + os.environ["PATH"],
-                        CALLS=str(self.calls), STATE=str(self.root / "claude-state.json"),
+                        CALLS=str(self.calls), STATE=str(self.state),
                         HOME=str(self.home))
 
     def launch(self, *args):
@@ -173,6 +178,27 @@ class DesktopTests(unittest.TestCase):
         self.assertTrue(all(record["cwd"] == str(self.project) for record in changes(records)))
         self.assertEqual((self.other / ".claude/settings.local.json").read_text(),
                          self.other_settings)
+
+    def test_a_machine_without_the_installed_plugin_still_gets_the_dogfood_one(self):
+        self.state.write_text(json.dumps({"markets": [], "installed": []}))
+        records = self.launch(str(self.project))
+        self.assertNotIn("disable", [record["args"][1] for record in changes(records)])
+        self.assertEqual(self.local(self.project), {"loft@yard-dogfood": True})
+        settings = json.loads(self.user_settings.read_text())
+        self.assertEqual(settings["pluginConfigs"]["loft@yard-dogfood"]["options"]["yardPort"], 7412)
+        self.assertEqual(changes(self.launch("--undo", str(self.project)))[0]["args"],
+                         ["plugin", "disable", "loft@yard-dogfood", "--scope", "local"])
+
+    def test_a_marketplace_of_that_name_added_elsewhere_is_refused(self):
+        self.state.write_text(json.dumps({"markets": [
+            {"name": "yard-dogfood", "source": "directory", "path": str(self.root / "another tree")},
+        ], "installed": []}))
+        result = subprocess.run(["zsh", str(self.tree / "scripts/yard-dogfood.sh"), "desktop",
+                                 str(self.project)], cwd=self.other, capture_output=True, text=True,
+                                env=dict(self.env, OUT=str(self.root / "out.txt")), timeout=20)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("another tree", result.stderr)
+        self.assertEqual(changes([json.loads(line) for line in self.calls.read_text().splitlines()]), [])
 
     def test_undo_returns_the_project_to_the_installed_plugin_and_leaves_others_alone(self):
         self.launch(str(self.project))

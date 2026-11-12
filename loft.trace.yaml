@@ -25751,7 +25751,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_home.rs"
         name: "a_moved_home_holds_the_files_of_the_machine_and_nothing_is_written_to_the_default_one"
-        body: 5e1e70bc3b8efe757c81b8d37d3f74d6d74af72fceb05c8f0b2938754ff1a6fc
+        body: 8e9c522d8e0f8ec0bc412bd7f684d6b2e03fc021b79300e51cfcc57181ee6423
   - node: 01a1cf7a-0eb8-7654-8bfa-cc1a8f3a8d68
     reviewed: a651d689534ebb35ab88020548b62f252136d08ad06b38fe6d55c179c3309156
     tests:
@@ -26609,7 +26609,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_the_session_s_loft_runs_with_the_dogfood_home"
-        body: 627723eb0a3b2fc85df258f1b0622b38739f6178ae7d5122c990b75ef17c551a
+        body: 0502e384942b79fe6207aaf382b95675576b4c7c4f6a1111221a86fe49612e2a
   - node: 01a1cf7a-0eb7-770e-800d-7eb7b63ace26
     reviewed: dd74e01940b78721e8742f8c9a38e3137fe28ecb239c7c7c99aa5bf21adf6e28
     tests:
@@ -26720,7 +26720,7 @@ links:
         body: 7e0992a4dcf3578402d2be2ad4d14d4acb4227a5f0cfdf7b7ffe4b8b63acb579
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_the_session_s_loft_runs_with_the_dogfood_home"
-        body: 627723eb0a3b2fc85df258f1b0622b38739f6178ae7d5122c990b75ef17c551a
+        body: 0502e384942b79fe6207aaf382b95675576b4c7c4f6a1111221a86fe49612e2a
   - node: 01a1cf7a-0eb7-770e-800d-7ebdfe1618e2
     reviewed: f89443c0a68ea6d33b0aec4ef45706743542d9f082ca976cf93d4e813f28b654
     tests:

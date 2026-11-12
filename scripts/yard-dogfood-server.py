@@ -178,6 +178,9 @@ class Runtime:
 
 
 def main():
+    if len(sys.argv) != 4:
+        print(f"usage: {Path(sys.argv[0]).name} TREE PORT HOME", file=sys.stderr)
+        return 2
     runtime = Runtime(sys.argv[3])
     try:
         tree = Path(sys.argv[1]).resolve()

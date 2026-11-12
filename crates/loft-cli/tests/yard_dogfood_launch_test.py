@@ -101,7 +101,9 @@ class LaunchTests(unittest.TestCase):
                 launch = Launch(self, host)
                 self.assertEqual(launch.result.returncode, 0, launch.result.stderr)
                 agent = launch.records[-1]
-                self.assertIsNone(agent["yardHome"], "the agent's own environment is left alone")
+                # Cargo starts every test with an empty `LOFT_YARD_HOME`, which loft ignores.
+                self.assertFalse(agent["yardHome"], "the agent's own environment is left alone")
+                self.assertEqual([path.name for path in launch.wrapper.parent.iterdir()], ["loft"])
                 ran = launch.run_wrapper("yard", "protocol")
                 self.assertEqual(ran["program"], "loft")
                 self.assertEqual(ran["args"], ["yard", "protocol"])

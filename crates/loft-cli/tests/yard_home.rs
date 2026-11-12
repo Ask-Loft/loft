@@ -2,8 +2,10 @@
 //! `~/.yard/`, so that a page server kept there runs beside one kept elsewhere; an empty or
 //! relative value is ignored.
 
+use std::fs;
 use std::path::PathBuf;
 
+use crate::common::stderr;
 use crate::served::{Served, free_port};
 use crate::yard::Yard;
 
@@ -21,8 +23,35 @@ fn serve_under(yard: &Yard, home: &str) -> Served {
 fn a_moved_home_holds_the_files_of_the_machine_and_nothing_is_written_to_the_default_one() {
     let yard = Yard::new();
     let home = moved(&yard);
-    let _served = serve_under(&yard, home.to_str().unwrap());
-    for name in ["server.json", "server.lock", "token"] {
+    let under = [("LOFT_YARD_HOME", home.to_str().unwrap())];
+    let _served = serve_under(&yard, under[0].1);
+    let batch = yard.scratch.home().join("batch.json");
+    fs::write(
+        &batch,
+        r#"[{"id":"build","kind":"stage","title":"Build","status":"active"}]"#,
+    )
+    .unwrap();
+    let wrote = yard.run_under(
+        &[
+            "write",
+            "--session",
+            "s1",
+            "--input",
+            batch.to_str().unwrap(),
+        ],
+        &under,
+    );
+    assert_eq!(wrote.status.code(), Some(0), "{}", stderr(&wrote));
+    let read = yard.run_under(&["read", "--session", "s1", "--mark-read"], &under);
+    assert_eq!(read.status.code(), Some(0), "{}", stderr(&read));
+    for name in [
+        "server.json",
+        "server.lock",
+        "token",
+        "trees.json",
+        "last-read.json",
+        "session-trees.json",
+    ] {
         assert!(home.join(name).exists(), "{name}");
     }
     assert!(!yard.scratch.home().join(".yard").exists());

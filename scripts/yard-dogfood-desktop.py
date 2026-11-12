@@ -50,7 +50,7 @@ def keep_marketplace(tree):
     The marketplace holds the plugin itself, so that Claude Code reads it from the worktree: a
     link to the plugin from elsewhere is refused, since its hooks module would lie outside the
     marketplace's directory. The file is ignored by git."""
-    market = tree / "plugins"
+    market = (tree / "plugins").resolve()
     manifest = market / ".claude-plugin/marketplace.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text(json.dumps({
@@ -71,15 +71,23 @@ def local_enabled(project):
     return settings.get("enabledPlugins", {})
 
 
-def installed_here(project):
+def installed(project):
+    """The plugins Claude Code holds as installed, as `claude plugin list` gives them."""
+    return json.loads(claude(["plugin", "list", "--json"], project) or "[]")
+
+
+def installed_here(listed, project):
     """Whether `loft@yard-dogfood` is installed at the local scope of `project`."""
-    listed = json.loads(claude(["plugin", "list", "--json"], project) or "[]")
     return any(entry.get("id") == DEV and entry.get("scope") == "local"
-               and Path(entry.get("projectPath", "")) == project for entry in listed)
+               and Path(entry.get("projectPath", "")).resolve() == project for entry in listed)
 
 
-def switch(project, plugin, enable):
+def switch(project, plugin, enable, listed):
+    """Enables or disables `plugin` in the project's local settings, where it is installed at all
+    and is not so already."""
     if local_enabled(project).get(plugin) is enable:
+        return
+    if not any(entry.get("id") == plugin for entry in listed):
         return
     verb = "enable" if enable else "disable"
     say(f"{verb.capitalize()} {plugin} in {project}'s local settings (.claude/settings.local.json)")
@@ -104,22 +112,26 @@ def desktop(tree, port, command, project):
     if known is None:
         say(f"Add the marketplace {MARKETPLACE} from {market} to your user settings")
         claude(["plugin", "marketplace", "add", str(market)], project)
-    elif (added := known.get("path") or known.get("installLocation")) and Path(added) != market:
+    elif Path(known.get("path") or known.get("installLocation") or "").resolve() != market:
+        added = known.get("path") or known.get("installLocation") or "a source it does not name"
         raise DesktopError(f"the marketplace {MARKETPLACE} is already added from {added}; "
                            f"remove it with `claude plugin marketplace remove {MARKETPLACE}` first")
-    if not installed_here(project):
+    listed = installed(project)
+    if not installed_here(listed, project):
         say(f"Install {DEV} in {project}'s local settings")
         claude(["plugin", "install", DEV, "--scope", "local"], project)
-    switch(project, DEV, True)
-    switch(project, INSTALLED, False)
+        listed = installed(project)
+    switch(project, DEV, True, listed)
+    switch(project, INSTALLED, False, listed)
     configure(project, {"loftCommand": command, "yardPort": str(port), "baseBranch": "develop"})
     say(f"{project} now runs this worktree's Loft plugin; Yard page: http://127.0.0.1:{port}/")
     say("Start a new session there, or run /reload-plugins in an open one.")
 
 
 def undo(project):
-    switch(project, DEV, False)
-    switch(project, INSTALLED, True)
+    listed = installed(project)
+    switch(project, DEV, False, listed)
+    switch(project, INSTALLED, True, listed)
     say(f"{project} runs the installed Loft plugin again; start a new session there.")
 
 

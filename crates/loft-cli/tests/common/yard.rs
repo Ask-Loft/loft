@@ -69,10 +69,20 @@ impl Yard {
 
     /// Runs `loft yard` with `args`, printing JSON.
     pub fn run(&self, args: &[&str]) -> Output {
+        self.run_under(args, &[])
+    }
+
+    /// [`Self::run`], with `variables` set in the command's environment.
+    pub fn run_under(&self, args: &[&str], variables: &[(&str, &str)]) -> Output {
         let mut all = vec!["yard"];
         all.extend_from_slice(args);
         all.extend_from_slice(&["--format", "json"]);
-        self.scratch.loft_with(&all, Some(&self.git), &self.clock)
+        self.scratch
+            .command(Some(&self.git), &self.clock)
+            .envs(variables.iter().copied())
+            .args(&all)
+            .output()
+            .unwrap()
     }
 
     /// Starts `loft yard` with `args`, printing JSON, and gives the running process, its

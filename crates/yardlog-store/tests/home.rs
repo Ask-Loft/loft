@@ -34,6 +34,12 @@ fn each_file_of_the_machine_has_its_name_in_the_home_directory() {
 }
 
 #[test]
+fn the_tests_inherit_no_yard_home_from_the_developer_s_environment() {
+    let inherited = std::env::var_os("LOFT_YARD_HOME").unwrap_or_default();
+    assert!(inherited.is_empty(), "{inherited:?}");
+}
+
+#[test]
 fn the_home_directory_is_yard_in_the_person_s_home() {
     let Some(home) = Home::from_env() else {
         return;
