@@ -210,11 +210,16 @@ function drawn(t: Table, { view, failure, notice }: YardPane, kept: YardPaneDraf
   )
 }
 
-/** What a press in the pane does, for this session, with what the person has set and not sent. */
-function actsOf($: EngineInterface, kept: YardPaneDrafts): Acts {
-  const ticked = (block: PaneBlock) => kept.ticked[block.key] ?? []
-  const words = (block: PaneBlock) => kept.words[block.key]
+/**
+ * What a press in the pane does, for this session. What the person set and not sent is read when
+ * they press, not as it was drawn, so that a tick or a keystroke not yet drawn is not lost.
+ */
+function actsOf($: EngineInterface): Acts {
   const recorded = (given: Given | undefined) => void (given && answerIn($, given))
+  const settled = async (block: PaneBlock) => {
+    const kept = await draftsOf($)
+    return { ticked: kept.ticked[block.key] ?? [], words: kept.words[block.key] }
+  }
   return {
     toggleFold: stage =>
       void setDrafts($, before => ({
@@ -222,16 +227,20 @@ function actsOf($: EngineInterface, kept: YardPaneDrafts): Acts {
         unfolded: before.unfolded.includes(stage) ? before.unfolded.filter(each => each !== stage) : [...before.unfolded, stage],
       })),
     choose: (block, label) => {
-      if (bodyOf(block).multiple !== true) return recorded(questionGiven(block.key, [label], undefined))
+      if (bodyOf(block).multiple !== true) {
+        void settled(block).then(now => recorded(questionGiven(block.key, [label], now.words)))
+        return
+      }
       void setDrafts($, before => {
         const was = before.ticked[block.key] ?? []
         const now = was.includes(label) ? was.filter(each => each !== label) : [...was, label]
         return { ...before, ticked: { ...before.ticked, [block.key]: now } }
       })
     },
-    send: (block, typed) => recorded(questionGiven(block.key, bodyOf(block).multiple === true ? ticked(block) : [], typed ?? words(block))),
+    send: (block, typed) =>
+      void settled(block).then(now => recorded(questionGiven(block.key, bodyOf(block).multiple === true ? now.ticked : [], typed ?? now.words))),
     type: (block, typed) => void setDrafts($, before => ({ ...before, words: { ...before.words, [block.key]: typed } })),
-    decide: (block, isApproved, typed) => recorded(decisionGiven(block.key, isApproved, typed ?? words(block))),
+    decide: (block, isApproved, typed) => void settled(block).then(now => recorded(decisionGiven(block.key, isApproved, typed ?? now.words))),
   }
 }
 
@@ -241,6 +250,6 @@ export function registerDraw(on: On) {
     const resolved = $.ui.resolve(e) as unknown as Table
     const t: Table = FIELDED[e.surface] ? resolved : { ...resolved, Input: undefined }
     const kept = await draftsOf($)
-    return drawn(t, await paneOf($), kept, actsOf($, kept))
+    return drawn(t, await paneOf($), kept, actsOf($))
   })
 }

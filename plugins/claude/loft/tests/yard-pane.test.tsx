@@ -1,6 +1,6 @@
 import { expect, test, type Mounted } from 'claude-code/testing'
 
-import { block, PAGE, readDoc, SESSION, stage, start, world, yardRuns, type Engine, type World } from './yard-world'
+import { block, deferred, PAGE, readDoc, SESSION, stage, start, world, yardRuns, type Engine, type World } from './yard-world'
 
 const OWNER = { host: 'claude-code', session: SESSION }
 
@@ -433,4 +433,39 @@ test("Claude Code's dialog for the same submission closes once the pane has answ
   expect(asked).toBe(1)
   expect(yardRuns(w).filter(run => run.startsWith('answer'))).toHaveLength(1)
   await ui.unmount()
+})
+
+test('an answer loft does not record keeps the words typed for another try, and the pane says why', async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  w.state.answers.answer = { doc: { outcome: 'error', errors: [{ message: 'Yard Log is locked' }] }, exitCode: 1 }
+  await opened($, w)
+  const ui = await mountFielded($, 'desktop')
+  await ui.input({ key: 'reason-k-go', text: 'Too many books', kind: 'change' })
+  await ui.press({ key: 'reject-k-go' })
+  expect(await ui.find({ type: 'Text', text: /Yard Log is locked/ })).toBeDefined()
+  expect((await ui.find({ key: 'reason-k-go' }))?.text).toBe('Too many books')
+  await ui.unmount()
+})
+
+test("choosing an option records the words typed in the question's field with it", async ($, on) => {
+  const w = world(on)
+  w.state.read = ASKING
+  await opened($, w)
+  const ui = await mountFielded($, 'terminal')
+  await ui.input({ key: 'words-k-readers', text: 'and their guests', kind: 'change' })
+  await ui.press({ key: 'option-k-readers-0' })
+  expect(answered(w).map(each => each.given)).toEqual([[{ block: 'k-readers', labels: ['Members'], words: 'and their guests' }]])
+  await ui.unmount()
+})
+
+test('running the command while a read is under way reads Yard Log whole once that read ends', async ($, on) => {
+  const w = await opened($, world(on))
+  const held = deferred<void>()
+  w.state.reading = held.promise
+  await w.clock.advance(1000)
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  held.resolve()
+  await w.clock.settle()
+  expect(reads(w).slice(-2)).toEqual(['read --session session-1 --since 4', 'read --session session-1'])
 })

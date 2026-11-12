@@ -32,7 +32,9 @@ export async function answerIn($: EngineInterface, given: Given) {
   if (view === null) return
   const [caller, cwd] = await Promise.all([callerOf($, undefined), $.session.cwd()])
   const ran = await record($, cwd, { ...caller, tree: view.tree }, [given])
-  await setDrafts($, before => {
+  // What the person set stays for another try unless loft took the answer, or kept another's first.
+  const isSettled = succeeded(ran) || ran.doc?.outcome === 'answered elsewhere'
+  if (isSettled) await setDrafts($, before => {
     const ticked = { ...before.ticked }
     const words = { ...before.words }
     delete ticked[given.block]

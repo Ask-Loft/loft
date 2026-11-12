@@ -34179,6 +34179,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "running the command again shows the same pane, read whole again, and keeps one follow going"
         body: 509b21b7ee1442183c24686311d6af8524de7fd6665b657f71b383739a82c417
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "running the command while a read is under way reads Yard Log whole once that read ends"
+        body: 210bdfc465ab7c425c2ac0a6362ac652fb918cc36f59785a25517c7d452a9535
   - node: 01a1cfe2-478e-75d1-b104-04de2a2db6e9
     reviewed: 78be96748d1ae96ff8ab0ad4e342bd7624416ac8d3bd229f88d95b92231202ff
     tests:
@@ -34329,6 +34332,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "choosing an option of a question that takes one records it with loft yard answer, for the tree the pane shows"
         body: 1e975aa90f9af5bcb60c3102d358d6486d77683dcb9359dbee79357c79827200
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "choosing an option records the words typed in the question's field with it"
+        body: 3bf076c2a38b7642fe803142a9b3eec3a05b150a90bce532a15cbeb57310fd09
   - node: 01a1cfe2-478e-75d1-b104-04f7754f2648
     reviewed: fc50d68681895a337e109dc4dca5a0443ca7fe82f67ee78b4d857f6ebc6d6812
     tests:
