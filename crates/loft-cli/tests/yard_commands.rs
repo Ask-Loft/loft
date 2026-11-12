@@ -66,7 +66,15 @@ fn each_yard_command_prints_one_document_its_own_schema_holds() {
         }
         assert_eq!(
             document["schema"],
-            format!("loft-{schema}/{}", if args[1] == "read" { 3 } else { 1 }).as_str(),
+            format!(
+                "loft-{schema}/{}",
+                match args[1] {
+                    "read" => 3,
+                    "protocol" => 2,
+                    _ => 1,
+                }
+            )
+            .as_str(),
             "{slug}"
         );
     }

@@ -69,20 +69,36 @@ impl Yard {
 
     /// Runs `loft yard` with `args`, printing JSON.
     pub fn run(&self, args: &[&str]) -> Output {
-        let mut all = vec!["yard"];
-        all.extend_from_slice(args);
-        all.extend_from_slice(&["--format", "json"]);
-        self.scratch.loft_with(&all, Some(&self.git), &self.clock)
+        self.run_under(args, &[])
     }
 
-    /// Starts `loft yard` with `args`, printing JSON, and gives the running process, its
-    /// standard output piped.
-    pub fn spawn(&self, args: &[&str]) -> Child {
+    /// [`Self::run`], with `variables` set in the command's environment.
+    pub fn run_under(&self, args: &[&str], variables: &[(&str, &str)]) -> Output {
         let mut all = vec!["yard"];
         all.extend_from_slice(args);
         all.extend_from_slice(&["--format", "json"]);
         self.scratch
             .command(Some(&self.git), &self.clock)
+            .envs(variables.iter().copied())
+            .args(&all)
+            .output()
+            .unwrap()
+    }
+
+    /// Starts `loft yard` with `args`, printing JSON, and gives the running process, its
+    /// standard output piped.
+    pub fn spawn(&self, args: &[&str]) -> Child {
+        self.spawn_with(args, &[])
+    }
+
+    /// [`Self::spawn`], with `variables` set in the command's environment.
+    pub fn spawn_with(&self, args: &[&str], variables: &[(&str, &str)]) -> Child {
+        let mut all = vec!["yard"];
+        all.extend_from_slice(args);
+        all.extend_from_slice(&["--format", "json"]);
+        self.scratch
+            .command(Some(&self.git), &self.clock)
+            .envs(variables.iter().copied())
             .args(&all)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

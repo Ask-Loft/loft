@@ -1,4 +1,5 @@
-"""Build loft and have it replace the shared development Yard server, before either agent starts."""
+"""Build loft and have it replace the development Yard server kept in ~/.yard-dogfood/, before
+either agent starts; the installed loft's page server in ~/.yard/ is left running."""
 
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -77,11 +78,15 @@ def start(runtime, clock, tree, port, cwd):
 
 
 class Runtime:
-    def __init__(self, home=None):
-        self.home = (home if home is not None else Path.home() / ".yard").resolve()
+    """What the helper does to the machine: `home` is the machine home the dogfood `loft` keeps
+    apart from the installed one's `~/.yard/`, which the launcher names."""
+
+    def __init__(self, home):
+        self.home = Path(home).resolve()
         self.home.mkdir(parents=True, exist_ok=True)
         self.log = self.home / "dogfood-server.log"
-        self.env = dict(os.environ, LOFT_TELEMETRY="off", LOFT_UPDATE_CHECK="off")
+        self.env = dict(os.environ, LOFT_TELEMETRY="off", LOFT_UPDATE_CHECK="off",
+                        LOFT_YARD_HOME=str(self.home))
 
     @contextmanager
     def exclusive(self, clock):
@@ -173,7 +178,10 @@ class Runtime:
 
 
 def main():
-    runtime = Runtime()
+    if len(sys.argv) != 4:
+        print(f"usage: {Path(sys.argv[0]).name} TREE PORT HOME", file=sys.stderr)
+        return 2
+    runtime = Runtime(sys.argv[3])
     try:
         tree = Path(sys.argv[1]).resolve()
         port = int(sys.argv[2])

@@ -26,6 +26,10 @@ list everything 2.4.0 will hold.
   the Gantt chart, and a Consultation view that charts them. The page server tells the Claude Code
   mod the trees it serves, by their real paths and as its session spells their tops, so both
   adapters class a path in any served worktree alike.
+- `LOFT_YARD_HOME`, given an absolute directory, keeps what belongs to the machine there in
+  place of `~/.yard/`, so a `loft` under development runs a page server and session records of
+  its own beside an installed one. `loft yard protocol` reports that directory as `home`
+  (schema `loft-yard-protocol/2`).
 
 ## 2.3.0 (2026-11-05)
 

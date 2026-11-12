@@ -12,7 +12,7 @@ requirements:
       form: event_driven
       when: "a host runs `loft yard protocol`"
       system: "`loft yard protocol`"
-      shall: "report the version of the protocol that the `loft yard` commands speak and the yardlog formats it reads and writes."
+      shall: "report the version of the protocol that the `loft yard` commands speak, the yardlog formats it reads and writes, and the directory it keeps what belongs to the machine in."
     criteria:
       - key: 01a1646f-546d-7042-befd-ea4276b44344
         name: "The report gives the protocol's version as one integer."
@@ -26,6 +26,10 @@ requirements:
         name: "The report gives `loft`'s own version."
       - key: 01a1646f-546d-7042-befd-ea440b264795
         name: "The report lists every yardlog format it reads, and names the one it writes."
+      - key: 01a1cf7a-0eb7-770e-800d-7eb43bb22cf2
+        name: "The report names, as `home`, the absolute directory that holds what belongs to the machine, the one `LOFT_YARD_HOME` names where it moves it."
+      - key: 01a1cf7a-0eb7-770e-800d-7eb53956f7b6
+        name: "Where no home directory is known, the report gives no `home`."
       - key: 01a1646f-546d-7042-befd-ea45ec21ca68
         name: "The report is the same inside and outside a git repository."
       - key: 01a1646f-546d-7042-befd-ea4652516db4

@@ -12,6 +12,8 @@ node_modules/
 __pycache__/
 *.py[cod]
 /.loft/
+# The dogfood launcher's local marketplace over plugins/, for Claude Desktop (scripts/yard-dogfood.sh).
+/plugins/.claude-plugin/
 # This repository keeps no plans: each branch's Yard Log, and what other planning tools write,
 # stay on the machine.
 /.yard/

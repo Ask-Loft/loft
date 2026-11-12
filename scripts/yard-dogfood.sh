@@ -1,6 +1,7 @@
 #!/bin/zsh
 # Start Claude Code or Codex with this worktree's Loft binary and Yard plugin.
-# Each launch builds Loft and restarts the one shared Yard server on port 7412.
+# Each launch builds Loft and restarts the dogfood Yard server on port 7412, kept in
+# ~/.yard-dogfood/ through LOFT_YARD_HOME; the installed loft's server in ~/.yard/ keeps running.
 # Existing sessions reconnect; refresh open pages after a same-version UI rebuild.
 # Both start in the caller's working directory. Requires Python 3.
 # Claude is the default.
@@ -8,15 +9,32 @@
 #   ./scripts/yard-dogfood.sh claude resume <session-id> resume Claude Code
 #   ./scripts/yard-dogfood.sh codex                     start Codex
 #   ./scripts/yard-dogfood.sh codex resume <session-id>  resume Codex
+# Claude Desktop takes no command-line flags, so one project at a time is switched instead:
+#   ./scripts/yard-dogfood.sh desktop <project-dir>         its sessions run this worktree's plugin
+#   ./scripts/yard-dogfood.sh desktop --undo <project-dir>  back to the installed plugin
 set -euo pipefail
 
 TREE=${0:A:h:h}
 PORT=7412
 LOFT="$TREE/target/release/loft"
+WRAPPER="$TREE/.loft/yard-dogfood/bin/loft"
+# The machine home of the dogfood loft and its page server, apart from the installed one's ~/.yard/.
+DOGFOOD_HOME="$HOME/.yard-dogfood"
 AGENT_COMMAND=claude
-if [[ ${1-} == codex || ${1-} == claude ]]; then
+if [[ ${1-} == codex || ${1-} == claude || ${1-} == desktop ]]; then
   AGENT_COMMAND=$1
   shift
+fi
+
+if [[ $AGENT_COMMAND == desktop ]]; then
+  DESKTOP=(python3 "$TREE/scripts/yard-dogfood-desktop.py" "$TREE" "$PORT" "$WRAPPER")
+  if [[ ${1-} == --undo && $# -eq 2 && -n ${2-} ]]; then
+    exec "${DESKTOP[@]}" "$2" --undo
+  fi
+  if [[ $# -ne 1 || -z ${1-} || ${1-} == -* ]]; then
+    print -u2 -- "Usage: ${0:t} desktop [--undo] PROJECT-DIR"
+    exit 2
+  fi
 fi
 
 if [[ ${1-} == resume ]]; then
@@ -30,13 +48,24 @@ if [[ ${1-} == resume ]]; then
   fi
 fi
 
-python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT"
+python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT" "$DOGFOOD_HOME"
+
+# The session's loft: this worktree's build, under the dogfood machine home. Written beside it
+# and renamed into place, since sessions already open may be running it.
+mkdir -p "${WRAPPER:h}"
+print -rl -- '#!/bin/sh' "export LOFT_YARD_HOME=${(qq)DOGFOOD_HOME}" "exec ${(qq)LOFT} \"\$@\"" > "$WRAPPER.$$"
+chmod 755 "$WRAPPER.$$"
+mv -f "$WRAPPER.$$" "$WRAPPER"
+
+if [[ $AGENT_COMMAND == desktop ]]; then
+  exec "${DESKTOP[@]}" "$1"
+fi
 
 echo "Yard page: http://127.0.0.1:$PORT/"
 if [[ $AGENT_COMMAND == codex ]]; then
   # Generate a local package from the repo source, with this binary and port in its hooks.
   # Codex installs it under a separate identity so it does not replace the released plugin.
-  CODEX_MARKETPLACE=$(python3 - "$TREE" "$PORT" <<'PY'
+  CODEX_MARKETPLACE=$(python3 - "$TREE" "$PORT" "$WRAPPER" <<'PY'
 import json
 from pathlib import Path
 import shlex
@@ -57,9 +86,7 @@ for groups in hooks["hooks"].values():
             words = shlex.split(hook["command"])
             if words[:3] != ["loft", "yard", "codex"]:
                 raise ValueError("Unexpected Codex hook command: " + hook["command"])
-            hook["command"] = shlex.join([
-                str(tree / "target/release/loft"), *words[1:], "--port", sys.argv[2]
-            ])
+            hook["command"] = shlex.join([sys.argv[3], *words[1:], "--port", sys.argv[2]])
 hooks_path.write_text(json.dumps(hooks, indent=2) + "\n")
 registry = market / ".agents/plugins/marketplace.json"
 registry.parent.mkdir(parents=True, exist_ok=True)
@@ -81,43 +108,20 @@ PY
     -c 'plugins."loft@yard-dogfood".enabled=true'
     -c 'plugins."loft@ask-loft".enabled=false'
   )
-  export PATH="$TREE/target/release:$PATH"
+  export PATH="${WRAPPER:h}:$PATH"
   export LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off
   codex "${CODEX_OPTIONS[@]}" plugin add loft@yard-dogfood --json >/dev/null
-  CODEX_CONNECTION=()
-  CODEX_AUTO_CONNECTION=true
-  CODEX_EXPLICIT_CWD=false
-  for argument in "$@"; do
-    case "$argument" in
-      --remote|--remote=*|--no-daemon) CODEX_AUTO_CONNECTION=false ;;
-      --cd|--cd=*|-C|-C?*) CODEX_EXPLICIT_CWD=true ;;
-    esac
-  done
-  if $CODEX_AUTO_CONNECTION; then
-    # The version command exits nonzero when no daemon is listening.
-    CODEX_DAEMON=$(codex app-server daemon version 2>/dev/null) || CODEX_DAEMON='{}'
-    CODEX_SOCKET=$(print -r -- "$CODEX_DAEMON" | python3 -c '
-import json, sys
-daemon = json.load(sys.stdin)
-print(daemon.get("socketPath", "") if daemon.get("status") == "running" else "")
-')
-    if [[ -n $CODEX_SOCKET ]]; then
-      # Config overrides otherwise select an embedded server, even without --no-daemon.
-      CODEX_CONNECTION=(--remote "unix://$CODEX_SOCKET")
-      if ! $CODEX_EXPLICIT_CWD; then
-        CODEX_CONNECTION+=(--cd "$PWD")
-      fi
-    fi
-  fi
-  exec codex "${CODEX_CONNECTION[@]}" "${CODEX_OPTIONS[@]}" "$@"
+  # Codex starts a server of its own, never a running daemon's: only this process's search path,
+  # with the wrapper first, makes the session's own `loft yard` commands the dogfood loft's.
+  exec codex "${CODEX_OPTIONS[@]}" "$@"
 fi
 
 SETTINGS=$(cat <<JSON
 {
   "enabledPlugins": { "loft@inline": true },
   "pluginConfigs": {
-    "loft": { "options": { "loftCommand": "$LOFT", "yardPort": $PORT, "baseBranch": "develop" } },
-    "loft@inline": { "options": { "loftCommand": "$LOFT", "yardPort": $PORT, "baseBranch": "develop" } }
+    "loft": { "options": { "loftCommand": "$WRAPPER", "yardPort": $PORT, "baseBranch": "develop" } },
+    "loft@inline": { "options": { "loftCommand": "$WRAPPER", "yardPort": $PORT, "baseBranch": "develop" } }
   }
 }
 JSON
