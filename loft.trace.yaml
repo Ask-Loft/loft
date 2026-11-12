@@ -25746,6 +25746,24 @@ links:
       - file: "crates/yardlog-store/tests/home.rs"
         name: "a_file_that_cannot_be_renamed_into_place_leaves_no_temporary_file_and_the_old_file_as_it_was"
         body: db584449999ea4c0a842d0b25344851dc486eeda045949795c6f8a37cf55d7f1
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc19f3178e8c
+    reviewed: e97078468c38d512a524474fc9255b6ce9600a1937c7ed7935e5e1a82c4a6501
+    tests:
+      - file: "crates/loft-cli/tests/yard_home.rs"
+        name: "a_moved_home_holds_the_files_of_the_machine_and_nothing_is_written_to_the_default_one"
+        body: 69fd3feb73fcf81b98bd873aa1d1200f5e6adf0761999af85236e79ff2397e67
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc1a8f3a8d68
+    reviewed: a651d689534ebb35ab88020548b62f252136d08ad06b38fe6d55c179c3309156
+    tests:
+      - file: "crates/loft-cli/tests/yard_home.rs"
+        name: "page_servers_kept_in_two_homes_serve_beside_each_other"
+        body: bd251f88cfcf7721a16c0b46f0db441a7fec5fe06b252bc821692c73445cecf6
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc1b82ba35e2
+    reviewed: 23683a421e1b5b8a2b6e4d12407a8a488b24f988d935565edcf2458850fda9cb
+    tests:
+      - file: "crates/loft-cli/tests/yard_home.rs"
+        name: "an_empty_or_relative_yard_home_is_ignored_and_the_default_one_is_used"
+        body: bce588aeb515bb8dab16dfaeba6a7426e2ec6b635e98f5279f08a006ed196a1f
   - node: 01a1646f-546e-76cb-8b4f-f1ee570d4cd2
     reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
     tests:

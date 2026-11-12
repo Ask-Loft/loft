@@ -134,6 +134,7 @@ mod yard_delegation;
 #[cfg(unix)]
 mod yard_dogfood;
 mod yard_event_ids;
+mod yard_home;
 mod yard_hosts;
 mod yard_merge_contract;
 mod yard_merge_driver;
