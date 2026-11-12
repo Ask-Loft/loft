@@ -24,6 +24,11 @@ sys.argv = sys.argv[:1]
 WORKSPACE = Path(__file__).resolve().parents[3]
 
 
+def without_yard_home(env):
+    """The launcher's own environment: the helper itself names the dogfood home."""
+    return {key: value for key, value in env.items() if key != "LOFT_YARD_HOME"}
+
+
 class ContractTests(unittest.TestCase):
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory(prefix="yard server contract ")
@@ -50,8 +55,9 @@ class ContractTests(unittest.TestCase):
             else:
                 self.env[key] = value
         self.env.update(HOME=str(self.home), PATH=str(tools) + os.pathsep + self.env["PATH"],
-                        LOFT_TELEMETRY="off", LOFT_UPDATE_CHECK="off")
-        self.runtime = server.Runtime(self.home / ".yard")
+                        LOFT_TELEMETRY="off", LOFT_UPDATE_CHECK="off",
+                        LOFT_YARD_HOME=str(self.home / ".yard-dogfood"))
+        self.runtime = server.Runtime(self.home / ".yard-dogfood")
         self.runtime.env = self.env
         with socket.socket() as port:
             port.bind(("127.0.0.1", 0))
@@ -102,7 +108,7 @@ class ContractTests(unittest.TestCase):
         child = subprocess.Popen([
             sys.executable, str(WORKSPACE / "scripts/yard-dogfood-server.py"),
             str(self.source), str(self.port),
-        ], cwd=self.tree, env=dict(self.env, **env), stdout=subprocess.PIPE,
+        ], cwd=self.tree, env=without_yard_home(dict(self.env, **env)), stdout=subprocess.PIPE,
             stderr=subprocess.PIPE, text=True)
         self.children.append(child)
         return child
@@ -160,6 +166,27 @@ class ContractTests(unittest.TestCase):
                 fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
         starts = [json.loads(line) for line in self.runtime.log.read_text().splitlines()]
         self.assertEqual(sum(line.get("outcome") == "serving" for line in starts), 3)
+
+    def test_the_page_server_kept_in_the_default_home_keeps_running_through_a_restart(self):
+        installed = server.Runtime(self.home / ".yard")
+        installed.env = without_yard_home(self.env)
+        with socket.socket() as port:
+            port.bind(("127.0.0.1", 0))
+            other_port = port.getsockname()[1]
+        stable = installed.spawn(self.binary, other_port, self.tree)
+        self.children.append(stable)
+        self.within(lambda: installed.running() and installed.ready(installed.running(),
+                                                                    installed.running().version))
+        before = installed.running()
+        self.initial_server()
+        self.finished(self.helper())
+        self.assertIsNone(stable.poll())
+        self.assertEqual(installed.running(), before)
+        self.assertTrue(installed.ready(before, before.version))
+        self.assertFalse((self.home / ".yard/stop.json").exists())
+        current = self.runtime.running()
+        self.assertEqual(current.port, self.port)
+        self.assertNotEqual(current.pid, before.pid)
 
     def test_a_failed_build_leaves_the_real_server_answering(self):
         original = self.initial_server()

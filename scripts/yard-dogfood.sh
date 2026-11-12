@@ -1,6 +1,7 @@
 #!/bin/zsh
 # Start Claude Code or Codex with this worktree's Loft binary and Yard plugin.
-# Each launch builds Loft and restarts the one shared Yard server on port 7412.
+# Each launch builds Loft and restarts the dogfood Yard server on port 7412, kept in
+# ~/.yard-dogfood/ through LOFT_YARD_HOME; the installed loft's server in ~/.yard/ keeps running.
 # Existing sessions reconnect; refresh open pages after a same-version UI rebuild.
 # Both start in the caller's working directory. Requires Python 3.
 # Claude is the default.
@@ -32,11 +33,21 @@ fi
 
 python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT"
 
+# The session's loft: this worktree's build, keeping its machine home in ~/.yard-dogfood/.
+DOGFOOD_HOME="$HOME/.yard-dogfood"
+WRAPPER="$TREE/.loft/yard-dogfood/bin/loft"
+mkdir -p "${WRAPPER:h}"
+print -r -- "#!/bin/sh
+LOFT_YARD_HOME=${(qq)DOGFOOD_HOME}
+export LOFT_YARD_HOME
+exec ${(qq)LOFT} \"\$@\"" > "$WRAPPER"
+chmod 755 "$WRAPPER"
+
 echo "Yard page: http://127.0.0.1:$PORT/"
 if [[ $AGENT_COMMAND == codex ]]; then
   # Generate a local package from the repo source, with this binary and port in its hooks.
   # Codex installs it under a separate identity so it does not replace the released plugin.
-  CODEX_MARKETPLACE=$(python3 - "$TREE" "$PORT" <<'PY'
+  CODEX_MARKETPLACE=$(python3 - "$TREE" "$PORT" "$WRAPPER" <<'PY'
 import json
 from pathlib import Path
 import shlex
@@ -57,9 +68,7 @@ for groups in hooks["hooks"].values():
             words = shlex.split(hook["command"])
             if words[:3] != ["loft", "yard", "codex"]:
                 raise ValueError("Unexpected Codex hook command: " + hook["command"])
-            hook["command"] = shlex.join([
-                str(tree / "target/release/loft"), *words[1:], "--port", sys.argv[2]
-            ])
+            hook["command"] = shlex.join([sys.argv[3], *words[1:], "--port", sys.argv[2]])
 hooks_path.write_text(json.dumps(hooks, indent=2) + "\n")
 registry = market / ".agents/plugins/marketplace.json"
 registry.parent.mkdir(parents=True, exist_ok=True)
@@ -81,7 +90,7 @@ PY
     -c 'plugins."loft@yard-dogfood".enabled=true'
     -c 'plugins."loft@ask-loft".enabled=false'
   )
-  export PATH="$TREE/target/release:$PATH"
+  export PATH="${WRAPPER:h}:$PATH"
   export LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off
   codex "${CODEX_OPTIONS[@]}" plugin add loft@yard-dogfood --json >/dev/null
   CODEX_CONNECTION=()
@@ -116,8 +125,8 @@ SETTINGS=$(cat <<JSON
 {
   "enabledPlugins": { "loft@inline": true },
   "pluginConfigs": {
-    "loft": { "options": { "loftCommand": "$LOFT", "yardPort": $PORT, "baseBranch": "develop" } },
-    "loft@inline": { "options": { "loftCommand": "$LOFT", "yardPort": $PORT, "baseBranch": "develop" } }
+    "loft": { "options": { "loftCommand": "$WRAPPER", "yardPort": $PORT, "baseBranch": "develop" } },
+    "loft@inline": { "options": { "loftCommand": "$WRAPPER", "yardPort": $PORT, "baseBranch": "develop" } }
   }
 }
 JSON

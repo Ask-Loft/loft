@@ -26604,6 +26604,18 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "the_result_lists_the_open_submissions_each_with_the_agent_that_sent_it_apart"
         body: b502c9889b3fdcc316860c225f46416e9f29f0412957032a9659c42de8c207f8
+  - node: 01a1cf7a-0eb7-770e-800d-7eb6b1f25771
+    reviewed: dd7688ebe641a24a69932904f4224a59476d7a9b30917cb82ca4910cdb8032e9
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
+        name: "test_the_session_s_loft_runs_with_the_dogfood_home"
+        body: d68ee398c22275dee113fbdda1072a4ceaa24b4ac42808d18d3f38acbc307c99
+  - node: 01a1cf7a-0eb7-770e-800d-7eb7b63ace26
+    reviewed: dd74e01940b78721e8742f8c9a38e3137fe28ecb239c7c7c99aa5bf21adf6e28
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_contract.py"
+        name: "test_the_page_server_kept_in_the_default_home_keeps_running_through_a_restart"
+        body: b7b5cc2565d91e4b18ace22c6ed63d5301cf4b0e2f8789d9ef0be5ce81b8ff52
   - node: 01a18025-1c03-72bb-b904-c23d0979cab4
     reviewed: 6dcddd855c2e99dce1c11914affe4f86f4bcdaf79ec53701418845fae6a3b122
     tests:
@@ -26621,7 +26633,7 @@ links:
         body: df0203e7aacc08a5aeadcbbb8c61661b85a03f3761d20b08dcbf22d1700fb238
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_both_hosts_and_resume_forms_restart_before_agent_start_and_keep_cwd"
-        body: 02448010ffbec8ff518af6a60bd3cfc0908c587eb66ea39643ce56d7cebc5b48
+        body: 101cefa3caa1f5268d834952007ea9bc647636e48eb273b761e425dd98aa033d
   - node: 01a18025-1c03-72bb-b904-c23ff7831364
     reviewed: 993a2c88d46ab376c640d6a95387d1965eb98a9cf78b0c336ac31417a03a232a
     tests:
@@ -26630,9 +26642,9 @@ links:
         body: b9ce42444fb7060978bf41c3be8e288ee60edb0642287986e52340a6e26a10dd
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_both_hosts_and_resume_forms_restart_before_agent_start_and_keep_cwd"
-        body: 02448010ffbec8ff518af6a60bd3cfc0908c587eb66ea39643ce56d7cebc5b48
+        body: 101cefa3caa1f5268d834952007ea9bc647636e48eb273b761e425dd98aa033d
   - node: 01a18025-1c03-72bb-b904-c240304554ce
-    reviewed: e06ae1d60bb9d4a722c97980ffb2fbea4afc7f8ae5b46e02e97204c2d85e50da
+    reviewed: c6a0de4b639a878811779c769da3ee8fa894e5faac51ca3e14439d66eea4235a
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_contract.py"
         name: "test_concurrent_launchers_finish_with_one_verified_server"
@@ -26654,7 +26666,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_both_hosts_and_resume_forms_restart_before_agent_start_and_keep_cwd"
-        body: 02448010ffbec8ff518af6a60bd3cfc0908c587eb66ea39643ce56d7cebc5b48
+        body: 101cefa3caa1f5268d834952007ea9bc647636e48eb273b761e425dd98aa033d
   - node: 01a18025-1c03-72bb-b904-c245ed0737b2
     reviewed: b57d3767095df0f11cf47f582a1bdf8fedbcfec0c2781aa288f0908c01c25e6e
     tests:
@@ -26681,7 +26693,7 @@ links:
         body: 2b34c5e49750275ececf4999620b806283dfe37f374964045eee6df3c367c183
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_restart_failure_prevents_both_hosts_from_starting"
-        body: 6e58ca31359bdc48005c8da64352fc653732c9b22c4b86940c49fc2c439d72cc
+        body: 85fa27110cb246971102fea46af921eb4eafd95c73ec45132c4fa95ae7465653
   - node: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
     reviewed: c915d004fdcea33a9c0dee16c199ac54477b6f7d577930b621a4235c0b4e989a
     tests:
