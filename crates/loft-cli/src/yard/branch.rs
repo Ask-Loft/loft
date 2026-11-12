@@ -56,8 +56,13 @@ impl Branch {
     pub fn fields(&self, revision: u64) -> Value {
         let mut fields = self.located();
         fields["revision"] = json!(revision);
-        fields["page"] = page::address(&self.place().tree, self.store.branch(), self.beyond.port);
+        fields["page"] = self.page();
         fields
+    }
+
+    /// The branch's Yard Log on the page.
+    pub fn page(&self) -> Value {
+        page::address(&self.place().tree, self.store.branch(), self.beyond.port)
     }
 
     /// Whether the tip of the base branch `log`'s root records holds Yard Log's root, so that

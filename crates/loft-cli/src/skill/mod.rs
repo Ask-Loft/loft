@@ -2,7 +2,7 @@
 //! composed for each agent host and written into a project by `loft skill install` and
 //! `loft init`, which also enable the Claude Code plugin `loft@ask-loft` beside it unless
 //! `--no-plugin` is given. `loft skill package` writes the plugins' packages from it, and from
-//! the `yard` skill's source beside it.
+//! the sources of the `yard` and `yard-page` skills beside it.
 
 mod compose;
 mod discovery;
@@ -60,6 +60,10 @@ const SOURCE: &[(&str, &str)] = source![
 /// The `yard` skill's source: its shared workflow and each host's adaptation.
 const YARD_SOURCE: &[(&str, &str)] =
     source!["yard": "SKILL.md", "agents/claude.md", "agents/codex.md"];
+
+/// The `yard-page` skill's source, which a host with no command of its own for the Yard page
+/// carries as it is.
+const YARD_PAGE_SOURCE: &[(&str, &str)] = source!["yard-page": "SKILL.md"];
 
 /// A skill directory that could not be written.
 #[derive(Debug)]

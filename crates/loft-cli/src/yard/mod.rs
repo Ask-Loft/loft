@@ -26,6 +26,7 @@ pub(crate) mod home_json;
 mod input;
 pub mod merge;
 mod page;
+mod page_command;
 mod post;
 mod protocol;
 mod published;
@@ -73,6 +74,7 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Protocol { output } => protocol::run(output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),
         YardAction::Consultation(args) => consultation::run(root, &args),
+        YardAction::Page(args) => page_command::run(root, &args),
         YardAction::Serve(args) => serve::run(&args),
     }
 }

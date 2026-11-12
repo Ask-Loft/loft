@@ -46,8 +46,7 @@ pub struct Running {
 /// The lock or the file cannot be read.
 pub fn running(home: &Home) -> Result<Option<Running>, YardStoreError> {
     let held = home.dir().join(SERVER_LOCK);
-    // A lock file that is not there is held by no server; looking does not create it.
-    if !held.is_file() || !lock::is_held(&held)? {
+    if !lock::is_held(&held)? {
         return Ok(None);
     }
     let Some(bytes) = home.read(HomeFile::Server)? else {

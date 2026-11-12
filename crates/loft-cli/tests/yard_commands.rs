@@ -14,7 +14,7 @@ use crate::common::{EPOCH, stderr, workspace};
 use crate::conformance::tagged;
 use crate::help;
 use crate::snapshot::snapshot;
-use crate::yard::{ASK, BRANCH, EPOCH_TEXT, Yard, block, document};
+use crate::yard::{ASK, BRANCH, EPOCH_TEXT, Yard, block, document, name_server};
 
 /// The entries of the yard commands in the command table.
 fn yard_entries() -> Vec<crate::commands::Entry> {
@@ -172,14 +172,6 @@ fn a_run_with_source_date_epoch_dates_its_acts_by_that_time() {
     other.write("s1", ASK, &[]);
     let read = other.read("s1", &[]);
     assert_eq!(block(&read, "q1")["version"]["act"]["at"], EPOCH_TEXT);
-}
-
-/// Writes `~/.yard/server.json` naming a server on `port`.
-fn name_server(yard: &Yard, port: u16) {
-    let dir = yard.scratch.home().join(".yard");
-    fs::create_dir_all(&dir).unwrap();
-    let server = json!({ "port": port, "pid": 1, "version": "2.2.1", "formats": ["yardlog/1"] });
-    fs::write(dir.join("server.json"), server.to_string()).unwrap();
 }
 
 #[test]
