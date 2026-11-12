@@ -1,0 +1,37 @@
+key: 01a1d123-dd40-7261-9ea6-092fa0b7887b
+slug: loft-yard-page
+name: "Give the Yard page's address"
+body: "An agent host with no command of its own for the Yard page, such as Codex, gives the person the page's address through `loft yard page`: the address of the branch's Yard Log on the page and a line on what the page shows, which the agent relays as they are."
+tags:
+  - yard-command
+  - needs-repository
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+requirements:
+  - key: 01a1d123-dd40-7261-9ea6-0930626ec14f
+    statement:
+      form: event_driven
+      when: "an agent runs `loft yard page` in a worktree"
+      system: "`loft yard page`"
+      shall: "print the Yard page's address for the worktree and its branch, and one line on what the page shows."
+    criteria:
+      - key: 01a1d123-dd40-7261-9ea6-09316d63df1a
+        name: "The address names the worktree and its branch, as the `page` of every `loft yard` command's result names them."
+      - key: 01a1d123-dd40-7261-9ea6-0932043bdc69
+        name: "The words say in one line that the page shows the branch's Yard Log in full, and suggest opening the address in a browser."
+      - key: 01a1d123-dd40-7261-9ea6-09334b3c5d83
+        name: "With `--format json`, the result gives the tree, the branch and `page` with `available`, `port` and `url`."
+      - key: 01a1d123-dd40-7261-9ea6-093488d97c8c
+        name: "No file of the tree is written."
+  - key: 01a1d123-dd40-7261-9ea6-093511ef9482
+    statement:
+      form: unwanted
+      if: "no page server serves the page"
+      system: "`loft yard page`"
+      shall: "say that none does, name `loft yard serve`, and exit 1."
+    criteria:
+      - key: 01a1d123-dd40-7261-9ea6-0936f8c5acc8
+        name: "The words give no address and name `loft yard serve`."
+      - key: 01a1d123-dd40-7261-9ea6-09375f70aceb
+        name: "The command exits 1 with the outcome `unavailable`, and its result gives `page` with `available` false."
