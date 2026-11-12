@@ -2,7 +2,7 @@
 // a whole read, then each read since the revision shown merged into it (the Feature "Follow Yard
 // Log in a pane"). Pure, so that each rule is tested on its own.
 
-import type { PaneActor, PaneBlock, PaneFoot, PaneStage, PaneSubmission, PaneTimes, PaneView } from '../../../types'
+import type { PaneActor, PaneBlock, PaneDiff, PaneFoot, PaneStage, PaneSubmission, PaneTimes, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
 import { isObject, records, textOf } from '../../model'
 import { pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
@@ -34,18 +34,45 @@ function timesOf(block: Block): PaneTimes | undefined {
   return kept
 }
 
+/** The most nodes of a `spec-change` report the pane keeps, and the most of each side's words. */
+const DIFF_NODES = 200
+const DIFF_WORDS = 2000
+
+const cut = (words: unknown) => {
+  const text = textOf(words)
+  if (text === '') return null
+  return text.length > DIFF_WORDS ? `${text.slice(0, DIFF_WORDS)}…` : text
+}
+
+/** Of a `spec-change` report, the nodes it names, before and after; none for another view or a block read without it. */
+function diffOf(body: Record<string, unknown>): PaneDiff | undefined {
+  const report = body.report
+  if (body.view !== 'spec-change' || !isObject(report) || !isObject(report.graph)) return undefined
+  const nodes = records(report.graph.diff)
+  return {
+    nodes: nodes.slice(0, DIFF_NODES).map(each => {
+      const words = isObject(each.words) ? each.words : {}
+      return { change: textOf(each.change), kind: textOf(each.kind), label: textOf(each.label) || null, before: cut(words.before), after: cut(words.after) }
+    }),
+    more: Math.max(0, nodes.length - DIFF_NODES),
+  }
+}
+
 /** Of a block, only what the pane draws; `before`, the block as the pane held it, where it did. */
 function kept(block: Block, before?: PaneBlock): PaneBlock {
   const times = timesOf(block)
+  const { report: _report, ...body } = (block.version?.body ?? {}) as Record<string, unknown>
+  const diff = diffOf(block.version?.body ?? {}) ?? before?.diff
   return {
     id: block.id,
     key: block.key,
     kind: block.kind,
-    version: { body: block.version?.body ?? {} },
+    version: { body },
     ...(block.answer ? { answer: block.answer } : {}),
     ...(block.outcome ? { outcome: block.outcome } : {}),
     foot: footOf(block, before?.foot),
     ...(times ? { times } : {}),
+    ...(diff ? { diff } : {}),
   }
 }
 

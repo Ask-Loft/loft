@@ -184,3 +184,54 @@ test('every submission is kept, oldest first, with when it was sent and settled'
     { key: 's-2', blocks: ['k-r'], sent: '2026-10-22T09:30:00Z', settled: null, isOpen: true },
   ])
 })
+
+/** A node of a `spec-change` report, as `loft` writes it. */
+const node = (change: string, kind: string, label: string | null, words: { before?: string; after?: string }) => ({ change, key: `n-${kind}-${label}`, kind, label, name: words.after ?? words.before, words })
+
+/** A `spec-change` block with its report, as a read with `--reports` gives it. */
+function specChange(id: string, diff: object[]) {
+  return block(id, 'loft', { view: 'spec-change', note: 'The change.', report: { counts: { 'graph.diff': diff.length }, graph: { diff, nodes: [{ key: 'n', kind: 'product' }] }, status: { base: {} } } })
+}
+
+const CHANGE = [
+  node('added', 'requirement', 'RQ-9', { after: 'The pane shall draw the change.' }),
+  node('changed', 'criterion', null, { before: 'No report.', after: 'Its nodes.' }),
+  node('removed', 'quality_attribute', 'QA-2', { before: 'Fast.' }),
+]
+
+test("a spec-change block keeps its report's nodes, before and after, and nothing else of the report", () => {
+  const view = followed(undefined, readDoc({ stages: [withBlocks('build', 'active', specChange('change', CHANGE))] }))!
+  const kept = view.stages[0]!.blocks[0]!
+  expect(kept.diff).toEqual({
+    nodes: [
+      { change: 'added', kind: 'requirement', label: 'RQ-9', before: null, after: 'The pane shall draw the change.' },
+      { change: 'changed', kind: 'criterion', label: null, before: 'No report.', after: 'Its nodes.' },
+      { change: 'removed', kind: 'quality_attribute', label: 'QA-2', before: 'Fast.', after: null },
+    ],
+    more: 0,
+  })
+  expect(kept.version.body.report).toBeUndefined()
+  expect(kept.version.body.note).toBe('The change.')
+})
+
+test("a spec-change report is kept to its first 200 nodes, each side's words cut at 2000 characters", () => {
+  const many = Array.from({ length: 250 }, (_, n) => node('changed', 'criterion', `AC-${n}`, { before: 'b'.repeat(5000), after: 'a' }))
+  const kept = followed(undefined, readDoc({ stages: [withBlocks('build', 'active', specChange('change', many))] }))!.stages[0]!.blocks[0]!
+  expect(kept.diff!.nodes).toHaveLength(200)
+  expect(kept.diff!.more).toBe(50)
+  expect(kept.diff!.nodes[0]!.before).toBe(`${'b'.repeat(2000)}…`)
+})
+
+test('a read since that gives a spec-change block without its report keeps the nodes the pane holds', () => {
+  const view = followed(undefined, readDoc({ revision: 4, stages: [withBlocks('build', 'active', specChange('change', CHANGE))] }))!
+  const bare = block('change', 'loft', { view: 'spec-change', note: 'The change.' })
+  const later = followed(view, readDoc({ revision: 5, since: 4, stages: [withBlocks('build', 'active', bare)] }))!
+  expect(later.stages[0]!.blocks[0]!.diff?.nodes).toHaveLength(3)
+})
+
+test('a loft block of another view keeps no nodes', () => {
+  const findings = block('found', 'loft', { view: 'findings', report: { graph: { diff: CHANGE } } })
+  const kept = followed(undefined, readDoc({ stages: [withBlocks('build', 'active', findings)] }))!.stages[0]!.blocks[0]!
+  expect(kept.diff).toBeUndefined()
+  expect(kept.version.body.report).toBeUndefined()
+})

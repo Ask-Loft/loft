@@ -34172,7 +34172,7 @@ links:
         body: 7d2f00fb32bba60a513eca53da68c6c731f9c7097a79047f3e2390fd87a7d3b0
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "the command opens the pane and reads Yard Log whole, for the session, marking nothing read"
-        body: 7d018ef3d3f715859ae468135e11dd912db2e0acc53f82158a52ad2124c820c0
+        body: b32130c62565debff327906ffa6eb4996ce6f2754fac8bd0f94846a3f7bc01a5
   - node: 01a1cfe2-478e-75d1-b104-04dd17b426cf
     reviewed: 87dec0c7700fa906267806a3110fbbe3302baf6e1ef085834ce009e57a530671
     tests:
@@ -34181,7 +34181,7 @@ links:
         body: 509b21b7ee1442183c24686311d6af8524de7fd6665b657f71b383739a82c417
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "running the command while a read is under way reads Yard Log whole once that read ends"
-        body: 514525516fea1d98bd49c22578d64407c2a06941a4b0657b36e48afb58cd8c31
+        body: 54c78c952870f3d4c95b8b1a6f7e0c59c63668d34d02caae25a33c814d44e694
   - node: 01a1cfe2-478e-75d1-b104-04de2a2db6e9
     reviewed: 78be96748d1ae96ff8ab0ad4e342bd7624416ac8d3bd229f88d95b92231202ff
     tests:
@@ -34211,16 +34211,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
-        body: a9773d3b414b2a000d401cb69eed502971d3bc87c103d4d6d16b9cf203e33364
+        body: f59b6bd42084cb57a250884abd8f452e42fb0a771537a2a7a974f865e140cb86
   - node: 01a1d007-2070-754c-bc33-f3cc6389cd12
     reviewed: b704463eb9abe003c1526b75e53c333479ffd1e6262a3b9ac786b90f9a458d77
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "a read since that brings a block the pane does not show is followed by a whole read"
-        body: 2210ea251277ab41af16a9ca2f2e01cfe7ba78b70766dd2eaf507f1e541c729d
+        body: 9d23cb07e060d9b6a3993eeeb3131aca01647b61a52f0a7a767f436d107ff50e
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "a checkout of another branch is read whole at once"
-        body: d7739511a6904ea946ddbfef24d269ae824b0bba0bcc8b18e9934966425f9f3c
+        body: 253f83cf44ea531dc95aa60e340b612e6ff34e8a96685191aeac9aa19cfc5464
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "a read since that brings a stage or a block the view does not hold asks for a whole read, which places it"
         body: 1c9248f11ffa65e961b32b36be9a0863a76267e33524247d5aca1bc7c82a3f21
@@ -34235,16 +34235,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "the command opens the pane and reads Yard Log whole, for the session, marking nothing read"
-        body: 7d018ef3d3f715859ae468135e11dd912db2e0acc53f82158a52ad2124c820c0
+        body: b32130c62565debff327906ffa6eb4996ce6f2754fac8bd0f94846a3f7bc01a5
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
-        body: a9773d3b414b2a000d401cb69eed502971d3bc87c103d4d6d16b9cf203e33364
+        body: f59b6bd42084cb57a250884abd8f452e42fb0a771537a2a7a974f865e140cb86
   - node: 01a1cfe2-478e-75d1-b104-04ee292ec71b
     reviewed: 58b4f6108ff01000db1a8b25381476aa04170ca02498d314ec293e38c325e21b
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "a checkout of another branch is read whole at once"
-        body: d7739511a6904ea946ddbfef24d269ae824b0bba0bcc8b18e9934966425f9f3c
+        body: 253f83cf44ea531dc95aa60e340b612e6ff34e8a96685191aeac9aa19cfc5464
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
         name: "a read of another branch, tree or Yard Log asks for a whole read"
         body: e3d130ce3adb96d61a37f1ef18ebdcd9aebd38c09c8078d1d5d8a4bfd962a279
@@ -34488,6 +34488,24 @@ links:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a note shows its Markdown, a decision its consequence, and a loft block its view in words and its note, and no report"
         body: 25119a7935b93f4212c6cea4932c1b4ce29d7aed96aae139d15e28b112d4042f
+  - node: 01a1d0a9-3033-71ae-b3b3-0eea66d75092
+    reviewed: fd369b57eab72efc84bdd213400870170b6f2d2ae87cf18655b49a95d61a5eb5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a spec-change card shows each node its report names, added, changed or removed, with its kind, its label and its words before and after"
+        body: e5e337fecd38a6e15f05701cf2e76fc92453aaab068bd5c8105b4238f583e1e4
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a spec-change block keeps its report's nodes, before and after, and nothing else of the report"
+        body: 70f0515957efa05b05a6ea45db59022ad1375f894b0fb9ee77be4d904f3a27d3
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a spec-change report is kept to its first 200 nodes, each side's words cut at 2000 characters"
+        body: 99bd1f926c1c6ccbddf74b201e369dfab1556d4af07d2b614f953aa6c08e419d
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read since that gives a spec-change block without its report keeps the nodes the pane holds"
+        body: cbf96d24175cd28e502bc4915cf7dd1e69af1108f34ba3f6b37805ad13069382
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a loft block of another view keeps no nodes"
+        body: 0ac98859698833af44526c15242a521332d0feffc97c610437fd956d47602cd5
   - node: 01a1d06f-b09f-73ae-a356-c4b099278c41
     reviewed: 0d53af88d4be5d60abbc6f3859ff943daeb29fda0504af96bfc4d9b721eabd36
     tests:

@@ -110,13 +110,14 @@ async function showUnseen($: EngineInterface, asked: readonly string[]) {
 }
 
 /**
- * One `loft yard read` for the session's main agent, with every submission's history: since
+ * One `loft yard read` for the session's main agent, with every submission's history and each
+ * `loft` block's report: since
  * `since` where given, else whole with every version of each block, for the cards' feet.
  */
 async function readSince($: EngineInterface, since: number | undefined) {
   const [caller, cwd] = await Promise.all([callerOf($, undefined), $.session.cwd()])
   const which = since === undefined ? ['--versions'] : ['--since', String(since)]
-  return run($, cwd, ['read', ...callerArgs(caller), ...which, '--submissions'])
+  return run($, cwd, ['read', ...callerArgs(caller), ...which, '--submissions', '--reports'])
 }
 
 /** Hooks `/yard-pane`, and starts the follow over for a module just loaded. */

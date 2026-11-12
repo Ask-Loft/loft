@@ -12,6 +12,12 @@ export type PaneTimes = { listed?: string; started?: string; ended?: string }
 /** What a card's foot says of its block: who wrote its current version, its number, and when. */
 export type PaneFoot = { by: PaneActor | null; number: number; created: string | null; updated: string | null }
 
+/** A node a `spec-change` report names: how it changed, its kind, its label where it has one, and its words. */
+export type PaneDiffNode = { change: string; kind: string; label: string | null; before: string | null; after: string | null }
+
+/** What the pane keeps of a `spec-change` report: its first nodes, and how many more it names. */
+export type PaneDiff = { nodes: PaneDiffNode[]; more: number }
+
 /** A block as the Yard pane keeps it: only what the pane draws. */
 export type PaneBlock = {
   id: string
@@ -22,6 +28,8 @@ export type PaneBlock = {
   outcome?: Record<string, unknown> | null
   foot?: PaneFoot
   times?: PaneTimes
+  /** A `spec-change` block's report, as the pane draws it. */
+  diff?: PaneDiff
 }
 
 /** A stage as the Yard pane keeps it: its own block, the agent that owns it and its blocks, in order. */

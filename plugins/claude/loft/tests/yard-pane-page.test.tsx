@@ -593,3 +593,44 @@ test('choosing a stage in the Gantt chart shows it, chosen, in the timeline', as
     await ui.unmount()
   }
 })
+
+const SPEC = readDoc({
+  stages: [
+    staged(
+      'shape',
+      'active',
+      block('change', 'loft', {
+        view: 'spec-change',
+        note: 'One Requirement.',
+        report: {
+          graph: {
+            diff: [
+              { change: 'added', key: 'n1', kind: 'requirement', label: 'RQ-9', name: 'Draw it', words: { after: 'The pane shall draw the change.' } },
+              { change: 'changed', key: 'n2', kind: 'quality_attribute', label: null, name: 'Its nodes', words: { before: 'No report.', after: 'Its nodes.' } },
+              { change: 'removed', key: 'n3', kind: 'criterion', label: 'AC-4', name: 'Gone', words: { before: 'It was.' } },
+            ],
+          },
+        },
+      }),
+    ),
+  ],
+})
+
+test("a spec-change card shows each node its report names, added, changed or removed, with its kind, its label and its words before and after", async ($, on) => {
+  const w = world(on)
+  w.state.read = SPEC
+  await openPane($)
+  for (const surface of SURFACES) {
+    const ui = await $.ui.mount(paneMount(surface))
+    expect(await ui.find({ type: 'Markdown', text: 'One Requirement.' })).toBeDefined()
+    const added = await ui.find({ key: 'diff-k-change-0' })
+    expect(added?.text).toBe('Added Requirement RQ-9The pane shall draw the change.')
+    const changed = await ui.find({ key: 'diff-k-change-1' })
+    expect(changed?.text).toBe('Changed Quality attributeNo report.Its nodes.')
+    const removed = await ui.find({ key: 'diff-k-change-2' })
+    expect(removed?.text).toBe('Removed Criterion AC-4It was.')
+    const colours = (await ui.findAll({ type: 'Text' })).flatMap(each => (each.text === 'No report.' || each.text === 'Its nodes.' ? [each.props.color] : []))
+    expect(colours).toEqual(['diffRemoved', 'diffAdded'])
+    await ui.unmount()
+  }
+})

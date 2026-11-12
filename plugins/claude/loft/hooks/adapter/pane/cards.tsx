@@ -1,7 +1,7 @@
 // The cards of the Yard pane's blocks, by their kind, as the Yard page draws them (the Feature "See
 // Yard Log in the pane as on the Yard page").
 
-import type { PaneBlock } from '../../../types'
+import type { PaneBlock, PaneDiff } from '../../../types'
 import { records, textOf as text } from '../../model'
 import { bodyOf, type Drawing } from './kit'
 import { answeredOn, blockStateOf, channelWords, clockOf, letterOf, VIEW_NAMES, whoOf } from './model'
@@ -164,10 +164,40 @@ function content(drawing: Drawing, block: PaneBlock) {
     case 'decision':
       return [title(drawing, text(body.title)), <Text color={palette.body}>{text(body.consequence)}</Text>]
     case 'loft':
-      return [title(drawing, VIEW_NAMES[text(body.view)] ?? text(body.view)), markdownOf(drawing, body.note)]
+      return [title(drawing, VIEW_NAMES[text(body.view)] ?? text(body.view)), markdownOf(drawing, body.note), block.diff ? specChange(drawing, block.key, block.diff) : null]
     default:
       return [<Text color={palette.muted}>{`A ${block.kind} block, which the pane does not draw.`}</Text>]
   }
+}
+
+const CHANGES: Record<string, string> = { added: 'Added', changed: 'Changed', removed: 'Removed' }
+
+/** A node's kind in words: `quality_attribute` as `Quality attribute`. */
+const kindWords = (kind: string) => (kind ? `${kind[0]!.toUpperCase()}${kind.slice(1).replace(/_/g, ' ')}` : 'Node')
+
+/** A spec change as the page draws it: each node it names, how it changed, and its words before and after. */
+function specChange({ t, palette }: Drawing, key: string, diff: PaneDiff) {
+  const { Box, Text } = t
+  const tone: Record<string, string> = { added: palette.done, changed: palette.signal, removed: palette.danger }
+  return (
+    <Box key={`diff-${key}`} flexDirection="column" gap={1} marginTop={1}>
+      {diff.nodes.map((node, n) => (
+        <Box key={`diff-${key}-${n}`} flexDirection="column" borderStyle="single" borderColor={palette.line} paddingX={1}>
+          <Text>
+            <Text color={tone[node.change] ?? palette.muted} weight="semibold">
+              {CHANGES[node.change] ?? node.change}
+            </Text>
+            <Text color={palette.muted}>{` ${kindWords(node.kind)}${node.label ? ` ${node.label}` : ''}`}</Text>
+          </Text>
+          {node.before !== null ? <Text color="diffRemoved">{node.before}</Text> : null}
+          {node.after !== null ? <Text color="diffAdded">{node.after}</Text> : null}
+        </Box>
+      ))}
+      {diff.more > 0 ? (
+        <Text color={palette.muted} size="caption">{`${diff.more} more on the Yard page`}</Text>
+      ) : null}
+    </Box>
+  )
 }
 
 /** A card's foot: who wrote the block, its version, and when it was created and last updated. */
