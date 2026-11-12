@@ -155,3 +155,17 @@ export function letterOf(index: number): string {
   for (let n = index; n >= 0; n = Math.floor(n / 26) - 1) text = String.fromCharCode(65 + (n % 26)) + text
   return text
 }
+
+/**
+ * What `/yard-pane` answers: that the pane is open, or opens once there is room; then, once a read
+ * gave the view, the Yard page's address for its tree and branch with a line on what it shows,
+ * opening in Desktop's browser pane on Desktop, or that no page server serves it. With no view
+ * read yet, the pane's line alone (the Feature "Keep the Yard page beside the session").
+ */
+export function answerOf(view: PaneView | null, isPlaced: boolean, isDesktop: boolean): string {
+  const pane = isPlaced ? "Yard Log's pane is open." : "Yard Log's pane opens once there is room for it."
+  if (view === null) return pane
+  if (view.page === null) return `${pane} No page server serves the Yard page yet.`
+  const where = isDesktop ? "It opens in Desktop's browser pane." : 'Open it in your browser.'
+  return `${pane}\nThe Yard page for ${view.branch} shows its Yard Log in full: ${view.page}\n${where}`
+}

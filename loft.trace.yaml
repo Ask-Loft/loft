@@ -34386,6 +34386,45 @@ links:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "in Claude Code Desktop, where the browser pane cannot be reached, the pane shows the link and says so"
         body: b96027be4fd419e189af416e9b23d3fb974612d6e53d7d66336a71e2f12389c8
+  - node: 01a1d115-a1c7-75e3-82bb-0f27995f7261
+    reviewed: 3062f8fb5facc0946f4c9e9332282d303709e0809685dc18f76e0f986ab96592
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in Claude Code Desktop the command's answer says the page opens in Desktop's browser pane"
+        body: 037783d7d765be3f407e6a9bdb002be64219f965db89e9bdfdc770b22390af86
+  - node: 01a1d115-a1c7-75e3-82bb-0f281f42f8f8
+    reviewed: e0e408752e7ecdbb806983cc2104a9e0e7d9ff35f905bea75c17adba3d98e9c6
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
+  - node: 01a1d115-a1c7-75e3-82bb-0f293f5fc03e
+    reviewed: 74f815c6105bbb669c7756719a270c27e00029ea55008a6a2a9adf413b2bf576
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in VS Code the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: 63832cdbfc3a4f292023dac645f1740e934d2eb2c7c0a6ce1346d68ed1f8eacb
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the mobile app the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: 026cb3fae70781f2aa6821bcb33d6672b86aed0e6b65e12968a521637485f2c8
+  - node: 01a1d115-a1c7-75e3-82bb-0f2ac26e3e93
+    reviewed: abea16fcb1d9fdba81905127fd4797c8149d28d8926eb57de61b7b1708760ead
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in Claude Code Desktop the command's answer says the page opens in Desktop's browser pane"
+        body: 037783d7d765be3f407e6a9bdb002be64219f965db89e9bdfdc770b22390af86
+  - node: 01a1d115-a1c7-75e3-82bb-0f2bc4f3bda5
+    reviewed: 300b417cf352dd298dc357c5b3ecac4756c337a4fc115e67e7ecede9e0abd883
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "where no page server serves the Yard page, the command says so and gives no address"
+        body: ce6abd6621426074df86b18b9e16c9c936c3afc4cf246b51ca02945f417dcfab
   - node: 01a1cfe2-478e-75d1-b104-04e08deef20b
     reviewed: b2a5f6637d4242eedc87ac5c2187a315e762228aa090f3688a7c8bb3a5529cd8
     tests:

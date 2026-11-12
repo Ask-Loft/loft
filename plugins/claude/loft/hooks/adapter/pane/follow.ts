@@ -9,7 +9,7 @@ import { callerArgs, failureOf, succeeded } from '../run'
 import { callerOf, run } from '../state'
 import { browserOf, paneOf, setBrowser, setPane } from './atoms'
 import { showPage } from './browser'
-import { followed } from './model'
+import { answerOf, followed } from './model'
 
 /** The pane's id, which its `ui.render` hook names as `requestId`. */
 export const PANE = 'yard'
@@ -131,6 +131,7 @@ export function registerPane(on: On) {
   Object.assign(following, { timer: undefined, isReading: false, again: false, epoch: 0, notice: undefined, isPageAsked: false })
   on('command.run', { command: COMMAND }, async $ => {
     const opened = await openPane($)
-    return { text: opened.isPlaced ? "Yard Log's pane is open." : "Yard Log's pane opens once there is room for it." }
+    const [{ view }, surfaces] = await Promise.all([paneOf($), $.session.surfaces()])
+    return { text: answerOf(view, opened.isPlaced, surfaces.includes('desktop')) }
   })
 }

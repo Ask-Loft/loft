@@ -6,7 +6,7 @@ import type { FoundElement } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
 import { PALETTE } from '../hooks/adapter/pane/theme'
-import { answersOf, block, deferred, goaled, openPane, OWNER, PAGE, paneMount, readDoc, staged, SURFACES, world, type Engine, type World } from './yard-world'
+import { answersOf, block, deferred, goaled, openPane, OWNER, PAGE, paneMount, readDoc, staged, start, SURFACES, world, type Engine, type World } from './yard-world'
 
 /** The shades that mark status, each of which must read on a light ground and on a dark one. */
 const STATUS_SHADES = ['signal', 'wait', 'fix', 'recommended'] as const
@@ -236,6 +236,56 @@ test('an approval shows its title and its Markdown, with Approve and Reject', as
     expect((await ui.find({ key: 'reject-k-go' }))?.props.label).toBe('Reject')
     await ui.unmount()
   }
+})
+
+/** Runs `/yard-pane` once the session has started, and gives the text it answers with. */
+async function answered($: Engine) {
+  await start($)
+  const ran = await $.command.run({ command: 'yard-pane', args: '' } as never)
+  return String((ran as { text?: string }).text)
+}
+
+/** Holds `/yard-pane`'s answer on `surface`, where no browser pane is reached, to its address and its suggestion. */
+async function answersWithAddress($: Engine, w: World, surface: 'terminal' | 'vscode' | 'mobile') {
+  w.state.read = LOG
+  w.state.surfaces = [surface]
+  const text = await answered($)
+  expect(text).toContain(PAGE)
+  expect(PAGE).toContain('tree=%2Fwork%2Fshelf&branch=feat%2Fshelf')
+  expect(text).toContain('The Yard page for feat/shelf shows its Yard Log in full')
+  expect(text).toContain('Open it in your browser.')
+  expect(text).toContain("Yard Log's pane is open.")
+  expect(text).not.toContain('browser pane')
+}
+
+test("in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it", async ($, on) => {
+  await answersWithAddress($, world(on), 'terminal')
+})
+
+test("in VS Code the command answers with the page's address for the tree and branch, what it shows, and to open it", async ($, on) => {
+  await answersWithAddress($, world(on), 'vscode')
+})
+
+test("in the mobile app the command answers with the page's address for the tree and branch, what it shows, and to open it", async ($, on) => {
+  await answersWithAddress($, world(on), 'mobile')
+})
+
+test("in Claude Code Desktop the command's answer says the page opens in Desktop's browser pane", async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  const text = await answered($)
+  expect(text).toContain(PAGE)
+  expect(text).toContain("It opens in Desktop's browser pane.")
+  expect(text).not.toContain('Open it in your browser.')
+})
+
+test('where no page server serves the Yard page, the command says so and gives no address', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ ...LOG, page: { available: false, port: 7411 } })
+  const text = await answered($)
+  expect(text).toContain('No page server serves the Yard page yet.')
+  expect(text).not.toContain('http')
 })
 
 test("in Claude Code Desktop the command opens the Yard page at the session's tree and branch in Desktop's browser pane", async ($, on) => {
