@@ -26699,25 +26699,25 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
         name: "test_desktop_switches_only_the_project_to_this_worktree_s_plugin"
-        body: 1159a2d426448dd5826f50a929fccfcfe0c5718d4c52d0b698315c6f73d8100e
+        body: 72d8c79e224688d313e69aa13a3a04d80c29aa9bbba193a5fd36c8fb144a6be1
   - node: 01a1cf7a-0eb7-770e-800d-7eba6cb45db1
     reviewed: e2bdb91454ccb7eb8f8100540a67a83a6f8f776fb4e5b31bc2d485cf850576f3
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
         name: "test_desktop_switches_only_the_project_to_this_worktree_s_plugin"
-        body: 1159a2d426448dd5826f50a929fccfcfe0c5718d4c52d0b698315c6f73d8100e
+        body: 72d8c79e224688d313e69aa13a3a04d80c29aa9bbba193a5fd36c8fb144a6be1
   - node: 01a1cf7a-0eb7-770e-800d-7ebb3cc110b1
     reviewed: 5d69e9e800a4d5cf5f3304ed8405dc6d4ecdbf5a422875a6c01b5d5c63b59eca
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
         name: "test_sessions_in_any_other_project_keep_the_installed_plugin"
-        body: f7eafb832038e53d4455db7b7e5e1196904152c40a0e3eb06ec56bd4cf5b733f
+        body: 478e4bd818861865a6d8487c1eeca92e52bcd7ba170f99896564ad664f0dfa5d
   - node: 01a1cf7a-0eb7-770e-800d-7ebcd178f72e
     reviewed: 161e0389a377e0f060aaf05697e1f77fde9907ebe9e1f1bab0807ec496d36114
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
         name: "test_the_settings_of_the_dogfood_plugin_run_this_worktree_s_loft"
-        body: 60d02410ca9499b1e013e0d37cba4aa03aeeca459860c1ec79dde824bad5e599
+        body: 7e0992a4dcf3578402d2be2ad4d14d4acb4227a5f0cfdf7b7ffe4b8b63acb579
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_the_session_s_loft_runs_with_the_dogfood_home"
         body: d68ee398c22275dee113fbdda1072a4ceaa24b4ac42808d18d3f38acbc307c99

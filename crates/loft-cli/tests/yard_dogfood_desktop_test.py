@@ -52,7 +52,10 @@ elif args[:2] == ["plugin", "install"] and args[3:] == ["--scope", "local"]:
 elif args[:2] in (["plugin", "enable"], ["plugin", "disable"]) and args[3:] == ["--scope", "local"]:
     enable(args[2], args[1] == "enable")
 elif args[:2] == ["plugin", "configure"] and args[3:] == ["--values-stdin"]:
-    values = json.loads(sys.stdin.read())
+    if not any(entry["id"] == args[2] and entry["projectPath"] == str(cwd) for entry in state["installed"]):
+        sys.exit(f'No installed plugin has the id "{args[2]}".')
+    values = {key: int(value) if key == "yardPort" else value
+              for key, value in json.loads(sys.stdin.read()).items()}
     settings(Path(os.environ["HOME"]) / ".claude/settings.json",
              lambda held: held.setdefault("pluginConfigs", {}).setdefault(args[2], {})
              .setdefault("options", {}).update(values))
@@ -120,13 +123,16 @@ class DesktopTests(unittest.TestCase):
         records, _ = self.launch(str(self.project))
         self.assertEqual(records[0]["program"], "yard-dogfood-server.py")
         self.assertEqual(records[0]["args"], [str(self.tree), "7412"])
-        market = self.tree / ".loft/yard-dogfood/claude"
+        # The marketplace holds the plugin itself: Claude Code refuses a hooks module that a link
+        # takes outside the marketplace's directory.
+        market = self.tree / "plugins"
         manifest = json.loads((market / ".claude-plugin/marketplace.json").read_text())
         self.assertEqual(manifest["name"], "yard-dogfood")
         self.assertEqual(manifest["plugins"][0]["name"], "loft")
-        self.assertEqual(manifest["plugins"][0]["source"], "./plugin")
-        self.assertTrue((market / "plugin").is_symlink())
-        self.assertEqual((market / "plugin").resolve(), self.tree / "plugins/claude/loft")
+        self.assertEqual(manifest["plugins"][0]["source"], "./claude/loft")
+        source = (market / manifest["plugins"][0]["source"]).resolve()
+        self.assertEqual(source, self.tree / "plugins/claude/loft")
+        self.assertFalse(any(path.is_symlink() for path in market.rglob("*")))
         made = [(record["args"], record["cwd"]) for record in changes(records)]
         self.assertIn((["plugin", "marketplace", "add", str(market)], str(self.project)), made)
         self.assertIn((["plugin", "install", "loft@yard-dogfood", "--scope", "local"],
@@ -144,7 +150,7 @@ class DesktopTests(unittest.TestCase):
         self.launch(str(self.project))
         settings = json.loads(self.user_settings.read_text())
         self.assertEqual(settings["pluginConfigs"]["loft@yard-dogfood"]["options"],
-                         {"loftCommand": self.wrapper, "yardPort": "7412", "baseBranch": "develop"})
+                         {"loftCommand": self.wrapper, "yardPort": 7412, "baseBranch": "develop"})
         self.assertEqual(settings["theme"], "dark")
         self.assertEqual(settings["pluginConfigs"]["loft@ask-loft"], {"options": {"yardPort": 7411}})
 
@@ -169,8 +175,7 @@ class DesktopTests(unittest.TestCase):
 
     def test_sessions_in_any_other_project_keep_the_installed_plugin(self):
         records, _ = self.launch(str(self.project))
-        self.assertTrue(all(record["cwd"] in {str(self.project), str(self.home)}
-                            for record in changes(records)))
+        self.assertTrue(all(record["cwd"] == str(self.project) for record in changes(records)))
         self.assertEqual((self.other / ".claude/settings.local.json").read_text(),
                          self.other_settings)
 

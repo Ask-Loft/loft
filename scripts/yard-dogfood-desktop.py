@@ -4,14 +4,13 @@ plugin and loft, or back to the installed ones.
   yard-dogfood-desktop.py <tree> <port> <loft command> <project>          switch the project
   yard-dogfood-desktop.py <tree> <port> <loft command> <project> --undo   switch it back
 
-The worktree's plugin is installed as `loft@yard-dogfood` from a local marketplace whose plugin is
-a link to `plugins/claude/loft`, so Claude Code reads it from the worktree and `/reload-plugins`
+The worktree's plugin is installed as `loft@yard-dogfood` from a local marketplace over the
+worktree's `plugins/`, so Claude Code reads it from `plugins/claude/loft` and `/reload-plugins`
 takes up an edit. Both plugins are switched at the local scope, which only the project reads, so
 every other project keeps the installed `loft@ask-loft`. Each change to the person's Claude Code
 settings is printed before it is made, and a change already in place is not made again.
 """
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -46,8 +45,12 @@ def read_json(path, empty):
 
 
 def keep_marketplace(tree):
-    """Writes the local marketplace beside the worktree's build and returns its directory."""
-    market = tree / ".loft/yard-dogfood/claude"
+    """Writes the local marketplace over the worktree's `plugins/` and returns its directory.
+
+    The marketplace holds the plugin itself, so that Claude Code reads it from the worktree: a
+    link to the plugin from elsewhere is refused, since its hooks module would lie outside the
+    marketplace's directory. The file is ignored by git."""
+    market = tree / "plugins"
     manifest = market / ".claude-plugin/marketplace.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     manifest.write_text(json.dumps({
@@ -55,17 +58,10 @@ def keep_marketplace(tree):
         "owner": {"name": "Loft dogfood"},
         "plugins": [{
             "name": "loft",
-            "source": "./plugin",
+            "source": "./claude/loft",
             "description": "This worktree's Loft plugin, read from plugins/claude/loft.",
         }],
     }, indent=2) + "\n")
-    link = market / "plugin"
-    target = tree / "plugins/claude/loft"
-    if link.is_symlink() and Path(os.readlink(link)) == target:
-        return market
-    if link.is_symlink() or link.exists():
-        link.unlink()
-    link.symlink_to(target, target_is_directory=True)
     return market
 
 
@@ -90,14 +86,15 @@ def switch(project, plugin, enable):
     claude(["plugin", verb, plugin, "--scope", "local"], project)
 
 
-def configure(home, options):
-    """Sets the options of `loft@yard-dogfood` in the person's user settings, where they differ."""
+def configure(project, home, options):
+    """Sets the options of `loft@yard-dogfood` in the person's user settings, where they differ.
+    Claude Code finds a plugin installed at a local scope only from within its project."""
     current = read_json(home / ".claude/settings.json", {})
     stored = current.get("pluginConfigs", {}).get(DEV, {}).get("options", {})
     if all(str(stored.get(key)) == value for key, value in options.items()):
         return
     say(f"Set {DEV}'s options in ~/.claude/settings.json: {json.dumps(options)}")
-    claude(["plugin", "configure", DEV, "--values-stdin"], home, stdin=json.dumps(options))
+    claude(["plugin", "configure", DEV, "--values-stdin"], project, stdin=json.dumps(options))
 
 
 def desktop(tree, port, command, project, home):
@@ -116,7 +113,7 @@ def desktop(tree, port, command, project, home):
         claude(["plugin", "install", DEV, "--scope", "local"], project)
     switch(project, DEV, True)
     switch(project, INSTALLED, False)
-    configure(home, {"loftCommand": command, "yardPort": str(port), "baseBranch": "develop"})
+    configure(project, home, {"loftCommand": command, "yardPort": str(port), "baseBranch": "develop"})
     say(f"{project} now runs this worktree's Loft plugin; Yard page: http://127.0.0.1:{port}/")
     say("Start a new session there, or run /reload-plugins in an open one.")
 
