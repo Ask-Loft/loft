@@ -22,11 +22,16 @@ fn a_lock_file_the_prober_may_not_write_still_reads_as_held_while_held_and_free_
     let held = lock::lock(&path).unwrap();
     set_mode(&path, 0o444);
     set_mode(&dir, 0o555);
+    let refused = fs::OpenOptions::new().write(true).open(&path).is_err();
     let while_held = is_held(&path);
     drop(held);
     let once_let_go = is_held(&path);
     set_mode(&dir, 0o755);
     set_mode(&path, 0o644);
+    if !refused {
+        eprintln!("skipped: the lock file stays writable for this user, as for root");
+        return;
+    }
     assert!(while_held.unwrap());
     assert!(!once_let_go.unwrap());
 }

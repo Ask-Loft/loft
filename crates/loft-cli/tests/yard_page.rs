@@ -111,9 +111,14 @@ fn where_the_page_server_already_serves_the_tree_a_run_that_may_not_write_the_ho
     fs::write(home.join("trees.json"), format!("{trees:#}\n")).unwrap();
     let held = lock::lock(&home.join("server.lock")).unwrap();
     set_modes(&home, 0o444, 0o555);
+    let refused = fs::write(home.join("probe"), "").is_err();
     let output = yard.run(&["page"]);
     set_modes(&home, 0o644, 0o755);
     drop(held);
+    if !refused {
+        eprintln!("skipped: the home stays writable for this user, as for root");
+        return;
+    }
     let page = document("page", &output);
     assert_eq!(page["outcome"], "page", "{page}");
     assert_eq!(page["page"]["port"], 7500);

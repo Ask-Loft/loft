@@ -77,16 +77,16 @@ pub fn lock(path: &Path) -> Result<Locked, YardStoreError> {
 /// The file cannot be created, opened or locked.
 pub fn try_lock(path: &Path) -> Result<Option<Locked>, YardStoreError> {
     let file = open(path)?;
-    Ok(taken(&file, path)?.then(|| Locked {
+    Ok(taken(file.try_lock(), path)?.then(|| Locked {
         file,
         path: path.to_owned(),
         named: None,
     }))
 }
 
-/// Whether the lock on `file`, at `path`, was free and is now taken.
-fn taken(file: &File, path: &Path) -> Result<bool, YardStoreError> {
-    match file.try_lock() {
+/// Whether an `attempt` on the lock at `path` found it free and took it.
+fn taken(attempt: Result<(), TryLockError>, path: &Path) -> Result<bool, YardStoreError> {
+    match attempt {
         Ok(()) => Ok(true),
         Err(TryLockError::WouldBlock) => Ok(false),
         Err(TryLockError::Error(error)) => Err(io_error(path)(error).into()),
@@ -94,8 +94,11 @@ fn taken(file: &File, path: &Path) -> Result<bool, YardStoreError> {
 }
 
 /// Whether another holds the lock on `path` now. The probe only reads: it opens the file for
-/// reading and lets the lock go at once, so a prober that may not write there, as in a sandbox,
-/// still learns it, and a file that is missing is held by no one and is not created.
+/// reading, tries a shared lock and lets it go at once, so a prober that may not write there, as
+/// in a sandbox, still learns it, and a file that is missing is held by no one and is not
+/// created. Every holder holds the lock exclusively, so a shared lock is refused while one does;
+/// a shared lock, unlike an exclusive one, needs no write access where `flock` is emulated with
+/// byte-range locks, as on NFS.
 ///
 /// # Errors
 ///
@@ -106,7 +109,7 @@ pub fn is_held(path: &Path) -> Result<bool, YardStoreError> {
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
         Err(error) => return Err(io_error(path)(error).into()),
     };
-    Ok(!taken(&file, path)?)
+    Ok(!taken(file.try_lock_shared(), path)?)
 }
 
 /// The file beside a lock that names its holder. It is a file of its own, not the lock's, since

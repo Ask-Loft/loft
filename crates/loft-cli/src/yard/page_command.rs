@@ -23,10 +23,7 @@ pub fn run(root: &Path, args: &PageArgs) -> Finished {
         Err(failure) => return failure.finish(SCHEMA, as_json),
     };
     let url = fields["page"]["url"].as_str().map(ToOwned::to_owned);
-    let (outcome, finish): (_, fn(&'static str) -> Finished) = match url {
-        Some(_) => ("page", Finished::success),
-        None => ("unavailable", Finished::failure),
-    };
+    let outcome = if url.is_some() { "page" } else { "unavailable" };
     if as_json {
         json::print(&json::result(SCHEMA, outcome, fields, Vec::new()));
     } else {
@@ -37,7 +34,11 @@ pub fn run(root: &Path, args: &PageArgs) -> Finished {
             outln!("{line}");
         }
     }
-    finish(outcome)
+    if url.is_some() {
+        Finished::success(outcome)
+    } else {
+        Finished::failure(outcome)
+    }
 }
 
 /// Where the command's tree is, with the page's address for its branch.

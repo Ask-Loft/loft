@@ -81,16 +81,13 @@ pub fn quiet(home: &Home) -> Result<Result<Locked, Option<Running>>, YardStoreEr
 
 /// The address of `branch`'s Yard Log in `tree` on the page, or, where no page server runs, that
 /// the page is unavailable, with the port it would listen on. Where a page server runs, `tree`
-/// is first added to the trees it serves unless it is served already, so that the address names
-/// a tree it serves and a run that may not write the home, as in a sandbox, still gives it; a
-/// tree that cannot be added leaves the page unavailable.
+/// is first added to the trees it serves, so that the address names a tree it serves; a tree
+/// that cannot be added leaves the page unavailable.
 pub fn address(tree: &Path, branch: &str, port: u16) -> Value {
     let running = SERVING.get().copied().or_else(|| {
         let home = Home::from_env()?;
         let server = running(&home).ok().flatten()?;
-        if !trees::is_served(&home, tree).ok()? {
-            trees::add(&home, tree).ok()?;
-        }
+        trees::add(&home, tree).ok()?;
         Some(server.port)
     });
     match running {
