@@ -22703,7 +22703,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submissions"
-        body: 64b5f0f205adad1352ca8069225569bb5b77ccf119f3667112240c0d94bb61eb
+        body: 7fb98e98061689fdef69a1edb56300a2167d12a3b823f3dc576e5f9c28ac7006
+  - node: 01a1d144-b627-70b3-a7fa-119f826bb1a9
+    reviewed: a68fde6ead835f5d8345afb2479a7990e08b20fbb83cb1e21724f38b86ca1263
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submissions"
+        body: 7fb98e98061689fdef69a1edb56300a2167d12a3b823f3dc576e5f9c28ac7006
   - node: 01a1787c-f803-70b1-b946-b71c877ab0bd
     reviewed: 6744efc618e24c37ca550932eea922be4e4a212c198f70d0536310a52ab864d4
     tests:
@@ -22805,13 +22811,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words"
-        body: 18420a00047225dc61e9db6cdae41c9dce036467cce881014e725b91bc83a65d
+        body: 6352c21b5501cb75f72417253b1477e0dc6622ea536fa2eb8e395d50f527f776
   - node: 01a1d123-dd3f-7153-9249-3a3cec086406
-    reviewed: b34c054aaddbb58c9646361b8649e7968242844b45245635ed11a5b17b10b7f6
+    reviewed: c03f084b6ec69069391c97580cda87c55b62f3b5bfdd64a87cbbfba1cfdeb163
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words"
-        body: 18420a00047225dc61e9db6cdae41c9dce036467cce881014e725b91bc83a65d
+        body: 6352c21b5501cb75f72417253b1477e0dc6622ea536fa2eb8e395d50f527f776
   - node: 01a1d123-dd3f-7153-9249-3a3da64435d6
     reviewed: eff86685b2b2e5c3c49029ea7be63cd8dd3d56d33b9499f7462e747d2701dd82
     tests:
@@ -35154,6 +35160,24 @@ links:
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serve_and_exits_1"
         body: 63dd5bfb8291312e4dd04543e58fce885bd0eef0f31b1e2beb197e4a45f4e066
+  - node: 01a1d144-b628-7658-b662-a69ef5586fb3
+    reviewed: a5257fa667c25bf9eca508a4750d61725eda5367bd52ad6167a9c9c50e427ac7
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
+        body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
+  - node: 01a1d144-e9d4-70fd-a1b7-0b4389f764df
+    reviewed: 2c3122e018ed6fca2ca557aebcef8cc12318247f669b46f89cc16b67ef47d8b1
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
+        body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
+  - node: 01a1d144-b628-7658-b662-a69f71c808d2
+    reviewed: dfc0c311970848441dbcea537a0b366ccaf1d68663b431d55fae81f5855c3b03
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
+        body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:

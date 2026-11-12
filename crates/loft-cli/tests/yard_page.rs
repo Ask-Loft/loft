@@ -123,3 +123,36 @@ fn where_the_page_server_already_serves_the_tree_a_run_that_may_not_write_the_ho
     assert_eq!(page["outcome"], "page", "{page}");
     assert_eq!(page["page"]["port"], 7500);
 }
+
+#[cfg(unix)]
+#[test]
+fn where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so() {
+    let yard = Yard::new();
+    let home = yard.scratch.home().join(".yard");
+    name_server(&yard, 7500);
+    fs::write(home.join("trees.json"), "{\n  \"trees\": []\n}\n").unwrap();
+    let held = lock::lock(&home.join("server.lock")).unwrap();
+    set_modes(&home, 0o444, 0o555);
+    let refused = fs::write(home.join("probe"), "").is_err();
+    let output = yard.run(&["page"]);
+    let printed = words(&yard);
+    set_modes(&home, 0o644, 0o755);
+    drop(held);
+    if !refused {
+        eprintln!("skipped: the home stays writable for this user, as for root");
+        return;
+    }
+    assert_eq!(output.status.code(), Some(1));
+    let page = document("page", &output);
+    assert_eq!(page["outcome"], "unavailable");
+    assert_eq!(page["page"], json!({ "available": false, "port": 7500 }));
+    assert_eq!(printed.status.code(), Some(1));
+    let printed = String::from_utf8(printed.stdout).unwrap();
+    assert!(printed.contains("port 7500"), "{printed}");
+    assert!(
+        printed.contains("does not serve this tree yet"),
+        "{printed}"
+    );
+    assert!(!printed.contains("http"), "{printed}");
+    assert!(!printed.contains("loft yard serve"), "{printed}");
+}

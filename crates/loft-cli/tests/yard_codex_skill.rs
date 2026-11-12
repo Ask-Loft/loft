@@ -59,6 +59,7 @@ fn the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submi
         "--agent",
         "--agent-type",
         "--format json",
+        "Give that identity and `--format json` to the six operations below; they are not for every `loft yard` command.",
         "--mark-read",
         "--based-on",
         "--send",
@@ -310,7 +311,7 @@ fn the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its
     assert!(words.contains("run nothing more"), "{words}");
     assert!(
         words.contains(
-            "no page server serves the page, give the person those words as they are too"
+            "Where it gives no address, because no page server runs or because one runs but does not serve this tree yet, give the person those words as they are too, and run nothing more"
         ),
         "{words}"
     );

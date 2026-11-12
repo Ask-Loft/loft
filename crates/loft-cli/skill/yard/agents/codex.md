@@ -8,7 +8,8 @@ must be installed, and the plugin's hooks enabled and trusted in Codex.
 
 Use the identity supplied by the session hook: `--host codex --session SESSION`, plus
 `--agent AGENT --agent-type TYPE` for a subagent. Keep that identity when working in another
-worktree. Do not supply another caller's identity. Use `--format json` for every operation.
+worktree. Do not supply another caller's identity. Give that identity and `--format json` to the
+six operations below; they are not for every `loft yard` command.
 
 | Operation | Command |
 | --- | --- |
