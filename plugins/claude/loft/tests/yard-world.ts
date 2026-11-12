@@ -27,6 +27,23 @@ export function stage(id: string, status: string, owner: Stage['owner']): Stage 
   return { ...block(id, 'stage', { title: `Stage ${id}`, goal: '', status }), owner, blocks: [] }
 }
 
+/** The session's main agent, as it owns a stage or sends a submission. */
+export const OWNER = { host: 'claude-code', session: SESSION }
+
+/** The surfaces Claude Code draws a pane on. */
+export const SURFACES = ['terminal', 'desktop', 'vscode', 'mobile'] as const
+
+/** A stage the main agent owns, holding `blocks`. */
+export function staged(id: string, status: string, ...blocks: Block[]) {
+  return { ...stage(id, status, OWNER), blocks }
+}
+
+/** A stage the main agent owns, with its goal, holding `blocks`. */
+export function goaled(id: string, status: string, goal: string, ...blocks: Block[]) {
+  const held = staged(id, status, ...blocks)
+  return { ...held, version: { body: { ...held.version.body, goal } } }
+}
+
 /** A `loft yard read` document of an open Yard Log, with these fields over it. */
 export function readDoc(fields: Doc = {}): Doc {
   return {
@@ -176,7 +193,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
      * Claude Code Desktop's browser pane, as its MCP server `Claude_Browser` answers: its tabs by
      * id and address, or `unreachable` where no such server answers.
      */
-    browser: { tabs: new Map<string, string>(), unreachable: false, movesTo: null as string | null, calls: [] as { tool: string; args: Record<string, unknown> }[] },
+    browser: { tabs: new Map<string, string>(), unreachable: false, movesTo: null as string | null, title: null as string | null, calls: [] as { tool: string; args: Record<string, unknown> }[] },
     /** Each `$.ui.open` the mod made. */
     opened: [] as Doc[],
     /** What a test has happen once `loft yard answer` records, as a wait then ending. */
@@ -215,7 +232,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     if (server !== 'Claude_Browser' || browser.unreachable) throw new Error(`MCP server ${server} is not connected`)
     browser.calls.push({ tool, args })
     const text = (words: string, isError = false) => ({ value: { content: [{ type: 'text', text: words }], isError } }) as never
-    // As Desktop's browser answers: JSON first, then words for the agent.
+    // As Desktop's browser answers: JSON first, then words for the agent, which may hold braces too.
     const answer = (fields: object) => text(`${JSON.stringify(fields, null, 2)}\nBrowser pane opened.`)
     if (tool === 'preview_start') {
       const tabId = `tab-${browser.tabs.size + 1}`
@@ -223,8 +240,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
       return answer({ tabId, reused: false, navOk: true })
     }
     if (tool === 'tabs_context') {
-      const tabs = [...browser.tabs].map(([tabId, url]) => ({ tabId, origin: new URL(url).origin, isActive: false }))
-      return text(`${JSON.stringify({ browserOpen: true, tabs }, null, 2)}\nThe Browser pane is currently displayed.`)
+      const tabs = [...browser.tabs].map(([tabId, url]) => ({ tabId, origin: new URL(url).origin, isActive: false, ...(browser.title === null ? {} : { title: browser.title }) }))
+      return text(`${JSON.stringify({ browserOpen: true, tabs }, null, 2)}\nThe Browser pane is currently displayed; its tabs are listed above in {braces}.`)
     }
     if (tool === 'navigate') {
       if (!browser.tabs.has(String(args.tabId))) return text(`navigation to ${new URL(String(args.url)).origin} was denied or failed`, true)
@@ -368,14 +385,20 @@ export const writesOf = (w: World) =>
 /** The id of the question the mod wrote last. */
 export const askedId = (w: World) => String(writesOf(w).at(-1)?.find(each => each.kind === 'question')?.id)
 
-/** The Yard pane as Claude Code mounts it to draw, `columns` wide. */
-export const paneMount = (surface: 'terminal' | 'desktop' | 'vscode' | 'mobile', columns = 80) =>
+/** What each `loft yard answer` was given, with the words after `yard` but the port and format. */
+export const answersOf = (w: World) =>
+  w.state.runs
+    .filter(run => run.argv.includes('answer'))
+    .map(run => ({ args: run.argv.slice(run.argv.indexOf('yard') + 1).join(' ').replace(' --port 7411 --format json', ''), given: JSON.parse(run.stdin ?? '[]') }))
+
+/** The Yard pane as Claude Code mounts it to draw on `surface`. */
+export const paneMount = (surface: (typeof SURFACES)[number]) =>
   ({
     plugin: 'loft',
     component: 'Pane',
     requestId: 'yard',
     surface,
-    props: { title: 'Yard', isFocused: false, bodyColumns: columns, placement: 'dock', scroll: { offset: 0, bodyRows: 40 }, view: {} },
+    props: { title: 'Yard', isFocused: false, bodyColumns: 80, placement: 'dock', scroll: { offset: 0, bodyRows: 40 }, view: {} },
   }) as never
 
 /** Starts the session and opens the Yard pane with `/yard-pane`. */

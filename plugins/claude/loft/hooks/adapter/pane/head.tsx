@@ -37,10 +37,8 @@ export function head({ t, palette }: Drawing, view: PaneView, waiting: number, i
         ) : null}
       </Box>
       {waiting > 0 ? (
-        <Box key="wait-control" backgroundColor={palette.wait} paddingX={1} alignSelf="flex-start">
-          <Box key="wait-count">
-            <Text color={palette.onButton} weight="semibold">{`${waiting} wait on you`}</Text>
-          </Box>
+        <Box key="wait-count" backgroundColor={palette.wait} paddingX={1} alignSelf="flex-start">
+          <Text color={palette.onButton} weight="semibold">{`${waiting} wait on you`}</Text>
         </Box>
       ) : null}
     </Box>

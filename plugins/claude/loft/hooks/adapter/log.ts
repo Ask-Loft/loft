@@ -73,17 +73,25 @@ export function blockById(doc: Doc, id: string): { block: Block; stage: Stage } 
 /** An open submission, as `loft yard read` lists it under the agent that sent it. */
 export type Submission = { key: string; blocks: string[]; agent: Actor }
 
+/** When a submission was sent, as the page orders open submissions: its time, then the revision it reached. */
+function sentOrder(submission: Record<string, unknown>): [number, number] {
+  const sent = isObject(submission.sent) ? submission.sent : {}
+  const at = typeof sent.at === 'string' ? Date.parse(sent.at) : NaN
+  const reached = typeof submission.sentReached === 'number' ? submission.sentReached : typeof sent.revision === 'number' ? sent.revision : 0
+  return [Number.isNaN(at) ? 0 : at, reached]
+}
+
+/** The open submissions, the oldest sent first, in the order the Yard page lists them. */
 export function openSubmissions(doc: Doc): Submission[] {
-  return records(doc.submissions).flatMap(group => {
-    const agent = (isObject(group.agent) ? group.agent : {}) as Actor
-    return records(group.open)
-      .filter(each => each.state === undefined || each.state === 'open')
-      .map(each => ({
-        key: String(each.key),
-        blocks: Array.isArray(each.blocks) ? each.blocks.map(String) : [],
-        agent,
-      }))
-  })
+  return records(doc.submissions)
+    .flatMap(group => {
+      const agent = (isObject(group.agent) ? group.agent : {}) as Actor
+      return records(group.open)
+        .filter(each => each.state === undefined || each.state === 'open')
+        .map(each => ({ key: String(each.key), blocks: Array.isArray(each.blocks) ? each.blocks.map(String) : [], agent, order: sentOrder(each) }))
+    })
+    .sort((one, other) => one.order[0] - other.order[0] || one.order[1] - other.order[1] || one.key.localeCompare(other.key))
+    .map(({ order: _order, ...submission }) => submission)
 }
 
 /** The kinds of block the person answers or decides. */

@@ -4,8 +4,8 @@
 
 import type { PaneActor, PaneBlock, PaneStage, PaneView } from '../../../types'
 import type { Doc } from '../../loft'
-import { isObject, records, textOf } from '../../model'
-import { pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
+import { isObject, textOf } from '../../model'
+import { openSubmissions, pageOf, stagesOf, waitingAmong, type Block, type Stage } from '../log'
 
 /** Of a block, only what the pane draws. */
 function kept(block: Block): PaneBlock {
@@ -24,7 +24,7 @@ function keptStage(stage: Stage, before?: PaneStage): PaneStage {
   return {
     ...kept(stage),
     owner: isObject(stage.owner) ? (stage.owner as PaneActor) : null,
-    blocks: before ? merged(before.blocks, stage.blocks ?? []) : (stage.blocks ?? []).map(each => kept(each)),
+    blocks: before ? merged(before.blocks, stage.blocks ?? []) : (stage.blocks ?? []).map(kept),
   }
 }
 
@@ -41,23 +41,9 @@ function repositoryOf(doc: Doc): string | null {
   return common.endsWith('/.git') ? common.slice(0, -'/.git'.length) : null
 }
 
-/** The open submissions, the oldest sent first, each with its blocks in its own order. */
-function openOf(doc: Doc): { key: string; blocks: string[] }[] {
-  return records(doc.submissions)
-    .flatMap(group => records(group.open))
-    .filter(each => each.state === undefined || each.state === 'open')
-    .map((each, n) => ({
-      key: String(each.key),
-      blocks: Array.isArray(each.blocks) ? each.blocks.map(String) : [],
-      at: isObject(each.sent) ? textOf(each.sent.at) : '',
-      n,
-    }))
-    .sort((one, other) => one.at.localeCompare(other.at) || one.n - other.n)
-    .map(({ key, blocks }) => ({ key, blocks }))
-}
-
+/** The blocks of the open submissions, the oldest submission first, each in its own order. */
 function sentOf(doc: Doc): string[] {
-  return openOf(doc).flatMap(each => each.blocks)
+  return openSubmissions(doc).flatMap(each => each.blocks)
 }
 
 /** The view of a whole read. */
@@ -77,11 +63,8 @@ function whole(doc: Doc): PaneView {
 
 /** `blocks` with each of `changed` in place of the block of its key. */
 function merged(blocks: readonly PaneBlock[], changed: readonly Block[]): PaneBlock[] {
-  const replaced = new Map(changed.map(block => [block.key, block]))
-  return blocks.map(block => {
-    const fresh = replaced.get(block.key)
-    return fresh ? kept(fresh) : block
-  })
+  const replaced = new Map(changed.map(block => [block.key, kept(block)]))
+  return blocks.map(block => replaced.get(block.key) ?? block)
 }
 
 /**
@@ -164,30 +147,6 @@ export function summaryOf(view: PaneView): string {
 export function ownerOf(owner: PaneStage['owner']): string | null {
   if (!owner) return null
   return typeof owner.agent === 'string' ? `${textOf(owner.agentType) || 'a'} subagent` : 'main agent'
-}
-
-const STATES: Record<string, string> = { open: 'Open', active: 'Active', done: 'Done', dropped: 'Dropped' }
-
-/**
- * A block's state as the page words it, with the status whose colour it takes: that it waits on
- * the person, a task's state, whether a question was answered, an approval's or a plan's verdict.
- * A note, a decision or a `loft` block has none.
- */
-export function blockStateOf(block: PaneBlock, isWaiting: boolean): [string, string] | null {
-  if (isWaiting) return ['Waits on you', 'waiting']
-  const body = block.version.body
-  if (block.kind === 'task') {
-    const state = textOf(body.state) || 'open'
-    return [STATES[state] ?? state, state === 'open' ? 'planned' : state]
-  }
-  if (block.kind === 'question') return block.answer ? ['Answered', 'done'] : ['Open', 'planned']
-  if (block.kind === 'approval' || block.kind === 'plan') {
-    const verdict = block.outcome?.verdict
-    if (verdict === 'approved') return ['Approved', 'done']
-    if (verdict === 'rejected') return ['Rejected', 'dropped']
-    return ['Open', 'planned']
-  }
-  return null
 }
 
 /** The letter of the option at `index`: A to Z, then AA, AB and on, as the page letters them. */

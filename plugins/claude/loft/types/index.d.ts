@@ -17,7 +17,7 @@ export type PaneBlock = {
 }
 
 /** A stage as the Yard pane keeps it: its own block, the agent that owns it and its blocks, in order. */
-export type PaneStage = PaneBlock & { owner?: PaneActor | null; blocks: PaneBlock[] }
+export type PaneStage = PaneBlock & { owner: PaneActor | null; blocks: PaneBlock[] }
 
 /** What the Yard pane shows: which Yard Log, at which revision, and its stages. */
 export type PaneView = {
@@ -40,12 +40,12 @@ export type PaneView = {
  * The Yard pane: its view once read, why the last read failed, if it did, and why the last answer
  * was not recorded, if it was not, until the next answer.
  */
-/** Claude Code Desktop's browser pane, as the pane last left it: the tab showing the Yard page, and whether it was reached. */
+export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null }
+
+/** Claude Code Desktop's browser pane, as `/yard-pane` last left it: the tab showing the Yard page, and whether it was reached. */
 export type PaneBrowser = { tab: string | null; isReached: boolean }
 
-export type YardPane = { view: PaneView | null; failure: string | null; notice: string | null; browser: PaneBrowser | null }
-
-/** What the person has set in the Yard pane and not sent: the stages unfolded, options ticked, words typed. */
+/** What the person has set in the Yard pane and not sent: options ticked, words typed. */
 export type YardPaneDrafts = {
   ticked: Record<string, string[]>
   words: Record<string, string>
@@ -56,6 +56,7 @@ declare module 'claude-code' {
     loft: {
       yardPage: YardPage
       yardPane: Shaped<YardPane>
+      yardPaneBrowser: Shaped<PaneBrowser | null>
       yardPaneDrafts: Shaped<YardPaneDrafts>
     }
   }

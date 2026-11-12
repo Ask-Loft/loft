@@ -6,10 +6,8 @@ import type { FoundElement } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
 import { PALETTE, STATUS_SHADES } from '../hooks/adapter/pane/theme'
-import { block, openPane, PAGE, paneMount, readDoc, SESSION, stage, world } from './yard-world'
+import { answersOf, block, goaled, openPane, OWNER, PAGE, paneMount, readDoc, staged, SURFACES, world } from './yard-world'
 
-const SURFACES = ['terminal', 'desktop', 'vscode', 'mobile'] as const
-const OWNER = { host: 'claude-code', session: SESSION }
 
 /** The colour of the first coloured Text an element holds. */
 function colourIn(found: { props?: Record<string, unknown>; type?: string; children?: unknown[] } | undefined): unknown {
@@ -30,16 +28,6 @@ function contrast(one: string, other: string) {
   }
   const [high, low] = [luminance(one), luminance(other)].sort((a, b) => b - a)
   return (high! + 0.05) / (low! + 0.05)
-}
-
-function staged(id: string, status: string, ...blocks: ReturnType<typeof block>[]) {
-  return { ...stage(id, status, OWNER), blocks }
-}
-
-/** A stage with its goal. */
-function goaled(id: string, status: string, goal: string, ...blocks: ReturnType<typeof block>[]) {
-  const held = staged(id, status, ...blocks)
-  return { ...held, version: { body: { ...held.version.body, goal } } }
 }
 
 const LOG = readDoc({
@@ -69,10 +57,8 @@ const IN_HAND = readDoc({
   ],
 })
 
-const recorded = (w: ReturnType<typeof world>) => w.state.runs.filter(run => run.argv.includes('answer')).map(run => JSON.parse(run.stdin ?? '[]'))
-
 test("text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one", () => {
-  expect([PALETTE.ink, PALETTE.body, PALETTE.muted, PALETTE.line]).toEqual(['text', 'text', 'inactive', 'subtle'])
+  expect([PALETTE.ink, PALETTE.muted, PALETTE.line]).toEqual(['text', 'inactive', 'subtle'])
   for (const shade of STATUS_SHADES) {
     expect(contrast(PALETTE[shade], '#ffffff')).toBeGreaterThanOrEqual(3)
     expect(contrast(PALETTE[shade], '#0c1117')).toBeGreaterThanOrEqual(3)
@@ -115,7 +101,7 @@ test('the head counts what waits on the person in the waiting colour, and shows 
   for (const surface of SURFACES) {
     const ui = await $.ui.mount(paneMount(surface))
     expect((await ui.find({ key: 'wait-count' }))?.text).toBe('2 wait on you')
-    expect((await ui.find({ key: 'wait-control' }))?.props.backgroundColor).toBe(PALETTE.wait)
+    expect((await ui.find({ key: 'wait-count' }))?.props.backgroundColor).toBe(PALETTE.wait)
     await ui.unmount()
   }
   w.state.read = LOG
@@ -225,7 +211,7 @@ test("a question's lettered option cards choose its options, and a field beneath
   const keys = (await ui.findAll({})).map(each => each.key)
   expect(keys.indexOf('words-k-readers')).toBeGreaterThan(keys.indexOf('pick-k-readers-1'))
   await ui.press({ key: 'option-k-readers-1' })
-  expect(recorded(w)).toEqual([[{ block: 'k-readers', labels: ['Visitors'] }]])
+  expect(answersOf(w).map(each => each.given)).toEqual([[{ block: 'k-readers', labels: ['Visitors'] }]])
   await ui.unmount()
 })
 
@@ -278,6 +264,17 @@ test('where the browser shows the page in another tab than the one asked for, th
   w.state.browser.movesTo = null
   await $.command.run({ command: 'yard-pane', args: '' } as never)
   expect(w.state.browser.calls.filter(call => call.tool === 'navigate').map(call => call.args.tabId)).toEqual(['tab-1', 'seed'])
+})
+
+test('a tab whose title holds quotes and braces is still found among the browser pane\'s tabs, and shown', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  w.state.browser.tabs.set('seed', 'http://127.0.0.1:7411/')
+  w.state.browser.title = 'The "}" page'
+  await openPane($)
+  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['tabs_context', 'navigate'])
+  expect(w.state.browser.tabs.size).toBe(1)
 })
 
 test('a tab of the Yard page the person opened in the browser pane is shown, and the tab it names kept', async ($, on) => {

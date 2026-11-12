@@ -7,7 +7,7 @@ import type { EngineInterface, On, Timer } from 'claude-code'
 
 import { callerArgs, failureOf, succeeded } from '../run'
 import { callerOf, run } from '../state'
-import { paneOf, setPane } from './atoms'
+import { browserOf, paneOf, setBrowser, setPane } from './atoms'
 import { showPage } from './browser'
 import { followed } from './model'
 
@@ -38,15 +38,15 @@ export async function registerCommand($: EngineInterface) {
 /** Opens the pane, or shows it again, read whole, and follows Yard Log while it stays open. */
 async function openPane($: EngineInterface) {
   following.epoch++
-  await setPane($, before => ({ view: null, failure: null, notice: null, browser: before.browser }))
+  await setPane($, () => ({ view: null, failure: null, notice: null }))
   const opened = await $.ui.open({ id: PANE, title: 'Yard' })
   await readPane($)
-  const held = await paneOf($)
-  if (held.view?.page) {
-    const browser = await showPage($, held.view.page, held.browser?.tab ?? null)
-    if (browser) await setPane($, before => ({ ...before, browser }))
-  }
   following.timer ??= $.clock.every(FOLLOW, () => void tick($))
+  const page = (await paneOf($)).view?.page
+  if (page) {
+    const shown = await showPage($, page, (await browserOf($))?.tab ?? null)
+    if (shown) await setBrowser($, shown)
+  }
   return opened
 }
 

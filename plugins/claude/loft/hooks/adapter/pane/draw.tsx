@@ -7,7 +7,7 @@ import type { EngineInterface, On, RenderSurface } from 'claude-code'
 import type { PaneBlock, YardPane, YardPaneDrafts } from '../../../types'
 import type { Given } from '../answers'
 import { answerIn, decisionGiven, questionGiven } from './answer'
-import { draftsOf, paneOf, setDrafts } from './atoms'
+import { browserOf, draftsOf, paneOf, setDrafts } from './atoms'
 import { PANE } from './follow'
 import { head } from './head'
 import { bodyOf, type Acts, type Drawing, type Table } from './kit'
@@ -23,8 +23,7 @@ import { whatWaits } from './waiting'
  */
 const FIELDED: Record<RenderSurface, boolean> = { terminal: true, desktop: true, vscode: true, mobile: false }
 
-
-function drawn(drawing: Drawing, { view, failure, notice, browser }: YardPane, kept: YardPaneDrafts, isDesktop: boolean) {
+function drawn(drawing: Drawing, { view, failure, notice }: YardPane, kept: YardPaneDrafts, isUnreached: boolean) {
   const { Box, Text } = drawing.t
   const failed = failure ? <Text color={drawing.palette.danger}>{failure}</Text> : null
   const noticed = notice ? <Text color={drawing.palette.wait}>{notice}</Text> : null
@@ -40,15 +39,11 @@ function drawn(drawing: Drawing, { view, failure, notice, browser }: YardPane, k
   const waits = waitingIn(view)
   return (
     <Box flexDirection="column">
-      {head(drawing, view, waits.length, isDesktop && browser?.isReached === false)}
+      {head(drawing, view, waits.length, isUnreached)}
       {failed}
       {noticed}
       {stageInHand(drawing, view)}
-      {waits.length > 0 ? (
-        <Box flexDirection="column" marginTop={1}>
-          {whatWaits(drawing, view, kept)}
-        </Box>
-      ) : null}
+      {waits.length > 0 ? whatWaits(drawing, waits, kept) : null}
     </Box>
   )
 }
@@ -86,8 +81,8 @@ function actsOf($: EngineInterface): Acts {
 export function registerDraw(on: On) {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const resolved = $.ui.resolve(e) as unknown as Table
-    const t: Table = { ...resolved, Input: FIELDED[e.surface] ? resolved.Input : undefined }
-    const [held, kept] = await Promise.all([paneOf($), draftsOf($)])
-    return drawn({ t, palette: PALETTE, acts: actsOf($) }, held, kept, e.surface === 'desktop')
+    const t: Table = FIELDED[e.surface] ? resolved : { ...resolved, Input: undefined }
+    const [held, kept, browser] = await Promise.all([paneOf($), draftsOf($), browserOf($)])
+    return drawn({ t, palette: PALETTE, acts: actsOf($) }, held, kept, e.surface === 'desktop' && browser?.isReached === false)
   })
 }

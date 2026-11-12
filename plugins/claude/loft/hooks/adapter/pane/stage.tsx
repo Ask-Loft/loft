@@ -31,7 +31,7 @@ export function stageInHand({ t, palette }: Drawing, view: PaneView) {
       <Text color={palette.ink} size="heading" weight="semibold">
         {text(body.title)}
       </Text>
-      {text(body.goal) ? <Text color={palette.body}>{text(body.goal)}</Text> : null}
+      {text(body.goal) ? <Text color={palette.ink}>{text(body.goal)}</Text> : null}
       {tasks.map(task => (
         <Box key={`task-${task.key}`} flexDirection="row" gap={1}>
           <Text color={palette.signal}>●</Text>

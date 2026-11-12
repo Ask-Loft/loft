@@ -4,11 +4,42 @@
 // or a plan has Approve, Reject and a field for the reason (the Feature "Keep the Yard page beside
 // the session").
 
-import type { PaneBlock, PaneView, YardPaneDrafts } from '../../../types'
+import type { PaneBlock, YardPaneDrafts } from '../../../types'
 import { records, textOf as text } from '../../model'
-import { cardHead, markdownOf, title } from './cards'
 import { bodyOf, type Drawing } from './kit'
-import { letterOf, waitingIn } from './model'
+import { letterOf } from './model'
+
+const KINDS: Record<string, string> = { question: 'Question', approval: 'Approval', plan: 'Plan' }
+
+/** A waiting card's head: its kind, a question's header as a chip, and that it waits, at the right. */
+function cardHead({ t, palette }: Drawing, block: PaneBlock) {
+  const { Box, Text } = t
+  const header = block.kind === 'question' ? text(bodyOf(block).header) : ''
+  return (
+    <Box key={`card-head-${block.key}`} flexDirection="row" justifyContent="space-between" gap={1}>
+      <Box flexDirection="row" gap={1}>
+        <Text color={palette.muted} size="caption">
+          {KINDS[block.kind] ?? block.kind}
+        </Text>
+        {header ? (
+          <Box key={`chip-${block.key}`} borderStyle="single" borderColor={palette.line} paddingX={1}>
+            <Text color={palette.muted} size="caption">
+              {header}
+            </Text>
+          </Box>
+        ) : null}
+      </Box>
+      <Text color={palette.wait} size="caption" weight="semibold">
+        Waits on you
+      </Text>
+    </Box>
+  )
+}
+
+function markdownOf({ t }: Drawing, words: unknown) {
+  const { Markdown } = t
+  return text(words) ? <Markdown text={text(words)} /> : null
+}
 
 /** A question's options as lettered cards, each choosing its option; a ticked one outlined. */
 function options(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
@@ -28,11 +59,9 @@ function options(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
           </Text>
           <Button key={`option-${block.key}-${n}`} plain label={isMultiple ? `${isTicked ? '☑' : '☐'} ${label}` : label} onPress={() => acts.choose(block, label)} />
           {option.recommended === true ? (
-            <Box>
-              <Text color={palette.recommended} size="caption" weight="semibold">
-                Recommended
-              </Text>
-            </Box>
+            <Text color={palette.recommended} size="caption" weight="semibold">
+              Recommended
+            </Text>
           ) : null}
         </Box>
         {text(option.detail) ? (
@@ -77,7 +106,11 @@ function controls(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
     ]
   }
   return [
-    title(drawing, text(body.title)),
+    text(body.title) ? (
+      <Text color={palette.ink} weight="semibold">
+        {text(body.title)}
+      </Text>
+    ) : null,
     markdownOf(drawing, body.markdown),
     field(drawing, block, kept, { placeholder: 'A reason, to reject', submitLabel: 'Reject' }, words => acts.decide(block, false, words)),
     <Box flexDirection="row" gap={1}>
@@ -87,7 +120,7 @@ function controls(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
   ]
 }
 
-/** A waiting block's card, on the waiting ground, outlined in action blue where it is the one asked for. */
+/** A waiting block's card, outlined in the waiting colour, with a bar of it at its left. */
 function askCard(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
   const { t, palette } = drawing
   const { Box } = t
@@ -95,7 +128,7 @@ function askCard(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
     <Box key={`ask-${block.key}`} flexDirection="row" borderStyle="single" borderColor={palette.wait}>
       <Box key={`wait-bar-${block.key}`} width={1} backgroundColor={palette.wait} />
       <Box flexDirection="column" flexGrow={1} flexShrink={1} paddingX={1} gap={1}>
-        {cardHead(drawing, block, true)}
+        {cardHead(drawing, block)}
         {controls(drawing, block, kept)}
       </Box>
     </Box>
@@ -103,12 +136,11 @@ function askCard(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
 }
 
 /** What waits on the person: a title that counts it, then each block, the oldest submission first. */
-export function whatWaits(drawing: Drawing, view: PaneView, kept: YardPaneDrafts) {
+export function whatWaits(drawing: Drawing, blocks: readonly PaneBlock[], kept: YardPaneDrafts) {
   const { Box, Text } = drawing.t
-  const blocks = waitingIn(view)
   const n = blocks.length
   return (
-    <Box key="waiting" flexDirection="column" gap={1}>
+    <Box key="waiting" flexDirection="column" gap={1} marginTop={1}>
       <Box key="waiting-title">
         <Text color={drawing.palette.ink} size="heading" weight="semibold">{`${n} ${n === 1 ? 'block waits' : 'blocks wait'} on you`}</Text>
       </Box>
