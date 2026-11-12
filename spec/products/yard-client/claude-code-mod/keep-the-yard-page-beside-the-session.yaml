@@ -4,7 +4,7 @@ name: "Keep the Yard page beside the session"
 body: |
   The Yard page shows Yard Log in full: its timeline, its Gantt chart, the tokens and what the agents consulted, each block as the page draws it. In Claude Code Desktop, `/yard-pane` opens that page itself in Desktop's browser pane, beside the chat, so the person sees every view of it as it is rather than a lesser copy.
 
-  The pane does not draw the page again. It is the page's companion inside Claude Code, on every surface: where the work stands, what waits on the person, and their answers, taken there. On a surface with no browser pane the mod can reach, the pane links the page.
+  The pane does not draw the page again. It is the page's companion inside Claude Code, on every surface: where the work stands, what waits on the person, and their answers, taken there. On a surface with no browser pane the mod can reach, the pane links the page, and the command's own answer gives the page's address with a word on what it shows.
 
   No mod can tell whether a surface is drawn light or dark, and Claude Code Desktop may be light while the terminal is dark, so the pane's text, lines and grounds take Claude Code's own colours, which each surface resolves to its own appearance, and the page's hues mark status alone, in shades that read on either.
 realizes:
@@ -33,6 +33,23 @@ requirements:
         name: "The terminal, VS Code and the mobile app show the link in the pane's head."
       - key: 01a1d0cd-6916-731d-8a40-084d1b67a9cf
         name: "In Claude Code Desktop, where the browser pane cannot be reached, the pane shows the link and says the browser pane could not be reached."
+  - key: 01a1d115-a1c7-75e3-82bb-0f26e36a4a6a
+    statement:
+      form: event_driven
+      when: "the person runs the command `/yard-pane`"
+      system: "the Loft mod"
+      shall: "answer with the Yard page's address at the session's working tree and branch, and one line on what the page shows."
+    criteria:
+      - key: 01a1d115-a1c7-75e3-82bb-0f27995f7261
+        name: "The answer gives the page's address, which names the session's working tree and its branch."
+      - key: 01a1d115-a1c7-75e3-82bb-0f281f42f8f8
+        name: "The answer says in one line that the page shows the branch's Yard Log in full."
+      - key: 01a1d115-a1c7-75e3-82bb-0f293f5fc03e
+        name: "In the terminal, VS Code and the mobile app, the answer suggests opening the address in a browser."
+      - key: 01a1d115-a1c7-75e3-82bb-0f2ac26e3e93
+        name: "In Claude Code Desktop, the answer says the page opens in Desktop's browser pane."
+      - key: 01a1d115-a1c7-75e3-82bb-0f2bc4f3bda5
+        name: "Where no page server serves the page, the answer says so and gives no address."
   - key: 01a1cfe2-478e-75d1-b104-04df60256262
     statement:
       form: ubiquitous
