@@ -76,6 +76,8 @@ requirements:
         name: "A subcommand's name is taken only from `loft`'s own list of subcommands, never from quoted text or a heredoc."
       - key: 01a1646f-546d-7042-befd-eb0ad2547439
         name: "Each event carries the page server's control token and no `Origin`."
+      - key: 01a1cf7a-0eb8-7654-8bfa-cc1709e17563
+        name: "The mod reads the control token from the directory that `loft yard protocol` reports as `home`, and from `~/.yard/` where the report names none."
       - key: 01a1646f-546d-7042-befd-eb0bdf72490b
         name: "The agent's work goes on without waiting for the page server's answer."
   - key: 01a1646f-546d-7042-befd-eb0c99dc419e
