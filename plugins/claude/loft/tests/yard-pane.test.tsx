@@ -47,7 +47,9 @@ test('running the command again shows the same pane, read whole again, and keeps
 })
 
 test('while the pane is open, each read after the first asks only for what changed since the revision shown', async ($, on) => {
-  const w = await opened($, world(on))
+  const w = world(on)
+  w.state.read = readDoc({ stages: [{ ...stage('build', 'active', OWNER), blocks: [block('store', 'task', { title: 'The store', state: 'open' })] }] })
+  await opened($, w)
   w.state.read = readDoc({
     revision: 6,
     since: 4,
@@ -467,5 +469,12 @@ test('running the command while a read is under way reads Yard Log whole once th
   await $.command.run({ command: 'yard-pane', args: '' } as never)
   held.resolve()
   await w.clock.settle()
+  expect(reads(w).slice(-2)).toEqual(['read --session session-1 --since 4', 'read --session session-1'])
+})
+
+test('a read since that brings a block the pane does not show is followed by a whole read', async ($, on) => {
+  const w = await opened($, world(on))
+  w.state.read = readDoc({ revision: 5, since: 4, stages: [{ ...stage('build', 'active', OWNER), blocks: [block('found', 'note', { markdown: 'Found.' })] }] })
+  await w.clock.advance(1000)
   expect(reads(w).slice(-2)).toEqual(['read --session session-1 --since 4', 'read --session session-1'])
 })

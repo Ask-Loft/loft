@@ -46,24 +46,29 @@ function whole(doc: Doc): PaneView {
   }
 }
 
-/** `blocks` with each of `changed` in place of the block of its key, and each new one last. */
+/** `blocks` with each of `changed` in place of the block of its key. */
 function merged(blocks: readonly PaneBlock[], changed: readonly Block[]): PaneBlock[] {
-  const next = [...blocks]
-  for (const block of changed.map(kept)) {
-    const at = next.findIndex(each => each.key === block.key)
-    if (at === -1) next.push(block)
-    else next[at] = block
-  }
-  return next
+  const replaced = new Map(changed.map(block => [block.key, kept(block)]))
+  return blocks.map(block => replaced.get(block.key) ?? block)
+}
+
+/**
+ * Whether a read since brings a stage or a block the view does not hold: the read gives no place
+ * for it among what did not change, so only a whole read shows it in its place.
+ */
+function bringsNew(view: PaneView, read: readonly Stage[]): boolean {
+  const known = new Set(view.stages.flatMap(stage => [stage.key, ...stage.blocks.map(block => block.key)]))
+  return read.some(stage => !known.has(stage.key) || (stage.blocks ?? []).some(block => !known.has(block.key)))
 }
 
 const sameList = (one: readonly string[], other: readonly string[]) => one.length === other.length && one.every((each, n) => each === other[n])
 
 /**
  * The view after a read: a whole read starts it over; a read since the revision shown is merged
- * in, a changed stage keeping its blocks and a new stage going after the one before it in the read.
- * A read that changed nothing gives the view shown, the same object. Undefined where a read since
- * names another tree, branch or Yard Log: the pane then reads it whole.
+ * in, each changed stage and block in its place, a changed stage keeping its blocks. A read that
+ * changed nothing gives the view shown, the same object. Undefined where a read since names another
+ * tree, branch or Yard Log, or brings a stage or a block the view does not hold: the pane then reads
+ * it whole.
  */
 export function followed(view: PaneView | undefined, doc: Doc): PaneView | undefined {
   if (typeof doc.since !== 'number') return whole(doc)
@@ -75,19 +80,12 @@ export function followed(view: PaneView | undefined, doc: Doc): PaneView | undef
   const page = pageOf(doc) ?? view.page
   const sent = sentOf(doc)
   if (read.length === 0 && revision === view.revision && page === view.page && sameList(sent, view.sent)) return view
-  const stages = [...view.stages]
-  let before: string | undefined
-  for (const stage of read) {
-    const at = stages.findIndex(each => each.key === stage.key)
-    if (at === -1) {
-      const after = before === undefined ? -1 : stages.findIndex(each => each.key === before)
-      if (after === -1) stages.push(keptStage(stage))
-      else stages.splice(after + 1, 0, keptStage(stage))
-    } else {
-      stages[at] = { ...kept(stage), blocks: merged(stages[at]!.blocks, stage.blocks ?? []) }
-    }
-    before = stage.key
-  }
+  if (bringsNew(view, read)) return undefined
+  const changed = new Map(read.map(stage => [stage.key, stage]))
+  const stages = view.stages.map(stage => {
+    const fresh = changed.get(stage.key)
+    return fresh ? { ...kept(fresh), blocks: merged(stage.blocks, fresh.blocks ?? []) } : stage
+  })
   return { ...view, revision, page, stages, sent }
 }
 

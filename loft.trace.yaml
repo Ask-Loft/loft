@@ -34258,8 +34258,8 @@ links:
         name: "a block an agent writes, and an answer given on the page, show within 2 seconds"
         body: 806349bdc48bfe0182a42a3e7c9cc674ee691085809a9d233eedd6b785a76d8b
       - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
-        name: "a read since the revision shown replaces each changed block and stage in place, and adds a new block last"
-        body: ec7a2001cc9ede3d4e552b39573799c6d7eed613f406b561ee3fd322348ecf25
+        name: "a read since the revision shown replaces each changed block and stage in place"
+        body: f59dc4fb25a7b51eb0693d91db9f4caba23e16289fdb9f032a4c50a47d610230
   - node: 01a1cfe2-478e-75d1-b104-04eb39d4b416
     reviewed: 6d7b92b6321875f3be74544ec0187d8acf550488a26781ac2c928e2383c24d71
     tests:
@@ -34267,11 +34267,29 @@ links:
         name: "a block an agent writes, and an answer given on the page, show within 2 seconds"
         body: 806349bdc48bfe0182a42a3e7c9cc674ee691085809a9d233eedd6b785a76d8b
   - node: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
-    reviewed: cf126e25a5931fbe390b79ff258ca895f6f918c5b6939cba9da4808a64d2bbd9
+    reviewed: 4df9aca82e250018d38308e5c126838fc5354653380f5e9deab4da08c68abfe5
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
-        body: d033f935ca9c8b1eca246eb6393d3439e16b06b9c4b57dcfc48f700e66c16247
+        body: 7d998c0575ac6912a4374aa77481600f1b71bc97152b87ca1a2cb71cdcdd8b64
+  - node: 01a1d007-2070-754c-bc33-f3cc6389cd12
+    reviewed: b704463eb9abe003c1526b75e53c333479ffd1e6262a3b9ac786b90f9a458d77
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a read since that brings a block the pane does not show is followed by a whole read"
+        body: 8a2ca46b52210157e62d1577ad1aa3f7be9e1e59ef02028a88643bc0147df6c7
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a checkout of another branch is read whole at once"
+        body: d0b9726a5b74ee0256f020b4afa04be2f47c81bc275b0aac4a4fa97623c8f9c8
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read since that brings a stage or a block the view does not hold asks for a whole read, which places it"
+        body: 1c9248f11ffa65e961b32b36be9a0863a76267e33524247d5aca1bc7c82a3f21
+  - node: 01a1d006-ff66-7349-92b7-bad2a75a773e
+    reviewed: 2903cc8624a4f9dfb310d6299621338b4ea1ee306bc6f392fe553a86d659597d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read since that brings a stage or a block the view does not hold asks for a whole read, which places it"
+        body: 1c9248f11ffa65e961b32b36be9a0863a76267e33524247d5aca1bc7c82a3f21
   - node: 01a1cfe2-478e-75d1-b104-04ed5daac090
     reviewed: 878ce16e085240e2fb7ce339447cf53d15496246ff6ba917be91d9de49907240
     tests:
@@ -34280,7 +34298,7 @@ links:
         body: 3f89adf38270607668d8a67f70f8644c96306ed18890dedcde5c585787a977fe
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
-        body: d033f935ca9c8b1eca246eb6393d3439e16b06b9c4b57dcfc48f700e66c16247
+        body: 7d998c0575ac6912a4374aa77481600f1b71bc97152b87ca1a2cb71cdcdd8b64
   - node: 01a1cfe2-478e-75d1-b104-04ee292ec71b
     reviewed: 58b4f6108ff01000db1a8b25381476aa04170ca02498d314ec293e38c325e21b
     tests:

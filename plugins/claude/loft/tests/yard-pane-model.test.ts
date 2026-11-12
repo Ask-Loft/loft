@@ -30,21 +30,17 @@ test('a first read gives the stages in their order, each with its blocks, at its
   expect(view.stages[1]!.blocks.map(each => each.id)).toEqual(['store'])
 })
 
-test('a read since the revision shown replaces each changed block and stage in place, and adds a new block last', () => {
+test('a read since the revision shown replaces each changed block and stage in place', () => {
   const since = readDoc({
     revision: 6,
     since: 4,
-    stages: [
-      {
-        ...withBlocks('build', 'active', block('store', 'task', { title: 'The store', state: 'done' }), block('result', 'note', { markdown: 'Built.' })),
-      },
-    ],
+    stages: [withBlocks('build', 'active', block('store', 'task', { title: 'The store', state: 'done' }))],
   })
   const view = followed(first(), since)!
   expect(view.revision).toBe(6)
   expect(view.stages.map(each => each.id)).toEqual(['shape', 'build'])
   expect(view.stages[0]!.blocks.map(each => each.id)).toEqual(['choice'])
-  expect(view.stages[1]!.blocks.map(each => each.id)).toEqual(['store', 'result'])
+  expect(view.stages[1]!.blocks.map(each => each.id)).toEqual(['store'])
   expect(view.stages[1]!.blocks[0]!.version.body.state).toBe('done')
 })
 
@@ -55,11 +51,13 @@ test('a changed stage keeps the blocks it held before', () => {
   expect(view.stages[0]!.blocks.map(each => each.id)).toEqual(['choice'])
 })
 
-test('a new stage goes after the stage that comes before it in the read, else last', () => {
-  const since = readDoc({ revision: 5, since: 4, stages: [withBlocks('shape', 'done'), withBlocks('plan', 'planned')] })
-  expect(followed(first(), since)!.stages.map(each => each.id)).toEqual(['shape', 'plan', 'build'])
-  const alone = readDoc({ revision: 5, since: 4, stages: [withBlocks('review', 'planned')] })
-  expect(followed(first(), alone)!.stages.map(each => each.id)).toEqual(['shape', 'build', 'review'])
+test('a read since that brings a stage or a block the view does not hold asks for a whole read, which places it', () => {
+  const view = first()
+  expect(followed(view, readDoc({ revision: 5, since: 4, stages: [withBlocks('build', 'active', block('result', 'note', { markdown: 'Built.' }))] }))).toBe(undefined)
+  expect(followed(view, readDoc({ revision: 5, since: 4, stages: [withBlocks('opened', 'active')] }))).toBe(undefined)
+  // A stage opened after the last unplanned one, before a planned one, shows there once read whole.
+  const read = readDoc({ revision: 5, stages: [withBlocks('shape', 'done'), withBlocks('opened', 'active'), withBlocks('build', 'planned')] })
+  expect(followed(undefined, read)!.stages.map(each => each.id)).toEqual(['shape', 'opened', 'build'])
 })
 
 test('a read of another branch, tree or Yard Log asks for a whole read', () => {
