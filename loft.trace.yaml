@@ -34372,26 +34372,56 @@ links:
         name: "the tabs Timeline and Gantt chart choose the view, and the tab of the view shown is marked"
         body: a6ab2c40a324406213d2814421daadca80741d3e5b3308b469b158f0c37d1892
   - node: 01a1cfe2-478e-75d1-b104-04e15b4516b0
-    reviewed: 5c6828aec5bb747d244d3f961d97bbba6c055f7aa57334949ca1537b610dfaa9
+    reviewed: 96d54962f59adbcfe77955fb8fcf67178023e5c795f3c42ae54dc7c56dbee7b5
     tests:
-      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
-        name: "each stage shows its title, status and goal, and its tasks their title and state, a fix marked"
-        body: ef48b92d63ae9399ca3a76d6bd44dc715beafac83142df4097f403ee1171cd0d
-      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
-        name: "a first read gives the stages in their order, each with its blocks, at its revision"
-        body: 4f959fa5eba2fdfc5fa2a04873d307d57497e0604a55dfab5657d061197aa7e4
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "each stage's row shows a square and its status in the status's colour, its title, its owner and the count of what waits"
+        body: 6bb42aa5ccf05941d5849341cd2fb58b779526c6555bc6d3fe5c16d6d8e95aab
+  - node: 01a1d06f-b09f-73ae-a356-c4a7e16b453e
+    reviewed: 2a9ac14811ae8f6545579e1b4e1124f4a30fe3967aaac59d1b7c59553d489945
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a line marks where the planned stages begin"
+        body: 4aae7e3fe6e1008b61357d918ad31bcc17d24c2b3c512bde55518d94a471052d
   - node: 01a1cfe2-478e-75d1-b104-04e7839a3e69
-    reviewed: 47d5cce050896d0c031a8c3a7bb9f8319848e0f214bc61ee8c436950962b8988
+    reviewed: 03581a882cd127b948664ca3cf37b31d716762e7a19efdd0c7bc4a9ec8e6b677
     tests:
-      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
-        name: "a stage done or dropped shows its title and status alone until unfolded, and a planned stage its blocks"
-        body: 1313d398bd3cd888bcd1af0af84a6e50e1380b6a42098a8cca6cc7f02e52d0db
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
+        body: aa3910d791337ccc39cd93ce357aebf55cdf45cc86ab6bda5103666c177a29ce
   - node: 01a1cfe2-478e-75d1-b104-04e8ffb8d768
-    reviewed: 2eddf7b2317da2797bf830423c954b3a1b0fed2a7680217f7b1050c137361434
+    reviewed: ff04873d12aa232ae76e8ed8c06567f2a0482085438c04ad02f5935414fdd98d
     tests:
-      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
-        name: "a stage done or dropped shows its title and status alone until unfolded, and a planned stage its blocks"
-        body: 1313d398bd3cd888bcd1af0af84a6e50e1380b6a42098a8cca6cc7f02e52d0db
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the chosen stage's row is open to its blocks, the others folded, and a row opens and folds as the person chooses"
+        body: aa3910d791337ccc39cd93ce357aebf55cdf45cc86ab6bda5103666c177a29ce
+  - node: 01a1d06f-b09f-73ae-a356-c4a8b44b6eec
+    reviewed: 93e2c57d022df1895506f8ae177265571d6cab69b1da5bf30c1e4a78622f9de7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the stage chosen is the first active one until the person chooses another, and shows in full"
+        body: 6336d14f4886b2293307299a4acfdde73463c18c3ccab76af063562b40ab7196
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "with no active stage, the stage chosen is the first"
+        body: b794cd35f8ecc361a40af6bb8880492d4fbc9e5f44a6f35fc96943fa6924107d
+  - node: 01a1d06f-b09f-73ae-a356-c4a9e6f022c1
+    reviewed: 6e533771a5065738c24646758f71c6d6b2475dd82f528eda5e2569c55579ce2c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the stage chosen is the first active one until the person chooses another, and shows in full"
+        body: 6336d14f4886b2293307299a4acfdde73463c18c3ccab76af063562b40ab7196
+  - node: 01a1d06f-b09f-73ae-a356-c4aa2a04584e
+    reviewed: 14602cc6a40c32f44789f577f8c4c94e7ebf4e5c30c4f329d17929333acbfb1c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "from 100 columns the rail and the stage chosen stand side by side, and below that one above the other"
+        body: 7a1a05409d5be3c89da0728718cedcd51e550c19f1b9c12fc8495a7129001661
+  - node: 01a1d06f-b09f-73ae-a356-c4ab4bffa5d7
+    reviewed: c01867e7ee28be28909bf0b22767803d312107243758f177977619df9e218934
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "from 100 columns the rail and the stage chosen stand side by side, and below that one above the other"
+        body: 7a1a05409d5be3c89da0728718cedcd51e550c19f1b9c12fc8495a7129001661
   - node: 01a1cfe2-478e-75d1-b104-04f1651155ff
     reviewed: 46d7f5ca7c0efd394634c360e77acc001edcc4b826118b9a4a9b77cacb049164
     tests:
@@ -34427,13 +34457,13 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "a note's Markdown, a decision's consequence and a loft block's view and note are drawn, and no report"
-        body: 9e749203d8b1f64317ee9c477da0eca25b578eb354a894e815cae1a956479449
+        body: d13905cac02130c5a7cbdda860629f9f49f7e145fdfeddf8eca5fe0322f58085
   - node: 01a1cfe2-478e-75d1-b104-04e5b757bd92
     reviewed: fe8e30b1b441254876520353b20fc380b258ad40fd1ccc6f91489e9e7bd0a8b2
     tests:
       - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
         name: "a note's Markdown, a decision's consequence and a loft block's view and note are drawn, and no report"
-        body: 9e749203d8b1f64317ee9c477da0eca25b578eb354a894e815cae1a956479449
+        body: d13905cac02130c5a7cbdda860629f9f49f7e145fdfeddf8eca5fe0322f58085
   - node: 01a1cfe2-478e-75d1-b104-04e66ffb3c99
     reviewed: 2a34339fb58faf79c4289c69380e3664a5b5a6cf6a59533b25d0373dfcd0cd32
     tests:

@@ -114,55 +114,21 @@ const LOG = readDoc({
   ],
 })
 
-test('each stage shows its title, status and goal, and its tasks their title and state, a fix marked', async ($, on) => {
-  const w = world(on)
-  w.state.read = LOG
-  await opened($, w)
-  for (const surface of SURFACES) {
-    const ui = await mount($, surface)
-    expect((await ui.find({ type: 'Text', text: /Stage build/ }))?.text).toContain('active')
-    expect(await ui.find({ type: 'Text', text: 'The store holds the shelf' })).toBeDefined()
-    expect((await ui.find({ type: 'Text', text: /Write the store/ }))?.text).toContain('active')
-    expect((await ui.find({ type: 'Text', text: /Write the store/ }))?.text).not.toContain('fix')
-    expect((await ui.find({ type: 'Text', text: /Mend the reload/ }))?.text).toContain('open')
-    expect((await ui.find({ type: 'Text', text: /Mend the reload/ }))?.text).toContain('fix')
-    await ui.unmount()
-  }
-})
-
 test("a note's Markdown, a decision's consequence and a loft block's view and note are drawn, and no report", async ($, on) => {
   const w = world(on)
   w.state.read = LOG
   await opened($, w)
   for (const surface of SURFACES) {
     const ui = await mount($, surface)
-    await ui.press({ key: 'unfold-k-shape' })
     expect(await ui.find({ type: 'Text', text: 'What the store holds' })).toBeDefined()
     expect((await ui.find({ type: 'Markdown', text: /book/ }))?.text).toBe('Every **book** on the shelf.')
-    expect(await ui.find({ type: 'Text', text: /Members only/ })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: 'Visitors wait for the next change' })).toBeDefined()
     expect(await ui.find({ type: 'Text', text: /spec-change/ })).toBeDefined()
     expect(await ui.find({ type: 'Markdown', text: 'Two Requirements changed.' })).toBeDefined()
     expect(await ui.find({ text: /THE WHOLE REPORT/ })).toBeUndefined()
-    await ui.press({ key: 'unfold-k-shape' })
-    await ui.unmount()
-  }
-})
-
-test('a stage done or dropped shows its title and status alone until unfolded, and a planned stage its blocks', async ($, on) => {
-  const w = world(on)
-  w.state.read = LOG
-  await opened($, w)
-  for (const surface of SURFACES) {
-    const ui = await mount($, surface)
-    expect((await ui.find({ type: 'Text', text: /Stage shape/ }))?.text).toContain('done')
-    expect(await ui.find({ type: 'Text', text: 'The change is shaped' })).toBeUndefined()
-    expect(await ui.find({ type: 'Text', text: /Members only/ })).toBeUndefined()
-    expect(await ui.find({ type: 'Markdown', text: 'Planned work.' })).toBeDefined()
-    await ui.press({ key: 'unfold-k-shape' })
+    await ui.press({ key: 'choose-k-shape' })
     expect(await ui.find({ type: 'Text', text: /Members only/ })).toBeDefined()
-    await ui.press({ key: 'unfold-k-shape' })
-    expect(await ui.find({ type: 'Text', text: /Members only/ })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: 'Visitors wait for the next change' })).toBeDefined()
+    await ui.press({ key: 'choose-k-build' })
     await ui.unmount()
   }
 })

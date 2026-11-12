@@ -199,3 +199,76 @@ export function summaryOf(view: PaneView): string {
   const n = view.stages.length
   return `${n} ${n === 1 ? 'stage' : 'stages'}: ${tally.join(', ')}`
 }
+
+/** Where the planned stages begin among `stages`: the first of the planned ones that end the list. */
+export function plannedFrom(stages: readonly PaneStage[]): number {
+  let from = stages.length
+  while (from > 0 && stages[from - 1]!.version.body.status === 'planned') from--
+  return from
+}
+
+/** The stage chosen: the one the person chose, else the first `active` stage, else the first stage. */
+export function chosenOf(stages: readonly PaneStage[], chosen: string | null): PaneStage | undefined {
+  return stages.find(stage => stage.key === chosen) ?? stages.find(stage => stage.version.body.status === 'active') ?? stages[0]
+}
+
+/** What a block's row on the rail calls it, by its kind, as the page does. */
+export function blockTitle(block: PaneBlock): string {
+  const body = block.version.body
+  switch (block.kind) {
+    case 'question':
+      return textOf(body.header) || textOf(body.prompt) || block.id
+    case 'loft':
+      return textOf(body.view) ? `${textOf(body.view)} view` : block.id
+    case 'note':
+      return textOf(body.title) || firstLine(textOf(body.markdown)) || block.id
+    default:
+      return textOf(body.title) || block.id
+  }
+}
+
+function firstLine(text: string): string {
+  const line = text.split('\n').find(each => each.trim() !== '') ?? ''
+  return line.replace(/[#*_`>]/g, '').trim().slice(0, 80)
+}
+
+/** A time as the page gives one: its hour and minute, as `02:00 PM`. */
+export function clockOf(at: string): string {
+  const date = new Date(at)
+  if (Number.isNaN(date.getTime())) return at
+  try {
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  } catch {
+    return at.slice(11, 16)
+  }
+}
+
+/** The agent that owns a stage, as the page names it: the main agent, or a subagent by its type. */
+export function ownerOf(owner: PaneStage['owner']): string | null {
+  if (!owner) return null
+  return typeof owner.agent === 'string' ? `${textOf(owner.agentType) || 'a'} subagent` : 'main agent'
+}
+
+const STATES: Record<string, string> = { open: 'Open', active: 'Active', done: 'Done', dropped: 'Dropped' }
+
+/**
+ * A block's state as the page words it, with the status whose colour it takes: that it waits on
+ * the person, a task's state, whether a question was answered, an approval's or a plan's verdict.
+ * A note, a decision or a `loft` block has none.
+ */
+export function blockStateOf(block: PaneBlock, isWaiting: boolean): [string, string] | null {
+  if (isWaiting) return ['Waits on you', 'waiting']
+  const body = block.version.body
+  if (block.kind === 'task') {
+    const state = textOf(body.state) || 'open'
+    return [STATES[state] ?? state, state === 'open' ? 'planned' : state]
+  }
+  if (block.kind === 'question') return block.answer ? ['Answered', 'done'] : ['Open', 'planned']
+  if (block.kind === 'approval' || block.kind === 'plan') {
+    const verdict = block.outcome?.verdict
+    if (verdict === 'approved') return ['Approved', 'done']
+    if (verdict === 'rejected') return ['Rejected', 'dropped']
+    return ['Open', 'planned']
+  }
+  return null
+}

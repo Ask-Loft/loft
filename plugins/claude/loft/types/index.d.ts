@@ -63,7 +63,10 @@ export type YardPaneDrafts = {
   /** The view shown, and the one to show again once nothing waits. */
   shown: PaneShown
   previous: PaneShown
-  unfolded: string[]
+  /** The stage the person chose, by key; none until they choose one. */
+  chosen: string | null
+  /** The stages whose row the person opened or folded, against its default: open for the stage chosen. */
+  toggled: string[]
   ticked: Record<string, string[]>
   words: Record<string, string>
 }

@@ -14,7 +14,10 @@ export type Table = Pick<Elements['mobile'], 'Box' | 'Text' | 'Button' | 'Link' 
 export type Acts = {
   /** Shows a view, keeping the one shown to go back to once nothing waits. */
   show: (view: PaneShown) => void
+  /** Opens a stage's row on the rail, or folds it. */
   toggleFold: (stage: string) => void
+  /** Chooses a stage, which the timeline then shows in full. */
+  pick: (stage: string) => void
   /** An option pressed: recorded for a question that takes one, ticked or unticked for one that takes more. */
   choose: (block: PaneBlock, label: string) => void
   /** The options ticked and the words typed, sent; or words submitted in the field, with what is ticked. */
