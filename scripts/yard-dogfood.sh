@@ -9,15 +9,30 @@
 #   ./scripts/yard-dogfood.sh claude resume <session-id> resume Claude Code
 #   ./scripts/yard-dogfood.sh codex                     start Codex
 #   ./scripts/yard-dogfood.sh codex resume <session-id>  resume Codex
+# Claude Desktop takes no command-line flags, so one project at a time is switched instead:
+#   ./scripts/yard-dogfood.sh desktop <project-dir>         its sessions run this worktree's plugin
+#   ./scripts/yard-dogfood.sh desktop --undo <project-dir>  back to the installed plugin
 set -euo pipefail
 
 TREE=${0:A:h:h}
 PORT=7412
 LOFT="$TREE/target/release/loft"
+WRAPPER="$TREE/.loft/yard-dogfood/bin/loft"
 AGENT_COMMAND=claude
-if [[ ${1-} == codex || ${1-} == claude ]]; then
+if [[ ${1-} == codex || ${1-} == claude || ${1-} == desktop ]]; then
   AGENT_COMMAND=$1
   shift
+fi
+
+if [[ $AGENT_COMMAND == desktop ]]; then
+  DESKTOP=(python3 "$TREE/scripts/yard-dogfood-desktop.py" "$TREE" "$PORT" "$WRAPPER")
+  if [[ ${1-} == --undo && $# -eq 2 && -n ${2-} ]]; then
+    exec "${DESKTOP[@]}" "$2" --undo
+  fi
+  if [[ $# -ne 1 || -z ${1-} || ${1-} == -* ]]; then
+    print -u2 -- "Usage: ${0:t} desktop [--undo] PROJECT-DIR"
+    exit 2
+  fi
 fi
 
 if [[ ${1-} == resume ]]; then
@@ -35,13 +50,16 @@ python3 "$TREE/scripts/yard-dogfood-server.py" "$TREE" "$PORT"
 
 # The session's loft: this worktree's build, keeping its machine home in ~/.yard-dogfood/.
 DOGFOOD_HOME="$HOME/.yard-dogfood"
-WRAPPER="$TREE/.loft/yard-dogfood/bin/loft"
 mkdir -p "${WRAPPER:h}"
 print -r -- "#!/bin/sh
 LOFT_YARD_HOME=${(qq)DOGFOOD_HOME}
 export LOFT_YARD_HOME
 exec ${(qq)LOFT} \"\$@\"" > "$WRAPPER"
 chmod 755 "$WRAPPER"
+
+if [[ $AGENT_COMMAND == desktop ]]; then
+  exec "${DESKTOP[@]}" "$1"
+fi
 
 echo "Yard page: http://127.0.0.1:$PORT/"
 if [[ $AGENT_COMMAND == codex ]]; then

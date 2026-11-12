@@ -26694,6 +26694,57 @@ links:
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_restart_failure_prevents_both_hosts_from_starting"
         body: 85fa27110cb246971102fea46af921eb4eafd95c73ec45132c4fa95ae7465653
+  - node: 01a1cf7a-0eb7-770e-800d-7eb96f1b7c1e
+    reviewed: 1d8c18a019b4a2a54c87cfff86b3ab2736b3cfe1097448a68d0580accd43fd12
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_desktop_switches_only_the_project_to_this_worktree_s_plugin"
+        body: 1159a2d426448dd5826f50a929fccfcfe0c5718d4c52d0b698315c6f73d8100e
+  - node: 01a1cf7a-0eb7-770e-800d-7eba6cb45db1
+    reviewed: e2bdb91454ccb7eb8f8100540a67a83a6f8f776fb4e5b31bc2d485cf850576f3
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_desktop_switches_only_the_project_to_this_worktree_s_plugin"
+        body: 1159a2d426448dd5826f50a929fccfcfe0c5718d4c52d0b698315c6f73d8100e
+  - node: 01a1cf7a-0eb7-770e-800d-7ebb3cc110b1
+    reviewed: 5d69e9e800a4d5cf5f3304ed8405dc6d4ecdbf5a422875a6c01b5d5c63b59eca
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_sessions_in_any_other_project_keep_the_installed_plugin"
+        body: f7eafb832038e53d4455db7b7e5e1196904152c40a0e3eb06ec56bd4cf5b733f
+  - node: 01a1cf7a-0eb7-770e-800d-7ebcd178f72e
+    reviewed: 161e0389a377e0f060aaf05697e1f77fde9907ebe9e1f1bab0807ec496d36114
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_the_settings_of_the_dogfood_plugin_run_this_worktree_s_loft"
+        body: 60d02410ca9499b1e013e0d37cba4aa03aeeca459860c1ec79dde824bad5e599
+      - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
+        name: "test_the_session_s_loft_runs_with_the_dogfood_home"
+        body: d68ee398c22275dee113fbdda1072a4ceaa24b4ac42808d18d3f38acbc307c99
+  - node: 01a1cf7a-0eb7-770e-800d-7ebdfe1618e2
+    reviewed: f89443c0a68ea6d33b0aec4ef45706743542d9f082ca976cf93d4e813f28b654
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_each_change_to_the_settings_is_printed_before_it_is_made"
+        body: c17169f656419e0a507e3d0e8dd0fd749ec7a69d8abf03187359437bd3bf8091
+  - node: 01a1cf7a-0eb7-770e-800d-7ebebaa4add8
+    reviewed: 8873ee7761082e0597a2f2af27dac82df019a6069583e0797a9a3946b487b001
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_a_second_run_with_the_same_project_changes_nothing"
+        body: ebf2c1708e9468e3cb1a07761f79bdbf853d6d08103544832a13fd296b8072db
+  - node: 01a1cf7a-0eb7-770e-800d-7ec0ee199dea
+    reviewed: 4b66485fa51ce6f611b4de45128bf8f8188de2bf6ec8bd0d87d91067ac7a7f71
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_undo_returns_the_project_to_the_installed_plugin_and_leaves_others_alone"
+        body: d3cfc21718cd780369d0cbb28ead2252ce6d2b1caf2063710648a3033c0a2918
+  - node: 01a1cf7a-0eb7-770e-800d-7ec1f2b2a7fe
+    reviewed: 04e7731512814fe30a0ef19d6ddf719a5217713b85f4e8c34adadea451e9b7dc
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_undo_returns_the_project_to_the_installed_plugin_and_leaves_others_alone"
+        body: d3cfc21718cd780369d0cbb28ead2252ce6d2b1caf2063710648a3033c0a2918
   - node: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
     reviewed: c915d004fdcea33a9c0dee16c199ac54477b6f7d577930b621a4235c0b4e989a
     tests:
