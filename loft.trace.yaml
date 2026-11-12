@@ -34340,34 +34340,52 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "in Claude Code Desktop the command opens the Yard page at the session's tree and branch in Desktop's browser pane"
-        body: 4ad2fe9a6493b0f5d50e6b6361cdf730f3d1711d6d7bdebe2536e7f880ceb962
+        body: aed0da0067f70a6eb140185d5e710ac47be08ccbce358e5cbee896d987b84564
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "run while a read is under way, the command still shows the page once that read ends"
+        body: bcb02b6bf43da0b7166254a9a5f893097da2aef983798391d3ee37e0e6464751
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the command answers without waiting on a browser pane that does not answer"
+        body: 617022b909cf627e7b3dc296afb8eb982a1907a621e750f94273e003525f703b
   - node: 01a1d0cd-6916-731d-8a40-084a8c2d8ba2
     reviewed: 5412a74728ec68a552c195716480cf02458e2148a1911f644531f589ad297786
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "where Desktop's browser pane already shows the Yard page, the command shows that tab and opens no other"
-        body: 789df37c7552b103955d00471555eb8093d62c6bf16e07e4af6225da69519dce
+        body: 008189a9b944d227236006e2331f210cbaefa35e891607cf0bf4719f5bd1ca9b
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a tab of the Yard page the person opened in the browser pane is shown, and the tab it names kept"
-        body: 22b50da1595ba45d5290a60e0970b17ec74f9da395ac759f625e012b9545d1ce
+        body: 9fb87a4cb1d0efd638acd457fec9c355667081c5343ced64a73c1970484fd909
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "where the browser shows the page in another tab than the one asked for, the next command shows the tab it named"
-        body: 6eff15286f957c50f5993b9c984a7eb4e03ec8a769fd03b1a0d9374c33063b19
+        body: 7adaf374676c7c603fb666a1f90f8bc6c6cc6243587084bda05740172c5db6ff
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "a tab whose title holds quotes and braces is still found among the browser pane's tabs, and shown"
-        body: fced05c1aa2d9c792285a7a5da4e4d0aed6352c85354d35280d5b7937986e432
+        body: 024ed96f49bd0755c5def435dcea304e7eba5d47550159d43272370da47a07f0
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a tab of the Yard page opened from its localhost link is shown, not a second one opened"
+        body: 5698268d4895e6de2d69251a583508b703a718427408065d0a21542d5fab5533
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the tab the command left, once it shows another site, is left alone and the page opened in a new one"
+        body: fd2cf6deb43bf2b90aecbc6fce96f666e2af2cf83fbf639557240717332c517a
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a browser pane that could not be reached once keeps the tab the command left, for the next command"
+        body: 5d7ea1f77b2a339af8dc9398e75bf197a0f1acff842bfb90b1d9599ec1267a0c
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "words before the JSON of a browser answer do not hide the tabs it lists"
+        body: 0ba41b9ec2963c3c9b956bd40ea54c4339955e92675bdee3315b84349e88052c
   - node: 01a1d0cd-6916-731d-8a40-084c16280236
     reviewed: bb667b4ce521ec91b5eb5d451a76d06b9a2669671826ea88483fbfa281a5f3eb
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "the terminal, VS Code and the mobile app show the link in the head, and no browser pane is opened for them"
-        body: 0efd1f905d53dc90beef3204b1f6d781439fb80fc7d0edb55bd6bb64e17baa89
+        body: 537ee6232b96eb9407cce00db28e88ccb1830fe7e00da4de8aadcd603f978336
   - node: 01a1d0cd-6916-731d-8a40-084d1b67a9cf
     reviewed: ff537df7b53ea8cdb44e26fe1014b582d399478a605ce833884db3f98a6e5855
     tests:
       - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
         name: "in Claude Code Desktop, where the browser pane cannot be reached, the pane shows the link and says so"
-        body: ad5adeadce195eefe592d8c21b10a07a99afa27724dfd070925f73a5f8773497
+        body: b96027be4fd419e189af416e9b23d3fb974612d6e53d7d66336a71e2f12389c8
   - node: 01a1cfe2-478e-75d1-b104-04e08deef20b
     reviewed: b2a5f6637d4242eedc87ac5c2187a315e762228aa090f3688a7c8bb3a5529cd8
     tests:

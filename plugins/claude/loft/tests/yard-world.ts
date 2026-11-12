@@ -193,7 +193,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
      * Claude Code Desktop's browser pane, as its MCP server `Claude_Browser` answers: its tabs by
      * id and address, or `unreachable` where no such server answers.
      */
-    browser: { tabs: new Map<string, string>(), unreachable: false, movesTo: null as string | null, title: null as string | null, calls: [] as { tool: string; args: Record<string, unknown> }[] },
+    browser: { tabs: new Map<string, string>(), unreachable: false, movesTo: null as string | null, title: null as string | null, preface: '', hangs: null as string | null, calls: [] as { tool: string; args: Record<string, unknown> }[] },
     /** Each `$.ui.open` the mod made. */
     opened: [] as Doc[],
     /** What a test has happen once `loft yard answer` records, as a wait then ending. */
@@ -231,7 +231,9 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     const browser = state.browser
     if (server !== 'Claude_Browser' || browser.unreachable) throw new Error(`MCP server ${server} is not connected`)
     browser.calls.push({ tool, args })
-    const text = (words: string, isError = false) => ({ value: { content: [{ type: 'text', text: words }], isError } }) as never
+    // A browser that never answers this tool.
+    if (tool === browser.hangs) return new Promise<never>(() => {})
+    const text = (words: string, isError = false) => ({ value: { content: [{ type: 'text', text: `${browser.preface}${words}` }], isError } }) as never
     // As Desktop's browser answers: JSON first, then words for the agent, which may hold braces too.
     const answer = (fields: object) => text(`${JSON.stringify(fields, null, 2)}\nBrowser pane opened.`)
     if (tool === 'preview_start') {

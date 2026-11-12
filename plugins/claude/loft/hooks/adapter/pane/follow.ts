@@ -20,7 +20,8 @@ const FOLLOW = 1000
 /**
  * What the module keeps of the follow: its timer; whether a read is under way and whether another
  * is asked for after it; the epoch, which an open moves on so that a read begun before it writes
- * nothing; and the notice an answer left for the next write.
+ * nothing; the notice an answer left for the next write; and whether an open asked for the Yard
+ * page in Desktop's browser pane that no read has yet brought the address of.
  */
 const following = {
   timer: undefined as Timer | undefined,
@@ -28,6 +29,7 @@ const following = {
   again: false,
   epoch: 0,
   notice: undefined as string | null | undefined,
+  isPageAsked: false,
 }
 
 /** Offers `/yard-pane` for the session, to run even while a turn runs. */
@@ -35,19 +37,29 @@ export async function registerCommand($: EngineInterface) {
   await $.command.register({ name: COMMAND, description: "Follow the branch's Yard Log in a pane, and answer there", immediate: true })
 }
 
-/** Opens the pane, or shows it again, read whole, and follows Yard Log while it stays open. */
+/**
+ * Opens the pane, or shows it again, read whole, and follows Yard Log while it stays open; the
+ * first read that brings the Yard page's address shows the page in Desktop's browser pane.
+ */
 async function openPane($: EngineInterface) {
   following.epoch++
+  following.isPageAsked = true
   await setPane($, () => ({ view: null, failure: null, notice: null }))
   const opened = await $.ui.open({ id: PANE, title: 'Yard' })
   await readPane($)
   following.timer ??= $.clock.every(FOLLOW, () => void tick($))
-  const page = (await paneOf($)).view?.page
-  if (page) {
+  return opened
+}
+
+/** Shows the Yard page in Desktop's browser pane, without holding up the read that brought it. */
+function askBrowser($: EngineInterface, page: string) {
+  following.isPageAsked = false
+  void (async () => {
     const shown = await showPage($, page, (await browserOf($))?.tab ?? null)
     if (shown) await setBrowser($, shown)
-  }
-  return opened
+  })().catch(() => {
+    // A pane closed or a module reloaded meanwhile: the next open asks again.
+  })
 }
 
 async function tick($: EngineInterface) {
@@ -100,6 +112,7 @@ async function readOnce($: EngineInterface) {
     return
   }
   const failure = succeeded(ran) ? null : failureOf(ran)
+  if (following.isPageAsked && view?.page) askBrowser($, view.page)
   const notice = following.notice
   following.notice = undefined
   if (view === shown && failure === held.failure && notice === undefined) return
@@ -115,7 +128,7 @@ async function readSince($: EngineInterface, since: number | undefined) {
 /** Hooks `/yard-pane`, and starts the follow over for a module just loaded. */
 export function registerPane(on: On) {
   following.timer?.cancel()
-  Object.assign(following, { timer: undefined, isReading: false, again: false, epoch: 0, notice: undefined })
+  Object.assign(following, { timer: undefined, isReading: false, again: false, epoch: 0, notice: undefined, isPageAsked: false })
   on('command.run', { command: COMMAND }, async $ => {
     const opened = await openPane($)
     return { text: opened.isPlaced ? "Yard Log's pane is open." : "Yard Log's pane opens once there is room for it." }

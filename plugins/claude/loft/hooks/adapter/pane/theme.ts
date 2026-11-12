@@ -32,6 +32,3 @@ export const PALETTE: Palette = {
   recommended: '#169c8a',
   onButton: '#ffffff',
 }
-
-/** The shades that mark status, each of which reads on a light ground and on a dark one. */
-export const STATUS_SHADES = ['signal', 'wait', 'fix', 'recommended'] as const

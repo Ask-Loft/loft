@@ -5,8 +5,17 @@
 import type { FoundElement } from 'claude-code/testing'
 import { expect, test } from 'claude-code/testing'
 
-import { PALETTE, STATUS_SHADES } from '../hooks/adapter/pane/theme'
-import { answersOf, block, goaled, openPane, OWNER, PAGE, paneMount, readDoc, staged, SURFACES, world } from './yard-world'
+import { PALETTE } from '../hooks/adapter/pane/theme'
+import { answersOf, block, deferred, goaled, openPane, OWNER, PAGE, paneMount, readDoc, staged, SURFACES, world, type Engine, type World } from './yard-world'
+
+/** The shades that mark status, each of which must read on a light ground and on a dark one. */
+const STATUS_SHADES = ['signal', 'wait', 'fix', 'recommended'] as const
+
+/** Runs `/yard-pane` again, and lets the browser pane's calls it starts settle. */
+async function again($: Engine, w: World) {
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  await w.clock.settle()
+}
 
 
 /** The colour of the first coloured Text an element holds. */
@@ -234,6 +243,7 @@ test("in Claude Code Desktop the command opens the Yard page at the session's tr
   w.state.read = LOG
   w.state.surfaces = ['terminal', 'desktop']
   await openPane($)
+  await w.clock.settle()
   expect(w.state.browser.calls.map(call => call.tool)).toEqual(['tabs_context', 'preview_start'])
   expect(w.state.browser.calls[1]!.args.url).toBe(PAGE)
   expect([...w.state.browser.tabs.values()]).toEqual([PAGE])
@@ -244,12 +254,13 @@ test("where Desktop's browser pane already shows the Yard page, the command show
   w.state.read = LOG
   w.state.surfaces = ['desktop']
   await openPane($)
-  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  await w.clock.settle()
+  await again($, w)
   expect(w.state.browser.calls.map(call => call.tool)).toEqual(['tabs_context', 'preview_start', 'tabs_context', 'navigate'])
   expect(w.state.browser.calls[3]!.args).toEqual({ tabId: 'tab-1', url: PAGE })
   expect(w.state.browser.tabs.size).toBe(1)
   w.state.browser.tabs.clear()
-  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  await again($, w)
   expect(w.state.browser.calls.slice(4).map(call => call.tool)).toEqual(['tabs_context', 'preview_start'])
   expect(w.state.browser.tabs.size).toBe(1)
 })
@@ -261,9 +272,90 @@ test('where the browser shows the page in another tab than the one asked for, th
   w.state.browser.tabs.set('tab-1', PAGE)
   w.state.browser.movesTo = 'seed'
   await openPane($)
+  await w.clock.settle()
   w.state.browser.movesTo = null
-  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  // Another tab of the page server, listed before the one the browser named.
+  const named = w.state.browser.tabs.get('seed')!
+  w.state.browser.tabs.clear()
+  w.state.browser.tabs.set('other', 'http://127.0.0.1:7411/')
+  w.state.browser.tabs.set('seed', named)
+  await again($, w)
   expect(w.state.browser.calls.filter(call => call.tool === 'navigate').map(call => call.args.tabId)).toEqual(['tab-1', 'seed'])
+})
+
+test('a tab of the Yard page opened from its localhost link is shown, not a second one opened', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  w.state.browser.tabs.set('seed', 'http://localhost:7411/')
+  await openPane($)
+  await w.clock.settle()
+  expect(w.state.browser.calls.map(call => [call.tool, call.args.tabId])).toEqual([['tabs_context', undefined], ['navigate', 'seed']])
+})
+
+test('the tab the command left, once it shows another site, is left alone and the page opened in a new one', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  await openPane($)
+  await w.clock.settle()
+  w.state.browser.tabs.set('tab-1', 'https://docs.example/')
+  await again($, w)
+  expect(w.state.browser.calls.slice(2).map(call => call.tool)).toEqual(['tabs_context', 'preview_start'])
+})
+
+test('a browser pane that could not be reached once keeps the tab the command left, for the next command', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  await openPane($)
+  await w.clock.settle()
+  w.state.browser.unreachable = true
+  await again($, w)
+  w.state.browser.unreachable = false
+  const left = w.state.browser.tabs.get('tab-1')!
+  w.state.browser.tabs.clear()
+  w.state.browser.tabs.set('other', 'http://127.0.0.1:7411/')
+  w.state.browser.tabs.set('tab-1', left)
+  await again($, w)
+  expect(w.state.browser.calls.at(-1)).toEqual({ tool: 'navigate', args: { tabId: 'tab-1', url: PAGE } })
+})
+
+test('words before the JSON of a browser answer do not hide the tabs it lists', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  w.state.browser.preface = 'Tabs of the browser pane:\n'
+  w.state.browser.tabs.set('seed', 'http://127.0.0.1:7411/')
+  await openPane($)
+  await w.clock.settle()
+  expect(w.state.browser.calls.map(call => call.tool)).toEqual(['tabs_context', 'navigate'])
+})
+
+test('run while a read is under way, the command still shows the page once that read ends', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  await openPane($)
+  await w.clock.settle()
+  const held = deferred<void>()
+  w.state.reading = held.promise
+  await w.clock.advance(1000)
+  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  w.state.reading = Promise.resolve()
+  held.resolve()
+  await w.clock.settle()
+  expect(w.state.browser.calls.slice(2).map(call => call.tool)).toEqual(['tabs_context', 'navigate'])
+})
+
+test('the command answers without waiting on a browser pane that does not answer', async ($, on) => {
+  const w = world(on)
+  w.state.read = LOG
+  w.state.surfaces = ['desktop']
+  w.state.browser.hangs = 'preview_start'
+  await openPane($)
+  const ran = await $.command.run({ command: 'yard-pane', args: '' } as never)
+  expect(ran).toBeDefined()
 })
 
 test('a tab whose title holds quotes and braces is still found among the browser pane\'s tabs, and shown', async ($, on) => {
@@ -273,6 +365,7 @@ test('a tab whose title holds quotes and braces is still found among the browser
   w.state.browser.tabs.set('seed', 'http://127.0.0.1:7411/')
   w.state.browser.title = 'The "}" page'
   await openPane($)
+  await w.clock.settle()
   expect(w.state.browser.calls.map(call => call.tool)).toEqual(['tabs_context', 'navigate'])
   expect(w.state.browser.tabs.size).toBe(1)
 })
@@ -283,7 +376,8 @@ test('a tab of the Yard page the person opened in the browser pane is shown, and
   w.state.surfaces = ['desktop']
   w.state.browser.tabs.set('seed', 'http://127.0.0.1:7411/')
   await openPane($)
-  await $.command.run({ command: 'yard-pane', args: '' } as never)
+  await w.clock.settle()
+  await again($, w)
   expect(w.state.browser.calls.filter(call => call.tool !== 'tabs_context')).toEqual([
     { tool: 'navigate', args: { tabId: 'seed', url: PAGE } },
     { tool: 'navigate', args: { tabId: 'seed', url: PAGE } },
@@ -296,6 +390,7 @@ test('the terminal, VS Code and the mobile app show the link in the head, and no
   w.state.read = LOG
   w.state.surfaces = ['terminal', 'vscode', 'mobile']
   await openPane($)
+  await w.clock.settle()
   expect(w.state.browser.calls).toEqual([])
   for (const surface of ['terminal', 'vscode', 'mobile'] as const) {
     const ui = await $.ui.mount(paneMount(surface))
@@ -311,6 +406,7 @@ test("in Claude Code Desktop, where the browser pane cannot be reached, the pane
   w.state.surfaces = ['desktop']
   w.state.browser.unreachable = true
   await openPane($)
+  await w.clock.settle()
   const ui = await $.ui.mount(paneMount('desktop'))
   expect((await ui.find({ type: 'Link' }))?.props.href).toBe(PAGE.replace('127.0.0.1', 'localhost'))
   expect((await ui.find({ key: 'browser-unreachable' }))?.text).toBe("Desktop's browser pane could not be reached.")
