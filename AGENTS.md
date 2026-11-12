@@ -185,6 +185,11 @@ text goes to standard error only.
   to at most 500 lines, to naming exactly the adapter's tools and to each habit its Feature
   states. Only hosts with a Yard adapter receive a Yard package; `loft skill install` continues
   to install the specification skill alone.
+- The Codex plugin also carries the `yard-page` skill, whose one source is
+  `crates/loft-cli/skill/yard-page/SKILL.md`, listed in `YARD_PAGE_SOURCE`: it has the agent run
+  `loft yard page` and relay its words, since Codex offers a plugin no command of its own. The
+  packager writes it into the Codex plugin alone; change its source and run
+  `scripts/package-skill.sh`.
 
 ## Software Plant
 

@@ -61,6 +61,10 @@ const SOURCE: &[(&str, &str)] = source![
 const YARD_SOURCE: &[(&str, &str)] =
     source!["yard": "SKILL.md", "agents/claude.md", "agents/codex.md"];
 
+/// The `yard-page` skill's source, which a host with no command of its own for the Yard page
+/// carries as it is.
+const YARD_PAGE_SOURCE: &[(&str, &str)] = source!["yard-page": "SKILL.md"];
+
 /// A skill directory that could not be written.
 #[derive(Debug)]
 pub struct SkillError {

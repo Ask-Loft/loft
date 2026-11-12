@@ -288,3 +288,32 @@ fn the_codex_yard_adaptation_plans_at_a_branch_s_start_and_ends_a_wave_with_code
         assert!(text.contains(phrase), "{phrase}");
     }
 }
+
+#[test]
+fn the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words() {
+    let package = read("plugins/codex/loft/skills/yard-page/SKILL.md");
+    assert_eq!(package, read("crates/loft-cli/skill/yard-page/SKILL.md"));
+    assert!(package.starts_with("---\nname: yard-page\ndescription: "));
+    let words = package.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(words.contains("Run `loft yard page` once"), "{words}");
+    assert!(
+        words.contains("give the person the words it prints as they are, the address included"),
+        "{words}"
+    );
+    assert!(words.contains("run nothing more"), "{words}");
+    assert!(
+        words.contains(
+            "no page server serves the page, give the person those words as they are too"
+        ),
+        "{words}"
+    );
+}
+
+#[test]
+fn the_claude_code_plugin_carries_no_yard_page_skill() {
+    assert!(
+        !workspace()
+            .join("plugins/claude/loft/skills/yard-page")
+            .exists()
+    );
+}
