@@ -2,9 +2,9 @@ key: 01a1d06f-b09f-73ae-a356-c4a2c667cf12
 slug: see-yard-log-in-the-pane-as-on-the-page
 name: "See Yard Log in the pane as on the Yard page"
 body: |
-  The pane draws Yard Log as the Yard page does, so that a person who knows the page knows the pane: the same head, the same tabs, the stages on a rail beside the stage chosen, each block a card of its kind, the options of a question as lettered cards, what waits on the person in the page's rust, and a Gantt chart of the stages along time, in the page's own colours.
+  The pane draws Yard Log as the Yard page does, so that a person who knows the page knows the pane: the same head, the same tabs, the stages on a rail beside the stage chosen, each block a card of its kind, the options of a question as lettered cards, what waits on the person in the page's rust, and a Gantt chart of the stages along time, in the page's hues for status.
 
-  It draws with Claude Code's own elements, which each surface paints natively, so the page's typeface and its hatched bands are not carried over. Nor are what only the page server knows, which `loft yard read` does not give: the tokens, what the agents consulted, the stretches of plan and spec mode, the marks of what changed since the last visit and the lanes of each session's activity. The page's list of trees and branches, its order of the stages and the earlier versions of a block stay on the page.
+  It draws with Claude Code's own elements, which each surface paints natively, so the page's typeface and its hatched bands are not carried over. No mod can tell whether a surface is drawn light or dark, and Claude Code Desktop may be light while the terminal is dark, so the pane's text, lines and grounds take Claude Code's own colours, which each surface resolves to its own appearance, and the page's hues mark status alone, in shades that read on either. Nor are what only the page server knows, which `loft yard read` does not give: the tokens, what the agents consulted, the stretches of plan and spec mode, the marks of what changed since the last visit and the lanes of each session's activity. The page's list of trees and branches, its order of the stages and the earlier versions of a block stay on the page.
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
@@ -56,7 +56,7 @@ requirements:
       - key: 01a1d06f-b09f-73ae-a356-c4adb658297a
         name: "A card's head names the block's kind, a question's header as a chip, and the block's state at the right."
       - key: 01a1d06f-b09f-73ae-a356-c4aecdbe19d5
-        name: "The card of a block that waits on the person stands on the waiting ground, with a bar of the waiting colour at its left, and ends with `This waits on you`."
+        name: "The card of a block that waits on the person is outlined in the waiting colour, with a bar of it at its left, and ends with `This waits on you`."
       - key: 01a1cfe2-478e-75d1-b104-04f1651155ff
         name: "A question shows its prompt, its context drawn as Markdown, and each option as a card lettered A, B, C and on, with its label and its detail."
       - key: 01a1cfe2-478e-75d1-b104-04f2f2c33b76
@@ -74,7 +74,9 @@ requirements:
       - key: 01a1cfe2-478e-75d1-b104-04e5b757bd92
         name: "A decision shows its title and its consequence."
       - key: 01a1cfe2-478e-75d1-b104-04e66ffb3c99
-        name: "A `loft` block names its view in words, such as `Spec change`, and shows its note, and no report."
+        name: "A `loft` block names its view in words, such as `Spec change`, and shows its note."
+      - key: 01a1d0a9-3033-71ae-b3b3-0eea66d75092
+        name: "A `spec-change` block shows each node its report names as added, changed or removed, with the node's kind, its label and its words before and after."
       - key: 01a1d06f-b09f-73ae-a356-c4b099278c41
         name: "A card's foot names the agent that wrote the block, its version, and when it was created and last updated."
   - key: 01a1cfe2-478e-75d1-b104-04f05a5573bc
@@ -132,11 +134,11 @@ requirements:
     statement:
       form: ubiquitous
       system: "The pane"
-      shall: "wear the Yard page's colours, light or dark as Claude Code's theme is."
+      shall: "draw its text, its lines and its grounds in the colours of the surface that draws it, and mark status in the Yard page's hues."
     criteria:
       - key: 01a1d06f-b09f-73ae-a356-c4c150ee429d
-        name: "Under a light theme, the pane's colours are the Yard page's light tokens."
+        name: "Text, muted text and lines take Claude Code's own colours, which each surface draws in its own light or dark appearance."
       - key: 01a1d06f-b09f-73ae-a356-c4c236afe1c5
-        name: "Under a dark theme, the pane's colours are the Yard page's dark tokens."
+        name: "Each colour that marks status is a shade that reads on a light ground and on a dark one."
       - key: 01a1d06f-b09f-73ae-a356-c4c3dc81b156
         name: "Done is drawn teal, active blue, what waits on the person rust and a fix rose, as on the page."
