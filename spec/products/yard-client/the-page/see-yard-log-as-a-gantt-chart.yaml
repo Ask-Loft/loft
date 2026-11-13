@@ -134,7 +134,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb7765e7bec9
         name: "Each stretch of a stage's time during a turn with no active task, no Loft run, no subagent run and no wait on the person is drawn in the stage's bar as agent work."
       - key: 01a168a8-bdad-700b-811b-68432bab687f
-        name: "Each stretch of a stage's bar is counted to one of its active tasks, Loft runs, subagent runs, waits on the person and agent work as the bar above the chart counts it, and drawn in that one's colour there."
+        name: "Each stretch of a stage's bar is counted to one of its active tasks, Loft runs, subagent runs, waits on the person and agent work as the bar above the chart counts it, and drawn in that one's color there."
       - key: 01a168a8-bdad-700b-811b-6844ce75769c
         name: "Idle time within a stage is left empty in its bar."
       - key: 01a1646f-546d-7042-befd-eb78faca6f3a
@@ -171,20 +171,20 @@ requirements:
       - key: 01a168a8-bdad-700b-811b-684b8764d21a
         name: "Each stretch of plan mode is shaded faintly across every lane of the chart, over each lane's background."
       - key: 01a1646f-546d-7042-befd-eb7d31ce0c2d
-        name: "Each stretch of plan mode is labelled as plan mode, and gives its length on hover."
+        name: "Each stretch of plan mode is labeled as plan mode, and gives its length on hover."
   - key: 01a1646f-546d-7042-befd-eb7e81779f4d
     statement:
       form: optional
       where: "the session's activity holds stretches of the main agent's spec mode"
       system: "the page"
-      shall: "mark each stretch of spec mode in the track of modes and faintly across every lane, apart from plan mode by its colour and its hatching."
+      shall: "mark each stretch of spec mode in the track of modes and faintly across every lane, apart from plan mode by its color and its hatching."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb7fd8a33165
         name: "Each stretch of spec mode is drawn hatched in the track of modes, from the time it started to the time it ended, or to now where it has not ended."
       - key: 01a168a8-bdad-700b-811b-684ca9e44c8f
         name: "Each stretch of spec mode is shaded faintly and hatched across every lane of the chart, over each lane's background."
       - key: 01a1646f-546d-7042-befd-eb80ccffb25f
-        name: "Each stretch of spec mode is labelled as spec mode, and gives its length on hover."
+        name: "Each stretch of spec mode is labeled as spec mode, and gives its length on hover."
   - key: 01a1a7e1-2b67-777d-ab6f-d4bf3e94624b
     statement:
       form: optional

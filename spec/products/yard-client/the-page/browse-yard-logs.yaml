@@ -98,7 +98,7 @@ requirements:
       shall: "set the controls of the view shown at the right of the Yard Log's head."
     criteria:
       - key: 01a1a7a4-51ce-73b8-bd34-87b54aac01b7
-        name: "Each control of the head is labelled above it in small text."
+        name: "Each control of the head is labeled above it in small text."
       - key: 01a1a7a4-51ce-73b8-bd34-87b600deb823
         name: "The head stays in place, its controls in view, while the panes beneath it scroll."
   - key: 01a1646f-546d-7042-befd-eb22743f9709
@@ -215,7 +215,7 @@ requirements:
       - key: 01a1a856-9e14-7124-a2ea-8d79ddaf440d
         name: "Beneath a stage of the list, each block's row gives its kind as a small light icon before its title, an `L` for a `loft` block, which names the kind to a reader and while the pointer rests on it."
       - key: 01a1a86a-2483-76c7-894e-d32912c94eba
-        name: "Beneath a stage of the list, the row of each `active` task is marked by a dot in the margin before it, in the colour the pane gives the status `active`, which names the task active to a reader and moves neither its icon nor its title."
+        name: "Beneath a stage of the list, the row of each `active` task is marked by a dot in the margin before it, in the color the pane gives the status `active`, which names the task active to a reader and moves neither its icon nor its title."
       - key: 01a1a7a4-51ce-73b8-bd34-87bda9d6693e
         name: "A stage's row in the list gives the count of its blocks that wait on the person and the count of its blocks marked since the last visit."
       - key: 01a1a7a4-51ce-73b8-bd34-87be8a0c6fed
@@ -225,7 +225,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb2bf26cc683
         name: "A line marks where the `done` and `dropped` stages end and the `planned` ones begin."
       - key: 01a1646f-546d-7042-befd-eb2cf93edd47
-        name: "Each status shows as a word as well as a colour."
+        name: "Each status shows as a word as well as a color."
       - key: 01a1646f-546d-7042-befd-eb2d6203081e
         name: "A stage owned by a subagent names the subagent's type."
       - key: 01a17f75-05dc-7361-a0cd-c0247d869c6b
@@ -291,7 +291,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eb35c3a78477
         name: "A task counts as written during a stretch where it was listed during it."
       - key: 01a1646f-546d-7042-befd-eb3400bc25ff
-        name: "A band of spec mode is told apart from a band of plan mode by its colour, its hatching and its label."
+        name: "A band of spec mode is told apart from a band of plan mode by its color, its hatching and its label."
   - key: 01a17b28-85cd-71b5-8420-67ee22ffafa7
     statement:
       form: ubiquitous
@@ -315,7 +315,7 @@ requirements:
       shall: "draw each block by its kind, from its current version."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb37bdcb84e2
-        name: "A note shows its title, its Markdown and its tone as a colour and a word."
+        name: "A note shows its title, its Markdown and its tone as a color and a word."
       - key: 01a1646f-546d-7042-befd-eb38e626356c
         name: "A note written folded starts folded."
       - key: 01a169b5-e858-7099-9745-8598cc3dc66f
@@ -410,25 +410,25 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "set each label a `loft` view gives in monospace before the name beside it, after a square in the colour of its node's kind."
+      shall: "set each label a `loft` view gives in monospace before the name beside it, after a square in the color of its node's kind."
     criteria:
       - key: 01a16844-c9d1-72df-8cfa-5cd9ccec0949
         name: "A label is drawn in monospace and muted text, apart from the name beside it, which keeps the page's ink."
       - key: 01a16844-c9d1-72df-8cfa-5cda23d83c08
-        name: "A Product, a Feature Group, a Feature, a Requirement, a criterion, a Constraint, a Quality Attribute and a Component each have a square of their own colour before their label."
+        name: "A Product, a Feature Group, a Feature, a Requirement, a criterion, a Constraint, a Quality Attribute and a Component each have a square of their own color before their label."
   - key: 01a1686f-4733-773b-b571-50bed5024ccb
     statement:
       form: optional
-      where: "a code span of a block's Markdown, or of a name a `loft` view draws, holds only a colour written as `#` and three, four, six or eight hexadecimal digits"
+      where: "a code span of a block's Markdown, or of a name a `loft` view draws, holds only a color written as `#` and three, four, six or eight hexadecimal digits"
       system: "the page"
-      shall: "draw the code span on that colour, with its text in whichever of dark or white ink reads more clearly on it."
+      shall: "draw the code span on that color, with its text in whichever of dark or white ink reads more clearly on it."
     criteria:
       - key: 01a1686f-4733-773b-b571-50bf0ed7f7e5
-        name: "A code span holding `#62359c` is drawn on the colour `#62359c`."
+        name: "A code span holding `#62359c` is drawn on the color `#62359c`."
       - key: 01a1686f-4733-773b-b571-50c06027a0c0
-        name: "The text of an opaque colour's code span holds a contrast of at least 4.5 to 1 against that colour."
+        name: "The text of an opaque color's code span holds a contrast of at least 4.5 to 1 against that color."
       - key: 01a1686f-4733-773b-b571-50c1d42366f8
-        name: "A code span that holds more than a colour, and a colour within a fenced code block, keep the page's own code colours."
+        name: "A code span that holds more than a color, and a color within a fenced code block, keep the page's own code colors."
   - key: 01a1646f-546d-7042-befd-eb48685b6f13
     statement:
       form: optional
@@ -468,9 +468,9 @@ requirements:
       - key: 01a1a7ee-1770-7572-ab19-cf365df5311d
         name: "The flowchart keeps its direction: top to bottom, bottom to top, left to right or right to left."
       - key: 01a1a7ee-1770-7572-ab19-cf371ce2cf24
-        name: "A node's own `style` or `classDef` keeps its fill, its stroke and its text colour."
+        name: "A node's own `style` or `classDef` keeps its fill, its stroke and its text color."
       - key: 01a1a7ee-1770-7572-ab19-cf38e596f988
-        name: "A change of the browser's scheme recolours a flowchart already drawn without laying it out again."
+        name: "A change of the browser's scheme recolors a flowchart already drawn without laying it out again."
       - key: 01a1a814-5ac4-7523-9962-5ad7fadce012
         name: "A flowchart is drawn at its own size and never scaled down to fit its block: one wider than its block scrolls sideways within it, its text staying at 13 pixels."
       - key: 01a1a814-5ac4-7523-9962-5ad8e9672abc
@@ -488,25 +488,25 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw itself, its Gantt chart and its diagrams in the colour scheme the browser asks for, light or dark."
+      shall: "draw itself, its Gantt chart and its diagrams in the color scheme the browser asks for, light or dark."
     criteria:
       - key: 01a16863-60a7-772b-980e-a07a7bb898ff
-        name: "In a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours."
+        name: "In a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colors."
       - key: 01a16863-60a7-772b-980e-a07b441c8e43
-        name: "In a browser that asks for a light scheme, or for none, the page, its Gantt chart and its diagrams are drawn in their light colours."
+        name: "In a browser that asks for a light scheme, or for none, the page, its Gantt chart and its diagrams are drawn in their light colors."
       - key: 01a16863-60a7-772b-980e-a07c5f19ca60
-        name: "Each colour the page gives text holds a contrast of at least 4.5 to 1 against each ground it is drawn on, in either scheme."
+        name: "Each color the page gives text holds a contrast of at least 4.5 to 1 against each ground it is drawn on, in either scheme."
   - key: 01a16863-60a7-772b-980e-a07df2e896da
     statement:
       form: event_driven
-      when: "the browser's colour scheme changes while the page is open"
+      when: "the browser's color scheme changes while the page is open"
       system: "the page"
       shall: "draw itself again in the new scheme, without a reload."
     criteria:
       - key: 01a16863-60a7-772b-980e-a07e6f0492af
-        name: "The page's colours turn to the new scheme without a reload."
+        name: "The page's colors turn to the new scheme without a reload."
       - key: 01a16863-60a7-772b-980e-a07f74dd4ee6
-        name: "Each diagram already drawn is drawn again in the new scheme's colours."
+        name: "Each diagram already drawn is drawn again in the new scheme's colors."
   - key: 01a1a7a4-51ce-73b8-bd34-87c021023032
     statement:
       form: ubiquitous

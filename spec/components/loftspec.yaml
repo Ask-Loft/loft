@@ -117,7 +117,7 @@ constraints:
     name: "`loftspec` shall perform no file or network input or output."
     verificationFate: proved
   - key: fb1d00d7-da12-43b1-b322-ab6b61a6f60c
-    name: "`loftspec` shall declare the Apache-2.0 licence in its package manifest."
+    name: "`loftspec` shall declare the Apache-2.0 license in its package manifest."
     verificationFate: proved
   - key: 91986534-aa13-4ba3-bc78-dfdf63c0a608
     name: "`loftspec` shall build on stable Rust at the crate's declared `rust-version`."

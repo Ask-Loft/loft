@@ -142,5 +142,5 @@ constraints:
     verificationFate: proved
   - key: 01a1d600-053c-73ed-b18e-e5a0c1114446
     name: "Yard Client's specification, code, tests and documentation in this repository shall be written in American English."
-    body: "This covers the Yard page, its styles and the adapters as well as the Yard commands. Text this repository does not own keeps its spelling: the v1 fixtures and golden vectors under `testdata/`, vendored files, and the released entries of `CHANGELOG.md`."
+    body: "This covers the Yard page, its styles and the adapters as well as the Yard commands. Text this repository keeps as history or does not own keeps its spelling: decisions published as resolved, which change only through a decision that supersedes them; the v1 fixtures and golden vectors under `testdata/`; vendored files; and the released entries of `CHANGELOG.md`."
     verificationFate: proved
