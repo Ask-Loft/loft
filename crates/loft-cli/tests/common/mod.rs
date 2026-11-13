@@ -80,6 +80,20 @@ pub fn sources(dir: &Path) -> Vec<PathBuf> {
     found
 }
 
+/// The files `git ls-files` lists with `args` in the repository, each as a path from its root.
+pub fn listed(args: &[&str]) -> Vec<String> {
+    let listed = real_git::real_git()
+        .arg("-C")
+        .arg(workspace())
+        .args(["ls-files", "-z"])
+        .args(args)
+        .output()
+        .unwrap();
+    assert!(listed.status.success(), "{}", stderr(&listed));
+    let text = stdout(&listed);
+    text.split_terminator('\0').map(str::to_owned).collect()
+}
+
 /// `path` as a guard reports it: from the root of the repository.
 pub fn shown(path: &Path) -> String {
     path.strip_prefix(workspace())

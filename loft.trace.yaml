@@ -11906,7 +11906,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
-        body: 55e83cf03332e2390b406eaed8c5aa9bc19066cdddfb4c1f6c127c04cfe5c4cb
+        body: f434643c23edb2b0cc22bfbd4c0f79e0f49c41a866e0fea416527eae2edb01d5
   - node: 730ba2d9-1d64-4348-aab5-67bb1603f077
     reviewed: ee8fbc9f2a7b5f2590254736865803bd711073b045f69acede780135277498f7
     tests:
@@ -19877,7 +19877,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
-        body: 55e83cf03332e2390b406eaed8c5aa9bc19066cdddfb4c1f6c127c04cfe5c4cb
+        body: f434643c23edb2b0cc22bfbd4c0f79e0f49c41a866e0fea416527eae2edb01d5
   - node: 01a12ff0-f5e5-7095-8fa8-24edcc9b44db
     reviewed: c9ede49992a2253856d8f616d48fe2158f53e2cde7efc752806243cecfbc79e6
     tests:
@@ -21461,7 +21461,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
-        body: 55e83cf03332e2390b406eaed8c5aa9bc19066cdddfb4c1f6c127c04cfe5c4cb
+        body: f434643c23edb2b0cc22bfbd4c0f79e0f49c41a866e0fea416527eae2edb01d5
   - node: 01a13654-6e12-74a1-ad7f-e7d4c0dc3e58
     reviewed: 3f41a2be394b6b630da9e6129a912554832b8a0f5b879b067f3c43e53b5362f0
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/changing-a-specified-product.md, read it there."
@@ -22670,7 +22670,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
-        body: 55e83cf03332e2390b406eaed8c5aa9bc19066cdddfb4c1f6c127c04cfe5c4cb
+        body: f434643c23edb2b0cc22bfbd4c0f79e0f49c41a866e0fea416527eae2edb01d5
   - node: 01a177f9-8294-77e4-aa6e-7061e2a58d45
     reviewed: b29031d6e1c64a703638403640f94ec466e5e01235de153bdace3b2059f474c0
     tests:
@@ -35207,7 +35207,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
-        body: 55e83cf03332e2390b406eaed8c5aa9bc19066cdddfb4c1f6c127c04cfe5c4cb
+        body: f434643c23edb2b0cc22bfbd4c0f79e0f49c41a866e0fea416527eae2edb01d5
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:
@@ -35450,7 +35450,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "the_release_workflow_stores_no_registry_token_in_the_repository"
-        body: 0e4e0396c1e695893b1f83fffba90a9b2e880073261781789819bf636e492b45
+        body: 4510616d9e8f7112211c67fba39a3b69cb788ffde657cd8827fe33bdc3aaa762
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "a_token_in_a_file_is_found"
         body: e7d177964691a753260ef33df9c56da8a70efac1af379ea2d61671b022e0bfe0

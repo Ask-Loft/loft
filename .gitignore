@@ -21,3 +21,5 @@ __pycache__/
 .env
 .env.*
 /.mcp.json
+# An agent host's settings for this machine alone.
+/.claude/settings.local.json
