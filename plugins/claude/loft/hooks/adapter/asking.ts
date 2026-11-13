@@ -99,7 +99,7 @@ async function send($: EngineInterface, cwd: string, caller: Caller, batch: unkn
 }
 
 /** Records what the person gave in the terminal with `loft yard answer`. */
-function record($: EngineInterface, cwd: string, caller: Caller, given: Given[]) {
+export function record($: EngineInterface, cwd: string, caller: Caller, given: Given[]) {
   return run($, cwd, ['answer', '--input', '-', ...callerArgs(caller)], JSON.stringify(given))
 }
 

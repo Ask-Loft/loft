@@ -26,6 +26,25 @@ list everything 2.4.0 will hold.
   the Gantt chart, and a Consultation view that charts them. The page server tells the Claude Code
   mod the trees it serves, by their real paths and as its session spells their tops, so both
   adapters class a path in any served worktree alike.
+- `LOFT_YARD_HOME`, given an absolute directory, keeps what belongs to the machine there in
+  place of `~/.yard/`, so a `loft` under development runs a page server and session records of
+  its own beside an installed one. `loft yard protocol` reports that directory as `home`
+  (schema `loft-yard-protocol/2`).
+- `/yard-pane` in Claude Code opens a pane on the branch's Yard Log, the Yard page's companion: the
+  stage in hand with its active tasks, and what waits on you, oldest first, with lettered option
+  cards to answer there. Answers are recorded on the channel `terminal`, as in Claude Code's own
+  dialog, and a block answered first elsewhere keeps that answer. In Claude Code Desktop the
+  command also opens the Yard page itself in Desktop's browser pane, at the session's branch, and
+  shows its tab again on the next run; elsewhere the pane links the page, and the command answers
+  with the page's address and a suggestion to open it. The pane's colours follow each surface's
+  light or dark.
+- `loft yard page` prints the Yard page's address for the worktree and its branch, with a line on
+  what the page shows, or says that no page server runs, or that one runs but does not serve the
+  tree yet. In Codex, which offers a plugin no command of its own, the skill `$loft:yard-page` has
+  the agent run it and relay its words.
+- Every `loft yard` command gives the page's address where the run may not write the machine's
+  home, as in Codex's sandbox, once the page server serves the tree: finding the page server only
+  reads its lock, and a tree already served writes nothing.
 
 ## 2.3.0 (2026-11-05)
 

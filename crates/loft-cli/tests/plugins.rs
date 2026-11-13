@@ -85,6 +85,7 @@ fn each_committed_package_equals_the_composition_for_its_host() {
             "plugins/claude/loft/skills/yard",
             "plugins/codex/loft/skills/loft-spec",
             "plugins/codex/loft/skills/yard",
+            "plugins/codex/loft/skills/yard-page",
         ])
     );
 }
@@ -120,7 +121,8 @@ fn skills(root: &str) -> Vec<String> {
 #[test]
 fn both_plugins_hold_loft_spec_and_their_adapters_yard_skills() {
     assert_eq!(skills(CLAUDE_ROOT), ["loft-spec", "yard"]);
-    assert_eq!(skills(CODEX_ROOT), ["loft-spec", "yard"]);
+    // Codex offers a plugin no command of its own, so it also carries `yard-page`.
+    assert_eq!(skills(CODEX_ROOT), ["loft-spec", "yard", "yard-page"]);
 }
 
 #[test]

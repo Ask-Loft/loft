@@ -129,7 +129,13 @@ change, or v1 reverts it.
   read, the sessions that continue others, the worktrees each session wrote Yard Log in and its
   main agent's directory, by which an agent's work follows its working stage into another
   worktree, the control token, and in `claude/` the Claude hook's hand-offs and each session's
-  last permission mode.
+  last permission mode. `LOFT_YARD_HOME`, an absolute directory, takes the place of `~/.yard/`;
+  a relative or empty value is ignored.
+- `scripts/yard-dogfood.sh` runs this worktree's `loft` and plugins beside the installed ones:
+  `claude` and `codex` start a session on them, and `desktop <project>` (`--undo` to reverse)
+  switches one project's Claude Code sessions, Claude Desktop's included, through
+  `scripts/yard-dogfood-desktop.py`. Its `loft` keeps the machine's files in `~/.yard-dogfood/`
+  through `LOFT_YARD_HOME`, with a page server of its own on port 7412.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
   of the platform it is installed on. A release packs it, and one package per platform, into
   tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;
@@ -185,6 +191,11 @@ text goes to standard error only.
   to at most 500 lines, to naming exactly the adapter's tools and to each habit its Feature
   states. Only hosts with a Yard adapter receive a Yard package; `loft skill install` continues
   to install the specification skill alone.
+- The Codex plugin also carries the `yard-page` skill, whose one source is
+  `crates/loft-cli/skill/yard-page/SKILL.md`, listed in `YARD_PAGE_SOURCE`: it has the agent run
+  `loft yard page` and relay its words, since Codex offers a plugin no command of its own. The
+  packager writes it into the Codex plugin alone; change its source and run
+  `scripts/package-skill.sh`.
 
 ## Software Plant
 
@@ -243,6 +254,9 @@ real half on demand, against `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CON
 both addresses at a closed loopback port; a test that exercises either switches it on through
 `tests/common/telemetry.rs` or `asking` in `tests/update_check.rs`. Run a gate's own `loft`
 through `cargo run`, never `target/debug/loft` directly, or set `LOFT_TELEMETRY=internal`.
+`.cargo/config.toml` also forces `LOFT_YARD_HOME` empty, so no test inherits a dogfood home; a
+`loft yard` command checked by hand against a dogfood home therefore runs `target/debug/loft`
+with `LOFT_TELEMETRY=internal`, not `cargo run`.
 
 The rules:
 

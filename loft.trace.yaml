@@ -15899,16 +15899,16 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "after_skill_package_runs_each_package_equals_its_composition"
-        body: 60ca0c8529609d7c723dfa4884b5183436913bfe061703247f398cffd1873336
+        body: a57414ba6bb9a969c781401be16652d9fcd39dd8cb362c0aa4fe245dc83d7bd3
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "skill_package_reports_the_package_directories_it_wrote"
-        body: 1a9a611c970fa92491609761fbdd7a528823eed01460082876fc026e6f3e5b97
+        body: cf09f15fef57b94be05602373e8798c01e741b1ca6b2404c87865e5b59d37fca
   - node: 01a1835b-defe-736c-aa9f-0f41ec3e6b18
     reviewed: 1ebbd62d60dcd58388be86ddb9b7234a1d76b92cc58904eaab7ee7db8c4bf49c
     tests:
       - file: "crates/loft-cli/src/skill/package.rs"
         name: "a_host_without_a_yard_adapter_gets_no_yard_package"
-        body: 73625bf093784ad8fc76ae5c38dde5b54d2dc00d38908a8a63774c01aa253680
+        body: a7085e4de3dee978d3cc512954d7529642984647c0d7abaa9d4c5c892161dd84
   - node: 01a1835b-defe-736c-aa9f-0f425c3d1d76
     reviewed: c11edd3c211e9c2983ce678efca2b10026b5c03e4d2e51c3ad776f6d19dd3de6
     tests:
@@ -15944,7 +15944,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "a_source_that_differs_from_the_embedded_one_is_refused_and_named_and_no_package_file_changes"
-        body: b4d4265519d48e74de24ed1ec1ede9b9269314095e099e2958dc6f08280b4fba
+        body: 63c2f095bd70b374ca8f8c1c5e32de3298f0c3968355c53b5fb81ceaf2c4e405
   - node: 01a1839e-0cd6-73b2-a193-4ffd235245ba
     reviewed: 7970380212290fb07c5c4063e7286cf210d9780a4d1f12291a838576b755bd7b
     tests:
@@ -22394,7 +22394,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "a_changed_missing_or_extra_package_file_is_named_and_exits_1_writing_nothing"
         body: 25f8efe41e1569246c06eec5887b975535a817dd1387c8351ed10adbad58c7e2
@@ -22403,7 +22403,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "a_changed_missing_or_extra_package_file_is_named_and_exits_1_writing_nothing"
         body: 25f8efe41e1569246c06eec5887b975535a817dd1387c8351ed10adbad58c7e2
@@ -22412,7 +22412,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "a_changed_missing_or_extra_package_file_is_named_and_exits_1_writing_nothing"
         body: 25f8efe41e1569246c06eec5887b975535a817dd1387c8351ed10adbad58c7e2
@@ -22421,10 +22421,10 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "after_skill_package_runs_each_package_equals_its_composition"
-        body: 60ca0c8529609d7c723dfa4884b5183436913bfe061703247f398cffd1873336
+        body: a57414ba6bb9a969c781401be16652d9fcd39dd8cb362c0aa4fe245dc83d7bd3
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 01a17844-cbca-7515-8e4e-48d7402352da
     reviewed: 36d08903542e95516329d75020ffd585773eaa394a767a8cb4843e8c1444a870
     tests:
@@ -22550,7 +22550,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 01a144ee-c59e-7325-802c-d71d0cf0947c
     reviewed: 83d267d165277492a4e3a91c8b3b73eb2dbd1ec0ff3c40981d588cca309be1e5
     tests:
@@ -22634,7 +22634,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 01a13654-6e11-74fa-a359-25a786145aea
     reviewed: 61ef55c530369a871fa920f6afcb175c0a43ec697675a6a1e25ef184a5a340b6
     tests:
@@ -22676,7 +22676,7 @@ links:
         body: 84795bcf4521ab0996adff173da409e9c66644765160686bda092166947d8bb2
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 01a1835b-df01-7555-84b6-2dc33427b39a
     reviewed: 9a75784bf29b8b82aefbcc09095393bef9d57e8d1e681062215e820901c722da
     tests:
@@ -22688,7 +22688,7 @@ links:
         body: 1c7c8033577285f8fa5d3c7a6ebee1d7c60ee0bf786c64639a6e03409aab44a6
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 01a1787c-f803-70b1-b946-b71adb17c6f4
     reviewed: 62d4ee13fff906105387ea4a9a28965ef04bcebbb8457023a4f0e52eaf31473f
     tests:
@@ -22697,13 +22697,19 @@ links:
         body: d888c6eafa1440521060a54d95d599df61ba255f4adf9d426a12d12692bf329e
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 01a1787c-f803-70b1-b946-b71b18646046
     reviewed: b43fd2c88b52f4fb3c10d2ab52c90399d8569f877c6c627a268ed247d4544311
     tests:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submissions"
-        body: 64b5f0f205adad1352ca8069225569bb5b77ccf119f3667112240c0d94bb61eb
+        body: 7fb98e98061689fdef69a1edb56300a2167d12a3b823f3dc576e5f9c28ac7006
+  - node: 01a1d144-b627-70b3-a7fa-119f826bb1a9
+    reviewed: a68fde6ead835f5d8345afb2479a7990e08b20fbb83cb1e21724f38b86ca1263
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submissions"
+        body: 7fb98e98061689fdef69a1edb56300a2167d12a3b823f3dc576e5f9c28ac7006
   - node: 01a1787c-f803-70b1-b946-b71c877ab0bd
     reviewed: 6744efc618e24c37ca550932eea922be4e4a212c198f70d0536310a52ab864d4
     tests:
@@ -22791,6 +22797,48 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_skill.rs"
         name: "the_codex_yard_adaptation_plans_at_a_branch_s_start_and_ends_a_wave_with_codex_review"
         body: 741b468feea5d949688d72e6b912e7722a2c16e89187a1f4d48267c02fdab12b
+  - node: 01a1d123-dd3f-7153-9249-3a3a511372e5
+    reviewed: eb7b39fa35a71a88770d0865256f80061be0723aaf28bad6703fb1db596f8e93
+    tests:
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "both_plugins_hold_loft_spec_and_their_adapters_yard_skills"
+        body: e71ea6821ef1ba20d2a091883d79ffe0a5da8ad82b45ab20b5f6ed25066b2587
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "after_skill_package_runs_each_package_equals_its_composition"
+        body: a57414ba6bb9a969c781401be16652d9fcd39dd8cb362c0aa4fe245dc83d7bd3
+  - node: 01a1d123-dd3f-7153-9249-3a3ba0959f58
+    reviewed: f016b21d0ad04342cedbee073f4d58213a356a7710a434da155eb74e4ea1e295
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words"
+        body: 6352c21b5501cb75f72417253b1477e0dc6622ea536fa2eb8e395d50f527f776
+  - node: 01a1d123-dd3f-7153-9249-3a3cec086406
+    reviewed: c03f084b6ec69069391c97580cda87c55b62f3b5bfdd64a87cbbfba1cfdeb163
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words"
+        body: 6352c21b5501cb75f72417253b1477e0dc6622ea536fa2eb8e395d50f527f776
+  - node: 01a1d123-dd3f-7153-9249-3a3da64435d6
+    reviewed: eff86685b2b2e5c3c49029ea7be63cd8dd3d56d33b9499f7462e747d2701dd82
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_skill.rs"
+        name: "the_claude_code_plugin_carries_no_yard_page_skill"
+        body: 1ca5c1c9f1ed229c370a9227dd08b1c5f98ded384b2c56ebc7fc2e6d21480f07
+      - file: "crates/loft-cli/tests/skill_install.rs"
+        name: "skill_install_writes_nothing_outside_the_two_skill_directories_and_the_claude_settings"
+        body: 815843a5a0c25b5a4089628ecb2e9ba55f2f21ad1bed35ff69281c7991ae2c85
+  - node: 01a1d123-dd3f-7153-9249-3a3ee9543cc8
+    reviewed: 597e19fa10ac9dc87c2dac9f8fa711bec68fca52e770f1a532f183b7b291008e
+    tests:
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_codex_yard_page_package_that_differs_from_its_source_is_named_by_the_check"
+        body: a3a3235009d3de9b470d6096094dc44ddabf0e79ecc9d2e044b3dda75841f264
+      - file: "crates/loft-cli/tests/skill_package.rs"
+        name: "a_source_that_differs_from_the_embedded_one_is_refused_and_named_and_no_package_file_changes"
+        body: 63c2f095bd70b374ca8f8c1c5e32de3298f0c3968355c53b5fb81ceaf2c4e405
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "each_committed_package_equals_the_composition_for_its_host"
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 01a177f9-8294-77e4-aa6e-7067b42cdd3c
     reviewed: ef283fb5971820f9c21d1a3fe9dcf582d3ce6e475f572ea0528eb52873c0bfa1
     tests:
@@ -23372,7 +23420,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
+        body: ebf5a03212c4a2dc85e4568df5d4df3be0f5fb3a2f9529251f9441211c30e0d4
   - node: 01a17989-a8b9-74b1-9049-07443fdd010e
     reviewed: cb64361c8ed7d4ba1bd954c0cc5d7aab4b7c55d5609cb4e989cf4d1bc260b592
     tests:
@@ -25746,6 +25794,24 @@ links:
       - file: "crates/yardlog-store/tests/home.rs"
         name: "a_file_that_cannot_be_renamed_into_place_leaves_no_temporary_file_and_the_old_file_as_it_was"
         body: db584449999ea4c0a842d0b25344851dc486eeda045949795c6f8a37cf55d7f1
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc19f3178e8c
+    reviewed: e97078468c38d512a524474fc9255b6ce9600a1937c7ed7935e5e1a82c4a6501
+    tests:
+      - file: "crates/loft-cli/tests/yard_home.rs"
+        name: "a_moved_home_holds_the_files_of_the_machine_and_nothing_is_written_to_the_default_one"
+        body: 8e9c522d8e0f8ec0bc412bd7f684d6b2e03fc021b79300e51cfcc57181ee6423
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc1a8f3a8d68
+    reviewed: a651d689534ebb35ab88020548b62f252136d08ad06b38fe6d55c179c3309156
+    tests:
+      - file: "crates/loft-cli/tests/yard_home.rs"
+        name: "page_servers_kept_in_two_homes_serve_beside_each_other"
+        body: 7ee0d9ebb01451f382302379e40788ede72e7f3d49afb75234fd89a6c3325ec4
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc1b82ba35e2
+    reviewed: 23683a421e1b5b8a2b6e4d12407a8a488b24f988d935565edcf2458850fda9cb
+    tests:
+      - file: "crates/loft-cli/tests/yard_home.rs"
+        name: "an_empty_or_relative_yard_home_is_ignored_and_the_default_one_is_used"
+        body: 4bddbd71f7fa9609943b88a59dfeaa9396ae0aa87f4c8b526694f969b647032b
   - node: 01a1646f-546e-76cb-8b4f-f1ee570d4cd2
     reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
     tests:
@@ -26586,6 +26652,18 @@ links:
       - file: "crates/loft-cli/tests/yard_read.rs"
         name: "the_result_lists_the_open_submissions_each_with_the_agent_that_sent_it_apart"
         body: b502c9889b3fdcc316860c225f46416e9f29f0412957032a9659c42de8c207f8
+  - node: 01a1cf7a-0eb7-770e-800d-7eb6b1f25771
+    reviewed: dd7688ebe641a24a69932904f4224a59476d7a9b30917cb82ca4910cdb8032e9
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
+        name: "test_the_session_s_loft_runs_with_the_dogfood_home"
+        body: 87f7d3393119bf0fb018cc25be1917f7c13399e217cce5e11cae105476f2d05a
+  - node: 01a1cf7a-0eb7-770e-800d-7eb7b63ace26
+    reviewed: dd74e01940b78721e8742f8c9a38e3137fe28ecb239c7c7c99aa5bf21adf6e28
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_contract.py"
+        name: "test_the_page_server_kept_in_the_default_home_keeps_running_through_a_restart"
+        body: 56905cacc05f43217840e035b3bc72ae817bc41c4cc8046ca5210bde42291547
   - node: 01a18025-1c03-72bb-b904-c23d0979cab4
     reviewed: 6dcddd855c2e99dce1c11914affe4f86f4bcdaf79ec53701418845fae6a3b122
     tests:
@@ -26603,7 +26681,7 @@ links:
         body: df0203e7aacc08a5aeadcbbb8c61661b85a03f3761d20b08dcbf22d1700fb238
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_both_hosts_and_resume_forms_restart_before_agent_start_and_keep_cwd"
-        body: 02448010ffbec8ff518af6a60bd3cfc0908c587eb66ea39643ce56d7cebc5b48
+        body: b6dd54959d57b0e5746464a0e0d128ec1c4ff39f4146f5ef87afbfadd8fdc24f
   - node: 01a18025-1c03-72bb-b904-c23ff7831364
     reviewed: 993a2c88d46ab376c640d6a95387d1965eb98a9cf78b0c336ac31417a03a232a
     tests:
@@ -26612,9 +26690,9 @@ links:
         body: b9ce42444fb7060978bf41c3be8e288ee60edb0642287986e52340a6e26a10dd
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_both_hosts_and_resume_forms_restart_before_agent_start_and_keep_cwd"
-        body: 02448010ffbec8ff518af6a60bd3cfc0908c587eb66ea39643ce56d7cebc5b48
+        body: b6dd54959d57b0e5746464a0e0d128ec1c4ff39f4146f5ef87afbfadd8fdc24f
   - node: 01a18025-1c03-72bb-b904-c240304554ce
-    reviewed: e06ae1d60bb9d4a722c97980ffb2fbea4afc7f8ae5b46e02e97204c2d85e50da
+    reviewed: c6a0de4b639a878811779c769da3ee8fa894e5faac51ca3e14439d66eea4235a
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_contract.py"
         name: "test_concurrent_launchers_finish_with_one_verified_server"
@@ -26636,7 +26714,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_both_hosts_and_resume_forms_restart_before_agent_start_and_keep_cwd"
-        body: 02448010ffbec8ff518af6a60bd3cfc0908c587eb66ea39643ce56d7cebc5b48
+        body: b6dd54959d57b0e5746464a0e0d128ec1c4ff39f4146f5ef87afbfadd8fdc24f
   - node: 01a18025-1c03-72bb-b904-c245ed0737b2
     reviewed: b57d3767095df0f11cf47f582a1bdf8fedbcfec0c2781aa288f0908c01c25e6e
     tests:
@@ -26663,7 +26741,58 @@ links:
         body: 2b34c5e49750275ececf4999620b806283dfe37f374964045eee6df3c367c183
       - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
         name: "test_restart_failure_prevents_both_hosts_from_starting"
-        body: 6e58ca31359bdc48005c8da64352fc653732c9b22c4b86940c49fc2c439d72cc
+        body: 868697b56a387127ade112ea498e032e6a71deed571a796f8298a4861773fe58
+  - node: 01a1cf7a-0eb7-770e-800d-7eb96f1b7c1e
+    reviewed: 1d8c18a019b4a2a54c87cfff86b3ab2736b3cfe1097448a68d0580accd43fd12
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_desktop_switches_only_the_project_to_this_worktree_s_plugin"
+        body: 91e61df5f72370815d1c20da992cae3bec458d517897de530439ef745d0d8f20
+  - node: 01a1cf7a-0eb7-770e-800d-7eba6cb45db1
+    reviewed: e2bdb91454ccb7eb8f8100540a67a83a6f8f776fb4e5b31bc2d485cf850576f3
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_desktop_switches_only_the_project_to_this_worktree_s_plugin"
+        body: 91e61df5f72370815d1c20da992cae3bec458d517897de530439ef745d0d8f20
+  - node: 01a1cf7a-0eb7-770e-800d-7ebb3cc110b1
+    reviewed: 5d69e9e800a4d5cf5f3304ed8405dc6d4ecdbf5a422875a6c01b5d5c63b59eca
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_sessions_in_any_other_project_keep_the_installed_plugin"
+        body: 2c3e6382cc8cf022160bb42b139206f3af2c7051fa891c738c444762036ac27f
+  - node: 01a1cf7a-0eb7-770e-800d-7ebcd178f72e
+    reviewed: 161e0389a377e0f060aaf05697e1f77fde9907ebe9e1f1bab0807ec496d36114
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_the_settings_of_the_dogfood_plugin_run_this_worktree_s_loft"
+        body: 7e0992a4dcf3578402d2be2ad4d14d4acb4227a5f0cfdf7b7ffe4b8b63acb579
+      - file: "crates/loft-cli/tests/yard_dogfood_launch_test.py"
+        name: "test_the_session_s_loft_runs_with_the_dogfood_home"
+        body: 87f7d3393119bf0fb018cc25be1917f7c13399e217cce5e11cae105476f2d05a
+  - node: 01a1cf7a-0eb7-770e-800d-7ebdfe1618e2
+    reviewed: f89443c0a68ea6d33b0aec4ef45706743542d9f082ca976cf93d4e813f28b654
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_each_change_to_the_settings_is_printed_before_it_is_made"
+        body: f5c483a36a22f97fdfb834a47878084f115e31ba296519b1906a2ac1a5520195
+  - node: 01a1cf7a-0eb7-770e-800d-7ebebaa4add8
+    reviewed: 8873ee7761082e0597a2f2af27dac82df019a6069583e0797a9a3946b487b001
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_a_second_run_with_the_same_project_changes_nothing"
+        body: a02e42d9f88be5397cafe279a529dbd6650e1b5fd6e47a4677958a29e5e071c1
+  - node: 01a1cf7a-0eb7-770e-800d-7ec0ee199dea
+    reviewed: 4b66485fa51ce6f611b4de45128bf8f8188de2bf6ec8bd0d87d91067ac7a7f71
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_undo_returns_the_project_to_the_installed_plugin_and_leaves_others_alone"
+        body: 78eeaf943b28d1650b324bc2341c20951c00af750f018ead687e0bec08cffb73
+  - node: 01a1cf7a-0eb7-770e-800d-7ec1f2b2a7fe
+    reviewed: 04e7731512814fe30a0ef19d6ddf719a5217713b85f4e8c34adadea451e9b7dc
+    tests:
+      - file: "crates/loft-cli/tests/yard_dogfood_desktop_test.py"
+        name: "test_undo_returns_the_project_to_the_installed_plugin_and_leaves_others_alone"
+        body: 78eeaf943b28d1650b324bc2341c20951c00af750f018ead687e0bec08cffb73
   - node: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
     reviewed: c915d004fdcea33a9c0dee16c199ac54477b6f7d577930b621a4235c0b4e989a
     tests:
@@ -31755,6 +31884,15 @@ links:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a post carries no Origin, so the page server tells the mod from a page"
         body: be75fd9790c04a38e35eafa27d171096d45cf3f764294158c78a7f2683c53565
+  - node: 01a1cf7a-0eb8-7654-8bfa-cc1709e17563
+    reviewed: 2f0432cf2ccf7f03cdf4e2ca8c8a202cbb263b1b3bbec5c01a766fda8262d023
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the token is read from the home that loft yard protocol reports"
+        body: 9f1d070a32f9ee5ad1abe550d007ba203fab107ca47dce3e69924e3b2fa60971
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the token is read from the home directory"
+        body: 7742f31a59b82efac08877f6556c51829c355c28d78ec1004f32ab35faae79c8
   - node: 01a1646f-546d-7042-befd-eb0bdf72490b
     reviewed: 52bde84706af67ee53aa0f2c4d5557ca4cb4fa0a182c334669c75f363ddb6779
     tests:
@@ -33404,7 +33542,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "both_plugins_hold_loft_spec_and_their_adapters_yard_skills"
-        body: 779ad4bf895d18a350c0a26dad07050eca62fe401e5d385ea8641c419f9734d7
+        body: e71ea6821ef1ba20d2a091883d79ffe0a5da8ad82b45ab20b5f6ed25066b2587
   - node: 01a183e9-dfd2-74b1-a45a-14bf569c68bb
     reviewed: 079df47ec9f5430a3c95a66df596eb55d4b9dc688ed49f4659d53f42ffa2c68c
     tests:
@@ -34062,6 +34200,405 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "output cut short is never read as a document, even where the bytes kept would read as one"
         body: 8c5509be9a614d07cb3e5ad721a6d7173519c12355c2bb91d8b811d8c599942d
+  - node: 01a1cfe2-478e-75d1-b104-04da77492dde
+    reviewed: c37747d9710ef601711cafc2b1e8462ccd159ef5ef7417e8a7e0d4682079d209
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command /yard-pane is offered once Yard Client is on, and runs while a turn runs"
+        body: 7d2f00fb32bba60a513eca53da68c6c731f9c7097a79047f3e2390fd87a7d3b0
+  - node: 01a1cfe2-478e-75d1-b104-04db8a13b084
+    reviewed: 49bb0a04f6871afbf434191271d86646f10096fbfc1a9e2d69b894e4f1a167ab
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command /yard-pane is not offered while Yard Client is off"
+        body: 4b1de870da1a79a1ec1abffb9a9367e17968d224b7bec722b4bf3f12b7103e96
+  - node: 01a1cfe2-478e-75d1-b104-04dc2834a13d
+    reviewed: c266ee2298bc23d9106bd6d7cf2a278e04ae67339579f518adfa39c007efd92b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command /yard-pane is offered once Yard Client is on, and runs while a turn runs"
+        body: 7d2f00fb32bba60a513eca53da68c6c731f9c7097a79047f3e2390fd87a7d3b0
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command opens the pane and reads Yard Log whole, for the session, marking nothing read"
+        body: 1d7ff598246f39ce94b5d77a9491d09648e007a68ab4631eb9c2a96dcd7da642
+  - node: 01a1cfe2-478e-75d1-b104-04dd17b426cf
+    reviewed: 87dec0c7700fa906267806a3110fbbe3302baf6e1ef085834ce009e57a530671
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "running the command again shows the same pane, read whole again, and keeps one follow going"
+        body: 36dbfa88c17cecffcf5c999c909606fa1f2e4b1faafb460805f9b8250f5575eb
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "running the command while a read is under way reads Yard Log whole once that read ends"
+        body: 9144d54327017fb4ec034a68726794d0a57e40c25db420a03d31df7f2ba48801
+  - node: 01a1cfe2-478e-75d1-b104-04de2a2db6e9
+    reviewed: 78be96748d1ae96ff8ab0ad4e342bd7624416ac8d3bd229f88d95b92231202ff
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "where the working tree holds no Yard Log, the pane says so and names the branch"
+        body: 59bb25da8e147f7bb5a0b5f9449c0ed3639c71c8905faa83981d3b5d311f3181
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a branch with no Yard Log gives a view that says so, with its branch"
+        body: 6cf3f2e8a0e6d4670c0b26ff83f2573e4b5755e31301b68a4131dd7481ca3b06
+  - node: 01a1cfe2-478e-75d1-b104-04ead25bf4dc
+    reviewed: 58b97a2b7dd9b1b782e96d1c869325913154862f45f1632ba6687ef434a5c7bf
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a write that changes what the pane shows, and an answer given on the page, show within 2 seconds"
+        body: 3aef875eddcc8d9564584c2556fcc0b0267a203c433e3728d18783f9bd3e0ac0
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read since the revision shown replaces each changed block and stage in place"
+        body: c5001c7d8753470f2ee60c65b98b99ad3961ff339528f7fa93abe208f42f7658
+  - node: 01a1cfe2-478e-75d1-b104-04eb39d4b416
+    reviewed: cf6d01707aed76dc8bdd6588d521fb19acccaaea05964470d0864dbd9d0b690e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a write that changes what the pane shows, and an answer given on the page, show within 2 seconds"
+        body: 3aef875eddcc8d9564584c2556fcc0b0267a203c433e3728d18783f9bd3e0ac0
+  - node: 01a1cfe2-478e-75d1-b104-04ec7f5f62a5
+    reviewed: 4df9aca82e250018d38308e5c126838fc5354653380f5e9deab4da08c68abfe5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
+        body: 61fae907176e4c063c48516d8ee63b284f6a6916a0d5ce05df2f5fa9b4cf6bd6
+  - node: 01a1d007-2070-754c-bc33-f3cc6389cd12
+    reviewed: b704463eb9abe003c1526b75e53c333479ffd1e6262a3b9ac786b90f9a458d77
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a read since that brings a block the pane does not show is followed by a whole read"
+        body: 5b1dcc24df7dee6465ef9f348460f7e06fbd164a59111c13ba0071a1234d0f5b
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a checkout of another branch is read whole at once"
+        body: 0c261139ee7a56fe80d17dac93a47c2e89f0f70f0250c606cfd7b6fa36772124
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read since that brings a stage or a block the view does not hold asks for a whole read, which places it"
+        body: 9ee5011bd443969f4fb84955522030bc1fe9b2397d312b101a3c1dc829cbcbe0
+  - node: 01a1d006-ff66-7349-92b7-bad2a75a773e
+    reviewed: 2903cc8624a4f9dfb310d6299621338b4ea1ee306bc6f392fe553a86d659597d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read since that brings a stage or a block the view does not hold asks for a whole read, which places it"
+        body: 9ee5011bd443969f4fb84955522030bc1fe9b2397d312b101a3c1dc829cbcbe0
+  - node: 01a1cfe2-478e-75d1-b104-04ed5daac090
+    reviewed: 878ce16e085240e2fb7ce339447cf53d15496246ff6ba917be91d9de49907240
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "the command opens the pane and reads Yard Log whole, for the session, marking nothing read"
+        body: 1d7ff598246f39ce94b5d77a9491d09648e007a68ab4631eb9c2a96dcd7da642
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "while the pane is open, each read after the first asks only for what changed since the revision shown"
+        body: 61fae907176e4c063c48516d8ee63b284f6a6916a0d5ce05df2f5fa9b4cf6bd6
+  - node: 01a1cfe2-478e-75d1-b104-04ee292ec71b
+    reviewed: 58b4f6108ff01000db1a8b25381476aa04170ca02498d314ec293e38c325e21b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a checkout of another branch is read whole at once"
+        body: 0c261139ee7a56fe80d17dac93a47c2e89f0f70f0250c606cfd7b6fa36772124
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a read of another branch, tree or Yard Log asks for a whole read"
+        body: e3d130ce3adb96d61a37f1ef18ebdcd9aebd38c09c8078d1d5d8a4bfd962a279
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a whole read of another branch starts the view over"
+        body: 7e77113feadae239a099406bf98d99358c28cf25d6c8c9b732f1286c64005256
+  - node: 01a1cfe2-478e-75d1-b104-04efb1c2e815
+    reviewed: ab35498221456d2dab8c9f7f6bd6b7e7f528cf4475c1b8039aa616ab63784371
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "once the pane is closed, the mod reads nothing for it"
+        body: fe20f2772254adbab43c92694ae23e4ddc8beba792d05a82fcd1859261511a42
+  - node: 01a1cfe2-478e-75d1-b104-04f6166ca30a
+    reviewed: b79ddb2fbffec1f36512d9bc6aa906036aa87248ef7a83ffe4494b806e9a7fdf
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "choosing an option of a question that takes one records it with loft yard answer, for the tree the pane shows"
+        body: 035cd4e75bf67ddd8a78e25bf16412ff522f0f99ac5a575fc95a27c4adeedd60
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "choosing an option records the words typed in the question's field with it"
+        body: 97b476724d919991e1abdd01bd946e6ddffe396c14fa74e33b8357301253a3d5
+  - node: 01a1cfe2-478e-75d1-b104-04f7754f2648
+    reviewed: fc50d68681895a337e109dc4dca5a0443ca7fe82f67ee78b4d857f6ebc6d6812
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a question that takes more than one option records the options ticked once sent"
+        body: e9684555c01ae1c8e8d5a2989cbc4672010fc7d9b3a2dc5fd3adca110251eb56
+  - node: 01a1cfe2-478e-75d1-b104-04f8dcb8f19e
+    reviewed: 9f1d3132640bf51ba6d51a11258fa79d67d5225260f1a3d6ea8915cbe5bc7b3d
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "words typed in a question's field and sent are recorded as the person's own words"
+        body: adc6c933d9b4ea2a50fc08bf2fc9a8af099e43f7f71f00788d232c48c547c535
+  - node: 01a1cfe2-478e-75d1-b104-04f9fa5c2fa8
+    reviewed: cda5f6783f0a88ca28d2ad409c9ad97453cb849ef41237d5e21a411c157a6929
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Approve records the block approved, and Reject rejected with the words typed as its reason, or with none"
+        body: d2dbfcc63420784895dc68d9008f77f688ec361cce3f2c063b845619b6e85baa
+  - node: 01a1cfe2-478e-75d1-b104-04fa5d52bd00
+    reviewed: 8d5db362fed7758f30189fe002edd2f6380a6f90ed46fe79c415a991a64ecac8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Approve records the block approved, and Reject rejected with the words typed as its reason, or with none"
+        body: d2dbfcc63420784895dc68d9008f77f688ec361cce3f2c063b845619b6e85baa
+  - node: 01a1cfe2-478e-75d1-b104-04fb73a62dec
+    reviewed: 11650543bee01cc9e4f056680c9b51e0a7cf63b79b9b869cbdd8fc89a5b72789
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Approve records the block approved, and Reject rejected with the words typed as its reason, or with none"
+        body: d2dbfcc63420784895dc68d9008f77f688ec361cce3f2c063b845619b6e85baa
+  - node: 01a1cfe2-478e-75d1-b104-04fc44d47b01
+    reviewed: 91fed78bd808182aeb44e7b5f2ff56d635b5a51e74b28385348316b8ee2708ce
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "once recorded, the block no longer shows as waiting on the person"
+        body: c8760addd933bad75a5c2e9f5f6bab75fc67a09aa43466156210a6127212dd2c
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "what waits on the person is each unanswered block of an open submission, in the order the submission holds them"
+        body: 1294ec53d339e4b2db49c48d8e07a481b7a6edf1e754cbff165094aeaa7af258
+  - node: 01a1cfe2-478e-75d1-b104-04fdedc77daa
+    reviewed: cee70f34c41887f00ea64f75fb60d5e52b8662cdd7c59df4b269a5a00f6620a7
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "Claude Code's dialog for the same submission closes once the pane has answered the last of it"
+        body: 333f220ea852d785088bbf0851c353ee02ad7f89a0d0f6ab7fc1647c34cd8d0d
+  - node: 01a1cfe2-478e-75d1-b104-04ffa640ae28
+    reviewed: 6ff0e806731e2c6923f57c15a42755bc937049ee805da8425e7e472c869a8444
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a block answered elsewhere first keeps that answer, and the pane names where it was answered"
+        body: 58a3a783089835692f4c70a3755916c40ca3dc5dc42756fab017abadac037428
+  - node: 01a1cfe2-478e-75d1-b104-0500223a2689
+    reviewed: 60905014b31cd6164f23cd1e465cee343d5bd94b939e98a7ef4f3f449f33ca2c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "a block answered elsewhere first keeps that answer, and the pane names where it was answered"
+        body: 58a3a783089835692f4c70a3755916c40ca3dc5dc42756fab017abadac037428
+  - node: 01a1cfe2-478e-75d1-b104-05026550ba85
+    reviewed: e7ebcff84d3412951cc21199744f7109c3b58cdea2eb94f88e6984d879866801
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "where the surface has no text field, a question is answered by its options and Reject records no reason"
+        body: fb4230639a33f0deab6987734ceda936280c0364de42bb38d0f5168b8f7b9395
+  - node: 01a1cfe2-478e-75d1-b104-050333a2c655
+    reviewed: c735ad7cacb80a2a343ced43bde54938e501d520f3685ce314d4f6abb1f446be
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "where the surface has no text field, a question is answered by its options and Reject records no reason"
+        body: fb4230639a33f0deab6987734ceda936280c0364de42bb38d0f5168b8f7b9395
+  - node: 01a1d0cd-6916-731d-8a40-08498c802b8a
+    reviewed: 0955c2ec1017a1594edc9e0580de7d120490261419036a6637fcb4fe8e5978fc
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in Claude Code Desktop the command opens the Yard page at the session's tree and branch in Desktop's browser pane"
+        body: aed0da0067f70a6eb140185d5e710ac47be08ccbce358e5cbee896d987b84564
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "run while a read is under way, the command still shows the page once that read ends"
+        body: b34216543776b7729900238cdc55a549396bbaa7087c20bb35069dbbf5447fdd
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the command answers without waiting on a browser pane that does not answer"
+        body: 617022b909cf627e7b3dc296afb8eb982a1907a621e750f94273e003525f703b
+  - node: 01a1d0cd-6916-731d-8a40-084a8c2d8ba2
+    reviewed: 5412a74728ec68a552c195716480cf02458e2148a1911f644531f589ad297786
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "where Desktop's browser pane already shows the Yard page, the command shows that tab and opens no other"
+        body: 008189a9b944d227236006e2331f210cbaefa35e891607cf0bf4719f5bd1ca9b
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a tab of the Yard page the person opened in the browser pane is shown, and the tab it names kept"
+        body: 9fb87a4cb1d0efd638acd457fec9c355667081c5343ced64a73c1970484fd909
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "where the browser shows the page in another tab than the one asked for, the next command shows the tab it named"
+        body: 7adaf374676c7c603fb666a1f90f8bc6c6cc6243587084bda05740172c5db6ff
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a tab whose title holds quotes and braces is still found among the browser pane's tabs, and shown"
+        body: 024ed96f49bd0755c5def435dcea304e7eba5d47550159d43272370da47a07f0
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a tab of the Yard page opened from its localhost link is shown, not a second one opened"
+        body: 5698268d4895e6de2d69251a583508b703a718427408065d0a21542d5fab5533
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the tab the command left, once it shows another site, is left alone and the page opened in a new one"
+        body: fd2cf6deb43bf2b90aecbc6fce96f666e2af2cf83fbf639557240717332c517a
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a browser pane that could not be reached once keeps the tab the command left, for the next command"
+        body: 5d7ea1f77b2a339af8dc9398e75bf197a0f1acff842bfb90b1d9599ec1267a0c
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "words before the JSON of a browser answer do not hide the tabs it lists"
+        body: 0ba41b9ec2963c3c9b956bd40ea54c4339955e92675bdee3315b84349e88052c
+  - node: 01a1d0cd-6916-731d-8a40-084c16280236
+    reviewed: bb667b4ce521ec91b5eb5d451a76d06b9a2669671826ea88483fbfa281a5f3eb
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the terminal, VS Code and the mobile app show the link in the head, and no browser pane is opened for them"
+        body: 537ee6232b96eb9407cce00db28e88ccb1830fe7e00da4de8aadcd603f978336
+  - node: 01a1d0cd-6916-731d-8a40-084d1b67a9cf
+    reviewed: ff537df7b53ea8cdb44e26fe1014b582d399478a605ce833884db3f98a6e5855
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in Claude Code Desktop, where the browser pane cannot be reached, the pane shows the link and says so"
+        body: b96027be4fd419e189af416e9b23d3fb974612d6e53d7d66336a71e2f12389c8
+  - node: 01a1d115-a1c7-75e3-82bb-0f27995f7261
+    reviewed: 3062f8fb5facc0946f4c9e9332282d303709e0809685dc18f76e0f986ab96592
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in Claude Code Desktop the command's answer says the page opens in Desktop's browser pane"
+        body: c613d382f3baa466df5beb0f185db220a0d1234ba062bdaca336a32e3430641c
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "run while a read is under way, the command waits for that read and answers with the address"
+        body: 8f9c348e350e4426698a3aa8833eccccae3d68819dd68734a86989e5ea5d4bf8
+  - node: 01a1d115-a1c7-75e3-82bb-0f281f42f8f8
+    reviewed: e0e408752e7ecdbb806983cc2104a9e0e7d9ff35f905bea75c17adba3d98e9c6
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "where the read names no branch, the command's answer names the Yard Log by its title"
+        body: 18b1b8d50a3656b808e7394211ea63da6abe9a8d3d42d61b6522d4e93086efa0
+  - node: 01a1d115-a1c7-75e3-82bb-0f293f5fc03e
+    reviewed: 74f815c6105bbb669c7756719a270c27e00029ea55008a6a2a9adf413b2bf576
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the terminal the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: d3208f70089aeabc0fdfdc6edb22c964b923a33247484b2beb2a4746147584d4
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in VS Code the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: 63832cdbfc3a4f292023dac645f1740e934d2eb2c7c0a6ce1346d68ed1f8eacb
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in the mobile app the command answers with the page's address for the tree and branch, what it shows, and to open it"
+        body: 026cb3fae70781f2aa6821bcb33d6672b86aed0e6b65e12968a521637485f2c8
+  - node: 01a1d115-a1c7-75e3-82bb-0f2ac26e3e93
+    reviewed: abea16fcb1d9fdba81905127fd4797c8149d28d8926eb57de61b7b1708760ead
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "in Claude Code Desktop the command's answer says the page opens in Desktop's browser pane"
+        body: c613d382f3baa466df5beb0f185db220a0d1234ba062bdaca336a32e3430641c
+  - node: 01a1d115-a1c7-75e3-82bb-0f2bc4f3bda5
+    reviewed: 300b417cf352dd298dc357c5b3ecac4756c337a4fc115e67e7ecede9e0abd883
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "where no page server serves the Yard page, the command says so and gives no address"
+        body: ce6abd6621426074df86b18b9e16c9c936c3afc4cf246b51ca02945f417dcfab
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "where Yard Log cannot be read, the command says so and that the address is not known"
+        body: 0da02dfc78bc4cd722e230679f85f9f779adaa58d88c61756357bd7851a08cb1
+  - node: 01a1cfe2-478e-75d1-b104-04e08deef20b
+    reviewed: b2a5f6637d4242eedc87ac5c2187a315e762228aa090f3688a7c8bb3a5529cd8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the head names the repository above the Yard Log's title, set larger, sums up its stages and links the page"
+        body: 32426d15691ffcb98a41921999db4a47147e49d7524c67b5cec6406e33df3f4d
+  - node: 01a1d06f-b09f-73ae-a356-c4a36c12e63f
+    reviewed: 205d56ab01ccba0bf9f3e21217573cb4145306e767250bcc9bee7db3fc9a201c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the head names the repository above the Yard Log's title, set larger, sums up its stages and links the page"
+        body: 32426d15691ffcb98a41921999db4a47147e49d7524c67b5cec6406e33df3f4d
+  - node: 01a1d06f-b09f-73ae-a356-c4a40bdf34c9
+    reviewed: e3f1cc3d8e2cc11c8f7f2dffd7b8d82d4ca22c1bb7770bf2c118d2dfed678216
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the head counts what waits on the person in the waiting colour, and shows no count where nothing waits"
+        body: e04b5e0c0d09e3c5cb1f2c6f2029b8636850d35dec32d3fd506f4566f26b49af
+  - node: 01a1cfe2-478e-75d1-b104-04f4e90e6960
+    reviewed: d8d748b0d99350359647332138e5fe8d612d1e458f3e0939227c4409b49aa3fa
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the head counts what waits on the person in the waiting colour, and shows no count where nothing waits"
+        body: e04b5e0c0d09e3c5cb1f2c6f2029b8636850d35dec32d3fd506f4566f26b49af
+  - node: 01a1d0cd-6916-731d-8a40-084f2599c3d8
+    reviewed: 255547bd1806dedecf96eb7729955fcf389223764d710e82794b47ae53d70719
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the pane shows the first active stage's title, the agent that owns it and its goal"
+        body: 827d17ae0a4804262d96355489fc80476119a15b6fc79ef5260df13d081a616c
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "a whole read keeps the agent that owns each stage, which the stage in hand names"
+        body: 5aa06008383154bd2f674d33ebbc6cf22d21678e6bd0273b10487bbf9e60497a
+  - node: 01a1d0cd-6916-731d-8a40-0850fe52458a
+    reviewed: 220a162e9a22aef43c49595b0d3395273129efc0698ee712d7ed8548f18df4ba
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "each active task of the stage in hand shows with its title, a fix marked Fix, and no other task"
+        body: d6ff9ebe85e0ef581749e200339c649b997134b1cd7006a8e6b74a961e822d01
+  - node: 01a1d0cd-6916-731d-8a40-08511dccb80f
+    reviewed: e786f574211c869c17878980f7fd4a7bbe7710a6f6dac59b5c9391d2e0b08273
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "where no stage is active, the pane says so"
+        body: 86b750245dd328724b2b998d403ae4927560ac2eebf3ff3014906f5953eadc6c
+  - node: 01a1d0cd-6916-731d-8a40-085200c14980
+    reviewed: d09df00cc12675ace9c6e1e16dedd74d1a56c500b370c93cf8bd338bbcd57f1e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "what waits shows without a press, the oldest submission first, each submission in its own order"
+        body: a6a1a78fa1d164abdf3e5af273dcc20f4cf7f31b091fbceaa878ba2e405a6216
+      - file: "plugins/claude/loft/tests/yard-pane-model.test.ts"
+        name: "open submissions sent in the same second wait in the order the Yard page lists them: by the revision each reached, then by key"
+        body: 22aa9590b1bd9a9b7b51a1769fa16a48bef57ce5ec5e5fe186bed28b2cf10dd9
+  - node: 01a1d06f-b09f-73ae-a356-c4aecdbe19d5
+    reviewed: 6ab15fe632d985fe6b7e1122387db21b3b55e8a3700a008de2d6b9606c575ae8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the card of a block that waits is outlined in the waiting colour, with a bar of it at its left"
+        body: f0b78463b6174446900283faf8b4a19d0929cccfbd2fd73cf10aab4e575a0f66
+  - node: 01a1cfe2-478e-75d1-b104-04f1651155ff
+    reviewed: f57db84803947bbd585f20fc74553070182892bd4f03b57d42a957c150709607
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a question shows its prompt, its context as Markdown and each option as a card lettered A, B and on, the recommended one marked"
+        body: 4aba1ef0359f4905c9c140cfc4f87497301e0d5f97c784ae666f3ee2bece8dca
+  - node: 01a1cfe2-478e-75d1-b104-04f2f2c33b76
+    reviewed: a36d10f6455af73fce6927199da62bcb37bbe837f4f6560725a1796a833d584f
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a question shows its prompt, its context as Markdown and each option as a card lettered A, B and on, the recommended one marked"
+        body: 4aba1ef0359f4905c9c140cfc4f87497301e0d5f97c784ae666f3ee2bece8dca
+  - node: 01a1d06f-b09f-73ae-a356-c4b42fb55400
+    reviewed: 1b1aef1797904d69b4e04a77890cf5d9ca438c32b801b33dd79bd4d3d99ee9e1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "a question's lettered option cards choose its options, and a field beneath them takes the person's own words"
+        body: 44f451472d7a7af50adc74f3050c8912dec2a123ab5d9127bd87230195b7e70a
+  - node: 01a1cfe2-478e-75d1-b104-04f3892200ab
+    reviewed: 19eb22d63cd46fb146d174e809b6ee3442ce0aa8a56ccfb9fbb5596803428ed0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "an approval shows its title and its Markdown, with Approve and Reject"
+        body: e9282f8cfb8ec94a2b614373034eccb38e4fbe41f5e880b438d7109561c7909e
+      - file: "plugins/claude/loft/tests/yard-pane.test.tsx"
+        name: "what waits on the person shows its questions with their options, and its approvals with their Markdown"
+        body: 2ff769f29f2e921162ec26bea64d155d7eb639842edb7b7388ce71ffc9494101
+  - node: 01a1d06f-b09f-73ae-a356-c4c150ee429d
+    reviewed: f7961de02579ea38fe7fc6a8d36da7fee1d11c6313830a30000a60bf9e61395a
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one"
+        body: 23767627813550d9ed56a99b43b68d1bc6ea1c0453407f8807e8e99bcbd6e751
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "on every surface the pane draws its text in Claude Code's own colours, and no tinted ground but the rust of what waits"
+        body: 6544a26c3dbe18a84c4a04514326084e4fc232bcc99ef7ca39478786fca98ca7
+  - node: 01a1d06f-b09f-73ae-a356-c4c236afe1c5
+    reviewed: 5d10c56f57ec8f92394ae9f55ca22334a6569b7aa3d9f79cbc7df83d781f1842
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one"
+        body: 23767627813550d9ed56a99b43b68d1bc6ea1c0453407f8807e8e99bcbd6e751
+  - node: 01a1d06f-b09f-73ae-a356-c4c3dc81b156
+    reviewed: fe7a88d21b6e00211715edf71f9bef9e739d85d7fee8fb8e7146ca142d2e64f1
+    tests:
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one"
+        body: 23767627813550d9ed56a99b43b68d1bc6ea1c0453407f8807e8e99bcbd6e751
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the head counts what waits on the person in the waiting colour, and shows no count where nothing waits"
+        body: e04b5e0c0d09e3c5cb1f2c6f2029b8636850d35dec32d3fd506f4566f26b49af
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "the pane shows the first active stage's title, the agent that owns it and its goal"
+        body: 827d17ae0a4804262d96355489fc80476119a15b6fc79ef5260df13d081a616c
+      - file: "plugins/claude/loft/tests/yard-pane-page.test.tsx"
+        name: "each active task of the stage in hand shows with its title, a fix marked Fix, and no other task"
+        body: d6ff9ebe85e0ef581749e200339c649b997134b1cd7006a8e6b74a961e822d01
   - node: 01a1646f-546d-7042-befd-ea352a11cc41
     reviewed: dfff3712569ee5acbd91eb8568e09a5d008e81f0cc1694a7c5838530827e3236
     tests:
@@ -34176,6 +34713,18 @@ links:
       - file: "crates/loft-cli/tests/yard_protocol.rs"
         name: "the_report_lists_every_format_it_reads_and_names_the_one_it_writes"
         body: aefd9213c4f650d28c2e49e98fa3c4607e21410c9670d8047f9ae638c002ac85
+  - node: 01a1cf7a-0eb7-770e-800d-7eb43bb22cf2
+    reviewed: 9c5a9cc9769f2338ebe351021e0eef1b6497d1884af180318638bf08d62c47c0
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "the_report_names_the_home_directory_and_the_one_loft_yard_home_moves_it_to"
+        body: 6ffce02874f5d08c2e1e68141bb95948d89fec79895d7ad13ec6b3ca9db40b46
+  - node: 01a1cf7a-0eb7-770e-800d-7eb53956f7b6
+    reviewed: 69ba835a7c2d191737b710f53f893d3cdbc360238721585095c1598385618119
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "the_report_gives_no_home_where_no_home_directory_is_known"
+        body: c9f1c3642747c83911ebb2bef7763f374aeb1733bcc2239b5ee486a9f66ea6b3
   - node: 01a1646f-546d-7042-befd-ea45ec21ca68
     reviewed: 41d76351b9e36ab128440d3f4e66f87370b22431903c4a66918d6c95abca5521
     tests:
@@ -34205,13 +34754,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
+        body: ebf5a03212c4a2dc85e4568df5d4df3be0f5fb3a2f9529251f9441211c30e0d4
   - node: 01a1646f-546d-7042-befd-ea4d859a6f03
     reviewed: e3639f6455b24eed94333fa4a304d289dad64e278b5fe2a3600e553338402675
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_prints_one_document_its_own_schema_holds"
-        body: 98b02772bb956c4decd4ba3e5ff31ab16346fa198288843ac87c9d4a95533390
+        body: ebf5a03212c4a2dc85e4568df5d4df3be0f5fb3a2f9529251f9441211c30e0d4
   - node: 01a1646f-546d-7042-befd-ea4ee183f9f9
     reviewed: 4f39839ca98658c67ed14e7fda627fafe4db01d0e8edd9c689870b33d4b509f4
     tests:
@@ -34560,6 +35109,75 @@ links:
       - file: "crates/loft-cli/tests/yard_consultation.rs"
         name: "no_file_is_written"
         body: 1decac606d2b7ea8b214759b61988376c5502e79594a150bedc012f655d8e907
+  - node: 01a1d123-dd40-7261-9ea6-09316d63df1a
+    reviewed: 5c56027aeae85401b7a6e42d3cbc89c434db54f0e8b4d122206fc19910c22fb3
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "the_page_command_gives_the_address_that_names_the_worktree_and_its_branch"
+        body: 570bd207d5b182013a8240a5d8164fe01226f7fd8f1f05bc7a1dfe4cce9826ae
+  - node: 01a1d123-dd40-7261-9ea6-0932043bdc69
+    reviewed: e3ede1d9887c6955f709b69c3f1ece5552702e95d8a1234e2fe16e01b929843f
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "the_page_command_says_what_the_page_shows_and_suggests_opening_the_address"
+        body: 6e73beadf82c08ac33251c5c77779b5ff725433320a2028801a2064c66502e0d
+  - node: 01a1d123-dd40-7261-9ea6-09334b3c5d83
+    reviewed: e8fc226bd7edbd5d25101a38815f3f38692c3d250a872a99e069a51ad181ce66
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "the_page_command_gives_the_address_that_names_the_worktree_and_its_branch"
+        body: 570bd207d5b182013a8240a5d8164fe01226f7fd8f1f05bc7a1dfe4cce9826ae
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serve_and_exits_1"
+        body: 63dd5bfb8291312e4dd04543e58fce885bd0eef0f31b1e2beb197e4a45f4e066
+  - node: 01a1d123-dd40-7261-9ea6-093488d97c8c
+    reviewed: f4661b2262bb40c357301494ef46e09cb87ad7abb2d77534d38cba3d46fb9d32
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "the_page_command_writes_no_file_of_the_tree"
+        body: 52d8203b3d0e7fbc5e9546a11d27d3240d84cb697eaa070dc66603709e20e9d9
+  - node: 01a1d131-2a10-7406-8c5c-c49970d8f822
+    reviewed: 40c6b610ee846267ae8cd6856f585472d76ebbbccbff107bcb942f3ed2151049
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_the_page_server_already_serves_the_tree_a_run_that_may_not_write_the_home_gives_the_address"
+        body: 97615650428bf5c4222f93a2216df760402804e345391d958e58ac140a0bf7be
+      - file: "crates/yardlog-store/tests/lock_probe.rs"
+        name: "a_lock_file_the_prober_may_not_write_still_reads_as_held_while_held_and_free_once_let_go"
+        body: a72e8f3746b238604bea13c4ef6c9d60aa844e76cb14d37e5d7c4fad94b539e7
+      - file: "crates/yardlog-store/tests/lock_probe.rs"
+        name: "a_missing_lock_file_is_held_by_no_one_and_probing_it_creates_nothing"
+        body: 9a87db0323ad97d44d906cc88ec8018195384947e49d71662fd6c70b4ff28440
+  - node: 01a1d123-dd40-7261-9ea6-0936f8c5acc8
+    reviewed: ce3d3c3b7de07531b9b75102d0d9c5a2e2e31e6dbd3f9b4b79a86e5f388276de
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serve_and_exits_1"
+        body: 63dd5bfb8291312e4dd04543e58fce885bd0eef0f31b1e2beb197e4a45f4e066
+  - node: 01a1d123-dd40-7261-9ea6-09375f70aceb
+    reviewed: 472c4d68e6bb6e1d49e0b07addf7b0e29d31135f140686ea759eb028a7c99ba7
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serve_and_exits_1"
+        body: 63dd5bfb8291312e4dd04543e58fce885bd0eef0f31b1e2beb197e4a45f4e066
+  - node: 01a1d144-b628-7658-b662-a69ef5586fb3
+    reviewed: a5257fa667c25bf9eca508a4750d61725eda5367bd52ad6167a9c9c50e427ac7
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
+        body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
+  - node: 01a1d144-e9d4-70fd-a1b7-0b4389f764df
+    reviewed: 2c3122e018ed6fca2ca557aebcef8cc12318247f669b46f89cc16b67ef47d8b1
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
+        body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
+  - node: 01a1d144-b628-7658-b662-a69f71c808d2
+    reviewed: dfc0c311970848441dbcea537a0b366ccaf1d68663b431d55fae81f5855c3b03
+    tests:
+      - file: "crates/loft-cli/tests/yard_page.rs"
+        name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
+        body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
   - node: 01a13a90-3554-7631-bb13-097fbc9045c0
     reviewed: d19c4c4c65c66c63aa3f6842f3814dcf78f6005a4c629d83662b923612d96f62
     tests:
@@ -34673,7 +35291,7 @@ links:
         body: d7579a078a019d04492d4e262845bd30b6fd44f1e6a04779af3d0b2dd050ace7
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "each_committed_package_equals_the_composition_for_its_host"
-        body: d02b02382ea37b72417346e42b2a3f6388d3f35da2de4bab74aa12233efe724a
+        body: c6868b6dbd6776409d19a18e143dc7d3397fe59f504b94cc5a5b3cfc433da1ad
   - node: 9908f127-794b-4463-a680-0639741cc37a
     reviewed: 8ec5d919ec898e7a2ce83348e8116b94fa37ccbd77c0384101081ae6172d4c10
     tests:

@@ -112,7 +112,8 @@ export function askerOf(caller: Caller): Asker {
 export async function run($: EngineInterface, cwd: string, args: readonly string[], stdin?: string): Promise<Ran> {
   const ran = await yard($, state.settings, cwd, args, stdin === undefined ? {} : { stdin })
   const url = pageOf(ran.doc)
-  if (url) await update($, page, () => url)
+  // Written only when it changes: every dialog and pane that shows it is drawn again on a write.
+  if (url && url !== (await read($, page))) await update($, page, () => url)
   const tree = ran.doc?.tree
   if (state.isOn && typeof tree === 'string' && !state.server.trees.has(tree)) {
     void registerTree($, state.settings, state.server, state.box, state.sessions[0] ?? '', tree)

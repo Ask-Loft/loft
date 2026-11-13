@@ -305,6 +305,14 @@ test('a tree a tool call reaches is registered with the page server once', async
   expect(other[0]!.cwd).toBe('/work/other')
 })
 
+test('the token is read from the home that loft yard protocol reports', async ($, on) => {
+  const w = world(on, { home: '/home/reader/.yard-dogfood' })
+  await start($)
+  await $.tool.call({ tool: 'Bash', command: 'ls' })
+  await w.clock.settle()
+  expect(w.state.posts[0]!.headers.Authorization).toBe('Bearer token-1')
+})
+
 test('the token is read from the home directory', async ($, on) => {
   const w = world(on)
   await start($)

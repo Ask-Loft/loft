@@ -141,7 +141,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 37] = [
+pub const COMMANDS: [Entry; 38] = [
     (
         "claude-yard-hook",
         &["yard", "claude", "hook"],
@@ -367,6 +367,13 @@ pub const COMMANDS: [Entry; 37] = [
         &["yard", "upgrade"],
         Fixture::Clean,
         "yard-upgrade",
+    ),
+    // Where a page server runs, `page` gives the address of the branch's Yard Log on it.
+    (
+        "loft-yard-page",
+        &["yard", "page"],
+        Fixture::Served,
+        "yard-page",
     ),
     // Where a page server of this version already runs, `serve` leaves it serving and exits.
     (

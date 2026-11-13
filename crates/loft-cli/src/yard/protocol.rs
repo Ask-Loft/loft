@@ -5,13 +5,14 @@
 
 use serde_json::{Value, json};
 use yardlog::Format;
+use yardlog_store::home::Home;
 
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
 use crate::version::VERSION;
 
-const SCHEMA: &str = "loft-yard-protocol/1";
+const SCHEMA: &str = "loft-yard-protocol/2";
 const OUTCOME: &str = "reported";
 
 /// The protocol's version, raised with each release that changes the input or the output of a
@@ -38,9 +39,23 @@ pub fn report() -> Value {
     })
 }
 
+/// The command's own report: [`report`], which the page server sends to every page too, and the
+/// directory that holds what belongs to the machine, which only the command reports.
+fn with_home(mut fields: Value) -> Value {
+    if let Some(home) = Home::from_env() {
+        fields["home"] = json!(home.dir().to_string_lossy());
+    }
+    fields
+}
+
 pub fn run(as_json: bool) -> Finished {
     if as_json {
-        json::print(&json::result(SCHEMA, OUTCOME, report(), Vec::new()));
+        json::print(&json::result(
+            SCHEMA,
+            OUTCOME,
+            with_home(report()),
+            Vec::new(),
+        ));
     } else {
         outln!(
             "loft {VERSION} speaks the yard protocol {PROTOCOL}; it reads {} and writes {}",

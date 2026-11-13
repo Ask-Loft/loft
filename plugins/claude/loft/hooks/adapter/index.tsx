@@ -15,6 +15,8 @@ import { capture, checkCapture } from './capture'
 import { descriptor } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
+import { registerDraw } from './pane/draw'
+import { registerCommand, registerPane } from './pane/follow'
 import { failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
 import { callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
@@ -45,15 +47,25 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   state.settings.protocol = protocol
   state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION, protocol) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
-  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
-  if (home) state.box.tokenPath = `${home}/.yard/token`
+  state.box.tokenPath = await tokenPathOf($, checked.doc?.home)
   state.isOn = true
+  await registerCommand($)
   void beat($, state.settings, state.server, state.box, await continued($), cwd)
   $.clock.every(BEAT, async () => {
     void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())
     void flush($, state.box)
   })
   return true
+}
+
+/**
+ * The control token's file: in the machine home `loft yard protocol` reports, which
+ * `LOFT_YARD_HOME` may move, else in `~/.yard/`, for a `loft` that reports none.
+ */
+async function tokenPathOf($: EngineInterface, reported: unknown): Promise<string | undefined> {
+  if (typeof reported === 'string' && reported !== '') return `${reported}/token`
+  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
+  return home ? `${home}/.yard/token` : undefined
 }
 
 /** Tells the person once why Yard Client is off; Claude Code's own dialogs then ask alone. */
@@ -170,4 +182,6 @@ export function registerYard(on: On, options: PluginOptions) {
   })
 
   registerEvents(on)
+  registerPane(on)
+  registerDraw(on)
 }

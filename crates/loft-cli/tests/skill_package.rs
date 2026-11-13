@@ -20,6 +20,7 @@ use software_plant::{Clock, ReleaseFeed};
 /// The skill's source and its Codex discovery entry, from the repository's root.
 const SOURCE: &str = "crates/loft-cli/skill/loft-spec";
 const YARD: &str = "crates/loft-cli/skill/yard";
+const YARD_PAGE: &str = "crates/loft-cli/skill/yard-page";
 const DISCOVERY: &str = ".agents/skills/loft-spec";
 const LINK: &str = "../../crates/loft-cli/skill/loft-spec";
 
@@ -36,6 +37,10 @@ fn repository() -> Scratch {
     let scratch = Scratch::empty();
     copy_tree(&skill_source(), &scratch.0.join(SOURCE));
     copy_tree(&skill_source().join("../yard"), &scratch.0.join(YARD));
+    copy_tree(
+        &skill_source().join("../yard-page"),
+        &scratch.0.join(YARD_PAGE),
+    );
     fs::create_dir_all(scratch.0.join(".agents/skills")).unwrap();
     symlink(LINK, scratch.0.join(DISCOVERY)).unwrap();
     scratch
@@ -87,12 +92,37 @@ fn after_skill_package_runs_each_package_equals_its_composition() {
         let yard = fs::read_to_string(scratch.0.join(root).join("skills/yard/SKILL.md")).unwrap();
         let expected = format!("{}\n{}", yard_source("SKILL.md"), yard_source(adaptation));
         assert_eq!(yard, expected, "{root}");
-        let skills: Vec<String> = fs::read_dir(scratch.0.join(root).join("skills"))
+        let mut skills: Vec<String> = fs::read_dir(scratch.0.join(root).join("skills"))
             .unwrap()
             .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
             .collect();
-        assert_eq!(skills.len(), 2, "{root}: {skills:?}");
+        skills.sort();
+        // Only Codex, which offers a plugin no command of its own, carries `yard-page`.
+        let expected: &[&str] = if package == CODEX {
+            &["loft-spec", "yard", "yard-page"]
+        } else {
+            &["loft-spec", "yard"]
+        };
+        assert_eq!(skills, expected, "{root}");
     }
+    let page = scratch
+        .0
+        .join("plugins/codex/loft/skills/yard-page/SKILL.md");
+    let source = skill_source().join("../yard-page/SKILL.md");
+    assert_eq!(
+        fs::read_to_string(page).unwrap(),
+        fs::read_to_string(source).unwrap()
+    );
+}
+
+#[test]
+fn a_codex_yard_page_package_that_differs_from_its_source_is_named_by_the_check() {
+    let scratch = packaged(repository());
+    let changed = "plugins/codex/loft/skills/yard-page/SKILL.md";
+    fs::write(scratch.0.join(changed), "edited by hand\n").unwrap();
+    let output = scratch.loft(&["skill", "package", "--check", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    assert_eq!(json_of(&output)["changed"], json!([changed]));
 }
 
 #[test]
@@ -109,6 +139,7 @@ fn skill_package_reports_the_package_directories_it_wrote() {
             "plugins/claude/loft/skills/yard",
             "plugins/codex/loft/skills/loft-spec",
             "plugins/codex/loft/skills/yard",
+            "plugins/codex/loft/skills/yard-page",
         ])
     );
 }
@@ -229,15 +260,17 @@ fn a_broken_discovery_entry_is_refused_and_named_and_no_package_file_changes() {
     }
 }
 
-/// A packaged repository whose sources differ from the ones `loft` embeds: one edited, one
-/// removed. Gives the two, from the repository's root.
-fn stale() -> (Scratch, [String; 2]) {
+/// A packaged repository whose sources differ from the ones `loft` embeds: two edited, one of
+/// them the `yard-page` skill's, and one removed. Gives the three, from the repository's root.
+fn stale() -> (Scratch, [String; 3]) {
     let scratch = packaged(repository());
     let edited = format!("{YARD}/agents/codex.md");
+    let page = format!("{YARD_PAGE}/SKILL.md");
     let removed = format!("{SOURCE}/references/format.md");
     fs::write(scratch.0.join(&edited), "edited after the build\n").unwrap();
+    fs::write(scratch.0.join(&page), "edited after the build\n").unwrap();
     fs::remove_file(scratch.0.join(&removed)).unwrap();
-    (scratch, [edited, removed])
+    (scratch, [edited, page, removed])
 }
 
 #[test]
@@ -268,7 +301,7 @@ fn a_source_that_differs_from_the_embedded_one_is_refused_and_named_and_no_packa
             .iter()
             .map(|error| &error["kind"])
             .collect();
-        assert_eq!(kinds, [&json!("stale"), &json!("stale")], "{check:?}");
+        assert_eq!(kinds, [&json!("stale"); 3], "{check:?}");
         assert!(snapshot(&scratch.0) == before, "{check:?}: a file changed");
     }
 }
