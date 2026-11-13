@@ -3,8 +3,10 @@
 //! its spelling: decisions published as resolved, which change only through a decision that
 //! supersedes them; `testdata/`; vendored files; and the released entries of `CHANGELOG.md`.
 
-use crate::common::{shown, workspace};
-use std::collections::HashSet;
+use crate::common::{shown, tree, workspace};
+use crate::markdown::section;
+use loftspec::ids::ElementId;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -30,7 +32,8 @@ const STEMS: [(&str, &str); 16] = [
 
 /// Stems spelled `-ise` or `-yse` in British English, found where an inflection follows them:
 /// `normalise`, `normalised`, `normalising`, `normalisation`, but not `analysis` or `emphasis`.
-const ISE_STEMS: [&str; 37] = [
+/// The American form ends the stem in `z`.
+const SE_STEMS: [&str; 40] = [
     "emphasis",
     "recognis",
     "normalis",
@@ -68,10 +71,10 @@ const ISE_STEMS: [&str; 37] = [
     "personalis",
     "stabilis",
     "capitalis",
+    "analys",
+    "paralys",
+    "catalys",
 ];
-
-/// Stems spelled `-yse` in British English.
-const YSE_STEMS: [&str; 3] = ["analys", "paralys", "catalys"];
 
 /// British words matched whole, each with its American spelling.
 const WORDS: [(&str, &str); 20] = [
@@ -97,30 +100,21 @@ const WORDS: [(&str, &str); 20] = [
     ("metre", "meter"),
 ];
 
-/// Paths from the root that hold text the repository keeps as history, does not own, or never
-/// commits.
-const SKIPPED: [&str; 17] = [
-    "crates/loftspec/proptest-regressions",
+/// Words that hold a British stem and pass whole: `cancellation`, which American English spells
+/// with two l's too, and `labelledby`, which the attribute `aria-labelledby` fixes.
+const NOT_BRITISH: [&str; 3] = ["cancellation", "cancellations", "labelledby"];
+
+/// Paths from the root, beyond those `.gitignore` names, that hold text the repository keeps as
+/// history or does not own: what git and the agent host keep, the fixtures, proptest's shrink
+/// records, the vendored scripts, and this guard's own word lists.
+const SKIPPED: [&str; 6] = [
     ".git",
-    ".yard",
-    ".loft",
     ".claude",
-    ".mcp.json",
-    "target",
     "testdata",
-    "work-plans",
-    "docs/spec.md",
-    "docs/spec.json",
-    "plugins/.claude-plugin",
-    "plugins/claude/loft/.claude-plugin/types",
+    "crates/loftspec/proptest-regressions",
     "crates/loft-cli/yard-page/vendor",
-    "crates/loft-cli/yard-page-tests/test-results",
-    "crates/loft-cli/yard-page-tests/playwright-report",
     "crates/loft-cli/tests/american_english.rs",
 ];
-
-/// Directory names skipped wherever they lie.
-const SKIPPED_NAMES: [&str; 3] = ["node_modules", "__pycache__", ".DS_Store"];
 
 /// Text that must keep a British form, each as its file and the line's text: the alias by which
 /// the Codex ledger still reads what an older `loft` wrote, and the test that holds it to that;
@@ -145,33 +139,20 @@ const ALLOWED: [(&str, &str); 4] = [
     ),
 ];
 
-/// Names a standard fixes in their British spelling: the attribute `aria-labelledby`.
-const STANDARD: [&str; 1] = ["labelledby"];
-
 /// The American spelling of `word`, lowercased, when it is British.
 fn american(word: &str) -> Option<String> {
     let lower = word.to_lowercase();
-    if STANDARD.contains(&lower.as_str()) {
+    if NOT_BRITISH.contains(&lower.as_str()) {
         return None;
     }
     if let Some((_, us)) = WORDS.iter().find(|(gb, _)| *gb == lower) {
         return Some((*us).to_owned());
     }
-    for (gb, us) in STEMS {
-        if let Some(at) = lower.find(gb) {
-            let rest = &lower[at + gb.len()..];
-            if gb == "cancell" && rest.starts_with("ation") {
-                continue;
-            }
-            return Some(lower.replacen(gb, us, 1));
-        }
+    if let Some((gb, us)) = STEMS.iter().find(|(gb, _)| lower.contains(gb)) {
+        return Some(lower.replacen(gb, us, 1));
     }
-    let stems = ISE_STEMS.iter().map(|gb| (gb, "iz"));
-    let (gb, us_tail) = stems
-        .chain(YSE_STEMS.iter().map(|gb| (gb, "yz")))
-        .find(|(gb, _)| inflected(&lower, gb))?;
-    let us = format!("{}{us_tail}", &gb[..gb.len() - 2]);
-    Some(lower.replacen(gb, &us, 1))
+    let gb = SE_STEMS.iter().find(|gb| inflected(&lower, gb))?;
+    Some(lower.replacen(gb, &format!("{}z", &gb[..gb.len() - 1]), 1))
 }
 
 /// Whether `stem` occurs in `word` with an inflection after it: `e`, `ation` or `ing`.
@@ -202,72 +183,114 @@ fn words(line: &str) -> Vec<&str> {
     found
 }
 
-/// The keys bound with a published history in `spec/labels.yaml`: decisions published as
-/// resolved.
-fn published_decisions(labels: &str) -> HashSet<String> {
-    let mut keys = HashSet::new();
-    let mut current = None;
-    for line in labels.lines().map(str::trim) {
-        if let Some(key) = line.strip_prefix("- key: ") {
-            current = Some(key.to_owned());
-        } else if line.starts_with("publishedHistory:") {
-            keys.extend(current.clone());
-        }
-    }
-    keys
+/// What the guard reads files against: the keys of the decisions published as resolved, and
+/// what it has already found each word to be.
+#[derive(Default)]
+struct Guard {
+    published: HashSet<String>,
+    seen: HashMap<String, Option<String>>,
 }
 
-/// The part of `text` the guard reads, as the byte it starts at and its end: all of it, none of a
-/// decision published as resolved, and of the changelog only what is unreleased.
-fn guarded(file: &str, text: &str, published: &HashSet<String>) -> (usize, usize) {
-    if file.starts_with("spec/decisions/")
-        && let Some(key) = text.lines().next().and_then(|l| l.strip_prefix("key: "))
-        && published.contains(key.trim())
-    {
-        return (0, 0);
+impl Guard {
+    /// A guard over the tree at `root`, whose decisions bound with a published history, as
+    /// `V2-010` judges them, keep their words.
+    fn of(root: &Path) -> Self {
+        let document = loftspec::codec::read(&tree(root)).unwrap();
+        let published = document
+            .bindings
+            .iter()
+            .filter(|binding| binding.published_history.is_some())
+            .filter_map(|binding| match binding.element {
+                ElementId::Decision(id) => Some(id.key().to_string()),
+                ElementId::Node(_) => None,
+            })
+            .collect();
+        Self {
+            published,
+            ..Self::default()
+        }
     }
-    if file == "CHANGELOG.md" {
-        let Some(start) = text.find("\n## Unreleased").map(|at| at + 1) else {
+
+    /// The part of `text` the guard reads, as the byte it starts at and its end: all of it, none
+    /// of a decision published as resolved, and of the changelog only what is unreleased.
+    fn guarded(&self, file: &str, text: &str) -> (usize, usize) {
+        if file.starts_with("spec/decisions/")
+            && let Some(key) = text.lines().next().and_then(|l| l.strip_prefix("key: "))
+            && self.published.contains(key.trim())
+        {
             return (0, 0);
-        };
-        let end = text[start..]
-            .find("\n## ")
-            .map_or(text.len(), |at| start + at + 1);
-        return (start, end);
-    }
-    (0, text.len())
-}
-
-/// Each British form in `text` of `file`, as `file:line: found → American`.
-fn findings(file: &str, text: &str, published: &HashSet<String>) -> Vec<String> {
-    let (start, end) = guarded(file, text, published);
-    let first = text[..start].lines().count();
-    let mut found = Vec::new();
-    for (number, line) in text[start..end].lines().enumerate() {
-        if ALLOWED.contains(&(file, line.trim())) {
-            continue;
         }
-        for word in words(line) {
-            if let Some(us) = american(word) {
-                found.push(format!("{file}:{}: {word} → {us}", first + number + 1));
+        if file == "CHANGELOG.md" {
+            let unreleased = section(text, "Unreleased");
+            let start = unreleased.as_ptr().addr() - text.as_ptr().addr();
+            return (start, start + unreleased.len());
+        }
+        (0, text.len())
+    }
+
+    /// The American spelling of `word` when it is British, worked out once for each word.
+    fn american(&mut self, word: &str) -> Option<&str> {
+        if !self.seen.contains_key(word) {
+            self.seen.insert(word.to_owned(), american(word));
+        }
+        self.seen[word].as_deref()
+    }
+
+    /// Each British form in `text` of `file`, as `file:line: found → American`.
+    fn findings(&mut self, file: &str, text: &str) -> Vec<String> {
+        let (start, end) = self.guarded(file, text);
+        let first = text[..start].lines().count();
+        let mut found = Vec::new();
+        for (number, line) in text[start..end].lines().enumerate() {
+            if ALLOWED.contains(&(file, line.trim())) {
+                continue;
+            }
+            for word in words(line) {
+                let us = self.american(word);
+                found.extend(us.map(|us| format!("{file}:{}: {word} → {us}", first + number + 1)));
             }
         }
+        found
     }
-    found
 }
 
-/// Every file beneath `dir` that the guard reads.
-fn files(dir: &Path) -> Vec<PathBuf> {
-    let mut found = Vec::new();
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        let name = path.file_name().unwrap().to_string_lossy().into_owned();
-        let skipped = SKIPPED.contains(&shown(&path).as_str()) || SKIPPED_NAMES.contains(&&*name);
-        if skipped || fs::symlink_metadata(&path).unwrap().is_symlink() {
+/// The paths `.gitignore` at `root` names literally: those it anchors at the root, and the names
+/// it skips wherever they lie. Its patterns with wildcards name no text the guard would misread.
+fn ignored(root: &Path) -> (HashSet<String>, HashSet<String>) {
+    let mut anchored = HashSet::new();
+    let mut anywhere = HashSet::new();
+    let text = fs::read_to_string(root.join(".gitignore")).unwrap();
+    for line in text.lines().map(str::trim) {
+        if line.is_empty() || line.starts_with(['#', '!']) || line.contains(['*', '?', '[']) {
             continue;
         }
-        if path.is_dir() {
-            found.extend(files(&path));
+        let path = line.trim_end_matches('/');
+        match path.strip_prefix('/') {
+            Some(path) => anchored.insert(path.to_owned()),
+            None => anywhere.insert(path.to_owned()),
+        };
+    }
+    anchored.extend(SKIPPED.map(str::to_owned));
+    (anchored, anywhere)
+}
+
+/// Every file beneath `dir` that the guard reads, skipping the paths `skipped` names.
+fn files(dir: &Path, skipped: &(HashSet<String>, HashSet<String>)) -> Vec<PathBuf> {
+    let (anchored, anywhere) = skipped;
+    let mut found = Vec::new();
+    for entry in fs::read_dir(dir).unwrap() {
+        let entry = entry.unwrap();
+        let kind = entry.file_type().unwrap();
+        let path = entry.path();
+        let name = entry.file_name();
+        if kind.is_symlink()
+            || anywhere.contains(name.to_string_lossy().as_ref())
+            || anchored.contains(&shown(&path))
+        {
+            continue;
+        }
+        if kind.is_dir() {
+            found.extend(files(&path, skipped));
         } else {
             found.push(path);
         }
@@ -278,17 +301,16 @@ fn files(dir: &Path) -> Vec<PathBuf> {
 #[test]
 fn the_repository_is_written_in_american_english() {
     let root = workspace();
-    let labels = fs::read_to_string(root.join("spec/labels.yaml")).unwrap();
-    let published = published_decisions(&labels);
+    let mut guard = Guard::of(&root);
     let mut read = 0;
     let mut found = Vec::new();
-    for path in files(&root) {
+    for path in files(&root, &ignored(&root)) {
         // A file that is not UTF-8 is a binary one: a font, an image or a compressed script.
         let Ok(text) = fs::read_to_string(&path) else {
             continue;
         };
         read += 1;
-        found.extend(findings(&shown(&path), &text, &published));
+        found.extend(guard.findings(&shown(&path), &text));
     }
     assert!(read > 500, "the scan read {read} files");
     assert_eq!(found, Vec::<String>::new());
@@ -296,10 +318,9 @@ fn the_repository_is_written_in_american_english() {
 
 #[test]
 fn british_forms_are_found_in_prose_and_identifiers_alike() {
-    let none = HashSet::new();
     let text = "The colour is grey.\nlet wordmarkColours = normalise(x);\n";
     assert_eq!(
-        findings("a.js", text, &none),
+        Guard::default().findings("a.js", text),
         [
             "a.js:1: colour → color",
             "a.js:1: grey → gray",
@@ -311,30 +332,49 @@ fn british_forms_are_found_in_prose_and_identifiers_alike() {
 
 #[test]
 fn american_forms_and_words_like_them_pass() {
-    let none = HashSet::new();
     let text = "A cancellation, an analysis, the emphasis, a specialist, an organism, a parameter.\n\
                 'aria-labelledby': 'title'";
-    assert_eq!(findings("a.md", text, &none), Vec::<String>::new());
+    assert_eq!(
+        Guard::default().findings("a.md", text),
+        Vec::<String>::new()
+    );
 }
 
 #[test]
 fn an_unpublished_decision_holding_a_british_form_is_reported() {
     let text = "key: k1\ntitle: \"The colour of a stage\"\n";
     assert_eq!(
-        findings("spec/decisions/d.yaml", text, &HashSet::new()),
+        Guard::default().findings("spec/decisions/d.yaml", text),
         ["spec/decisions/d.yaml:2: colour → color"]
     );
 }
 
 #[test]
 fn a_decision_published_as_resolved_keeps_its_spelling() {
-    let labels = "bindings:\n  - key: k1\n    label: ADR-1\n    publishedState: accepted\n    publishedHistory: 00\n  - key: k2\n    label: RQ-2\n";
-    let published = published_decisions(labels);
-    assert_eq!(published, HashSet::from(["k1".to_owned()]));
+    let mut guard = Guard {
+        published: HashSet::from(["k1".to_owned()]),
+        ..Guard::default()
+    };
     let text = "key: k1\ntitle: \"The colour of a stage\"\n";
     assert_eq!(
-        findings("spec/decisions/d.yaml", text, &published),
+        guard.findings("spec/decisions/d.yaml", text),
         Vec::<String>::new()
+    );
+}
+
+#[test]
+fn the_repositorys_published_decisions_are_those_bound_with_a_published_history() {
+    let guard = Guard::of(&workspace());
+    // "v2 leads the behaviour it shares with v1", published as accepted.
+    assert!(
+        guard
+            .published
+            .contains("01a12dad-fb7a-7333-9129-a6bc9ad902da")
+    );
+    assert!(
+        guard.published.len() > 10,
+        "{} published",
+        guard.published.len()
     );
 }
 
@@ -342,7 +382,7 @@ fn a_decision_published_as_resolved_keeps_its_spelling() {
 fn only_the_unreleased_entries_of_the_changelog_are_read() {
     let text = "# Changelog\n\n## 2.0.0-alpha.1\n\nA colour.\n\n## Unreleased\n\n- A colour.\n\n## 1.0.0\n\nA colour.\n";
     assert_eq!(
-        findings("CHANGELOG.md", text, &HashSet::new()),
+        Guard::default().findings("CHANGELOG.md", text),
         ["CHANGELOG.md:9: colour → color"]
     );
 }
