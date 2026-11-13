@@ -146,7 +146,7 @@ impl Lock {
                 publish_sequence: derived.publish_sequence,
             }),
         };
-        let mut bytes = serde_json::to_vec_pretty(&wire).expect("a lock serialises");
+        let mut bytes = serde_json::to_vec_pretty(&wire).expect("a lock serializes");
         bytes.push(b'\n');
         bytes
     }

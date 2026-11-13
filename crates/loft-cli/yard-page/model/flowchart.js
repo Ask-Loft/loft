@@ -38,7 +38,7 @@ export function lines(label) {
 }
 
 /**
- * The fill, stroke and text colour a node's own `classDef` and `style` give it, the `style` last.
+ * The fill, stroke and text color a node's own `classDef` and `style` give it, the `style` last.
  * @param {any} node
  * @param {Record<string, string[]>} classes
  * @returns {{ fill?: string, stroke?: string, color?: string }}

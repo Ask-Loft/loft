@@ -72,7 +72,7 @@ function later(shown, submissions, revision = shown.revision + 1) {
 }
 
 test('opening a branch’s Yard Log that has an open submission opens the panel, every open submission in it oldest first', () => {
-  const first = question('colour', ['Red', 'Blue']);
+  const first = question('color', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], {
     submissions: [open([second], '2026-01-01T10:09:00Z'), open([first], '2026-01-01T10:04:00Z', EXPLORE)],
@@ -87,7 +87,7 @@ test('opening a branch’s Yard Log that has an open submission opens the panel,
 });
 
 test('nothing of an open submission is shown above the timeline or the Gantt chart', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   for (const view of ['gantt', 'timeline']) {
     prefs.set('view', view);
@@ -98,14 +98,14 @@ test('nothing of an open submission is shown above the timeline or the Gantt cha
 });
 
 test('where Yard Log has no open submission, no panel opens and nothing shows above the timeline', () => {
-  const drawn = page(log([stage('s', 'S', 'active', [question('colour', ['Red', 'Blue'])])]));
+  const drawn = page(log([stage('s', 'S', 'active', [question('color', ['Red', 'Blue'])])]));
   assert.ok(!modal.isOpen('waiting'));
   assert.ok(!drawn.querySelector('.submission'));
   assert.ok(!drawn.querySelector('#open-waiting'));
 });
 
 test('a closed, inherited or newer Yard Log opens no panel and offers nothing to answer', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const submissions = [open([asked], '2026-01-01T10:04:00Z')];
   const yardLog = { key: 'k', title: 'Shelf', branch: 'feat/shelf', format: 'yardlog/1', closedBy: 'agent', closed: act('2026-01-01T11:00:00Z', 9) };
   for (const shown of [
@@ -120,7 +120,7 @@ test('a closed, inherited or newer Yard Log opens no panel and offers nothing to
 });
 
 test('the panel closes by its close button, and by Escape while the focus is within it', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
   assert.ok(dialog().classList.contains('modal--docked'));
@@ -136,7 +136,7 @@ test('the panel closes by its close button, and by Escape while the focus is wit
 });
 
 test('a change to Yard Log that sends no new submission leaves the panel closed', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
   modal.close('waiting');
@@ -146,7 +146,7 @@ test('a change to Yard Log that sends no new submission leaves the panel closed'
 });
 
 test('a submission sent after the panel was closed opens it again', () => {
-  const first = question('colour', ['Red', 'Blue']);
+  const first = question('color', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], { submissions: [open([first], '2026-01-01T10:04:00Z')] });
   page(shown);
@@ -157,7 +157,7 @@ test('a submission sent after the panel was closed opens it again', () => {
 });
 
 test('a button among the controls of the page’s head gives the count of the blocks that wait and opens the panel', () => {
-  const first = question('colour', ['Red', 'Blue']);
+  const first = question('color', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
   const shown = log([stage('s', 'S', 'active', [first, second])], { submissions: [open([first, second], '2026-01-01T10:04:00Z')] });
   const drawn = page(shown);
@@ -169,7 +169,7 @@ test('a button among the controls of the page’s head gives the count of the bl
 });
 
 test('each waiting block’s button to answer opens the panel at that block’s form', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const approval = block('approval', 'ship', { title: 'Ship it', html: '<p>May I?</p>' });
   const shown = log([stage('s', 'S', 'active', [asked, approval])], { submissions: [open([asked, approval], '2026-01-01T10:04:00Z')] });
   const drawn = page(shown);
@@ -182,7 +182,7 @@ test('each waiting block’s button to answer opens the panel at that block’s 
 });
 
 test('what was chosen or typed and not sent is shown again when the panel opens again', () => {
-  const asked = question('colour', ['Red', 'Blue'], { ownWords: true });
+  const asked = question('color', ['Red', 'Blue'], { ownWords: true });
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
   const blue = dialog().querySelector('input[value="Blue"]');
@@ -199,7 +199,7 @@ test('what was chosen or typed and not sent is shown again when the panel opens 
 });
 
 test('accepting the recommendations shows them chosen in the panel at once', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
   const accept = [...dialog().querySelectorAll('button')].find((button) => button.textContent === 'Accept the recommendations');
@@ -209,7 +209,7 @@ test('accepting the recommendations shows them chosen in the panel at once', () 
 });
 
 test('the panel closes by itself once nothing in it waits on the person, and the page then says what was sent', async () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   page(shown);
   const blue = dialog().querySelector('input[value="Blue"]');
@@ -223,7 +223,7 @@ test('the panel closes by itself once nothing in it waits on the person, and the
 });
 
 test('a diagram in a waiting block is drawn in the panel, as it is in the timeline', async () => {
-  const asked = question('colour', ['Red', 'Blue'], {
+  const asked = question('color', ['Red', 'Blue'], {
     contextHtml: '<pre><code class="language-mermaid">sequenceDiagram\n  A-&gt;&gt;B: hi</code></pre>',
   });
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });

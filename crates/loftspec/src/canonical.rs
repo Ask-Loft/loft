@@ -141,7 +141,7 @@ impl Serialize for Digest {
 #[must_use]
 pub fn canonical_bytes<T: Serialize>(view: &T) -> Vec<u8> {
     serde_json_canonicalizer::to_vec(view)
-        .expect("a view of strings, integers, booleans, nulls, arrays and objects serialises")
+        .expect("a view of strings, integers, booleans, nulls, arrays and objects serializes")
 }
 
 /// SHA-256 over the domain string, one zero byte and the view's canonical bytes, which are
@@ -150,7 +150,7 @@ pub fn canonical_bytes<T: Serialize>(view: &T) -> Vec<u8> {
 pub fn digest<T: Serialize>(domain: Domain, view: &T) -> Digest {
     let mut writer = HashWriter::new(domain);
     serde_json_canonicalizer::to_writer(view, &mut writer)
-        .expect("a view of strings, integers, booleans, nulls, arrays and objects serialises");
+        .expect("a view of strings, integers, booleans, nulls, arrays and objects serializes");
     writer.finish()
 }
 

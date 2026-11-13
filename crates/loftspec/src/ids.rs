@@ -1,4 +1,4 @@
-//! Typed domain IDs. Each wraps the element's key and serialises as it, so the files, views and
+//! Typed domain IDs. Each wraps the element's key and serializes as it, so the files, views and
 //! digests see one lowercase UUID whatever the type; the types only keep the code from passing one
 //! kind of element where another is meant. A kind change keeps the key (AC-249) through an
 //! explicit conversion such as [`RequirementId::promote`].
@@ -164,10 +164,18 @@ impl ElementId {
         }
     }
 
+    /// The former name of [`ElementId::labeled`], kept so that code written against an earlier
+    /// release still builds.
+    #[must_use]
+    #[deprecated(since = "2.4.0", note = "renamed `labeled`")]
+    pub const fn labelled(prefix: LabelPrefix, key: Key) -> Self {
+        Self::labeled(prefix, key)
+    }
+
     /// The element of the kind that labels of `prefix` name, under `key`: what the binding of a
     /// key the document no longer holds names.
     #[must_use]
-    pub const fn labelled(prefix: LabelPrefix, key: Key) -> Self {
+    pub const fn labeled(prefix: LabelPrefix, key: Key) -> Self {
         let kind = match prefix {
             LabelPrefix::Decision => return Self::Decision(DecisionId::new(key)),
             LabelPrefix::Product => NodeKind::Product,

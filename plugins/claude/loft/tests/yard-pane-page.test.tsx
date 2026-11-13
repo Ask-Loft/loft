@@ -19,18 +19,18 @@ async function again($: Engine, w: World) {
 }
 
 
-/** The colour of the first coloured Text an element holds. */
-function colourIn(found: { props?: Record<string, unknown>; type?: string; children?: unknown[] } | undefined): unknown {
+/** The color of the first colored Text an element holds. */
+function colorIn(found: { props?: Record<string, unknown>; type?: string; children?: unknown[] } | undefined): unknown {
   if (!found) return undefined
   if (found.type === 'Text' && found.props?.color !== undefined) return found.props.color
   for (const child of found.children ?? []) {
-    const colour = typeof child === 'object' && child !== null ? colourIn(child as FoundElement) : undefined
-    if (colour !== undefined) return colour
+    const color = typeof child === 'object' && child !== null ? colorIn(child as FoundElement) : undefined
+    if (color !== undefined) return color
   }
   return undefined
 }
 
-/** The contrast of two `#rrggbb` colours, as WCAG measures it. */
+/** The contrast of two `#rrggbb` colors, as WCAG measures it. */
 function contrast(one: string, other: string) {
   const luminance = (hex: string) => {
     const [r, g, b] = [1, 3, 5].map(at => parseInt(hex.slice(at, at + 2), 16) / 255).map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
@@ -67,7 +67,7 @@ const IN_HAND = readDoc({
   ],
 })
 
-test("text, muted text and lines take Claude Code's own colours, and each status shade reads on a light ground and on a dark one", () => {
+test("text, muted text and lines take Claude Code's own colors, and each status shade reads on a light ground and on a dark one", () => {
   expect([PALETTE.ink, PALETTE.muted, PALETTE.line]).toEqual(['text', 'inactive', 'subtle'])
   for (const shade of STATUS_SHADES) {
     expect(contrast(PALETTE[shade], '#ffffff')).toBeGreaterThanOrEqual(3)
@@ -75,7 +75,7 @@ test("text, muted text and lines take Claude Code's own colours, and each status
   }
 })
 
-test('on every surface the pane draws its text in Claude Code\'s own colours, and no tinted ground but the rust of what waits', async ($, on) => {
+test('on every surface the pane draws its text in Claude Code\'s own colors, and no tinted ground but the rust of what waits', async ($, on) => {
   const w = world(on)
   w.state.read = ASKING
   await openPane($)
@@ -104,7 +104,7 @@ test("the head names the repository above the Yard Log's title, set larger, sums
   }
 })
 
-test('the head counts what waits on the person in the waiting colour, and shows no count where nothing waits', async ($, on) => {
+test('the head counts what waits on the person in the waiting color, and shows no count where nothing waits', async ($, on) => {
   const w = world(on)
   w.state.read = ASKING
   await openPane($)
@@ -132,7 +132,7 @@ test("the pane shows the first active stage's title, the agent that owns it and 
     expect(shown?.text).toContain('main agent')
     expect(shown?.text).toContain('The store holds the shelf')
     expect(shown?.text).not.toContain('Stage ship')
-    expect(colourIn(shown)).toBe(PALETTE.signal)
+    expect(colorIn(shown)).toBe(PALETTE.signal)
     await ui.unmount()
   }
 })
@@ -146,7 +146,7 @@ test('each active task of the stage in hand shows with its title, a fix marked F
     const tasks = (await ui.findAll({})).flatMap(each => (each.key?.startsWith('task-') ? [each.key] : []))
     expect(tasks).toEqual(['task-k-store', 'task-k-mend'])
     expect((await ui.find({ key: 'task-k-mend' }))?.text).toMatch(/Mend the reload.*Fix/)
-    expect(colourIn(await ui.find({ key: 'fix-k-mend' }))).toBe(PALETTE.fix)
+    expect(colorIn(await ui.find({ key: 'fix-k-mend' }))).toBe(PALETTE.fix)
     expect(await ui.find({ key: 'fix-k-store' })).toBeUndefined()
     await ui.unmount()
   }
@@ -182,7 +182,7 @@ test('what waits shows without a press, the oldest submission first, each submis
   }
 })
 
-test('the card of a block that waits is outlined in the waiting colour, with a bar of it at its left', async ($, on) => {
+test('the card of a block that waits is outlined in the waiting color, with a bar of it at its left', async ($, on) => {
   const w = world(on)
   w.state.read = ASKING
   await openPane($)

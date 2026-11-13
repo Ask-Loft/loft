@@ -47,10 +47,10 @@ fn position_conflict() -> Document {
 }
 
 /// A conflict over the existence of the Requirement keyed 60, which ours changed and theirs
-/// deleted; `labelled` binds it to `RQ-3` first.
-fn record_conflict(labelled: bool) -> Document {
+/// deleted; `labeled` binds it to `RQ-3` first.
+fn record_conflict(labeled: bool) -> Document {
     let mut base = three_requirements();
-    if labelled {
+    if labeled {
         let second = RequirementId::new(key(SECOND));
         base.bindings.bind(second, label("RQ-3")).unwrap();
     }

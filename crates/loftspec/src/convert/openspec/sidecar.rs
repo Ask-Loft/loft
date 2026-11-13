@@ -51,7 +51,7 @@ impl OpenspecSidecar {
     /// The sidecar as JSON with a closing newline.
     #[must_use]
     pub fn to_json(&self) -> String {
-        let mut json = serde_json::to_string_pretty(self).expect("the sidecar serialises");
+        let mut json = serde_json::to_string_pretty(self).expect("the sidecar serializes");
         json.push('\n');
         json
     }

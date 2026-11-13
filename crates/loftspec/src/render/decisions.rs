@@ -71,7 +71,7 @@ pub(super) fn render(out: &mut String, document: &Document, labels: &Labels, nod
     out.push('\n');
 }
 
-/// Labelled decisions by their number, then unlabelled ones by key.
+/// Labeled decisions by their number, then unlabeled ones by key.
 fn order(labels: &Labels, id: DecisionId) -> (u8, u64, DecisionId) {
     let number = labels
         .label(id)

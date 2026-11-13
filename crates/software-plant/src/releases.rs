@@ -66,7 +66,7 @@ impl Release {
 
 /// How the feed answers.
 #[derive(Clone, Debug)]
-enum Behaviour {
+enum Behavior {
     /// As GitHub does: the newest release that is neither a draft nor a prerelease.
     Listing(Vec<Release>),
     /// The latest release answered as exactly this one, as a mirror that misreports might.
@@ -86,31 +86,31 @@ impl ReleaseFeed {
     /// does: the newest that is neither a draft nor a prerelease, or `404` when there is none.
     #[must_use]
     pub fn listing(releases: Vec<Release>) -> Self {
-        Self::start(Behaviour::Listing(releases))
+        Self::start(Behavior::Listing(releases))
     }
 
     /// A feed that answers the latest release as exactly `release`, whatever its flags.
     #[must_use]
     pub fn answering(release: Release) -> Self {
-        Self::start(Behaviour::Answering(release))
+        Self::start(Behavior::Answering(release))
     }
 
     /// A feed that answers every request with `status`.
     #[must_use]
     pub fn failing(status: u16) -> Self {
-        Self::start(Behaviour::Failing(status))
+        Self::start(Behavior::Failing(status))
     }
 
     /// A feed whose limit for requests without a token is spent, as GitHub answers then.
     #[must_use]
     pub fn rate_limited() -> Self {
-        Self::start(Behaviour::RateLimited)
+        Self::start(Behavior::RateLimited)
     }
 
     /// A feed that accepts each connection and never answers.
     #[must_use]
     pub fn silent() -> Self {
-        Self::start(Behaviour::Silent)
+        Self::start(Behavior::Silent)
     }
 
     /// The address of a feed that refuses every connection.
@@ -119,9 +119,9 @@ impl ReleaseFeed {
         refusing_url()
     }
 
-    fn start(behaviour: Behaviour) -> Self {
+    fn start(behavior: Behavior) -> Self {
         Self {
-            server: Server::start(Feed(behaviour)),
+            server: Server::start(Feed(behavior)),
         }
     }
 
@@ -138,16 +138,16 @@ impl ReleaseFeed {
     }
 }
 
-struct Feed(Behaviour);
+struct Feed(Behavior);
 
 impl Responder for Feed {
     fn answer(&mut self, request: &Request) -> Answer {
         match &self.0 {
-            Behaviour::Silent => Answer::Hold,
-            Behaviour::Failing(status) => Response::empty(*status).into(),
-            Behaviour::RateLimited => rate_limited().into(),
-            Behaviour::Answering(release) => latest(request, Some(release)).into(),
-            Behaviour::Listing(releases) => {
+            Behavior::Silent => Answer::Hold,
+            Behavior::Failing(status) => Response::empty(*status).into(),
+            Behavior::RateLimited => rate_limited().into(),
+            Behavior::Answering(release) => latest(request, Some(release)).into(),
+            Behavior::Listing(releases) => {
                 let latest_published = releases
                     .iter()
                     .find(|release| !release.draft && !release.prerelease);

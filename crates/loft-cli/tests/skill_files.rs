@@ -101,7 +101,7 @@ fn changed(before: &BTreeMap<String, Vec<u8>>, after: &BTreeMap<String, Vec<u8>>
 }
 
 /// The files `loft init --no-skill` writes, as the files table names them.
-fn initialised() -> Vec<String> {
+fn initialized() -> Vec<String> {
     let scratch = Scratch::empty();
     let before = snapshot(&scratch.0);
     let output = scratch.loft(&["init", "--no-skill"]);
@@ -130,9 +130,9 @@ fn the_files_table_names_each_command_that_writes_a_file() {
         let written = row[2].contains(&format!("`{command}`"));
         assert!(written, "{path} is written by {command}: {}", row[2]);
     };
-    let initialised = initialised();
-    assert!(initialised.len() >= 4, "{initialised:?}");
-    for path in initialised {
+    let initialized = initialized();
+    assert!(initialized.len() >= 4, "{initialized:?}");
+    for path in initialized {
         says(&path, "loft init");
     }
     for role in roles().iter().filter(|role| role.is_written()) {

@@ -202,7 +202,7 @@ test('the stages are newest first unless the person chose otherwise, and the cho
   assert.deepEqual(ordered(stages, prefs.order()).list.map((each) => each.id), ['first', 'second']);
 });
 
-test('a note shows its title, its markdown and its tone as a colour and a word', () => {
+test('a note shows its title, its markdown and its tone as a color and a word', () => {
   const note = block('note', 'n1', { title: 'Mind it', markdown: 'x', html: '<p><strong>x</strong></p>', tone: 'warning', folded: false });
   const shown = log([stage('s', 'S', 'active', [note])]);
   const drawn = card(note, context(shown));
@@ -323,7 +323,7 @@ test('a field whose HTML the page server did not give is drawn as its text', () 
   assert.ok(!drawn.querySelector('.detail code'));
 });
 
-test('each block offers its current author and version with its creation time labelled', () => {
+test('each block offers its current author and version with its creation time labeled', () => {
   const note = block('note', 'n1', { markdown: 'x', html: '<p>x</p>', folded: false }, { by: EXPLORE });
   const drawn = card(note, context(log([stage('s', 'S', 'active', [note])])));
   const meta = drawn.querySelector('.block-meta');
@@ -630,7 +630,7 @@ test('a decided approval gives its outcome once, in the line naming who decided 
   assert.match(drawn.querySelector('.outcome')?.textContent ?? '', /^Approved /);
 });
 
-test('beneath a stage of the list, an active task’s row has a dot in the margin before it in the colour of the status active, named to a reader, and no other row does', () => {
+test('beneath a stage of the list, an active task’s row has a dot in the margin before it in the color of the status active, named to a reader, and no other row does', () => {
   const doing = block('task', 'doing', { title: 'Doing', state: 'active', detail: '' });
   const done = block('task', 'done', { title: 'Done', state: 'done', detail: '' });
   const shown = log([stage('now', 'Now', 'active', [doing, done]), stage('next', 'Next', 'planned', [])]);
@@ -638,8 +638,8 @@ test('beneath a stage of the list, an active task’s row has a dot in the margi
   assert.deepEqual(rows.map((row) => row.querySelector('.active-dot')?.getAttribute('aria-label') ?? null), ['Active', null]);
   const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
   const active = /\.status\.status--active, \.state\.state--active \{ color: var\((--[a-z-]+)\); \}/.exec(css)?.[1];
-  assert.ok(active, 'the colour the pane gives the status active');
-  assert.match(css, new RegExp(`\\.active-dot \\{ position: absolute; left: -11px;[^}]*background: var\\(${active}\\);`), 'in the margin, out of the row’s flow, in that colour');
+  assert.ok(active, 'the color the pane gives the status active');
+  assert.match(css, new RegExp(`\\.active-dot \\{ position: absolute; left: -11px;[^}]*background: var\\(${active}\\);`), 'in the margin, out of the row’s flow, in that color');
 });
 
 test('the pane holds its stage within 900 pixels, and a note’s, an approval’s and a loft block’s Markdown spans its block', () => {

@@ -1,8 +1,7 @@
 //! `loft review` (the `loft review` Feature): the review packet of the tree, against the tree
 //! where HEAD left a base revision where `--base` is given, narrowed to a node by `--node`, and
 //! paged by whole units. The packet is JSON; the text is an index of the page. It writes
-//! nothing and judges nothing (the decision "The review packet carries context and no
-//! judgement").
+//! nothing and judges nothing (the accepted decision ADR-96).
 
 use std::num::NonZeroUsize;
 use std::path::Path;

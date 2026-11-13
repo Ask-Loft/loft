@@ -44,7 +44,7 @@ fn capabilities_render_as_headings_of_levels_3_to_6() {
 }
 
 #[test]
-fn a_criterion_is_a_bold_paragraph_and_an_unlabelled_node_shows_its_key() {
+fn a_criterion_is_a_bold_paragraph_and_an_unlabeled_node_shows_its_key() {
     assert!(markdown().contains(
         "\n**00000000-0000-7000-8000-000000000005 · Acceptance Criterion · Every node record \
          carries a `key` field.**\n"

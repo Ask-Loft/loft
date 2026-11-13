@@ -95,7 +95,7 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
     Ok(json!({}))
 }
 
-// Concurrent background startup may precede the ordinary prompt handler. A cancelled nudge
+// Concurrent background startup may precede the ordinary prompt handler. A canceled nudge
 // cannot clear a previous session end, even when Codex launches both handlers at once.
 fn resume(files: &Files, hook: &Hook) -> Result<()> {
     if matches!(

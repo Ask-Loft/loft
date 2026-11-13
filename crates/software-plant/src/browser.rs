@@ -17,7 +17,7 @@ use crate::install::browser_executable;
 /// The variable that names the scenario's directory to the simulator.
 pub const SCENARIO_ENV: &str = "SOFTWARE_PLANT_BROWSER";
 /// The file of the scenario's directory that says how the browser behaves.
-const BEHAVIOUR_FILE: &str = "browser-scenario";
+const BEHAVIOR_FILE: &str = "browser-scenario";
 /// The file of the scenario's directory that lists the arguments of each run, one run a line,
 /// as a JSON array.
 const ARGUMENTS_FILE: &str = "browser-arguments";
@@ -43,11 +43,11 @@ impl BrowserScenario {
     /// Writes the scenario into `dir`, which then holds its record of visits.
     #[must_use]
     pub fn install(self, dir: &Path) -> InstalledBrowser {
-        let behaviour = match self {
+        let behavior = match self {
             Self::Visiting => "visiting",
             Self::Absent => "absent",
         };
-        fs::write(dir.join(BEHAVIOUR_FILE), behaviour).expect("the browser scenario is written");
+        fs::write(dir.join(BEHAVIOR_FILE), behavior).expect("the browser scenario is written");
         let _ = fs::remove_file(dir.join(ARGUMENTS_FILE));
         InstalledBrowser {
             dir: dir.to_path_buf(),
@@ -106,7 +106,7 @@ pub fn run(dir: &Path, arguments: &[String]) -> u8 {
     let [address] = arguments else {
         return 2;
     };
-    match fs::read_to_string(dir.join(BEHAVIOUR_FILE)).as_deref() {
+    match fs::read_to_string(dir.join(BEHAVIOR_FILE)).as_deref() {
         Ok("visiting") => u8::from(visit(address).is_err()),
         _ => 1,
     }

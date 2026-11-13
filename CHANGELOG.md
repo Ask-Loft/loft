@@ -47,7 +47,7 @@ list everything 2.4.0 will hold.
   dialog, and a block answered first elsewhere keeps that answer. In Claude Code Desktop the
   command also opens the Yard page itself in Desktop's browser pane, at the session's branch, and
   shows its tab again on the next run; elsewhere the pane links the page, and the command answers
-  with the page's address and a suggestion to open it. The pane's colours follow each surface's
+  with the page's address and a suggestion to open it. The pane's colors follow each surface's
   light or dark.
 - `loft yard page` prints the Yard page's address for the worktree and its branch, with a line on
   what the page shows, or says that no page server runs, or that one runs but does not serve the

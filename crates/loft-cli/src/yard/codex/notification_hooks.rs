@@ -8,7 +8,7 @@ use super::translate::{Hook, HookKind};
 pub enum Disposition {
     Ordinary,
     Notification,
-    Cancelled,
+    Canceled,
 }
 
 pub fn record(hook: &Hook, caller: Option<&Caller>, ledger: &mut Ledger) -> Disposition {
@@ -27,7 +27,7 @@ pub fn record(hook: &Hook, caller: Option<&Caller>, ledger: &mut Ledger) -> Disp
             let prompt = hook.0["prompt"].as_str().unwrap_or_default();
             match ledger.receive_prompt(thread, prompt) {
                 Some(true) => return Disposition::Notification,
-                Some(false) => return Disposition::Cancelled,
+                Some(false) => return Disposition::Canceled,
                 None => Lifecycle::UserPrompt,
             }
         }

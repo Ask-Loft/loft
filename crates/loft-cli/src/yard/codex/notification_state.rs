@@ -46,7 +46,9 @@ pub enum Progress {
     Uncertain,
     Accepted,
     Read,
-    Cancelled,
+    // An older `loft` wrote this state in British spelling; its ledgers still read.
+    #[serde(alias = "cancelled")]
+    Canceled,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -150,7 +152,7 @@ impl Ledger {
             progress: Progress::Queued,
             retry_at: 0,
         });
-        if ticket.progress == Progress::Cancelled && ticket.generation != watcher.generation {
+        if ticket.progress == Progress::Canceled && ticket.generation != watcher.generation {
             ticket.generation = watcher.generation;
             ticket.progress = Progress::Queued;
             ticket.retry_at = 0;
@@ -247,7 +249,7 @@ impl Ledger {
         let Some(ticket) = self
             .deliveries
             .get_mut(marker)
-            .filter(|t| t.generation == watcher.generation && t.progress != Progress::Cancelled)
+            .filter(|t| t.generation == watcher.generation && t.progress != Progress::Canceled)
         else {
             return Some(false);
         };
@@ -309,7 +311,7 @@ impl Ledger {
 
 fn cancel(ticket: &mut Ticket) {
     if !matches!(ticket.progress, Progress::Accepted | Progress::Read) {
-        ticket.progress = Progress::Cancelled;
+        ticket.progress = Progress::Canceled;
     }
 }
 

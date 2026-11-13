@@ -286,7 +286,7 @@ fn an_active_native_turn_receives_a_steer_without_any_configuration_overrides() 
 }
 
 #[test]
-fn context_reports_delivery_status_and_late_cancelled_prompts_cannot_rearm_the_worker() {
+fn context_reports_delivery_status_and_late_canceled_prompts_cannot_rearm_the_worker() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
     // The session's briefing marks its read before the answer, which it does not show.

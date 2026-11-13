@@ -25,7 +25,7 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
   which writes the whole document as Markdown, with every node under its label, and search it. A
   plain `loft render` writes `docs/spec.md` and `docs/spec.json` beside `spec/`. The projection is
   for reading; never edit it, and never commit it unless the project does.
-- Read the Feature that holds the behaviour, its Requirements and criteria, the Components it
+- Read the Feature that holds the behavior, its Requirements and criteria, the Components it
   realizes, the decisions whose subjects include it, and every node that `mentions` it.
 - Open the file `loft find` names and confirm the node's name and kind there before you edit it.
 - Before deleting a Product or a tag, find every reference to it by name: a tag is listed on each
@@ -33,14 +33,14 @@ Starting a document where there is none belongs to `new-document.md`; the edit c
 
 ## Edit the specification first
 
-- A new behaviour is a new Requirement with its criteria, or a new Feature; write it without a
+- A new behavior is a new Requirement with its criteria, or a new Feature; write it without a
   key.
-- A changed behaviour is the same Requirement or criterion with new words. Change the statement
+- A changed behavior is the same Requirement or criterion with new words. Change the statement
   or the criterion in place.
-- A removed behaviour is a removed node. Remove its file, or its entry in its parent's list, then
+- A removed behavior is a removed node. Remove its file, or its entry in its parent's list, then
   run `loft fmt`, which marks its binding departed in `spec/labels.yaml`. Remove every other
   reference to its key that `loft check` reports.
-- A behaviour that contradicts a decision needs a new decision that supersedes the old one; ask
+- A behavior that contradicts a decision needs a new decision that supersedes the old one; ask
   the user before making it.
 
 Agree a change of more than one Feature with the user before writing criteria, as for a new

@@ -365,7 +365,7 @@ fn bind(document: &mut Document, k: &dyn Fn(u32) -> Key) {
 }
 
 /// The small document built with the keys `k` gives: P-1 > FG-1 > F-1 > RQ-2 (alias RQ-1) > one
-/// unlabelled criterion, with QA-2 under F-1 and CON-2 under FG-1; root Component CMP-1 with
+/// unlabeled criterion, with QA-2 under F-1 and CON-2 under FG-1; root Component CMP-1 with
 /// CON-1 and QA-1; five edges, two tags, one constraint category and ADR-1.
 pub fn small_document_with(k: &dyn Fn(u32) -> Key) -> Document {
     let mut document = Document::empty(DocumentId::new(k(0)));

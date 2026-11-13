@@ -74,7 +74,7 @@ pub fn enable(root: &Path) -> io::Result<Enabled> {
         [Added::NotAnObject, _] | [_, Added::NotAnObject] => Ok(Enabled::NotAnObject),
         _ => {
             let mut text = serde_json::to_string_pretty(&Ordered::Object(settings))
-                .expect("settings serialise");
+                .expect("settings serialize");
             text.push('\n');
             write(&path, &text)?;
             Ok(Enabled::Written)

@@ -101,14 +101,14 @@ pub const ASSETS: &[Asset] = &[
     asset!("views/loft/trace.js", JS),
     asset!("views/loft/trace-list.js", JS),
     // Mermaid, which draws the page's diagrams, as its release ships it, kept compressed, with its
-    // licence; `vendor/README.md` names the release.
+    // license; `vendor/README.md` names the release.
     asset!("vendor/mermaid.min.js", JS, gzip),
     asset!("vendor/mermaid.LICENSE", TEXT),
     // ELK, which lays the page's flowcharts out, as its release ships it, kept compressed, with
-    // its licence; `vendor/README.md` names the release.
+    // its license; `vendor/README.md` names the release.
     asset!("vendor/elk.bundled.js", JS, gzip),
     asset!("vendor/elk.LICENSE", TEXT),
-    // Inter, the Loft website's typeface, in its variable Latin cut, with its licence.
+    // Inter, the Loft website's typeface, in its variable Latin cut, with its license.
     asset!("vendor/inter-latin.woff2", FONT),
     asset!("vendor/inter.LICENSE", TEXT),
 ];

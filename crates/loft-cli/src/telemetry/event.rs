@@ -204,7 +204,7 @@ mod tests {
     }
 
     #[test]
-    fn each_agent_is_recognised_by_its_markers_in_order() {
+    fn each_agent_is_recognized_by_its_markers_in_order() {
         assert_eq!(agent_of(&[("CLAUDE_CODE_IS_COWORK", "1")]), "claude");
         assert_eq!(
             agent_of(&[
@@ -233,7 +233,7 @@ mod tests {
     }
 
     #[test]
-    fn a_codex_variable_outside_the_four_markers_recognises_no_agent() {
+    fn a_codex_variable_outside_the_four_markers_recognizes_no_agent() {
         assert_eq!(agent_of(&[("CODEX_COMPANION_SESSION_ID", "x")]), "unknown");
     }
 

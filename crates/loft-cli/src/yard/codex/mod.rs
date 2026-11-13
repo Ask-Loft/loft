@@ -119,7 +119,7 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         let caller = hook.caller(state);
         let disposition =
             notification_hooks::record(hook, caller.as_ref(), &mut state.notifications);
-        if disposition == notification_hooks::Disposition::Cancelled {
+        if disposition == notification_hooks::Disposition::Canceled {
             return Ok((caller, disposition, false));
         }
         let events = translate::events(hook, state, &consulted)?;
@@ -136,9 +136,9 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         let ended = key.is_some_and(|key| state.ended_tasks.contains(&key));
         Ok((caller, disposition, ended))
     })?;
-    if disposition == notification_hooks::Disposition::Cancelled {
+    if disposition == notification_hooks::Disposition::Canceled {
         return Ok(
-            json!({"decision":"block","reason":"This Yard notification was cancelled after native interruption or session end."}),
+            json!({"decision":"block","reason":"This Yard notification was canceled after native interruption or session end."}),
         );
     }
     // Yard Log takes the task changes under its own lock. A change Yard cannot take leaves the

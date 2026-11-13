@@ -206,7 +206,7 @@ fn one_statement_edited_apart_conflicts_until_the_record_is_removed() {
 }
 
 #[test]
-fn nodes_both_sides_create_are_both_kept_with_their_own_keys_unlabelled() {
+fn nodes_both_sides_create_are_both_kept_with_their_own_keys_unlabeled() {
     let repo = Repo::new();
     let base = keys(&repo.text(SHARE));
     let create = |scratch: &Scratch, shall: &str| {

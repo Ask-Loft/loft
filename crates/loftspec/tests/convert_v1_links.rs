@@ -176,7 +176,7 @@ fn a_realization_link_whose_ends_are_not_a_feature_and_a_component_is_refused() 
 }
 
 /// The `full_export()` with ADR-1's outcome subject and its subject driver naming nodes the
-/// export no longer holds, last labelled RQ-9 and RQ-8.
+/// export no longer holds, last labeled RQ-9 and RQ-8.
 fn with_deleted_subjects() -> serde_json::Value {
     let mut value = full_export();
     let decision = &mut value["architectureDecisions"][0];

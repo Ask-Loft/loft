@@ -320,7 +320,7 @@ impl<'t> Resolver<'t> {
         // A departed binding may name a key no element carries; its label gives its kind.
         let element = match self.index.get(&key(binding, field::KEY)) {
             Some(element) if departed => *element,
-            None if departed => ElementId::labelled(label.prefix(), key(binding, field::KEY)),
+            None if departed => ElementId::labeled(label.prefix(), key(binding, field::KEY)),
             _ => self.element(binding.get(field::KEY).expect("a checked key"))?,
         };
         let fail = |error: crate::bindings::BindingError| {

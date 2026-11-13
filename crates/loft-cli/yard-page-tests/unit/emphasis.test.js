@@ -1,5 +1,5 @@
 // The hover layer of a diagram the page draws: pointing at a node brings it, its edges and its
-// neighbours forward and fades the rest; leaving it lets them fall back.
+// neighbors forward and fades the rest; leaving it lets them fall back.
 
 import { forget, root } from './dom.js';
 

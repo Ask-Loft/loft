@@ -2,7 +2,7 @@
    square corners and hairline rules, and a hard offset shadow only on what floats over the page.
    Its tokens are Loft Web's, drawn again here, since the page shares no code with it: action blue
    marks what is in hand, teal what is done, rust what waits on the person, lilac plan mode and
-   rose a fix the person asked for, and each kind of node has its colour. The dark scheme is Loft
+   rose a fix the person asked for, and each kind of node has its color. The dark scheme is Loft
    Web's own, taken when the browser asks for it. Tokens first, then the frame, the sidebar, the
    head, the timeline, the blocks, the answers, the Loft views, the Gantt chart and the tokens. */
 
@@ -196,9 +196,9 @@ a:hover { text-decoration-thickness: 2.5px; }
 code, .label { font-family: var(--mono); font-size: 0.86em; }
 code { background: var(--code); padding: 0 4px; }
 pre code, .label code { background: none; padding: 0; }
-/* A colour written in a code span, drawn on that colour, ringed so that one like the ground shows. */
-code.colour { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabular-nums; }
-/* A label as Loft Web sets one: in monospace and muted, after a square in its node's kind's colour,
+/* A color written in a code span, drawn on that color, ringed so that one like the ground shows. */
+code.color { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabular-nums; }
+/* A label as Loft Web sets one: in monospace and muted, after a square in its node's kind's color,
    apart from the name beside it, which keeps the ink. */
 .label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.6; white-space: nowrap; }
 .label::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--kind, var(--rail)); }
@@ -304,7 +304,7 @@ button { font: inherit; }
 .is-offline .connection-dot { background: var(--wait); }
 
 /* The head of the Yard Log shown, as Loft Web heads a page: where it lies above its title, a line
-   that sums it up beneath, and the controls of the view shown at its right, each labelled above
+   that sums it up beneath, and the controls of the view shown at its right, each labeled above
    it in small text. It stays in place while what lies beneath it scrolls. */
 .page-head {
   flex: none;
@@ -470,7 +470,7 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .station.is-chosen > .list-row .stage-choose { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
 .stage-choose .stage-title { font-size: 15px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
 .station.status--dropped .stage-choose .stage-title { color: var(--muted); text-decoration: line-through; }
-/* What a stage's agents consulted: spec first in the colour of done work, code first in that of a wait. */
+/* What a stage's agents consulted: spec first in the color of done work, code first in that of a wait. */
 .consult-line { white-space: nowrap; color: var(--muted); }
 .consult-line--spec-first { color: var(--done); }
 .consult-line--code-first { color: var(--wait); }
@@ -510,7 +510,7 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
   .main:has(> .yard-log.view--timeline) > .notice, .view--timeline > .banners { margin-left: 16px; margin-right: 16px; padding-left: 0; padding-right: 0; }
 }
 
-/* A status, as Loft Web gives a decision's: a dot in its colour, then its word. */
+/* A status, as Loft Web gives a decision's: a dot in its color, then its word. */
 .status, .state { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; line-height: 20px; white-space: nowrap; }
 .status::before, .state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .status.status--planned, .state.state--open { color: var(--muted); }
@@ -820,7 +820,7 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .finding-group > summary { cursor: pointer; }
 .finding-message { color: var(--body); }
 .finding-counts { display: inline-flex; gap: 10px; margin-left: 4px; color: var(--muted); font-size: 12.5px; white-space: nowrap; vertical-align: baseline; }
-/* Each count a number beside its icon: new findings in the colour of what is new, older ones muted. */
+/* Each count a number beside its icon: new findings in the color of what is new, older ones muted. */
 .count-mark { display: inline-flex; align-items: center; gap: 3px; font-variant-numeric: tabular-nums; }
 .count-mark svg, .count-icon { flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .count-mark--new:not(.is-none), .count-icon--new { color: var(--new); }
@@ -858,7 +858,7 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .diagram svg :is(.node, .cluster) :is(rect, polygon, path) { rx: 0; ry: 0; stroke-width: 1px; }
 .diagram svg :is(.flowchart-link, .edgePath path, .relation, .messageLine0, .messageLine1) { stroke-width: 1px; }
 /* The page's own `.label` must not reach Mermaid's labels, where it is measured or drawn: its size
-   and colour are the diagram's theme's, 13 pixels in ink. */
+   and color are the diagram's theme's, 13 pixels in ink. */
 svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; white-space: revert; }
 /* A flowchart the page draws itself: flat cards with hairline borders on the sidebar's ground, the
    page's face at 13 pixels in ink, edges in muted ink, their labels in pills and groups as panels
@@ -878,7 +878,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .flow-pill-label { fill: var(--body); font-size: 12px; }
 .flow-group rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
 /* A spec-change diagram: nested panels and cards, each headed by its kind's square, its label and
-   its change, a bar at its left in its change's colour. */
+   its change, a bar at its left in its change's color. */
 .spec-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; color: var(--body); font-size: 13px; }
 .spec-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .spec-key { width: 3px; height: 14px; background: var(--change); }
@@ -916,7 +916,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .spec-panel[role="button"]:focus-visible .spec-panel-frame { stroke: var(--signal); stroke-width: 2px; }
 .change-tree li.is-marked { outline: 2px solid var(--signal); outline-offset: 4px; }
 .flow .flow-group-title { fill: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
-/* Pointing at a node brings it, its edges and its neighbours forward, and fades the rest. */
+/* Pointing at a node brings it, its edges and its neighbors forward, and fades the rest. */
 /* Pointing at a node outlines it and the nodes its edges join in action blue and draws those
    edges in action blue; nothing fades, so moving between nodes makes nothing flicker. */
 .flow.is-emphasis .flow-edge.is-near { stroke: var(--signal); stroke-width: 1.75px; }
@@ -949,7 +949,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .group-button:hover { background: var(--mist); }
 .group-button.is-open { background: var(--mist); border-color: var(--signal); box-shadow: inset 0 -2px 0 var(--signal); font-weight: 600; }
 /* The diff of a spec change: each node's words, the words removed struck through and the words
-   added underlined, as well as coloured. */
+   added underlined, as well as colored. */
 .diff > ul { display: grid; gap: 10px; }
 .diff .diff-words { margin: 4px 0 0; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
 .diff ins { text-decoration: underline; text-decoration-thickness: 2px; background: var(--done-soft); color: var(--ink); }

@@ -17,7 +17,7 @@ use crate::remote_sign_in_refusals::login;
 
 #[test]
 fn loft_reaches_the_address_as_it_is_given_changing_no_part_of_it() {
-    // A lowercase escape, which a normaliser would put in upper case.
+    // A lowercase escape, which a normalizer would put in upper case.
     let (remote, _scratch, output, _) = login(RemoteScenario::accepting("Doc%2dOne"));
     assert_eq!(output.status.code(), Some(0), "{output:?}");
     assert_eq!(remote.requests()[0].path, "/documents/Doc%2dOne/head");
