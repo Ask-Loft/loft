@@ -3,16 +3,17 @@
 //! its spelling: decisions published as resolved, which change only through a decision that
 //! supersedes them; `testdata/`; vendored files; and the released entries of `CHANGELOG.md`.
 
-use crate::common::{shown, workspace};
+use crate::common::{stderr, stdout, workspace};
 use crate::markdown::section;
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::ids::ElementId;
+use software_plant::real_git::real_git;
 use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// British stems found anywhere in a word, each with its American spelling.
-const STEMS: [(&str, &str); 17] = [
+const STEMS: [(&str, &str); 11] = [
     ("acknowledgement", "acknowledgment"),
     ("colour", "color"),
     ("behaviour", "behavior"),
@@ -24,17 +25,21 @@ const STEMS: [(&str, &str); 17] = [
     ("catalogue", "catalog"),
     ("licence", "license"),
     ("artefact", "artifact"),
-    ("cancell", "cancel"),
-    ("labell", "label"),
-    ("modell", "model"),
-    ("signall", "signal"),
-    ("travell", "travel"),
-    ("levell", "level"),
 ];
 
+/// Stems whose `l` British English doubles where an inflection follows them: `labelled`,
+/// `labelling`, `labeller`, but not `cancellation`, which American English spells so too. The
+/// American form keeps one `l`.
+const LL_STEMS: [&str; 6] = [
+    "cancell", "labell", "modell", "signall", "travell", "levell",
+];
+
+/// The inflections after which a stem of `LL_STEMS` is British.
+const LL_ENDINGS: [&str; 3] = ["ed", "ing", "er"];
+
 /// Stems spelled `-ise` or `-yse` in British English, found where an inflection follows them:
-/// `normalise`, `normalised`, `normalising`, `normalisation`, but not `analysis` or `emphasis`.
-/// The American form ends the stem in `z`.
+/// `normalise`, `normalised`, `normalising`, `normalisation`, `normalisable`, but not `analysis`
+/// or `emphasis`. The American form ends the stem in `z`.
 const SE_STEMS: [&str; 40] = [
     "emphasis",
     "recognis",
@@ -78,6 +83,9 @@ const SE_STEMS: [&str; 40] = [
     "catalys",
 ];
 
+/// The inflections after which a stem of `SE_STEMS` is British.
+const SE_ENDINGS: [&str; 4] = ["e", "ation", "ing", "able"];
+
 /// British words matched whole, each with its American spelling.
 const WORDS: [(&str, &str); 20] = [
     ("centre", "center"),
@@ -102,16 +110,14 @@ const WORDS: [(&str, &str); 20] = [
     ("metre", "meter"),
 ];
 
-/// Words that hold a British stem and pass whole: `cancellation`, which American English spells
-/// with two l's too; `analyses`, the plural of `analysis` in either; and `labelledby`, which the
-/// attribute `aria-labelledby` fixes.
-const NOT_BRITISH: [&str; 4] = ["cancellation", "cancellations", "analyses", "labelledby"];
+/// Words that hold a British stem and pass whole: `analyses`, the plural of `analysis` in
+/// either, and `labelledby`, which the attribute `aria-labelledby` fixes.
+const NOT_BRITISH: [&str; 2] = ["analyses", "labelledby"];
 
-/// Paths from the root, beyond those `.gitignore` names, that hold text the repository keeps as
-/// history or does not own: what git and the agent host keep, the fixtures, proptest's shrink
-/// records, the vendored scripts, and this guard's own word lists.
-const SKIPPED: [&str; 6] = [
-    ".git",
+/// Paths from the root, beyond those git ignores, that hold text the repository keeps as history
+/// or does not own: what the agent host keeps, the fixtures, proptest's shrink records, the
+/// vendored scripts, and this guard's own word lists.
+const SKIPPED: [&str; 5] = [
     ".claude",
     "testdata",
     "crates/loftspec/proptest-regressions",
@@ -154,15 +160,23 @@ fn american(word: &str) -> Option<String> {
     if let Some((gb, us)) = STEMS.iter().find(|(gb, _)| lower.contains(gb)) {
         return Some(lower.replacen(gb, us, 1));
     }
-    let gb = SE_STEMS.iter().find(|gb| inflected(&lower, gb))?;
+    if let Some(gb) = LL_STEMS
+        .iter()
+        .find(|gb| inflected(&lower, gb, &LL_ENDINGS))
+    {
+        return Some(lower.replacen(gb, &gb[..gb.len() - 1], 1));
+    }
+    let gb = SE_STEMS
+        .iter()
+        .find(|gb| inflected(&lower, gb, &SE_ENDINGS))?;
     Some(lower.replacen(gb, &format!("{}z", &gb[..gb.len() - 1]), 1))
 }
 
-/// Whether `stem` occurs in `word` with an inflection after it: `e`, `ation` or `ing`.
-fn inflected(word: &str, stem: &str) -> bool {
+/// Whether `stem` occurs in `word` with one of `endings` after it.
+fn inflected(word: &str, stem: &str, endings: &[&str]) -> bool {
     word.find(stem).is_some_and(|at| {
         let rest = &word[at + stem.len()..];
-        ["e", "ation", "ing"].iter().any(|s| rest.starts_with(s))
+        endings.iter().any(|ending| rest.starts_with(ending))
     })
 }
 
@@ -186,8 +200,8 @@ fn words(line: &str) -> Vec<&str> {
     found
 }
 
-/// What the guard reads files against: the keys of the decisions published as resolved, and
-/// what it has already found each word to be.
+/// What the guard reads files against: the files of the decisions published as resolved, each
+/// as a path from the root, and what it has already found each word to be.
 #[derive(Default)]
 struct Guard {
     published: HashSet<String>,
@@ -198,15 +212,16 @@ impl Guard {
     /// A guard over the tree at `root`, whose decisions bound with a published history, as
     /// `V2-010` judges them, keep their words.
     fn of(root: &Path) -> Self {
-        let document = codec::read(&spec_files(&root.join("spec"), "")).unwrap();
+        let (document, sites) = codec::read_sited(&spec_files(&root.join("spec"), "")).unwrap();
         let published = document
             .bindings
             .iter()
             .filter(|binding| binding.published_history.is_some())
             .filter_map(|binding| match binding.element {
-                ElementId::Decision(id) => Some(id.key().to_string()),
+                ElementId::Decision(id) => sites.get(id.key()),
                 ElementId::Node(_) => None,
             })
+            .map(|site| site.path.to_string())
             .collect();
         Self {
             published,
@@ -217,10 +232,7 @@ impl Guard {
     /// The part of `text` the guard reads, as the byte it starts at and its end: all of it, none
     /// of a decision published as resolved, and of the changelog only what is unreleased.
     fn guarded(&self, file: &str, text: &str) -> (usize, usize) {
-        if file.starts_with("spec/decisions/")
-            && let Some(key) = text.lines().next().and_then(|l| l.strip_prefix("key: "))
-            && self.published.contains(key.trim())
-        {
+        if self.published.contains(file) {
             return (0, 0);
         }
         if file == "CHANGELOG.md" {
@@ -273,68 +285,35 @@ fn spec_files(dir: &Path, prefix: &str) -> Files {
     files
 }
 
-/// The paths `.gitignore` at `root` names: those it anchors at the root, each literally, and the
-/// names it skips wherever they lie, each literally or with one `*`. Its patterns with other
-/// wildcards name only binary files, which the guard never reads.
-struct Ignored {
-    anchored: HashSet<String>,
-    names: Vec<String>,
+/// Whether `path`, from the root, lies in one of the paths `SKIPPED` names.
+fn skipped(path: &str) -> bool {
+    SKIPPED.iter().any(|skipped| {
+        path.strip_prefix(skipped)
+            .is_some_and(|rest| rest.is_empty() || rest.starts_with('/'))
+    })
 }
 
-impl Ignored {
-    fn of(root: &Path) -> Self {
-        let mut anchored = HashSet::new();
-        let mut names = Vec::new();
-        let text = fs::read_to_string(root.join(".gitignore")).unwrap();
-        for line in text.lines().map(str::trim) {
-            if line.is_empty() || line.starts_with(['#', '!']) || line.contains(['?', '[']) {
-                continue;
-            }
-            let path = line.trim_end_matches('/');
-            match path.strip_prefix('/') {
-                Some(path) if !path.contains('*') => anchored.insert(path.to_owned()),
-                Some(_) => false,
-                None => {
-                    names.push(path.to_owned());
-                    true
-                }
-            };
-        }
-        anchored.extend(SKIPPED.map(str::to_owned));
-        Self { anchored, names }
-    }
-
-    /// Whether the guard skips the file or directory at `path`, named `name`.
-    fn skips(&self, path: &Path, name: &str) -> bool {
-        self.anchored.contains(&shown(path))
-            || self
-                .names
-                .iter()
-                .any(|pattern| match pattern.split_once('*') {
-                    Some((head, tail)) => name.starts_with(head) && name.ends_with(tail),
-                    None => name == pattern,
-                })
-    }
-}
-
-/// Every file beneath `dir` that the guard reads, skipping the paths `ignored` names.
-fn files(dir: &Path, ignored: &Ignored) -> Vec<PathBuf> {
-    let mut found = Vec::new();
-    for entry in fs::read_dir(dir).unwrap() {
-        let entry = entry.unwrap();
-        let kind = entry.file_type().unwrap();
-        let path = entry.path();
-        let name = entry.file_name();
-        if kind.is_symlink() || ignored.skips(&path, &name.to_string_lossy()) {
-            continue;
-        }
-        if kind.is_dir() {
-            found.extend(files(&path, ignored));
-        } else {
-            found.push(path);
-        }
-    }
-    found
+/// Every file of the repository that git keeps or would add, as a path from the root, but those
+/// `SKIPPED` names: what any `.gitignore` or git's own exclude file names is left out.
+fn files() -> Vec<String> {
+    let listed = real_git()
+        .arg("-C")
+        .arg(workspace())
+        .args([
+            "ls-files",
+            "-z",
+            "--cached",
+            "--others",
+            "--exclude-standard",
+        ])
+        .output()
+        .unwrap();
+    assert!(listed.status.success(), "{}", stderr(&listed));
+    stdout(&listed)
+        .split('\0')
+        .filter(|path| !path.is_empty() && !skipped(path))
+        .map(str::to_owned)
+        .collect()
 }
 
 #[test]
@@ -343,13 +322,19 @@ fn the_repository_is_written_in_american_english() {
     let mut guard = Guard::of(&root);
     let mut read = 0;
     let mut found = Vec::new();
-    for path in files(&root, &Ignored::of(&root)) {
-        // A file that is not UTF-8 is a binary one: a font, an image or a compressed script.
-        let Ok(text) = fs::read_to_string(&path) else {
+    for path in files() {
+        // A symbolic link is read where it leads, such as each `CLAUDE.md` beside its `AGENTS.md`.
+        let full = root.join(&path);
+        if fs::symlink_metadata(&full).is_ok_and(|metadata| metadata.is_symlink()) {
+            continue;
+        }
+        // A file that is not UTF-8 is a binary one: a font, an image or a compressed script. One
+        // deleted but not yet staged reads as nothing.
+        let Ok(text) = fs::read_to_string(&full) else {
             continue;
         };
         read += 1;
-        found.extend(guard.findings(&shown(&path), &text));
+        found.extend(guard.findings(&path, &text));
     }
     assert!(read > 500, "the scan read {read} files");
     assert_eq!(found, Vec::<String>::new());
@@ -372,11 +357,27 @@ fn british_forms_are_found_in_prose_and_identifiers_alike() {
 
 #[test]
 fn american_forms_and_words_like_them_pass() {
-    let text = "A cancellation, two analyses, the emphasis, a specialist, an organism, a parameter.\n\
+    let text = "Cancellations, two analyses, the emphasis, a specialist, an organism, a parameter.\n\
                 'aria-labelledby': 'title'";
     assert_eq!(
         Guard::default().findings("a.md", text),
         Vec::<String>::new()
+    );
+}
+
+#[test]
+fn a_british_form_before_able_or_a_doubled_l_before_its_inflection_is_found() {
+    let text = "normalisable, serialisable, analysable\nUNLABELLED, travelling, modeller";
+    assert_eq!(
+        Guard::default().findings("a.rs", text),
+        [
+            "a.rs:1: normalisable → normalizable",
+            "a.rs:1: serialisable → serializable",
+            "a.rs:1: analysable → analyzable",
+            "a.rs:2: UNLABELLED → unlabeled",
+            "a.rs:2: travelling → traveling",
+            "a.rs:2: modeller → modeler",
+        ]
     );
 }
 
@@ -392,7 +393,7 @@ fn an_unpublished_decision_holding_a_british_form_is_reported() {
 #[test]
 fn a_decision_published_as_resolved_keeps_its_spelling() {
     let mut guard = Guard {
-        published: HashSet::from(["k1".to_owned()]),
+        published: HashSet::from(["spec/decisions/d.yaml".to_owned()]),
         ..Guard::default()
     };
     let text = "key: k1\ntitle: \"The colour of a stage\"\n";
@@ -405,12 +406,8 @@ fn a_decision_published_as_resolved_keeps_its_spelling() {
 #[test]
 fn the_repositorys_published_decisions_are_those_bound_with_a_published_history() {
     let guard = Guard::of(&workspace());
-    // "v2 leads the behaviour it shares with v1", published as accepted.
-    assert!(
-        guard
-            .published
-            .contains("01a12dad-fb7a-7333-9129-a6bc9ad902da")
-    );
+    let leads = "spec/decisions/v2-leads-the-behaviour-it-shares-with-v1.yaml";
+    assert!(guard.published.contains(leads));
     assert!(
         guard.published.len() > 10,
         "{} published",
@@ -428,13 +425,20 @@ fn only_the_unreleased_entries_of_the_changelog_are_read() {
 }
 
 #[test]
-fn the_files_gitignore_names_are_skipped_whether_named_literally_or_with_a_star() {
-    let ignored = Ignored::of(&workspace());
-    let root = workspace();
-    assert!(ignored.skips(&root.join("target"), "target"));
-    assert!(ignored.skips(&root.join("docs/spec.md"), "spec.md"));
-    assert!(ignored.skips(&root.join("crates/x/node_modules"), "node_modules"));
-    assert!(ignored.skips(&root.join(".env.staging"), ".env.staging"));
-    assert!(!ignored.skips(&root.join("spec/spec.md"), "spec.md"));
-    assert!(!ignored.skips(&root.join("AGENTS.md"), "AGENTS.md"));
+fn the_files_git_ignores_and_the_skipped_paths_are_not_read() {
+    let files = files();
+    assert!(files.iter().any(|path| path == "AGENTS.md"));
+    let read: Vec<&String> = (files.iter())
+        .filter(|path| {
+            path.starts_with("target/")
+                || path.starts_with(".yard/")
+                || path.starts_with("testdata/")
+                || path.contains("node_modules/")
+                || *path == "docs/spec.md"
+        })
+        .collect();
+    assert_eq!(read, Vec::<&String>::new());
+    assert!(skipped("crates/loft-cli/tests/american_english.rs"));
+    assert!(!skipped("testdata.rs"));
+    assert!(!skipped(".claudex"));
 }
