@@ -94,5 +94,5 @@ featureGroups:
 constraints:
   - key: 01a1d600-053a-74d6-95d2-62f7d2f5efff
     name: "The Loft CLI's specification, code, tests and documentation in this repository shall be written in American English."
-    body: "This covers the command line's help, messages and JSON prose as well as its sources and tests. Text this repository keeps as history or does not own keeps its spelling: decisions published as resolved, which change only through a decision that supersedes them; the v1 fixtures and golden vectors under `testdata/`; vendored files; and the released entries of `CHANGELOG.md`."
+    body: "This covers the command line's help, messages and JSON prose as well as its sources and tests. Text this repository keeps as history or does not own keeps its spelling: decisions published as resolved, which change only through a decision that supersedes them; the v1 fixtures and golden vectors under `testdata/`; vendored files; and the released entries of `CHANGELOG.md`. So does a name that a standard, a persisted file, a published interface or a golden vector fixes in British spelling."
     verificationFate: proved
