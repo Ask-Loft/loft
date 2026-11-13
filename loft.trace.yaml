@@ -11902,7 +11902,7 @@ links:
         name: "a_tree_that_holds_a_conflict_record_is_refused_naming_its_file_and_key"
         body: f252b78a07fcea42a11629f377f2fa94d1ef212142fa6948b3469faa385ba187
   - node: 01a1d600-053b-77ad-8132-b98169820900
-    reviewed: 56a15a26ce012b827e3e5152f62fcc0702064e3fbe13f7c6b8cd2c4a61f786e9
+    reviewed: 1eec5b8a9c4f69a36e631d989dad171ef286f3412d790558be031843502542ce
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
@@ -19873,7 +19873,7 @@ links:
         name: "the_command_event_of_a_connected_publish_holds_no_token_and_not_the_address"
         body: 526848f520071630bbd79b1174d65ed475bab7caf0ddbfeb42029037bc1eddff
   - node: 01a1d600-053a-74d6-95d2-62f7d2f5efff
-    reviewed: f03c40c2eb248ec571fdf0081f1ae527842d5d8b7286f05f247112464f9439fb
+    reviewed: 869b0d979a573e825e09dc3053252e56dcbe2b16bee12048b2f69d770fc91846
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
@@ -21457,7 +21457,7 @@ links:
     reviewed: db337175f4ff2fc917300472bbcfdc4e9da189f39e7b434a0656fd58fa1bde0b
     unverified: "Only the person's own system can show it: a test may not open the person's browser, and the on-demand browser contract runs the system's opener directly rather than through loft, so the binary's choice of the opener without BROWSER is read from the code."
   - node: 01a1d600-053b-77ad-8132-b982f4fbae63
-    reviewed: 8705b99b87963e9816b29e15b5edbfcc5bdd34e662c2232b17392dcb9bad3c34
+    reviewed: 5bc2ff80dfab7c1ca28618d5736380837fc1a438f4db457c731eeaf3536f4d72
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
@@ -22666,7 +22666,7 @@ links:
         name: "each_manifest_carries_the_version_of_loft"
         body: c2557effbdb82d0834d3c7b2463223d843d505fb14aa10501c8046bf781dec12
   - node: 01a1d600-0538-70e6-9ede-e298220b4973
-    reviewed: 8a5ad29097632bad9ead41aac4708d2050e62feed493cf76c5b825bed0008f77
+    reviewed: 4331780d875a339e54b8fb15ca04b5028c5b70ed0f8f5b8f2b80566153b82896
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
@@ -35203,7 +35203,7 @@ links:
         name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
         body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
   - node: 01a1d600-053c-73ed-b18e-e5a0c1114446
-    reviewed: 1643cc90c305ec4ec1b9c227c199ea84cb0808341b6a4d3a7373a67ec03fbc0f
+    reviewed: 9053d55a1c2bb4d36c39e44ae7192c5f2555f7b328a282a3c8fa0547644c5b8c
     tests:
       - file: "crates/loft-cli/tests/american_english.rs"
         name: "the_repository_is_written_in_american_english"
