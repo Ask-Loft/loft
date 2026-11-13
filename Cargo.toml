@@ -21,12 +21,12 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
 # The published crates depend on one another at the release they ship in.
-loft-common = { path = "crates/loft-common", version = "2.4.0-alpha.1" }
-loft-ports = { path = "crates/loft-ports", version = "2.4.0-alpha.1" }
-loftspec = { path = "crates/loftspec", version = "2.4.0-alpha.1" }
-loftspec-store = { path = "crates/loftspec-store", version = "2.4.0-alpha.1" }
-yardlog = { path = "crates/yardlog", version = "2.4.0-alpha.1" }
-yardlog-store = { path = "crates/yardlog-store", version = "2.4.0-alpha.1" }
+loft-common = { path = "crates/loft-common", version = "2.4.0-alpha.2" }
+loft-ports = { path = "crates/loft-ports", version = "2.4.0-alpha.2" }
+loftspec = { path = "crates/loftspec", version = "2.4.0-alpha.2" }
+loftspec-store = { path = "crates/loftspec-store", version = "2.4.0-alpha.2" }
+yardlog = { path = "crates/yardlog", version = "2.4.0-alpha.2" }
+yardlog-store = { path = "crates/yardlog-store", version = "2.4.0-alpha.2" }
 clap = { version = "4", features = ["derive"] }
 # Reads a server's skill package, a gzip-compressed tar archive, in Rust alone.
 flate2 = "1"
