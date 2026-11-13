@@ -298,6 +298,12 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 - Test names say what they prove in words and cite no label: a publish can withdraw a label and
   give its node a new one, and a guard (`crates/loft-cli/tests/citations.rs`) fails on a label
   in a test name.
+- Write in American English: `spec/`, code, comments, identifiers, test names, the skill and the
+  docs. Each Product carries a Constraint that says so, and a guard
+  (`crates/loft-cli/tests/american_english.rs`) fails on a British spelling, naming its file, its
+  line and the American form. Decisions published as resolved, `testdata/`, vendored files and
+  released changelog entries keep their spelling. A British form that a standard or a persisted
+  file fixes goes on the guard's allow list, with its reason, and is never renamed.
 - Link each test to the criterion it verifies in `loft.trace.yaml`, by the criterion's key
   (`loft find <label>` prints it), and run `loft reconcile --accept <label>` once the test is
   read against the criterion as it now reads. When a criterion changes, its link turns stale

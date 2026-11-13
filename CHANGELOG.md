@@ -26,6 +26,10 @@ list everything 2.4.0 will hold.
 
 ## Unreleased
 
+- The specification, the code, the skill and the plugins are written in American English, and a
+  guard keeps them so. The Codex notification ledger now writes `canceled` and still reads the
+  British spelling an older `loft` wrote. In `loftspec`, `ElementId::labeled` replaces the
+  former British spelling, which stays as a deprecated alias.
 - Yard measures how far an agent's work is led by the specification. The Claude Code mod and
   the Codex hook give each tool call that reads or edits files the classes of what it touched,
   `spec`, `code` or `other`, and name the `loft` subcommands a shell command runs; the yard
