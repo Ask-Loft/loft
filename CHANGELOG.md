@@ -3,6 +3,17 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.4.0-alpha.2 (2026-11-13)
+
+The second prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.0-alpha.2`. It lets you try following Yard Log
+beside the session: `/yard-pane` in Claude Code opens a pane on the branch's Yard Log, where you
+can answer what waits on you, and in Claude Code Desktop it also opens the Yard page in
+Desktop's browser pane. `loft yard page` prints the page's address, which Codex relays through
+`$loft:yard-page`, and the page's address now reaches a sandboxed run such as Codex's.
+`LOFT_YARD_HOME` runs a `loft` under development beside an installed one. The entries under
+Unreleased below list everything 2.4.0 will hold.
+
 ## 2.4.0-alpha.1 (2026-11-10)
 
 The first prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
