@@ -1,4 +1,4 @@
-// The page's two colour schemes, read from its stylesheet: the light one on `:root`, the dark
+// The page's two color schemes, read from its stylesheet: the light one on `:root`, the dark
 // one under `prefers-color-scheme: dark`.
 
 import assert from 'node:assert/strict';
@@ -7,7 +7,7 @@ import { test } from 'node:test';
 
 const css = readFileSync(new URL('../../yard-page/yard.css', import.meta.url), 'utf8');
 
-/** The colour tokens a block of declarations sets, by name. */
+/** The color tokens a block of declarations sets, by name. */
 function tokens(block) {
   return new Map([...block.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-f]{6})\s*;/gi)].map((m) => [m[1], m[2].toLowerCase()]));
 }
@@ -36,26 +36,26 @@ function contrast(a, b) {
   return (high + 0.05) / (low + 0.05);
 }
 
-/** Every colour the page gives text, and every ground it draws text on. */
+/** Every color the page gives text, and every ground it draws text on. */
 const TEXTS = ['ink', 'body', 'muted', 'signal', 'done', 'wait', 'danger', 'info', 'plan', 'spec', 'new', 'drop'];
 const GROUNDS = ['canvas', 'surface', 'surface-2', 'mist', 'signal-soft', 'done-soft', 'wait-soft', 'danger-soft', 'info-soft', 'plan-soft', 'spec-soft'];
 
-test('each colour the page gives text holds 4.5 to 1 against each ground, in either scheme', () => {
-  for (const [scheme, colours] of [['light', light], ['dark', dark]]) {
+test('each color the page gives text holds 4.5 to 1 against each ground, in either scheme', () => {
+  for (const [scheme, colors] of [['light', light], ['dark', dark]]) {
     for (const text of TEXTS) {
       for (const ground of GROUNDS) {
-        const [fore, back] = [colours.get(text), colours.get(ground)];
+        const [fore, back] = [colors.get(text), colors.get(ground)];
         assert.ok(fore && back, `the ${scheme} scheme sets --${text} and --${ground}`);
         const ratio = contrast(fore, back);
         assert.ok(ratio >= 4.5, `${scheme}: --${text} ${fore} on --${ground} ${back} is ${ratio.toFixed(2)} to 1`);
       }
     }
-    const ratio = contrast(colours.get('on-button'), colours.get('button'));
+    const ratio = contrast(colors.get('on-button'), colors.get('button'));
     assert.ok(ratio >= 4.5, `${scheme}: a button's text is ${ratio.toFixed(2)} to 1`);
   }
 });
 
-test('the dark scheme sets every colour the light scheme sets, each its own', () => {
+test('the dark scheme sets every color the light scheme sets, each its own', () => {
   assert.ok(light.size >= TEXTS.length + GROUNDS.length);
   for (const [name, value] of light) {
     assert.ok(dark.has(name), `the dark scheme sets --${name}`);

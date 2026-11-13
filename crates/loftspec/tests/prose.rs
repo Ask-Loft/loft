@@ -12,7 +12,7 @@ fn labels(text: &str) -> Vec<String> {
 }
 
 #[test]
-fn every_label_form_is_recognised() {
+fn every_label_form_is_recognized() {
     assert_eq!(
         labels("P-1, FG-2, F-3, RQ-4, AC-5, CMP-6, CON-7, QA-8 and ADR-9."),
         [
@@ -22,7 +22,7 @@ fn every_label_form_is_recognised() {
 }
 
 #[test]
-fn a_reference_with_a_document_prefix_is_recognised() {
+fn a_reference_with_a_document_prefix_is_recognized() {
     assert_eq!(
         labels("As D-2/RQ-12 and D-7/AC-3 state."),
         ["RQ-12", "AC-3"]
@@ -30,7 +30,7 @@ fn a_reference_with_a_document_prefix_is_recognised() {
 }
 
 #[test]
-fn a_reference_in_backticks_or_brackets_is_recognised() {
+fn a_reference_in_backticks_or_brackets_is_recognized() {
     assert_eq!(
         labels("See `RQ-12` (AC-3) [ADR-4]."),
         ["RQ-12", "AC-3", "ADR-4"]

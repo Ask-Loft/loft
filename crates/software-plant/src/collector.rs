@@ -24,7 +24,7 @@ pub const LIMIT: usize = 4096;
 
 /// How the simulator answers.
 #[derive(Clone, Copy, Debug)]
-enum Behaviour {
+enum Behavior {
     Accepting,
     Failing(u16),
     Silent,
@@ -40,19 +40,19 @@ impl Collector {
     /// A collector that answers as its contract states.
     #[must_use]
     pub fn accepting() -> Self {
-        Self::start(Behaviour::Accepting)
+        Self::start(Behavior::Accepting)
     }
 
     /// A collector that answers every request with `status`.
     #[must_use]
     pub fn failing(status: u16) -> Self {
-        Self::start(Behaviour::Failing(status))
+        Self::start(Behavior::Failing(status))
     }
 
     /// A collector that accepts each connection and never answers.
     #[must_use]
     pub fn silent() -> Self {
-        Self::start(Behaviour::Silent)
+        Self::start(Behavior::Silent)
     }
 
     /// The address of a collector that refuses every connection.
@@ -61,10 +61,10 @@ impl Collector {
         format!("{}{PATH}", refusing_url())
     }
 
-    fn start(behaviour: Behaviour) -> Self {
+    fn start(behavior: Behavior) -> Self {
         let accepted = Arc::new(Mutex::new(Vec::new()));
         let responder = Answering {
-            behaviour,
+            behavior,
             accepted: Arc::clone(&accepted),
             seen: BTreeSet::new(),
         };
@@ -96,17 +96,17 @@ impl Collector {
 }
 
 struct Answering {
-    behaviour: Behaviour,
+    behavior: Behavior,
     accepted: Arc<Mutex<Vec<Vec<u8>>>>,
     seen: BTreeSet<String>,
 }
 
 impl Responder for Answering {
     fn answer(&mut self, request: &Request) -> Answer {
-        match self.behaviour {
-            Behaviour::Silent => Answer::Hold,
-            Behaviour::Failing(status) => Response::empty(status).into(),
-            Behaviour::Accepting => Response::empty(self.accept(request)).into(),
+        match self.behavior {
+            Behavior::Silent => Answer::Hold,
+            Behavior::Failing(status) => Response::empty(status).into(),
+            Behavior::Accepting => Response::empty(self.accept(request)).into(),
         }
     }
 }

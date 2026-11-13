@@ -46,13 +46,13 @@ fn an_unknown_format_is_refused_and_no_other_file_is_read() {
 
 #[test]
 fn an_unknown_field_is_refused_at_its_position() {
-    let files = edited(FEATURE, "slug: keys\n", "slug: keys\ncolour: \"red\"\n");
+    let files = edited(FEATURE, "slug: keys\n", "slug: keys\ncolor: \"red\"\n");
     let error = only(&files);
-    assert_eq!(error.problem, Problem::UnknownField("colour".to_owned()));
+    assert_eq!(error.problem, Problem::UnknownField("color".to_owned()));
     assert_eq!(error.sites[0].location, Some(at(3, 1)));
     assert_eq!(
         error.to_string(),
-        "spec/products/example-product/identity/keys.yaml:3:1: the field `colour` is not one the \
+        "spec/products/example-product/identity/keys.yaml:3:1: the field `color` is not one the \
          Format defines here"
     );
 }

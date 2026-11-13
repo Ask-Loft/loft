@@ -67,7 +67,7 @@ test('each view chosen in the head’s tabs is kept in the browser and drawn alo
 });
 
 test('the button that opens what waits lies in the page’s head', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+  const asked = question('color', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   const drawn = page(shown);
   const button = drawn.querySelector('header#head #open-waiting');
@@ -95,8 +95,8 @@ test('the switch of order lies among the controls of the page’s head, shown on
   prefs.set('order', null);
 });
 
-test('each control of the head is labelled above it in small text', () => {
-  const asked = question('colour', ['Red', 'Blue']);
+test('each control of the head is labeled above it in small text', () => {
+  const asked = question('color', ['Red', 'Blue']);
   const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
   const controls = [...page(shown).querySelectorAll('#head .head-controls > .control')];
   assert.deepEqual(controls.map((control) => control.firstElementChild?.className), ['control-label', 'control-label']);

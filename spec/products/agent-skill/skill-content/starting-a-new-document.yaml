@@ -46,14 +46,14 @@ requirements:
       form: event_driven
       when: "the agent drafts a document from an existing codebase"
       system: "the skill"
-      shall: "direct the agent to confirm with the user each behaviour it infers from the code."
+      shall: "direct the agent to confirm with the user each behavior it infers from the code."
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e8170af00839
         name: "The workflow tells the agent to read the code before proposing an outline."
       - key: 01a13654-6e12-74a1-ad7f-e818e6e5caad
-        name: "The workflow tells the agent to list each behaviour inferred from the code as a question for the user."
+        name: "The workflow tells the agent to list each behavior inferred from the code as a question for the user."
       - key: 01a13654-6e12-74a1-ad7f-e819405744bd
-        name: "The workflow tells the agent to state a behaviour as a Requirement only once the user confirms it."
+        name: "The workflow tells the agent to state a behavior as a Requirement only once the user confirms it."
   - key: 01a13754-833e-725b-b941-63441f37d11b
     statement:
       form: event_driven

@@ -30,7 +30,7 @@ fn newer() -> Yard {
         let text = text.replace("kind: question", "kind: sketch");
         let text = text.replace(
             "    markdown: \"Kept.\"",
-            "    markdown: \"Kept.\"\n    colour: \"green\"",
+            "    markdown: \"Kept.\"\n    color: \"green\"",
         );
         fs::write(&path, text).unwrap();
     }

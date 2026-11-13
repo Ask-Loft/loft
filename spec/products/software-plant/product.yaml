@@ -1,7 +1,7 @@
 key: 01a12ff0-f5e5-7095-8fa8-24ba9ff252f2
 slug: software-plant
 name: "Software Plant"
-body: "Simulators of the external systems that Loft depends on. Tests run Loft's own binaries, unchanged, against a simulator's scripted and repeatable behaviour instead of the real system, and a contract suite shared with the real system keeps each simulator honest."
+body: "Simulators of the external systems that Loft depends on. Tests run Loft's own binaries, unchanged, against a simulator's scripted and repeatable behavior instead of the real system, and a contract suite shared with the real system keeps each simulator honest."
 featureGroups:
   - key: 01a12ff0-f5e5-7095-8fa8-24d892139560
     slug: simulators
@@ -16,3 +16,8 @@ featureGroups:
       - 01a156ae-6a51-7230-a9a1-fa8778ff0ee8
       - 01a17989-a8b9-74b1-9049-073969b8f0f3
       - 01a18e1f-8dac-71f7-847a-723a5547f246
+constraints:
+  - key: 01a1d600-053b-77ad-8132-b982f4fbae63
+    name: "The Software Plant's specification, code, tests and documentation in this repository shall be written in American English."
+    body: "Text this repository keeps as history or does not own keeps its spelling: decisions published as resolved, which change only through a decision that supersedes them; the v1 fixtures and golden vectors under `testdata/`; vendored files; and the released entries of `CHANGELOG.md`. So does a name that a standard, a persisted file, a published interface or a golden vector fixes in British spelling."
+    verificationFate: proved

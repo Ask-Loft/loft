@@ -134,7 +134,7 @@ const STATUSES = [
 
 /**
  * The head of the Yard Log shown: where it lies, its title and the line that sums it up, and at
- * its right the controls of the view shown, each labelled above it.
+ * its right the controls of the view shown, each labeled above it.
  * @param {any} log
  * @param {LogContext} context
  */

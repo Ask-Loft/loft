@@ -1,4 +1,4 @@
-//! Worker scheduling and acknowledgement without a network or a native host.
+//! Worker scheduling and acknowledgment without a network or a native host.
 
 use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::json;
@@ -120,7 +120,7 @@ fn an_identified_in_flight_payload_and_drop_report_survive_failure_and_restart_u
 }
 
 #[test]
-fn a_background_handler_for_a_cancelled_nudge_cannot_resume_an_ended_session() {
+fn a_background_handler_for_a_canceled_nudge_cannot_resume_an_ended_session() {
     use crate::yard::codex::commands::Caller;
     use crate::yard::codex::notification_state::{Lifecycle, Resolution, Route};
     use crate::yard::codex::translate::Hook;

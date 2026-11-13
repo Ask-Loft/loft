@@ -6,7 +6,7 @@ body: |
 
   The pane does not draw the page again. It is the page's companion inside Claude Code, on every surface: where the work stands, what waits on the person, and their answers, taken there. On a surface with no browser pane the mod can reach, the pane links the page, and the command's own answer gives the page's address with a word on what it shows.
 
-  No mod can tell whether a surface is drawn light or dark, and Claude Code Desktop may be light while the terminal is dark, so the pane's text, lines and grounds take Claude Code's own colours, which each surface resolves to its own appearance, and the page's hues mark status alone, in shades that read on either.
+  No mod can tell whether a surface is drawn light or dark, and Claude Code Desktop may be light while the terminal is dark, so the pane's text, lines and grounds take Claude Code's own colors, which each surface resolves to its own appearance, and the page's hues mark status alone, in shades that read on either.
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
@@ -61,7 +61,7 @@ requirements:
       - key: 01a1d06f-b09f-73ae-a356-c4a36c12e63f
         name: "The head's line counts the stages by status, as `3 stages: 2 done, 1 active, 0 planned`."
       - key: 01a1d06f-b09f-73ae-a356-c4a40bdf34c9
-        name: "Where blocks wait on the person, the head counts them, as `3 wait on you`, in the waiting colour."
+        name: "Where blocks wait on the person, the head counts them, as `3 wait on you`, in the waiting color."
       - key: 01a1cfe2-478e-75d1-b104-04f4e90e6960
         name: "Where no block waits on the person, the head shows no such count."
   - key: 01a1d0cd-6916-731d-8a40-084e96e1d9e6
@@ -86,7 +86,7 @@ requirements:
       - key: 01a1d0cd-6916-731d-8a40-085200c14980
         name: "The blocks show the oldest submission first, each submission's blocks in its own order."
       - key: 01a1d06f-b09f-73ae-a356-c4aecdbe19d5
-        name: "The card of a block that waits on the person is outlined in the waiting colour, with a bar of it at its left."
+        name: "The card of a block that waits on the person is outlined in the waiting color, with a bar of it at its left."
       - key: 01a1cfe2-478e-75d1-b104-04f1651155ff
         name: "A question shows its prompt, its context drawn as Markdown, and each option as a card lettered A, B, C and on, with its label and its detail."
       - key: 01a1cfe2-478e-75d1-b104-04f2f2c33b76
@@ -99,11 +99,11 @@ requirements:
     statement:
       form: ubiquitous
       system: "The pane"
-      shall: "draw its text, its lines and its grounds in the colours of the surface that draws it, and mark status in the Yard page's hues."
+      shall: "draw its text, its lines and its grounds in the colors of the surface that draws it, and mark status in the Yard page's hues."
     criteria:
       - key: 01a1d06f-b09f-73ae-a356-c4c150ee429d
-        name: "Text, muted text and lines take Claude Code's own colours, which each surface draws in its own light or dark appearance."
+        name: "Text, muted text and lines take Claude Code's own colors, which each surface draws in its own light or dark appearance."
       - key: 01a1d06f-b09f-73ae-a356-c4c236afe1c5
-        name: "Each colour that marks status is a shade that reads on a light ground and on a dark one."
+        name: "Each color that marks status is a shade that reads on a light ground and on a dark one."
       - key: 01a1d06f-b09f-73ae-a356-c4c3dc81b156
         name: "Done is drawn teal, active blue, what waits on the person rust and a fix rose, as on the page."

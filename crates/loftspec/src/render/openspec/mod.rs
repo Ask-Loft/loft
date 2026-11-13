@@ -115,7 +115,7 @@ pub fn openspec(document: &Document) -> Result<OpenspecProjection, RenderError> 
         entries,
         schema: MAP_SCHEMA,
     };
-    let mut map = serde_json::to_string_pretty(&map).expect("a render map serialises");
+    let mut map = serde_json::to_string_pretty(&map).expect("a render map serializes");
     map.push('\n');
     Ok(OpenspecProjection {
         roots,

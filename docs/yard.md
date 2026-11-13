@@ -128,7 +128,7 @@ plugin's `hooks/hooks.json` and review the hooks again in `/hooks`.
 
 The Codex adapter differs from Claude Code's:
 
-- Codex's own dialogs are not synchronised with the page.
+- Codex's own dialogs are not synchronized with the page.
 - A successful `update_plan` mirrors its steps as tasks of the agent's working stage.
 - Native hooks carry no token counters, so usage comes only from the app server, and tool
   activity whose subagent is ambiguous is left out.

@@ -337,7 +337,7 @@ Both registries are lists of entries.
 
 ```yaml path=spec/tags.yaml
 - name: offline
-  definition: "Behaviour that works without a network connection."
+  definition: "Behavior that works without a network connection."
 ```
 
 ```yaml path=spec/categories.yaml

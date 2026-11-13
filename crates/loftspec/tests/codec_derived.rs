@@ -94,11 +94,11 @@ fn no_written_node_record_carries_an_ordinal() {
 #[test]
 fn no_written_node_record_carries_a_label() {
     let (names, scalars) = node_records(&full_files());
-    let labelled = names.iter().find(|name| {
+    let labeled = names.iter().find(|name| {
         let name = name.to_lowercase();
         name.contains("label") || name.contains("alias")
     });
-    assert_eq!(labelled, None);
+    assert_eq!(labeled, None);
     let document = full_document();
     for binding in document.bindings.iter() {
         for label in binding.every_label() {

@@ -6,7 +6,7 @@ an obligation belongs. It owns the craft. The fields and files belong to `format
 lint finding means belongs to `lint-findings.md`. Never restate or override them here.
 
 Lint checks some of these rules, and the rule ids are given where it does. Most of the craft is
-judgement that lint cannot make.
+judgment that lint cannot make.
 
 ## Contents
 
@@ -15,7 +15,7 @@ judgement that lint cannot make.
 - Name the system
 - Name each concept by one term
 - Write criteria that are atomic and complete
-- Give each rule of a catalogue its own Requirement
+- Give each rule of a catalog its own Requirement
 - Promote an oversized Requirement to a Feature
 - Keep obligations out of bodies
 - Make a Quality Attribute measurable
@@ -65,7 +65,7 @@ The `system` slot names who holds the obligation.
 - A proper name stands bare: "Loft shall", "When …, Reading List shall". Never invent a head noun
   for it ("the Loft service"). List the project's proper names in `spec/lint.yaml` under
   `V2-008`'s `properNames`, and lint reports an article before one of them.
-- Capitalise the system at the start of a `ubiquitous` statement; after a condition it follows a
+- Capitalize the system at the start of a `ubiquitous` statement; after a condition it follows a
   comma and keeps its own case.
 
 ## Name each concept by one term
@@ -108,11 +108,11 @@ A criterion that only repeats its Requirement covers nothing. "The book is added
 the reader adds a book, the shelf shall hold it" is an echo; "The book appears on the shelf" and
 "A book already on the shelf is not added twice" are outcomes.
 
-## Give each rule of a catalogue its own Requirement
+## Give each rule of a catalog its own Requirement
 
 When a Feature lists rules, checks, commands or error codes, each item is its own Requirement
 with its own criteria: when it applies, when it does not, and its exemptions. Never fold a
-catalogue into one Requirement with a criterion per item.
+catalog into one Requirement with a criterion per item.
 
 ## Promote an oversized Requirement to a Feature
 
@@ -167,7 +167,7 @@ Product uses is realized by that Feature too; reuse the Component, never copy it
 
 ## State guarantees, not provisioning
 
-A specification states the behaviour the product guarantees and the targets it meets. How much
+A specification states the behavior the product guarantees and the targets it meets. How much
 is provisioned to meet them, such as a machine size, a disk or a number of replicas, is a choice
 of the deployment and goes stale with it; write it in the deployment's own files, not as a node.
 
@@ -203,7 +203,7 @@ the tag (`LQ-009`).
 ## Cite a label with a `mentions` edge
 
 Prose may cite a published label, such as `RQ-12`. Add a `mentions` edge from the node to the
-labelled node's key, so that the citation follows the node when labels change (`V2-003`). Prefer
+labeled node's key, so that the citation follows the node when labels change (`V2-003`). Prefer
 the node's name in prose that does not need the label.
 
 ## Follow the document's conventions

@@ -1,13 +1,13 @@
-// The pane's colours. No mod can tell whether a surface is drawn light or dark, and Claude Code
+// The pane's colors. No mod can tell whether a surface is drawn light or dark, and Claude Code
 // Desktop may be light while the terminal is dark, so text, muted text and lines take Claude
-// Code's own colours, which each surface resolves to its own appearance, and the Yard page's hues
+// Code's own colors, which each surface resolves to its own appearance, and the Yard page's hues
 // mark status alone, in shades that read on a light ground and on a dark one: action blue for
 // what is in hand, rust for what waits on the person, rose for a fix the person asked for and teal
 // for the option an agent recommends (the Feature "Keep the Yard page beside the session"). Pure.
 
 import type { ThemeKey } from 'claude-code'
 
-/** The colours the pane draws with: Claude Code's own for its neutrals, a fixed shade for each status. */
+/** The colors the pane draws with: Claude Code's own for its neutrals, a fixed shade for each status. */
 export type Palette = {
   ink: ThemeKey
   muted: ThemeKey
@@ -17,7 +17,7 @@ export type Palette = {
   wait: string
   fix: string
   recommended: string
-  /** Text on a ground filled with a status colour. */
+  /** Text on a ground filled with a status color. */
   onButton: string
 }
 

@@ -27,7 +27,7 @@ requirements:
       - key: 01a1695a-dd72-7090-817b-abebaa96fd5a
         name: "A Feature's box gives no count of its Requirements or its criteria."
       - key: 01a1646f-546d-7042-befd-eac305fe0fe5
-        name: "Each box says whether its node was added, changed or removed, in a word as well as a colour, and a box drawn only for context says neither."
+        name: "Each box says whether its node was added, changed or removed, in a word as well as a color, and a box drawn only for context says neither."
       - key: 01a1646f-546d-7042-befd-eac47fbbbfb2
         name: "Each box of a Product, a Feature Group, a Feature, a Component or a decision names its node, and every box gives its node's label where the node has one."
       - key: 01a1646f-546d-7042-befd-eac6d7f3526d
@@ -41,17 +41,17 @@ requirements:
       shall: "draw a `spec-change` view's diagram with its own flowchart renderer, as nested panels and cards in Loft Web's marks, at its own size: a compact map in its block, and full cards once expanded."
     criteria:
       - key: 01a1a814-5ac4-7523-9962-5acb7c0667ce
-        name: "Each Product, Feature Group and Feature the diagram shows is a panel framed by a hairline that holds what belongs to it, headed by its kind's coloured square, its label and its name."
+        name: "Each Product, Feature Group and Feature the diagram shows is a panel framed by a hairline that holds what belongs to it, headed by its kind's colored square, its label and its name."
       - key: 01a1a814-5ac4-7523-9962-5acc70ed77b9
         name: "A Requirement's box and the boxes of its criteria stand in one row, the criteria stacked one beneath another to its right, each joined to it by a plain line without an arrowhead."
       - key: 01a1a814-5ac4-7523-9962-5acd501df9ef
-        name: "Expanded, each box is a flat card headed by its kind's coloured square and its label in monospace, or its kind's label prefix, such as `RQ` or `AC`, where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
+        name: "Expanded, each box is a flat card headed by its kind's colored square and its label in monospace, or its kind's label prefix, such as `RQ` or `AC`, where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
       - key: 01a1a836-8724-73ee-8657-ce8aec3a1302
-        name: "In its block, each box is a chip of one line: its kind's coloured square, its label or its kind's label prefix, its name cut to the chip's measured width, and its change in a word."
+        name: "In its block, each box is a chip of one line: its kind's colored square, its label or its kind's label prefix, its name cut to the chip's measured width, and its change in a word."
       - key: 01a1a836-8725-715c-9d62-b5b2deeb88a9
         name: "A chip whose name is cut gives its whole name to a reader and shows it while the pointer rests on the chip."
       - key: 01a1a814-5ac4-7523-9962-5ace0ee365c5
-        name: "An added, changed or removed box or panel carries a bar at its left in its change's colour and its change in a word at its right."
+        name: "An added, changed or removed box or panel carries a bar at its left in its change's color and its change in a word at its right."
       - key: 01a1a823-bcd4-7465-a368-65401608d872
         name: "A removed box or panel is outlined dashed."
       - key: 01a1a814-5ac4-7523-9962-5acfa4c34f20

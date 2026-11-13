@@ -26,6 +26,7 @@ mod workflow;
 #[path = "common/yard.rs"]
 mod yard;
 
+mod american_english;
 mod check;
 mod check_baseline;
 mod checks_for_updates;

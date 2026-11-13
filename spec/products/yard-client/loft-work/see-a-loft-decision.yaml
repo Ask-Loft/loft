@@ -16,7 +16,7 @@ requirements:
       - key: 01a1a879-b49c-74df-b755-c48a1b0870b2
         name: "The options are listed once, as the rows of the table, and the selected option is marked as selected."
       - key: 01a1646f-546d-7042-befd-eab9f27ee1c1
-        name: "The table has a row for each option and a column for each driver, and each cell gives the rating as a symbol in its colour, which names the rating to a reader."
+        name: "The table has a row for each option and a column for each driver, and each cell gives the rating as a symbol in its color, which names the rating to a reader."
       - key: 01a1a879-b49c-74df-b755-c48b1ef1ef99
         name: "A line above the table names the rating each symbol stands for."
       - key: 01a1a879-b49c-74df-b755-c48c5e06a169

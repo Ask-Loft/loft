@@ -6,7 +6,7 @@ agents alike; this page is the short version.
 ## The specification comes first
 
 The contract is this repository's own specification in `spec/`, written in the Loft
-Specification Format. A change of behaviour changes `spec/` in the same pull request as the
+Specification Format. A change of behavior changes `spec/` in the same pull request as the
 code: write the new Requirements and criteria without keys, run `loft fmt` to mint them, and keep
 `loft check --fail-on warning` clean. A decision is added in the state that is true, `proposed` or
 `accepted`. When code and `spec/` disagree, `spec/` wins unless the change is to the contract.
@@ -23,7 +23,7 @@ add have keys and no labels until then.
 - Tests never reach git or the clock directly. They put a simulator from the Software Plant
   (`crates/software-plant`) in front of the unchanged `loft` binary; only a contract suite runs the
   real system.
-- Behaviour shared with Loft v1 is led from here. An intended difference is an entry in
+- Behavior shared with Loft v1 is led from here. An intended difference is an entry in
   `testdata/v1/divergences.json`.
 - A change to a command's output changes its schema under `schemas/` in the same commit.
 - The agent skills are changed only in their sources, `crates/loft-cli/skill/loft-spec/` and
@@ -127,6 +127,6 @@ it. `AGENTS.md` lists the steps.
 Everything here is public, the history included. Never commit secrets, private documents or
 customer data, and keep commit messages, comments and test names free of them.
 
-## Licence
+## License
 
 Contributions are made under the Apache License 2.0, as section 5 of `LICENSE` states.

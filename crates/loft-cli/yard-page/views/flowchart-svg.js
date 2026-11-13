@@ -1,7 +1,7 @@
 // A laid-out flowchart drawn as the page's own SVG: its groups as panels framed by a hairline and
 // titled in small muted text, then its edges in muted ink, each turning with rounded elbows and
 // ending in a small arrowhead, their labels in pills, and its nodes as flat cards in their shapes.
-// Colours come from the page's stylesheet through classes, so that a change of scheme recolours a
+// Colors come from the page's stylesheet through classes, so that a change of scheme recolors a
 // flowchart without laying it out again; only a node's own `style` or `classDef` is written on it.
 
 import { svg } from '../lib/dom.js';
@@ -13,7 +13,7 @@ const MARGIN = 8;
 const ELBOW = 6;
 
 /**
- * A label's lines, centred on (`x`, `y`).
+ * A label's lines, centered on (`x`, `y`).
  * @param {string[]} lines
  * @param {number} x
  * @param {number} y
@@ -49,7 +49,7 @@ function shapeOf(node) {
 }
 
 /**
- * A node: its shape and its label, with the colours its own style gives it.
+ * A node: its shape and its label, with the colors its own style gives it.
  * @param {any} node
  */
 function nodeOf(node) {

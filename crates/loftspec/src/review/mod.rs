@@ -1,6 +1,6 @@
 //! The review packer (The review packet): the assertions under review, each in the unit of its
-//! scope with the nodes it is read against, and nothing that weighs them (the decision "The
-//! review packet carries context and no judgement"). An assertion is a Requirement, a criterion,
+//! scope with the nodes it is read against, and nothing that weighs them (the accepted
+//! decision ADR-96). An assertion is a Requirement, a criterion,
 //! a Constraint or a Quality Attribute. Without a base every assertion is reviewed; against a
 //! base, those the tree added, changed, moved or removed, each beside the base's node. [`pack`]
 //! gives the packet; [`page`] gives a page of its units as JSON, as every caller pages them.

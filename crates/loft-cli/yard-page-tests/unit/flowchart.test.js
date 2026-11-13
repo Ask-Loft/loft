@@ -149,9 +149,9 @@ test('the flowchart keeps its direction', async () => {
   assert.ok(at(up, 'A').y > at(up, 'B').y, 'bottom to top');
 });
 
-test('a node’s own style or classDef keeps its fill, its stroke and its text colour', async () => {
+test('a node’s own style or classDef keeps its fill, its stroke and its text color', async () => {
   assert.deepEqual(styleOf({ cssClasses: 'default hot', cssStyles: ['stroke:#00f'] }, parsed().classes), { fill: '#fdd', stroke: '#00f', color: '#600' });
-  assert.deepEqual(styleOf({ cssStyles: ['fill:url(javascript:x)', 'stroke-width:4px'] }, {}), {}, 'only a plain colour is kept');
+  assert.deepEqual(styleOf({ cssStyles: ['fill:url(javascript:x)', 'stroke-width:4px'] }, {}), {}, 'only a plain color is kept');
   const drawn = flowchartSvg(await laid(), 'f5');
   assert.equal(drawn.querySelector('[data-id="A"] rect')?.getAttribute('style'), 'fill:#eef');
   assert.equal(drawn.querySelector('[data-id="E"] rect')?.getAttribute('style'), 'fill:#fdd;stroke:#c00');

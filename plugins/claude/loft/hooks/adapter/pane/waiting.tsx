@@ -120,7 +120,7 @@ function controls(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
   ]
 }
 
-/** A waiting block's card, outlined in the waiting colour, with a bar of it at its left. */
+/** A waiting block's card, outlined in the waiting color, with a bar of it at its left. */
 function askCard(drawing: Drawing, block: PaneBlock, kept: YardPaneDrafts) {
   const { t, palette } = drawing
   const { Box } = t

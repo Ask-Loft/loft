@@ -12,13 +12,13 @@ function onStage(view, at) {
   return { x: view.x + at.x * view.k, y: view.y + at.y * view.k };
 }
 
-test('fitting shows the whole diagram in the stage, centred in it', () => {
+test('fitting shows the whole diagram in the stage, centered in it', () => {
   const view = fit(stage, { width: 2000, height: 400 });
   assert.ok(view.k > 0 && view.k < 1, `${view.k}`);
   const corner = onStage(view, { x: 2000, y: 400 });
   assert.ok(view.x >= 0 && view.y >= 0 && corner.x <= stage.width && corner.y <= stage.height, JSON.stringify(view));
-  assert.ok(Math.abs(view.x - (stage.width - corner.x)) < 1e-9, 'centred across');
-  assert.ok(Math.abs(view.y - (stage.height - corner.y)) < 1e-9, 'centred down');
+  assert.ok(Math.abs(view.x - (stage.width - corner.x)) < 1e-9, 'centered across');
+  assert.ok(Math.abs(view.y - (stage.height - corner.y)) < 1e-9, 'centered down');
 });
 
 test('fitting a small diagram scales it up to fill the stage', () => {

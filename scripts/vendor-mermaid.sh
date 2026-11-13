@@ -1,6 +1,6 @@
 #!/bin/sh
 # Rewrites the Mermaid that the Yard page draws its diagrams with, from the release the npm
-# registry holds: its minified script, compressed, and its licence, under
+# registry holds: its minified script, compressed, and its license, under
 # crates/loft-cli/yard-page/vendor/. `loft` serves the script from the compressed file. To move to
 # another release, change VERSION here and in that folder's README.md, run this script, and run
 # the page's tests.

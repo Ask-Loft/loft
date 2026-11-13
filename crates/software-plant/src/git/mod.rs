@@ -351,7 +351,7 @@ impl GitScenario {
     ///
     /// The file cannot be written.
     pub fn write(&self, path: &Path) {
-        let text = serde_json::to_string_pretty(self).expect("a scenario serialises");
+        let text = serde_json::to_string_pretty(self).expect("a scenario serializes");
         fs::write(path, text).expect("the scenario file is written");
     }
 

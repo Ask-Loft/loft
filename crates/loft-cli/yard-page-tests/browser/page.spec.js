@@ -203,8 +203,8 @@ test('a diagram is drawn from the vendored Mermaid, and one that does not parse 
   await expect(broken).toContainText('shelf --> --> ((');
 });
 
-/** The computed colour of `property` on the first element `locator` finds. */
-function colour(locator, property) {
+/** The computed color of `property` on the first element `locator` finds. */
+function color(locator, property) {
   return locator.first().evaluate((element, name) => getComputedStyle(element).getPropertyValue(name), property);
 }
 
@@ -213,40 +213,40 @@ function diagramBox(page) {
   return page.locator('#block-drawn svg.flow .flow-node').first().locator('rect, polygon, circle');
 }
 
-test('in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colours', async ({ page }) => {
+test('in a browser that asks for a dark scheme, the page, its Gantt chart and its diagrams are drawn in their dark colors', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto(address());
   await closeWaiting(page);
-  expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
+  expect(await color(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
-  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(16, 22, 29)');
-  expect(await colour(diagramBox(page), 'stroke')).toBe('rgb(74, 85, 97)');
-  expect(await colour(diagramBox(page), 'stroke-width')).toBe('1px');
+  expect(await color(diagramBox(page), 'fill')).toBe('rgb(16, 22, 29)');
+  expect(await color(diagramBox(page), 'stroke')).toBe('rgb(74, 85, 97)');
+  expect(await color(diagramBox(page), 'stroke-width')).toBe('1px');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
+  expect(await color(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(232, 238, 244)');
 });
 
 /** Loft's wordmark and the tab of the view shown in `scheme`, whose ink and action blue are given. */
-async function wordmarkColours(page, scheme, ink, signal) {
+async function wordmarkColors(page, scheme, ink, signal) {
   await page.emulateMedia({ colorScheme: scheme });
   await page.goto(address());
   await closeWaiting(page);
-  expect(await colour(page.locator('.wordmark-initial'), 'color')).toBe(signal);
-  expect(await colour(page.locator('.wordmark'), 'color')).toBe(ink);
+  expect(await color(page.locator('.wordmark-initial'), 'color')).toBe(signal);
+  expect(await color(page.locator('.wordmark'), 'color')).toBe(ink);
   const shown = page.locator('#head .view-tab[aria-current="page"]');
   await expect(shown).toHaveText('Timeline');
-  expect(await colour(shown, 'color')).toBe(ink);
-  expect(await colour(shown, 'border-bottom-color')).toBe(signal);
+  expect(await color(shown, 'color')).toBe(ink);
+  expect(await color(shown, 'border-bottom-color')).toBe(signal);
   const other = page.locator('#head .view-tab:not([aria-current])').first();
-  expect(await colour(other, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
+  expect(await color(other, 'border-bottom-color')).toBe('rgba(0, 0, 0, 0)');
 }
 
 test('in a light scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue', async ({ page }) => {
-  await wordmarkColours(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)');
+  await wordmarkColors(page, 'light', 'rgb(14, 20, 29)', 'rgb(20, 72, 143)');
 });
 
 test('in a dark scheme, the wordmark’s L is action blue and the rest ink, and the tab of the view shown is ink underlined in action blue', async ({ page }) => {
-  await wordmarkColours(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
+  await wordmarkColors(page, 'dark', 'rgb(232, 238, 244)', 'rgb(142, 197, 242)');
 });
 
 test('the wordmark’s L meets the rest of its name with no gap between them, and Yard stands on its baseline, muted', async ({ page }) => {
@@ -267,23 +267,23 @@ test('the wordmark’s L meets the rest of its name with no gap between them, an
       return y;
     });
   expect(Math.abs((await baseline(page.locator('.wordmark'))) - (await baseline(page.locator('.app-name'))))).toBeLessThan(1);
-  expect(await colour(page.locator('.app-name'), 'color')).toBe(await colour(page.locator('.connection'), 'color'));
+  expect(await color(page.locator('.app-name'), 'color')).toBe(await color(page.locator('.connection'), 'color'));
 });
 
-test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colours', async ({ page }) => {
+test('in a browser that asks for a light scheme, the page, its Gantt chart and its diagrams are drawn in their light colors', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' });
   await page.goto(address());
   await closeWaiting(page);
-  expect(await colour(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
+  expect(await color(page.locator('body'), 'background-color')).toBe('rgb(255, 255, 255)');
   await expect(diagramBox(page).first()).toBeVisible({ timeout: 10_000 });
-  expect(await colour(diagramBox(page), 'fill')).toBe('rgb(246, 249, 251)');
-  expect(await colour(diagramBox(page), 'stroke')).toBe('rgb(170, 178, 186)');
+  expect(await color(diagramBox(page), 'fill')).toBe('rgb(246, 249, 251)');
+  expect(await color(diagramBox(page), 'stroke')).toBe('rgb(170, 178, 186)');
   const label = page.locator('#block-drawn svg.flow .flow-label').first();
-  expect(await colour(label, 'font-size')).toBe('13px');
-  expect(await colour(label, 'fill')).toBe('rgb(14, 20, 29)');
-  expect(await colour(diagramBox(page), 'stroke-width')).toBe('1px');
+  expect(await color(label, 'font-size')).toBe('13px');
+  expect(await color(label, 'fill')).toBe('rgb(14, 20, 29)');
+  expect(await color(diagramBox(page), 'stroke-width')).toBe('1px');
   await page.getByRole('button', { name: 'Gantt chart' }).click();
-  expect(await colour(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
+  expect(await color(page.locator('.gantt .lane-label'), 'color')).toBe('rgb(14, 20, 29)');
 });
 
 test('when the browser changes its scheme, the open page and each diagram it drew turn to it without a reload', async ({ page }) => {
@@ -294,8 +294,8 @@ test('when the browser changes its scheme, the open page and each diagram it dre
     /** @type {any} */ (window).unreloaded = true;
   });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await expect.poll(() => colour(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
-  await expect.poll(() => colour(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(16, 22, 29)');
+  await expect.poll(() => color(page.locator('body'), 'background-color')).toBe('rgb(12, 17, 23)');
+  await expect.poll(() => color(diagramBox(page), 'fill'), { timeout: 10_000 }).toBe('rgb(16, 22, 29)');
   expect(await page.evaluate(() => /** @type {any} */ (window).unreloaded)).toBe(true);
 });
 
@@ -348,8 +348,8 @@ test('expanding a diagram opens it in a modal, named by its block, over the view
       const diagram = await diagramOnScreen(page);
       const inside = diagram.x >= room.x - 0.5 && diagram.y >= room.y - 0.5;
       const within = diagram.x + diagram.width <= room.x + room.width + 0.5 && diagram.y + diagram.height <= room.y + room.height + 0.5;
-      const centred = Math.abs(diagram.x - room.x - (room.x + room.width - diagram.x - diagram.width)) < 1;
-      return inside && within && centred;
+      const centered = Math.abs(diagram.x - room.x - (room.x + room.width - diagram.x - diagram.width)) < 1;
+      return inside && within && centered;
     })
     .toBe(true);
 });
@@ -658,13 +658,13 @@ test('an answer given in Claude Code shows within 2 seconds, and the count of wh
   await expect(card.locator('.answer-text')).toHaveText('Top', { timeout: LIVE });
   await expect(card.locator('.answer .byline')).toContainText('in the terminal');
   await expect(page).toHaveTitle('Yard', { timeout: LIVE });
-  ask('q2', 'Which colour?');
+  ask('q2', 'Which color?');
   await expect(page).toHaveTitle('(1) Yard', { timeout: LIVE });
 });
 
 test('the page sends every answer of a submission at once, and shows them given on the page', async ({ page }) => {
   await page.goto(address());
-  const panel = page.locator('.submission', { has: page.locator('.prompt', { hasText: 'Which colour?' }) });
+  const panel = page.locator('.submission', { has: page.locator('.prompt', { hasText: 'Which color?' }) });
   const send = panel.getByRole('button', { name: 'Send answers' });
   await expect(send).toBeDisabled();
   await panel.locator('input[value="Blue"]').check();
@@ -729,13 +729,13 @@ test('a rejection without a reason records nothing and asks for the reason; with
   await page.locator('#reject-paint').click();
   await expect(page.locator('.decision-form').filter({ has: page.locator('#reject-paint') }).locator('.send-message')).toContainText('Give the reason');
   expect((await read()).revision).toBe(before);
-  await page.locator('#reason-paint').fill('Not this colour');
+  await page.locator('#reason-paint').fill('Not this color');
   write([{ id: 'typing', kind: 'note', stage: 'shape', title: 'Written while the person types', markdown: 'x' }]);
   await expect(page.locator('#block-typing')).toBeVisible({ timeout: LIVE });
-  await expect(page.locator('#reason-paint')).toHaveValue('Not this colour');
+  await expect(page.locator('#reason-paint')).toHaveValue('Not this color');
   await page.locator('#reject-paint').click();
   await expect(page.locator('#block-paint .verdict-word')).toHaveText('Rejected', { timeout: LIVE });
-  await expect(page.locator('#block-paint .outcome')).toContainText('Not this colour');
+  await expect(page.locator('#block-paint .outcome')).toContainText('Not this color');
 });
 
 test('the page shows the first outcome with the channel it came from', async ({ page }) => {
@@ -892,7 +892,7 @@ test('the sidebar runs down the window’s left from top to bottom, on a ground 
   await expect(side.locator('.wordmark-link')).toBeVisible();
   const menu = await box(side);
   expect([menu.x, menu.y, menu.height]).toEqual([0, 0, 400]);
-  expect(await colour(side, 'background-color')).not.toBe(await colour(page.locator('body'), 'background-color'));
+  expect(await color(side, 'background-color')).not.toBe(await color(page.locator('body'), 'background-color'));
   expect((await box(page.locator('.page'))).x).toBe(menu.x + menu.width);
   await expect(side.locator('.connection')).toHaveText('Live');
   if (await waitingModal(page).isVisible()) await closeWaiting(page);
@@ -1042,11 +1042,11 @@ test('while the chart scrolls sideways its names stay in view, and while it scro
 
 test('the chart’s frame does not rebound at its edges, and a scroll down it can take no further scrolls the pane that holds it', async ({ page }) => {
   const frame = await openLongDay(page);
-  const behaviour = await frame.evaluate((element) => {
+  const behavior = await frame.evaluate((element) => {
     const style = getComputedStyle(element);
     return [style.overscrollBehaviorX, style.overscrollBehaviorY];
   });
-  expect(behaviour).toEqual(['none', 'auto']);
+  expect(behavior).toEqual(['none', 'auto']);
   await frame.evaluate((element) => (element.scrollTop = element.scrollHeight));
   const main = page.locator('#log');
   await main.evaluate((element) => element.scrollTo(0, 0));
@@ -1114,13 +1114,13 @@ test('folding the sidebar widens the Gantt chart into the room the sidebar left,
 test('a faint grid lies behind the bars, its lines unbroken by folded idle stretches, which are unhatched', async ({ page }) => {
   await openLongDay(page);
   expect(await page.locator('.stage-row').first().evaluate((element) => getComputedStyle(element).borderTopWidth)).toBe('1px');
-  const alpha = (colour) => {
-    const found = /\/\s*([\d.]+)\)$/.exec(colour) ?? /rgba\([^)]*,\s*([\d.]+)\)$/.exec(colour);
-    return found ? Number(found[1]) : colour === 'transparent' ? 0 : 1;
+  const alpha = (color) => {
+    const found = /\/\s*([\d.]+)\)$/.exec(color) ?? /rgba\([^)]*,\s*([\d.]+)\)$/.exec(color);
+    return found ? Number(found[1]) : color === 'transparent' ? 0 : 1;
   };
   const gaps = await page.locator('.idle-gap').evaluateAll((elements) => elements.map((element) => getComputedStyle(element).backgroundColor));
   expect(gaps.length).toBeGreaterThan(0);
-  for (const colour of gaps) expect(alpha(colour), `a gap of ${colour} lets the line beneath it through`).toBeLessThan(0.2);
+  for (const color of gaps) expect(alpha(color), `a gap of ${color} lets the line beneath it through`).toBeLessThan(0.2);
   const lines = page.locator('.gantt-lane .grid-line');
   expect(await lines.count()).toBe(await page.locator('.gantt-axis .tick').count());
   expect(await lines.first().evaluate((element) => getComputedStyle(element).borderLeftWidth)).toBe('1px');
@@ -1311,7 +1311,7 @@ test('same second submissions from different callers retain arrival order in the
 
 test('typing selects the free form radio while a later named choice sends no retained text', async ({ page }) => {
   const id = 'freeform-radio';
-  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colour?', header: 'Colour', ownWords: true,
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which color?', header: 'Color', ownWords: true,
     options: [{ label: 'Red' }, { label: 'Blue' }] }], ['--send']);
   await page.goto(address());
   const panel = page.locator(`#submission-${sent.submission}`);
@@ -1344,7 +1344,7 @@ test('typing selects the free form radio while a later named choice sends no ret
 
 test('legacy text stays unselected until editing and explicit free form selection survives reload', async ({ page }) => {
   const id = 'freeform-legacy';
-  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colour?', header: 'Colour', ownWords: true,
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which color?', header: 'Color', ownWords: true,
     options: [{ label: 'Red', recommended: true }, { label: 'Blue' }] }], ['--send']);
   const block = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key;
   await page.goto(address());
@@ -1372,7 +1372,7 @@ test('legacy text stays unselected until editing and explicit free form selectio
 
 test('free form checkboxes combine with named choices and keep selection independently of text', async ({ page }) => {
   const id = 'freeform-multi';
-  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colours?', header: 'Colours', ownWords: true, multiple: true,
+  const sent = write([{ id, kind: 'question', stage: 'shape', prompt: 'Which colors?', header: 'Colors', ownWords: true, multiple: true,
     options: [{ label: 'Red' }, { label: 'Blue' }] }], ['--send']);
   const block = (await read()).stages.flatMap(s => s.blocks).find(b => b.id === id).key;
   await page.goto(address());
@@ -1410,10 +1410,10 @@ test('the tokens view shows its totals, table, coverage and note with no fold, i
   await expect(totals).toBeVisible();
   await expect(section.locator('details, summary')).toHaveCount(0);
   for (const part of ['.tokens-table', '.reporting-coverage', '.tokens-note']) await expect(section.locator(part)).toBeVisible();
-  expect(await colour(totals.locator('dd').first(), 'font-variant-numeric')).toBe('normal');
+  expect(await color(totals.locator('dd').first(), 'font-variant-numeric')).toBe('normal');
   const count = section.locator('.tokens-table tbody td.number').first();
-  expect(await colour(count, 'font-variant-numeric')).toBe('tabular-nums');
-  expect(await colour(count, 'text-align')).toBe('right');
+  expect(await color(count, 'font-variant-numeric')).toBe('tabular-nums');
+  expect(await color(count, 'text-align')).toBe('right');
   const bar = count.locator('.share');
   expect((await box(bar)).height).toBe(4);
   const shown = await box(count);
@@ -1565,7 +1565,7 @@ test('the cards of a question’s options stand side by side, at most three to a
     await expect(clearing).toBeDisabled();
     await form.locator('label.choice', { hasText: 'Middle' }).click();
     await expect(form.locator('.question-state')).toHaveText('Chosen: B');
-    expect(await colour(cards.nth(1), 'outline-color')).toBe('rgb(20, 72, 143)');
+    expect(await color(cards.nth(1), 'outline-color')).toBe('rgb(20, 72, 143)');
     await clearing.click();
     await expect(form.locator('.question-state')).toHaveText('Not chosen yet');
     await expect(clearing).toBeDisabled();
@@ -1573,7 +1573,7 @@ test('the cards of a question’s options stand side by side, at most three to a
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
-test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node outlines it and its neighbours in action blue and fades nothing', async ({ page }) => {
+test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and pointing at a node outlines it and its neighbors in action blue and fades nothing', async ({ page }) => {
   const chain = Array.from({ length: 9 }, (_, n) => `  s${n}[Step ${n} of a long chain] --> s${n + 1}[Step ${n + 1} of a long chain]`).join('\n');
   write([{ id: 'wide-flow', kind: 'note', stage: 'shape', title: 'A wide flow', markdown: `\`\`\`mermaid\nflowchart LR\n${chain}\n\`\`\`` }]);
   await page.goto(address());
@@ -1591,14 +1591,14 @@ test('a wide flowchart keeps its own size and scrolls sideways at 13 pixels, and
   // Drawn at its own size: a label's 13 pixels are 13 on the screen.
   const label = flow.locator('.flow-label').first();
   expect(await label.evaluate((element) => /** @type {SVGGraphicsElement} */ (element).getBoundingClientRect().height)).toBeGreaterThan(12);
-  expect(await colour(label, 'font-size')).toBe('13px');
-  // Pointing at a node outlines it and its neighbour in action blue, and fades nothing.
-  const outline = (id) => colour(flow.locator(`.flow-node[data-id="${id}"] rect`), 'stroke');
+  expect(await color(label, 'font-size')).toBe('13px');
+  // Pointing at a node outlines it and its neighbor in action blue, and fades nothing.
+  const outline = (id) => color(flow.locator(`.flow-node[data-id="${id}"] rect`), 'stroke');
   await flow.locator('.flow-node[data-id="s0"]').hover();
   await expect.poll(() => outline('s1')).toBe('rgb(20, 72, 143)');
   expect(await outline('s0')).toBe('rgb(20, 72, 143)');
   expect(await outline('s5')).not.toBe('rgb(20, 72, 143)');
-  expect(await colour(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('1');
+  expect(await color(flow.locator('.flow-node[data-id="s5"]'), 'opacity')).toBe('1');
   await page.mouse.move(0, 0);
   await expect.poll(() => outline('s1')).not.toBe('rgb(20, 72, 143)');
 });
@@ -1649,7 +1649,7 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
     // In its block, a compact map of one-line chips, none of whose text runs out of it.
     await expect(flow.locator('.spec-chip')).toHaveCount(6);
     expect(await flow.locator('.spec-name').count()).toBe(0);
-    expect(await colour(flow.locator('.spec-chip-name').first(), 'font-size')).toBe('12.5px');
+    expect(await color(flow.locator('.spec-chip-name').first(), 'font-size')).toBe('12.5px');
     const fits = await flow.evaluate((svg) =>
       [...svg.querySelectorAll('.spec-card')].every((card) => {
         const frame = /** @type {SVGGraphicsElement} */ (card.querySelector('.spec-frame')).getBBox();
@@ -1661,17 +1661,17 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
     );
     expect(fits).toBe(true);
     const bars = { light: ['rgb(25, 158, 112)', 'rgb(37, 106, 191)', 'rgb(227, 73, 72)'], dark: ['rgb(25, 158, 112)', 'rgb(57, 135, 229)', 'rgb(230, 103, 103)'] }[scheme];
-    expect(await colour(flow.locator('.spec-card--added .spec-bar'), 'fill')).toBe(bars[0]);
-    expect(await colour(flow.locator('.spec-card--changed .spec-bar'), 'fill')).toBe(bars[1]);
-    expect(await colour(flow.locator('.spec-card--removed .spec-bar'), 'fill')).toBe(bars[2]);
+    expect(await color(flow.locator('.spec-card--added .spec-bar'), 'fill')).toBe(bars[0]);
+    expect(await color(flow.locator('.spec-card--changed .spec-bar'), 'fill')).toBe(bars[1]);
+    expect(await color(flow.locator('.spec-card--removed .spec-bar'), 'fill')).toBe(bars[2]);
     // A new criterion without a label shows its kind's prefix.
     expect(await flow.locator('.spec-card[data-key="c2"] .spec-label').textContent()).toBe('AC');
     // Pointing at the decision outlines the Requirement it settles in action blue, and fades nothing.
     const signal = scheme === 'light' ? 'rgb(20, 72, 143)' : 'rgb(142, 197, 242)';
     await flow.locator('.spec-card[data-key="d"]').hover();
-    await expect.poll(() => colour(flow.locator('.spec-card--context .spec-frame'), 'stroke')).toBe(signal);
-    expect(await colour(flow.locator('.spec-card[data-key="c3"] .spec-frame'), 'stroke')).not.toBe(signal);
-    expect(await colour(flow.locator('.spec-card[data-key="c3"]'), 'opacity')).toBe('1');
+    await expect.poll(() => color(flow.locator('.spec-card--context .spec-frame'), 'stroke')).toBe(signal);
+    expect(await color(flow.locator('.spec-card[data-key="c3"] .spec-frame'), 'stroke')).not.toBe(signal);
+    expect(await color(flow.locator('.spec-card[data-key="c3"]'), 'opacity')).toBe('1');
     await flow.locator('.spec-card[data-key="c1"]').click();
     const entry = page.locator('#block-spec-test .diff li.is-marked');
     await expect(entry).toHaveCount(1);
@@ -1681,7 +1681,7 @@ test('a spec-change diagram is drawn as nested panels and cards at its own size,
     await page.locator('#block-spec-test .diagram-expand').click();
     const expanded = page.locator('dialog.modal[data-modal="diagram"] svg.flow');
     await expect(expanded.locator('.spec-name').first()).toBeVisible({ timeout: 10_000 });
-    expect(await colour(expanded.locator('.spec-name').first(), 'font-size')).toBe('13px');
+    expect(await color(expanded.locator('.spec-name').first(), 'font-size')).toBe('13px');
     // Dragging it pans, and selects none of its text.
     const name = await box(expanded.locator('.spec-name').first());
     await page.mouse.move(name.x + 2, name.y + name.height / 2);

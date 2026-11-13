@@ -1,6 +1,6 @@
 // The timeline, as Loft Web lists what a page holds beside a pane of the one chosen: at its left,
 // the stages of a branch's Yard Log in their order on a rail, each with its title, its status in a
-// word and a colour, the agent that owns it and the counts of its blocks that wait on the person
+// word and a color, the agent that owns it and the counts of its blocks that wait on the person
 // and that changed since the last visit, a line where the stages done or dropped end and the
 // planned ones begin, and each stage open to its blocks or folded to its row; while Yard Log holds
 // a single stage, its blocks in place of it, each drawn as a stage's row is. At its right, the

@@ -102,7 +102,7 @@ fn a_nodes_key_is_unchanged_after_its_tags_change() {
 }
 
 #[test]
-fn a_nodes_key_is_unchanged_after_it_is_relabelled() {
+fn a_nodes_key_is_unchanged_after_it_is_relabeled() {
     let files = edited(
         "labels.yaml",
         "    label: RQ-2\n    aliases:\n      - RQ-1\n",

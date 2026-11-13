@@ -65,7 +65,7 @@ mod tests {
     }
 
     #[test]
-    fn a_page_server_of_an_unrecognised_version_is_older() {
+    fn a_page_server_of_an_unrecognized_version_is_older() {
         assert_eq!(against("2.3.0-pre", "0.0.1-alpha.0"), Ordering::Less);
     }
 }

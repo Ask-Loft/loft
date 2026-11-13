@@ -49,13 +49,13 @@ fn the_briefing_names_the_page_revision_stage_open_submissions_and_what_was_answ
     yard.write("s1", ASK, &["--send"]);
     yard.answer("s1", r#"[{"block": "q1", "labels": ["Top"]}]"#);
     yard.read("s1", &["--mark-read"]);
-    let colour = r#"[
-      {"id": "q2", "kind": "question", "stage": "shape", "prompt": "Which colour?",
-       "header": "Colour", "options": [{"label": "Red"}, {"label": "Blue"}]},
+    let color = r#"[
+      {"id": "q2", "kind": "question", "stage": "shape", "prompt": "Which color?",
+       "header": "Color", "options": [{"label": "Red"}, {"label": "Blue"}]},
       {"id": "q3", "kind": "question", "stage": "shape", "prompt": "Which size?",
        "header": "Size", "options": [{"label": "Small"}, {"label": "Large"}]}
     ]"#;
-    yard.write("s1", colour, &["--send"]);
+    yard.write("s1", color, &["--send"]);
     yard.answer("s1", r#"[{"block": "q2", "labels": ["Red"]}]"#);
     let briefed = served(&yard, || context(&yard, None, &[]));
     let page = briefed["page"].as_str().unwrap();
@@ -74,7 +74,7 @@ fn the_briefing_names_the_page_revision_stage_open_submissions_and_what_was_answ
     );
     assert_eq!(
         briefed["responded"],
-        json!([{"id": "q2", "kind": "question", "response": "answered", "title": "Which colour?"}])
+        json!([{"id": "q2", "kind": "question", "response": "answered", "title": "Which color?"}])
     );
     let text = text(&briefed);
     for said in [
@@ -84,7 +84,7 @@ fn the_briefing_names_the_page_revision_stage_open_submissions_and_what_was_answ
         "Open submissions (1):",
         "2 blocks, sent by you",
         "Answered or decided since revision 2, which you last read (1):",
-        "- `q2` answered: Which colour?",
+        "- `q2` answered: Which color?",
     ] {
         assert!(text.contains(said), "{said}\n{text}");
     }

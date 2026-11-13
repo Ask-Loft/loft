@@ -24,7 +24,7 @@ requirements:
       form: event_driven
       when: "the person expands a diagram"
       system: "the page"
-      shall: "open the diagram in a modal over the page, scaled to fit the modal and centred in it."
+      shall: "open the diagram in a modal over the page, scaled to fit the modal and centered in it."
     criteria:
       - key: 01a1695a-dd72-7090-817b-abfcdbb64f36
         name: "The modal covers the viewport within a margin, over the panel of the open submissions where that is open."

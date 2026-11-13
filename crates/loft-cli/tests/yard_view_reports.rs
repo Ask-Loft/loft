@@ -1,6 +1,6 @@
 //! What a `spec-change` and a `publish` view record beside the document the matching command
 //! prints, for the page to draw: the boxes of the spec change's diagram and the edges between
-//! them, and the publish's comparison with the commit that last wrote the lock and its labelled
+//! them, and the publish's comparison with the commit that last wrote the lock and its labeled
 //! nodes counted by kind.
 
 use serde_json::Value;
@@ -291,7 +291,7 @@ fn a_publish_view_where_no_commit_wrote_the_lock_holds_what_loft_status_prints()
 }
 
 #[test]
-fn a_publish_view_counts_the_labelled_nodes_and_decisions_by_kind() {
+fn a_publish_view_counts_the_labeled_nodes_and_decisions_by_kind() {
     let yard = Yard::with_spec();
     let labels = report(&yard, "publish")["labels"].clone();
     for kind in [

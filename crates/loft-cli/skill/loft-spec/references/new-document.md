@@ -55,12 +55,12 @@ agents' hooks run and the plugin are in place. Act on each entry whose state is 
 ## Draft from an existing codebase
 
 1. Read the code before proposing anything: its entry points, its modules, its tests and its
-   documentation. Tests and error messages state behaviour most precisely.
+   documentation. Tests and error messages state behavior most precisely.
 2. Propose an outline as above, the Components following the code's own parts.
-3. List each behaviour you infer from the code as a question for the user: "The importer skips
+3. List each behavior you infer from the code as a question for the user: "The importer skips
    a row with no title; is that the rule?" Code shows what the product does, not what it should
    do, and a bug is not a Requirement.
-4. Write a behaviour as a Requirement only once the user confirms it. Keep the rest as open
+4. Write a behavior as a Requirement only once the user confirms it. Keep the rest as open
    questions in your report, not in `spec/`.
 
 ## Finish the first draft

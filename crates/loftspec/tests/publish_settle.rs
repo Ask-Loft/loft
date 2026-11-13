@@ -203,7 +203,7 @@ fn assert_pulled_side_kept(settled: &Settled) {
 }
 
 #[test]
-fn in_a_stopped_merge_the_pulled_side_is_theirs_and_the_other_key_is_relabelled() {
+fn in_a_stopped_merge_the_pulled_side_is_theirs_and_the_other_key_is_relabeled() {
     let files = met(Operation::Merge, &LOCAL, &PULLED);
     let settled = settled(&files, &stopped(Operation::Merge));
     assert_pulled_side_kept(&settled);
@@ -229,7 +229,7 @@ fn the_settled_tree_checks_and_the_lock_pins_it_one_past_the_higher_sequence() {
 }
 
 #[test]
-fn a_key_both_sides_labelled_apart_keeps_the_pulled_label_and_withdraws_the_other() {
+fn a_key_both_sides_labeled_apart_keeps_the_pulled_label_and_withdraws_the_other() {
     let files = met(
         Operation::Merge,
         &[(0x5, "AC-2", &[])],

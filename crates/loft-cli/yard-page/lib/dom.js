@@ -68,13 +68,13 @@ function append(element, children) {
   }
 }
 
-/** A colour as a code span may hold it: `#` and three, four, six or eight hexadecimal digits. */
-const COLOUR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+/** A color as a code span may hold it: `#` and three, four, six or eight hexadecimal digits. */
+const COLOR = /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
 
 /**
- * The ink that reads more clearly on the colour `hex`, its alpha left aside: black on a light
- * colour and white on a dark one, each at least 4.5 to 1 (the page's own dark ink, a shade off
- * black, would fall short on a mid grey).
+ * The ink that reads more clearly on the color `hex`, its alpha left aside: black on a light
+ * color and white on a dark one, each at least 4.5 to 1 (the page's own dark ink, a shade off
+ * black, would fall short on a mid gray).
  * @param {string} hex
  */
 export function inkOn(hex) {
@@ -89,16 +89,16 @@ export function inkOn(hex) {
 }
 
 /**
- * Draws each code span under `root` that holds only a colour on that colour; a code block's
+ * Draws each code span under `root` that holds only a color on that color; a code block's
  * code is left as it is.
  * @param {ParentNode} root
  */
 function swatch(root) {
   for (const code of root.querySelectorAll('code')) {
     const text = code.textContent?.trim() ?? '';
-    if (!COLOUR.test(text) || code.closest('pre')) continue;
+    if (!COLOR.test(text) || code.closest('pre')) continue;
     const span = /** @type {HTMLElement} */ (code);
-    span.classList.add('colour');
+    span.classList.add('color');
     span.style.backgroundColor = text;
     span.style.color = inkOn(text);
   }
@@ -107,7 +107,7 @@ function swatch(root) {
 /**
  * A container holding HTML that `loft` rendered from a block's Markdown, with raw HTML already
  * turned to text and unsafe links undone, each table in a wrapper that scrolls sideways where the
- * table is wider than the block, and each colour in a code span drawn on that colour.
+ * table is wider than the block, and each color in a code span drawn on that color.
  * @param {string} rendered
  * @param {string} [className]
  * @returns {HTMLElement}
@@ -140,8 +140,8 @@ export function markdown(rendered, text, className) {
 }
 
 /**
- * One line of HTML that `loft` rendered from Markdown, such as a node's name, each colour in a
- * code span drawn on that colour.
+ * One line of HTML that `loft` rendered from Markdown, such as a node's name, each color in a
+ * code span drawn on that color.
  * @param {string} rendered
  */
 export function inline(rendered) {

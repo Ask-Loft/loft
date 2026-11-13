@@ -1,6 +1,6 @@
 // The Yard pane's head, as the Yard page heads Yard Log: the tree above the Yard Log's title, set
 // larger, a line that sums up its stages, a link to the page, and the count of what waits on the
-// person in the waiting colour. Where Desktop's browser pane could not be reached, it says so beside
+// person in the waiting color. Where Desktop's browser pane could not be reached, it says so beside
 // the link (the Feature "Keep the Yard page beside the session").
 
 import type { PaneView } from '../../../types'

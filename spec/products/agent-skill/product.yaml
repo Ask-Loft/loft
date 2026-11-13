@@ -33,3 +33,8 @@ featureGroups:
       - 01a13654-6e11-74fa-a359-2590f18ff9d5
       - 01a13654-6e11-74fa-a359-25996138a11d
       - 01a13654-6e11-74fa-a359-25a5e0990497
+constraints:
+  - key: 01a1d600-0538-70e6-9ede-e298220b4973
+    name: "The Agent Skill's specification, code, tests and documentation in this repository shall be written in American English."
+    body: "This covers the skill's own text and the plugins that package it. The skill tells no project which spelling to use. Text this repository keeps as history or does not own keeps its spelling: decisions published as resolved, which change only through a decision that supersedes them; the v1 fixtures and golden vectors under `testdata/`; vendored files; and the released entries of `CHANGELOG.md`. So does a name that a standard, a persisted file, a published interface or a golden vector fixes in British spelling."
+    verificationFate: proved

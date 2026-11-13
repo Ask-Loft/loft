@@ -42,7 +42,7 @@ export function loftView(body, context = {}) {
 }
 
 /**
- * A word with a colour, never a colour alone.
+ * A word with a color, never a color alone.
  * @param {string} word
  * @param {string} tone
  */
@@ -51,7 +51,7 @@ export function chip(word, tone) {
 }
 
 /**
- * A label in monospace, apart from the name beside it, after a square in the colour of its node's
+ * A label in monospace, apart from the name beside it, after a square in the color of its node's
  * kind, which its prefix names, as Loft Web marks a node.
  * @param {string} label
  */

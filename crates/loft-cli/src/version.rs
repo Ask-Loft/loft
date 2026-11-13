@@ -50,7 +50,7 @@ enum Stage {
 
 impl Version {
     /// The version `text` names, if it is a release or a prerelease of the accepted forms. An
-    /// unrecognised version is `None`, which orders before every `Some`.
+    /// unrecognized version is `None`, which orders before every `Some`.
     pub fn parse(text: &str) -> Option<Self> {
         let (release, prerelease) = match text.split_once('-') {
             Some((release, prerelease)) => (release, Some(prerelease)),
@@ -146,12 +146,12 @@ mod tests {
     }
 
     #[test]
-    fn an_unrecognised_version_is_earlier_than_every_recognised_one() {
-        for unrecognised in ["2.3.0-pre", "nightly", "2.3.0.1"] {
-            for recognised in ["0.0.0-alpha.0", "0.0.0", "2.3.0-rc.1"] {
+    fn an_unrecognized_version_is_earlier_than_every_recognized_one() {
+        for unrecognized in ["2.3.0-pre", "nightly", "2.3.0.1"] {
+            for recognized in ["0.0.0-alpha.0", "0.0.0", "2.3.0-rc.1"] {
                 assert!(
-                    Version::parse(unrecognised) < Version::parse(recognised),
-                    "{unrecognised} < {recognised}"
+                    Version::parse(unrecognized) < Version::parse(recognized),
+                    "{unrecognized} < {recognized}"
                 );
             }
         }
