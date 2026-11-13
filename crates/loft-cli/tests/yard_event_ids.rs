@@ -66,7 +66,7 @@ fn conflicting_reuse_of_an_event_identifier_is_refused_without_changing_totals()
 }
 
 #[test]
-fn a_lost_acknowledgement_can_be_retried_after_a_page_server_restart() {
+fn a_lost_acknowledgment_can_be_retried_after_a_page_server_restart() {
     let (yard, served) = open();
     let sample = request(&yard, "sample-one", 7);
     let _ = post(&served, std::slice::from_ref(&sample));

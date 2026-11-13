@@ -1,4 +1,4 @@
-//! Worker scheduling and acknowledgement without a network or a native host.
+//! Worker scheduling and acknowledgment without a network or a native host.
 
 use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::json;

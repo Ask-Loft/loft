@@ -214,7 +214,7 @@ fn flush(files: &Files, post: impl FnOnce(&Value) -> bool) -> Result<()> {
     };
     let accepted = post(&json!(body));
     files.update(|state| {
-        // Identified payloads must survive a lost acknowledgement byte-for-byte, including
+        // Identified payloads must survive a lost acknowledgment byte-for-byte, including
         // their drop report. Later hooks keep appending to the separate pending queue.
         if !accepted
             && state

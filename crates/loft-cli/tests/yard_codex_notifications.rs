@@ -129,7 +129,7 @@ fn a_decision_after_normal_turn_end_wakes_an_idle_caller_without_an_agent_wait_l
 }
 
 #[test]
-fn a_lost_acknowledgement_is_checked_against_native_receipts_before_retrying_input() {
+fn a_lost_acknowledgment_is_checked_against_native_receipts_before_retrying_input() {
     let yard = Yard::new();
     yard.write("codex-session", ASK, &["--host", "codex", "--send"]);
     // The session's briefing marks its read before the answer, which it does not show.
@@ -146,7 +146,7 @@ fn a_lost_acknowledgement_is_checked_against_native_receipts_before_retrying_inp
             },
         )]
         .into(),
-        drop_acknowledgements: vec!["turn/start".into()],
+        drop_acknowledgments: vec!["turn/start".into()],
         ..Scenario::default()
     });
     let _worker = worker(&yard, page.port, peer.path());

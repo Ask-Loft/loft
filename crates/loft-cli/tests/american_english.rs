@@ -3,15 +3,17 @@
 //! its spelling: decisions published as resolved, which change only through a decision that
 //! supersedes them; `testdata/`; vendored files; and the released entries of `CHANGELOG.md`.
 
-use crate::common::{shown, tree, workspace};
+use crate::common::{shown, workspace};
 use crate::markdown::section;
+use loftspec::codec::{self, Files, SpecPath};
 use loftspec::ids::ElementId;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 /// British stems found anywhere in a word, each with its American spelling.
-const STEMS: [(&str, &str); 16] = [
+const STEMS: [(&str, &str); 17] = [
+    ("acknowledgement", "acknowledgment"),
     ("colour", "color"),
     ("behaviour", "behavior"),
     ("neighbour", "neighbor"),
@@ -101,8 +103,9 @@ const WORDS: [(&str, &str); 20] = [
 ];
 
 /// Words that hold a British stem and pass whole: `cancellation`, which American English spells
-/// with two l's too, and `labelledby`, which the attribute `aria-labelledby` fixes.
-const NOT_BRITISH: [&str; 3] = ["cancellation", "cancellations", "labelledby"];
+/// with two l's too; `analyses`, the plural of `analysis` in either; and `labelledby`, which the
+/// attribute `aria-labelledby` fixes.
+const NOT_BRITISH: [&str; 4] = ["cancellation", "cancellations", "analyses", "labelledby"];
 
 /// Paths from the root, beyond those `.gitignore` names, that hold text the repository keeps as
 /// history or does not own: what git and the agent host keep, the fixtures, proptest's shrink
@@ -195,7 +198,7 @@ impl Guard {
     /// A guard over the tree at `root`, whose decisions bound with a published history, as
     /// `V2-010` judges them, keep their words.
     fn of(root: &Path) -> Self {
-        let document = loftspec::codec::read(&tree(root)).unwrap();
+        let document = codec::read(&spec_files(&root.join("spec"), "")).unwrap();
         let published = document
             .bindings
             .iter()
@@ -254,43 +257,79 @@ impl Guard {
     }
 }
 
-/// The paths `.gitignore` at `root` names literally: those it anchors at the root, and the names
-/// it skips wherever they lie. Its patterns with wildcards name no text the guard would misread.
-fn ignored(root: &Path) -> (HashSet<String>, HashSet<String>) {
-    let mut anchored = HashSet::new();
-    let mut anywhere = HashSet::new();
-    let text = fs::read_to_string(root.join(".gitignore")).unwrap();
-    for line in text.lines().map(str::trim) {
-        if line.is_empty() || line.starts_with(['#', '!']) || line.contains(['*', '?', '[']) {
-            continue;
+/// Every file of the `spec/` tree at `dir`, by its path under `spec/` after `prefix`, read as
+/// they lie: unlike a store's, this read finishes no interrupted save in the working tree.
+fn spec_files(dir: &Path, prefix: &str) -> Files {
+    let mut files = Files::new();
+    for entry in fs::read_dir(dir).unwrap() {
+        let entry = entry.unwrap();
+        let name = format!("{prefix}{}", entry.file_name().to_string_lossy());
+        if entry.file_type().unwrap().is_dir() {
+            files.extend(spec_files(&entry.path(), &format!("{name}/")));
+        } else if Path::new(&name).extension().is_some_and(|e| e == "yaml") {
+            files.insert(SpecPath::new(&name), fs::read(entry.path()).unwrap());
         }
-        let path = line.trim_end_matches('/');
-        match path.strip_prefix('/') {
-            Some(path) => anchored.insert(path.to_owned()),
-            None => anywhere.insert(path.to_owned()),
-        };
     }
-    anchored.extend(SKIPPED.map(str::to_owned));
-    (anchored, anywhere)
+    files
 }
 
-/// Every file beneath `dir` that the guard reads, skipping the paths `skipped` names.
-fn files(dir: &Path, skipped: &(HashSet<String>, HashSet<String>)) -> Vec<PathBuf> {
-    let (anchored, anywhere) = skipped;
+/// The paths `.gitignore` at `root` names: those it anchors at the root, each literally, and the
+/// names it skips wherever they lie, each literally or with one `*`. Its patterns with other
+/// wildcards name only binary files, which the guard never reads.
+struct Ignored {
+    anchored: HashSet<String>,
+    names: Vec<String>,
+}
+
+impl Ignored {
+    fn of(root: &Path) -> Self {
+        let mut anchored = HashSet::new();
+        let mut names = Vec::new();
+        let text = fs::read_to_string(root.join(".gitignore")).unwrap();
+        for line in text.lines().map(str::trim) {
+            if line.is_empty() || line.starts_with(['#', '!']) || line.contains(['?', '[']) {
+                continue;
+            }
+            let path = line.trim_end_matches('/');
+            match path.strip_prefix('/') {
+                Some(path) if !path.contains('*') => anchored.insert(path.to_owned()),
+                Some(_) => false,
+                None => {
+                    names.push(path.to_owned());
+                    true
+                }
+            };
+        }
+        anchored.extend(SKIPPED.map(str::to_owned));
+        Self { anchored, names }
+    }
+
+    /// Whether the guard skips the file or directory at `path`, named `name`.
+    fn skips(&self, path: &Path, name: &str) -> bool {
+        self.anchored.contains(&shown(path))
+            || self
+                .names
+                .iter()
+                .any(|pattern| match pattern.split_once('*') {
+                    Some((head, tail)) => name.starts_with(head) && name.ends_with(tail),
+                    None => name == pattern,
+                })
+    }
+}
+
+/// Every file beneath `dir` that the guard reads, skipping the paths `ignored` names.
+fn files(dir: &Path, ignored: &Ignored) -> Vec<PathBuf> {
     let mut found = Vec::new();
     for entry in fs::read_dir(dir).unwrap() {
         let entry = entry.unwrap();
         let kind = entry.file_type().unwrap();
         let path = entry.path();
         let name = entry.file_name();
-        if kind.is_symlink()
-            || anywhere.contains(name.to_string_lossy().as_ref())
-            || anchored.contains(&shown(&path))
-        {
+        if kind.is_symlink() || ignored.skips(&path, &name.to_string_lossy()) {
             continue;
         }
         if kind.is_dir() {
-            found.extend(files(&path, skipped));
+            found.extend(files(&path, ignored));
         } else {
             found.push(path);
         }
@@ -304,7 +343,7 @@ fn the_repository_is_written_in_american_english() {
     let mut guard = Guard::of(&root);
     let mut read = 0;
     let mut found = Vec::new();
-    for path in files(&root, &ignored(&root)) {
+    for path in files(&root, &Ignored::of(&root)) {
         // A file that is not UTF-8 is a binary one: a font, an image or a compressed script.
         let Ok(text) = fs::read_to_string(&path) else {
             continue;
@@ -318,7 +357,7 @@ fn the_repository_is_written_in_american_english() {
 
 #[test]
 fn british_forms_are_found_in_prose_and_identifiers_alike() {
-    let text = "The colour is grey.\nlet wordmarkColours = normalise(x);\n";
+    let text = "The colour is grey.\nlet wordmarkColours = normalise(x);\n// No acknowledgement.\n";
     assert_eq!(
         Guard::default().findings("a.js", text),
         [
@@ -326,13 +365,14 @@ fn british_forms_are_found_in_prose_and_identifiers_alike() {
             "a.js:1: grey → gray",
             "a.js:2: Colours → colors",
             "a.js:2: normalise → normalize",
+            "a.js:3: acknowledgement → acknowledgment",
         ]
     );
 }
 
 #[test]
 fn american_forms_and_words_like_them_pass() {
-    let text = "A cancellation, an analysis, the emphasis, a specialist, an organism, a parameter.\n\
+    let text = "A cancellation, two analyses, the emphasis, a specialist, an organism, a parameter.\n\
                 'aria-labelledby': 'title'";
     assert_eq!(
         Guard::default().findings("a.md", text),
@@ -385,4 +425,16 @@ fn only_the_unreleased_entries_of_the_changelog_are_read() {
         Guard::default().findings("CHANGELOG.md", text),
         ["CHANGELOG.md:9: colour → color"]
     );
+}
+
+#[test]
+fn the_files_gitignore_names_are_skipped_whether_named_literally_or_with_a_star() {
+    let ignored = Ignored::of(&workspace());
+    let root = workspace();
+    assert!(ignored.skips(&root.join("target"), "target"));
+    assert!(ignored.skips(&root.join("docs/spec.md"), "spec.md"));
+    assert!(ignored.skips(&root.join("crates/x/node_modules"), "node_modules"));
+    assert!(ignored.skips(&root.join(".env.staging"), ".env.staging"));
+    assert!(!ignored.skips(&root.join("spec/spec.md"), "spec.md"));
+    assert!(!ignored.skips(&root.join("AGENTS.md"), "AGENTS.md"));
 }
