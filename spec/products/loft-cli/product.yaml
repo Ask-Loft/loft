@@ -91,3 +91,8 @@ featureGroups:
       - 01a156aa-d531-70a7-88e0-0bebdc0a9327
       - 01a1587a-dee2-7262-8c7b-89499e59ce55
       - 01a18e1f-8daa-7674-9603-5ad621016b05
+constraints:
+  - key: 01a1d600-053a-74d6-95d2-62f7d2f5efff
+    name: "The Loft CLI's specification, code, tests and documentation in this repository shall be written in American English."
+    body: "This covers the command line's help, messages and JSON prose as well as its sources and tests. Text this repository does not own keeps its spelling: the v1 fixtures and golden vectors under `testdata/`, vendored files, and the released entries of `CHANGELOG.md`."
+    verificationFate: proved

@@ -140,3 +140,7 @@ constraints:
   - key: 01a16469-55a3-716f-a42c-3a41d0d81520
     name: "Yard Client shall run no git command that commits, stages, stashes or checks out."
     verificationFate: proved
+  - key: 01a1d600-053c-73ed-b18e-e5a0c1114446
+    name: "Yard Client's specification, code, tests and documentation in this repository shall be written in American English."
+    body: "This covers the Yard page, its styles and the adapters as well as the Yard commands. Text this repository does not own keeps its spelling: the v1 fixtures and golden vectors under `testdata/`, vendored files, and the released entries of `CHANGELOG.md`."
+    verificationFate: proved
