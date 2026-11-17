@@ -154,7 +154,12 @@ impl YardStore {
         let _locked = self.locked()?;
         let (held, read) = self.load()?;
         let current = match held {
-            Held::Absent => None,
+            Held::Absent => {
+                // The page server keeps live copies only while Yard Log is open, so any found as
+                // it opens were left by an earlier Yard Log under the branch's name.
+                self.remove_live();
+                None
+            }
             Held::Log(log) => {
                 self.adopt_live(&log.root.branch);
                 Some(self.renamed(*log))
@@ -169,14 +174,15 @@ impl YardStore {
         };
         let (next, value) = change(current)?;
         let mut changes = self.folder.changes(&read, &next);
-        self.save_live(&mut changes);
+        let saved_all = self.save_live(&mut changes);
         self.journal()
             .save(&changes)
             .map_err(YardStoreError::from)?;
-        if next.is_closed() {
+        if next.is_closed() && saved_all {
             // Saved above, the live copies take no more events once Yard Log is closed; one left
-            // behind holds what the folder holds, so a failure to remove it loses nothing.
-            let _ = std::fs::remove_dir_all(self.live_dir());
+            // behind holds what the folder holds, so a failure to remove it loses nothing. A copy
+            // that could not be saved is kept, with the rest.
+            self.remove_live();
         }
         Ok(Updated {
             value,

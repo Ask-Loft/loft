@@ -25861,6 +25861,12 @@ links:
     reviewed: f4504f5304fce6b0cbc0ba8aa6e6ed64943745084e74c183bc20a846811e4f58
     tests:
       - file: "crates/yardlog-store/tests/session_files.rs"
+        name: "a_new_yard_log_on_a_reused_branch_name_takes_none_of_the_live_copies_left_before_it"
+        body: 5d73d24576483ae57f5416a6237c2e9c1df26ca57470cfadfca3339dceab2bae
+      - file: "crates/yardlog-store/tests/session_files.rs"
+        name: "a_rename_leaves_a_live_copy_of_the_old_name_that_the_new_name_already_holds"
+        body: f55d249b3de38a37a3f59732aa6c7af949f40c6641908bd8d1e813d4d1bd3b10
+      - file: "crates/yardlog-store/tests/session_files.rs"
         name: "a_write_after_a_branch_is_renamed_saves_the_live_copies_kept_under_its_old_name"
         body: 9538e63f04f4575c24760bfbba6f566a74552d9b1a58e9e17a92cc9754452300
       - file: "crates/yardlog-store/tests/session_files.rs"
@@ -25902,6 +25908,9 @@ links:
   - node: 01a1eb56-fda6-75f2-ab4e-2f20ab33730b
     reviewed: d55b002c1e482a35c2b9c3d0c1c64af398c1b12b21c386d89c5bcbc05d058c63
     tests:
+      - file: "crates/yardlog-store/tests/session_files.rs"
+        name: "closing_yard_log_keeps_the_live_copies_where_one_could_not_be_saved"
+        body: b137f79a6eb71f95a9fe0bde49679d4c64459ee231440b0dec0c1f40384a3034
       - file: "crates/yardlog-store/tests/session_files.rs"
         name: "closing_yard_log_saves_the_live_copies_then_removes_them"
         body: e5e18bc5a463aa18e1c5747ec67c60e6f2308ab8c7c3ad56120bb8ae76eade1a

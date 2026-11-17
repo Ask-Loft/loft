@@ -101,10 +101,10 @@ impl YardStore {
         Ok(replace_synced(&path, bytes, false)?)
     }
 
-    /// Rewrites a session's file where a read takes it from: its live copy where there is one,
-    /// as [`Self::write_session`] does, else its copy in Yard Log's folder, saved through the
-    /// journal under Yard Log's lock, as a command that upgrades the files does outside the
-    /// session's events.
+    /// Rewrites a session's file, as a command that upgrades the files does outside the session's
+    /// events: its live copy where there is one, as [`Self::write_session`] does, and its copy in
+    /// Yard Log's folder, saved through the journal under Yard Log's lock, so that the next
+    /// commit carries the rewrite.
     ///
     /// # Errors
     ///
@@ -117,7 +117,7 @@ impl YardStore {
     ) -> Result<(), YardStoreError> {
         checked(session)?;
         if self.live_session_path(file, session).is_file() {
-            return self.write_session(file, session, bytes);
+            self.write_session(file, session, bytes)?;
         }
         let _locked = self.locked()?;
         let mut changes = Changes::default();
@@ -148,8 +148,10 @@ impl YardStore {
     }
 
     /// Adds to `changes` each live copy whose bytes differ from its copy in Yard Log's folder,
-    /// leaving a copy of a format this `loft` does not write as it is.
-    pub(crate) fn save_live(&self, changes: &mut Changes) {
+    /// leaving a copy of a format this `loft` does not write as it is; whether no live copy was
+    /// left unsaved because its folder copy could not be read.
+    pub(crate) fn save_live(&self, changes: &mut Changes) -> bool {
+        let mut saved_all = true;
         let live = SessionFile::ALL.into_iter().flat_map(|kind| {
             let files = listed(&self.live_dir().join(kind.folder()));
             files
@@ -160,6 +162,7 @@ impl YardStore {
             // A folder copy that cannot be read is left, as every reader leaves it, rather than
             // refuse the write it does not belong to.
             let Ok(folder) = read_if_present(&self.session_path(kind, &session)) else {
+                saved_all = false;
                 continue;
             };
             if saves_over(kind, folder.as_deref(), &bytes) {
@@ -168,11 +171,18 @@ impl YardStore {
                     .insert(self.folder_file(kind, &session), bytes);
             }
         }
+        saved_all
+    }
+
+    /// Removes the live copies kept under this branch's name, where they can be removed.
+    pub(crate) fn remove_live(&self) {
+        let _ = fs::remove_dir_all(self.live_dir());
     }
 
     /// Moves to this branch's name the live copies kept under `was`, the name Yard Log had at its
     /// last write, where the branch was renamed since: each one this branch's name keeps no copy
-    /// of yet. A copy that cannot be moved stays where it is, and the write goes on without it.
+    /// of yet. A copy that is not moved stays where it is, and the write goes on without it; only
+    /// the directories the moves emptied are removed.
     pub(crate) fn adopt_live(&self, was: &str) {
         let from = live_dir(&self.place().git_yard, was);
         if was == self.branch() || !from.is_dir() {
@@ -189,7 +199,10 @@ impl YardStore {
                 let _ = fs::rename(from.join(kind.name(&session)), to);
             }
         }
-        let _ = fs::remove_dir_all(&from);
+        for kind in SessionFile::ALL {
+            let _ = fs::remove_dir(from.join(kind.folder()));
+        }
+        let _ = fs::remove_dir(&from);
     }
 
     /// A session's file in Yard Log's folder, by its path from the top of the worktree.
