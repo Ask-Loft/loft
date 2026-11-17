@@ -56,11 +56,11 @@ requirements:
       - key: 01a144ee-c59f-7034-9c62-3c5b29c96166
         name: "A node that only moved to another parent or file is not listed as changed."
       - key: 01a1ea8e-b119-760b-bb98-a3320f620660
-        name: "A Feature whose `realizes` entries or a Component whose `scopedTo` entries differ from the base commit's is listed as changed."
+        name: "A node whose `realizes`, `scopedTo` or `mentions` entries differ from the base commit's is listed as changed."
       - key: 01a1ea8e-b119-760b-bb98-a3335e289149
         name: "A decision whose key the tree holds and the base commit does not is listed as added, and one whose key the base commit holds and the tree does not is listed as removed."
       - key: 01a1ea8e-b119-760b-bb98-a33456fcccc3
-        name: "A decision whose fields or subjects differ from the base commit's is listed as changed."
+        name: "A decision whose fields, subjects or `mentions` entries differ from the base commit's is listed as changed."
       - key: 01a1ea8e-b119-760b-bb98-a33552d49161
         name: "A decision that differs from the base commit's only in naming a node by its former label in one and by its key in the other is not listed as changed."
       - key: 01a1ea8e-b119-760b-bb98-a33607f80f96

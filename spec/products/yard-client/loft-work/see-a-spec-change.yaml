@@ -19,7 +19,7 @@ requirements:
       - key: 01a16475-7fbc-7732-a78c-bc4f592eb112
         name: "The diagram draws the `realizes` and decision subject edges between the nodes it shows."
       - key: 01a1ea8e-b11b-737e-8311-c97711e8cd8c
-        name: "A Feature that gained or lost a `realizes` entry, and a Component that gained or lost a `scopedTo` entry, is drawn as changed."
+        name: "A node that gained or lost a `realizes`, `scopedTo` or `mentions` entry is drawn as changed."
       - key: 01a1646f-546d-7042-befd-eac271279597
         name: "Each added, changed or removed Requirement is drawn as a box inside its Feature's panel that holds its statement."
       - key: 01a16475-7fbc-7732-a78c-bc50ee43201f
@@ -34,6 +34,8 @@ requirements:
         name: "Each added, changed or removed Section of a Requirement, a criterion, a Component, a Constraint, a Quality Attribute or a Section is drawn as a box to the right of that node's box, joined to it, that holds its name."
       - key: 01a1e982-1425-7775-9b23-a8188b955180
         name: "A decision whose only change is a subject added or removed is drawn as changed."
+      - key: 01a1eafb-028a-74e3-ba22-929f39442f3a
+        name: "A decision whose only change is a `mentions` entry added or removed is drawn as changed."
       - key: 01a1e982-1425-7775-9b23-a8190c394d6e
         name: "Each node that an added or changed decision gained as a subject is drawn, so that the decision's subject edge ends at its box."
       - key: 01a1e982-1425-7775-9b23-a81a5843ca14
