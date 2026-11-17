@@ -4,9 +4,10 @@
 //! merge driver takes one whole rather than joining them; all it reads of a copy is when its last
 //! event ended.
 
-use super::reader::{Fields, time};
+use super::reader::{Fields, scalar, time};
 use super::{FileError, parse};
 use crate::act::Time;
+use crate::totals::TotalsFormat;
 
 /// The folder of a session's token totals.
 pub const TOKENS: &str = "tokens";
@@ -36,4 +37,30 @@ pub fn last_ended(name: &str, bytes: &[u8]) -> Result<Option<Time>, FileError> {
         .map(time)
         .transpose()
         .map_err(in_file)
+}
+
+/// Whether this `loft` writes over a session's file of `folder` that holds `bytes`: not where it
+/// is a totals file of a newer totals format or of one it does not know, nor a consultation file
+/// of a format other than its own. A file that does not read is written over, since only its own
+/// session's events change it and the next of them writes it whole.
+#[must_use]
+pub fn writes_over(folder: &str, bytes: &[u8]) -> bool {
+    let Ok(node) = parse(folder, bytes) else {
+        return true;
+    };
+    let Ok(mut fields) = Fields::of(&node) else {
+        return true;
+    };
+    let format = fields.get("format").map(scalar);
+    match folder {
+        TOKENS => match format {
+            None => true,
+            Some(named) => named
+                .ok()
+                .and_then(|name| TotalsFormat::named(&name))
+                .is_some_and(TotalsFormat::is_known),
+        },
+        CONSULTATION => matches!(format, Some(Ok(name)) if name == crate::consult::FORMAT),
+        _ => true,
+    }
 }

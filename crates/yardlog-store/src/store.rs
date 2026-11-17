@@ -93,7 +93,7 @@ impl YardStore {
     /// The branch's name as a single file name: `%` and `/` escaped, so that no two branches,
     /// nor a branch and a directory of another's, share a name.
     fn file_name(&self) -> String {
-        self.branch.replace('%', "%25").replace('/', "%2F")
+        file_name(&self.branch)
     }
 
     /// The lock under which one write at a time is applied to this Yard Log.
@@ -171,10 +171,16 @@ impl YardStore {
             }
         };
         let (next, value) = change(current)?;
-        let changes = self.folder.changes(&read, &next);
+        let mut changes = self.folder.changes(&read, &next);
+        self.save_live(&mut changes)?;
         self.journal()
             .save(&changes)
             .map_err(YardStoreError::from)?;
+        if next.is_closed() {
+            // Saved above, the live copies take no more events once Yard Log is closed; one left
+            // behind holds what the folder holds, so a failure to remove it loses nothing.
+            let _ = self.remove_live();
+        }
         Ok(Updated {
             value,
             written: changes
@@ -222,7 +228,7 @@ impl YardStore {
     }
 
     /// Takes the branch's lock and finishes or undoes an interrupted write.
-    fn locked(&self) -> Result<lock::Locked, YardStoreError> {
+    pub(crate) fn locked(&self) -> Result<lock::Locked, YardStoreError> {
         let locked = lock::lock(&self.lock_path())?;
         self.journal().recover()?;
         Ok(locked)
@@ -284,6 +290,12 @@ impl YardStore {
         })?;
         Ok((value, read))
     }
+}
+
+/// `branch`'s name as a single file name: `%` and `/` escaped, so that no two branches, nor a
+/// branch and a directory of another's, share a name.
+pub(crate) fn file_name(branch: &str) -> String {
+    branch.replace('%', "%25").replace('/', "%2F")
 }
 
 /// The bytes of each file of a Yard Log's folder that a read met, by name.

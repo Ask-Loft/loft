@@ -36,7 +36,13 @@ impl TotalsFormat {
         let Some(named) = file.get("format") else {
             return Some(Self(1));
         };
-        let digits = named.as_str()?.strip_prefix("yardtokens/")?;
+        Self::named(named.as_str()?)
+    }
+
+    /// The totals format `name` names, `yardtokens/<n>`; none where it names no totals format.
+    #[must_use]
+    pub fn named(name: &str) -> Option<Self> {
+        let digits = name.strip_prefix("yardtokens/")?;
         let canonical = !digits.is_empty()
             && digits.bytes().all(|byte| byte.is_ascii_digit())
             && !digits.starts_with('0');

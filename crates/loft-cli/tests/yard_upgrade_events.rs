@@ -9,11 +9,10 @@ use std::path::PathBuf;
 use serde_json::{Value, json};
 
 use crate::served::Served;
-use crate::yard::{ASK, Yard};
+use crate::yard::{ASK, BRANCH, Yard};
 use crate::yard_codex_cachewrite::request;
 use crate::yard_serve_events::{event, log, post, session_file};
 use crate::yard_upgrade::upgrade;
-use crate::yard_upgrade_totals::tokens;
 
 const FORMAT: &str = "format: yardtokens/2\n";
 
@@ -35,6 +34,11 @@ fn lines(yard: &Yard) -> Vec<Value> {
     log(yard, "codex~s1")
 }
 
+/// The live copy of the Codex session's totals file, which its events wrote.
+fn tokens(yard: &Yard) -> PathBuf {
+    yard.live(BRANCH).join("tokens/codex~s1.yaml")
+}
+
 fn totals(yard: &Yard) -> String {
     session_file(yard, "tokens", "codex~s1").unwrap()
 }
@@ -51,7 +55,7 @@ fn legacy_session(rows: impl Fn(&Yard) -> Vec<Value>, keep_format: bool) -> Yard
     drop(served);
     if !keep_format {
         let first = totals(&yard).replacen(FORMAT, "", 1);
-        fs::write(tokens(&yard, "codex~s1"), first).unwrap();
+        fs::write(tokens(&yard), first).unwrap();
     }
     yard
 }
@@ -221,7 +225,7 @@ fn a_totals_file_whose_events_an_earlier_upgrade_moved_is_counted_again_without_
 fn a_totals_file_replay_gives_byte_for_byte_is_not_written_again() {
     let yard = current_session();
     upgrade(&yard);
-    let path = tokens(&yard, "codex~s1");
+    let path = tokens(&yard);
     let first = fs::read(&path).unwrap();
     let modified = fs::metadata(&path).unwrap().modified().unwrap();
     let (code, result) = upgrade(&yard);

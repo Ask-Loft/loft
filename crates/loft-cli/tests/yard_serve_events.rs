@@ -49,13 +49,13 @@ pub(crate) fn post(served: &Served, events: &[Value]) -> Value {
     reply.json()
 }
 
-/// A session's file in the folder of `yard`'s Yard Log, as text.
+/// A session's file of `yard`'s Yard Log, as text: its live copy in the worktree's git directory
+/// where there is one, as Yard Log's readers take it, else the copy in Yard Log's folder.
 pub(crate) fn session_file(yard: &Yard, folder: &str, session: &str) -> Option<String> {
-    let path = yard
-        .folder(BRANCH)
-        .join(folder)
-        .join(format!("{session}.yaml"));
-    fs::read_to_string(path).ok()
+    let name = format!("{folder}/{session}.yaml");
+    fs::read_to_string(yard.live(BRANCH).join(&name))
+        .or_else(|_| fs::read_to_string(yard.folder(BRANCH).join(&name)))
+        .ok()
 }
 
 /// Session `session`'s event log, a line to an event.
@@ -182,8 +182,8 @@ fn a_request_s_tokens_are_counted_in_all_by_stage_by_agent_and_model_and_by_open
     let text = session_file(&yard, "tokens", "s1").unwrap();
     assert_eq!(text, totals_of_three_requests(&stage, &submission));
     assert_eq!(yard.read("s1", &[])["revision"], revision);
-    let folder = yard.folder(BRANCH).join("tokens");
-    let names: Vec<String> = fs::read_dir(folder)
+    let live = yard.live(BRANCH).join("tokens");
+    let names: Vec<String> = fs::read_dir(live)
         .unwrap()
         .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
         .collect();
@@ -456,7 +456,7 @@ fn a_subagent_s_spec_edits_and_plan_mode_are_not_kept_as_stretches() {
 fn an_event_that_starts_or_ends_nothing_leaves_the_activity_file_as_it_was() {
     let (yard, served) = open();
     post(&served, &[event(&yard, "turn.start", 0, &json!({}))]);
-    let path = yard.folder(BRANCH).join("activity/s1.yaml");
+    let path = yard.live(BRANCH).join("activity/s1.yaml");
     let before = (
         fs::read(&path).unwrap(),
         fs::metadata(&path).unwrap().modified().unwrap(),
@@ -481,7 +481,7 @@ fn an_event_that_starts_or_ends_nothing_leaves_the_activity_file_as_it_was() {
 fn no_other_session_s_activity_file_is_written_for_a_session_s_events() {
     let (yard, served) = open();
     post(&served, &[event(&yard, "turn.start", 0, &json!({}))]);
-    let names: Vec<String> = fs::read_dir(yard.folder(BRANCH).join("activity"))
+    let names: Vec<String> = fs::read_dir(yard.live(BRANCH).join("activity"))
         .unwrap()
         .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
         .collect();

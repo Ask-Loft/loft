@@ -170,7 +170,7 @@ fn settle(
         };
         let (branch, store, key, totals) = file;
         let path = store.session_path(SessionFile::Tokens, key);
-        let written = store.write_session(SessionFile::Tokens, key, text.as_bytes());
+        let written = store.rewrite_session(SessionFile::Tokens, key, text.as_bytes());
         written.map_err(|error| Unsettled::at(path, &error))?;
         let (host, session) = (&totals["host"], &totals["session"]);
         classified.push(json!({ "branch": branch, "host": host, "session": session }));

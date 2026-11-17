@@ -84,7 +84,7 @@ fn an_identified_retry_repairs_derived_totals_after_replay_without_another_charg
     let sample = request(&yard, "recover-derived-totals", 7);
     post(&served, std::slice::from_ref(&sample));
     drop(served);
-    fs::remove_file(yard.folder(crate::yard::BRANCH).join("tokens/s1.yaml")).unwrap();
+    fs::remove_file(yard.live(crate::yard::BRANCH).join("tokens/s1.yaml")).unwrap();
     let served = Served::start(&yard, &[]);
     post(&served, &[sample]);
     assert_eq!(recorded(&yard, "s1"), 1);

@@ -82,7 +82,7 @@ fn assigned_task_stage_precedes_current_parent_and_worker_stages_for_usage_and_r
         2,
         "{activity}"
     );
-    assert!(yard.folder(BRANCH).join("tokens/s1.yaml").exists());
+    assert!(yard.live(BRANCH).join("tokens/s1.yaml").exists());
 }
 
 #[test]

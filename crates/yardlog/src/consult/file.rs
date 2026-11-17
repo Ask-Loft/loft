@@ -9,7 +9,7 @@ use crate::Time;
 use crate::totals::Who;
 
 /// The format a consultation file names.
-const FORMAT: &str = "yardconsult/1";
+pub(crate) const FORMAT: &str = "yardconsult/1";
 
 /// The fields of `values` under `names`, each written, a zero too.
 fn counts_out<const N: usize>(

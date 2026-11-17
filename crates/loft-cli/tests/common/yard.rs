@@ -152,6 +152,12 @@ impl Yard {
         self.scratch.0.join(".yard").join(branch)
     }
 
+    /// The directory of the live copies of the session files of `branch`'s Yard Log, in the
+    /// worktree's git directory.
+    pub fn live(&self, branch: &str) -> PathBuf {
+        yardlog_store::session::live_dir(&self.scratch.0.join(".git/yard"), branch)
+    }
+
     /// The file `name` of `~/.yard/`, as JSON.
     pub fn home_file(&self, name: &str) -> Value {
         let path = self.scratch.home().join(".yard").join(name);
