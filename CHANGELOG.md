@@ -33,6 +33,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - A `spec-change` view draws a Feature whose `realizes` entries changed, and a Component whose
   `scopedTo` entries changed, as changed, and no longer draws a `realizes` edge the branch removed
   between two nodes the tree still holds.
+- A `spec-change` view draws a node the branch removed beneath its parent where the tree now
+  holds that parent, so that a node that moved is drawn once, in its new place. A box could name
+  as its parent a box that was not drawn, which left the moved node outside its Feature's panel
+  and that Feature's old panel drawn empty.
 - A `loft` block records the whole report its view gives, however long. A list of more than
   1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
   part of Yard Log's history of the work.

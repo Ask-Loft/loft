@@ -31077,6 +31077,12 @@ links:
       - file: "crates/loft-cli/tests/yard_view_placement.rs"
         name: "a_spec_change_view_draws_the_realizes_edge_of_a_removed_feature_as_the_base_held_it"
         body: 78c82473cc82572ca9500a508b20fc1efdebc52491554f9a8d40a5c0b2b163a2
+  - node: 01a1ea8e-b11b-737e-8311-c978701716bd
+    reviewed: 8e03f5a0cc61db93929a8b1a77fb8902ddfbc24737d384e3f619871b4622ac66
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_placement.rs"
+        name: "a_spec_change_view_draws_a_removed_node_beneath_a_parent_that_moved_where_the_tree_holds_it"
+        body: 3671e391c6d6fb98de10a4fe46e418519a7fdc60b1051d2b3f011b3e55e9dd3d
   - node: 01a1a814-5ac4-7523-9962-5acb7c0667ce
     reviewed: 3028c8438a2af8f21c6d1a6da865ff12565deb3aa983bfe7c3d7f8b77e125310
     tests:

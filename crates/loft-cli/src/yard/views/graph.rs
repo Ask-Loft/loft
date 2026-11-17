@@ -202,7 +202,8 @@ fn diff(lists: &[&Vec<loftspec::ids::NodeId>; 3], now: &Walked, then: &Walked) -
 }
 
 /// The boxes drawn: each marked one, each subject a decision gained, and each box above any of
-/// them, in the documents' order.
+/// them, as the tree holds it, or as the base held it where the tree no longer holds it, in the
+/// documents' order.
 fn shown(
     marked: &BTreeMap<Key, &'static str>,
     gained: &BTreeSet<Key>,
@@ -213,9 +214,14 @@ fn shown(
     let marks = marked
         .iter()
         .map(|(key, change)| (*key, if *change == "removed" { then } else { now }));
-    for (key, walked) in marks.chain(gained.iter().map(|key| (*key, now))) {
+    for (key, mut walked) in marks.chain(gained.iter().map(|key| (*key, now))) {
         let mut at = Some(key);
         while let Some(key) = at {
+            // A removed node lies where the base held it, but each ancestor the tree still holds
+            // lies where the tree holds it, so that a node that moved is drawn once, in its place.
+            if now.entries.contains_key(&key) {
+                walked = now;
+            }
             let Some(entry) = walked.entries.get(&key) else {
                 break;
             };

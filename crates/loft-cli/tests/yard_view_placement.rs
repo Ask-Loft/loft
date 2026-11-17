@@ -14,6 +14,11 @@ use crate::yard_view_reports::node;
 const SHELF_STORE_KEY: &str = "00000000-0000-4000-8000-00000000003c";
 /// Add a book's key.
 const ADD_A_BOOK_KEY: &str = "00000000-0000-4000-8000-00000000001e";
+/// The Feature Remove a book and its key.
+const REMOVE_A_BOOK: &str = "products/reading-list/shelf/remove-a-book.yaml";
+const REMOVE_A_BOOK_KEY: &str = "00000000-0000-4000-8000-00000000001f";
+/// Requirement RQ-2 of Add a book.
+const KEEP_ORDER_KEY: &str = "00000000-0000-4000-8000-00000000002b";
 /// The Feature Share a list, which realizes the Link service, and the Link service's key.
 const SHARE_A_LIST: &str = "products/reading-list/sharing/share-a-list.yaml";
 const SHARE_A_LIST_KEY: &str = "00000000-0000-4000-8000-000000000020";
@@ -80,5 +85,51 @@ fn a_spec_change_view_draws_the_realizes_edge_of_a_removed_feature_as_the_base_h
         realizes(&graph),
         [(SHARE_A_LIST_KEY.to_owned(), LINK_SERVICE_KEY.to_owned())],
         "{graph}"
+    );
+}
+
+#[test]
+fn a_spec_change_view_draws_a_removed_node_beneath_a_parent_that_moved_where_the_tree_holds_it() {
+    let yard = Yard::with_spec();
+    let feature = fs::read_to_string(yard.scratch.file(ADD_A_BOOK)).unwrap();
+    let start = feature
+        .find(&format!("  - key: {KEEP_ORDER_KEY}\n"))
+        .unwrap();
+    let end = feature.find("qualityAttributes:\n").unwrap();
+    // RQ-2 moves, unchanged, to Remove a book, and its criterion AC-3 is removed.
+    let moved = &feature[start
+        ..feature
+            .find("    criteria:\n      - key: 00000000-0000-4000-8000-00000000002c")
+            .unwrap()];
+    yard.scratch.edit(ADD_A_BOOK, &feature[start..end], "");
+    yard.scratch.edit(
+        REMOVE_A_BOOK,
+        "requirements:\n",
+        &format!("requirements:\n{moved}"),
+    );
+    let formatted = yard.scratch.loft(&["fmt"]);
+    assert!(formatted.status.success(), "{formatted:?}");
+    let graph = diagram(&yard);
+    let boxes = graph["nodes"].as_array().unwrap();
+    let drawn: Vec<&Value> = boxes.iter().map(|box_| &box_["key"]).collect();
+    for box_ in boxes {
+        assert!(
+            box_["parent"].is_null() || drawn.contains(&&box_["parent"]),
+            "the parent of {} is drawn: {graph}",
+            box_["name"]
+        );
+    }
+    let criterion = node(&graph, "Books list in the order they were added.");
+    assert_eq!(criterion["change"], "removed", "{graph}");
+    assert_eq!(criterion["parent"], KEEP_ORDER_KEY);
+    let requirement = node(
+        &graph,
+        "The shelf shall keep books in the order they were added.",
+    );
+    assert_eq!(requirement["change"], Value::Null, "{graph}");
+    assert_eq!(requirement["parent"], REMOVE_A_BOOK_KEY);
+    assert!(
+        !drawn.contains(&&Value::from(ADD_A_BOOK_KEY)),
+        "Add a book, where RQ-2 no longer lies, is not drawn: {graph}"
     );
 }
