@@ -169,7 +169,12 @@ fn settle(
             continue;
         };
         let (branch, store, key, totals) = file;
-        let path = store.session_path(SessionFile::Tokens, key);
+        let live = store.live_session_path(SessionFile::Tokens, key);
+        let path = if live.is_file() {
+            live
+        } else {
+            store.session_path(SessionFile::Tokens, key)
+        };
         let written = store.rewrite_session(SessionFile::Tokens, key, text.as_bytes());
         written.map_err(|error| Unsettled::at(path, &error))?;
         let (host, session) = (&totals["host"], &totals["session"]);

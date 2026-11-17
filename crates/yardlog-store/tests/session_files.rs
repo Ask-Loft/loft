@@ -220,6 +220,51 @@ fn closing_yard_log_saves_the_live_copies_then_removes_them() {
 }
 
 #[test]
+fn a_write_after_a_branch_is_renamed_saves_the_live_copies_kept_under_its_old_name() {
+    let tree = Tree::new();
+    let old = tree.store("feat/old");
+    write(&old, &json!([{ "id": "s", "kind": "stage", "title": "S" }]));
+    old.write_session(SessionFile::Tokens, "s1", b"session: s1\n")
+        .unwrap();
+    fs::rename(
+        tree.top().join(".yard/feat/old"),
+        tree.top().join(".yard/feat/new"),
+    )
+    .unwrap();
+    let new = tree.store("feat/new");
+    write(
+        &new,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    );
+    assert_eq!(
+        fs::read(new.session_path(SessionFile::Tokens, "s1")).unwrap(),
+        b"session: s1\n"
+    );
+    assert!(!old.live_dir().exists());
+    assert!(new.live_session_path(SessionFile::Tokens, "s1").is_file());
+}
+
+#[test]
+fn a_folder_copy_that_cannot_be_read_neither_blocks_a_write_nor_is_written_over() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    let unreadable = store.session_path(SessionFile::Activity, "s1");
+    fs::create_dir_all(&unreadable).unwrap();
+    store
+        .write_session(SessionFile::Activity, "s1", b"session: s1\n")
+        .unwrap();
+    write(
+        &store,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    );
+    assert!(unreadable.is_dir());
+}
+
+#[test]
 fn a_session_id_that_could_reach_outside_its_folder_names_no_file() {
     let tree = Tree::new();
     let store = tree.store("feat/shelf");

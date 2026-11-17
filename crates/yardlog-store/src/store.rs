@@ -155,7 +155,10 @@ impl YardStore {
         let (held, read) = self.load()?;
         let current = match held {
             Held::Absent => None,
-            Held::Log(log) => Some(self.renamed(*log)),
+            Held::Log(log) => {
+                self.adopt_live(&log.root.branch);
+                Some(self.renamed(*log))
+            }
             Held::Newer(found) => {
                 return Err(YardStoreError::Newer {
                     found,
@@ -166,7 +169,7 @@ impl YardStore {
         };
         let (next, value) = change(current)?;
         let mut changes = self.folder.changes(&read, &next);
-        self.save_live(&mut changes)?;
+        self.save_live(&mut changes);
         self.journal()
             .save(&changes)
             .map_err(YardStoreError::from)?;

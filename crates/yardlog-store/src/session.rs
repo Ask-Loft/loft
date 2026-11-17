@@ -149,7 +149,7 @@ impl YardStore {
 
     /// Adds to `changes` each live copy whose bytes differ from its copy in Yard Log's folder,
     /// leaving a copy of a format this `loft` does not write as it is.
-    pub(crate) fn save_live(&self, changes: &mut Changes) -> Result<(), YardStoreError> {
+    pub(crate) fn save_live(&self, changes: &mut Changes) {
         let live = SessionFile::ALL.into_iter().flat_map(|kind| {
             let files = listed(&self.live_dir().join(kind.folder()));
             files
@@ -157,14 +157,39 @@ impl YardStore {
                 .map(move |(session, bytes)| (kind, session, bytes))
         });
         for (kind, session, bytes) in live {
-            let folder = read_if_present(&self.session_path(kind, &session))?;
+            // A folder copy that cannot be read is left, as every reader leaves it, rather than
+            // refuse the write it does not belong to.
+            let Ok(folder) = read_if_present(&self.session_path(kind, &session)) else {
+                continue;
+            };
             if saves_over(kind, folder.as_deref(), &bytes) {
                 changes
                     .write
                     .insert(self.folder_file(kind, &session), bytes);
             }
         }
-        Ok(())
+    }
+
+    /// Moves to this branch's name the live copies kept under `was`, the name Yard Log had at its
+    /// last write, where the branch was renamed since: each one this branch's name keeps no copy
+    /// of yet. A copy that cannot be moved stays where it is, and the write goes on without it.
+    pub(crate) fn adopt_live(&self, was: &str) {
+        let from = live_dir(&self.place().git_yard, was);
+        if was == self.branch() || !from.is_dir() {
+            return;
+        }
+        let kept = SessionFile::ALL.into_iter().flat_map(|kind| {
+            let sessions = listed(&from.join(kind.folder())).into_keys();
+            sessions.map(move |session| (kind, session))
+        });
+        for (kind, session) in kept {
+            let to = self.live_session_path(kind, &session);
+            if !to.exists() {
+                let _ = fs::create_dir_all(self.live_dir().join(kind.folder()));
+                let _ = fs::rename(from.join(kind.name(&session)), to);
+            }
+        }
+        let _ = fs::remove_dir_all(&from);
     }
 
     /// A session's file in Yard Log's folder, by its path from the top of the worktree.

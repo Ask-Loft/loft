@@ -42,8 +42,9 @@ pub fn last_ended(name: &str, bytes: &[u8]) -> Result<Option<Time>, FileError> {
 
 /// Whether this `loft` writes over a session's file of `folder` that holds `bytes`: not where it
 /// is a totals file of a newer totals format or of one it does not know, nor a consultation file
-/// of a format other than its own. A file that does not read is written over, since only its own
-/// session's events change it and the next of them writes it whole.
+/// of a format other than its own, nor one whose root is no mapping, which names no format. A file
+/// that does not read is written over, since only its own session's events change it and the next
+/// of them writes it whole.
 #[must_use]
 pub fn writes_over(folder: &str, bytes: &[u8]) -> bool {
     if folder != TOKENS && folder != CONSULTATION {
@@ -53,7 +54,8 @@ pub fn writes_over(folder: &str, bytes: &[u8]) -> bool {
         return true;
     };
     let Ok(mut fields) = Fields::of(&node) else {
-        return true;
+        // A totals file that names no format is of the first totals format.
+        return folder == TOKENS;
     };
     let Ok(format) = fields.optional_text("format") else {
         return false;

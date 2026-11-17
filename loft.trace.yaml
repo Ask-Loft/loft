@@ -25861,6 +25861,9 @@ links:
     reviewed: f4504f5304fce6b0cbc0ba8aa6e6ed64943745084e74c183bc20a846811e4f58
     tests:
       - file: "crates/yardlog-store/tests/session_files.rs"
+        name: "a_write_after_a_branch_is_renamed_saves_the_live_copies_kept_under_its_old_name"
+        body: 9538e63f04f4575c24760bfbba6f566a74552d9b1a58e9e17a92cc9754452300
+      - file: "crates/yardlog-store/tests/session_files.rs"
         name: "each_write_of_yard_log_saves_the_live_copies_that_differ_into_its_folder"
         body: dee3b05e3b2489f36e1e6c296945266b125e6fa18bec7b9dd9f905a85afb2d64
       - file: "crates/yardlog-store/tests/session_files.rs"
@@ -25878,6 +25881,9 @@ links:
   - node: 01a1eb56-fda6-75f2-ab4e-2f1e2ef61a4f
     reviewed: f5af186f1308fd2c8d9d19dfde3fbf9d8338629fd05a3b27cd83d3d2b7745081
     tests:
+      - file: "crates/yardlog/tests/session_files.rs"
+        name: "only_a_session_file_of_a_format_this_loft_writes_is_written_over"
+        body: 37126fe3fb981b7f1731677452b787f091f0450b8a12eecb303fc8b2293f5f1d
       - file: "crates/yardlog-store/tests/session_files.rs"
         name: "a_live_copy_is_not_saved_over_a_folder_file_of_a_format_this_loft_does_not_write"
         body: 4eedd71534763ca6b875938c9b42a6fd0e320b8095440bd3e319e49c925c486b
