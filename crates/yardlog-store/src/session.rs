@@ -45,6 +45,13 @@ impl SessionFile {
             Self::Consultation => CONSULTATION,
         }
     }
+
+    /// Session `session`'s file of this kind, by its path from Yard Log's folder or from the
+    /// directory of the live copies.
+    #[must_use]
+    pub fn name(self, session: &str) -> String {
+        format!("{}/{session}.yaml", self.folder())
+    }
 }
 
 pub use yardlog::identity::is_session_id;
@@ -60,9 +67,7 @@ impl YardStore {
     /// The path of a session's file in Yard Log's folder.
     #[must_use]
     pub fn session_path(&self, file: SessionFile, session: &str) -> PathBuf {
-        self.folder()
-            .join(file.folder())
-            .join(format!("{session}.yaml"))
+        self.folder().join(file.name(session))
     }
 
     /// The directory of the live copies of this Yard Log's session files.
@@ -74,9 +79,7 @@ impl YardStore {
     /// The path of the live copy of a session's file.
     #[must_use]
     pub fn live_session_path(&self, file: SessionFile, session: &str) -> PathBuf {
-        self.live_dir()
-            .join(file.folder())
-            .join(format!("{session}.yaml"))
+        self.live_dir().join(file.name(session))
     }
 
     /// Replaces the live copy of a session's file with `bytes`, through a temporary file beside
@@ -91,9 +94,7 @@ impl YardStore {
         session: &str,
         bytes: &[u8],
     ) -> Result<(), YardStoreError> {
-        if !SessionKey::parse(session).is_valid() {
-            return Err(YardStoreError::Session(session.to_owned()));
-        }
+        checked(session)?;
         let path = self.live_session_path(file, session);
         let dir = path.parent().expect("a session's file lies in a folder");
         fs::create_dir_all(dir).map_err(io_error(dir))?;
@@ -114,16 +115,15 @@ impl YardStore {
         session: &str,
         bytes: &[u8],
     ) -> Result<(), YardStoreError> {
-        if !SessionKey::parse(session).is_valid() {
-            return Err(YardStoreError::Session(session.to_owned()));
-        }
+        checked(session)?;
         if self.live_session_path(file, session).is_file() {
             return self.write_session(file, session, bytes);
         }
         let _locked = self.locked()?;
         let mut changes = Changes::default();
-        let path = format!("{}/{}/{session}.yaml", self.folder_rel(), file.folder());
-        changes.write.insert(RelPath::new(path), bytes.to_vec());
+        changes
+            .write
+            .insert(self.folder_file(file, session), bytes.to_vec());
         Ok(self.journal().save(&changes)?)
     }
 
@@ -142,9 +142,7 @@ impl YardStore {
     /// next event writes it whole again.
     #[must_use]
     pub fn session_files(&self, kind: SessionFile) -> Vec<(String, Vec<u8>)> {
-        let mut files: BTreeMap<_, _> = listed(&self.folder().join(kind.folder()))
-            .into_iter()
-            .collect();
+        let mut files = listed(&self.folder().join(kind.folder()));
         files.extend(listed(&self.live_dir().join(kind.folder())));
         files.into_iter().collect()
     }
@@ -161,22 +159,26 @@ impl YardStore {
         for (kind, session, bytes) in live {
             let folder = read_if_present(&self.session_path(kind, &session))?;
             if saves_over(kind, folder.as_deref(), &bytes) {
-                let path = format!("{}/{}/{session}.yaml", self.folder_rel(), kind.folder());
-                changes.write.insert(RelPath::new(path), bytes);
+                changes
+                    .write
+                    .insert(self.folder_file(kind, &session), bytes);
             }
         }
         Ok(())
     }
 
-    /// Removes the live copies of this Yard Log's session files.
-    pub(crate) fn remove_live(&self) -> Result<(), YardStoreError> {
-        let dir = self.live_dir();
-        match fs::remove_dir_all(&dir) {
-            Err(error) if error.kind() != io::ErrorKind::NotFound => {
-                Err(io_error(&dir)(error).into())
-            }
-            _ => Ok(()),
-        }
+    /// A session's file in Yard Log's folder, by its path from the top of the worktree.
+    fn folder_file(&self, kind: SessionFile, session: &str) -> RelPath {
+        RelPath::new(format!("{}/{}", self.folder_rel(), kind.name(session)))
+    }
+}
+
+/// Refuses a session id that cannot name a file.
+fn checked(session: &str) -> Result<(), YardStoreError> {
+    if SessionKey::parse(session).is_valid() {
+        Ok(())
+    } else {
+        Err(YardStoreError::Session(session.to_owned()))
     }
 }
 
@@ -189,24 +191,20 @@ fn saves_over(kind: SessionFile, folder: Option<&[u8]>, live: &[u8]) -> bool {
 
 /// Every `.yaml` file in `dir`, by its name without the extension, with its bytes; a file that
 /// cannot be read is left out, and so is every file where `dir` cannot be read.
-fn listed(dir: &Path) -> Vec<(String, Vec<u8>)> {
+fn listed(dir: &Path) -> BTreeMap<String, Vec<u8>> {
     let Ok(entries) = fs::read_dir(dir) else {
-        return Vec::new();
+        return BTreeMap::new();
     };
-    let mut paths: Vec<_> = entries
+    entries
         .filter_map(Result::ok)
         .map(|entry| entry.path())
         .filter(|path| {
             path.extension()
                 .is_some_and(|extension| extension == "yaml")
         })
-        .collect();
-    paths.sort();
-    paths
-        .iter()
         .filter_map(|path| {
             let key = path.file_stem()?.to_str()?.to_owned();
-            Some((key, fs::read(path).ok()?))
+            Some((key, fs::read(&path).ok()?))
         })
         .collect()
 }

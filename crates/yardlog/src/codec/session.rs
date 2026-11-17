@@ -4,9 +4,10 @@
 //! merge driver takes one whole rather than joining them; all it reads of a copy is when its last
 //! event ended.
 
-use super::reader::{Fields, scalar, time};
+use super::reader::{Fields, time};
 use super::{FileError, parse};
 use crate::act::Time;
+use crate::consult::Consultation;
 use crate::totals::TotalsFormat;
 
 /// The folder of a session's token totals.
@@ -45,22 +46,21 @@ pub fn last_ended(name: &str, bytes: &[u8]) -> Result<Option<Time>, FileError> {
 /// session's events change it and the next of them writes it whole.
 #[must_use]
 pub fn writes_over(folder: &str, bytes: &[u8]) -> bool {
+    if folder != TOKENS && folder != CONSULTATION {
+        return true;
+    }
     let Ok(node) = parse(folder, bytes) else {
         return true;
     };
     let Ok(mut fields) = Fields::of(&node) else {
         return true;
     };
-    let format = fields.get("format").map(scalar);
-    match folder {
-        TOKENS => match format {
-            None => true,
-            Some(named) => named
-                .ok()
-                .and_then(|name| TotalsFormat::named(&name))
-                .is_some_and(TotalsFormat::is_known),
-        },
-        CONSULTATION => matches!(format, Some(Ok(name)) if name == crate::consult::FORMAT),
-        _ => true,
+    let Ok(format) = fields.optional_text("format") else {
+        return false;
+    };
+    if folder == TOKENS {
+        TotalsFormat::named(format.as_deref()).is_some_and(TotalsFormat::is_known)
+    } else {
+        Consultation::is_format(format.as_deref())
     }
 }

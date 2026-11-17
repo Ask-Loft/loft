@@ -9,7 +9,7 @@ use crate::Time;
 use crate::totals::Who;
 
 /// The format a consultation file names.
-pub(crate) const FORMAT: &str = "yardconsult/1";
+const FORMAT: &str = "yardconsult/1";
 
 /// The fields of `values` under `names`, each written, a zero too.
 fn counts_out<const N: usize>(
@@ -141,7 +141,13 @@ impl Consultation {
     /// Whether the consultation file `file`, as JSON, is of the format `yardconsult/1`.
     #[must_use]
     pub fn of_this_format(file: &Value) -> bool {
-        file["format"] == FORMAT
+        Self::is_format(file["format"].as_str())
+    }
+
+    /// Whether a consultation file whose `format` is `name` is of the format `yardconsult/1`.
+    #[must_use]
+    pub fn is_format(name: Option<&str>) -> bool {
+        name == Some(FORMAT)
     }
 
     /// Reads a consultation file as JSON, as [`Consultation::text`] wrote it; none where it names

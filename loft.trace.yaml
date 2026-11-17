@@ -25847,13 +25847,13 @@ links:
     tests:
       - file: "crates/yardlog-store/tests/session_files.rs"
         name: "a_session_s_live_copy_lies_under_git_s_directory_by_the_branch_s_escaped_name"
-        body: ee4503d8be24e1da704dafffeff6f6f08e64421d660324d6fc4fa2ddc06d5ed7
+        body: da634b01d912acfb77836bf7564dd0b05a510abea4171ef5bb78825085db4757
   - node: 01a1eb56-fda6-75f2-ab4e-2f1b078b44b0
     reviewed: c0aa240447457edbe5d551cecb249bfa6557b94abea931d42a76a174a640ae75
     tests:
       - file: "crates/loft-cli/tests/yard_live_sessions.rs"
         name: "a_session_s_events_leave_every_file_of_the_working_tree_as_it_was"
-        body: 590222af34d86e47d3fd5bae89b1bae85dae9eb2e03ce49d9704a11f69509f05
+        body: 0c0a4237af4537616767dfdb8e6eecdf6bc9ee15f63693f5e1ccdaa6fcf91a5a
       - file: "crates/yardlog-store/tests/session_files.rs"
         name: "a_session_s_live_copy_is_written_whole_in_git_s_directory_outside_yard_log_s_lock"
         body: dbc480b870ef3c78a0faf04f9a79b1bb10998ce66ba0729c34e8daf3aa6bb3f8

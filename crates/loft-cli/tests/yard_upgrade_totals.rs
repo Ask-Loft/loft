@@ -143,7 +143,7 @@ agents:
     output: 1
 ";
 
-pub(crate) fn tokens(yard: &Yard, key: &str) -> std::path::PathBuf {
+fn tokens(yard: &Yard, key: &str) -> std::path::PathBuf {
     yard.folder(BRANCH)
         .join("tokens")
         .join(format!("{key}.yaml"))

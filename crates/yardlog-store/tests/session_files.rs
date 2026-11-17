@@ -49,18 +49,12 @@ fn a_session_s_live_copy_lies_under_git_s_directory_by_the_branch_s_escaped_name
     let store = tree.store("feat/shelf");
     let live = tree.git_dir().join("yard/feat%2Fshelf.sessions");
     assert_eq!(store.live_dir(), live);
-    assert_eq!(
-        store.live_session_path(SessionFile::Tokens, "s1"),
-        live.join("tokens/s1.yaml")
-    );
-    assert_eq!(
-        store.live_session_path(SessionFile::Activity, "s1"),
-        live.join("activity/s1.yaml")
-    );
-    assert_eq!(
-        store.live_session_path(SessionFile::Consultation, "s1"),
-        live.join("consultation/s1.yaml")
-    );
+    for (file, folder) in SessionFile::ALL.into_iter().zip(FOLDERS) {
+        assert_eq!(
+            store.live_session_path(file, "s1"),
+            live.join(folder).join("s1.yaml")
+        );
+    }
     assert_eq!(
         store.session_path(SessionFile::Tokens, "s1"),
         store.folder().join("tokens/s1.yaml")

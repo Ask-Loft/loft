@@ -17,7 +17,6 @@ use crate::Time;
 use crate::totals::Who;
 
 pub use estimate::{Attributed, Estimate, Live};
-pub(crate) use file::FORMAT;
 pub use json::tallies;
 pub use sums::{SessionSum, Sums};
 

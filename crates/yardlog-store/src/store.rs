@@ -90,18 +90,12 @@ impl YardStore {
         self.folder.rel()
     }
 
-    /// The branch's name as a single file name: `%` and `/` escaped, so that no two branches,
-    /// nor a branch and a directory of another's, share a name.
-    fn file_name(&self) -> String {
-        file_name(&self.branch)
-    }
-
     /// The lock under which one write at a time is applied to this Yard Log.
     #[must_use]
     pub fn lock_path(&self) -> PathBuf {
         self.place
             .git_yard
-            .join(format!("{}.lock", self.file_name()))
+            .join(format!("{}.lock", file_name(&self.branch)))
     }
 
     /// The journal through which this Yard Log's files are saved.
@@ -110,7 +104,7 @@ impl YardStore {
         let dir = self
             .place
             .git_yard
-            .join(format!("{}.save", self.file_name()));
+            .join(format!("{}.save", file_name(&self.branch)));
         Journal::new(&self.place.tree, dir).keeping(YARD)
     }
 
@@ -179,7 +173,7 @@ impl YardStore {
         if next.is_closed() {
             // Saved above, the live copies take no more events once Yard Log is closed; one left
             // behind holds what the folder holds, so a failure to remove it loses nothing.
-            let _ = self.remove_live();
+            let _ = std::fs::remove_dir_all(self.live_dir());
         }
         Ok(Updated {
             value,

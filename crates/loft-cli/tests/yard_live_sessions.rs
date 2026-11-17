@@ -2,36 +2,14 @@
 //! directory as the session's events arrive, so that no event changes the working tree, and each
 //! write of Yard Log saves them into its folder.
 
-use std::collections::BTreeMap;
 use std::fs;
-use std::path::Path;
 
 use serde_json::json;
 
+use crate::snapshot::snapshot;
 use crate::yard::{BRANCH, Yard};
 use crate::yard_serve_consult::described;
 use crate::yard_serve_events::{event, open, post, tokens};
-
-/// Every file under `root` but those under its `.git`, by its path from `root`, with its bytes.
-fn worktree(root: &Path) -> BTreeMap<String, Vec<u8>> {
-    let mut files = BTreeMap::new();
-    let mut pending = vec![root.to_owned()];
-    while let Some(dir) = pending.pop() {
-        for entry in fs::read_dir(&dir).unwrap() {
-            let path = entry.unwrap().path();
-            let relative = path.strip_prefix(root).unwrap().display().to_string();
-            if relative == ".git" {
-                continue;
-            }
-            if path.is_dir() {
-                pending.push(path);
-            } else {
-                files.insert(relative, fs::read(&path).unwrap());
-            }
-        }
-    }
-    files
-}
 
 /// A turn of session `s1`'s main agent, whose adapter counts consultations, that reads a file and
 /// makes one model request.
@@ -49,10 +27,10 @@ fn a_turn(yard: &Yard) -> Vec<serde_json::Value> {
 #[test]
 fn a_session_s_events_leave_every_file_of_the_working_tree_as_it_was() {
     let (yard, served) = open();
-    let before = worktree(&yard.scratch.0);
+    let before = snapshot(&yard.scratch.0);
     let reply = post(&served, &a_turn(&yard));
     assert_eq!(reply["rejected"], json!([]), "{reply}");
-    assert_eq!(worktree(&yard.scratch.0), before);
+    assert_eq!(snapshot(&yard.scratch.0), before);
     for folder in ["tokens", "activity", "consultation"] {
         let live = yard.live(BRANCH).join(folder).join("s1.yaml");
         assert!(live.is_file(), "{} holds the live copy", live.display());
