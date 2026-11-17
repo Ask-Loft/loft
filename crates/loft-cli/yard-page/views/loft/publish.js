@@ -5,7 +5,7 @@
 import { h } from '../../lib/dom.js';
 import { when } from '../../lib/format.js';
 import * as kept from '../../lib/kept.js';
-import { changeItem, chip, leftOut } from './index.js';
+import { changeItem, chip } from './index.js';
 
 const KIND_NAMES = {
   product: 'Products',
@@ -56,7 +56,6 @@ export function publishView(report, body, context) {
           { class: 'fold' },
           h('summary', {}, `${changes.length} nodes added, changed or removed since the publish`),
           h('ul', { class: 'changes' }, changes.map(changeItem)),
-          ['added', 'changed', 'removed'].map((change) => leftOut(report, `status.base.${change}`)),
         )
       : null,
     labels.length

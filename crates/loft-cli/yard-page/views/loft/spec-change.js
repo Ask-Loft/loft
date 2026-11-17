@@ -15,7 +15,7 @@ import * as kept from '../../lib/kept.js';
 import { digest, drawSpecChange } from '../../lib/spec-diagram.js';
 import { CHANGE_WORDS, boxes, isFolded, labelOf } from '../../model/spec-graph.js';
 import { compareWords } from '../../model/words.js';
-import { changeItem, leftOut, named, tag } from './index.js';
+import { changeItem, named, tag } from './index.js';
 
 /**
  * The legend above the diagram: each change its boxes and panels show, keyed by its bar, with
@@ -130,15 +130,12 @@ export function specChangeView(report, body, context = {}) {
           { class: 'fold change-tree diff' },
           h('summary', {}, `${diff.length} nodes and decisions changed`),
           h('ul', {}, diff.map(diffItem)),
-          leftOut(report, 'graph.diff'),
-          leftOut(report, 'graph.diff.subjects', ['subject', 'subjects']),
         )
       : kept.details(
           fold,
           { class: 'fold change-tree' },
           h('summary', {}, `${changes.length + decisions.length} nodes and decisions changed`),
           h('ul', {}, [...changes, ...decisions].map(changeItem)),
-          ['added', 'changed', 'removed'].map((change) => leftOut(report, `status.base.${change}`)),
         ),
   );
   return holder;

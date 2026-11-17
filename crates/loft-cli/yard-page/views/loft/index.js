@@ -87,15 +87,4 @@ export function changeItem(node) {
   return h('li', {}, chip(node.change, CHANGE_TONES[node.change]), ' ', h('span', { class: 'kind' }, node.kind), ' ', named(node));
 }
 
-/**
- * How many of a report's list it left out, where it left some out, naming what they are where
- * `nouns` gives it, one and many.
- * @param {any} report
- * @param {string} path
- * @param {[string, string]} [nouns]
- */
-export function leftOut(report, path, nouns) {
-  const count = report?.leftOut?.[path];
-  const noun = nouns ? ` ${count === 1 ? nouns[0] : nouns[1]}` : '';
-  return count ? h('p', { class: 'left-out' }, `${count} more${noun} not recorded in this view.`) : null;
-}
+

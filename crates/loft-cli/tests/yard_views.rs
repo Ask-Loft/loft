@@ -174,28 +174,6 @@ fn a_view_that_cannot_be_computed_refuses_the_batch_naming_block_view_and_error(
     assert!(snapshot(&yard.scratch.0) == before, "a file changed");
 }
 
-#[test]
-fn a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole() {
-    let yard = Yard::with_spec();
-    let mut added = String::new();
-    for number in 0..1_001 {
-        let _ = write!(
-            added,
-            "\n      - key: 00000000-0000-4000-9000-{number:012x}\n        name: \"Criterion {number} holds.\""
-        );
-    }
-    let last = "        name: \"An edit made through the link is refused.\"";
-    yard.scratch.edit(SHARE, last, &format!("{last}{added}"));
-    let body = recorded(&yard, "spec-change", "");
-    let report = &body["report"];
-    assert_eq!(
-        report["status"]["base"]["added"].as_array().unwrap().len(),
-        1_000
-    );
-    assert_eq!(report["counts"]["status.base.added"], 1_001);
-    assert_eq!(report["leftOut"]["status.base.added"], 1);
-}
-
 /// The criteria `count` new criteria of Share a list, as its file writes them, and their keys.
 fn many_criteria(count: usize) -> (String, Vec<String>) {
     let mut written = String::new();
@@ -215,7 +193,25 @@ fn many_criteria(count: usize) -> (String, Vec<String>) {
 const LAST: &str = "        name: \"An edit made through the link is refused.\"";
 
 #[test]
-fn a_view_keeps_the_first_1000_subjects_a_decision_gained_and_counts_the_whole() {
+fn a_view_of_more_than_1000_items_records_every_one_and_counts_them() {
+    let yard = Yard::with_spec();
+    let (criteria, _) = many_criteria(1_001);
+    yard.scratch.edit(SHARE, LAST, &format!("{LAST}{criteria}"));
+    let report = &recorded(&yard, "spec-change", "")["report"];
+    let added = report["status"]["base"]["added"].as_array().unwrap();
+    assert_eq!(added.len(), 1_001);
+    assert_eq!(report["graph"]["diff"].as_array().unwrap().len(), 1_001);
+    assert_eq!(report["counts"]["status.base.added"], 1_001);
+    assert_eq!(
+        report.get("leftOut"),
+        None,
+        "nothing is left out: {}",
+        report["counts"]
+    );
+}
+
+#[test]
+fn a_view_records_every_subject_a_decision_gained() {
     let mut yard = Yard::with_spec();
     let (criteria, keys) = many_criteria(1_001);
     yard.scratch.edit(SHARE, LAST, &format!("{LAST}{criteria}"));
@@ -233,35 +229,26 @@ fn a_view_keeps_the_first_1000_subjects_a_decision_gained_and_counts_the_whole()
         .iter()
         .find(|entry| entry["name"] == "Keep a change log")
         .unwrap();
-    assert_eq!(entry["subjects"].as_array().unwrap().len(), 1_000);
-    assert_eq!(report["counts"]["graph.diff.subjects"], 1_001);
-    assert_eq!(report["leftOut"]["graph.diff.subjects"], 1);
+    assert_eq!(entry["subjects"].as_array().unwrap().len(), 1_001);
 }
 
 #[test]
-fn a_trace_view_keeps_the_first_1000_criteria_of_its_features_and_counts_the_whole() {
+fn a_trace_view_records_every_criterion_of_its_features_with_its_tests_and_rules() {
     let yard = Yard::with_spec();
     let (criteria, _) = many_criteria(1_001);
     yard.scratch.edit(SHARE, LAST, &format!("{LAST}{criteria}"));
     let report = &recorded(&yard, "trace", "")["report"];
-    let kept: usize = report["features"]
+    let recorded: Vec<&Value> = report["features"]
         .as_array()
         .unwrap()
         .iter()
-        .map(|feature| feature["criteria"].as_array().unwrap().len())
-        .sum();
-    assert_eq!(kept, 1_000);
-    let whole = report["counts"]["features.criteria"].as_u64().unwrap();
+        .flat_map(|feature| feature["criteria"].as_array().unwrap())
+        .collect();
+    assert!(recorded.len() > 1_001, "{}", recorded.len());
     assert!(
-        whole > 1_001,
-        "the Feature's own criteria as well: {}",
-        report["counts"]
-    );
-    assert_eq!(report["leftOut"]["features.criteria"], whole - 1_000);
-    assert!(
-        report["counts"]["features.criteria.tests"].is_u64(),
-        "{}",
-        report["counts"]
+        recorded
+            .iter()
+            .all(|criterion| criterion["tests"].is_array() && criterion["rules"].is_array())
     );
 }
 

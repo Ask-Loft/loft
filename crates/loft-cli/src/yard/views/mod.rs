@@ -2,12 +2,12 @@
 //! `loft`'s own library over the tree that holds Yard Log, never by another `loft`. Each report
 //! holds the document the matching command prints, as it prints it, under the command's name:
 //! `status` for a `spec-change` or a `publish` view, `check` for `findings`, `reconcile` for
-//! `trace`; a `decision` view holds the decision as the tree holds it. A list longer than
-//! [`MOST`] items keeps its first [`MOST`], and the report counts what it left out (`keep`).
+//! `trace`; a `decision` view holds the decision as the tree holds it. A report is recorded
+//! whole, with the number of items of each of its lists (`counts`).
 
+mod counts;
 mod decision;
 mod graph;
-mod keep;
 mod subjects;
 mod trace;
 mod words;
@@ -25,9 +25,6 @@ use yardlog::input::LoftRequest;
 use crate::opened::Opened;
 use crate::stop::Stop;
 use crate::{base, check, status, version};
-
-/// The most items of one list a report keeps.
-pub const MOST: usize = 1_000;
 
 /// Computes the `loft` views of a batch over the tree under `tree`, the directory the command
 /// runs in, whose `spec/` the matching commands run there read; at `at`, comparing with `base`
@@ -48,7 +45,7 @@ impl Views<'_> {
     pub fn report(&self, request: &LoftRequest) -> Result<(Recorded, Datum), String> {
         let reported = self.reported(request);
         let (recorded, mut report) = reported.map_err(|stop| stop.lines.join("; "))?;
-        keep::keep_most(&mut report, request.view);
+        counts::count(&mut report, request.view);
         Ok((recorded, Datum::from(&report)))
     }
 
