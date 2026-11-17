@@ -191,7 +191,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc9e7078f833
         name: "The skill says that answers given since the last commit are committed with the next."
       - key: 01a1646f-546c-7521-9643-bc9f66547934
-        name: "The skill says that the token totals and the activity that Yard Client keeps for each session are committed with the work."
+        name: "The skill says that the token totals, the activity and the consultation counts that Yard Client keeps for each session enter `.yard/` with each write of Yard Log, and are committed with the work as of the last write."
       - key: 01a1646f-546c-7521-9643-bca03b27536e
         name: "The skill says to commit nothing of `.yard/` where `yard_read` reports that git ignores it."
   - key: 01a1646f-546c-7521-9643-bca1ca361934

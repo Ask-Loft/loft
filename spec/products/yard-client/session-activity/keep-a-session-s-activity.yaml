@@ -2,7 +2,7 @@ key: 01a1646f-546d-7042-befd-eaefec18d7c5
 slug: keep-a-session-s-activity
 name: "Keep a session's activity"
 body: |
-  Beside its token totals, each session keeps in Yard Log's folder when its agents' turns ran, when the main agent was in plan mode or writing the specification, and when the shell ran `loft`, so that the page can tell the time agents worked from the time nobody did, on any machine that reads the branch. The page server writes the file from the session's events, and the agent commits it with its work.
+  Beside its token totals, each session keeps in Yard Log's folder when its agents' turns ran, when the main agent was in plan mode or writing the specification, and when the shell ran `loft`, so that the page can tell the time agents worked from the time nobody did, on any machine that reads the branch. The page server keeps the file's live copy in git's directory for the worktree as the session's events arrive, each write of Yard Log saves it into Yard Log's folder, and the agent commits it with its work.
 
   A subagent's run is kept with the stage it worked for: the stage active for its session's main agent as the run started. A shell command that runs `loft` is kept with the stage it counted toward, as a request is counted (the Feature "Count the tokens Yard Log took").
 
@@ -47,7 +47,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eaf9e32fc612
         name: "Writing the activity file leaves Yard Log's revision as it was."
       - key: 01a1649f-62ef-71e6-98de-e10ba2181638
-        name: "The activity file is written to a temporary file and renamed into place, outside Yard Log's lock."
+        name: "The activity file's live copy is written to a temporary file in git's directory for the worktree and renamed into place, outside Yard Log's lock."
       - key: 01a1649f-62ef-71e6-98de-e10c9467d774
         name: "No event is kept in the activity file once Yard Log is closed."
       - key: 01a1646f-546d-7042-befd-eafae23372c6
