@@ -1,0 +1,142 @@
+//! The decisions one document added, changed and removed against its base, and the subjects each
+//! gained and lost (the `loft status` and See a spec change Features). A decision's subjects are
+//! `subject` edges of its document, not fields of the decision, so they are compared beside it. A
+//! node that `loft fmt` names by its former label once it leaves the document is the same node
+//! as before: each former label a binding, live or departed, resolves is read as its node before
+//! the two versions are compared, in a decision's subjects, drivers and consequences alike.
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use crate::bindings::Bindings;
+use crate::decision::{Decision, DriverPayload, NodeRef};
+use crate::document::{Document, Edge, SubjectRole};
+use crate::ids::{DecisionId, ElementId};
+
+/// A node a decision names as a subject, and the role it gives it.
+pub type Subject = (NodeRef, SubjectRole);
+
+/// The subjects one decision gained and lost.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct SubjectChange {
+    pub gained: BTreeSet<Subject>,
+    pub lost: BTreeSet<Subject>,
+}
+
+/// The decisions a document added, changed and removed against its base: the added and changed
+/// in the document's order, the removed in the base's; and the subjects each of them gained and
+/// lost, where it gained or lost one.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct DecisionChanges {
+    pub added: Vec<DecisionId>,
+    pub changed: Vec<DecisionId>,
+    pub removed: Vec<DecisionId>,
+    pub subjects: BTreeMap<DecisionId, SubjectChange>,
+}
+
+impl DecisionChanges {
+    /// Whether the document holds every decision of its base unchanged and no other.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.added.is_empty() && self.changed.is_empty() && self.removed.is_empty()
+    }
+}
+
+/// The decisions `document` added, changed and removed against `base`. A decision changed where
+/// its record or its subjects differ, once each former label is read as the node it names.
+#[must_use]
+pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges {
+    let (then, now) = (Read::of(base), Read::of(document));
+    let mut changes = DecisionChanges::default();
+    let none = BTreeSet::new();
+    for id in &now.order {
+        let list = match then.decisions.get(id) {
+            None => &mut changes.added,
+            Some(was) if *was != now.decisions[id] => &mut changes.changed,
+            Some(_) if then.subjects.get(id) != now.subjects.get(id) => &mut changes.changed,
+            Some(_) => continue,
+        };
+        list.push(*id);
+    }
+    changes.removed = (then.order.iter())
+        .filter(|id| !now.decisions.contains_key(id))
+        .copied()
+        .collect();
+    let decided = changes.added.iter().chain(&changes.changed);
+    for id in decided.chain(&changes.removed) {
+        let was = then.subjects.get(id).unwrap_or(&none);
+        let is = now.subjects.get(id).unwrap_or(&none);
+        let change = SubjectChange {
+            gained: is.difference(was).copied().collect(),
+            lost: was.difference(is).copied().collect(),
+        };
+        if !change.gained.is_empty() || !change.lost.is_empty() {
+            changes.subjects.insert(*id, change);
+        }
+    }
+    changes
+}
+
+/// A document's decisions, each former label read as its node: each decision by its ID, their
+/// order, and each one's subjects.
+struct Read {
+    decisions: BTreeMap<DecisionId, Decision>,
+    order: Vec<DecisionId>,
+    subjects: BTreeMap<DecisionId, BTreeSet<Subject>>,
+}
+
+impl Read {
+    fn of(document: &Document) -> Self {
+        let bindings = &document.bindings;
+        let mut subjects: BTreeMap<DecisionId, BTreeSet<Subject>> = BTreeMap::new();
+        for edge in &document.edges {
+            if let Edge::Subject {
+                decision,
+                subject,
+                role,
+            } = *edge
+            {
+                let subject = (resolved(subject, bindings), role);
+                subjects.entry(decision).or_default().insert(subject);
+            }
+        }
+        Self {
+            decisions: (document.decisions.iter())
+                .map(|decision| (decision.id, normalized(decision, bindings)))
+                .collect(),
+            order: document
+                .decisions
+                .iter()
+                .map(|decision| decision.id)
+                .collect(),
+            subjects,
+        }
+    }
+}
+
+/// `decision` with each former label of its drivers and consequences read as its node.
+fn normalized(decision: &Decision, bindings: &Bindings) -> Decision {
+    let mut decision = decision.clone();
+    for driver in &mut decision.drivers {
+        if let DriverPayload::Subject { subject } = &mut driver.payload {
+            *subject = resolved(*subject, bindings);
+        }
+    }
+    for consequence in &mut decision.consequences {
+        consequence.subject = consequence
+            .subject
+            .map(|subject| resolved(subject, bindings));
+    }
+    decision
+}
+
+/// The node `reference` names: a former label that a binding, live or departed, gives to a node
+/// is read as that node, and any other reference as it is.
+fn resolved(reference: NodeRef, bindings: &Bindings) -> NodeRef {
+    let NodeRef::Former(label) = reference else {
+        return reference;
+    };
+    match bindings.resolve(label).or_else(|| bindings.former(label)) {
+        Some(ElementId::Node(node)) => NodeRef::Held(node),
+        _ => reference,
+    }
+}

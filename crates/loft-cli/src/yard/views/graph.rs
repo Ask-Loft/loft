@@ -9,14 +9,13 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use loftspec::decision::NodeRef;
-use loftspec::diff::content_changes;
+use loftspec::diff::{DecisionChanges, Subject, SubjectChange, content_changes, decision_changes};
 use loftspec::document::{Document, Edge};
-use loftspec::identity::{Key, Label};
+use loftspec::identity::Key;
 use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 use serde_json::{Value, json};
 
-use super::subjects::{self, Change, Named, Subject};
 use super::words;
 
 /// One keyed node of a document: what a box or a tree line shows of it, and the node above it.
@@ -83,10 +82,22 @@ pub fn report(base: &Document, document: &Document) -> Value {
     for (ids, change) in lists.into_iter().zip(CHANGES) {
         marked.extend(ids.iter().map(|id| (id.key(), change)));
     }
-    let subjects = subjects::changes(base, document);
-    let gained: BTreeSet<Key> = subjects::gained_nodes(&subjects).collect();
+    let decided = decision_changes(base, document);
+    let gained: BTreeSet<Key> = (decided.subjects.values())
+        .flat_map(|change| &change.gained)
+        .filter_map(|(subject, _)| match subject {
+            NodeRef::Held(node) => Some(node.key()),
+            NodeRef::Former(_) => None,
+        })
+        .collect();
     let shown = shown(&marked, &gained, &now, &then);
-    let decided = decisions(base, document, &subjects, &now, &then);
+    let documents = Documents {
+        base,
+        document,
+        now: &now,
+        then: &then,
+    };
+    let decided = decisions(&decided, &documents);
     let edges = edges(&shown, &decided, document, base);
     // Only a decision's entry in the diff lists its subjects; its box needs none.
     let (boxes, listed): (Vec<Value>, Vec<Value>) = decided
@@ -259,44 +270,50 @@ struct Decided {
     subjects: Option<Value>,
 }
 
-/// Each decision added, changed or removed, with its words before and after and the subjects it
-/// gained and lost: those the tree holds by key, then those only the base holds by key. A decision
-/// is changed where it or its subjects differ.
-fn decisions(
-    base: &Document,
-    document: &Document,
-    subjects: &BTreeMap<Key, Change>,
-    now: &Walked,
-    then: &Walked,
-) -> Vec<Decided> {
+/// The two documents compared and their keyed nodes.
+struct Documents<'a> {
+    base: &'a Document,
+    document: &'a Document,
+    now: &'a Walked,
+    then: &'a Walked,
+}
+
+/// Each decision `changes` holds, with its words before and after and the subjects it gained and
+/// lost: the added and changed in the tree's order, then the removed in the base's.
+fn decisions(changes: &DecisionChanges, documents: &Documents<'_>) -> Vec<Decided> {
+    let Documents { base, document, .. } = *documents;
     let before: BTreeMap<Key, _> = base.decisions.iter().map(|d| (d.id.key(), d)).collect();
-    let after: BTreeMap<Key, _> = document.decisions.iter().map(|d| (d.id.key(), d)).collect();
-    let gone = before.keys().filter(|key| !after.contains_key(key));
-    after
-        .keys()
-        .chain(gone)
-        .filter_map(|key| {
-            let (was, is) = (before.get(key).copied(), after.get(key).copied());
-            let change = match (was, is) {
-                (None, _) => "added",
-                (_, None) => "removed",
-                (Some(was), Some(is)) if was != is || subjects.contains_key(key) => "changed",
-                _ => return None,
-            };
-            let (decision, holder) = match is {
-                Some(is) => (is, document),
-                None => (was?, base),
-            };
+    let marked = [
+        (&changes.added, "added"),
+        (&changes.changed, "changed"),
+        (&changes.removed, "removed"),
+    ];
+    let change: BTreeMap<Key, &str> = marked
+        .into_iter()
+        .flat_map(|(ids, change)| ids.iter().map(move |id| (id.key(), change)))
+        .collect();
+    let in_tree = document.decisions.iter().map(|is| (is, document));
+    let removed = base.decisions.iter().map(|was| (was, base));
+    in_tree
+        .chain(removed.filter(|(was, _)| change.get(&was.id.key()) == Some(&"removed")))
+        .filter_map(|(decision, holder)| {
+            let key = decision.id.key();
+            let change = *change.get(&key)?;
+            let was = before.get(&key).copied();
+            let is = (change != "removed").then_some(decision);
             let label = holder.bindings.label_of(decision.id).map(|l| l.to_string());
             let words = words::pair(
                 was.map(words::of_decision).as_deref(),
                 is.map(words::of_decision).as_deref(),
             );
             Some(Decided {
-                key: *key,
+                key,
                 removed: is.is_none(),
-                entry: decision_json(*key, label.as_deref(), &decision.title, change, &words),
-                subjects: subjects.get(key).map(|change| listed(change, now, then)),
+                entry: decision_json(key, label.as_deref(), &decision.title, change, &words),
+                subjects: changes
+                    .subjects
+                    .get(&decision.id)
+                    .map(|change| listed(change, documents)),
             })
         })
         .collect()
@@ -315,41 +332,39 @@ fn decision_json(key: Key, label: Option<&str>, title: &str, change: &str, words
 
 /// The subjects `change` holds, as a decision's entry lists them: each gained, as the tree names
 /// it, and each lost, as the base does.
-fn listed(change: &Change, now: &Walked, then: &Walked) -> Value {
-    let formers = &change.formers;
-    let gained = change
-        .gained
-        .iter()
-        .map(|named| subject(named, "added", now, formers));
-    let lost = change
-        .lost
-        .iter()
-        .map(|named| subject(named, "removed", then, formers));
+fn listed(change: &SubjectChange, documents: &Documents<'_>) -> Value {
+    let gained =
+        (change.gained.iter()).map(|named| subject(named, "added", documents.now, documents));
+    let lost =
+        (change.lost.iter()).map(|named| subject(named, "removed", documents.then, documents));
     Value::Array(gained.chain(lost).collect())
 }
 
 /// A subject as a decision's entry lists it: the node's key, kind, label and name, as `walked`
-/// holds them, or its former label alone where neither document holds it, with its role and its
-/// change.
+/// holds them, or the label its departed binding keeps where neither document holds it, or a
+/// former label no binding gives, with its role and its change.
 fn subject(
-    (subject, role): &Named,
+    (subject, role): &Subject,
     change: &str,
     walked: &Walked,
-    formers: &BTreeMap<Key, Label>,
+    documents: &Documents<'_>,
 ) -> Value {
     let mut value = json!({ "role": role.as_str(), "change": change });
     match *subject {
-        Subject::Node(key) => {
+        NodeRef::Held(node) => {
+            let key = node.key();
             value["key"] = json!(key.to_string());
             if let Some(entry) = walked.entries.get(&key) {
                 value["kind"] = json!(entry.kind.as_str());
                 value["label"] = json!(entry.label);
                 value["name"] = json!(entry.name);
-            } else if let Some(label) = formers.get(&key) {
-                value["label"] = json!(label.to_string());
+            } else if let Some(binding) =
+                (documents.document.bindings.get(key)).or_else(|| documents.base.bindings.get(key))
+            {
+                value["label"] = json!(binding.label.to_string());
             }
         }
-        Subject::Former(label) => value["label"] = json!(label.to_string()),
+        NodeRef::Former(label) => value["label"] = json!(label.to_string()),
     }
     value
 }

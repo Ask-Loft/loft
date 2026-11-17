@@ -4,9 +4,11 @@
 //! change to a node is not a change to each of its ancestors. A node moved when its own content
 //! view is the base's and its parent is not (the `loft review` Feature); a move alone is no
 //! change, so [`NodeChanges::is_empty`] ignores it. The comparer, [`compare`], tells the same
-//! changes by each node's record in place of its content view.
+//! changes by each node's record in place of its content view, and [`decision_changes`] tells the
+//! decisions added, changed and removed, with the subjects each gained and lost.
 
 mod compare;
+mod decisions;
 
 use std::collections::BTreeMap;
 
@@ -21,6 +23,7 @@ pub use compare::{
     Comparison, DecisionChange, DecisionDifference, Difference, NodeDifference, Order, Part,
     Refusal, Side, Version, Which, compare,
 };
+pub use decisions::{DecisionChanges, Subject, SubjectChange, decision_changes};
 
 /// The keyed nodes a document added, changed, moved and removed against its base: the added,
 /// changed and moved in the document's order, the removed in the base's.

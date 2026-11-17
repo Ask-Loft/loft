@@ -8,7 +8,6 @@
 mod counts;
 mod decision;
 mod graph;
-mod subjects;
 mod trace;
 mod words;
 

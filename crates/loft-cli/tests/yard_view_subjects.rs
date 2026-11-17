@@ -20,6 +20,9 @@ const IN_ORDER_KEY: &str = "00000000-0000-4000-8000-00000000002c";
 /// Criterion AC-3's name.
 const IN_ORDER: &str = "Books list in the order they were added.";
 
+/// The accepted decision Store a shelf in one file, which names RQ-2 in a driver and a subject.
+const STORE_A_SHELF: &str = "decisions/store-a-shelf-in-one-file.yaml";
+
 /// The key of Requirement RQ-2.
 const KEEP_ORDER_KEY: &str = "00000000-0000-4000-8000-00000000002b";
 
@@ -201,4 +204,40 @@ fn a_spec_change_view_lists_a_subject_gained_by_its_former_label_under_that_labe
     assert_eq!(subjects.len(), 1, "{entry}");
     assert_eq!(subjects[0]["label"], "AC-3", "{entry}");
     assert_eq!(subjects[0]["change"], "added");
+}
+
+#[test]
+fn a_spec_change_view_draws_no_decision_whose_subject_and_consequence_loft_fmt_named_by_a_former_label()
+ {
+    let mut yard = Yard::with_spec();
+    // The other decision that names RQ-2 is retired too, so that the tree reads without it.
+    yard.scratch
+        .edit(STORE_A_SHELF, "  kind: accepted\n", "  kind: retired\n");
+    yard.scratch.edit(
+        STORE_A_SHELF,
+        "  outcome: \"One JSON file per shelf.\"\n",
+        "  outcome: \"One JSON file per shelf.\"\n  rationale: \"Shelves moved to a database.\"\n",
+    );
+    yard.rebased();
+    let requirement = fs::read_to_string(yard.scratch.file(ADD_A_BOOK)).unwrap();
+    let start = requirement
+        .find(&format!("  - key: {KEEP_ORDER_KEY}\n"))
+        .unwrap();
+    let end = requirement.find("qualityAttributes:\n").unwrap();
+    yard.scratch.edit(ADD_A_BOOK, &requirement[start..end], "");
+    let formatted = yard.scratch.loft(&["fmt"]);
+    assert!(formatted.status.success(), "{formatted:?}");
+    let decision_file = fs::read_to_string(yard.scratch.file(CHANGE_LOG)).unwrap();
+    assert_eq!(
+        decision_file.matches("formerLabel: RQ-2").count(),
+        2,
+        "loft fmt names the removed Requirement by its former label in the consequence and the subject: {decision_file}"
+    );
+    let graph = diagram(&yard);
+    assert_eq!(graph["decisions"], serde_json::json!([]), "{graph}");
+    let entries = graph["diff"].as_array().unwrap();
+    assert!(
+        entries.iter().all(|entry| entry["kind"] != "decision"),
+        "{graph}"
+    );
 }

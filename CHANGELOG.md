@@ -21,6 +21,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   decision is drawn as changed, each subject it gained is drawn so that its edge has an end, a
   subject it lost has no edge, and its entry in the diff lists the subjects added and removed with
   their roles. Such a decision used to be missing from the view altogether.
+- A `spec-change` view no longer draws a retired or superseded decision as changed only because
+  `loft fmt` now names a node the branch removed by its former label, in a subject, a driver or a
+  consequence. `loftspec` compares decisions in `diff::decision_changes`, which reads each former
+  label as the node it names, and `Bindings::former` finds the node a departed label named.
 - A `loft` block records the whole report its view gives, however long. A list of more than
   1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
   part of Yard Log's history of the work.

@@ -287,7 +287,8 @@ impl Bindings {
     }
 
     /// The binding of `key`, departed or not.
-    pub(crate) fn get(&self, key: Key) -> Option<&Binding> {
+    #[must_use]
+    pub fn get(&self, key: Key) -> Option<&Binding> {
         self.entries.get(&key)
     }
 
@@ -356,6 +357,16 @@ impl Bindings {
         let first = |keys: &LabelIndex| keys.get(&label)?.first().copied();
         let key = first(&self.live_keys).or_else(|| first(&self.alias_keys))?;
         self.entries.get(&key).map(|binding| binding.element)
+    }
+
+    /// The element whose departed binding carries `label` as its live label: the node or decision
+    /// a former label names. A departed label is never given again, so it names one element.
+    #[must_use]
+    pub fn former(&self, label: Label) -> Option<ElementId> {
+        let mut departed = self.departed();
+        departed
+            .find(|binding| binding.label == label)
+            .map(|binding| binding.element)
     }
 
     /// Whether any binding has a withdrawn label.
