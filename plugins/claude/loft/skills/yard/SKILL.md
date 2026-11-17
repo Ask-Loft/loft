@@ -362,6 +362,10 @@ rejected on the page or in the terminal. Approved on the page, it ends plan mode
 auto mode. Rejected on the page, `ExitPlanMode` is denied with the person's reason: revise the plan
 in plan mode and present it again.
 
+Where the host ends `ExitPlanMode` before the person decided the plan, as a host that shows no
+plan dialog does, nobody has rejected it: wait with `yard_wait` on the submission its result names,
+and act on the person's decision as on one given in the terminal.
+
 Where the person changes a requirement once the plan is approved, commit the change to `spec/` and
 record its `spec-change` view before you write any code that meets it. Then call `EnterPlanMode`
 and present with `ExitPlanMode` only the steps whose criteria the change touches, each as it now

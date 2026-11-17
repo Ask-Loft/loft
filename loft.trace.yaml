@@ -34116,6 +34116,12 @@ links:
       - file: "crates/loft-cli/tests/yard_skill.rs"
         name: "the_yard_skill_tells_the_agent_to_plan_the_build_in_plan_mode_once_the_spec_change_is_approved"
         body: ca8064e25ca76740f2391cfdba80bbf8ce1182d13e331d7a68434ffa27927ecc
+  - node: 01a1eb26-527d-769d-91c8-de45c246546f
+    reviewed: cd5e95756781d6a2996408fc1bc6215043d0b9ef56bac3ac076d8431ebe7ad59
+    tests:
+      - file: "crates/loft-cli/tests/yard_skill.rs"
+        name: "the_yard_skill_tells_the_agent_to_wait_on_a_plan_the_host_ended_before_the_person_decided_it"
+        body: ec169336b3f8efa4a39aef8ff5a008225e90c1fc407e55e13c97644698d668a0
   - node: 01a16a1a-78f9-750e-8105-fbca6aafd170
     reviewed: 86bf3a0d60bbce3e66066ab2341f0025dbe9329b17d4d029dea2fb42f9f86857
     tests:
