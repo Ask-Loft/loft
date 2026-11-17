@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { idOf } from '../hooks/adapter/log'
-import { askedId, block, callIdOf, deferred, flagOf, readDoc, SESSION, spawn, stage, start, TREE, world, yardRuns, type Engine } from './yard-world'
+import { askedId, block, callIdOf, deferred, flagOf, PAGE, readDoc, SESSION, spawn, stage, start, TREE, world, yardRuns, type Engine } from './yard-world'
 
 const QUESTIONS = [
   {
@@ -126,6 +126,17 @@ const PLAN_ID = 'plan-10-plan-shelf-k-shape'
 
 const PLAN = '# Build the shelf\n\nOne step.'
 
+/** Claude Code's own words for the person's rejection of a tool call, with and without feedback. */
+const REJECTED = "The user doesn't want to proceed with this tool use. The tool use was rejected (eg. if it was a file edit, the new_string was NOT written to the file)."
+const STOPPED = `${REJECTED} STOP what you are doing and wait for the user to tell you how to proceed.`
+const SAID = `${REJECTED} To tell you how to proceed, the user said:\nsplit it`
+
+/** Claude Code's own words for a tool call the person stopped by interrupting the turn. */
+const CANCELED = "The user doesn't want to take this action right now. STOP what you are doing and wait for the user to tell you how to proceed."
+
+/** What an Agent SDK host that shows no plan dialog answers `ExitPlanMode` with. */
+const HOST_ENDED = "The client captured your proposed plan. Stop here and wait for the user's feedback or implementation request in a later turn."
+
 /**
  * Claude Code asking for a plan's approval: the `ExitPlanMode` call whose dialog shows until it is
  * answered. The plugin's command hook, not the mod, waits on the page beside it. `answer` settles
@@ -152,7 +163,7 @@ const decidedOnPage = (outcome: Record<string, unknown>) =>
 test("the agent's plan goes to Yard Log as a plan block in plan mode, with no path for a file outside the tree, and the terminal's verdict is recorded", async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  w.state.terminal.ExitPlanMode = () => ({ deny: "The user doesn't want to proceed. the user said: split it" })
+  w.state.terminal.ExitPlanMode = () => ({ deny: SAID })
   await start($)
   const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
   expect(writes(w).at(-1)).toEqual([
@@ -166,7 +177,7 @@ test("the agent's plan goes to Yard Log as a plan block in plan mode, with no pa
 test('a plan rejected in the terminal with no feedback typed is recorded as rejected with no reason', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  w.state.terminal.ExitPlanMode = () => ({ deny: "The user doesn't want to proceed with this tool use." })
+  w.state.terminal.ExitPlanMode = () => ({ deny: STOPPED })
   await start($)
   await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
   const recorded = w.state.runs.find(run => run.argv.includes('answer'))!
@@ -223,11 +234,85 @@ test('a plan decided in the terminal first is recorded with its verdict', async 
   expect(JSON.parse(recorded.stdin!)).toEqual([{ block: PLAN_ID, verdict: 'approved' }])
 })
 
-const sentDoc = (blocks: ReturnType<typeof block>[], agent: Record<string, unknown> = { session: SESSION }) =>
+const sentDoc = (blocks: ReturnType<typeof block>[], agent: Record<string, unknown> = { session: SESSION }, submission = 'sub-7') =>
   readDoc({
     stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks }],
-    submissions: [{ agent, open: [{ key: 'sub-7', blocks: blocks.map(each => each.key), state: 'open' }] }],
+    submissions: [{ agent, open: [{ key: submission, blocks: blocks.map(each => each.key), state: 'open' }] }],
   })
+
+/** A plan presented with `ExitPlanMode` that the host answers itself, from Yard Log as `read`. */
+async function endedByHost($: Engine, w: ReturnType<typeof world>, read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })) {
+  w.state.read = read
+  w.state.terminal.ExitPlanMode = () => ({ deny: HOST_ENDED })
+  await start($)
+  return $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
+}
+
+test('a plan the host ends records no outcome, keeps its submission open and points the agent at it', async ($, on) => {
+  const w = world(on)
+  const ran = await endedByHost($, w)
+  expect(yardRuns(w).filter(run => run.startsWith('answer') || run.startsWith('withdraw'))).toEqual([])
+  expect(ran.deny).toContain(HOST_ENDED)
+  expect(ran.deny).toContain('submission sub-1')
+  expect(ran.deny).toContain('yard_wait')
+  expect(ran.deny).toContain(PAGE)
+})
+
+test('the agent is not told that the person rejected a plan the host ended', async ($, on) => {
+  const ran = await endedByHost($, world(on))
+  expect(ran.deny).not.toMatch(/rejected/i)
+})
+
+test('a tool error that ends ExitPlanMode is handled as a host that ends it', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.ExitPlanMode = () => ({ result: 'You are not in plan mode.', isError: true, text: 'You are not in plan mode.' })
+  await start($)
+  const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/p/shelf.md' } as never)
+  expect(yardRuns(w).filter(run => run.startsWith('answer') || run.startsWith('withdraw'))).toEqual([])
+  expect(ran.deny).toContain('You are not in plan mode.')
+  expect(ran.deny).toContain('submission sub-1')
+})
+
+test('a plan the person stopped by interrupting the turn is withdrawn, not decided', async ($, on) => {
+  const w = world(on)
+  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+  w.state.terminal.ExitPlanMode = () => ({ deny: CANCELED })
+  await start($)
+  const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/p/shelf.md' } as never)
+  expect(yardRuns(w).filter(run => run.startsWith('answer'))).toEqual([])
+  expect(yardRuns(w).filter(run => run.startsWith('withdraw'))).toEqual(['withdraw --submission sub-1 --session session-1 --port 7411 --format json'])
+  expect(ran.deny).toBe(CANCELED)
+})
+
+test("the agent's yard_wait on a plan the host ended gives the decision the person makes on the page", async ($, on) => {
+  const w = world(on)
+  w.state.terminal.AskUserQuestion = () => new Promise(() => {})
+  await endedByHost($, w)
+  w.state.read = sentDoc([block(PLAN_ID, 'plan', { title: 'Build the shelf', markdown: PLAN, planMode: true })], { session: SESSION }, 'sub-1')
+  w.state.waits.push(answeredOnPage([{ ...block(PLAN_ID, 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }]))
+  const ran = await $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 'sub-1' })
+  expect(flagOf(w.state.runs.filter(run => run.argv.includes('wait')).at(-1)!.argv, '--submission')).toBe('sub-1')
+  expect(JSON.parse(String(ran.result)).blocks[0].outcome.verdict).toBe('approved')
+})
+
+/** Yard Log where `agent`'s open submission `sub-0` still holds the plan block of the shelf file. */
+const heldPlan = (agent: Record<string, unknown>) => sentDoc([block(PLAN_ID, 'plan', { markdown: PLAN, planMode: true })], agent, 'sub-0')
+
+test("presenting a plan again whose block the agent's own open submission holds withdraws that submission and sends the new version", async ($, on) => {
+  const w = world(on)
+  await endedByHost($, w, heldPlan({ host: 'claude-code', session: SESSION }))
+  const runs = yardRuns(w).filter(run => run.startsWith('withdraw') || run.startsWith('write'))
+  expect(runs[0]).toBe('withdraw --submission sub-0 --session session-1 --port 7411 --format json')
+  expect(runs[1]).toMatch(/^write .*--send/)
+  expect(writes(w).at(-1)![0]!.id).toBe(PLAN_ID)
+})
+
+test("presenting a plan again leaves another agent's open submission of its block as it is", async ($, on) => {
+  const w = world(on)
+  await endedByHost($, w, heldPlan({ host: 'claude-code', session: 'session-2' }))
+  expect(yardRuns(w).filter(run => run.startsWith('withdraw'))).toEqual([])
+})
 
 const pick = (id: string, options: number, multiple = false) =>
   block(id, 'question', {
