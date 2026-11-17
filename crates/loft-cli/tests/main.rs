@@ -168,6 +168,7 @@ mod yard_task;
 mod yard_upgrade;
 mod yard_upgrade_events;
 mod yard_upgrade_totals;
+mod yard_view_constraints;
 mod yard_view_reports;
 mod yard_views;
 mod yard_wait;

@@ -12,7 +12,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Requirements, criteria, Components and decisions, with a diff of every changed node beneath it."
+      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Requirements, criteria, Components, Constraints, Quality Attributes and decisions, with a diff of every changed node beneath it."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac1d09f5f92
         name: "The diagram shows each changed node with the Requirement, the Feature, the Feature Group and the Product above it."
@@ -22,6 +22,10 @@ requirements:
         name: "Each added, changed or removed Requirement is drawn as a box inside its Feature's panel that holds its statement."
       - key: 01a16475-7fbc-7732-a78c-bc50ee43201f
         name: "Each added, changed or removed criterion is drawn as a box to the right of its Requirement, joined to it, that holds its name."
+      - key: 01a1e8b6-12bc-7032-8e15-88126e617470
+        name: "Each added, changed or removed Constraint or Quality Attribute of a Product, a Feature Group or a Feature is drawn as a box inside that node's panel that holds its name."
+      - key: 01a1e8b6-b713-735b-a077-9e3ce8e88bfe
+        name: "Each added, changed or removed Constraint or Quality Attribute of a Component is drawn as a box to the right of the Component's box, joined to it, that holds its name."
       - key: 01a1695a-dd72-7090-817b-abea7cf0c895
         name: "A Requirement or a criterion that did not change is drawn only where a changed criterion lies beneath it, and then only for context."
       - key: 01a1695a-dd72-7090-817b-abebaa96fd5a
@@ -113,6 +117,6 @@ requirements:
       shall: "draw each Feature Group as one box that counts its changed nodes, and let the person open one Feature Group at a time."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac9dc2edaf7
-        name: "Opening a Feature Group draws its changed Features, Requirements and criteria in place of its box."
+        name: "Opening a Feature Group draws its changed Features, Requirements, criteria, Constraints and Quality Attributes in place of its box."
       - key: 01a1646f-546d-7042-befd-eacaa63dddfa
         name: "Opening another Feature Group closes the one that was open."

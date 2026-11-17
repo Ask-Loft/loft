@@ -1,9 +1,10 @@
 //! What a `spec-change` view's diagram draws (the See a spec change Feature): the changed
-//! Products, Feature Groups, Features, Requirements, criteria and Components as boxes, each box
-//! above a changed one drawn for context, the changed decisions, and the `realizes` and subject
-//! edges between them. A change to a node that has no box of its own, a constraint, a quality
-//! attribute or a Section, marks the nearest box above it as changed. Beside the diagram, the
-//! diff gives the words of every added, changed and removed node and decision, before and after.
+//! Products, Feature Groups, Features, Requirements, criteria, Components, Constraints and
+//! Quality Attributes as boxes, each box above a changed one drawn for context, the changed
+//! decisions, and the `realizes` and subject edges between them. A change to a Section, the one
+//! node that has no box of its own, marks the nearest box above it as changed. Beside the
+//! diagram, the diff gives the words of every added, changed and removed node and decision,
+//! before and after.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -80,17 +81,20 @@ impl Walked {
     }
 }
 
-/// Whether nodes of `kind` are drawn as boxes of their own.
+/// Whether nodes of `kind` are drawn as boxes of their own: every kind but a Section. No arm is a
+/// wildcard, so a kind the Format gains is placed here before it is drawn.
 const fn has_box(kind: NodeKind) -> bool {
-    matches!(
-        kind,
+    match kind {
         NodeKind::Product
-            | NodeKind::FeatureGroup
-            | NodeKind::Feature
-            | NodeKind::Requirement
-            | NodeKind::Criterion
-            | NodeKind::Component
-    )
+        | NodeKind::FeatureGroup
+        | NodeKind::Feature
+        | NodeKind::Requirement
+        | NodeKind::Criterion
+        | NodeKind::Component
+        | NodeKind::Constraint
+        | NodeKind::QualityAttribute => true,
+        NodeKind::Section => false,
+    }
 }
 
 const CHANGES: [&str; 3] = ["added", "changed", "removed"];

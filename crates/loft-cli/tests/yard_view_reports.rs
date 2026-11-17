@@ -20,7 +20,7 @@ const SHARE: &str = "products/reading-list/sharing/share-a-list.yaml";
 const LINK_SERVICE: &str = "components/link-service.yaml";
 
 /// Records a `loft` block `v1` of `view`, and gives its report.
-fn report(yard: &Yard, view: &str) -> Value {
+pub(crate) fn report(yard: &Yard, view: &str) -> Value {
     let batch = format!(
         r#"[{{"id": "shape", "kind": "stage", "title": "Shape it", "status": "active"}},
             {{"id": "v1", "kind": "loft", "stage": "shape", "view": "{view}"}}]"#
@@ -39,8 +39,20 @@ fn change_a_criterion(yard: &Yard) {
     );
 }
 
+/// The decision [`change_a_decision`] changes.
+pub(crate) const CHANGE_LOG: &str = "decisions/keep-a-change-log.yaml";
+
+/// Changes the outcome of the decision Keep a change log.
+pub(crate) fn change_a_decision(yard: &Yard) {
+    yard.scratch.edit(
+        CHANGE_LOG,
+        "outcome: \"An append-only log.\"",
+        "outcome: \"An append-only log, kept a year.\"",
+    );
+}
+
 /// The box of the node named `name`.
-fn node<'a>(graph: &'a Value, name: &str) -> &'a Value {
+pub(crate) fn node<'a>(graph: &'a Value, name: &str) -> &'a Value {
     graph["nodes"]
         .as_array()
         .unwrap()
@@ -64,7 +76,7 @@ fn published_now(yard: &Yard, scenario: GitScenario) -> GitScenario {
 }
 
 /// The box whose key is `node`'s parent.
-fn parent<'a>(graph: &'a Value, node: &Value) -> &'a Value {
+pub(crate) fn parent<'a>(graph: &'a Value, node: &Value) -> &'a Value {
     graph["nodes"]
         .as_array()
         .unwrap()
@@ -212,11 +224,7 @@ fn a_spec_change_view_s_diff_gives_an_added_node_s_words_after_and_a_removed_one
 #[test]
 fn a_spec_change_view_s_diff_gives_a_decision_s_title_and_outcome() {
     let yard = Yard::with_spec();
-    yard.scratch.edit(
-        "decisions/keep-a-change-log.yaml",
-        "outcome: \"An append-only log.\"",
-        "outcome: \"An append-only log, kept a year.\"",
-    );
+    change_a_decision(&yard);
     let graph = report(&yard, "spec-change")["graph"].clone();
     let entry = diffed(&graph, "Keep a change log");
     assert_eq!(entry["kind"], "decision");

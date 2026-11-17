@@ -1,9 +1,10 @@
 // A `spec-change` view: a diagram of the changed Products, Feature Groups, Features,
-// Requirements, criteria, Components and decisions, drawn by the page as nested panels and cards
-// (`lib/spec-diagram.js`), each saying how it changed, with what holds each for context and the
-// `realizes` and subject edges between them, under a legend that counts the changes; beneath it,
-// a folded diff of the words of every changed node, which choosing a card unfolds at its entry. A diagram of more than 30 boxes draws each
-// Feature Group as one box that counts its changed nodes, and opens one Feature Group at a time.
+// Requirements, criteria, Components, Constraints, Quality Attributes and decisions, drawn by the
+// page as nested panels and cards (`lib/spec-diagram.js`), each saying how it changed, with what
+// holds each for context and the `realizes` and subject edges between them, under a legend that
+// counts the changes; beneath it, a folded diff of the words of every changed node, which
+// choosing a card unfolds at its entry. A diagram of more than 30 boxes draws each Feature Group
+// as one box that counts its changed nodes, and opens one Feature Group at a time.
 // A report recorded before the words were kept has no diff: its Features count their
 // Requirements and criteria, and a folded tree lists its changed nodes.
 
