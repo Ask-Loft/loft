@@ -7,7 +7,7 @@
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
 import type { Doc, Ran } from '../loft'
-import { askResultOf, feedbackIn, givenOf, isPersonsRejection, planId, planPath, planTitle, questionBlocks, type Asked, type Given } from './answers'
+import { askResultOf, givenOf, planId, planPath, planTitle, questionBlocks, rejectionIn, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { capture, checkCapture } from './capture'
 import { activeStage, idOf, isAsker, lastUnplanned, openSubmissions, pageOf, waitingOf, whoOf, type Asker, type Block } from './log'
@@ -75,14 +75,17 @@ function stageFor(doc: Doc, asker: Asker, minted: string): SelectedStage {
   }
 }
 
-/** A file's revisions belong to the selected stage, including blocks with legacy ids. */
-function planFor(stage: SelectedStage, path: string | undefined, fallback: string): string {
+/**
+ * A file's revisions belong to the selected stage, including blocks with legacy ids: the plan
+ * block's id, and the key of the block it writes again, where the stage holds one.
+ */
+function planFor(stage: SelectedStage, path: string | undefined, fallback: string): { id: string; key?: string } {
   const base = planId(path, fallback)
-  if (!path) return base
+  if (!path) return { id: base }
   // The length separates the filename identity from the stage namespace without ambiguity.
   const prefix = idOf('plan', String(base.length), base)
   const held = stage.blocks?.find(block => block.kind === 'plan' && (block.id === base || block.id.startsWith(`${prefix}-`)))
-  return held?.id ?? idOf(prefix, stage.key ?? stage.id)
+  return held ? { id: held.id, key: held.key } : { id: idOf(prefix, stage.key ?? stage.id) }
 }
 
 /**
@@ -153,11 +156,10 @@ async function decidedOnPage($: EngineInterface, cwd: string, caller: Caller, id
   return block?.outcome?.channel === 'page' ? block.outcome : undefined
 }
 
-/** The agent's own open submission that holds the stage's block `id`, which a new version of it needs withdrawn. */
-function heldBy(doc: Doc, stage: SelectedStage, id: string, asker: Asker): string | undefined {
-  const held = stage.blocks?.find(block => block.id === id)
-  if (!held) return undefined
-  return openSubmissions(doc).find(each => each.blocks.includes(held.key) && isAsker(each.agent, asker))?.key
+/** The agent's own open submission that holds the block `key`, which a new version of it needs withdrawn. */
+function heldBy(doc: Doc, key: string | undefined, asker: Asker): string | undefined {
+  if (key === undefined) return undefined
+  return openSubmissions(doc).find(each => each.blocks.includes(key) && isAsker(each.agent, asker))?.key
 }
 
 /**
@@ -165,8 +167,8 @@ function heldBy(doc: Doc, stage: SelectedStage, id: string, asker: Asker): strin
  * Agent SDK host may answer `ExitPlanMode` itself, and a tool error may end it, before the person
  * saw it.
  */
-function undecided(ran: ToolCallResult, submission: string, page: string | undefined): ToolCallResult {
-  const where = page ? `the Yard page (${page})` : 'the Yard page'
+function undecided(ran: ToolCallResult, submission: string, address: string | undefined): ToolCallResult {
+  const where = address ? `the Yard page (${address})` : 'the Yard page'
   const note =
     `Nobody has decided this plan: ExitPlanMode ended before the person did. The plan waits on ${where} ` +
     `as submission ${submission}; wait on it with yard_wait for the person's decision.`
@@ -198,17 +200,18 @@ export async function presentPlan(
     if (!asking) return undefined
     const { cwd, caller, doc } = asking
     const minted = mintedFor(e, caller)
-    const stage = stageFor(doc, askerOf(caller), minted)
-    const id = planFor(stage, path, idOf('plan', minted))
-    const held = heldBy(doc, stage, id, askerOf(caller))
+    const asker = askerOf(caller)
+    const stage = stageFor(doc, asker, minted)
+    const { id, key } = planFor(stage, path, idOf('plan', minted))
+    const held = heldBy(doc, key, asker)
     if (held) await withdraw($, cwd, caller, held)
     const kept = planPath(typeof doc?.tree === 'string' ? doc.tree : undefined, path)
     const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(kept ? { path: kept } : {}), planMode: true }
     const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
-    return submission === undefined ? undefined : { id, cwd, caller, submission, page: pageOf(doc) }
+    return submission === undefined ? undefined : { id, cwd, caller, submission, address: pageOf(doc) }
   })
   if (!captured) return next(e as never)
-  const { id, cwd, caller, submission, page: address } = captured
+  const { id, cwd, caller, submission, address } = captured
   const ran = await next(e as never)
   const page = await decidedOnPage($, cwd, caller, id)
   if (page) return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
@@ -220,10 +223,9 @@ export async function presentPlan(
     await record($, cwd, caller, [{ block: id, verdict: 'approved' }])
     return ran
   }
-  const denial = ran.deny ?? ran.text ?? ''
-  if (!isPersonsRejection(denial)) return undecided(ran, submission, address)
-  const reason = feedbackIn(denial)
-  await record($, cwd, caller, [{ block: id, verdict: 'rejected', ...(reason ? { reason } : {}) }])
+  const rejected = rejectionIn(ran.deny ?? ran.text ?? '')
+  if (!rejected) return undecided(ran, submission, address)
+  await record($, cwd, caller, [{ block: id, verdict: 'rejected', ...rejected }])
   return ran
 }
 

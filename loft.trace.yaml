@@ -33512,10 +33512,10 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "presenting a plan again whose block the agent's own open submission holds withdraws that submission and sends the new version"
-        body: a537908ea7cd8bffa7a406e0a61a0ed9f43f73ff8ed5889ad2bae5d61e757ac6
+        body: 4a36a8e821a2b2fee663d506ec79e49f00159e1f02e21ab185517b085216c3b8
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "presenting a plan again leaves another agent's open submission of its block as it is"
-        body: 402b85d9ebb0cc8f0d0ccbe0583868e0e7d013406208616f4a1e80c1547f3788
+        body: cd4bfeba83687ef32c1a212e27521b7e18be2ea4cb3e2ea84dd64fdafd24b15d
   - node: 01a1646f-546c-7521-9643-bc489d459a81
     reviewed: cd10eb622abb012278e634bba0133471f490c812c5b556e72b0b8c69e848a3b8
     tests:
@@ -33548,7 +33548,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the host ends records no outcome, keeps its submission open and points the agent at it"
-        body: 3c17436a7c4709759102485730f9c1b14a57d07544b66b0dfaecbdc84897141a
+        body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a tool error that ends ExitPlanMode is handled as a host that ends it"
         body: cd9f86775fd894436e16491cf11d43f44267f841c2ac6a46c348549d18a89daf
@@ -33560,7 +33560,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the host ends records no outcome, keeps its submission open and points the agent at it"
-        body: 3c17436a7c4709759102485730f9c1b14a57d07544b66b0dfaecbdc84897141a
+        body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a tool error that ends ExitPlanMode is handled as a host that ends it"
         body: cd9f86775fd894436e16491cf11d43f44267f841c2ac6a46c348549d18a89daf
@@ -33569,19 +33569,19 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the host ends records no outcome, keeps its submission open and points the agent at it"
-        body: 3c17436a7c4709759102485730f9c1b14a57d07544b66b0dfaecbdc84897141a
+        body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
   - node: 01a1eb26-527d-769d-91c8-de421f7bdffb
     reviewed: c8e81cdeb26eee0c1ffc063cd97ec79e45f7e780c7cdaf1db35a0b22feae4d05
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent is not told that the person rejected a plan the host ended"
-        body: 9044389c71bffb7c4cac4b485638762336d11d56966a01a4268b4717e297865d
+        body: 0d552b1b6a79f4392b6c69f890b480242b4003415febfc48dcc73f101e2c46f5
   - node: 01a1eb26-527d-769d-91c8-de43087d0ee9
     reviewed: 20e5df46739ca7b9158e05e0c4dc572696459447e0a506a0bf797e7f20b9dbc0
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the host ends records no outcome, keeps its submission open and points the agent at it"
-        body: 3c17436a7c4709759102485730f9c1b14a57d07544b66b0dfaecbdc84897141a
+        body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a tool error that ends ExitPlanMode is handled as a host that ends it"
         body: cd9f86775fd894436e16491cf11d43f44267f841c2ac6a46c348549d18a89daf
@@ -33590,7 +33590,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's yard_wait on a plan the host ended gives the decision the person makes on the page"
-        body: 5ec9f0be90f720371e99358c57bea0bcbea8834daa8196cf664e4700426f2e8a
+        body: a9bc07be0f947450ca33d794106d422f3cde644ee80be4b946a6c19bfa7829a1
   - node: 01a1646f-546c-7521-9643-bc4b064c0cda
     reviewed: 4cc6d766b76e707ef2f023dcecff83a982f8899eb5a1a563f29c6004b69a0c3c
     tests:

@@ -231,12 +231,23 @@ test('a plan decided in the terminal first is recorded with its verdict', async 
   expect(JSON.parse(recorded.stdin!)).toEqual([{ block: PLAN_ID, verdict: 'approved' }])
 })
 
-test('a plan the host ends records no outcome, keeps its submission open and points the agent at it', async ($, on) => {
-  const w = world(on)
-  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
+const sentDoc = (blocks: ReturnType<typeof block>[], agent: Record<string, unknown> = { session: SESSION }, submission = 'sub-7') =>
+  readDoc({
+    stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks }],
+    submissions: [{ agent, open: [{ key: submission, blocks: blocks.map(each => each.key), state: 'open' }] }],
+  })
+
+/** A plan presented with `ExitPlanMode` that the host answers itself, from Yard Log as `read`. */
+async function endedByHost($: Engine, w: ReturnType<typeof world>, read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })) {
+  w.state.read = read
   w.state.terminal.ExitPlanMode = () => ({ deny: HOST_ENDED })
   await start($)
-  const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/p/shelf.md' } as never)
+  return $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
+}
+
+test('a plan the host ends records no outcome, keeps its submission open and points the agent at it', async ($, on) => {
+  const w = world(on)
+  const ran = await endedByHost($, w)
   expect(yardRuns(w).filter(run => run.startsWith('answer') || run.startsWith('withdraw'))).toEqual([])
   expect(ran.deny).toContain(HOST_ENDED)
   expect(ran.deny).toContain('submission sub-1')
@@ -245,11 +256,7 @@ test('a plan the host ends records no outcome, keeps its submission open and poi
 })
 
 test('the agent is not told that the person rejected a plan the host ended', async ($, on) => {
-  const w = world(on)
-  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  w.state.terminal.ExitPlanMode = () => ({ deny: HOST_ENDED })
-  await start($)
-  const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/p/shelf.md' } as never)
+  const ran = await endedByHost($, world(on))
   expect(ran.deny).not.toMatch(/rejected/i)
 })
 
@@ -267,31 +274,21 @@ test('a tool error that ends ExitPlanMode is handled as a host that ends it', as
 
 test("the agent's yard_wait on a plan the host ended gives the decision the person makes on the page", async ($, on) => {
   const w = world(on)
-  w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  w.state.terminal.ExitPlanMode = () => ({ deny: HOST_ENDED })
   w.state.terminal.AskUserQuestion = () => new Promise(() => {})
-  await start($)
-  await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/p/shelf.md' } as never)
-  w.state.read = sentDoc([block(PLAN_ID, 'plan', { title: 'Build the shelf', markdown: PLAN, planMode: true })])
-  const decided = { ...block(PLAN_ID, 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }
-  w.state.waits.push(answeredOnPage([decided]))
-  const ran = await $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 'sub-7' })
+  await endedByHost($, w)
+  w.state.read = sentDoc([block(PLAN_ID, 'plan', { title: 'Build the shelf', markdown: PLAN, planMode: true })], { session: SESSION }, 'sub-1')
+  w.state.waits.push(answeredOnPage([{ ...block(PLAN_ID, 'plan', {}), outcome: { verdict: 'approved', channel: 'page' } }]))
+  const ran = await $.tool.call({ tool: 'mcp__loft__yard_wait', submission: 'sub-1' })
+  expect(flagOf(w.state.runs.filter(run => run.argv.includes('wait')).at(-1)!.argv, '--submission')).toBe('sub-1')
   expect(JSON.parse(String(ran.result)).blocks[0].outcome.verdict).toBe('approved')
 })
 
 /** Yard Log where `agent`'s open submission `sub-0` still holds the plan block of the shelf file. */
-const heldBy = (agent: Record<string, unknown>) =>
-  readDoc({
-    stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks: [block(PLAN_ID, 'plan', { markdown: PLAN, planMode: true })] }],
-    submissions: [{ agent, open: [{ key: 'sub-0', blocks: [`k-${PLAN_ID}`], state: 'open' }] }],
-  })
+const heldPlan = (agent: Record<string, unknown>) => sentDoc([block(PLAN_ID, 'plan', { markdown: PLAN, planMode: true })], agent, 'sub-0')
 
 test("presenting a plan again whose block the agent's own open submission holds withdraws that submission and sends the new version", async ($, on) => {
   const w = world(on)
-  w.state.read = heldBy({ host: 'claude-code', session: SESSION })
-  w.state.terminal.ExitPlanMode = () => ({ deny: HOST_ENDED })
-  await start($)
-  await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
+  await endedByHost($, w, heldPlan({ host: 'claude-code', session: SESSION }))
   const runs = yardRuns(w).filter(run => run.startsWith('withdraw') || run.startsWith('write'))
   expect(runs[0]).toBe('withdraw --submission sub-0 --session session-1 --port 7411 --format json')
   expect(runs[1]).toMatch(/^write .*--send/)
@@ -300,18 +297,9 @@ test("presenting a plan again whose block the agent's own open submission holds 
 
 test("presenting a plan again leaves another agent's open submission of its block as it is", async ($, on) => {
   const w = world(on)
-  w.state.read = heldBy({ host: 'claude-code', session: 'session-2' })
-  w.state.terminal.ExitPlanMode = () => ({ deny: HOST_ENDED })
-  await start($)
-  await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/home/reader/.claude/plans/shelf.md' } as never)
+  await endedByHost($, w, heldPlan({ host: 'claude-code', session: 'session-2' }))
   expect(yardRuns(w).filter(run => run.startsWith('withdraw'))).toEqual([])
 })
-
-const sentDoc = (blocks: ReturnType<typeof block>[], agent: Record<string, unknown> = { session: SESSION }) =>
-  readDoc({
-    stages: [{ ...stage('shape', 'active', { session: SESSION }), blocks }],
-    submissions: [{ agent, open: [{ key: 'sub-7', blocks: blocks.map(each => each.key), state: 'open' }] }],
-  })
 
 const pick = (id: string, options: number, multiple = false) =>
   block(id, 'question', {
