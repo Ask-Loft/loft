@@ -132,7 +132,7 @@ const STOPPED = `${REJECTED} STOP what you are doing and wait for the user to te
 const SAID = `${REJECTED} To tell you how to proceed, the user said:\nsplit it`
 
 /** Claude Code's own words for a tool call the person stopped by interrupting the turn. */
-const CANCELLED = "The user doesn't want to take this action right now. STOP what you are doing and wait for the user to tell you how to proceed."
+const CANCELED = "The user doesn't want to take this action right now. STOP what you are doing and wait for the user to tell you how to proceed."
 
 /** What an Agent SDK host that shows no plan dialog answers `ExitPlanMode` with. */
 const HOST_ENDED = "The client captured your proposed plan. Stop here and wait for the user's feedback or implementation request in a later turn."
@@ -277,12 +277,12 @@ test('a tool error that ends ExitPlanMode is handled as a host that ends it', as
 test('a plan the person stopped by interrupting the turn is withdrawn, not decided', async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
-  w.state.terminal.ExitPlanMode = () => ({ deny: CANCELLED })
+  w.state.terminal.ExitPlanMode = () => ({ deny: CANCELED })
   await start($)
   const ran = await $.tool.call({ tool: 'ExitPlanMode', plan: PLAN, planFilePath: '/p/shelf.md' } as never)
   expect(yardRuns(w).filter(run => run.startsWith('answer'))).toEqual([])
   expect(yardRuns(w).filter(run => run.startsWith('withdraw'))).toEqual(['withdraw --submission sub-1 --session session-1 --port 7411 --format json'])
-  expect(ran.deny).toBe(CANCELLED)
+  expect(ran.deny).toBe(CANCELED)
 })
 
 test("the agent's yard_wait on a plan the host ended gives the decision the person makes on the page", async ($, on) => {

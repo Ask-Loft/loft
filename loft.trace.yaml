@@ -33548,7 +33548,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the person stopped by interrupting the turn is withdrawn, not decided"
-        body: 3d122f07600c597e028018d781065f3ee8c56ce83be081114e8ef0bb00ad8699
+        body: 547663d83bd43075bc9b15bda251a91ca47717d52ff1833667d360993b87cf6b
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the host ends records no outcome, keeps its submission open and points the agent at it"
         body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f

@@ -7,7 +7,7 @@
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
 import type { Doc, Ran } from '../loft'
-import { askResultOf, givenOf, planId, planPath, planTitle, isCancelled, questionBlocks, rejectionIn, type Asked, type Given } from './answers'
+import { askResultOf, givenOf, planId, planPath, planTitle, isCanceled, questionBlocks, rejectionIn, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { capture, checkCapture } from './capture'
 import { activeStage, idOf, isAsker, lastUnplanned, openSubmissions, pageOf, waitingOf, whoOf, type Asker, type Block } from './log'
@@ -216,7 +216,7 @@ export async function presentPlan(
   const page = await decidedOnPage($, cwd, caller, id)
   if (page) return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
   const denial = ran.deny ?? ran.text ?? ''
-  if (next.signal.aborted || isCancelled(denial)) {
+  if (next.signal.aborted || isCanceled(denial)) {
     await withdraw($, cwd, caller, submission)
     return ran
   }

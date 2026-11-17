@@ -165,11 +165,11 @@ export function planPath(tree: string | undefined, path: string | undefined): st
 const REJECTED = /^The user doesn't want to proceed with this tool use\b/
 
 // Claude Code opens a tool call the person stopped by interrupting the turn with these words.
-const CANCELLED = /^The user doesn't want to take this action right now\b/
+const CANCELED = /^The user doesn't want to take this action right now\b/
 
 /** Whether Claude Code gives the agent `text` for a tool call the person stopped by interrupting the turn. */
-export function isCancelled(text: string): boolean {
-  return CANCELLED.test(text.trim())
+export function isCanceled(text: string): boolean {
+  return CANCELED.test(text.trim())
 }
 
 // Claude Code gives the agent a rejection's feedback after these words.
