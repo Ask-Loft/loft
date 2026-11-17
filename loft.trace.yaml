@@ -31239,6 +31239,9 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a decision’s entry lists each subject added to it or removed from it by its label or its kind, its name, its role and its change"
         body: a43bad29f59e500c365e2efd2c76ff61bf6f8756c065682d2bf0a09344809a52
+      - file: "crates/loft-cli/tests/yard_view_subjects.rs"
+        name: "a_spec_change_view_lists_a_subject_gained_by_its_former_label_under_that_label"
+        body: 875c6576164dfc126e4b668a15768a6122e43f974991baa277b66e3dfed14c0e
   - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
     reviewed: dea93ed5f29437fa4001e0abc1666d588ba51096b7422c88b09feac71429f49b
     tests:

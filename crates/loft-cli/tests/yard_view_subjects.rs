@@ -181,3 +181,24 @@ fn a_spec_change_view_draws_the_subjects_of_an_added_decision() {
         "{graph}"
     );
 }
+
+#[test]
+fn a_spec_change_view_lists_a_subject_gained_by_its_former_label_under_that_label() {
+    let mut yard = Yard::with_spec();
+    let criterion = format!("      - key: {IN_ORDER_KEY}\n        name: \"{IN_ORDER}\"\n");
+    yard.scratch.edit(ADD_A_BOOK, &criterion, "");
+    let formatted = yard.scratch.loft(&["fmt"]);
+    assert!(formatted.status.success(), "{formatted:?}");
+    yard.rebased();
+    yard.scratch.edit(
+        CHANGE_LOG,
+        OUTCOME_ONLY,
+        &format!("{OUTCOME_ONLY}  - role: affected\n    node:\n      formerLabel: AC-3\n"),
+    );
+    let graph = diagram(&yard);
+    let (_, entry) = decision(&graph, "Keep a change log");
+    let subjects = entry["subjects"].as_array().unwrap();
+    assert_eq!(subjects.len(), 1, "{entry}");
+    assert_eq!(subjects[0]["label"], "AC-3", "{entry}");
+    assert_eq!(subjects[0]["change"], "added");
+}

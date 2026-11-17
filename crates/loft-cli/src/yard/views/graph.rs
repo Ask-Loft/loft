@@ -11,7 +11,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use loftspec::decision::NodeRef;
 use loftspec::diff::content_changes;
 use loftspec::document::{Document, Edge};
-use loftspec::identity::Key;
+use loftspec::identity::{Key, Label};
 use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 use serde_json::{Value, json};
@@ -87,18 +87,22 @@ pub fn report(base: &Document, document: &Document) -> Value {
     let gained: BTreeSet<Key> = subjects::gained_nodes(&subjects).collect();
     let shown = shown(&marked, &gained, &now, &then);
     let decided = decisions(base, document, &subjects, &now, &then);
+    let edges = edges(&shown, &decided, document, base);
     // Only a decision's entry in the diff lists its subjects; its box needs none.
-    let listed = decided.iter().map(|decision| {
-        let mut entry = decision.entry.clone();
-        if let Some(subjects) = &decision.subjects {
-            entry["subjects"] = subjects.clone();
-        }
-        entry
-    });
+    let (boxes, listed): (Vec<Value>, Vec<Value>) = decided
+        .into_iter()
+        .map(|decision| {
+            let mut listed = decision.entry.clone();
+            if let Some(subjects) = decision.subjects {
+                listed["subjects"] = subjects;
+            }
+            (decision.entry, listed)
+        })
+        .unzip();
     json!({
         "nodes": nodes(&shown, &marked, &now, &then),
-        "decisions": decided.iter().map(|decision| decision.entry.clone()).collect::<Vec<_>>(),
-        "edges": edges(&shown, &decided, document, base),
+        "decisions": boxes,
+        "edges": edges,
         "diff": diff(&lists, &now, &then).into_iter().chain(listed).collect::<Vec<_>>(),
     })
 }
@@ -256,8 +260,8 @@ struct Decided {
 }
 
 /// Each decision added, changed or removed, with its words before and after and the subjects it
-/// gained and lost, in the tree's order and then the removed in the base's. A decision is changed
-/// where it or its subjects differ.
+/// gained and lost: those the tree holds by key, then those only the base holds by key. A decision
+/// is changed where it or its subjects differ.
 fn decisions(
     base: &Document,
     document: &Document,
@@ -312,20 +316,27 @@ fn decision_json(key: Key, label: Option<&str>, title: &str, change: &str, words
 /// The subjects `change` holds, as a decision's entry lists them: each gained, as the tree names
 /// it, and each lost, as the base does.
 fn listed(change: &Change, now: &Walked, then: &Walked) -> Value {
+    let formers = &change.formers;
     let gained = change
         .gained
         .iter()
-        .map(|named| subject(named, "added", now));
+        .map(|named| subject(named, "added", now, formers));
     let lost = change
         .lost
         .iter()
-        .map(|named| subject(named, "removed", then));
+        .map(|named| subject(named, "removed", then, formers));
     Value::Array(gained.chain(lost).collect())
 }
 
 /// A subject as a decision's entry lists it: the node's key, kind, label and name, as `walked`
-/// holds them, or the former label alone, with its role and its change.
-fn subject((subject, role): &Named, change: &str, walked: &Walked) -> Value {
+/// holds them, or its former label alone where neither document holds it, with its role and its
+/// change.
+fn subject(
+    (subject, role): &Named,
+    change: &str,
+    walked: &Walked,
+    formers: &BTreeMap<Key, Label>,
+) -> Value {
     let mut value = json!({ "role": role.as_str(), "change": change });
     match *subject {
         Subject::Node(key) => {
@@ -334,6 +345,8 @@ fn subject((subject, role): &Named, change: &str, walked: &Walked) -> Value {
                 value["kind"] = json!(entry.kind.as_str());
                 value["label"] = json!(entry.label);
                 value["name"] = json!(entry.name);
+            } else if let Some(label) = formers.get(&key) {
+                value["label"] = json!(label.to_string());
             }
         }
         Subject::Former(label) => value["label"] = json!(label.to_string()),
@@ -346,12 +359,16 @@ fn subject((subject, role): &Named, change: &str, walked: &Walked) -> Value {
 /// tree holds them, and a removed decision's as the base did.
 fn edges(shown: &[Key], decided: &[Decided], document: &Document, base: &Document) -> Value {
     let drawn: BTreeSet<Key> = shown.iter().copied().collect();
-    let mut held: [BTreeSet<Key>; 2] = Default::default();
-    for decision in decided {
-        held[usize::from(decision.removed)].insert(decision.key);
-    }
+    let held = |removed: bool| -> BTreeSet<Key> {
+        decided
+            .iter()
+            .filter(|decision| decision.removed == removed)
+            .map(|decision| decision.key)
+            .collect()
+    };
+    let (in_tree, in_base) = (held(false), held(true));
     let mut found = BTreeSet::new();
-    for (edges, named) in [(&document.edges, &held[0]), (&base.edges, &held[1])] {
+    for (edges, named) in [(&document.edges, &in_tree), (&base.edges, &in_base)] {
         found.extend(
             edges
                 .iter()
