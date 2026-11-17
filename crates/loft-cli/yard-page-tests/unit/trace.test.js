@@ -178,6 +178,19 @@ test('a criterion’s state comes from its own tests and rules, though the repor
   assert.ok(!view.querySelector('.short'));
 });
 
+test('a view whose Features’ criteria, tests or rules were cut at 1,000 says how many of each it left out', () => {
+  const cut = report();
+  cut.leftOut = { 'features.criteria': 12, 'features.criteria.tests': 3, 'features.criteria.rules': 2, 'features.requirements': 1 };
+  const lines = [...drawn(traceView(cut, {}, {})).querySelectorAll('.left-out')].map((line) => line.textContent);
+  assert.deepEqual(lines, [
+    '1 more Requirement not recorded in this view.',
+    '12 more criteria not recorded in this view.',
+    '3 more tests not recorded in this view.',
+    '2 more findings not recorded in this view.',
+  ]);
+  assert.equal(drawn(traceView(report(), {}, {})).querySelector('.left-out'), null);
+});
+
 test('a view recorded without each criterion’s tests and rules, whose lists were shortened, says its counts may fall short', () => {
   const old = report();
   old.leftOut = { 'reconcile.tests': 3408 };

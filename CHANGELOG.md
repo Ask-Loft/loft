@@ -21,6 +21,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   decision is drawn as changed, each subject it gained is drawn so that its edge has an end, a
   subject it lost has no edge, and its entry in the diff lists the subjects added and removed with
   their roles. Such a decision used to be missing from the view altogether.
+- A `loft` block keeps a list inside the items of another list to its first 1,000 items across
+  them all, as it already kept each list of a report: the Requirements, criteria, tests and
+  findings of a `trace` view's Features, and the subjects in a `spec-change` view's diff. It
+  counts each such list whole and records how many items it left out, and the Yard page says how
+  many it left out. Those lists used to be recorded in full, however long.
 
 ## 2.4.0 (2026-11-17)
 

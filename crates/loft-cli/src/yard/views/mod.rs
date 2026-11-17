@@ -3,10 +3,11 @@
 //! holds the document the matching command prints, as it prints it, under the command's name:
 //! `status` for a `spec-change` or a `publish` view, `check` for `findings`, `reconcile` for
 //! `trace`; a `decision` view holds the decision as the tree holds it. A list longer than
-//! [`MOST`] items keeps its first [`MOST`], and the report counts what it left out.
+//! [`MOST`] items keeps its first [`MOST`], and the report counts what it left out (`keep`).
 
 mod decision;
 mod graph;
+mod keep;
 mod subjects;
 mod trace;
 mod words;
@@ -15,7 +16,7 @@ use std::path::Path;
 
 use loftspec::publish::{ReadTree, RepoState};
 use loftspec_store::repository::{GitCommand, MergeBase, Repository as _};
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 use yardlog::Time;
 use yardlog::body::{Recorded, View};
 use yardlog::datum::Datum;
@@ -47,7 +48,7 @@ impl Views<'_> {
     pub fn report(&self, request: &LoftRequest) -> Result<(Recorded, Datum), String> {
         let reported = self.reported(request);
         let (recorded, mut report) = reported.map_err(|stop| stop.lines.join("; "))?;
-        keep_most(&mut report, request.view);
+        keep::keep_most(&mut report, request.view);
         Ok((recorded, Datum::from(&report)))
     }
 
@@ -131,54 +132,4 @@ impl Views<'_> {
             at: self.at,
         }
     }
-}
-
-/// The lists of each view's report that [`keep_most`] shortens, by their path in the report.
-fn lists(view: View) -> &'static [&'static [&'static str]] {
-    match view {
-        View::SpecChange => &[
-            &["status", "base", "added"],
-            &["status", "base", "changed"],
-            &["status", "base", "removed"],
-            &["graph", "nodes"],
-            &["graph", "decisions"],
-            &["graph", "edges"],
-            &["graph", "diff"],
-        ],
-        View::Publish => &[
-            &["status", "base", "added"],
-            &["status", "base", "changed"],
-            &["status", "base", "removed"],
-        ],
-        View::Findings => &[
-            &["check", "findings"],
-            &["check", "resolved"],
-            &["check", "errors"],
-        ],
-        View::Trace => &[&["features"]],
-        View::Decision => &[],
-    }
-}
-
-/// Keeps the first [`MOST`] items of each long list of a report, and records each list's whole
-/// count and the number of its items left out, under `counts` and `leftOut` by the list's path.
-fn keep_most(report: &mut Value, view: View) {
-    let mut counts = Map::new();
-    let mut left_out = Map::new();
-    for path in lists(view) {
-        let Some(Value::Array(items)) = path
-            .iter()
-            .try_fold(&mut *report, |at, name| at.get_mut(*name))
-        else {
-            continue;
-        };
-        let name = path.join(".");
-        counts.insert(name.clone(), json!(items.len()));
-        if items.len() > MOST {
-            left_out.insert(name, json!(items.len() - MOST));
-            items.truncate(MOST);
-        }
-    }
-    report["counts"] = Value::Object(counts);
-    report["leftOut"] = Value::Object(left_out);
 }

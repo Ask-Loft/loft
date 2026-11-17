@@ -417,6 +417,18 @@ test('a decision’s entry lists each subject added to it or removed from it by 
   assert.match(css, /\.diff \.diff-subject \{/);
 });
 
+test('a diff whose decisions’ subjects were cut at 1,000 says how many subjects it left out', () => {
+  const title = 'Keep a change log';
+  const entry = { key: 'd', kind: 'decision', label: 'ADR-5', name: title, change: 'changed', words: { before: title, after: title }, subjects: [] };
+  const report = {
+    status: { base: { revision: 'develop', commit: '0123456789abcdef', added: [], changed: [], removed: [] } },
+    graph: { nodes: [product, group, feature], decisions: [], edges: [], diff: [entry] },
+    leftOut: { 'graph.diff.subjects': 7 },
+  };
+  const view = loftView({ view: 'spec-change', report, recorded: RECORDED, base: 'develop', reasons: [] });
+  assert.equal(view.querySelector('.diff .left-out')?.textContent, '7 more subjects not recorded in this view.');
+});
+
 test('a spec change view of no change says that the specification has not changed since the base revision', () => {
   const report = { status: { base: { revision: 'develop', added: [], changed: [], removed: [] } }, graph: { nodes: [], decisions: [], edges: [] } };
   const view = loftView({ view: 'spec-change', report, recorded: RECORDED, reasons: [] });

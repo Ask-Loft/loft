@@ -196,6 +196,75 @@ fn a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole() {
     assert_eq!(report["leftOut"]["status.base.added"], 1);
 }
 
+/// The criteria `count` new criteria of Share a list, as its file writes them, and their keys.
+fn many_criteria(count: usize) -> (String, Vec<String>) {
+    let mut written = String::new();
+    let mut keys = Vec::new();
+    for number in 0..count {
+        let key = format!("00000000-0000-4000-9000-{number:012x}");
+        let _ = write!(
+            written,
+            "\n      - key: {key}\n        name: \"Criterion {number} holds.\""
+        );
+        keys.push(key);
+    }
+    (written, keys)
+}
+
+/// The last criterion of Share a list, after which [`many_criteria`] are written.
+const LAST: &str = "        name: \"An edit made through the link is refused.\"";
+
+#[test]
+fn a_view_keeps_the_first_1000_subjects_a_decision_gained_and_counts_the_whole() {
+    let mut yard = Yard::with_spec();
+    let (criteria, keys) = many_criteria(1_001);
+    yard.scratch.edit(SHARE, LAST, &format!("{LAST}{criteria}"));
+    yard.rebased();
+    let mut subjects = String::from("subjects:\n");
+    for key in &keys {
+        let _ = write!(subjects, "  - role: affected\n    node: {key}\n");
+    }
+    yard.scratch
+        .edit("decisions/keep-a-change-log.yaml", "subjects:\n", &subjects);
+    let report = &recorded(&yard, "spec-change", "")["report"];
+    let entry = report["graph"]["diff"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["name"] == "Keep a change log")
+        .unwrap();
+    assert_eq!(entry["subjects"].as_array().unwrap().len(), 1_000);
+    assert_eq!(report["counts"]["graph.diff.subjects"], 1_001);
+    assert_eq!(report["leftOut"]["graph.diff.subjects"], 1);
+}
+
+#[test]
+fn a_trace_view_keeps_the_first_1000_criteria_of_its_features_and_counts_the_whole() {
+    let yard = Yard::with_spec();
+    let (criteria, _) = many_criteria(1_001);
+    yard.scratch.edit(SHARE, LAST, &format!("{LAST}{criteria}"));
+    let report = &recorded(&yard, "trace", "")["report"];
+    let kept: usize = report["features"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|feature| feature["criteria"].as_array().unwrap().len())
+        .sum();
+    assert_eq!(kept, 1_000);
+    let whole = report["counts"]["features.criteria"].as_u64().unwrap();
+    assert!(
+        whole > 1_001,
+        "the Feature's own criteria as well: {}",
+        report["counts"]
+    );
+    assert_eq!(report["leftOut"]["features.criteria"], whole - 1_000);
+    assert!(
+        report["counts"]["features.criteria.tests"].is_u64(),
+        "{}",
+        report["counts"]
+    );
+}
+
 /// Runs `loft` with `args` in the folder `pkg/` of `yard`'s tree, printing JSON.
 fn in_package(yard: &Yard, args: &[&str]) -> Value {
     let output = yard

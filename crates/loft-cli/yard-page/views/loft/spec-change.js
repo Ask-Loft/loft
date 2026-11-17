@@ -131,6 +131,7 @@ export function specChangeView(report, body, context = {}) {
           h('summary', {}, `${diff.length} nodes and decisions changed`),
           h('ul', {}, diff.map(diffItem)),
           leftOut(report, 'graph.diff'),
+          leftOut(report, 'graph.diff.subjects', ['subject', 'subjects']),
         )
       : kept.details(
           fold,

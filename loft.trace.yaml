@@ -30723,12 +30723,30 @@ links:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole"
         body: 687be064bf9a404d88fd59d2bc8d911e7ca896fc7ffdcad4b1e228344755c677
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_keeps_the_first_1000_subjects_a_decision_gained_and_counts_the_whole"
+        body: 4c224780d9fc4156e74776b424d30be47c4a06f43c31cd22297abb8425b93391
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_trace_view_keeps_the_first_1000_criteria_of_its_features_and_counts_the_whole"
+        body: 08b88232f1ae3b40bb8ada372471f0897638841dc7a6e66e515aeb0fb69dc9c2
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a diff whose decisions’ subjects were cut at 1,000 says how many subjects it left out"
+        body: 908a0c1b45bd3c4ca391ad08e79a84397389ee0ca08ca414e42b8aa1f4d4eb0c
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a view whose Features’ criteria, tests or rules were cut at 1,000 says how many of each it left out"
+        body: 907ce96241872e2e2213c9764a23d07012e1396e65becb08d5a6f8751ee56aa5
   - node: 01a1646f-546d-7042-befd-eab2b5d08cae
     reviewed: a24108679a1851e1fb0fb82ac9d90fd208c765f37ffa296aa8a77715f97ec8b3
     tests:
       - file: "crates/loft-cli/tests/yard_views.rs"
         name: "a_view_of_more_than_1000_items_keeps_the_first_1000_and_counts_the_whole"
         body: 687be064bf9a404d88fd59d2bc8d911e7ca896fc7ffdcad4b1e228344755c677
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_view_keeps_the_first_1000_subjects_a_decision_gained_and_counts_the_whole"
+        body: 4c224780d9fc4156e74776b424d30be47c4a06f43c31cd22297abb8425b93391
+      - file: "crates/loft-cli/tests/yard_views.rs"
+        name: "a_trace_view_keeps_the_first_1000_criteria_of_its_features_and_counts_the_whole"
+        body: 08b88232f1ae3b40bb8ada372471f0897638841dc7a6e66e515aeb0fb69dc9c2
   - node: 01a1646f-546d-7042-befd-eab5b5f31064
     reviewed: 4d05f6305d42448c5fb9f46ca62737959da7e08733d0ccb98fa6fe9bf0eb7aa4
     tests:

@@ -66,6 +66,10 @@ export function traceView(report, _body, context = {}) {
       h('summary', {}, `${count(criteria.length, 'criterion', 'criteria')} under ${count(features.length, 'Feature')}`),
       features.map((feature) => featureFold(feature, tests, kept.folds, key && `${key}/${feature.key}`)),
       leftOut(report, 'features'),
+      leftOut(report, 'features.requirements', ['Requirement', 'Requirements']),
+      leftOut(report, 'features.criteria', ['criterion', 'criteria']),
+      leftOut(report, 'features.criteria.tests', ['test', 'tests']),
+      leftOut(report, 'features.criteria.rules', ['finding', 'findings']),
       findingsList(findingsOf(criteria, reconcile), context.key ? `${context.key}/findings` : null),
     ),
   ];
