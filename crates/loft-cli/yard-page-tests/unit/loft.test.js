@@ -110,6 +110,35 @@ test('a changed Requirement is drawn inside its Feature’s panel holding its st
   assert.ok(joining.every((edge) => !edge.arrowEnd && !edge.arrowStart && !edge.label), 'a plain line, no arrowhead');
 });
 
+test('a changed Constraint or Quality Attribute of a Product, a Feature Group or a Feature is drawn inside that node’s panel, holding its name', async () => {
+  const title = { key: 'k1', kind: 'constraint', label: 'CON-1', name: 'Every book shall carry a title.', parent: 'p', change: 'changed' };
+  const opening = { key: 'k2', kind: 'quality_attribute', label: null, name: 'A shared list opens quickly.', parent: 'g', change: 'added' };
+  const sharing = { key: 'k3', kind: 'quality_attribute', label: 'QA-4', name: 'Sharing a list completes quickly.', parent: 'f', change: 'removed' };
+  const layout = await laid({ nodes: [product, title, group, opening, feature, sharing] });
+  for (const [key, holder] of [['k1', 'p'], ['k2', 'g'], ['k3', 'f']]) {
+    assert.ok(at(layout, key).card, `${key} is a card`);
+    assert.ok(within(at(layout, key), at(layout, holder)), `${key} inside the panel of ${holder}`);
+  }
+  assert.equal(at(layout, 'k1').card.lines.join(' '), title.name);
+  assert.equal(at(layout, 'k2').card.label, 'QA', 'its kind’s label prefix, as it has no label yet');
+  assert.equal(at(layout, 'k3').card.word, 'REMOVED');
+  assert.equal(layout.edges.filter((edge) => edge.pattern === 'tree').length, 0, 'joined to no other box');
+});
+
+test('a changed Constraint or Quality Attribute of a Component is drawn to the right of the Component’s box, joined to it by a plain line, holding its name', async () => {
+  const store = { key: 'm', kind: 'component', label: 'CMP-1', name: 'Shelf store', parent: null, change: null };
+  const rust = { key: 'k1', kind: 'constraint', label: 'CON-2', name: 'The shelf store shall be written in Rust.', parent: 'm', change: 'changed' };
+  const listing = { key: 'k2', kind: 'quality_attribute', label: 'QA-2', name: 'Listing a shelf completes quickly.', parent: 'm', change: 'changed' };
+  const layout = await laid({ nodes: [store, rust, listing] });
+  const held = at(layout, 'm');
+  for (const key of ['k1', 'k2']) assert.ok(at(layout, key).x >= held.x + held.width, `${key} to the right of the Component`);
+  assert.equal(at(layout, 'k1').card.lines.join(' '), rust.name);
+  assert.equal(at(layout, 'k2').card.lines.join(' '), listing.name);
+  const joining = layout.edges.filter((edge) => edge.pattern === 'tree');
+  assert.deepEqual(joining.map((edge) => [edge.from, edge.to]), [[held.id, at(layout, 'k1').id], [held.id, at(layout, 'k2').id]]);
+  assert.ok(joining.every((edge) => !edge.arrowEnd && !edge.arrowStart && !edge.label), 'a plain line, no arrowhead');
+});
+
 test('a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count', async () => {
   const layout = await laid({ nodes: [product, group, feature, requirement, criterion] });
   assert.equal(at(layout, 'r').card.change, null);
@@ -227,6 +256,24 @@ test('opening a Feature Group draws its changed Features, Requirements and crite
   assert.ok(one.shown.every((node) => node.kind !== 'feature' || node.parent === 'g1'));
   const other = boxes({ nodes, decisions: [], edges: [] }, 'g2');
   assert.ok(other.shown.every((node) => node.kind !== 'feature' || node.parent === 'g2'));
+});
+
+test('opening a Feature Group draws its changed Constraints and Quality Attributes in place of its box', () => {
+  const nodes = [product];
+  for (let g = 0; g < 4; g += 1) {
+    nodes.push({ key: `g${g}`, kind: 'feature_group', label: `FG-${g}`, name: `Group ${g}`, parent: 'p', change: null });
+    for (let f = 0; f < 9; f += 1) nodes.push({ ...feature, key: `g${g}f${f}`, parent: `g${g}` });
+    nodes.push(
+      { key: `g${g}k`, kind: 'constraint', label: null, name: 'Every book shall carry a title.', parent: `g${g}`, change: 'changed' },
+      { key: `g${g}q`, kind: 'quality_attribute', label: null, name: 'Adding a book completes quickly.', parent: `g${g}f0`, change: 'added' },
+    );
+  }
+  const held = (/** @type {any} */ node) => node.kind === 'constraint' || node.kind === 'quality_attribute';
+  const folded = boxes({ nodes, decisions: [], edges: [] }, null);
+  assert.equal(folded.shown.filter(held).length, 0, 'folded with their group');
+  assert.equal(folded.groups.find((each) => each.key === 'g1').count, 11, 'and counted among its changed nodes');
+  const one = boxes({ nodes, decisions: [], edges: [] }, 'g1');
+  assert.deepEqual(one.shown.filter(held).map((node) => node.key), ['g1k', 'g1q']);
 });
 
 test('a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded', () => {

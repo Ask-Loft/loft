@@ -1,9 +1,10 @@
 //! What a `spec-change` view's diagram draws (the See a spec change Feature): the changed
-//! Products, Feature Groups, Features, Requirements, criteria and Components as boxes, each box
-//! above a changed one drawn for context, the changed decisions, and the `realizes` and subject
-//! edges between them. A change to a node that has no box of its own, a constraint, a quality
-//! attribute or a Section, marks the nearest box above it as changed. Beside the diagram, the
-//! diff gives the words of every added, changed and removed node and decision, before and after.
+//! Products, Feature Groups, Features, Requirements, criteria, Components, Constraints and
+//! Quality Attributes as boxes, each box above a changed one drawn for context, the changed
+//! decisions, and the `realizes` and subject edges between them. A change to a Section, the one
+//! node that has no box of its own, marks the nearest box above it as changed. Beside the
+//! diagram, the diff gives the words of every added, changed and removed node and decision,
+//! before and after.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -90,6 +91,8 @@ const fn has_box(kind: NodeKind) -> bool {
             | NodeKind::Requirement
             | NodeKind::Criterion
             | NodeKind::Component
+            | NodeKind::Constraint
+            | NodeKind::QualityAttribute
     )
 }
 

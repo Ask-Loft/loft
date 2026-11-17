@@ -30861,6 +30861,9 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "the diagram draws the realizes and decision subject edges between the nodes it shows"
         body: f51b97110de62df6475f45fe8f8ab96a1034c19750094f55538a48bfae2a7002
+      - file: "crates/loft-cli/tests/yard_view_constraints.rs"
+        name: "a_spec_change_view_ends_a_decision_s_subject_edge_at_the_box_of_the_constraint_it_names"
+        body: 1746ffd7699c41eb59a0732b017564428213352e340a85ae909e6edd0e16987d
   - node: 01a1646f-546d-7042-befd-eac271279597
     reviewed: 74b7cba6d63762655ab819f4c61aa1e531e2938038c8e8d91be1debc86159c0c
     tests:
@@ -30873,6 +30876,33 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a changed Requirement is drawn inside its Feature’s panel holding its statement, and a changed criterion to its right holding its name"
         body: 984696dce1aca8e01a24e768756801f5c66a481e471a93ea27aab74b3615b6a9
+  - node: 01a1e8b6-12bc-7032-8e15-88126e617470
+    reviewed: b0596eb8e982f2d2be6ac324ed0975c1de99ddba7a41fd971ec4cd48f137b9be
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Constraint or Quality Attribute of a Product, a Feature Group or a Feature is drawn inside that node’s panel, holding its name"
+        body: ceab50035f6746fa128b5747cb20e0d63f6bbebe5d12ca795405d57de342f4d5
+      - file: "crates/loft-cli/tests/yard_view_constraints.rs"
+        name: "a_spec_change_view_draws_a_feature_group_s_changed_constraint_as_its_own_box_beneath_the_group"
+        body: 1739bb040d5882a573f67ac2ad52aab9114dd21cedb4cf80d6219f26631da4ef
+      - file: "crates/loft-cli/tests/yard_view_constraints.rs"
+        name: "a_spec_change_view_draws_a_feature_s_changed_quality_attribute_as_its_own_box_beneath_the_feature"
+        body: 22427afcaabe3dc47afb86c581c948526ed720d5d13a4db555139c9e51494365
+      - file: "crates/loft-cli/tests/yard_view_constraints.rs"
+        name: "a_spec_change_view_draws_an_added_and_a_removed_constraint_as_boxes_of_their_own"
+        body: b48bc588993fb94c14a03923b13fac28710176f50b85808a5b37f835dfc1a4ea
+  - node: 01a1e8b6-b713-735b-a077-9e3ce8e88bfe
+    reviewed: d0536848601de71675b651ae00f0cda980cbf8f295c978dd319e7504ec8f72e8
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Constraint or Quality Attribute of a Component is drawn to the right of the Component’s box, joined to it by a plain line, holding its name"
+        body: 545d77625cee43a7217b8cdce4484c02141b7073ccf8bf4d90b2d4856113e8ba
+      - file: "crates/loft-cli/tests/yard_view_constraints.rs"
+        name: "a_spec_change_view_draws_a_component_s_changed_constraint_and_quality_attribute_as_boxes_beneath_it"
+        body: 60a216eabf13cd13fec7718b69d730dfc7bcb819490aca41e9ad0d95f6a95bee
+      - file: "crates/loft-cli/tests/yard_view_constraints.rs"
+        name: "a_spec_change_view_draws_an_added_and_a_removed_constraint_as_boxes_of_their_own"
+        body: b48bc588993fb94c14a03923b13fac28710176f50b85808a5b37f835dfc1a4ea
   - node: 01a1695a-dd72-7090-817b-abea7cf0c895
     reviewed: 6354ea4edd365237a916b0fe92b888bb76457ed3fefd1503ee99d9e393605d45
     tests:
@@ -30900,6 +30930,9 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "each box says how its node changed in a word, and a box drawn for context says neither"
         body: fd9837c4be59e79964a77f71c61192efb77837197bfaa225ea2bde93852391d9
+      - file: "crates/loft-cli/tests/yard_view_constraints.rs"
+        name: "a_spec_change_view_draws_a_feature_group_s_changed_constraint_as_its_own_box_beneath_the_group"
+        body: 1739bb040d5882a573f67ac2ad52aab9114dd21cedb4cf80d6219f26631da4ef
   - node: 01a1646f-546d-7042-befd-eac47fbbbfb2
     reviewed: ab243427d554d742fbea2a1ce64c2a36d647532c218691cd6ffad0dd849bc3bf
     tests:
@@ -31156,11 +31189,14 @@ links:
         name: "a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded"
         body: 316ae92e9ff423fa714faafe0a09b407dcec10a675d50963333b0cb64a263240
   - node: 01a1646f-546d-7042-befd-eac9dc2edaf7
-    reviewed: e21e6cf88c8c7aac1691b60e194d01504bbf2f01c1ea184993b3b409ad6c2ed6
+    reviewed: 73440f8966bda0a0352539c0121265a534341fd8eff052fbb5c409f0ac9c0c4e
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "opening a Feature Group draws its changed Features, Requirements and criteria in place of its box, and opening another closes the first"
         body: 7064f158d8816851a3a76448a1f16fe053ea1e370c21fbae89b5cb6c7853cb1b
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "opening a Feature Group draws its changed Constraints and Quality Attributes in place of its box"
+        body: 1e6ed837465d71175dbb8ea841f2c44850ff33c80de355eaed3b219dbd700a89
   - node: 01a1646f-546d-7042-befd-eacaa63dddfa
     reviewed: 2bdf176a550307ee7b8df2b5b4e782d0460ac22c2b7b996cc3827a64f78fae7a
     tests:
