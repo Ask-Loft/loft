@@ -14980,7 +14980,7 @@ links:
         name: "a_node_that_only_moved_to_another_parent_is_not_changed"
         body: 977a73ea362eb5e888ecc12cff77b7295deca50ae4047c69f403899d6d82e9ec
   - node: 01a1ea8e-b119-760b-bb98-a3320f620660
-    reviewed: ce838144aa9c702667e2c545aebb5da2382353c242dece2378577a5bace2d60b
+    reviewed: a1a1f61279d5c551593feb82bea380de7cfb4a22a56e19d9fbd97735aaa5ac58
     tests:
       - file: "crates/loft-cli/tests/status_decisions.rs"
         name: "a_feature_whose_only_change_is_a_realizes_entry_removed_is_listed_as_changed"
@@ -14991,6 +14991,12 @@ links:
       - file: "crates/loftspec/tests/diff.rs"
         name: "a_component_that_gained_or_lost_a_scoped_to_entry_is_changed_and_its_product_is_not"
         body: fce88d4f8b415086f7c2e5daafcd5a0f620337cf1faf2f96d9b053e440c7ba58
+      - file: "crates/loft-cli/tests/status_decisions.rs"
+        name: "a_node_whose_only_change_is_a_mentions_entry_removed_is_listed_as_changed"
+        body: bcae6008807aa37b36627fc9c3367ecb907ef3645074769c3f4639f9e6e0ebd7
+      - file: "crates/loftspec/tests/diff.rs"
+        name: "a_node_that_gained_or_lost_a_mentions_entry_is_changed_and_the_node_it_names_is_not"
+        body: 02932c180e55dcc42789b4e45ddb4d3c6854c4a6a3bf5665de1b3d4e6e5a7d3b
   - node: 01a1ea8e-b119-760b-bb98-a3335e289149
     reviewed: 421c2e46dd3ca99887d8b8f4a9bd949f468d243553542c3c715f307a7201d8ca
     tests:
@@ -15004,7 +15010,7 @@ links:
         name: "a_removed_decision_is_listed_with_the_bases_label_and_site"
         body: 666c855eb28d597dc172c438df91b92cbadf8853ca512edc53924b04e9d5c6c3
   - node: 01a1ea8e-b119-760b-bb98-a33456fcccc3
-    reviewed: d7ddec2cefaf2d19a4c2137b1d58b239b1e607321f22671c93e7b10d3559c040
+    reviewed: 0a38929401cb59d68167031221f783836ac5b364a18a1275a4b1bea14cf40029
     tests:
       - file: "crates/loftspec/tests/decision_changes.rs"
         name: "a_document_compared_with_itself_changes_no_decision"
@@ -15021,6 +15027,12 @@ links:
       - file: "crates/loft-cli/tests/status_decisions.rs"
         name: "a_decision_whose_only_change_is_a_subject_added_is_listed_as_changed"
         body: 3cd30b7b3053da7961cf7790e2984df6ce7fece43621c05ff82d5c3b6b85fe98
+      - file: "crates/loft-cli/tests/status_decisions.rs"
+        name: "a_decision_whose_only_change_is_a_mentions_entry_added_is_listed_as_changed"
+        body: 4e96adf9347f72ffd2afc991b879bb66ea26582c9a885c59281d20dc29de33b5
+      - file: "crates/loftspec/tests/decision_changes.rs"
+        name: "a_decision_whose_only_change_is_a_mentions_entry_is_changed"
+        body: 1e6810f2b2a7371a8fd425bb710ff50adb36daa8ff041e8541ec3bc1976f2e32
   - node: 01a1ea8e-b119-760b-bb98-a33552d49161
     reviewed: 4c26f778c912ea02f7f73a13d3c227a03afd52dd5158a08f0ae74122f104a7e9
     tests:
@@ -30919,11 +30931,14 @@ links:
         name: "a_spec_change_view_ends_a_decision_s_subject_edge_at_the_box_of_the_constraint_it_names"
         body: ea36b88ddaca0b7de5fb515f6b3ab54d881278677a17bb450954f7711034e060
   - node: 01a1ea8e-b11b-737e-8311-c97711e8cd8c
-    reviewed: c94e4e4444a8c07e7695c86da2d58e2690ebbbd5935c97c3697ca5b01acb162e
+    reviewed: 04f9b81cbe4b6633a6556c3dbcf52736b18a57e8981f4d130b51b60e3af92824
     tests:
       - file: "crates/loft-cli/tests/yard_view_placement.rs"
         name: "a_spec_change_view_draws_no_realizes_edge_the_branch_removed_between_nodes_the_tree_holds"
         body: 91f7901518195350eed0e6915a12add137be8e5aa9258e640f387a59af402399
+      - file: "crates/loft-cli/tests/yard_view_placement.rs"
+        name: "a_spec_change_view_draws_a_node_and_a_decision_whose_only_change_is_a_mentions_entry_as_changed"
+        body: edce21a16e3e478dc5538ef8416b19803f7e25ba01e6e3901861bf6b264011c7
   - node: 01a1646f-546d-7042-befd-eac271279597
     reviewed: 74b7cba6d63762655ab819f4c61aa1e531e2938038c8e8d91be1debc86159c0c
     tests:
@@ -30987,6 +31002,12 @@ links:
       - file: "crates/loft-cli/tests/yard_view_subjects.rs"
         name: "a_spec_change_view_draws_a_decision_whose_only_change_is_a_subject_added_as_changed"
         body: d386d72aa94a9286741e274bb9725db3f3fab99cd3675a19d13be83ffbcfd3f8
+  - node: 01a1eafb-028a-74e3-ba22-929f39442f3a
+    reviewed: f9f18dc06bc04a19222b1749acb9605d6eb1626ef5396ef1409c0bcb37abe134
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_placement.rs"
+        name: "a_spec_change_view_draws_a_node_and_a_decision_whose_only_change_is_a_mentions_entry_as_changed"
+        body: edce21a16e3e478dc5538ef8416b19803f7e25ba01e6e3901861bf6b264011c7
   - node: 01a1e982-1425-7775-9b23-a8190c394d6e
     reviewed: d303da9e11e1263976484bb167669700d6394e43b70f07fb410f0c2a4510ed59
     tests:

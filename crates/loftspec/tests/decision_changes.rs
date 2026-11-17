@@ -158,3 +158,19 @@ fn a_former_label_no_binding_gives_is_a_subject_of_its_own() {
         subjects(&[(requirement(), SubjectRole::Outcome)])
     );
 }
+
+#[test]
+fn a_decision_whose_only_change_is_a_mentions_entry_is_changed() {
+    let mut document = small_document();
+    document.edges.push(Edge::Mentions {
+        source: adr().into(),
+        target: RequirementId::new(key(4)).into(),
+    });
+    let changes = decision_changes(&small_document(), &document);
+    assert_eq!(changes.changed, [adr()]);
+    assert!(changes.subjects.is_empty(), "{changes:?}");
+    assert_eq!(
+        decision_changes(&document, &small_document()).changed,
+        [adr()]
+    );
+}

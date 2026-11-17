@@ -141,3 +141,31 @@ fn a_decision_that_loft_fmt_names_a_removed_node_in_by_its_former_label_is_not_l
     assert!(keys(&document, "changed").is_empty(), "{document}");
     assert_eq!(keys(&document, "removed"), [KEEP_ORDER_KEY, IN_ORDER_KEY]);
 }
+
+/// The first of Add a book's `mentions` entries: Remove a book, and the Shelf store, which it
+/// also realizes.
+const MENTIONS: &str = "mentions:\n  - 00000000-0000-4000-8000-00000000001f\n  - 00000000-0000-4000-8000-00000000003c\n";
+
+#[test]
+fn a_node_whose_only_change_is_a_mentions_entry_removed_is_listed_as_changed() {
+    let scratch = Scratch::with_reading_list();
+    let git = based_on_now(&scratch);
+    // The Shelf store stays among the Components Add a book realizes.
+    scratch.edit(
+        ADD_A_BOOK,
+        MENTIONS,
+        "mentions:\n  - 00000000-0000-4000-8000-00000000001f\n",
+    );
+    let document = compared(&scratch, &git);
+    assert_eq!(keys(&document, "changed"), [ADD_A_BOOK_KEY]);
+}
+
+#[test]
+fn a_decision_whose_only_change_is_a_mentions_entry_added_is_listed_as_changed() {
+    let scratch = Scratch::with_reading_list();
+    let git = based_on_now(&scratch);
+    scratch.append(CHANGE_LOG, &format!("mentions:\n  - {ADD_A_BOOK_KEY}\n"));
+    assert_eq!(scratch.loft(&["fmt"]).status.code(), Some(0));
+    let document = compared(&scratch, &git);
+    assert_eq!(keys(&document, "changed"), [CHANGE_LOG_KEY]);
+}

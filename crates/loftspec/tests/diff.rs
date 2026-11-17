@@ -191,3 +191,20 @@ fn a_component_that_gained_or_lost_a_scoped_to_entry_is_changed_and_its_product_
         );
     }
 }
+
+#[test]
+fn a_node_that_gained_or_lost_a_mentions_entry_is_changed_and_the_node_it_names_is_not() {
+    let lost = without_edges(|edge| matches!(edge, Edge::Mentions { .. }));
+    for changes in [
+        content_changes(&small_document(), &lost),
+        content_changes(&lost, &small_document()),
+    ] {
+        assert_eq!(
+            changes,
+            NodeChanges {
+                changed: vec![criterion_id(5)],
+                ..NodeChanges::default()
+            }
+        );
+    }
+}

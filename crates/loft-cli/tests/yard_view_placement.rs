@@ -133,3 +133,26 @@ fn a_spec_change_view_draws_a_removed_node_beneath_a_parent_that_moved_where_the
         "Add a book, where RQ-2 no longer lies, is not drawn: {graph}"
     );
 }
+
+#[test]
+fn a_spec_change_view_draws_a_node_and_a_decision_whose_only_change_is_a_mentions_entry_as_changed()
+{
+    let yard = Yard::with_spec();
+    yard.scratch.edit(
+        ADD_A_BOOK,
+        &format!("mentions:\n  - 00000000-0000-4000-8000-00000000001f\n  - {SHELF_STORE_KEY}\n"),
+        "mentions:\n  - 00000000-0000-4000-8000-00000000001f\n",
+    );
+    yard.scratch.append(
+        "decisions/keep-a-change-log.yaml",
+        &format!("mentions:\n  - {ADD_A_BOOK_KEY}\n"),
+    );
+    let formatted = yard.scratch.loft(&["fmt"]);
+    assert!(formatted.status.success(), "{formatted:?}");
+    let graph = diagram(&yard);
+    assert_eq!(node(&graph, "Add a book")["change"], "changed", "{graph}");
+    let decisions = graph["decisions"].as_array().unwrap();
+    assert_eq!(decisions.len(), 1, "{graph}");
+    assert_eq!(decisions[0]["name"], "Keep a change log");
+    assert_eq!(decisions[0]["change"], "changed");
+}

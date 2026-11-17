@@ -11,7 +11,8 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::bindings::Bindings;
 use crate::decision::{Decision, DriverPayload, NodeRef};
 use crate::document::{Document, Edge, SubjectRole};
-use crate::ids::DecisionId;
+use crate::identity::Key;
+use crate::ids::{DecisionId, ElementId};
 
 /// A node a decision names as a subject, and the role it gives it.
 pub type Subject = (NodeRef, SubjectRole);
@@ -43,7 +44,8 @@ impl DecisionChanges {
 }
 
 /// The decisions `document` added, changed and removed against `base`. A decision changed where
-/// its record or its subjects differ, once each former label is read as the node it names.
+/// its record, its subjects or its `mentions` entries differ, once each former label is read as
+/// the node it names.
 #[must_use]
 pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges {
     let (then, now) = (Read::of(base), Read::of(document));
@@ -52,7 +54,11 @@ pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges
         let id = decision.id;
         let list = match then.decisions.get(&id) {
             None => &mut changes.added,
-            Some(was) if *was != now.decisions[&id] || then.subjects(id) != now.subjects(id) => {
+            Some(was)
+                if *was != now.decisions[&id]
+                    || then.subjects(id) != now.subjects(id)
+                    || then.mentions.get(&id) != now.mentions.get(&id) =>
+            {
                 &mut changes.changed
             }
             Some(_) => continue,
@@ -77,10 +83,12 @@ pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges
     changes
 }
 
-/// A document's decisions, each former label read as its node, by ID, and each one's subjects.
+/// A document's decisions, each former label read as its node, by ID, each one's subjects, and
+/// the keys each one's `mentions` entries name.
 struct Read<'a> {
     decisions: BTreeMap<DecisionId, Cow<'a, Decision>>,
     subjects: BTreeMap<DecisionId, BTreeSet<Subject>>,
+    mentions: BTreeMap<DecisionId, BTreeSet<Key>>,
     none: BTreeSet<Subject>,
 }
 
@@ -88,15 +96,24 @@ impl<'a> Read<'a> {
     fn of(document: &'a Document) -> Self {
         let bindings = &document.bindings;
         let mut subjects: BTreeMap<DecisionId, BTreeSet<Subject>> = BTreeMap::new();
+        let mut mentions: BTreeMap<DecisionId, BTreeSet<Key>> = BTreeMap::new();
         for edge in &document.edges {
-            if let Edge::Subject {
-                decision,
-                subject,
-                role,
-            } = *edge
-            {
-                let subject = (bindings.node(subject), role);
-                subjects.entry(decision).or_default().insert(subject);
+            match *edge {
+                Edge::Subject {
+                    decision,
+                    subject,
+                    role,
+                } => {
+                    let subject = (bindings.node(subject), role);
+                    subjects.entry(decision).or_default().insert(subject);
+                }
+                Edge::Mentions {
+                    source: ElementId::Decision(decision),
+                    target,
+                } => {
+                    mentions.entry(decision).or_default().insert(target.key());
+                }
+                _ => {}
             }
         }
         Self {
@@ -104,6 +121,7 @@ impl<'a> Read<'a> {
                 .map(|decision| (decision.id, normalized(decision, bindings)))
                 .collect(),
             subjects,
+            mentions,
             none: BTreeSet::new(),
         }
     }

@@ -26,13 +26,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   consequence. `loftspec` compares decisions in `diff::decision_changes`, which reads each former
   label as the node it names, and `Bindings::former` finds the node a departed label named.
 - `loft status --base` lists the decisions added, changed and removed, after the nodes of each
-  list, with the kind `decision` and the title as the name, and lists as changed a Feature whose
-  `realizes` entries, or a Component whose `scopedTo` entries, changed. Such a change used to be
-  missing, and so was every decision. Its JSON is now `loft-status/3`. `loftspec`'s
-  `content_changes` and `node_changes` count those entries too.
-- A `spec-change` view draws a Feature whose `realizes` entries changed, and a Component whose
-  `scopedTo` entries changed, as changed, and no longer draws a `realizes` edge the branch removed
-  between two nodes the tree still holds.
+  list, with the kind `decision` and the title as the name. It lists as changed a node whose
+  `realizes`, `scopedTo` or `mentions` entries changed, and a decision whose `mentions` entries
+  changed. Such a change used to be missing, and so was every decision. Its JSON is now
+  `loft-status/3`. `loftspec`'s `content_changes`, `node_changes` and `decision_changes` count
+  those entries too.
+- A `spec-change` view draws a node whose `realizes`, `scopedTo` or `mentions` entries changed,
+  and a decision whose `mentions` entries changed, as changed, and no longer draws a `realizes`
+  edge the branch removed between two nodes the tree still holds.
 - A `spec-change` view draws a node the branch removed beneath its parent where the tree now
   holds that parent, so that a node that moved is drawn once, in its new place. A box could name
   as its parent a box that was not drawn, which left the moved node outside its Feature's panel
