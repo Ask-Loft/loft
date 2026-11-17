@@ -2,8 +2,8 @@
 //! status` Feature). A node is matched by its key, so a node that moves stays the same node; it
 //! changed when its own content view differs, the hashes of its children left out, so a
 //! change to a node is not a change to each of its ancestors, or when the edges its record
-//! writes differ: a Feature's `realizes` and a Component's `scopedTo`. A node moved when its own content
-//! view is the base's and its parent is not (the `loft review` Feature); a move alone is no
+//! writes differ: a Feature's `realizes` and a Component's `scopedTo`. A node moved when its own
+//! content view is the base's and its parent is not (the `loft review` Feature); a move alone is no
 //! change, so [`NodeChanges::is_empty`] ignores it. The comparer, [`compare`], tells the same
 //! changes by each node's record in place of its content view, and [`decision_changes`] tells the
 //! decisions added, changed and removed, with the subjects each gained and lost.

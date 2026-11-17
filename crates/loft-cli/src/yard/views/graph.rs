@@ -12,6 +12,7 @@ use loftspec::decision::NodeRef;
 use loftspec::diff::{DecisionChanges, Subject, SubjectChange, content_changes, decision_changes};
 use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
+use loftspec::ids::ElementId;
 use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 use serde_json::{Value, json};
@@ -72,16 +73,27 @@ impl Walked {
 
 const CHANGES: [&str; 3] = ["added", "changed", "removed"];
 
+/// The change of each key of the added, changed and removed lists, by key.
+fn marks(lists: [&[impl Copy + Into<ElementId>]; 3]) -> BTreeMap<Key, &'static str> {
+    lists
+        .into_iter()
+        .zip(CHANGES)
+        .flat_map(|(ids, change)| ids.iter().map(move |id| ((*id).into().key(), change)))
+        .collect()
+}
+
+/// A node as the tree holds it, or as the base held it where the tree no longer holds it.
+fn entry<'a>(key: &Key, now: &'a Walked, then: &'a Walked) -> Option<&'a Entry> {
+    now.entries.get(key).or_else(|| then.entries.get(key))
+}
+
 /// The diagram of the change from `base` to `document`.
 pub fn report(base: &Document, document: &Document) -> Value {
     let now = Walked::of(document);
     let then = Walked::of(base);
     let changes = content_changes(base, document);
-    let mut marked: BTreeMap<Key, &'static str> = BTreeMap::new();
     let lists = [&changes.added, &changes.changed, &changes.removed];
-    for (ids, change) in lists.into_iter().zip(CHANGES) {
-        marked.extend(ids.iter().map(|id| (id.key(), change)));
-    }
+    let marked = marks(lists.map(Vec::as_slice));
     let decided = decision_changes(base, document);
     let gained: BTreeSet<Key> = (decided.subjects.values())
         .flat_map(|change| &change.gained)
@@ -211,22 +223,13 @@ fn shown(
     then: &Walked,
 ) -> Vec<Key> {
     let mut wanted = BTreeSet::new();
-    let marks = marked
-        .iter()
-        .map(|(key, change)| (*key, if *change == "removed" { then } else { now }));
-    for (key, mut walked) in marks.chain(gained.iter().map(|key| (*key, now))) {
-        let mut at = Some(key);
-        while let Some(key) = at {
-            // A removed node lies where the base held it, but each ancestor the tree still holds
-            // lies where the tree holds it, so that a node that moved is drawn once, in its place.
-            if now.entries.contains_key(&key) {
-                walked = now;
-            }
-            let Some(entry) = walked.entries.get(&key) else {
-                break;
-            };
-            wanted.insert(key);
-            at = entry.parent;
+    for key in marked.keys().chain(gained) {
+        // A removed node lies where the base held it, but each ancestor the tree still holds lies
+        // where the tree holds it, so that a node that moved is drawn once, in its place.
+        let mut at = Some(*key);
+        while let Some(found) = at.and_then(|key| entry(&key, now, then)) {
+            wanted.extend(at);
+            at = found.parent;
         }
     }
     let mut order: Vec<Key> = now.order.clone();
@@ -250,11 +253,7 @@ fn nodes(
 ) -> Value {
     let nodes = shown.iter().filter_map(|key| {
         let change = marked.get(key).copied();
-        let entry = if change == Some("removed") {
-            then.entries.get(key)
-        } else {
-            now.entries.get(key).or_else(|| then.entries.get(key))
-        }?;
+        let entry = entry(key, now, then)?;
         Some(json!({
             "key": key.to_string(),
             "kind": entry.kind.as_str(),
@@ -289,19 +288,11 @@ struct Documents<'a> {
 fn decisions(changes: &DecisionChanges, documents: &Documents<'_>) -> Vec<Decided> {
     let Documents { base, document, .. } = *documents;
     let before: BTreeMap<Key, _> = base.decisions.iter().map(|d| (d.id.key(), d)).collect();
-    let marked = [
-        (&changes.added, "added"),
-        (&changes.changed, "changed"),
-        (&changes.removed, "removed"),
-    ];
-    let change: BTreeMap<Key, &str> = marked
-        .into_iter()
-        .flat_map(|(ids, change)| ids.iter().map(move |id| (id.key(), change)))
-        .collect();
+    let change = marks([&changes.added, &changes.changed, &changes.removed].map(Vec::as_slice));
     let in_tree = document.decisions.iter().map(|is| (is, document));
-    let removed = base.decisions.iter().map(|was| (was, base));
+    let removed = (changes.removed.iter()).filter_map(|id| Some((*before.get(&id.key())?, base)));
     in_tree
-        .chain(removed.filter(|(was, _)| change.get(&was.id.key()) == Some(&"removed")))
+        .chain(removed)
         .filter_map(|(decision, holder)| {
             let key = decision.id.key();
             let change = *change.get(&key)?;

@@ -1,8 +1,8 @@
 //! `loft status` (the `loft status` Feature): where the tree stands, for an agent host or a
 //! person between edits. It reports the lock and whether the tree matches it, the state of the
 //! repository that holds it, and, with `--base <revision>`, the nodes and decisions added, changed
-//! and removed since HEAD left the revision. It writes nothing and exits 0 whatever it finds; a tree that
-//! does not read, a conflict record and a base it cannot read stop it with exit 1.
+//! and removed since HEAD left the revision. It writes nothing and exits 0 whatever it finds; a
+//! tree that does not read, a conflict record and a base it cannot read stop it with exit 1.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
@@ -174,9 +174,9 @@ fn repository_error(error: StoreError) -> Stop {
 fn base_report(base: &base::Tree, document: &Document, sites: &Sites) -> BaseReport {
     let nodes = content_changes(&base.document, document);
     let decisions = decision_changes(&base.document, document);
-    let now = Nodes::of(document, sites);
-    let then = Nodes::of(&base.document, &base.sites);
-    let listed = |nodes: &[NodeId], decisions: &[DecisionId], side: &Nodes| {
+    let now = Elements::of(document, sites);
+    let then = Elements::of(&base.document, &base.sites);
+    let listed = |nodes: &[NodeId], decisions: &[DecisionId], side: &Elements| {
         let keys = nodes.iter().map(|id| id.key());
         let keys = keys.chain(decisions.iter().map(|id| id.key()));
         keys.map(|key| side.listed(key)).collect()
@@ -191,13 +191,13 @@ fn base_report(base: &base::Tree, document: &Document, sites: &Sites) -> BaseRep
 }
 
 /// The keyed nodes and the decisions of a document by key, with what the report lists of each.
-struct Nodes<'a> {
+struct Elements<'a> {
     document: &'a Document,
     sites: &'a Sites,
     by_key: BTreeMap<Key, (&'static str, String)>,
 }
 
-impl<'a> Nodes<'a> {
+impl<'a> Elements<'a> {
     fn of(document: &'a Document, sites: &'a Sites) -> Self {
         let mut by_key = BTreeMap::new();
         document.walk(&mut |node| {

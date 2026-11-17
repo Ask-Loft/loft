@@ -5,6 +5,7 @@
 //! as before: each former label a binding, live or departed, resolves is read as its node before
 //! the two versions are compared, in a decision's subjects, drivers and consequences alike.
 
+use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bindings::Bindings;
@@ -47,24 +48,24 @@ impl DecisionChanges {
 pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges {
     let (then, now) = (Read::of(base), Read::of(document));
     let mut changes = DecisionChanges::default();
-    let none = BTreeSet::new();
-    for id in &now.order {
-        let list = match then.decisions.get(id) {
+    for decision in &document.decisions {
+        let id = decision.id;
+        let list = match then.decisions.get(&id) {
             None => &mut changes.added,
-            Some(was) if *was != now.decisions[id] => &mut changes.changed,
-            Some(_) if then.subjects.get(id) != now.subjects.get(id) => &mut changes.changed,
+            Some(was) if *was != now.decisions[&id] || then.subjects(id) != now.subjects(id) => {
+                &mut changes.changed
+            }
             Some(_) => continue,
         };
-        list.push(*id);
+        list.push(id);
     }
-    changes.removed = (then.order.iter())
+    changes.removed = (base.decisions.iter())
+        .map(|decision| decision.id)
         .filter(|id| !now.decisions.contains_key(id))
-        .copied()
         .collect();
     let decided = changes.added.iter().chain(&changes.changed);
     for id in decided.chain(&changes.removed) {
-        let was = then.subjects.get(id).unwrap_or(&none);
-        let is = now.subjects.get(id).unwrap_or(&none);
+        let (was, is) = (then.subjects(*id), now.subjects(*id));
         let change = SubjectChange {
             gained: is.difference(was).copied().collect(),
             lost: was.difference(is).copied().collect(),
@@ -76,16 +77,15 @@ pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges
     changes
 }
 
-/// A document's decisions, each former label read as its node: each decision by its ID, their
-/// order, and each one's subjects.
-struct Read {
-    decisions: BTreeMap<DecisionId, Decision>,
-    order: Vec<DecisionId>,
+/// A document's decisions, each former label read as its node, by ID, and each one's subjects.
+struct Read<'a> {
+    decisions: BTreeMap<DecisionId, Cow<'a, Decision>>,
     subjects: BTreeMap<DecisionId, BTreeSet<Subject>>,
+    none: BTreeSet<Subject>,
 }
 
-impl Read {
-    fn of(document: &Document) -> Self {
+impl<'a> Read<'a> {
+    fn of(document: &'a Document) -> Self {
         let bindings = &document.bindings;
         let mut subjects: BTreeMap<DecisionId, BTreeSet<Subject>> = BTreeMap::new();
         for edge in &document.edges {
@@ -103,18 +103,32 @@ impl Read {
             decisions: (document.decisions.iter())
                 .map(|decision| (decision.id, normalized(decision, bindings)))
                 .collect(),
-            order: document
-                .decisions
-                .iter()
-                .map(|decision| decision.id)
-                .collect(),
             subjects,
+            none: BTreeSet::new(),
         }
+    }
+
+    /// The subjects of the decision `id`, none where it names none or the document lacks it.
+    fn subjects(&self, id: DecisionId) -> &BTreeSet<Subject> {
+        self.subjects.get(&id).unwrap_or(&self.none)
     }
 }
 
-/// `decision` with each former label of its drivers and consequences read as its node.
-fn normalized(decision: &Decision, bindings: &Bindings) -> Decision {
+/// `decision` with each former label of its drivers and consequences read as its node, cloned
+/// only where one is.
+fn normalized<'a>(decision: &'a Decision, bindings: &Bindings) -> Cow<'a, Decision> {
+    let drivers = decision
+        .drivers
+        .iter()
+        .filter_map(|driver| match driver.payload {
+            DriverPayload::Subject { subject } => Some(subject),
+            DriverPayload::Local { .. } => None,
+        });
+    let consequences = decision.consequences.iter().filter_map(|each| each.subject);
+    let mut references = drivers.chain(consequences);
+    if references.all(|reference| resolved(reference, bindings) == reference) {
+        return Cow::Borrowed(decision);
+    }
     let mut decision = decision.clone();
     for driver in &mut decision.drivers {
         if let DriverPayload::Subject { subject } = &mut driver.payload {
@@ -126,7 +140,7 @@ fn normalized(decision: &Decision, bindings: &Bindings) -> Decision {
             .subject
             .map(|subject| resolved(subject, bindings));
     }
-    decision
+    Cow::Owned(decision)
 }
 
 /// The node `reference` names: a former label that a binding, live or departed, gives to a node
