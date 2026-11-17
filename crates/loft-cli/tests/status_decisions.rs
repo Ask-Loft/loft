@@ -20,7 +20,8 @@ const STORE_A_SHELF: &str = "decisions/store-a-shelf-in-one-file.yaml";
 /// The Feature Add a book, F-1, which realizes the Shelf store and holds RQ-2.
 const ADD_A_BOOK: &str = "products/reading-list/shelf/add-a-book.yaml";
 const ADD_A_BOOK_KEY: &str = "00000000-0000-4000-8000-00000000001e";
-/// Remove a book and the Shelf store, which Add a book mentions; it also realizes the Shelf store.
+/// Remove a book and the Shelf store, which Add a book mentions. Add a book also realizes the
+/// Shelf store, so dropping only its mention changes no `realizes` entry.
 const REMOVE_A_BOOK_KEY: &str = "00000000-0000-4000-8000-00000000001f";
 const SHELF_STORE_KEY: &str = "00000000-0000-4000-8000-00000000003c";
 /// Requirement RQ-2 of Add a book, and its criterion AC-3.

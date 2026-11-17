@@ -10,7 +10,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::bindings::Bindings;
 use crate::decision::{Decision, DriverPayload, NodeRef};
-use crate::document::{Document, Edge, SubjectRole};
+use crate::document::{Document, Edge, EdgeKind, SubjectRole};
 use crate::identity::Key;
 use crate::ids::{DecisionId, ElementId};
 
@@ -57,7 +57,7 @@ pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges
             Some(was)
                 if *was != now.decisions[&id]
                     || then.subjects(id) != now.subjects(id)
-                    || then.mentions.get(&id) != now.mentions.get(&id) =>
+                    || then.written.get(&id) != now.written.get(&id) =>
             {
                 &mut changes.changed
             }
@@ -84,11 +84,11 @@ pub fn decision_changes(base: &Document, document: &Document) -> DecisionChanges
 }
 
 /// A document's decisions, each former label read as its node, by ID, each one's subjects, and
-/// the keys each one's `mentions` entries name.
+/// the other edges each one's record writes: its `mentions`.
 struct Read<'a> {
     decisions: BTreeMap<DecisionId, Cow<'a, Decision>>,
     subjects: BTreeMap<DecisionId, BTreeSet<Subject>>,
-    mentions: BTreeMap<DecisionId, BTreeSet<Key>>,
+    written: BTreeMap<DecisionId, BTreeSet<(EdgeKind, Key)>>,
     none: BTreeSet<Subject>,
 }
 
@@ -96,32 +96,29 @@ impl<'a> Read<'a> {
     fn of(document: &'a Document) -> Self {
         let bindings = &document.bindings;
         let mut subjects: BTreeMap<DecisionId, BTreeSet<Subject>> = BTreeMap::new();
-        let mut mentions: BTreeMap<DecisionId, BTreeSet<Key>> = BTreeMap::new();
         for edge in &document.edges {
-            match *edge {
-                Edge::Subject {
-                    decision,
-                    subject,
-                    role,
-                } => {
-                    let subject = (bindings.node(subject), role);
-                    subjects.entry(decision).or_default().insert(subject);
-                }
-                Edge::Mentions {
-                    source: ElementId::Decision(decision),
-                    target,
-                } => {
-                    mentions.entry(decision).or_default().insert(target.key());
-                }
-                _ => {}
+            if let Edge::Subject {
+                decision,
+                subject,
+                role,
+            } = *edge
+            {
+                let subject = (bindings.node(subject), role);
+                subjects.entry(decision).or_default().insert(subject);
             }
         }
+        let written = (super::written(document).into_iter())
+            .filter_map(|(from, edges)| match from {
+                ElementId::Decision(decision) => Some((decision, edges)),
+                ElementId::Node(_) => None,
+            })
+            .collect();
         Self {
             decisions: (document.decisions.iter())
                 .map(|decision| (decision.id, normalized(decision, bindings)))
                 .collect(),
             subjects,
-            mentions,
+            written,
             none: BTreeSet::new(),
         }
     }

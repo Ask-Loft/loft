@@ -92,15 +92,12 @@ impl Keyed {
     /// changes the node.
     fn compared(document: &Document) -> Self {
         let mut keyed = Self::of(document);
-        for edge in &document.edges {
-            // A `subject` edge starts at a decision, so only the edges a node writes are kept.
-            let (ElementId::Node(from), EdgeTarget::Element(to)) = (edge.source(), edge.target())
-            else {
-                continue;
-            };
-            let written = keyed.written.entry(from).or_default();
-            written.insert((edge.kind(), to.key()));
-        }
+        keyed.written = (written(document).into_iter())
+            .filter_map(|(from, edges)| match from {
+                ElementId::Node(node) => Some((node, edges)),
+                ElementId::Decision(_) => None,
+            })
+            .collect();
         keyed
     }
 
@@ -110,6 +107,23 @@ impl Keyed {
         document.walk(&mut |node| order.extend(node.id()));
         order
     }
+}
+
+/// The kind and target of each edge an element's record writes, by the element: a Feature's
+/// `realizes`, a Component's `scopedTo` and any node's or decision's `mentions`. A decision's
+/// subjects are left out, since they are compared apart, each former label read as its node.
+pub(crate) fn written(document: &Document) -> BTreeMap<ElementId, BTreeSet<(EdgeKind, Key)>> {
+    let mut written: BTreeMap<ElementId, BTreeSet<(EdgeKind, Key)>> = BTreeMap::new();
+    for edge in &document.edges {
+        let EdgeTarget::Element(to) = edge.target() else {
+            continue;
+        };
+        if edge.kind() != EdgeKind::Subject {
+            let edges = written.entry(edge.source()).or_default();
+            edges.insert((edge.kind(), to.key()));
+        }
+    }
+    written
 }
 
 /// Each keyed node's parent, the nearest keyed node above it; none for a Product or a root
