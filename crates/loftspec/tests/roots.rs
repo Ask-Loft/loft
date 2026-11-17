@@ -75,7 +75,7 @@ fn edge_order_does_not_change_the_edges_root() {
 }
 
 #[test]
-fn relabelling_moves_the_binding_root_and_nothing_else() {
+fn relabeling_moves_the_binding_root_and_nothing_else() {
     let mut document = small_document();
     let before = roots(&document);
     document

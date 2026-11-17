@@ -196,7 +196,7 @@ fn a_field_the_v1_export_does_not_define_is_an_error() {
         &[node(1, "TierSection", &json!("Product"), "P-1", &[])],
         &[],
     );
-    value["nodes"][0]["colour"] = json!("blue");
+    value["nodes"][0]["color"] = json!("blue");
     assert!(Export::from_json(&value.to_string()).is_err());
 }
 

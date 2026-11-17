@@ -343,11 +343,11 @@ fn the_own_record_view_holds_a_bindings_fields_as_the_writer_writes_them() {
     assert_eq!(view(&document, RecordKind::Binding, 90), departed);
     let requirement = json!({"label": "RQ-2", "aliases": ["RQ-1"], "withdrawn": ["RQ-7"]});
     assert_eq!(view(&document, RecordKind::Binding, 4), requirement);
-    let mut relabelled = document;
+    let mut relabeled = document;
     let id = RequirementId::new(key(4));
-    relabelled.bindings.relabel(id, label("RQ-3")).unwrap();
+    relabeled.bindings.relabel(id, label("RQ-3")).unwrap();
     assert_eq!(
-        view(&relabelled, RecordKind::Binding, 4)["label"],
+        view(&relabeled, RecordKind::Binding, 4)["label"],
         json!("RQ-3")
     );
 }

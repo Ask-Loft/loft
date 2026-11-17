@@ -1,7 +1,7 @@
 //! What the `loftspec` package promises of itself, held by guards over its source, its manifest
 //! and CI: it performs no file or network input or output, its renderer reads no clock, locale or
 //! environment variable, its hasher digests with SHA-256 alone, it declares the Apache-2.0
-//! licence, and CI builds it with the toolchain its declared `rust-version` names.
+//! license, and CI builds it with the toolchain its declared `rust-version` names.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -226,13 +226,13 @@ fn the_renderer_and_the_hasher_read_no_clock_locale_or_environment() {
 }
 
 #[test]
-fn the_package_declares_the_apache_licence() {
+fn the_package_declares_the_apache_license() {
     assert_eq!(package_value("license"), "Apache-2.0");
     let manifest = read(&Path::new(CRATE).join("Cargo.toml"));
     let package = table(&manifest, "[package]");
     assert!(
         !package.iter().any(|line| line.starts_with("license-file")),
-        "crates/loftspec/Cargo.toml names a licence file beside the licence"
+        "crates/loftspec/Cargo.toml names a license file beside the license"
     );
 }
 

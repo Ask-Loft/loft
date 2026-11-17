@@ -23,7 +23,7 @@ takes `--help`.
 | `loft terms` | Lists the names the specification may be using for one concept, and the subjects of each Product's statements, for the term list to decide |
 | `loft reconcile [--fail-on <severity>] [--accept <node>] [--accept-stale]` | Checks `loft.trace.yaml` against the tree and the test files, and records links a reviewer has checked ([tracing](tracing.md)) |
 | `loft merge-driver` | Merges one file of `spec/` or `.yard/` as git's merge driver; `--install` registers it for both ([publishing and merging](publishing.md)) |
-| `loft yard <command>` | Keeps the branch's Yard Log for the Yard adapters: `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `task`, `continue`, `protocol`, `upgrade`, `serve`, the page server, and each host's hooks ([Yard](yard.md)) |
+| `loft yard <command>` | Keeps the branch's Yard Log for the Yard adapters: `read`, `write`, `wait`, `withdraw`, `close`, `published`, `answer`, `task`, `continue`, `protocol`, `upgrade`, `serve`, the page server, `page`, the page's address, and each host's hooks ([Yard](yard.md)) |
 | `loft skill install [--host <host>] [--no-plugin] [--server <origin>]` | Writes the agent skill into the current directory, or brings it up to date; `--server` installs a server's skill package instead |
 | `loft telemetry`, `loft update-check` | Switch telemetry and the update check on or off ([telemetry](telemetry.md)) |
 | `loft record-install <way>` | Records how `loft` was installed, for the update notice; the npm package runs it itself ([telemetry](telemetry.md)) |

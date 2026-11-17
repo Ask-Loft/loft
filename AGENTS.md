@@ -29,10 +29,10 @@ publish on `main`, which `loft verify` recomputes and CI checks there. Edits to 
 ## Agreement with v1
 
 Loft v1 implements the same structural and language rules (`SH-*`, `LQ-*`), EARS forms and label
-rules, and this repository leads them (the accepted decision "v2 leads the behaviour it shares
-with v1"). Change shared behaviour through `spec/`. An intended difference from v1 is an entry of
-`testdata/v1/divergences.json` in the same pull request, naming its rule, condition, direction and
-the criteria or decisions in `decidedBy`. `tests/v1_parity.rs` compares loftspec with
+rules, and this repository leads them (the accepted decision ADR-19). Change shared behavior
+through `spec/`. An intended difference from v1 is an entry of `testdata/v1/divergences.json` in
+the same pull request, naming its rule, condition, direction and the criteria or decisions in
+`decidedBy`. `tests/v1_parity.rs` compares loftspec with
 `v1-lint.json` and `v1-ears.json` beside each public v1 export under `testdata/v1/`. Those files
 are written only by a v1 implementation; never edit or regenerate them to make a failure
 disappear. When v1's output changes, the files are rewritten from v1 after `spec/` adopts the
@@ -69,13 +69,13 @@ change, or v1 reverts it.
 - `crates/loft-cli` is the `loft` binary and owns nothing the library could own.
 - `crates/software-plant` is the Software Plant: simulators of the external systems Loft depends
   on, for tests only. It is never published and never a dependency of a published crate.
-- None of these ever depends on a crate of the private Loft server. That boundary is the licence
+- None of these ever depends on a crate of the private Loft server. That boundary is the license
   boundary.
 - Identifiers are typed domain IDs — `ProductId`, `FeatureGroupId`, `FeatureId`,
   `RequirementId`, `CriterionId`, `ComponentId`, `ConstraintId`, `QualityAttributeId`,
   `SectionId`, `DecisionId`, `OptionId`, `DriverId`, `ConsequenceId`, `TagId`, `CategoryId` — and
   references by name are typed (`TagName`, `CategoryName`); never a plain string or one shared
-  key type. Every typed ID wraps the element's key and serialises as it, so the files, views and
+  key type. Every typed ID wraps the element's key and serializes as it, so the files, views and
   digests are unchanged by the types. A kind change keeps the key through an explicit
   conversion. Prose (names, bodies, statements) stays text.
 - `crates/loft-cli/skill/loft-spec/` is the source of the `loft-spec` agent skill: `SKILL.md`,
@@ -129,7 +129,13 @@ change, or v1 reverts it.
   read, the sessions that continue others, the worktrees each session wrote Yard Log in and its
   main agent's directory, by which an agent's work follows its working stage into another
   worktree, the control token, and in `claude/` the Claude hook's hand-offs and each session's
-  last permission mode.
+  last permission mode. `LOFT_YARD_HOME`, an absolute directory, takes the place of `~/.yard/`;
+  a relative or empty value is ignored.
+- `scripts/yard-dogfood.sh` runs this worktree's `loft` and plugins beside the installed ones:
+  `claude` and `codex` start a session on them, and `desktop <project>` (`--undo` to reverse)
+  switches one project's Claude Code sessions, Claude Desktop's included, through
+  `scripts/yard-dogfood-desktop.py`. Its `loft` keeps the machine's files in `~/.yard-dogfood/`
+  through `LOFT_YARD_HOME`, with a page server of its own on port 7412.
 - `npm/loft/` is the launcher of the npm package `@ask-loft/loft`, which runs the prebuilt `loft`
   of the platform it is installed on. A release packs it, and one package per platform, into
   tarballs with `scripts/npm-packages.sh`, and runs `loft` from them with `scripts/npm-smoke.sh`;
@@ -185,6 +191,11 @@ text goes to standard error only.
   to at most 500 lines, to naming exactly the adapter's tools and to each habit its Feature
   states. Only hosts with a Yard adapter receive a Yard package; `loft skill install` continues
   to install the specification skill alone.
+- The Codex plugin also carries the `yard-page` skill, whose one source is
+  `crates/loft-cli/skill/yard-page/SKILL.md`, listed in `YARD_PAGE_SOURCE`: it has the agent run
+  `loft yard page` and relay its words, since Codex offers a plugin no command of its own. The
+  packager writes it into the Codex plugin alone; change its source and run
+  `scripts/package-skill.sh`.
 
 ## Software Plant
 
@@ -207,7 +218,7 @@ simulator from the Software Plant in front of the unchanged binary under test:
   anticipates: outside a repository, and a scripted git error. `install` writes the scenario into
   the scratch directory, and `Installed::apply` gives a `Command` a search path whose only `git`
   is the simulator. Any call the simulator does not answer exits 2 naming the call, so Loft
-  cannot come to depend on git behaviour nobody modelled.
+  cannot come to depend on git behavior nobody modeled.
 - **the clock**: the clock port tells the time and waits. `software_plant::Clock` sets
   `SOURCE_DATE_EPOCH`, which `loft publish` reads as its publish time and the command event as
   its hour, fixed or stepping between runs. `Clock::…().passing()` also sets `LOFT_CLOCK=passing`,
@@ -243,6 +254,9 @@ real half on demand, against `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CON
 both addresses at a closed loopback port; a test that exercises either switches it on through
 `tests/common/telemetry.rs` or `asking` in `tests/update_check.rs`. Run a gate's own `loft`
 through `cargo run`, never `target/debug/loft` directly, or set `LOFT_TELEMETRY=internal`.
+`.cargo/config.toml` also forces `LOFT_YARD_HOME` empty, so no test inherits a dogfood home; a
+`loft yard` command checked by hand against a dogfood home therefore runs `target/debug/loft`
+with `LOFT_TELEMETRY=internal`, not `cargo run`.
 
 The rules:
 
@@ -280,10 +294,16 @@ The thinking behind the Software Plant is at <https://askloft.ai/vision>.
 ## Workflow
 
 - Work test-first: add a focused failing test, implement the smallest correct behavior, then
-  refactor. Check each key behaviour negatively too: break it and see a test fail.
+  refactor. Check each key behavior negatively too: break it and see a test fail.
 - Test names say what they prove in words and cite no label: a publish can withdraw a label and
   give its node a new one, and a guard (`crates/loft-cli/tests/citations.rs`) fails on a label
   in a test name.
+- Write in American English: `spec/`, code, comments, identifiers, test names, the skill and the
+  docs. Each Product carries a Constraint that says so, and a guard
+  (`crates/loft-cli/tests/american_english.rs`) fails on a British spelling, naming its file, its
+  line and the American form. Decisions published as resolved, `testdata/`, vendored files and
+  released changelog entries keep their spelling. A British form that a standard or a persisted
+  file fixes goes on the guard's allow list, with its reason, and is never renamed.
 - Link each test to the criterion it verifies in `loft.trace.yaml`, by the criterion's key
   (`loft find <label>` prints it), and run `loft reconcile --accept <label>` once the test is
   read against the criterion as it now reads. When a criterion changes, its link turns stale

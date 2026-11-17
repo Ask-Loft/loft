@@ -180,12 +180,12 @@ fn a_record_both_sides_added_at_different_parents_is_where_ours_put_it_without_a
 fn a_feature_both_sides_renamed_apart_keeps_its_base_slug_and_file_with_a_slug_conflict() {
     let base = two_features();
     let mut ours = base.clone();
-    features(&mut ours)[1].slug = slug("labelling");
+    features(&mut ours)[1].slug = slug("labeling");
     let mut theirs = base.clone();
     features(&mut theirs)[1].slug = slug("label-rules");
     let merged = merged(&base, &ours, &theirs);
     let text = file(&merged, LABELS_FEATURE);
-    let expected = "conflicts:\n  - field: slug\n    base: labels\n    ours: labelling\n    theirs: label-rules\n";
+    let expected = "conflicts:\n  - field: slug\n    base: labels\n    ours: labeling\n    theirs: label-rules\n";
     assert!(
         text.starts_with(&format!("key: {}\nslug: labels\n", k(40))),
         "{text}"

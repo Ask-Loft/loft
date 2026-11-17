@@ -155,6 +155,14 @@ class RestartTests(unittest.TestCase):
             self.launch(runtime)
 
 
+class MainTests(unittest.TestCase):
+    def test_a_call_without_the_home_is_refused_with_its_usage(self):
+        with patch.object(server.sys, "argv", ["yard-dogfood-server.py", "/tree", "7412"]), \
+                patch.object(server, "Runtime") as runtime:
+            self.assertEqual(server.main(), 2)
+        runtime.assert_not_called()
+
+
 class RuntimeTests(unittest.TestCase):
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory()

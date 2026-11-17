@@ -5,6 +5,64 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+## 2.4.0 (2026-11-17)
+
+- The specification, the code, the skill and the plugins are written in American English, and a
+  guard keeps them so. The Codex notification ledger now writes `canceled` and still reads the
+  British spelling an older `loft` wrote. In `loftspec`, `ElementId::labeled` replaces the
+  former British spelling, which stays as a deprecated alias.
+- Yard measures how far an agent's work is led by the specification. The Claude Code mod and
+  the Codex hook give each tool call that reads or edits files the classes of what it touched,
+  `spec`, `code` or `other`, and name the `loft` subcommands a shell command runs; the yard
+  protocol is 3, and an adapter declares `consults` to be counted. The page server keeps each
+  session's consultation file beside its token totals: six counts in all, by stage and by agent,
+  whether a stage's specification was consulted before its code was first edited, and an
+  estimate of the context tokens each class brought in. `loft yard consultation` reports their
+  sums as a table or as JSON; the Yard page shows a line beside each stage, in the timeline and
+  the Gantt chart, and a Consultation view that charts them. The page server tells the Claude Code
+  mod the trees it serves, by their real paths and as its session spells their tops, so both
+  adapters class a path in any served worktree alike.
+- `LOFT_YARD_HOME`, given an absolute directory, keeps what belongs to the machine there in
+  place of `~/.yard/`, so a `loft` under development runs a page server and session records of
+  its own beside an installed one. `loft yard protocol` reports that directory as `home`
+  (schema `loft-yard-protocol/2`).
+- `/yard-pane` in Claude Code opens a pane on the branch's Yard Log, the Yard page's companion: the
+  stage in hand with its active tasks, and what waits on you, oldest first, with lettered option
+  cards to answer there. Answers are recorded on the channel `terminal`, as in Claude Code's own
+  dialog, and a block answered first elsewhere keeps that answer. In Claude Code Desktop the
+  command also opens the Yard page itself in Desktop's browser pane, at the session's branch, and
+  shows its tab again on the next run; elsewhere the pane links the page, and the command answers
+  with the page's address and a suggestion to open it. The pane's colors follow each surface's
+  light or dark.
+- `loft yard page` prints the Yard page's address for the worktree and its branch, with a line on
+  what the page shows, or says that no page server runs, or that one runs but does not serve the
+  tree yet. In Codex, which offers a plugin no command of its own, the skill `$loft:yard-page` has
+  the agent run it and relay its words.
+- Every `loft yard` command gives the page's address where the run may not write the machine's
+  home, as in Codex's sandbox, once the page server serves the tree: finding the page server only
+  reads its lock, and a tree already served writes nothing.
+
+## 2.4.0-alpha.2 (2026-11-13)
+
+The second prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.0-alpha.2`. It lets you try following Yard Log
+beside the session: `/yard-pane` in Claude Code opens a pane on the branch's Yard Log, where you
+can answer what waits on you, and in Claude Code Desktop it also opens the Yard page in
+Desktop's browser pane. `loft yard page` prints the page's address, which Codex relays through
+`$loft:yard-page`, and the page's address now reaches a sandboxed run such as Codex's.
+`LOFT_YARD_HOME` runs a `loft` under development beside an installed one. The entries under
+Unreleased below list everything 2.4.0 will hold.
+
+## 2.4.0-alpha.1 (2026-11-10)
+
+The first prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.0-alpha.1`. It lets you try measuring how far an
+agent's work is led by the specification: the Claude Code mod and the Codex hook class each call
+that reads or edits files as `spec`, `code` or `other`, `loft yard consultation` sums them by
+stage, session and agent with an estimate of the context each class brought in, and the Yard
+page shows a line beside each stage and a Consultation view. The entries under Unreleased below
+list everything 2.4.0 will hold.
+
 ## 2.3.0 (2026-11-05)
 
 - The Yard page wears Loft Web's design. A sidebar lists the Yard Logs under Loft's wordmark and

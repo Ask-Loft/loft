@@ -25,7 +25,7 @@ fn component_id(n: u32) -> ComponentId {
     ComponentId::new(key(n))
 }
 
-/// The small document with two more root Components, neither labelled: Storage, holding a
+/// The small document with two more root Components, neither labeled: Storage, holding a
 /// constraint and mentioning Cache, and Cache.
 fn with_storage() -> Document {
     let mut document = small_document();

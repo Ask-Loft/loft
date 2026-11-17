@@ -29,6 +29,15 @@ fn the_dogfood_launch_paths_restart_before_starting_either_agent() {
 }
 
 #[test]
+fn the_dogfood_desktop_mode_switches_one_project_and_switches_it_back() {
+    let status = Command::new("python3")
+        .arg(workspace().join("crates/loft-cli/tests/yard_dogfood_desktop_test.py"))
+        .status()
+        .expect("Python 3 runs the desktop mode tests");
+    assert!(status.success(), "desktop mode tests failed: {status}");
+}
+
+#[test]
 fn the_dogfood_restart_contract_replaces_one_server_and_preserves_recorded_state() {
     let yard = Yard::new();
     yard.write(

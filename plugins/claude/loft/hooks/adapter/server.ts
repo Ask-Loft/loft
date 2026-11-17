@@ -11,17 +11,44 @@ import type { EngineInterface } from 'claude-code'
 import { QUIET, type Settings } from '../loft'
 import { parseDocument } from '../model'
 import { HOST } from './contract'
-import { postToServer, type Outbox } from './outbox'
+import { answerOf, type Outbox } from './outbox'
 import { argvOf } from './run'
 
 /** How often the mod tells the page server its session is live, in milliseconds. */
 export const BEAT = 5000
 
-/** What the mod knows of the page server: whether its own child serves, and the trees registered. */
-export type Server = { isServing: boolean; isBeating: boolean; trees: Set<string> }
+/**
+ * What the mod knows of the page server: whether its own child serves; the trees the mod
+ * registered, as its session spells them; for each tree whose registration the page server
+ * answered, the top of its worktree by its real path and as spelled; and the real path of each
+ * tree served, as the last answer named them.
+ */
+export type Server = { isServing: boolean; isBeating: boolean; trees: Set<string>; tops: Map<string, string[]>; served: Set<string> }
 
 export function serverOf(): Server {
-  return { isServing: false, isBeating: false, trees: new Set() }
+  return { isServing: false, isBeating: false, trees: new Set(), tops: new Map(), served: new Set() }
+}
+
+/**
+ * Every tree the mod knows to class a path against, by each spelling it knows. A directory the
+ * mod registered stands for its tree only until the page server names the tree's top: a
+ * subdirectory's own `spec/` is not the specification.
+ */
+export function known(server: Server): Set<string> {
+  const unanswered = [...server.trees].filter(tree => (server.tops.get(tree) ?? []).length === 0)
+  return new Set([...unanswered, ...[...server.tops.values()].flat(), ...server.served])
+}
+
+/** The texts an answer's field `name` holds. */
+function textsOf(answer: Record<string, unknown>, name: string): string[] {
+  const value = answer[name]
+  const all = Array.isArray(value) ? value : [value]
+  return all.filter((each): each is string => typeof each === 'string')
+}
+
+/** Takes the real path of each tree served from an answer of the page server that names them. */
+function learn(server: Server, answer: Record<string, unknown>) {
+  if (Array.isArray(answer.trees)) server.served = new Set(textsOf(answer, 'trees'))
 }
 
 /** The port a `loft yard serve` document reports for the page server that serves or runs, if any. */
@@ -67,19 +94,30 @@ export function serve($: EngineInterface, settings: Settings, server: Server, bo
   })
 }
 
-/** Tells the page server that `session` is live; whether a page server took it. */
-export async function hear($: EngineInterface, box: Outbox, session: string, protocol = 1): Promise<boolean> {
-  return postToServer($, box, '/api/heard', { session, ...(protocol >= 2 ? { host: HOST } : {}) })
+/** Tells the page server that `session` is live, learning the trees it serves; whether it took it. */
+async function hear($: EngineInterface, box: Outbox, server: Server, session: string, protocol = 1): Promise<boolean> {
+  const answer = await answerOf($, box, '/api/heard', { session, ...(protocol >= 2 ? { host: HOST } : {}) })
+  if (answer !== undefined) learn(server, answer)
+  return answer !== undefined
 }
 
 /**
  * One beat: tells the page server the session is live, and registers the session's tree with one
- * that answers until it takes it; where none answers, runs `loft yard serve`, which registers the
- * tree itself, unless the mod's own child serves or the last run has yet to say what it did.
+ * that answers until it takes it, learning the tree's top from the answer; where none answers,
+ * runs `loft yard serve`, which registers the tree itself, unless the mod's own child serves or
+ * the last run has yet to say what it did. `loft yard serve` reports no top, so a beat that
+ * reaches the page server registers the tree once more to learn it.
  */
 export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
-  if (await hear($, box, session, settings.protocol)) {
-    if (!server.trees.has(tree) && (await postToServer($, box, '/api/register', { tree }))) server.trees.add(tree)
+  if (await hear($, box, server, session, settings.protocol)) {
+    if (server.tops.has(tree)) return
+    const answer = await answerOf($, box, '/api/register', { tree })
+    if (answer === undefined) return
+    server.trees.add(tree)
+    learn(server, answer)
+    // An answer that names no top, as from a page server that wrote no JSON, is asked again.
+    const tops = [...textsOf(answer, 'tree'), ...textsOf(answer, 'spelled')]
+    if (tops.length > 0) server.tops.set(tree, tops)
     return
   }
   if (server.isBeating || server.isServing) return

@@ -42,7 +42,7 @@ fn a_late_delivery_result_does_not_report_availability_for_a_new_native_route() 
     );
     assert_eq!(
         state.notifications.deliveries[&marker].progress,
-        Progress::Cancelled
+        Progress::Canceled
     );
     std::fs::remove_dir_all(root).unwrap();
 }

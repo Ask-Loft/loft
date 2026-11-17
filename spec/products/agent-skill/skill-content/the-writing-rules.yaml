@@ -47,10 +47,10 @@ requirements:
     statement:
       form: ubiquitous
       system: "The skill"
-      shall: "teach one Requirement for each rule of a catalogue."
+      shall: "teach one Requirement for each rule of a catalog."
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e86c305d4cd8
-        name: "The rules tell the agent to give each rule, check or command of a catalogue its own Requirement."
+        name: "The rules tell the agent to give each rule, check or command of a catalog its own Requirement."
   - key: 01a13654-6e12-74a1-ad7f-e86de70da85f
     statement:
       form: ubiquitous
@@ -186,7 +186,7 @@ requirements:
       shall: "teach that a specification states guarantees and not provisioning."
     criteria:
       - key: 01a154c3-02c1-74da-a483-d4c4a11131f9
-        name: "The rules tell the agent to state the behaviour and the targets the product guarantees."
+        name: "The rules tell the agent to state the behavior and the targets the product guarantees."
       - key: 01a154c3-02c1-74da-a483-d4c50dfca1bd
         name: "The rules tell the agent never to state a sizing or capacity choice as a node."
   - key: 01a154c3-02c1-74da-a483-d4c6672fa2a8

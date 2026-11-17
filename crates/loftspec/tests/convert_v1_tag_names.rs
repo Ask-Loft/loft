@@ -60,7 +60,7 @@ fn a_registry_entry_keeps_the_entry_s_definition() {
     let document = converted(&both_named("MCP tool")).document;
     assert_eq!(
         document.tags[ENTRY].definition,
-        "Behaviour every implementation reproduces."
+        "Behavior every implementation reproduces."
     );
 }
 

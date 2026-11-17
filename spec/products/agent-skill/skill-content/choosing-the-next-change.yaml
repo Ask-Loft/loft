@@ -43,7 +43,7 @@ requirements:
       - key: 01a154c3-02c1-74da-a483-d4853e5373dc
         name: "The workflow tells the agent to map each scenario to every criterion it covers."
       - key: 01a154c3-02c1-74da-a483-d486f37c7595
-        name: "The workflow tells the agent to report an ambiguity in the specification rather than invent behaviour."
+        name: "The workflow tells the agent to report an ambiguity in the specification rather than invent behavior."
   - key: 01a154c3-02c1-74da-a483-d4872971a2e7
     statement:
       form: ubiquitous

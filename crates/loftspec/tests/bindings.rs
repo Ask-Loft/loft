@@ -1,4 +1,4 @@
-//! Bindings and aliases (F-2): a label changes only by relabelling, which keeps the previous
+//! Bindings and aliases (F-2): a label changes only by relabeling, which keeps the previous
 //! label as a permanent alias, and the validator refuses aliases that collide.
 
 use crate::common::fields::{scalar, scalars};
@@ -93,7 +93,7 @@ fn an_alias_resolves_to_the_element_it_was_assigned_to() {
 }
 
 #[test]
-fn relabelling_an_unbound_element_is_refused() {
+fn relabeling_an_unbound_element_is_refused() {
     let mut bindings = Bindings::default();
     assert_eq!(
         bindings.relabel(requirement(1), label("RQ-3")),

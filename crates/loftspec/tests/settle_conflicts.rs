@@ -230,7 +230,7 @@ fn a_record_given_for_a_field_that_holds_a_scalar_is_refused_naming_the_field() 
 
 #[test]
 fn a_record_given_with_a_field_its_kind_does_not_define_is_refused_naming_the_field() {
-    let record = ConflictValue::Record(vec![("colour".to_owned(), text("blue"))]);
+    let record = ConflictValue::Record(vec![("color".to_owned(), text("blue"))]);
     shape_refused(&subject_conflict(), "subject", record);
 }
 
@@ -254,7 +254,7 @@ fn settling_a_slug_by_a_side_gives_the_record_that_slug_and_its_file_the_path_it
         crate::common::merge_tree::features(&mut document)[1].slug = crate::common::slug(text);
         document
     };
-    let document = merge(&base, &renamed("labelling"), &renamed("label-rules"));
+    let document = merge(&base, &renamed("labeling"), &renamed("label-rules"));
     let settled = settled(&document, "slug", &Settlement::Theirs);
     let slug = &settled.products[0].feature_groups[0].features[1].slug;
     assert_eq!(slug, &crate::common::slug("label-rules"));

@@ -89,7 +89,7 @@ impl Place {
     ///
     /// # Errors
     ///
-    /// The lease's file cannot be created, opened or locked.
+    /// The lease's file cannot be opened or locked.
     pub fn is_leased(&self, submission: SubmissionKey) -> Result<bool, YardStoreError> {
         lock::is_held(&self.lease_path(submission))
     }

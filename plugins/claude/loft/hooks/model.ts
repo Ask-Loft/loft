@@ -8,6 +8,9 @@ type Json = Record<string, unknown>
 export const isObject = (value: unknown): value is Json =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
+/** A JSON value that is text, else the empty text. */
+export const textOf = (value: unknown): string => (typeof value === 'string' ? value : '')
+
 /** The objects of a JSON array; none for anything else. */
 export const records = (value: unknown): Json[] => (Array.isArray(value) ? value.filter(isObject) : [])
 

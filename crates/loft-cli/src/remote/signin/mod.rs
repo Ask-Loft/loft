@@ -1,4 +1,4 @@
-//! Signing in to a remote through OAuth 2.0: the authorization server is learnt from the
+//! Signing in to a remote through OAuth 2.0: the authorization server is learned from the
 //! remote's challenge (RFC 9728, RFC 8414), `loft` registers itself as a public native client
 //! (RFC 7591), and the authorization code grant with PKCE (RFC 7636) runs on a redirect to a
 //! loopback port of its own (RFC 8252), naming the remote's protected resource (RFC 8707). A

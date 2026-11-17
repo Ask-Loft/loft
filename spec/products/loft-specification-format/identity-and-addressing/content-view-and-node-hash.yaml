@@ -86,7 +86,7 @@ requirements:
       - key: f9e8c0b8-fd34-41bb-98a2-8854d25bfaea
         name: "The same view hashed under two domain strings yields two different digests."
       - key: ccd68fa9-cf0b-4766-87bf-65b05eef84e4
-        name: "The canonical bytes of a view are byte-identical to RFC 8785's serialisation of it."
+        name: "The canonical bytes of a view are byte-identical to RFC 8785's serialization of it."
       - key: 11a77e35-59df-42af-ad77-f2d062c29e30
         name: "The golden vectors published with the Format are reproduced byte for byte."
       - key: fc49b3d4-27f7-41a0-8373-4ca4f6682546

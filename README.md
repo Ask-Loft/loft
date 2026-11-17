@@ -119,6 +119,6 @@ your machine. The Claude Code plugin runs `loft` with both off.
 
 [docs/telemetry.md](docs/telemetry.md) shows an event, every field and how long events are kept.
 
-## Licence
+## License
 
 Apache-2.0: [LICENSE](LICENSE) and [NOTICE](NOTICE).

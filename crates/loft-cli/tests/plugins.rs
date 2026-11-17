@@ -85,6 +85,7 @@ fn each_committed_package_equals_the_composition_for_its_host() {
             "plugins/claude/loft/skills/yard",
             "plugins/codex/loft/skills/loft-spec",
             "plugins/codex/loft/skills/yard",
+            "plugins/codex/loft/skills/yard-page",
         ])
     );
 }
@@ -120,7 +121,8 @@ fn skills(root: &str) -> Vec<String> {
 #[test]
 fn both_plugins_hold_loft_spec_and_their_adapters_yard_skills() {
     assert_eq!(skills(CLAUDE_ROOT), ["loft-spec", "yard"]);
-    assert_eq!(skills(CODEX_ROOT), ["loft-spec", "yard"]);
+    // Codex offers a plugin no command of its own, so it also carries `yard-page`.
+    assert_eq!(skills(CODEX_ROOT), ["loft-spec", "yard", "yard-page"]);
 }
 
 #[test]
@@ -468,6 +470,14 @@ fn loft_subcommands() -> Vec<String> {
         .filter(|name| *name != "help")
         .map(ToOwned::to_owned)
         .collect()
+}
+
+#[test]
+fn each_loft_subcommand_counted_as_reading_the_specification_is_one_of_loft_s_own() {
+    let subcommands = loft_subcommands();
+    for name in yardlog::consult::LOFT_READS {
+        assert!(subcommands.iter().any(|known| known == name), "{name}");
+    }
 }
 
 #[test]

@@ -126,7 +126,7 @@ pub(super) fn publish_labels_in(document: &mut Document, elements: &[ElementId])
 /// never rewinds and no label is given out twice (AC-25, AC-26, AC-722). Nodes come in document
 /// order: the Products in the manifest's order, then the root Components by file name (AC-24,
 /// AC-262), each parent before its children; the decisions follow by file name. An element whose
-/// label has another kind's prefix is relabelled, its previous label kept as an alias (RQ-63).
+/// label has another kind's prefix is relabeled, its previous label kept as an alias (RQ-63).
 pub fn allocate(document: &mut Document) -> Vec<Allocated> {
     let elements = elements_in_order(document);
     restore_departed(document, &elements);
@@ -134,7 +134,7 @@ pub fn allocate(document: &mut Document) -> Vec<Allocated> {
 }
 
 /// Gives each of `elements` whose binding is departed that binding back, and reports each label
-/// it gave back that has the element's own prefix: one of another prefix is relabelled by
+/// it gave back that has the element's own prefix: one of another prefix is relabeled by
 /// allocation.
 fn restore_departed(document: &mut Document, elements: &[ElementId]) -> Vec<Allocated> {
     let mut given_back = Vec::new();

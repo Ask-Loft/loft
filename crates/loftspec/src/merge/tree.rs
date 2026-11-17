@@ -132,7 +132,7 @@ fn merge_records(sides: &[Flat; 3], sure: &BTreeSet<Key>) -> BTreeMap<Key, Rec> 
 }
 
 /// Each version's lists, each filtered to the records the merge places in it and those no side
-/// holds, so that a record moved elsewhere makes no neighbour look moved; the order each list
+/// holds, so that a record moved elsewhere makes no neighbor look moved; the order each list
 /// keeps; and the records ours and theirs each moved within each list in authored order.
 pub(super) struct Lists {
     sides: [BTreeMap<Place, Vec<Key>>; 3],

@@ -40,6 +40,20 @@ class Provider(BaseHTTPRequestHandler):
                 "name": "exec_command",
                 "arguments": json.dumps({"cmd": "printf fixture", "yield_time_ms": 1000}),
             }
+        elif Provider.requests == 2:
+            item = {
+                "id": "fc_reads", "type": "function_call", "call_id": "call_reads",
+                "name": "exec_command",
+                "arguments": json.dumps({"cmd": "cat spec/fixture.yaml", "yield_time_ms": 1000}),
+            }
+        elif Provider.requests == 3:
+            patch = "*** Begin Patch\n*** Add File: notes/fixture.md\n+fixture\n*** End Patch\n"
+            item = {
+                "id": "fc_patch", "type": "function_call", "call_id": "call_patch",
+                "name": "exec_command",
+                "arguments": json.dumps({"cmd": f"apply_patch <<'PATCH'\n{patch}PATCH\n",
+                                         "yield_time_ms": 1000}),
+            }
         else:
             item = {"id": "msg_fixture", "type": "message", "role": "assistant",
                     "content": [{"type": "output_text", "text": "Fixture complete."}]}
@@ -138,7 +152,10 @@ def run(loft, work, home):
                 events += [json.loads(line) for line in log.read_text().splitlines()]
             assert any(event["kind"] == "tool.start" for event in events), events
             assert any(event["kind"] == "tool.end" for event in events), events
-            assert Provider.requests == 2, Provider.requests
+            starts = {event.get("call"): event for event in events if event["kind"] == "tool.start"}
+            assert starts.get("call_reads", {}).get("reads") == ["spec"], starts
+            assert starts.get("call_patch", {}).get("edits") == ["code"], starts
+            assert Provider.requests == 4, Provider.requests
             print("Real Codex native tool hooks passed with loopback model fixtures.")
         finally:
             process.terminate()

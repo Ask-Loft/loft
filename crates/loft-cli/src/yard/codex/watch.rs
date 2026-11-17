@@ -95,7 +95,7 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
     Ok(json!({}))
 }
 
-// Concurrent background startup may precede the ordinary prompt handler. A cancelled nudge
+// Concurrent background startup may precede the ordinary prompt handler. A canceled nudge
 // cannot clear a previous session end, even when Codex launches both handlers at once.
 fn resume(files: &Files, hook: &Hook) -> Result<()> {
     if matches!(
@@ -214,7 +214,7 @@ fn flush(files: &Files, post: impl FnOnce(&Value) -> bool) -> Result<()> {
     };
     let accepted = post(&json!(body));
     files.update(|state| {
-        // Identified payloads must survive a lost acknowledgement byte-for-byte, including
+        // Identified payloads must survive a lost acknowledgment byte-for-byte, including
         // their drop report. Later hooks keep appending to the separate pending queue.
         if !accepted
             && state

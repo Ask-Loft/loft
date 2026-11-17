@@ -8,6 +8,7 @@
 
 mod activity;
 mod assets;
+mod consulted;
 mod discovery;
 mod events;
 mod guard;

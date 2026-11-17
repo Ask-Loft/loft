@@ -301,7 +301,7 @@ test('choosing a stage, a task or a submission in the chart opens the timeline a
   assert.deepEqual(picked, ['one', 'one', 't1', 't1', 'q']);
 });
 
-test('each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labelled with its mode and its length on hover', () => {
+test('each stretch of plan or spec mode is drawn in the track of modes and shaded over every lane, labeled with its mode and its length on hover', () => {
   const shown = log([timed('one', MAIN, 0, 300), timed('scan', EXPLORE, 10, 60)], {
     activity: [activity({ plan: [span(10, 70)], spec: [span(200)] })],
   });
@@ -338,7 +338,7 @@ test('the axis’s first label begins at the chart’s start and a label at its 
   assert.ok(ticks.length >= 3);
   assert.equal(ticks[0].className, 'tick tick--start');
   assert.equal(ticks.at(-1).className, 'tick tick--end');
-  assert.ok(ticks.some((tick) => tick.className === 'tick tick--start' && tick !== ticks[0]), 'time resuming after a break is labelled from the break');
+  assert.ok(ticks.some((tick) => tick.className === 'tick tick--start' && tick !== ticks[0]), 'time resuming after a break is labeled from the break');
 });
 
 test('each time lies at its share of the track’s width and its offset in pixels, so a bar follows the width the browser gives it', () => {

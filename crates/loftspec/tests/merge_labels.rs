@@ -297,7 +297,7 @@ fn a_binding_whose_departure_alone_changed_is_not_put_in_dispute_by_a_label_anot
 }
 
 #[test]
-fn a_binding_one_side_relabelled_takes_that_sides_label_aliases_and_withdrawn_labels_whole() {
+fn a_binding_one_side_relabeled_takes_that_sides_label_aliases_and_withdrawn_labels_whole() {
     let base = with(
         &counter(&labels_file(), "RQ", 51),
         &[binding(1, "RQ-50", &[], &[])],

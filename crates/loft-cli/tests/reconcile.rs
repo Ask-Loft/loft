@@ -102,13 +102,13 @@ fn a_node_without_a_label_is_printed_with_a_dash_and_null_in_json() {
         stdout(&output)
     );
     let json = json_of(&scratch.loft(&["reconcile", "--format", "json"]));
-    let unlabelled = json["findings"]
+    let unlabeled = json["findings"]
         .as_array()
         .unwrap()
         .iter()
         .find(|finding| finding["key"] == "01a13900-0000-7000-8000-000000000001")
         .unwrap();
-    assert_eq!(unlabelled["label"], Value::Null);
+    assert_eq!(unlabeled["label"], Value::Null);
 }
 
 #[test]

@@ -2,7 +2,7 @@
    square corners and hairline rules, and a hard offset shadow only on what floats over the page.
    Its tokens are Loft Web's, drawn again here, since the page shares no code with it: action blue
    marks what is in hand, teal what is done, rust what waits on the person, lilac plan mode and
-   rose a fix the person asked for, and each kind of node has its colour. The dark scheme is Loft
+   rose a fix the person asked for, and each kind of node has its color. The dark scheme is Loft
    Web's own, taken when the browser asks for it. Tokens first, then the frame, the sidebar, the
    head, the timeline, the blocks, the answers, the Loft views, the Gantt chart and the tokens. */
 
@@ -72,6 +72,13 @@
   --plan-soft: #f1ebf8;
   --spec: #7a5600;
   --spec-soft: #fbf0d6;
+  /* What the agents consulted: one hue for each class in every chart, validated as the dataviz
+     method's categorical slots 1, 3 and 2; the other reads and the unclassified in neutrals. */
+  --consult-spec: #2a78d6;
+  --consult-loft: #1baf7a;
+  --consult-code: #eb6834;
+  --consult-other: #9aa3ad;
+  --consult-none: #c8ced5;
   --new: #007083;
   --button: #14488f;
   --button-hover: #1a56ab;
@@ -108,6 +115,11 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --canvas: #0c1117;
+    --consult-spec: #3987e5;
+    --consult-loft: #199e70;
+    --consult-code: #d95926;
+    --consult-other: #6b7682;
+    --consult-none: #3f4a56;
     --surface: #0c1117;
     --surface-2: #10161d;
     --side: #10161d;
@@ -184,9 +196,9 @@ a:hover { text-decoration-thickness: 2.5px; }
 code, .label { font-family: var(--mono); font-size: 0.86em; }
 code { background: var(--code); padding: 0 4px; }
 pre code, .label code { background: none; padding: 0; }
-/* A colour written in a code span, drawn on that colour, ringed so that one like the ground shows. */
-code.colour { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabular-nums; }
-/* A label as Loft Web sets one: in monospace and muted, after a square in its node's kind's colour,
+/* A color written in a code span, drawn on that color, ringed so that one like the ground shows. */
+code.color { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabular-nums; }
+/* A label as Loft Web sets one: in monospace and muted, after a square in its node's kind's color,
    apart from the name beside it, which keeps the ink. */
 .label { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 400; line-height: 1.6; white-space: nowrap; }
 .label::before { content: ""; flex: none; width: 6px; height: 6px; background: var(--kind, var(--rail)); }
@@ -292,7 +304,7 @@ button { font: inherit; }
 .is-offline .connection-dot { background: var(--wait); }
 
 /* The head of the Yard Log shown, as Loft Web heads a page: where it lies above its title, a line
-   that sums it up beneath, and the controls of the view shown at its right, each labelled above
+   that sums it up beneath, and the controls of the view shown at its right, each labeled above
    it in small text. It stays in place while what lies beneath it scrolls. */
 .page-head {
   flex: none;
@@ -458,6 +470,11 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
 .station.is-chosen > .list-row .stage-choose { background: var(--mist); box-shadow: inset 3px 0 0 var(--signal); }
 .stage-choose .stage-title { font-size: 15px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
 .station.status--dropped .stage-choose .stage-title { color: var(--muted); text-decoration: line-through; }
+/* What a stage's agents consulted: spec first in the color of done work, code first in that of a wait. */
+.consult-line { white-space: nowrap; color: var(--muted); }
+.consult-line--spec-first { color: var(--done); }
+.consult-line--code-first { color: var(--wait); }
+.consult-line--brief { flex: none; padding-right: 8px; font-size: 11px; font-variant-numeric: tabular-nums; }
 .stage-facts { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; font-size: 12px; color: var(--muted); }
 .stage-facts .status { font-size: 12px; }
 .stage-facts .waiting-count { min-width: 0; padding: 0; font-size: 12px; }
@@ -493,7 +510,7 @@ body:has(.modal--docked[open]) :is(.main:not(:has(> .view--timeline)), .stage-li
   .main:has(> .yard-log.view--timeline) > .notice, .view--timeline > .banners { margin-left: 16px; margin-right: 16px; padding-left: 0; padding-right: 0; }
 }
 
-/* A status, as Loft Web gives a decision's: a dot in its colour, then its word. */
+/* A status, as Loft Web gives a decision's: a dot in its color, then its word. */
 .status, .state { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; line-height: 20px; white-space: nowrap; }
 .status::before, .state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .status.status--planned, .state.state--open { color: var(--muted); }
@@ -803,7 +820,7 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .finding-group > summary { cursor: pointer; }
 .finding-message { color: var(--body); }
 .finding-counts { display: inline-flex; gap: 10px; margin-left: 4px; color: var(--muted); font-size: 12.5px; white-space: nowrap; vertical-align: baseline; }
-/* Each count a number beside its icon: new findings in the colour of what is new, older ones muted. */
+/* Each count a number beside its icon: new findings in the color of what is new, older ones muted. */
 .count-mark { display: inline-flex; align-items: center; gap: 3px; font-variant-numeric: tabular-nums; }
 .count-mark svg, .count-icon { flex: none; fill: none; stroke: currentColor; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
 .count-mark--new:not(.is-none), .count-icon--new { color: var(--new); }
@@ -841,7 +858,7 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .diagram svg :is(.node, .cluster) :is(rect, polygon, path) { rx: 0; ry: 0; stroke-width: 1px; }
 .diagram svg :is(.flowchart-link, .edgePath path, .relation, .messageLine0, .messageLine1) { stroke-width: 1px; }
 /* The page's own `.label` must not reach Mermaid's labels, where it is measured or drawn: its size
-   and colour are the diagram's theme's, 13 pixels in ink. */
+   and color are the diagram's theme's, 13 pixels in ink. */
 svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-size: inherit; font-weight: inherit; line-height: inherit; white-space: revert; }
 /* A flowchart the page draws itself: flat cards with hairline borders on the sidebar's ground, the
    page's face at 13 pixels in ink, edges in muted ink, their labels in pills and groups as panels
@@ -861,7 +878,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .flow-pill-label { fill: var(--body); font-size: 12px; }
 .flow-group rect { fill: var(--canvas); stroke: var(--line); stroke-width: 1px; }
 /* A spec-change diagram: nested panels and cards, each headed by its kind's square, its label and
-   its change, a bar at its left in its change's colour. */
+   its change, a bar at its left in its change's color. */
 .spec-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 8px; color: var(--body); font-size: 13px; }
 .spec-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .spec-key { width: 3px; height: 14px; background: var(--change); }
@@ -899,7 +916,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .spec-panel[role="button"]:focus-visible .spec-panel-frame { stroke: var(--signal); stroke-width: 2px; }
 .change-tree li.is-marked { outline: 2px solid var(--signal); outline-offset: 4px; }
 .flow .flow-group-title { fill: var(--muted); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; }
-/* Pointing at a node brings it, its edges and its neighbours forward, and fades the rest. */
+/* Pointing at a node brings it, its edges and its neighbors forward, and fades the rest. */
 /* Pointing at a node outlines it and the nodes its edges join in action blue and draws those
    edges in action blue; nothing fades, so moving between nodes makes nothing flicker. */
 .flow.is-emphasis .flow-edge.is-near { stroke: var(--signal); stroke-width: 1.75px; }
@@ -932,7 +949,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .group-button:hover { background: var(--mist); }
 .group-button.is-open { background: var(--mist); border-color: var(--signal); box-shadow: inset 0 -2px 0 var(--signal); font-weight: 600; }
 /* The diff of a spec change: each node's words, the words removed struck through and the words
-   added underlined, as well as coloured. */
+   added underlined, as well as colored. */
 .diff > ul { display: grid; gap: 10px; }
 .diff .diff-words { margin: 4px 0 0; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
 .diff ins { text-decoration: underline; text-decoration-thickness: 2px; background: var(--done-soft); color: var(--ink); }
@@ -1070,3 +1087,32 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 /* The person's own words lie beneath the cards of the options, as wide as they are. */
 .option-grid + .own-words { margin-top: 12px; }
 .question-form > .option-grid + .own-words { margin-top: 2px; }
+
+/* What the agents consulted, as the dataviz method draws it: a legend in one row, bars of stacked
+   segments with a gap of the surface between them, totals and text in the page's ink, and a table
+   of each chart's counts beneath it. Only the marks carry a class's hue. */
+.consultation { position: relative; display: grid; gap: 28px; max-width: 1080px; }
+.consultation h4 { font-size: 13px; font-weight: 600; color: var(--muted); }
+.consult-chart { display: grid; gap: 12px; margin: 0; }
+.consult-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0; padding: 0; list-style: none; font-size: 12px; color: var(--body); }
+.consult-legend li { display: flex; align-items: center; gap: 6px; }
+.consult-swatch { width: 10px; height: 10px; border-radius: 2px; background: currentColor; }
+.consult-rows { display: grid; gap: 8px; }
+.consult-row { display: grid; grid-template-columns: minmax(8em, 14em) minmax(0, 1fr) minmax(7em, auto); align-items: center; gap: 12px; font-size: 13px; }
+.consult-name { overflow: hidden; color: var(--ink); white-space: nowrap; text-overflow: ellipsis; }
+.consult-total { display: flex; gap: 8px; align-items: baseline; color: var(--body); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.consult-bar { display: block; overflow: visible; }
+.consult-mark { stroke: var(--canvas); stroke-width: 1px; cursor: default; }
+.consult-mark:focus-visible { outline: none; stroke: var(--ink); stroke-width: 2px; }
+.consult--specReads, .consult--spec { color: var(--consult-spec); fill: var(--consult-spec); }
+.consult--loftReads { color: var(--consult-loft); fill: var(--consult-loft); }
+.consult--codeReads, .consult--code { color: var(--consult-code); fill: var(--consult-code); }
+.consult--otherReads, .consult--other { color: var(--consult-other); fill: var(--consult-other); }
+.consult--unclassified { color: var(--consult-none); fill: var(--consult-none); }
+.consult-table summary { cursor: pointer; font-size: 12px; color: var(--muted); }
+.consult-partial, .consult-unmeasured { margin: 0; font-size: 13px; color: var(--body); }
+.consult-tip { position: absolute; z-index: 10; padding: 4px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); color: var(--ink); font-size: 12px; white-space: nowrap; pointer-events: none; box-shadow: var(--float); }
+@media (max-width: 640px) {
+  .consult-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .consult-row .consult-bar { grid-column: 1 / -1; grid-row: 2; }
+}

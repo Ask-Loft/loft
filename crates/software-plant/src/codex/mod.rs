@@ -47,7 +47,7 @@ pub struct Scenario {
     pub threads: BTreeMap<String, NativeThread>,
     pub refuse_methods: Vec<String>,
     /// Apply a request but close its first connection before acknowledging it.
-    pub drop_acknowledgements: Vec<String>,
+    pub drop_acknowledgments: Vec<String>,
 }
 
 #[derive(Default)]
@@ -226,7 +226,7 @@ fn requested(
     let method = request["method"].as_str().unwrap_or_default();
     let response = reply(scenario, method, id, &request["params"], shared);
     if scenario
-        .drop_acknowledgements
+        .drop_acknowledgments
         .iter()
         .any(|name| name == method)
         && shared.dropped.lock().unwrap().insert(method.into())

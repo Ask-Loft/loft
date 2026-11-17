@@ -23,7 +23,7 @@ export function clamp(k) {
 }
 
 /**
- * The view that shows the whole diagram of `size` in the stage of `stage`, centred in it.
+ * The view that shows the whole diagram of `size` in the stage of `stage`, centered in it.
  * @param {Size} stage
  * @param {Size} size
  * @returns {View}

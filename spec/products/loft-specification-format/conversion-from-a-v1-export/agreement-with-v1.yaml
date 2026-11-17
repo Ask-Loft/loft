@@ -1,7 +1,7 @@
 key: 01a12dad-fb7a-7333-9129-a6a99935b250
 slug: agreement-with-v1
 name: "Agreement with v1"
-body: "How loftspec stays in agreement with Loft v1 on the behaviour the two share: the structural and language rules and the EARS forms, compared on public v1 exports against outputs a v1 implementation wrote, with each intended difference recorded in a register."
+body: "How loftspec stays in agreement with Loft v1 on the behavior the two share: the structural and language rules and the EARS forms, compared on public v1 exports against outputs a v1 implementation wrote, with each intended difference recorded in a register."
 realizes:
   - e26eb15d-2a28-44fe-bf85-1313011ab0ed
 requirements:

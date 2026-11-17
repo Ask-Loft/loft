@@ -107,7 +107,7 @@ fn a_sentence_the_template_cannot_reproduce_stays_text() {
     // The precondition ends at `the` with no comma: the form parses, but the template writes a
     // comma the sentence does not have.
     stays_text("When formatting the formatter shall mint a key.");
-    // The template capitalises the prefix word.
+    // The template capitalizes the prefix word.
     stays_text("when formatting, the formatter shall mint a key.");
     // Two spaces before `shall`.
     stays_text("The writer  shall write a key.");

@@ -59,6 +59,7 @@ fn the_codex_yard_adaptation_teaches_cli_identity_revisions_tasks_and_page_submi
         "--agent",
         "--agent-type",
         "--format json",
+        "Give that identity and `--format json` to the six operations below; they are not for every `loft yard` command.",
         "--mark-read",
         "--based-on",
         "--send",
@@ -287,4 +288,40 @@ fn the_codex_yard_adaptation_plans_at_a_branch_s_start_and_ends_a_wave_with_code
     ] {
         assert!(text.contains(phrase), "{phrase}");
     }
+}
+
+#[test]
+fn the_codex_yard_page_skill_has_the_agent_run_loft_yard_page_once_and_relay_its_words() {
+    let package = read("plugins/codex/loft/skills/yard-page/SKILL.md");
+    assert_eq!(package, read("crates/loft-cli/skill/yard-page/SKILL.md"));
+    assert!(package.starts_with("---\nname: yard-page\ndescription: "));
+    let words = package.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        words.contains("Run exactly `loft yard page` once"),
+        "{words}"
+    );
+    assert!(
+        words.contains("with no options: it needs no caller, so give it no `--host`, `--session` or other identity"),
+        "{words}"
+    );
+    assert!(
+        words.contains("Give the person the words it prints as they are, the address included"),
+        "{words}"
+    );
+    assert!(words.contains("run nothing more"), "{words}");
+    assert!(
+        words.contains(
+            "Where it gives no address, because no page server runs or because one runs but does not serve this tree yet, give the person those words as they are too, and run nothing more"
+        ),
+        "{words}"
+    );
+}
+
+#[test]
+fn the_claude_code_plugin_carries_no_yard_page_skill() {
+    assert!(
+        !workspace()
+            .join("plugins/claude/loft/skills/yard-page")
+            .exists()
+    );
 }

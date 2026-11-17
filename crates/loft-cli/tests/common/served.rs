@@ -72,10 +72,15 @@ impl Served {
 
     /// Starts `loft yard serve` on `port`.
     pub fn start_on(yard: &Yard, port: u16, extra: &[&str]) -> Self {
+        Self::start_with(yard, port, &[], extra)
+    }
+
+    /// Starts `loft yard serve` on `port`, with `variables` set in its environment.
+    pub fn start_with(yard: &Yard, port: u16, variables: &[(&str, &str)], extra: &[&str]) -> Self {
         let port_text = port.to_string();
         let mut args = vec!["serve", "--port", &port_text];
         args.extend_from_slice(extra);
-        let mut child = yard.spawn(&args);
+        let mut child = yard.spawn_with(&args, variables);
         let started = first_document(&mut child);
         assert_eq!(started["outcome"], "serving", "{started}");
         Self {

@@ -192,17 +192,17 @@ fn every_script_style_and_font_the_page_loads_comes_from_the_page_server() {
 }
 
 #[test]
-fn inter_is_served_as_a_font_with_its_licence() {
+fn inter_is_served_as_a_font_with_its_license() {
     let yard = Yard::new();
     let served = Served::start(&yard, &[]);
     let font = served.get("/vendor/inter-latin.woff2");
     assert_eq!(font.status, 200);
     assert!(font.head.contains("font/woff2"), "{}", font.head);
     assert_eq!(font.body, page_file("vendor/inter-latin.woff2"));
-    let licence = served.get("/vendor/inter.LICENSE");
-    assert_eq!(licence.status, 200);
+    let license = served.get("/vendor/inter.LICENSE");
+    assert_eq!(license.status, 200);
     assert!(
-        String::from_utf8(licence.body)
+        String::from_utf8(license.body)
             .unwrap()
             .contains("SIL Open Font License")
     );

@@ -45,9 +45,9 @@ fn a_record_both_sides_moved_to_one_place_is_there_without_a_conflict_over_its_p
 fn a_feature_whose_slug_one_side_changed_is_written_under_its_new_name_and_leaves_its_old_file() {
     let base = two_features();
     let mut ours = moved(&base);
-    features(&mut ours)[1].slug = slug("labelling");
+    features(&mut ours)[1].slug = slug("labeling");
     let merged = merged(&base, &ours, &edited(&base, EDIT));
-    let renamed = "products/example-product/identity/labelling.yaml";
+    let renamed = "products/example-product/identity/labeling.yaml";
     assert!(file(&merged, renamed).contains(EDIT), "{}", dump(&merged));
     assert!(!merged.files.contains_key(&SpecPath::new(LABELS_FEATURE)));
     assert_eq!(carried(&merged, 4), 1);

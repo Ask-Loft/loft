@@ -104,7 +104,7 @@ fn a_notification_client_does_not_displace_an_existing_usage_client() {
 fn a_lost_acknowledgment_can_be_recovered_from_the_native_receipt_after_reconnect() {
     let peer = CodexAppServer::start(Scenario {
         loaded: vec!["thread".into()],
-        drop_acknowledgements: vec!["turn/start".into()],
+        drop_acknowledgments: vec!["turn/start".into()],
         ..Scenario::default()
     });
     let mut client = Client::connect(peer.path(), "thread").unwrap();

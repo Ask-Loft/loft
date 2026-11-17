@@ -1,4 +1,4 @@
-//! Recognising the five basic EARS forms over a sentence's tokens: the same classification as
+//! Recognizing the five basic EARS forms over a sentence's tokens: the same classification as
 //! the language rule that reports a statement outside the five forms, so a sentence the Format
 //! stores as slots is one that rule accepts. Spans index [`crate::text::tokenize`].
 

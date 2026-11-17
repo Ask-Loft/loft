@@ -22,7 +22,7 @@ requirements:
       - key: 75ba89e0-d6ee-4a6e-a81b-b9dccba165ed
         name: "Rekeying a node leaves the edges root unchanged."
       - key: 735135ce-6c8e-40f8-9f10-87ba23a346e9
-        name: "Relabelling a node leaves the edges root unchanged."
+        name: "Relabeling a node leaves the edges root unchanged."
       - key: a0510545-2865-4b2c-a28b-b8ebb8b94667
         name: "A node endpoint enters by its content hash."
       - key: 16ed798a-86b8-44aa-9bda-dab20590bedf
@@ -42,7 +42,7 @@ requirements:
       - key: d56b9623-7212-49bf-9d24-5692ab3a9ac6
         name: "The same document with fresh keys has the same content root."
       - key: 9d540b62-2320-4764-a14a-e2f4dd7da89a
-        name: "Relabelling every node leaves the content root unchanged."
+        name: "Relabeling every node leaves the content root unchanged."
       - key: 371ad570-9dd3-4893-ad0a-58859b55c5fc
         name: "Reordering the Products in the manifest's list changes the content root."
       - key: 9ad90ae7-2dd8-4f71-aea2-3ed4b7b8a45c
@@ -66,7 +66,7 @@ requirements:
       shall: "compute the binding root over the sorted bindings of key, label, aliases and content hash."
     criteria:
       - key: fb197598-98ce-4ae1-9374-c62c17f0e3b7
-        name: "Relabelling a node changes the binding root."
+        name: "Relabeling a node changes the binding root."
       - key: 245ac12d-523d-4ff2-8a39-f1918b595aff
         name: "The hash in a binding is computed from the document, never read from `spec/labels.yaml`."
       - key: 01a130de-5738-756e-a4f4-f9521ba46949

@@ -3,6 +3,8 @@
 
 import type { EngineInterface } from 'claude-code'
 
+import { isObject } from '../model'
+
 /** The most events kept while the page server does not answer; past it the oldest is dropped. */
 export const MOST = 1000
 
@@ -53,12 +55,13 @@ export async function tokenOf($: EngineInterface, box: Outbox): Promise<string |
 }
 
 /**
- * Posts `body` to the page server's `path` with the control token; whether it took it. A token it
+ * Posts `body` to the page server's `path` with the control token; its answer where it took it, an
+ * empty one where the answer is no JSON object, and none where it did not take it. A token it
  * refuses is forgotten, so that the next post reads the one a newer page server made.
  */
-export async function postToServer($: EngineInterface, box: Outbox, path: string, body: unknown): Promise<boolean> {
+export async function answerOf($: EngineInterface, box: Outbox, path: string, body: unknown): Promise<Record<string, unknown> | undefined> {
   const token = await tokenOf($, box)
-  if (token === undefined) return false
+  if (token === undefined) return undefined
   try {
     const posted = await $.http.fetch(`http://127.0.0.1:${box.port}${path}`, {
       method: 'POST',
@@ -66,10 +69,26 @@ export async function postToServer($: EngineInterface, box: Outbox, path: string
       body: JSON.stringify(body),
     })
     if (posted.status === 401 || posted.status === 403) box.token = undefined
-    return posted.ok
+    if (!posted.ok) return undefined
+    return objectOf(posted.text)
   } catch {
-    return false
+    return undefined
   }
+}
+
+/** `text` as a JSON object, or an empty one. */
+function objectOf(text: string): Record<string, unknown> {
+  try {
+    const doc: unknown = JSON.parse(text)
+    return isObject(doc) ? doc : {}
+  } catch {
+    return {}
+  }
+}
+
+/** Posts `body` to the page server's `path` with the control token; whether it took it. */
+export async function postToServer($: EngineInterface, box: Outbox, path: string, body: unknown): Promise<boolean> {
+  return (await answerOf($, box, path, body)) !== undefined
 }
 
 /**

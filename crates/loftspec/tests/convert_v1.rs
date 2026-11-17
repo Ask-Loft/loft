@@ -216,7 +216,7 @@ fn the_registries_keep_keys_names_and_definitions() {
             (
                 TagId::new(key(71)),
                 "portable",
-                "Behaviour every implementation reproduces."
+                "Behavior every implementation reproduces."
             ),
             (TagId::new(key(72)), "identity", "Keys and labels."),
         ]

@@ -19,7 +19,7 @@ fn full_export() -> Value {
     let mut value = common::v1::full_export();
     value["nodes"][9]["componentScope"] = json!({"kind": "external"});
     value["nodes"][6]["proposedFate"] = json!("proved");
-    // A subject the export no longer holds, labelled above every live Requirement.
+    // A subject the export no longer holds, labeled above every live Requirement.
     let subject = &mut value["architectureDecisions"][0]["subjectLinks"][0]["subject"];
     subject["nodeId"] = json!(uuid(77));
     subject["externalId"] = json!("RQ-9");

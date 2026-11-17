@@ -166,7 +166,7 @@ fn tagged() -> Document {
     document.tags.push(TagEntry {
         id: TagId::new(key(20)),
         name: tag.clone(),
-        definition: "Behaviour about lending books.".to_owned(),
+        definition: "Behavior about lending books.".to_owned(),
     });
     let feature = borrowing(&mut document);
     feature.details.tags.push(tag.clone());

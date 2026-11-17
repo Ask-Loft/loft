@@ -20,7 +20,7 @@ requirements:
       - key: 01a1646f-546d-7042-befd-eae166cc8004
         name: "Each criterion is listed under its Requirement within its Feature, in a table of its label, its name, its state and each of its tests by its file and the line it starts at."
       - key: 01a1646f-546d-7042-befd-eae2b314450a
-        name: "Each criterion not accepted is marked not yet reviewed, stale, unverified with its reason, or not linked, in a word as well as a colour."
+        name: "Each criterion not accepted is marked not yet reviewed, stale, unverified with its reason, or not linked, in a word as well as a color."
       - key: 01a1646f-546d-7042-befd-eae34b438416
         name: "The accepted criteria of each Feature are folded into one line that counts them and opens to their list."
       - key: 01a1646f-546d-7042-befd-eae4edf1b696

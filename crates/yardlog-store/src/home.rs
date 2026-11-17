@@ -18,6 +18,9 @@ use crate::{YardStoreError, lock};
 /// The directory under the person's home directory.
 pub const HOME_DIR: &str = ".yard";
 
+/// The environment variable that moves the directory, given an absolute path.
+pub const HOME_VARIABLE: &str = "LOFT_YARD_HOME";
+
 /// A file of `~/.yard/`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HomeFile {
@@ -70,12 +73,19 @@ pub struct Home {
 }
 
 impl Home {
-    /// `~/.yard/` in the home directory of the person who runs `loft`, where one is known.
+    /// The directory `LOFT_YARD_HOME` names where it is absolute, else `~/.yard/` in the home
+    /// directory of the person who runs `loft`, where one is known: a `loft` under development
+    /// keeps a page server and session records of its own beside an installed one.
     #[must_use]
     pub fn from_env() -> Option<Self> {
-        std::env::home_dir()
-            .filter(|home| home.is_absolute())
-            .map(|home| Self::at(home.join(HOME_DIR)))
+        let moved = std::env::var_os(HOME_VARIABLE)
+            .map(PathBuf::from)
+            .filter(|dir| dir.is_absolute());
+        moved.map(Self::at).or_else(|| {
+            std::env::home_dir()
+                .filter(|home| home.is_absolute())
+                .map(|home| Self::at(home.join(HOME_DIR)))
+        })
     }
 
     /// The directory `dir` in place of `~/.yard/`.

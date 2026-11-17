@@ -5,10 +5,10 @@
 // sidebar's ground with hairline borders, the page's face at 13 pixels, muted edges, and groups
 // framed by a hairline on the page's ground; and each diagram on the page is drawn again when the
 // browser changes its scheme. A flowchart of a block's Markdown is drawn by the page itself, over
-// ELK (`flowchart.js`), in classes the stylesheet colours, so a change of scheme recolours it
+// ELK (`flowchart.js`), in classes the stylesheet colors, so a change of scheme recolors it
 // without laying it out again; so is a diagram the page builds itself, given as a drawing that
 // draws its own SVG. A diagram the page draws keeps its own size, scrolling sideways where it is
-// wider than its block, and brings a node's neighbours forward under the pointer. Each diagram
+// wider than its block, and brings a node's neighbors forward under the pointer. Each diagram
 // drawn has a button that expands it into the page's modal, where it zooms and pans.
 
 import { h } from './dom.js';
@@ -17,7 +17,7 @@ import { FLOWCHART, drawFlowchart } from './flowchart.js';
 import * as modal from './modal.js';
 import { zoomStage } from './zoom.js';
 
-/** The colours of the page's light scheme, for a page whose stylesheet sets none. */
+/** The colors of the page's light scheme, for a page whose stylesheet sets none. */
 const LIGHT = {
   font: '"Inter", ui-sans-serif, system-ui, sans-serif',
   surface: '#ffffff',
@@ -37,7 +37,7 @@ const LIGHT = {
   dangerSoft: '#fde8e7',
 };
 
-/** @typedef {typeof LIGHT} Colours */
+/** @typedef {typeof LIGHT} Colors */
 
 /** @returns {'dark' | 'light'} the scheme the browser asks for. */
 function scheme() {
@@ -45,22 +45,22 @@ function scheme() {
 }
 
 /**
- * The colours a diagram is drawn in: the page's tokens, as its stylesheet sets them for the
+ * The colors a diagram is drawn in: the page's tokens, as its stylesheet sets them for the
  * scheme the browser asks for.
- * @returns {Colours}
+ * @returns {Colors}
  */
-export function colours() {
+export function colors() {
   const style = globalThis.getComputedStyle?.(document.documentElement);
   /** @param {string} token */
   const read = (token) => style?.getPropertyValue(`--${token}`).trim() || '';
   const kebab = (/** @type {string} */ name) => name.replace(/[A-Z0-9]/g, (letter) => `-${letter.toLowerCase()}`);
-  return /** @type {Colours} */ (Object.fromEntries(Object.entries(LIGHT).map(([name, fallback]) => [name, read(kebab(name)) || fallback])));
+  return /** @type {Colors} */ (Object.fromEntries(Object.entries(LIGHT).map(([name, fallback]) => [name, read(kebab(name)) || fallback])));
 }
 
 /**
  * Mermaid's theme in the page's design: nodes on the sidebar's ground with hairline borders, the
  * page's face at 13 pixels, muted edges, and groups and edge labels on the page's ground.
- * @param {Colours} c
+ * @param {Colors} c
  */
 export function theme(c) {
   return {
@@ -115,7 +115,7 @@ async function mermaid() {
   const library = await loading;
   if (configured !== scheme()) {
     configured = scheme();
-    library.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'base', themeVariables: theme(colours()) });
+    library.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'base', themeVariables: theme(colors()) });
   }
   return library;
 }
@@ -166,10 +166,10 @@ function show(target, svg) {
 
 /**
  * Draws `source` into `target`: Mermaid's source, the source that `source` makes from the
- * colours of the scheme, or a drawing; with a button that expands it. Where it cannot be drawn,
+ * colors of the scheme, or a drawing; with a button that expands it. Where it cannot be drawn,
  * shows its source with a line saying it could not be drawn, and no button.
  * @param {HTMLElement} target
- * @param {string | ((colours: Colours) => string) | Drawing} source
+ * @param {string | ((colors: Colors) => string) | Drawing} source
  */
 export async function draw(target, source) {
   shown.set(target, source);
@@ -178,7 +178,7 @@ export async function draw(target, source) {
   const drawing = typeof source === 'object' ? source : null;
   if (drawing?.choose) chooser(target, drawing);
   /** @type {string} */
-  const text = typeof source === 'object' ? '' : typeof source === 'function' ? source(colours()) : source;
+  const text = typeof source === 'object' ? '' : typeof source === 'function' ? source(colors()) : source;
   const flow = typeof source === 'string' && FLOWCHART.test(text);
   const expanded = EXPANDED.has(target);
   const key = drawing ? `drawing\n${expanded ? 'expanded' : 'block'}\n${drawing.key}` : flow ? `flow\n${text}` : `${scheme()}\n${text}`;

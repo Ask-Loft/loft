@@ -7,6 +7,7 @@
 //! holder lets go; only a holder that was killed leaves its name, for the next to replace.
 
 use std::fs::{self, File, OpenOptions, TryLockError};
+use std::io;
 use std::path::{Path, PathBuf};
 
 use loft_ports::io_error;
@@ -76,24 +77,39 @@ pub fn lock(path: &Path) -> Result<Locked, YardStoreError> {
 /// The file cannot be created, opened or locked.
 pub fn try_lock(path: &Path) -> Result<Option<Locked>, YardStoreError> {
     let file = open(path)?;
-    match file.try_lock() {
-        Ok(()) => Ok(Some(Locked {
-            file,
-            path: path.to_owned(),
-            named: None,
-        })),
-        Err(TryLockError::WouldBlock) => Ok(None),
+    Ok(taken(file.try_lock(), path)?.then(|| Locked {
+        file,
+        path: path.to_owned(),
+        named: None,
+    }))
+}
+
+/// Whether an `attempt` on the lock at `path` found it free and took it.
+fn taken(attempt: Result<(), TryLockError>, path: &Path) -> Result<bool, YardStoreError> {
+    match attempt {
+        Ok(()) => Ok(true),
+        Err(TryLockError::WouldBlock) => Ok(false),
         Err(TryLockError::Error(error)) => Err(io_error(path)(error).into()),
     }
 }
 
-/// Whether another holds the lock on `path` now.
+/// Whether another holds the lock on `path` now. The probe only reads: it opens the file for
+/// reading, tries a shared lock and lets it go at once, so a prober that may not write there, as
+/// in a sandbox, still learns it, and a file that is missing is held by no one and is not
+/// created. Every holder holds the lock exclusively, so a shared lock is refused while one does;
+/// a shared lock, unlike an exclusive one, needs no write access where `flock` is emulated with
+/// byte-range locks, as on NFS.
 ///
 /// # Errors
 ///
-/// The file cannot be created, opened or locked.
+/// The file cannot be opened or locked.
 pub fn is_held(path: &Path) -> Result<bool, YardStoreError> {
-    Ok(try_lock(path)?.is_none())
+    let file = match File::open(path) {
+        Ok(file) => file,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(false),
+        Err(error) => return Err(io_error(path)(error).into()),
+    };
+    Ok(!taken(file.try_lock_shared(), path)?)
 }
 
 /// The file beside a lock that names its holder. It is a file of its own, not the lock's, since

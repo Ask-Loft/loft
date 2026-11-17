@@ -29,7 +29,7 @@ export function capture<T>(agentId: string | undefined, signal: AbortSignal, ope
     checkCapture(signal)
     return Promise.race([operation(keep), interrupted])
   })
-  // A cancelled queued job still follows its predecessor, but a cancelled active native
+  // A canceled queued job still follows its predecessor, but a canceled active native
   // call need not finish before the lane is released; its continuation checks before writing.
   const tail = job.then(() => {}, () => {})
   lanes.set(key, tail)

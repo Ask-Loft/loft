@@ -21,7 +21,7 @@ requirements:
       - key: 01a13a90-3556-7106-a68c-265ce556b8ad
         name: "Loft reads both switches before it reads or writes a token and before it opens a connection."
       - key: 01a13a90-3556-7106-a68c-265d78901344
-        name: "A run through the npm launcher honours both switches."
+        name: "A run through the npm launcher honors both switches."
   - key: 01a13a90-3556-7106-a68c-265e3e3a8d23
     statement:
       form: optional

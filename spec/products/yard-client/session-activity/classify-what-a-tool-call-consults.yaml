@@ -1,0 +1,147 @@
+key: 01a1c32b-8dbe-7792-8bde-87a2fd521f0a
+slug: classify-what-a-tool-call-consults
+name: "Classify what a tool call consults"
+body: |
+  To tell how far an agent's work is led by the specification, Yard needs to know, for each tool call that reads or edits files, whether it looked at the specification or at the code. An agent adapter gives the call's start event the classes of the paths the call reads or edits, and nothing else of them: `spec` for a path under the `spec/` of the tree that holds it, `code` for any other path in that tree, and `other` for a path outside every known tree or within its `.git/` or `.yard/`.
+
+  A search rooted at the tree itself, such as a repository-wide grep, reads the code: it is the code an agent searches when it does not reach for the specification. The rendered projection of the specification, `docs/spec.md`, is code by this rule, since it is not the tree the work is checked against.
+
+  Shell commands are read by the same tokenizer that names their `loft` subcommands. The readers are a fixed list of programs, so that a command that writes, builds or tests is never taken for a read; a path a reader names inside quoted text is still a path, but no word of a heredoc is.
+
+  Every adapter knows the same trees: each tree the page server serves, by its real path. Codex's adapter, which is `loft` itself, also knows the git top level of its directory. The Claude Code mod, which can run neither git nor a resolution of paths, learns them from the page server's answers: the real path of each tree served, and the top of the tree it registers as its session spells it, so that a path named through a symbolic link is classed as the tree it lies in.
+realizes:
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+requirements:
+  - key: 01a1c32b-8dbe-7792-8bde-87a3d6960806
+    statement:
+      form: ubiquitous
+      system: "Each agent adapter"
+      shall: "classify a path a tool call reads or edits as `spec` where it lies under the `spec/` of the known tree that holds it, as `code` where it lies elsewhere in that tree, and as `other` where no known tree holds it or it lies under that tree's `.git/` or `.yard/`."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87a420f97222
+        name: "A path under the tree's `spec/` is `spec`."
+      - key: 01a1c32b-8dbe-7792-8bde-87a58315620f
+        name: "The tree's directory itself is `code`."
+      - key: 01a1c32b-8dbe-7792-8bde-87a6f66188df
+        name: "A path in the tree outside `spec/`, `.git/` and `.yard/` is `code`."
+      - key: 01a1c32b-8dbe-7792-8bde-87a796375e92
+        name: "A path under the tree's `.git/` or `.yard/` is `other`."
+      - key: 01a1c32b-8dbe-7792-8bde-87a844ee0fc5
+        name: "A path that no known tree holds is `other`."
+      - key: 01a1c32b-8dbe-7792-8bde-87a917ff4718
+        name: "A relative path is resolved against the directory of the agent that made the call."
+      - key: 01a1c32b-8dbe-7792-8bde-87aa9859e6ec
+        name: "Where two known trees hold a path, the tree nearest to it decides its class."
+      - key: 01a1c32b-8dbe-7792-8bde-87ab3e8dab60
+        name: "A path that leaves its directory through `..` is classified where it leads."
+      - key: 01a1c332-5f5c-77bb-9cce-f57795eeda52
+        name: "A path that starts with `~` is `other`."
+  - key: 01a1c32b-8dbe-7792-8bde-87ac80ce6aa2
+    statement:
+      form: event_driven
+      when: "a Claude Code tool call that reads files starts"
+      system: "the Loft plugin"
+      shall: "give the call's start event, as `reads`, the class of the path the call reads or searches."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87ad061b5511
+        name: "A `Read` call reads its `file_path`."
+      - key: 01a1c32b-8dbe-7792-8bde-87ae54f001f2
+        name: "A `Grep` call searches its `path`, or the agent's directory where it names none."
+      - key: 01a1c32b-8dbe-7792-8bde-87afcd2fe473
+        name: "A `Glob` call searches its `path`, or the agent's directory where it names none, joined with the directories its `pattern` opens with before its first wildcard."
+      - key: 01a1c32b-8dbe-7792-8bde-87b05050d013
+        name: "A `NotebookRead` call reads its `notebook_path`."
+      - key: 01a1c32b-8dbe-7792-8bde-87b102a27b8a
+        name: "The event holds the class alone, and nothing of the path, the pattern or the result."
+  - key: 01a1c32b-8dbe-7792-8bde-87b2ea0bd958
+    statement:
+      form: event_driven
+      when: "a shell command starts"
+      system: "each agent adapter"
+      shall: "give the call's start event, as `reads`, the distinct classes of the paths that the command's reading programs name."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87b31f7c625e
+        name: "The reading programs are `cat`, `head`, `tail`, `less`, `more`, `bat`, `nl`, `sed`, `awk`, `cut`, `sort`, `uniq`, `wc`, `diff`, `grep`, `egrep`, `fgrep`, `rg`, `ag`, `find`, `fd`, `ls`, `tree`, `jq` and `yq`."
+      - key: 01a1c32b-8dbe-7792-8bde-87b4a6359f07
+        name: "`git diff`, `git show`, `git log` and `git grep` are reading programs whose paths are the words after `--`."
+      - key: 01a1c32b-8dbe-7792-8bde-87b52616cea7
+        name: "A word that starts with `-` is not a path."
+      - key: 01a1c32b-8dbe-7792-8bde-87b61b2f1d5d
+        name: "The value of a reading program's option that takes one, written as the option's next word, is not a path."
+      - key: 01a1c32b-8dbe-7792-8bde-87b7a5b516ef
+        name: "The first word that is not an option of `grep`, `egrep`, `fgrep`, `rg`, `ag`, `fd`, `sed`, `awk`, `jq` and `yq` is their pattern, script or filter, not a path, unless an option gave it with `-e` or `-f`."
+      - key: 01a1c32b-8dbe-7792-8bde-87b8f624a294
+        name: "The paths of `find` are its words before the first that starts with `-`, `(` or `!`."
+      - key: 01a1c32b-8dbe-7792-8bde-87b9e9ea2709
+        name: "`rg`, `ag`, `fd`, `find`, `ls`, `tree` and the `git` readers, naming no path, read the directory the command runs in."
+      - key: 01a1c332-5f5c-77bb-9cce-f578199d9c0d
+        name: "Any other reading program that names no path reads its standard input, and adds no class."
+      - key: 01a1c332-5f5c-77bb-9cce-f5791e9847cc
+        name: "The file a reading program's input is redirected from is a path it reads."
+      - key: 01a1c332-5f5c-77bb-9cce-f57ab29f75bc
+        name: "The file an output is redirected to is not a path the command reads."
+      - key: 01a1c32b-8dbe-7792-8bde-87ba435ec11f
+        name: "A command that changes its directory with `cd` resolves the paths after it against the directory it changed to."
+      - key: 01a1c32b-8dbe-7792-8bde-87bba630ba32
+        name: "A path in quoted text is a path, and no word of a heredoc is."
+      - key: 01a1c32b-8dbe-7792-8bde-87bc249b6809
+        name: "A command whose readers name paths of two classes holds both, each once."
+      - key: 01a1c32b-8dbe-7792-8bde-87bd90cf0ddc
+        name: "A command that runs no reading program holds no `reads`."
+      - key: 01a1c32b-8dbe-7792-8bde-87bef71ba64c
+        name: "The event holds the classes alone, and nothing of the command."
+  - key: 01a1c32b-8dbe-7792-8bde-87bfc1611a20
+    statement:
+      form: event_driven
+      when: "a tool call that edits files starts"
+      system: "each agent adapter"
+      shall: "give the call's start event, as `edits`, the distinct classes of the files it edits."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87c01c4ce488
+        name: "A Claude Code `Write`, `Edit`, `MultiEdit` or `NotebookEdit` call edits the file its `file_path` or `notebook_path` names."
+      - key: 01a1c32b-8dbe-7792-8bde-87c1f75d0077
+        name: "A Codex `apply_patch` call edits each file its patch adds, updates, deletes or moves, the destination of a move included."
+      - key: 01a1c32b-8dbe-7792-8bde-87c28586388c
+        name: "A Claude Code edit's start still says, as `spec`, whether its file lies under the tree's `spec/`."
+      - key: 01a1c32b-8dbe-7792-8bde-87c3776bf8c0
+        name: "The event holds the classes alone, and nothing of the paths or the changes."
+  - key: 01a1c32b-8dbe-7792-8bde-87c40faad9dd
+    statement:
+      form: ubiquitous
+      system: "Each agent adapter that classifies tool calls"
+      shall: "declare the capability `consults` as `true` in its descriptor."
+    criteria:
+      - key: 01a1c32b-8dbe-7792-8bde-87c5220d0f22
+        name: "The Claude and Codex adapters' descriptors each hold `consults: true`."
+      - key: 01a1c338-7d63-7408-bf96-f098bb443e15
+        name: "The Claude adapter declares `consults`, and gives a tool call's start `reads` and `edits`, only where the `loft` it runs speaks protocol 3."
+      - key: 01a1c32b-8dbe-7792-8bde-87c63e0639b2
+        name: "A descriptor that holds no `consults` reads as an adapter that does not classify tool calls."
+  - key: 01a1c4f2-a000-7601-8eae-ec94b97b5862
+    statement:
+      form: event_driven
+      when: "the page server takes a tree a mod registers, or hears a mod's session"
+      system: "the page server"
+      shall: "answer with the real path of each tree it serves."
+    criteria:
+      - key: 01a1c4f2-a000-7601-8eae-ec9565f952b5
+        name: "The answer to a session heard names the real path of each tree the page server serves."
+      - key: 01a1c4f2-a000-7601-8eae-ec96f2e2bf8a
+        name: "The answer to a tree registered names the real path of each tree served, the one registered among them."
+      - key: 01a1c4f2-a000-7601-8eae-ec9750c12327
+        name: "The answer to a tree registered names the top of that tree's worktree as the request spelled it, where the directory the request named lies under that top by the same path."
+  - key: 01a1c4f2-a000-7601-8eae-ec98abd85e11
+    statement:
+      form: ubiquitous
+      system: "The Claude Code mod"
+      shall: "classify a path against each tree the page server's answers name, by each spelling they give, and against each tree it registered."
+    criteria:
+      - key: 01a1c4f2-a000-7601-8eae-ec992bef006a
+        name: "A path in a tree that another session registered is classed by that tree."
+      - key: 01a1c4f2-a000-7601-8eae-ec9a6da8e599
+        name: "A path named through the session's own spelling of a tree whose real path differs is classed by that tree."
+      - key: 01a1c4f2-a000-7601-8eae-ec9b13a061e5
+        name: "A path under the top of the session's worktree, outside the directory the session registered, is classed by that tree."
+      - key: 01a1c4f2-a000-7601-8eae-ec9c36957441
+        name: "Until a page server answers, the mod classes paths against the trees it registered."

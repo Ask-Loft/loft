@@ -1,10 +1,12 @@
-//! The files each session keeps in a branch's Yard Log folder, its token totals and its
-//! activity, as the page reads them: each file as JSON, in the order of their session ids. A
-//! file that does not read is left out, since only its own session's events change it and the
-//! next event writes it whole again.
+//! The files each session keeps in a branch's Yard Log folder, its token totals, its activity
+//! and its consultation, as the page reads them: each file as JSON, in the order of their session
+//! ids. A file that does not read is left out, since only its own session's events change it and
+//! the next event writes it whole again.
 
 use loftspec::yaml::{self, Node, Style, Value as Yaml};
 use serde_json::{Map, Number, Value};
+use yardlog::consult::Consultation;
+use yardlog::totals::TotalsFormat;
 use yardlog_store::YardStore;
 use yardlog_store::session::SessionFile;
 
@@ -16,9 +18,25 @@ pub fn read(store: &YardStore, kind: SessionFile) -> Vec<Value> {
         .collect()
 }
 
+/// Whether session `session`'s `file` in the Yard Log of `store` is of a format this `loft` does
+/// not write, and so is left as it is: a totals file of a newer totals format or one it does not
+/// know, or a consultation file of a format other than its own.
+pub fn foreign(store: &YardStore, file: SessionFile, session: &str) -> bool {
+    let read = || one(store, file, session);
+    match file {
+        SessionFile::Tokens => {
+            read().is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
+        }
+        SessionFile::Consultation => {
+            read().is_some_and(|file| !Consultation::of_this_format(&file))
+        }
+        SessionFile::Activity => false,
+    }
+}
+
 /// Session `session`'s file of `kind` in the Yard Log of `store`, as JSON; none where it does not
 /// read.
-pub fn one(store: &YardStore, kind: SessionFile, session: &str) -> Option<Value> {
+fn one(store: &YardStore, kind: SessionFile, session: &str) -> Option<Value> {
     parsed(&store.session_file(kind, session)?)
 }
 

@@ -2,7 +2,7 @@ key: 01a1646f-546d-7042-befd-ea8ce9a4adcc
 slug: share-one-page-server
 name: "Share one page server"
 body: |
-  One page server on the machine serves the page for every tree whose sessions use Yard Client, in every repository. The first mod that needs it starts it, every other mod registers its tree with it, and when the session that started it ends, a live mod starts another. A `loft yard` command that gives the page's address adds its tree to those served as well, so that a session that runs `loft` without the mod, such as one an agent host starts in a worktree of its own, is on the page too. The person keeps one address for every branch's Yard Log on the machine.
+  One page server on the machine serves the page for every tree whose sessions use Yard Client, in every repository. The first mod that needs it starts it, every other mod registers its tree with it, and when the session that started it ends, a live mod starts another. A `loft yard` command that gives the page's address adds its tree to those served as well, so that a session that runs `loft` without the mod, such as one an agent host starts in a worktree of its own, is on the page too. The person keeps one address for every branch's Yard Log on the machine. A `loft` under development, run by the dogfood launcher with `LOFT_YARD_HOME`, keeps a page server of its own beside it, on the dogfood port.
 
   A mod starts the page server as a child that lives as long as the mod does, or until a newer `loft yard serve` replaces it, so the page is up while any session with the Loft plugin runs. Each mod tells the page server every 5 seconds that its session is live, and runs `loft yard serve`, which reads `~/.yard/server.json`, only where no page server answers.
 realizes:
@@ -14,8 +14,12 @@ requirements:
       form: event_driven
       when: "the repository's `scripts/yard-dogfood.sh` launcher finishes building `loft` for a Claude Code or Codex session"
       system: "the dogfood launcher"
-      shall: "restart the shared page server with the binary it just built before starting the session."
+      shall: "restart the page server kept in `~/.yard-dogfood/` with the binary it just built before starting the session."
     criteria:
+      - key: 01a1cf7a-0eb7-770e-800d-7eb6b1f25771
+        name: "The session's `loft` runs with `LOFT_YARD_HOME` naming `~/.yard-dogfood/`."
+      - key: 01a1cf7a-0eb7-770e-800d-7eb7b63ace26
+        name: "The page server kept in `~/.yard/` keeps running, and sessions of the installed Loft plugin keep reaching it."
       - key: 01a18025-1c03-72bb-b904-c23d0979cab4
         name: "A running page server is replaced even when its release version equals the newly built binary's version."
       - key: 01a18025-1c03-72bb-b904-c23e06b616f8
@@ -23,7 +27,7 @@ requirements:
       - key: 01a18025-1c03-72bb-b904-c23ff7831364
         name: "The launcher verifies that the replacement serves before starting Claude Code or Codex."
       - key: 01a18025-1c03-72bb-b904-c240304554ce
-        name: "Concurrent dogfood launches leave one page server holding the machine-wide server lock."
+        name: "Concurrent dogfood launches leave one page server holding the server lock of `~/.yard-dogfood/`."
       - key: 01a18025-1c03-72bb-b904-c241ca7ef9be
         name: "A session already using Yard connects to the replacement without restarting its agent."
       - key: 01a18025-1c03-72bb-b904-c24253398c1b
@@ -43,6 +47,36 @@ requirements:
         name: "An unrelated process named by stale server metadata is left running."
       - key: 01a18025-1c03-72bb-b904-c24747d8b962
         name: "A restart that cannot be confirmed within a bounded wait fails instead of starting Claude Code or Codex."
+  - key: 01a1cf7a-0eb7-770e-800d-7eb897cfbf3e
+    statement:
+      form: event_driven
+      when: "the dogfood launcher is run with `desktop` and a project directory"
+      system: "the dogfood launcher"
+      shall: "have the Claude Code sessions of that project, Claude Desktop's among them, load this worktree's Loft plugin and `loft` in place of the installed ones."
+    criteria:
+      - key: 01a1cf7a-0eb7-770e-800d-7eb96f1b7c1e
+        name: "The launcher keeps a local marketplace `yard-dogfood` whose `loft` plugin is read from this worktree's `plugins/claude/loft`, so that `/reload-plugins` takes up an edit."
+      - key: 01a1cf7a-0eb7-770e-800d-7eba6cb45db1
+        name: "In the project, `loft@yard-dogfood` is enabled and `loft@ask-loft` disabled, both at the local scope."
+      - key: 01a1cf7a-0eb7-770e-800d-7ebb3cc110b1
+        name: "Sessions in any other project load the installed Loft plugin."
+      - key: 01a1cf7a-0eb7-770e-800d-7ebcd178f72e
+        name: "The settings of `loft@yard-dogfood` run this worktree's `loft` with `LOFT_YARD_HOME` naming `~/.yard-dogfood/`, on the dogfood port, 7412."
+      - key: 01a1cf7a-0eb7-770e-800d-7ebdfe1618e2
+        name: "The launcher prints each change it makes to the person's Claude Code settings before it makes it."
+      - key: 01a1cf7a-0eb7-770e-800d-7ebebaa4add8
+        name: "A second run with the same project changes nothing."
+  - key: 01a1cf7a-0eb7-770e-800d-7ebf6ac04278
+    statement:
+      form: event_driven
+      when: "the dogfood launcher is run with `desktop --undo` and a project directory"
+      system: "the dogfood launcher"
+      shall: "return that project's Claude Code sessions to the installed Loft plugin."
+    criteria:
+      - key: 01a1cf7a-0eb7-770e-800d-7ec0ee199dea
+        name: "In the project, `loft@yard-dogfood` is disabled and `loft@ask-loft` enabled, both at the local scope."
+      - key: 01a1cf7a-0eb7-770e-800d-7ec1f2b2a7fe
+        name: "The settings of every other project are left as they were."
   - key: 01a1646f-546d-7042-befd-ea8d95ec4aad
     statement:
       form: event_driven

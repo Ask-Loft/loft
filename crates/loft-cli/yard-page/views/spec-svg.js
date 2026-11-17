@@ -1,8 +1,8 @@
 // The cards and panels of a `spec-change` view's diagram, drawn into the page's own flowchart SVG.
-// A card is a flat frame with a hairline border, a bar at its left in its change's colour, its
+// A card is a flat frame with a hairline border, a bar at its left in its change's color, its
 // kind's square and its label in monospace, its change in a word at its right, and its name in
-// the page's face beneath; a panel is a frame that holds its nodes, headed the same way. Colours
-// come from the stylesheet through classes, so that a change of scheme only recolours. A card or
+// the page's face beneath; a panel is a frame that holds its nodes, headed the same way. Colors
+// come from the stylesheet through classes, so that a change of scheme only recolors. A card or
 // panel whose node changed, and a folded Feature Group, can be chosen.
 
 import { svg } from '../lib/dom.js';

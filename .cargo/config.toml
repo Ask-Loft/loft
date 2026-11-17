@@ -8,3 +8,6 @@ LOFT_TELEMETRY = "off"
 LOFT_UPDATE_CHECK = "off"
 LOFT_TELEMETRY_ENDPOINT = "http://127.0.0.1:9"
 LOFT_UPDATE_ENDPOINT = "http://127.0.0.1:9"
+# A dogfood `LOFT_YARD_HOME` is never inherited: every test keeps the machine's files in its own
+# home. An empty value is ignored, so `~/.yard/` of the home each test gives applies.
+LOFT_YARD_HOME = { value = "", force = true }

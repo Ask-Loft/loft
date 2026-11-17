@@ -9,9 +9,8 @@
 use std::fs;
 use std::path::Path;
 
-use crate::common::{PLATFORMS, stdout, workspace};
+use crate::common::{PLATFORMS, listed, workspace};
 use crate::workflow::{Job, block, job, read};
-use software_plant::real_git::real_git;
 
 fn release() -> String {
     read(".github/workflows/release.yml")
@@ -363,18 +362,7 @@ fn the_release_workflow_stores_no_registry_token_in_the_repository() {
             assert!(given, "{workflow}: `{line}`");
         }
     }
-    let listed = real_git()
-        .arg("-C")
-        .arg(workspace())
-        .args(["ls-files", "-z"])
-        .output()
-        .unwrap();
-    assert!(listed.status.success());
-    let files: Vec<String> = stdout(&listed)
-        .split('\0')
-        .filter(|path| !path.is_empty())
-        .map(str::to_owned)
-        .collect();
+    let files = listed(&[]);
     assert!(files.len() > 100, "git lists {} files", files.len());
     for file in files {
         let path = workspace().join(&file);

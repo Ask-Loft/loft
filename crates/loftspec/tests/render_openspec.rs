@@ -161,10 +161,10 @@ fn a_requirement_is_named_by_its_ext_name_else_its_label_else_its_key() {
     let requirement = &mut first_feature(&mut document).requirements[0];
     set(&mut requirement.details.ext, "name", "Write keys");
     assert!(only(&document).contains("### Requirement: Write keys\n"));
-    let mut unlabelled = small_document();
-    unlabelled.bindings = loftspec::bindings::Bindings::default();
+    let mut unlabeled = small_document();
+    unlabeled.bindings = loftspec::bindings::Bindings::default();
     let heading = format!("### Requirement: {}\n", key(4));
-    assert!(only(&unlabelled).contains(&heading));
+    assert!(only(&unlabeled).contains(&heading));
 }
 
 #[test]

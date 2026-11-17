@@ -212,7 +212,7 @@ fn root<T: Serialize>(
     view: &T,
 ) -> Digest {
     if let Some(views) = views {
-        let value = serde_json::to_value(view).expect("a root view serialises");
+        let value = serde_json::to_value(view).expect("a root view serializes");
         views.roots.push((name, domain, value));
     }
     digest(domain, view)
@@ -310,7 +310,7 @@ pub(crate) fn former(label: Label) -> Value {
 /// The edges root: each edge as its source's hash, its type, its target's hash and its role,
 /// the tuples sorted by their canonical bytes, duplicates kept (RQ-13). An endpoint's hash is a
 /// node's content hash or a decision's view hash; a former label enters as itself. Each tuple is
-/// canonicalised once, and the sorted bytes are digested as the array they make.
+/// canonicalized once, and the sorted bytes are digested as the array they make.
 fn edges_root(
     edges: &[Edge],
     resolve: &impl Fn(ElementId) -> Digest,

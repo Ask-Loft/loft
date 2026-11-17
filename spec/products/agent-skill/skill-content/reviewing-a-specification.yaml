@@ -20,7 +20,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The skill"
-      shall: "teach the judgements that lint cannot make."
+      shall: "teach the judgments that lint cannot make."
     criteria:
       - key: 01a13654-6e12-74a1-ad7f-e8070e76bc6d
         name: "The workflow tells the agent to check that each Requirement's conditions are covered by its criteria."

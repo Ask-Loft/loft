@@ -91,7 +91,7 @@ fn unindex(keys: &mut LabelIndex, label: Label, key: Key) {
 pub enum BindingError {
     #[error("{0} has no label to replace")]
     Unbound(ElementId),
-    #[error("{0} already has a label; a label changes only by relabelling")]
+    #[error("{0} already has a label; a label changes only by relabeling")]
     AlreadyBound(ElementId),
     #[error("{element} cannot carry label {label}: its kind takes another prefix or none")]
     PrefixMismatch { element: ElementId, label: Label },

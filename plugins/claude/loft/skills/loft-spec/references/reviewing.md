@@ -3,7 +3,7 @@
 Use this workflow for a review of a specification's quality beyond what `loft check` reports:
 whether each Requirement's criteria cover it, whether nodes contradict one another, and whether
 the product is broken down well, for a whole document or for the change a branch makes. It owns
-the scope of a review, the judgement, the disposition of each finding and the report. What each
+the scope of a review, the judgment, the disposition of each finding and the report. What each
 finding means belongs to `lint-findings.md`; the craft a review measures against to
 `writing-rules.md`. Never restate or override them here.
 
@@ -61,7 +61,7 @@ mention, not coverage, and two texts that use the same words do not, by that, co
 - **Numeric:** limits that disagree; compare "within", "at most" and "less than" exactly.
 - **Against an ancestor:** a node that breaks a Constraint of a Component or Feature Group above
   it. A Constraint's `conservationKind` names the kind of invariant it guards, a sum preserved, a
-  cap or an operation's identity; look for that kind of violation among its neighbours.
+  cap or an operation's identity; look for that kind of violation among its neighbors.
 - **Precedence:** two assertions that are each right, where both apply and nothing says which
   wins.
 - **Against its own criteria:** a criterion that contradicts its Requirement.

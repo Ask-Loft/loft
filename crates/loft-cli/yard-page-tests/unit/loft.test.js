@@ -151,7 +151,7 @@ test('a box’s name is wrapped to its measured width, so that nothing is cut', 
   assert.ok(card.height >= 2 * CARD.pad + CARD.head + CARD.gap + card.card.lines.length * 18, 'tall enough');
 });
 
-test('an added, changed or removed box carries a bar at its left in its change’s colour, and a removed one is outlined dashed', async () => {
+test('an added, changed or removed box carries a bar at its left in its change’s color, and a removed one is outlined dashed', async () => {
   const drawn = flowchartSvg(await laid({ nodes: [{ ...product, change: 'added' }, { ...group, change: 'removed' }, feature] }), 'p4');
   for (const change of ['added', 'changed', 'removed']) {
     const box = drawn.querySelector(`.spec-panel--${change}`);
@@ -165,8 +165,8 @@ test('an added, changed or removed box carries a bar at its left in its change�
 
 test('the bars of change are the validated steps of green, blue and red in each scheme', () => {
   const [light, dark] = css.split('@media (prefers-color-scheme: dark)');
-  for (const [scheme, colours] of [[light, ['#199e70', '#256abf', '#e34948']], [dark, ['#199e70', '#3987e5', '#e66767']]]) {
-    const [added, changed, removed] = colours;
+  for (const [scheme, colors] of [[light, ['#199e70', '#256abf', '#e34948']], [dark, ['#199e70', '#3987e5', '#e66767']]]) {
+    const [added, changed, removed] = colors;
     assert.match(scheme, new RegExp(`--change-added: ${added};`));
     assert.match(scheme, new RegExp(`--change-changed: ${changed};`));
     assert.match(scheme, new RegExp(`--change-removed: ${removed};`));
@@ -491,7 +491,7 @@ test('a decision view shows the decision, its options with the selected one mark
   assert.deepEqual(cells.map((cell) => cell.querySelector('.rating-why').textContent), ['one read', 'many reads']);
   assert.equal(view.querySelector('.assessments thead th:nth-child(2)').textContent, 'Speed');
   const tones = cells.map((cell) => cell.querySelector('.rating').className);
-  assert.equal(new Set(tones).size, 2, `each rating has its own colour: ${tones}`);
+  assert.equal(new Set(tones).size, 2, `each rating has its own color: ${tones}`);
   assert.match([...view.querySelectorAll('details li')].map((item) => item.textContent).join('\n'), /Speed Fast reads/);
   assert.equal(view.querySelector('.consequence[data-kind="risk"] .consequence-kind').textContent, 'risk');
   assert.match(view.querySelector('.consequence').textContent, /A big file/);
@@ -525,7 +525,7 @@ test('a decision’s selected option comes first in its table, marked, each row 
   assert.match(why.textContent, /The one/);
   const ratings = [...why.querySelectorAll('.option-ratings > *')].map((each) => each.textContent.trim());
   assert.deepEqual(ratings, ['Speed', '✓ supports', 'quick', 'Size', '– neutral', 'middling'], 'driver, rating and rationale, side by side');
-  assert.match(css, /\.assessments \.option-why > td \{[^}]*text-align: left;/, 'left-aligned, not centred as the ratings are');
+  assert.match(css, /\.assessments \.option-why > td \{[^}]*text-align: left;/, 'left-aligned, not centered as the ratings are');
   assert.match(css, /\.assessments tr:not\(\.option-why\) > td:has\(\.rating\) \{ text-align: center; \}/);
   assert.match(css, /\.option-why-body \{ position: sticky; left: 8px; max-width: min\(720px, var\(--room, 720px\)\);/, 'held within the width the table is seen in');
   assert.equal(rows[0].querySelector('td').getAttribute('tabindex'), '0', 'reached by the keyboard');

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Rewrites the ELK that the Yard page lays its flowcharts out with, from the release the npm
 # registry holds: `elkjs`'s bundled script, which runs without a worker, compressed, and its
-# licence, under crates/loft-cli/yard-page/vendor/. `loft` serves the script from the compressed
+# license, under crates/loft-cli/yard-page/vendor/. `loft` serves the script from the compressed
 # file. To move to another release, change VERSION here and in that folder's README.md, run this
 # script, record the digest it prints there, and run the page's tests.
 set -eu

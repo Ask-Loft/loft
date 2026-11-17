@@ -94,7 +94,7 @@ pub fn export(nodes: &[Value], decisions: &[Value]) -> Value {
             "entryId": uuid(71),
             "documentId": uuid(0),
             "name": "portable",
-            "definition": "Behaviour every implementation reproduces.",
+            "definition": "Behavior every implementation reproduces.",
         }],
     })
 }

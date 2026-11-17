@@ -50,3 +50,48 @@ fn a_counter_that_is_not_a_whole_number_is_unreported_beside_the_counters_measur
         assert_eq!(Counts::read(&unusable), Counts::unreported(), "{unusable}");
     }
 }
+
+#[test]
+fn an_adapter_that_classifies_tool_calls_keeps_consults_through_json_and_yaml() {
+    let wire = json!({"format":"yard-adapter/1", "version":"1", "capabilities":{"consults":true}});
+    let descriptor = Descriptor::read(&wire).unwrap();
+    assert!(descriptor.consults());
+    let normalized = descriptor.json();
+    assert_eq!(normalized["capabilities"]["consults"], true);
+    assert_eq!(Descriptor::read(&normalized).unwrap(), descriptor);
+    let yaml = loft_common::yaml::write(&descriptor.yaml());
+    assert!(yaml.contains("consults: true"), "{yaml}");
+}
+
+#[test]
+fn a_descriptor_that_holds_no_consults_reads_as_an_adapter_that_does_not_classify() {
+    let descriptor =
+        Descriptor::read(&json!({"format":"yard-adapter/1", "version":"1", "capabilities":{}}))
+            .unwrap();
+    assert!(!descriptor.consults());
+    assert!(descriptor.json()["capabilities"].get("consults").is_none());
+    let yaml = loft_common::yaml::write(&descriptor.yaml());
+    assert!(!yaml.contains("consults"), "{yaml}");
+}
+
+#[test]
+fn a_consults_capability_that_is_not_a_boolean_is_refused() {
+    for unusable in [json!("yes"), json!(1), json!(null)] {
+        let wire =
+            json!({"format":"yard-adapter/1", "version":"1", "capabilities":{"consults":unusable}});
+        assert!(Descriptor::read(&wire).is_err(), "{unusable}");
+    }
+}
+
+#[test]
+fn a_capability_the_reader_does_not_know_is_kept_out_and_the_descriptor_reads() {
+    let wire = json!({"format":"yard-adapter/1", "version":"1", "capabilities":{
+        "taskMirroring":true, "future":{"anything":1}
+    }});
+    let descriptor = Descriptor::read(&wire).unwrap();
+    let normalized = descriptor.json();
+    assert_eq!(normalized["capabilities"]["taskMirroring"], true);
+    assert!(normalized["capabilities"].get("future").is_none());
+    let yaml = loft_common::yaml::write(&descriptor.yaml());
+    assert!(!yaml.contains("future"), "{yaml}");
+}

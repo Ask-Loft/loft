@@ -26,7 +26,7 @@ requirements:
       - key: 01a13654-6e11-74fa-a359-2596c765f8ea
         name: "The manifest is named `loft`."
       - key: 01a13654-6e11-74fa-a359-2597853f5d9e
-        name: "The manifest gives the version, a description, the author, the repository and the licence."
+        name: "The manifest gives the version, a description, the author, the repository and the license."
       - key: 01a13654-6e11-74fa-a359-2598f5b72114
         name: "The plugin's skill lies at `skills/loft-spec/`."
       - key: 01a144ee-c59e-7325-802c-d71d0cf0947c

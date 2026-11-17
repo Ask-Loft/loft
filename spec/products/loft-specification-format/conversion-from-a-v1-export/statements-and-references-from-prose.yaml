@@ -26,9 +26,9 @@ requirements:
       shall: "turn each resolvable label reference in prose into a `mentions` edge."
     criteria:
       - key: 33a82191-e668-4cb0-8c21-d98e6ca9e01e
-        name: "References of the forms `P-n`, `FG-n`, `F-n`, `RQ-n`, `AC-n`, `CMP-n`, `CON-n`, `QA-n` and `ADR-n` are recognised."
+        name: "References of the forms `P-n`, `FG-n`, `F-n`, `RQ-n`, `AC-n`, `CMP-n`, `CON-n`, `QA-n` and `ADR-n` are recognized."
       - key: c990c8ce-9714-4974-ab24-15b0d785b3ab
-        name: "A reference with a `D-n/` prefix is recognised."
+        name: "A reference with a `D-n/` prefix is recognized."
       - key: 246c2160-9498-431d-91bb-7eecbab1b6a6
         name: "A resolvable reference becomes a `mentions` edge from the node to the referenced node."
       - key: f4fdf966-df4c-4aa5-ba96-040b43e7f26f

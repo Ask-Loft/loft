@@ -31,8 +31,10 @@ impl Failure {
         Self::Stopped(Stop::one(kind, message.into()))
     }
 
-    /// Why a command that needs `~/.yard/` could not reach it.
-    pub const NO_HOME: &str = "no home directory is known, so `~/.yard/` cannot be reached";
+    /// Why a command that needs `~/.yard/`, or the directory `LOFT_YARD_HOME` names, could not
+    /// reach it.
+    pub const NO_HOME: &str = "no home directory is known and `LOFT_YARD_HOME` names no absolute \
+                                directory, so `~/.yard/` cannot be reached";
 
     pub fn no_home() -> Self {
         Self::one("home", Self::NO_HOME)

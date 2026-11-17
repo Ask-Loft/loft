@@ -24,6 +24,7 @@ use crate::yard::answer_input;
 use crate::yard::args::{Beyond, Runner};
 use crate::yard::branch::Branch;
 use crate::yard::caller::{Caller, Continuations};
+use crate::yard::consultation;
 use crate::yard::failure::Failure;
 use crate::yard::read::{SCHEMA as READ_SCHEMA, settler, shown};
 use crate::yard::render_log::Selection;
@@ -129,7 +130,8 @@ fn inherited(place: &Place, branch: &str, beyond: Beyond) -> Result<Value, Failu
 
 /// Yard Log as a read with every version renders it, recording nothing, with its Markdown
 /// rendered, every submission it sent, the activity its sessions keep, the sums of their token
-/// totals, and whether it is `inherited` from the branch the tree's was cut from.
+/// totals and of their consultation files, and whether it is `inherited` from the branch the
+/// tree's was cut from.
 fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<Value, Failure> {
     let selection = Selection {
         since: None,
@@ -137,11 +139,13 @@ fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<V
         submissions: matches!(&held, Held::Log(_)),
     };
     let continuations = Continuations::read(Home::from_env().as_ref())?;
+    let stages = consultation::titled(&held);
     let mut fields = shown(branch, held, &selection, &continuations)?.0;
     markdown::render_document(&mut fields);
     let activity = session_files::read(&branch.store, SessionFile::Activity);
     let totals = session_files::read(&branch.store, SessionFile::Tokens);
     fields["tokenSums"] = token_sums::sums(&totals, &activity);
+    fields["consultationSums"] = consultation::report(&branch.store, &activity, &stages).into();
     fields["activity"] = Value::Array(activity);
     fields["inherited"] = json!(inherited);
     Ok(fields)

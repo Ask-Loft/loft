@@ -15,6 +15,8 @@ import { capture, checkCapture } from './capture'
 import { descriptor } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
+import { registerDraw } from './pane/draw'
+import { registerCommand, registerPane } from './pane/follow'
 import { failureOf, succeeded, yard } from './run'
 import { beat, BEAT } from './server'
 import { callerOf, continued, pageNoted, PLUGIN, prepare, reset, run, state } from './state'
@@ -23,9 +25,9 @@ import { endAssigned } from './task-writes'
 import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './tools'
 
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
-export const PLUGIN_VERSION = '2.3.0'
+export const PLUGIN_VERSION = '2.4.0'
 /** The oldest and the newest yard protocol this mod speaks. */
-export const PROTOCOLS = { oldest: 1, newest: 2 } as const
+export const PROTOCOLS = { oldest: 1, newest: 3 } as const
 
 function protocolRange({ oldest, newest }: { oldest: number; newest: number }): string {
   return `${oldest}${newest === oldest ? '' : `–${newest}`}`
@@ -43,17 +45,27 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd)
   if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
   state.settings.protocol = protocol
-  state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION) : undefined
+  state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION, protocol) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
-  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
-  if (home) state.box.tokenPath = `${home}/.yard/token`
+  state.box.tokenPath = await tokenPathOf($, checked.doc?.home)
   state.isOn = true
+  await registerCommand($)
   void beat($, state.settings, state.server, state.box, await continued($), cwd)
   $.clock.every(BEAT, async () => {
     void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())
     void flush($, state.box)
   })
   return true
+}
+
+/**
+ * The control token's file: in the machine home `loft yard protocol` reports, which
+ * `LOFT_YARD_HOME` may move, else in `~/.yard/`, for a `loft` that reports none.
+ */
+async function tokenPathOf($: EngineInterface, reported: unknown): Promise<string | undefined> {
+  if (typeof reported === 'string' && reported !== '') return `${reported}/token`
+  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
+  return home ? `${home}/.yard/token` : undefined
 }
 
 /** Tells the person once why Yard Client is off; Claude Code's own dialogs then ask alone. */
@@ -170,4 +182,6 @@ export function registerYard(on: On, options: PluginOptions) {
   })
 
   registerEvents(on)
+  registerPane(on)
+  registerDraw(on)
 }

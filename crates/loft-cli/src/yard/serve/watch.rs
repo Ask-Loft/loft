@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, UNIX_EPOCH};
 
 use yardlog::codec::ROOT;
-use yardlog::codec::session::{ACTIVITY, TOKENS};
+use yardlog::codec::session::FOLDERS;
 use yardlog_store::YARD;
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
@@ -99,8 +99,9 @@ impl Watch {
 pub fn quick(tree: &Path, shown: &str, branch: &str, digests: &mut Digests) {
     let folder = tree.join(YARD).join(branch);
     let mut sessions = DefaultHasher::new();
-    files(&folder.join(TOKENS), &mut sessions);
-    files(&folder.join(ACTIVITY), &mut sessions);
+    for session_folder in FOLDERS {
+        files(&folder.join(session_folder), &mut sessions);
+    }
     let mut log = DefaultHasher::new();
     files(&folder, &mut log);
     let (tree, branch) = (shown.to_owned(), branch.to_owned());

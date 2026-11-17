@@ -122,7 +122,7 @@ requirements:
       - key: 01a13a90-3556-7106-a68c-2680443bb3f6
         name: "A run that is not `internal`, with a non-empty `CI` variable, has the mode `ci`, even when an agent started it."
       - key: 01a13a90-3556-7106-a68c-26819a860609
-        name: "A run that is neither `internal` nor `ci`, started by a recognised agent, has the mode `agent`."
+        name: "A run that is neither `internal` nor `ci`, started by a recognized agent, has the mode `agent`."
       - key: 01a13a90-3556-7106-a68c-2682629d7c96
         name: "A run that is neither `internal`, `ci` nor `agent`, whose standard error is a terminal, has the mode `interactive`."
       - key: 01a13a90-3556-7106-a68c-2683dd6f15ca
@@ -132,7 +132,7 @@ requirements:
       form: ubiquitous
       system: "The command event"
       shall: "name the agent that started the run, as one of `claude`, `claude-code`, `chatgpt`, `chatgpt-codex` and `unknown`, by the first of these rules that holds: the Claude app, Claude Code, Codex, a generic agent variable."
-    body: "No agent documents the variables it sets for the commands it runs, so the markers below are those the agents set today, as observed and as other tools that detect agents record them. Claude's markers come first, because a Codex plugin inside Claude Code sets a variable whose name begins with `CODEX_`. A recognised agent says only which agent ran `loft`; it decides nothing else."
+    body: "No agent documents the variables it sets for the commands it runs, so the markers below are those the agents set today, as observed and as other tools that detect agents record them. Claude's markers come first, because a Codex plugin inside Claude Code sets a variable whose name begins with `CODEX_`. A recognized agent says only which agent ran `loft`; it decides nothing else."
     criteria:
       - key: 01a13a90-3556-7106-a68c-26858a4e4f5d
         name: "A run with a non-empty `CLAUDE_CODE_IS_COWORK`, or with `CLAUDE_CODE_ENTRYPOINT` set to `claude-desktop`, has the agent `claude`."
@@ -141,7 +141,7 @@ requirements:
       - key: 01a13a90-3556-7106-a68c-2688a1633fb9
         name: "A run that is neither, with a non-empty `CODEX_THREAD_ID`, `CODEX_SANDBOX`, `CODEX_SANDBOX_NETWORK_DISABLED` or `CODEX_CI`, has the agent `chatgpt-codex`."
       - key: 01a13acd-2cad-74ea-9479-766d2581801b
-        name: "A variable whose name begins with `CODEX_` but is none of those four, such as `CODEX_COMPANION_SESSION_ID`, recognises no agent."
+        name: "A variable whose name begins with `CODEX_` but is none of those four, such as `CODEX_COMPANION_SESSION_ID`, recognizes no agent."
       - key: 01a13a90-3556-7106-a68c-26878b793048
         name: "Otherwise, an `AI_AGENT` value that begins with `claude-code`, `claude`, `codex` or `chatgpt` gives the agent `claude-code`, `claude`, `chatgpt-codex` or `chatgpt` respectively."
       - key: 01a13acd-6513-768b-bcf2-2a3af3d65e4b

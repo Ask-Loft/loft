@@ -219,7 +219,7 @@ function questionForm(block, key, update) {
 }
 
 /** The person's own words, a card of its own beneath a question's options, lettered after them: its own
- * selection control and a labelled text field, the text kept while it is not selected.
+ * selection control and a labeled text field, the text kept while it is not selected.
  * @param {import('../model/log.js').Block} block
  * @param {import('../model/answers.js').Answer} answer
  * @param {() => void} choose

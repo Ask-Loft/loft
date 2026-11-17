@@ -103,7 +103,7 @@ requirements:
       shall: "disarm the affected caller's automatic continuation."
     criteria:
       - key: 01a17afd-c25e-744a-84c1-087efbda5f0f
-        name: "Queued notifications are cancelled before any later dispatch for the disarmed caller."
+        name: "Queued notifications are canceled before any later dispatch for the disarmed caller."
       - key: 01a17afd-c25e-744a-84c1-087f2aacfd32
         name: "Disarming survives a worker restart."
       - key: 01a17afd-c25e-744a-84c1-0880026bf8d4

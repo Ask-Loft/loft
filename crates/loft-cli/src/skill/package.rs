@@ -1,6 +1,6 @@
 //! `loft skill package`: the maintainer's command that writes every plugin package under
 //! `plugins/` from the skill sources `loft` embeds, each host's `loft-spec` package and, for a
-//! host with a Yard adapter, its `yard` package; or, with `--check`, writes nothing and names
+//! host with a Yard adapter, its `yard` package, and for Codex its `yard-page` package; or, with `--check`, writes nothing and names
 //! each package file that differs from its composition. It runs at the root of the repository of
 //! `loft`, and refuses while the repository's Codex discovery entry is not the link to the
 //! canonical skill source, or while a source it embeds differs from the repository's.
@@ -13,7 +13,7 @@ use std::path::Path;
 use serde_json::json;
 
 use super::compose::{self, Files, Host};
-use super::{SOURCE, YARD_SOURCE, discovery, write};
+use super::{SOURCE, YARD_PAGE_SOURCE, YARD_SOURCE, discovery, write};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -22,12 +22,14 @@ use crate::stop::Stop;
 /// The schema `--format json` writes to, by name and version.
 const SCHEMA: &str = "loft-skill-package/1";
 
-/// A host's plugin: its root from the repository's root, and the host's adaptation of the `yard`
-/// skill if the host has a Yard adapter.
+/// A host's plugin: its root from the repository's root, the host's adaptation of the `yard`
+/// skill if the host has a Yard adapter, and whether it carries the `yard-page` skill, as a host
+/// that offers a plugin no command of its own does.
 struct Plugin {
     host: Host,
     root: &'static str,
     yard: Option<&'static str>,
+    page: bool,
 }
 
 const PLUGINS: [Plugin; 2] = [
@@ -35,11 +37,13 @@ const PLUGINS: [Plugin; 2] = [
         host: Host::ClaudeCode,
         root: "plugins/claude/loft",
         yard: Some("agents/claude.md"),
+        page: false,
     },
     Plugin {
         host: Host::Codex,
         root: "plugins/codex/loft",
         yard: Some("agents/codex.md"),
+        page: true,
     },
 ];
 
@@ -68,6 +72,15 @@ fn packages(plugins: &[Plugin]) -> Vec<Package> {
                 Package {
                     directory: format!("{}/skills/yard", plugin.root),
                     files: yard,
+                },
+                Package {
+                    directory: format!("{}/skills/yard-page", plugin.root),
+                    files: plugin.page.then(|| {
+                        YARD_PAGE_SOURCE
+                            .iter()
+                            .map(|(path, text)| ((*path).to_owned(), (*text).to_owned()))
+                            .collect()
+                    }),
                 },
             ]
         })
@@ -172,7 +185,11 @@ fn discovered(root: &Path) -> Result<(), String> {
 /// Each embedded source file that differs from its file under `crates/loft-cli/skill/` in the
 /// repository at `root`, or is missing there, as a line naming it from the repository's root.
 fn stale(root: &Path) -> Vec<String> {
-    [("loft-spec", SOURCE), ("yard", YARD_SOURCE)]
+    [
+        ("loft-spec", SOURCE),
+        ("yard", YARD_SOURCE),
+        ("yard-page", YARD_PAGE_SOURCE),
+    ]
         .into_iter()
         .flat_map(|(skill, source)| {
             source.iter().filter_map(move |(path, text)| {
@@ -272,6 +289,7 @@ mod tests {
             host: Host::Codex,
             root: "plugins/codex/loft",
             yard: None,
+            page: false,
         }];
         let packages = packages(&plugins);
         let directories: Vec<(&str, bool)> = packages
@@ -283,6 +301,7 @@ mod tests {
             [
                 ("plugins/codex/loft/skills/loft-spec", true),
                 ("plugins/codex/loft/skills/yard", false),
+                ("plugins/codex/loft/skills/yard-page", false),
             ]
         );
         let root = env::temp_dir().join(format!("loft-cli-package-{}", process::id()));

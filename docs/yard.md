@@ -82,6 +82,14 @@ mode and compactions, and takes the page's decision of a plan through command ho
 After `/clear` or a resume, the new session continues the one that ended: it keeps that
 session's stages, tasks and open questions, and starts from what it last read.
 
+`/yard-pane` opens a pane beside the session, the Yard page's companion. It shows the branch's
+Yard Log: the stage in hand with its active tasks, and what waits on you, oldest first, which
+you can answer in the pane as in Claude Code's own dialog. An answer given first elsewhere
+counts, and the pane shows the block as answered there. Where the pane has no text field, it
+offers each question's options and the two decisions alone. In Claude Code Desktop, the command
+also opens the Yard page at the session's branch in Desktop's browser pane. Elsewhere the pane
+links the page, and the command answers with its address.
+
 ### Codex
 
 Install the Codex plugin (`codex plugin marketplace add Ask-Loft/loft`, then
@@ -109,13 +117,18 @@ where `CODEX_HOME` is not set); the watch starts no Codex process and changes no
   notifications reach it; where they don't, it waits for the answer instead. Interrupting the
   agent or ending the session stops them until your next prompt.
 
+Codex offers a plugin no command of its own, so the skill `$loft:yard-page` stands in for
+`/yard-pane`: the agent runs `loft yard page` and gives you the Yard page's address at the
+session's branch. Where the page server is not running, or runs but does not serve the
+worktree yet, it says so instead, and the agent starts nothing.
+
 `loft yard codex watch --app-server-socket ABSOLUTE_PATH` observes another local socket. The
 plugin's hooks use the default; to use another, change the `watch` commands in the installed
 plugin's `hooks/hooks.json` and review the hooks again in `/hooks`.
 
 The Codex adapter differs from Claude Code's:
 
-- Codex's own dialogs are not synchronised with the page.
+- Codex's own dialogs are not synchronized with the page.
 - A successful `update_plan` mirrors its steps as tasks of the agent's working stage.
 - Native hooks carry no token counters, so usage comes only from the app server, and tool
   activity whose subagent is ambiguous is left out.
@@ -145,4 +158,6 @@ of a Yard Log record by record.
 
 What belongs to the machine rather than the branch lives in `~/.yard/`: the page server's
 address, the trees it serves, each session's events, the revision each agent last read, the
-sessions that continue others and the control token.
+sessions that continue others and the control token. `LOFT_YARD_HOME`, set to an absolute
+directory, keeps them there instead, so a `loft` under development runs a page server and
+session records of its own beside an installed one; a relative or empty value is ignored.

@@ -12,4 +12,6 @@ mod files;
 mod git_contract;
 mod home;
 mod leases;
+#[cfg(unix)]
+mod lock_probe;
 mod session_files;

@@ -33,7 +33,7 @@ impl ExtValue {
     /// The value as JSON.
     #[must_use]
     pub fn to_json(&self) -> Value {
-        serde_json::to_value(self).expect("an extension value serialises")
+        serde_json::to_value(self).expect("an extension value serializes")
     }
 
     /// The entry `key` of a mapping; none for any other value.
@@ -71,7 +71,7 @@ impl Serialize for ExtValue {
 /// A node's extension data as a JSON object of its namespaces.
 #[must_use]
 pub fn to_json(ext: &Ext) -> Value {
-    serde_json::to_value(ext).expect("extension data serialises")
+    serde_json::to_value(ext).expect("extension data serializes")
 }
 
 /// Why JSON is not extension data the text form can hold, at the JSON Pointer (RFC 6901) of the

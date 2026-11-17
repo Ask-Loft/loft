@@ -437,9 +437,9 @@ fn connected() -> Scratch {
 
 #[test]
 fn loft_publish_never_publishes_as_the_remote_so_a_connected_document_is_refused() {
-    for unlabelled in [false, true] {
+    for unlabeled in [false, true] {
         let scratch = connected();
-        if unlabelled {
+        if unlabeled {
             unlabel(&scratch, "AC-2");
         }
         let before = snapshot(&scratch.0);

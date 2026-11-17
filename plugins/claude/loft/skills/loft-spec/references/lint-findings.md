@@ -166,7 +166,7 @@ featureGroups:
 
 ```yaml rule=SH-006 path=spec/tags.yaml
 - name: synced
-  definition: "Behaviour that copies notes between devices."
+  definition: "Behavior that copies notes between devices."
 ```
 
 ```yaml rule=SH-007 path=spec/products/notes/writing/write-a-note.yaml
@@ -373,7 +373,7 @@ requirements:
 
 ```yaml rule=LQ-009 path=spec/tags.yaml
 - name: offline
-  definition: "Behaviour that works without a network connection."
+  definition: "Behavior that works without a network connection."
 ```
 
 ```yaml rule=LQ-009 path=spec/products/notes/product.yaml

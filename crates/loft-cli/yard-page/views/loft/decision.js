@@ -1,6 +1,6 @@
 // A `decision` view: the decision's title, label and state, then its outcome; its options once,
 // as the rows of a compact table of its assessments, the selected one first and marked, each
-// cell a rating as a symbol in its colour whose rationale shows on hover or focus, each row
+// cell a rating as a symbol in its color whose rationale shows on hover or focus, each row
 // opening to the option's description and every rationale, a line above the table naming the
 // symbols; its consequences as one list, each led by its kind; its subjects one line for each
 // role; and its context and drivers each folded.
@@ -171,7 +171,7 @@ function place(event) {
 }
 
 /**
- * A rating as its symbol in its colour, and its word, shown or only named to a reader.
+ * A rating as its symbol in its color, and its word, shown or only named to a reader.
  * @param {string} rating
  * @param {boolean} [word] whether the word is shown beside the symbol
  */

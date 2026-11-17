@@ -14,7 +14,7 @@ requirements:
       - key: 00f903a2-296f-45d0-a465-5a258efac8cd
         name: "No node record under `spec/` carries a label field."
       - key: 901c9c47-7917-436d-ac06-3af365269ed7
-        name: "`spec/labels.yaml` maps each labelled key to exactly one label."
+        name: "`spec/labels.yaml` maps each labeled key to exactly one label."
       - key: 47b85428-cc82-4571-9326-404141030fc5
         name: "A node authored since the last publish or conversion has no entry in `spec/labels.yaml`."
   - key: d1aae04f-e9e4-4bb0-bd84-2a334bee5542
@@ -28,7 +28,7 @@ requirements:
       - key: 52a35682-d0d0-4aff-8c8b-7618c1a65d3a
         name: "The next value of each prefix counter is stored in `spec/labels.yaml`."
       - key: 870afd07-a139-4313-a79e-fb9f2528f4f4
-        name: "Labels are allocated to unlabelled nodes in document order."
+        name: "Labels are allocated to unlabeled nodes in document order."
       - key: 51137dfc-0ecc-4678-873f-68bdd9e1ec9e
         name: "The kind prefixes are `P` for a Product, `FG` for a Feature Group, `F` for a Feature, `RQ` for a Requirement, `AC` for a criterion, `CMP` for a Component, `CON` for a Constraint, `QA` for a Quality Attribute and `ADR` for a decision."
       - key: 4cecef66-9447-4199-93eb-08b4b715f439

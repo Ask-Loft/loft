@@ -13,6 +13,8 @@ import * as kept from '../lib/kept.js';
 import * as prefs from '../lib/prefs.js';
 import { separator } from '../lib/separator.js';
 import { FOLD, chart, folds, minimumWidth, place, scale, ticks } from '../model/gantt.js';
+import { summary } from '../model/consultation.js';
+import { consultLine } from './consult-line.js';
 
 /** The column of names: its narrowest, its widest and its width until one is chosen. */
 export const NAMES = { least: 160, most: 480, first: 260 };
@@ -55,6 +57,7 @@ function css({ share, offset }) {
  *   left: (time: number) => string,
  *   track: number,
  *   pick: (id: string) => object,
+ *   consulted: Map<string, import('../model/consultation.js').StageSums>,
  * }} Draw
  */
 
@@ -85,6 +88,7 @@ export function gantt(log, options) {
     },
     track,
     pick: (id) => ({ onclick: () => onPick(id) }),
+    consulted: summary(log.consultationSums).byStage,
   };
   const marks = labels(model, ticks(model, (time) => draw.px(time), 84), draw);
   const frame = h(
@@ -285,7 +289,12 @@ function stageRows(row, draw) {
     h(
       'div',
       { class: 'gantt-row stage-row' },
-      h('div', { class: 'name-cell' }, h('button', { type: 'button', class: 'stage-name', title: stage.title, ...draw.pick(stage.id) }, stage.title)),
+      h(
+        'div',
+        { class: 'name-cell' },
+        h('button', { type: 'button', class: 'stage-name', title: stage.title, ...draw.pick(stage.id) }, stage.title),
+        consultLine(draw.consulted.get(stage.key), { brief: true }),
+      ),
       h(
         'div',
         { class: 'track-cell' },

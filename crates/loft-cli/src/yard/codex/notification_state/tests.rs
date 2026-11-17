@@ -104,7 +104,7 @@ fn interruption_cancels_pending_work_and_a_late_result_cannot_rearm_it() {
     ledger.confirm(&attempt);
     ledger.refuse(&attempt);
     assert!(!ledger.current(&attempt));
-    assert_eq!(ledger.deliveries[&marker].progress, Progress::Cancelled);
+    assert_eq!(ledger.deliveries[&marker].progress, Progress::Canceled);
     let mut restarted: Ledger =
         serde_json::from_slice(&serde_json::to_vec(&ledger).unwrap()).unwrap();
     restarted.observe(route("thread"), Lifecycle::Start);
@@ -211,7 +211,7 @@ fn changing_the_native_route_invalidates_an_in_flight_result() {
     ledger.observe(moved, Lifecycle::UserPrompt);
     ledger.confirm(&old);
     assert!(!ledger.current(&old));
-    assert_eq!(ledger.deliveries[&marker].progress, Progress::Cancelled);
+    assert_eq!(ledger.deliveries[&marker].progress, Progress::Canceled);
 }
 
 #[test]
@@ -244,7 +244,7 @@ fn a_native_prompt_receipt_confirms_only_a_current_armed_delivery() {
 }
 
 #[test]
-fn a_late_native_prompt_does_not_revive_a_cancelled_or_superseded_attempt() {
+fn a_late_native_prompt_does_not_revive_a_canceled_or_superseded_attempt() {
     let mut ledger = Ledger::default();
     ledger.observe(route("thread"), Lifecycle::Start);
     let marker = ledger.offer(resolution("thread"), None).unwrap();
@@ -258,4 +258,12 @@ fn a_late_native_prompt_does_not_revive_a_cancelled_or_superseded_attempt() {
     ledger.offer(resolution("thread"), Some(2));
     assert_eq!(ledger.receive_prompt("thread", &marker), Some(true));
     assert_eq!(ledger.deliveries[&marker].progress, Progress::Read);
+}
+
+#[test]
+fn a_canceled_delivery_is_written_canceled_and_reads_in_the_spelling_an_older_loft_wrote() {
+    let written = serde_json::to_string(&Progress::Canceled).unwrap();
+    assert_eq!(written, "\"canceled\"");
+    let older: Progress = serde_json::from_str("\"cancelled\"").unwrap();
+    assert_eq!(older, Progress::Canceled);
 }

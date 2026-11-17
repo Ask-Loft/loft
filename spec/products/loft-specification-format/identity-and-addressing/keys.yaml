@@ -32,7 +32,7 @@ requirements:
       - key: 995c7b31-ea90-428c-8af0-5a69d9ba3426
         name: "A node's key is unchanged after the node moves to another parent."
       - key: 9a41e9fc-d57f-4312-bcb9-8ab41663c252
-        name: "A node's key is unchanged after the node is relabelled."
+        name: "A node's key is unchanged after the node is relabeled."
       - key: ad8ae0e5-c9c6-4591-83d9-a510b33a7ce7
         name: "A node's key is unchanged after its kind changes."
       - key: 3003a33c-d009-403c-aeb1-ecb58d55db3f

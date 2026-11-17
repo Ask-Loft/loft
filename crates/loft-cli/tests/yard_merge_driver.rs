@@ -199,6 +199,20 @@ fn a_session_s_file_is_taken_whole_from_the_copy_whose_last_event_ended_later() 
 }
 
 #[test]
+fn a_session_s_consultation_file_is_taken_whole_from_the_later_copy_without_conflict() {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &[]);
+    let consultation = path("consultation/s1.yaml");
+    let (earlier, later) = (session_file(60), session_file(120));
+    for (mine, other) in [(&earlier, &later), (&later, &earlier)] {
+        let output = driver(&yard, [&session_file(0), mine, other], &consultation);
+        assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+        assert_eq!(json_of(&output)["conflicts"], 0);
+        assert_eq!(ours(&yard).as_bytes(), later.as_slice());
+    }
+}
+
+#[test]
 fn of_two_copies_of_a_session_s_file_whose_last_events_ended_at_one_time_this_copy_is_taken() {
     let yard = Yard::new();
     yard.write("s1", ASK, &[]);

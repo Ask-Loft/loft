@@ -3,6 +3,7 @@
 mod account;
 mod app_server;
 mod commands;
+mod consulted;
 mod context;
 mod notification_discovery;
 mod notification_hooks;
@@ -111,16 +112,17 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         return Ok(json!({}));
     }
     let files = state::Files::of(hook)?;
+    let consulted = consulted::fields(hook);
     // Serializes hooks and task mirrors for this session; the worker never holds this lock
     // while posting, so an unavailable page cannot delay a native tool.
     let (caller, disposition, ended) = files.update(|state| {
         let caller = hook.caller(state);
         let disposition =
             notification_hooks::record(hook, caller.as_ref(), &mut state.notifications);
-        if disposition == notification_hooks::Disposition::Cancelled {
+        if disposition == notification_hooks::Disposition::Canceled {
             return Ok((caller, disposition, false));
         }
-        let events = translate::events(hook, state)?;
+        let events = translate::events(hook, state, &consulted)?;
         let key = caller.as_ref().map(task_writes::actor_key);
         if let Some(key) = &key {
             if hook.kind().starts() {
@@ -134,9 +136,9 @@ fn handle(hook: &translate::Hook, port: u16) -> Result<Value> {
         let ended = key.is_some_and(|key| state.ended_tasks.contains(&key));
         Ok((caller, disposition, ended))
     })?;
-    if disposition == notification_hooks::Disposition::Cancelled {
+    if disposition == notification_hooks::Disposition::Canceled {
         return Ok(
-            json!({"decision":"block","reason":"This Yard notification was cancelled after native interruption or session end."}),
+            json!({"decision":"block","reason":"This Yard notification was canceled after native interruption or session end."}),
         );
     }
     // Yard Log takes the task changes under its own lock. A change Yard cannot take leaves the

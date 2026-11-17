@@ -7,7 +7,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process::{Child, Output, Stdio};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use software_plant::{Clock, GitScenario};
 
 use crate::base::based_on_now;
@@ -69,20 +69,36 @@ impl Yard {
 
     /// Runs `loft yard` with `args`, printing JSON.
     pub fn run(&self, args: &[&str]) -> Output {
-        let mut all = vec!["yard"];
-        all.extend_from_slice(args);
-        all.extend_from_slice(&["--format", "json"]);
-        self.scratch.loft_with(&all, Some(&self.git), &self.clock)
+        self.run_under(args, &[])
     }
 
-    /// Starts `loft yard` with `args`, printing JSON, and gives the running process, its
-    /// standard output piped.
-    pub fn spawn(&self, args: &[&str]) -> Child {
+    /// [`Self::run`], with `variables` set in the command's environment.
+    pub fn run_under(&self, args: &[&str], variables: &[(&str, &str)]) -> Output {
         let mut all = vec!["yard"];
         all.extend_from_slice(args);
         all.extend_from_slice(&["--format", "json"]);
         self.scratch
             .command(Some(&self.git), &self.clock)
+            .envs(variables.iter().copied())
+            .args(&all)
+            .output()
+            .unwrap()
+    }
+
+    /// Starts `loft yard` with `args`, printing JSON, and gives the running process, its
+    /// standard output piped.
+    pub fn spawn(&self, args: &[&str]) -> Child {
+        self.spawn_with(args, &[])
+    }
+
+    /// [`Self::spawn`], with `variables` set in the command's environment.
+    pub fn spawn_with(&self, args: &[&str], variables: &[(&str, &str)]) -> Child {
+        let mut all = vec!["yard"];
+        all.extend_from_slice(args);
+        all.extend_from_slice(&["--format", "json"]);
+        self.scratch
+            .command(Some(&self.git), &self.clock)
+            .envs(variables.iter().copied())
             .args(&all)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
@@ -168,3 +184,11 @@ pub const ASK: &str = r#"[
 
 /// [`EPOCH`] as Yard Log writes it.
 pub const EPOCH_TEXT: &str = "2026-01-01T00:00:00Z";
+
+/// Writes `~/.yard/server.json` naming a server on `port`.
+pub fn name_server(yard: &Yard, port: u16) {
+    let dir = yard.scratch.home().join(".yard");
+    fs::create_dir_all(&dir).unwrap();
+    let server = json!({ "port": port, "pid": 1, "version": "2.2.1", "formats": ["yardlog/1"] });
+    fs::write(dir.join("server.json"), server.to_string()).unwrap();
+}

@@ -26,9 +26,10 @@ export const LOFT_SUBCOMMANDS: readonly string[] = [
   'render',
 ]
 
-type Word = { text: string; quoted: boolean }
+/** A word of a shell command, and whether any of it was quoted. */
+export type Word = { text: string; quoted: boolean }
 
-const SEPARATORS = new Set([';', '&', '|', '(', ')', '\n'])
+const SEPARATORS = new Set([';', '&', '|', '\n'])
 
 /** The command with every heredoc's body left out. */
 function withoutHeredocs(command: string): string {
@@ -41,14 +42,19 @@ function withoutHeredocs(command: string): string {
       continue
     }
     kept.push(line)
-    const opened = /<<-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1/.exec(line)
+    // `<<<` is a here-string, which opens no heredoc.
+    const opened = /(?<!<)<<(?!<)-?\s*(['"]?)([A-Za-z_][A-Za-z0-9_]*)\1/.exec(line)
     if (opened) ending = opened[2]!
   }
   return kept.join('\n')
 }
 
-/** The simple commands of a shell command, each as its words. */
-function commandsOf(command: string): Word[][] {
+/**
+ * The simple commands of a shell command, each as its words, with every heredoc's body left out.
+ * A subshell's `(` and `)` are each a command of their own word, so that a reader can tell where a
+ * subshell's `cd` ends; an `&` within a redirection, as in `2>&1` or `&>`, stays in its word.
+ */
+export function commandsOf(command: string): Word[][] {
   const commands: Word[][] = [[]]
   let word = ''
   let quoted = false
@@ -66,11 +72,19 @@ function commandsOf(command: string): Word[][] {
       const close = source.indexOf(c, i + 1)
       const inner = close === -1 ? source.slice(i + 1) : source.slice(i + 1, close)
       word += inner
-      quoted = quoted || !(c === '"' && /^\$\{?[A-Za-z_][A-Za-z0-9_]*\}?$/.test(inner))
+      quoted = quoted || !(c === '"' && VARIABLE.test(inner))
       isWord = true
       i = close === -1 ? source.length : close
     } else if (c === ' ' || c === '\t') {
       end()
+    } else if (c === '&' && ((isWord && /[<>]$/.test(word)) || source[i + 1] === '>')) {
+      word += c
+      isWord = true
+    } else if (c === '(' || c === ')') {
+      end()
+      if (commands.at(-1)!.length > 0) commands.push([])
+      commands.at(-1)!.push({ text: c, quoted: false })
+      commands.push([])
     } else if (SEPARATORS.has(c)) {
       end()
       if (commands.at(-1)!.length > 0) commands.push([])
@@ -84,7 +98,14 @@ function commandsOf(command: string): Word[][] {
 }
 
 const ASSIGNMENT = /^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/s
-const VARIABLE = /^\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?$/
+const VARIABLE = /^\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))$/
+
+/** The number of words that open `words` by assigning shell variables. */
+export function assignments(words: Word[]): number {
+  let n = 0
+  while (n < words.length && !words[n]!.quoted && ASSIGNMENT.test(words[n]!.text)) n++
+  return n
+}
 
 const isLoft = (word: string) => word === 'loft' || /[\\/]loft(\.exe)?$/.test(word)
 
@@ -93,8 +114,7 @@ export function loftSubcommands(command: string): string[] {
   const variables = new Map<string, string>()
   const names: string[] = []
   for (const words of commandsOf(command)) {
-    let n = 0
-    while (n < words.length && !words[n]!.quoted && ASSIGNMENT.test(words[n]!.text)) n++
+    const n = assignments(words)
     if (n === words.length) {
       for (const word of words) {
         const [, name, value] = ASSIGNMENT.exec(word.text)!
@@ -104,7 +124,7 @@ export function loftSubcommands(command: string): string[] {
     }
     const first = words[n]!
     const variable = VARIABLE.exec(first.text)
-    const program = variable ? variables.get(variable[1]!) : first.quoted ? undefined : first.text
+    const program = variable ? variables.get((variable[1] ?? variable[2])!) : first.quoted ? undefined : first.text
     if (program === undefined || !isLoft(program)) continue
     const sub = words.slice(n + 1).find(word => !word.text.startsWith('-'))
     if (sub && !sub.quoted && LOFT_SUBCOMMANDS.includes(sub.text) && !names.includes(sub.text)) names.push(sub.text)

@@ -1,6 +1,6 @@
 //! The browser port: opens an address in the person's web browser, through the program that
 //! `BROWSER` names, given the address as its one argument, or else the system's own opener of
-//! addresses. The browser is started and left to run; whether it could open is learnt from its
+//! addresses. The browser is started and left to run; whether it could open is learned from its
 //! exit while the sign-in waits.
 
 use std::process::{Child, Command, Stdio};

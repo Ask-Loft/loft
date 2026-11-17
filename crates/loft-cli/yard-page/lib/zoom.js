@@ -46,7 +46,7 @@ export function zoomStage(content) {
     content,
   );
   const size = () => ({ width: stage.clientWidth, height: stage.clientHeight });
-  const centre = () => ({ x: stage.clientWidth / 2, y: stage.clientHeight / 2 });
+  const center = () => ({ x: stage.clientWidth / 2, y: stage.clientHeight / 2 });
   /** @param {import('../model/zoom.js').View} next */
   const set = (next) => {
     view = next;
@@ -70,9 +70,9 @@ export function zoomStage(content) {
   const tools = h(
     'div',
     { class: 'zoom-tools' },
-    button('Zoom out', '−', () => set(zoomAt(view, 1 / STEP, centre()))),
+    button('Zoom out', '−', () => set(zoomAt(view, 1 / STEP, center()))),
     shown,
-    button('Zoom in', '+', () => set(zoomAt(view, STEP, centre()))),
+    button('Zoom in', '+', () => set(zoomAt(view, STEP, center()))),
     button('Fit the whole diagram', 'Fit', fitted),
   );
 
@@ -122,10 +122,10 @@ export function zoomStage(content) {
 
   /** @type {Record<string, () => void>} */
   const keys = {
-    '+': () => set(zoomAt(view, STEP, centre())),
-    '=': () => set(zoomAt(view, STEP, centre())),
-    '-': () => set(zoomAt(view, 1 / STEP, centre())),
-    _: () => set(zoomAt(view, 1 / STEP, centre())),
+    '+': () => set(zoomAt(view, STEP, center())),
+    '=': () => set(zoomAt(view, STEP, center())),
+    '-': () => set(zoomAt(view, 1 / STEP, center())),
+    _: () => set(zoomAt(view, 1 / STEP, center())),
     0: fitted,
     ArrowLeft: () => set(pan(view, NUDGE, 0)),
     ArrowRight: () => set(pan(view, -NUDGE, 0)),

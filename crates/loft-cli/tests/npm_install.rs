@@ -1,6 +1,6 @@
 //! The install script of `@ask-loft/loft` (the Feature "The npm package"): it records that npm
 //! installed `loft`, an install never fails because of it, and an install whose script never ran
-//! behaves as one whose did. The launcher honours both switches.
+//! behaves as one whose did. The launcher honors both switches.
 
 use std::fs;
 use std::path::Path;
@@ -108,7 +108,7 @@ fn an_install_whose_script_never_ran_runs_every_command_as_one_whose_script_did(
 }
 
 #[test]
-fn the_launcher_honours_both_switches() {
+fn the_launcher_honors_both_switches() {
     let scratch = Scratch::empty();
     let project = project(&scratch, true);
     let home = scratch.home();

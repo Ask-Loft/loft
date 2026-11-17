@@ -1,7 +1,7 @@
 key: d22ef71f-0e46-414d-9da2-5da8d9347ac2
 slug: label-allocation-at-publish
 name: "Label allocation at publish"
-body: "How a publish gives each unlabelled node the next label of its kind prefix while advancing the counters in `spec/labels.yaml`, gives a key that came back to its document the label it departed with, and marks departed the binding of each key that left."
+body: "How a publish gives each unlabeled node the next label of its kind prefix while advancing the counters in `spec/labels.yaml`, gives a key that came back to its document the label it departed with, and marks departed the binding of each key that left."
 realizes:
   - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
 requirements:

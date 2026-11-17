@@ -175,7 +175,7 @@ test('an interrupted preparation cannot write a late mirror after a later captur
   expect(writes(w).map(batch => batch[0]!.title)).toEqual(['Later'])
 })
 
-test('cancelling a queued capture never lets a later call overtake its active predecessor', { plugins: [INTERRUPTING] }, async ($, on) => {
+test('canceling a queued capture never lets a later call overtake its active predecessor', { plugins: [INTERRUPTING] }, async ($, on) => {
   const w = world(on)
   w.state.read = readDoc({ stages: [stage('shape', 'active', { session: SESSION })] })
   const native = deferred<typeof created>()
@@ -215,7 +215,7 @@ test('an interruption after the native task ran keeps its result while its mirro
 test('an interruption before the native task ran cancels its capture', async () => {
   const interrupt = new AbortController()
   const native = deferred<typeof created>()
-  const captured = capture('cancelled-result', interrupt.signal, async keep => keep(await native.promise))
+  const captured = capture('canceled-result', interrupt.signal, async keep => keep(await native.promise))
   await Promise.resolve()
   interrupt.abort()
   const kept = await captured.then(ran => ran, () => 'lost')

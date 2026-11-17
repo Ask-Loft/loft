@@ -23,7 +23,7 @@ pub(crate) type Visit<'a> = dyn FnMut(Option<NodeId>, &NodeView<'_>, Digest) + '
 
 /// A node's content view, borrowed from the node and its child hashes: kind, statement or name,
 /// body, sorted tag names, the typed attributes, then the ordered child content hashes. It
-/// serialises as a JSON array, so RFC 8785, which sorts object members, keeps this order.
+/// serializes as a JSON array, so RFC 8785, which sorts object members, keeps this order.
 #[derive(Serialize)]
 pub(crate) struct NodeView<'a>(
     &'static str,
@@ -42,7 +42,7 @@ pub(crate) struct NodeView<'a>(
 impl NodeView<'_> {
     /// The view as a JSON value, for a caller that keeps it.
     pub(crate) fn to_value(&self) -> Value {
-        serde_json::to_value(self).expect("a content view serialises")
+        serde_json::to_value(self).expect("a content view serializes")
     }
 }
 

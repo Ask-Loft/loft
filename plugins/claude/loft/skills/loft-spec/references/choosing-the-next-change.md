@@ -65,7 +65,7 @@ than by every combination:
 - **Return:** a value changed and changed back, `A → B → A`, where history keeps both.
 
 Where the criteria do not decide what a scenario should give, report the ambiguity and ask; never
-invent the behaviour.
+invent the behavior.
 
 ## Report
 

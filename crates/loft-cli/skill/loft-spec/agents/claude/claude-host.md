@@ -39,7 +39,7 @@ so that the report can be assembled from them.
 
 ## Report progress
 
-Say in a line what you are about to change before a write to `spec/`, and summarise the changed
+Say in a line what you are about to change before a write to `spec/`, and summarize the changed
 nodes after each run of the loop. Report findings you leave in place with their reason.
 
 ## Delegate

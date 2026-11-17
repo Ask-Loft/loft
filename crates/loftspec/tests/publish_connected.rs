@@ -60,7 +60,7 @@ fn applied(files: &Files, publication: Publication) -> (Files, Lock) {
     (files, lock)
 }
 
-/// The small document marked connected, every node labelled by a publish made as its remote,
+/// The small document marked connected, every node labeled by a publish made as its remote,
 /// and that publish's lock.
 fn connected() -> (Files, Lock) {
     let mut document = small_document();
@@ -157,17 +157,17 @@ fn a_connected_documents_publish_not_made_as_its_remote_stops_short_of_a_lock() 
     let (files, lock) = connected();
     let mut document = codec::read(&files).unwrap();
     document.bindings.unbind(ConstraintId::new(key(7)));
-    let unlabelled = codec::write(&document);
+    let unlabeled = codec::write(&document);
     for repo in [None, Some(clean_main())] {
-        let publication = run(&unlabelled, repo.as_ref(), Some(&lock), Made::NotAsRemote);
+        let publication = run(&unlabeled, repo.as_ref(), Some(&lock), Made::NotAsRemote);
         let (tree, roots, state, base) = prepared(publication);
-        let read = codec::read(&unlabelled).unwrap();
+        let read = codec::read(&unlabeled).unwrap();
         assert_eq!(tree, read, "no label is given and no record is made");
         assert_eq!(roots, hash_document(&read).unwrap().roots);
         assert_eq!(state, roots.state);
         assert_eq!(base, Base::of(Some(&lock)));
     }
-    let as_remote = run(&unlabelled, None, Some(&lock), Made::AsRemote).unwrap();
+    let as_remote = run(&unlabeled, None, Some(&lock), Made::AsRemote).unwrap();
     let given = Allocated {
         label: label("CON-3"),
         element: ConstraintId::new(key(7)).into(),
@@ -242,10 +242,10 @@ fn a_publish_made_as_the_remote_advances_each_counter_to_the_next_unallocated_va
     let (files, lock) = connected();
     let mut document = codec::read(&files).unwrap();
     document.bindings.unbind(ConstraintId::new(key(7)));
-    let unlabelled = codec::write(&document);
+    let unlabeled = codec::write(&document);
     let before = document.counters.next(LabelPrefix::Constraint).get();
-    let publication = run(&unlabelled, None, Some(&lock), Made::AsRemote).unwrap();
-    let (after, _) = applied(&unlabelled, publication);
+    let publication = run(&unlabeled, None, Some(&lock), Made::AsRemote).unwrap();
+    let (after, _) = applied(&unlabeled, publication);
     let published = codec::read(&after).unwrap();
     assert_eq!(
         published.counters.next(LabelPrefix::Constraint).get(),
