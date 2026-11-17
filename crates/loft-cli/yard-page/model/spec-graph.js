@@ -4,10 +4,9 @@
 // Feature Group is a card, headed by its label (or its kind's label prefix, or the word Section
 // for a Section, which has no label) and its change, with its name or statement beneath, wrapped
 // to the width the page's face measures. A card beneath another card, as a criterion beneath its
-// Requirement or a Section beneath a Component, stands beside it,
-// joined to it by a plain line; `realizes` and decision subject edges are dashed, and decisions
-// and Components lie in the last column, a decision's edges laid out from its subjects so that it
-// lies beside them.
+// Requirement or a Section beneath a Component, stands beside it, joined to it by a plain line;
+// `realizes` and decision subject edges are dashed, and decisions and Components lie in the last
+// column, a decision's edges laid out from its subjects so that it lies beside them.
 // Nothing here reaches the page or the network.
 
 import { PAD } from './flowchart.js';

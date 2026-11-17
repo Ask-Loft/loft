@@ -7,7 +7,8 @@ use std::fs;
 use serde_json::Value;
 
 use crate::yard::Yard;
-use crate::yard_view_reports::{CHANGE_LOG, node, parent, report};
+use crate::yard_view_constraints::{ADD_A_BOOK, diagram};
+use crate::yard_view_reports::{CHANGE_LOG, diffed, node, parent};
 
 /// The subjects of Keep a change log: Requirement RQ-2 as its outcome.
 const OUTCOME_ONLY: &str =
@@ -22,11 +23,6 @@ const IN_ORDER: &str = "Books list in the order they were added.";
 /// The key of Requirement RQ-2.
 const KEEP_ORDER_KEY: &str = "00000000-0000-4000-8000-00000000002b";
 
-/// The diagram of a `spec-change` view of the tree as it now stands.
-fn diagram(yard: &Yard) -> Value {
-    report(yard, "spec-change")["graph"].clone()
-}
-
 /// Names criterion AC-3 as affected by Keep a change log, beside its outcome.
 fn name_in_order(yard: &Yard) {
     yard.scratch.edit(
@@ -36,16 +32,15 @@ fn name_in_order(yard: &Yard) {
     );
 }
 
-/// The entry of the decision named `title`, in the diagram's decisions and in its diff.
+/// The box of the decision named `title`, and its entry in the diff.
 fn decision<'a>(graph: &'a Value, title: &str) -> (&'a Value, &'a Value) {
-    let find = |list: &'a Value| {
-        list.as_array()
-            .unwrap()
-            .iter()
-            .find(|each| each["kind"] == "decision" && each["name"] == title)
-            .unwrap_or_else(|| panic!("no decision {title}: {graph}"))
-    };
-    (find(&graph["decisions"]), find(&graph["diff"]))
+    let drawn = graph["decisions"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|each| each["name"] == title)
+        .unwrap_or_else(|| panic!("no decision {title}: {graph}"));
+    (drawn, diffed(graph, title))
 }
 
 /// The subject edges of `graph`, as (from, to, role).
@@ -93,18 +88,21 @@ fn a_spec_change_view_draws_the_subject_a_decision_gained_only_for_context_with_
     let graph = diagram(&yard);
     let criterion = node(&graph, IN_ORDER);
     assert_eq!(criterion["change"], Value::Null, "{graph}");
-    let mut above = parent(&graph, criterion);
-    for kind in ["requirement", "feature", "feature_group", "product"] {
-        assert_eq!(above["kind"], kind, "{graph}");
-        assert_eq!(
-            above["change"],
-            Value::Null,
-            "drawn only for context: {above}"
-        );
-        if kind != "product" {
-            above = parent(&graph, above);
-        }
-    }
+    let above: Vec<&Value> = std::iter::successors(Some(criterion), |box_| {
+        box_["parent"].is_string().then(|| parent(&graph, box_))
+    })
+    .skip(1)
+    .collect();
+    let kinds: Vec<&Value> = above.iter().map(|box_| &box_["kind"]).collect();
+    assert_eq!(
+        kinds,
+        ["requirement", "feature", "feature_group", "product"],
+        "{graph}"
+    );
+    assert!(
+        above.iter().all(|box_| box_["change"].is_null()),
+        "drawn only for context: {graph}"
+    );
     let (drawn, _) = decision(&graph, "Keep a change log");
     let from = drawn["key"].as_str().unwrap().to_owned();
     assert!(
@@ -119,7 +117,7 @@ fn a_spec_change_view_draws_no_edge_to_a_subject_a_decision_lost_and_lists_it_as
     yard.scratch.edit(CHANGE_LOG, OUTCOME_ONLY, "");
     // RQ-2 changes too, so that its box is drawn and an edge to it could be.
     yard.scratch.edit(
-        "products/reading-list/shelf/add-a-book.yaml",
+        ADD_A_BOOK,
         "keep books in the order they were added.",
         "keep books in the order a reader added them.",
     );
@@ -146,13 +144,8 @@ fn a_spec_change_view_lists_no_subject_where_a_removed_node_is_named_by_its_form
     let mut yard = Yard::with_spec();
     name_in_order(&yard);
     yard.rebased();
-    let path = yard
-        .scratch
-        .file("products/reading-list/shelf/add-a-book.yaml");
-    let feature = fs::read_to_string(&path).unwrap();
     let criterion = format!("      - key: {IN_ORDER_KEY}\n        name: \"{IN_ORDER}\"\n");
-    assert!(feature.contains(&criterion), "{feature}");
-    fs::write(&path, feature.replace(&criterion, "")).unwrap();
+    yard.scratch.edit(ADD_A_BOOK, &criterion, "");
     let formatted = yard.scratch.loft(&["fmt"]);
     assert!(formatted.status.success(), "{formatted:?}");
     let decision_file = fs::read_to_string(yard.scratch.file(CHANGE_LOG)).unwrap();

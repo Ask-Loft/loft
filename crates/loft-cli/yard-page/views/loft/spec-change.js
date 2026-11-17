@@ -1,10 +1,11 @@
 // A `spec-change` view: a diagram of the changed Products, Feature Groups, Features,
 // Requirements, criteria, Components, Constraints, Quality Attributes, Sections and decisions,
-// drawn by the page as nested panels and cards (`lib/spec-diagram.js`), each saying how it changed, with what
-// holds each for context and the `realizes` and subject edges between them, under a legend that
-// counts the changes; beneath it, a folded diff of the words of every changed node, which
-// choosing a card unfolds at its entry. A diagram of more than 30 boxes draws each Feature Group
-// as one box that counts its changed nodes, and opens one Feature Group at a time.
+// drawn by the page as nested panels and cards (`lib/spec-diagram.js`), each saying how it
+// changed, with what holds each for context and the `realizes` and subject edges between them,
+// under a legend that counts the changes; beneath it, a folded diff of the words of every changed
+// node and the subjects each decision gained and lost, which choosing a card unfolds at its
+// entry. A diagram of more than 30 boxes draws each Feature Group as one box that counts its
+// changed nodes, and opens one Feature Group at a time.
 // A report recorded before the words were kept has no diff: its Features count their
 // Requirements and criteria, and a folded tree lists its changed nodes.
 
@@ -14,7 +15,7 @@ import * as kept from '../../lib/kept.js';
 import { digest, drawSpecChange } from '../../lib/spec-diagram.js';
 import { CHANGE_WORDS, boxes, isFolded, labelOf } from '../../model/spec-graph.js';
 import { compareWords } from '../../model/words.js';
-import { changeItem, leftOut } from './index.js';
+import { changeItem, leftOut, named, tag } from './index.js';
 
 /**
  * The legend above the diagram: each change its boxes and panels show, keyed by its bar, with
@@ -179,16 +180,11 @@ export function diffItem(entry) {
 
 /**
  * A subject a decision gained or lost: its change, its label (or what stands for it) and its
- * name, marked as added or removed, and its role.
+ * name, as every node is named on the page, marked as added or removed, and its role.
  * @param {Subject} subject
  */
 function subjectLine(subject) {
-  const named = [labelOf(subject), subject.name].filter(Boolean).join(' ');
-  return h(
-    'p',
-    { class: 'diff-subject' },
-    `Subject ${subject.change}: `,
-    h(subject.change === 'added' ? 'ins' : 'del', {}, named),
-    ` as ${subject.role}`,
-  );
+  const label = labelOf(subject);
+  const shown = subject.name ? named({ ...subject, label }) : tag(label);
+  return h('p', { class: 'diff-subject' }, `Subject ${subject.change}: `, h(subject.change === 'added' ? 'ins' : 'del', {}, shown), ` as ${subject.role}`);
 }

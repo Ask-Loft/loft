@@ -19,7 +19,7 @@ pub enum Subject {
 pub type Named = (Subject, SubjectRole);
 
 /// What one decision's subjects gained and lost.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Change {
     pub gained: BTreeSet<Named>,
     pub lost: BTreeSet<Named>,
@@ -45,6 +45,17 @@ pub fn changes(base: &Document, document: &Document) -> BTreeMap<Key, Change> {
         .collect()
 }
 
+/// The key of each node a decision of `changes` gained as a subject, where a key names it.
+pub fn gained_nodes(changes: &BTreeMap<Key, Change>) -> impl Iterator<Item = Key> + '_ {
+    changes
+        .values()
+        .flat_map(|change| &change.gained)
+        .filter_map(|(subject, _)| match subject {
+            Subject::Node(key) => Some(*key),
+            Subject::Former(_) => None,
+        })
+}
+
 /// The subjects of each decision of `document`, by the decision's key.
 fn of(document: &Document) -> BTreeMap<Key, BTreeSet<Named>> {
     let mut subjects: BTreeMap<Key, BTreeSet<Named>> = BTreeMap::new();
@@ -65,20 +76,16 @@ fn of(document: &Document) -> BTreeMap<Key, BTreeSet<Named>> {
 /// The node `subject` names. A former label is the node its binding, live or departed, keeps,
 /// so that a node `loft fmt` names by its former label once it is removed is the same subject.
 fn subject_of(document: &Document, subject: NodeRef) -> Subject {
-    match subject {
-        NodeRef::Held(node) => Subject::Node(node.key()),
-        NodeRef::Former(label) => document
-            .bindings
-            .resolve(label)
-            .or_else(|| {
-                document
-                    .bindings
-                    .departed()
-                    .find(|binding| binding.label == label)
-                    .map(|binding| binding.element)
-            })
-            .map_or(Subject::Former(label), |element| {
-                Subject::Node(element.key())
-            }),
-    }
+    let label = match subject {
+        NodeRef::Held(node) => return Subject::Node(node.key()),
+        NodeRef::Former(label) => label,
+    };
+    let bindings = &document.bindings;
+    let departed = || bindings.departed().find(|binding| binding.label == label);
+    bindings
+        .resolve(label)
+        .or_else(|| departed().map(|binding| binding.element))
+        .map_or(Subject::Former(label), |element| {
+            Subject::Node(element.key())
+        })
 }

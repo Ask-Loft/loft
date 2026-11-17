@@ -80,31 +80,26 @@ pub fn report(base: &Document, document: &Document) -> Value {
     let changes = content_changes(base, document);
     let mut marked: BTreeMap<Key, &'static str> = BTreeMap::new();
     let lists = [&changes.added, &changes.changed, &changes.removed];
-    for (index, ids) in lists.into_iter().enumerate() {
-        let walked = if index == 2 { &then } else { &now };
-        for id in ids {
-            if walked.entries.contains_key(&id.key()) {
-                marked.insert(id.key(), CHANGES[index]);
-            }
-        }
+    for (ids, change) in lists.into_iter().zip(CHANGES) {
+        marked.extend(ids.iter().map(|id| (id.key(), change)));
     }
     let subjects = subjects::changes(base, document);
-    let gained: BTreeSet<Key> = subjects
-        .values()
-        .flat_map(|change| &change.gained)
-        .filter_map(|(subject, _)| match subject {
-            Subject::Node(key) => now.entries.contains_key(key).then_some(*key),
-            Subject::Former(_) => None,
-        })
-        .collect();
+    let gained: BTreeSet<Key> = subjects::gained_nodes(&subjects).collect();
     let shown = shown(&marked, &gained, &now, &then);
-    let decisions = decisions(base, document, &subjects, &now, &then);
-    let decided = decisions.iter().map(|(_, value)| value.clone());
+    let decided = decisions(base, document, &subjects, &now, &then);
+    // Only a decision's entry in the diff lists its subjects; its box needs none.
+    let listed = decided.iter().map(|decision| {
+        let mut entry = decision.entry.clone();
+        if let Some(subjects) = &decision.subjects {
+            entry["subjects"] = subjects.clone();
+        }
+        entry
+    });
     json!({
         "nodes": nodes(&shown, &marked, &now, &then),
-        "decisions": decided.clone().collect::<Vec<_>>(),
-        "edges": edges(&shown, &decisions, document, base, &now, &then),
-        "diff": diff(&lists, &now, &then).into_iter().chain(decided).collect::<Vec<_>>(),
+        "decisions": decided.iter().map(|decision| decision.entry.clone()).collect::<Vec<_>>(),
+        "edges": edges(&shown, &decided, document, base),
+        "diff": diff(&lists, &now, &then).into_iter().chain(listed).collect::<Vec<_>>(),
     })
 }
 
@@ -225,6 +220,7 @@ fn shown(
         .collect()
 }
 
+/// Each box drawn, with its kind, label, name, the box above it and its change, where it has one.
 fn nodes(
     shown: &[Key],
     marked: &BTreeMap<Key, &'static str>,
@@ -250,45 +246,56 @@ fn nodes(
     Value::Array(nodes.collect())
 }
 
-/// Each decision added, changed or removed, by its key, with its words before and after and the
-/// subjects it gained and lost. A decision is changed where it or its subjects differ.
+/// A decision the diagram draws: its key, whether only the base holds it, its entry, and the
+/// subjects it gained and lost, which only its entry in the diff lists.
+struct Decided {
+    key: Key,
+    removed: bool,
+    entry: Value,
+    subjects: Option<Value>,
+}
+
+/// Each decision added, changed or removed, with its words before and after and the subjects it
+/// gained and lost, in the tree's order and then the removed in the base's. A decision is changed
+/// where it or its subjects differ.
 fn decisions(
     base: &Document,
     document: &Document,
     subjects: &BTreeMap<Key, Change>,
     now: &Walked,
     then: &Walked,
-) -> Vec<(Key, Value)> {
+) -> Vec<Decided> {
     let before: BTreeMap<Key, _> = base.decisions.iter().map(|d| (d.id.key(), d)).collect();
     let after: BTreeMap<Key, _> = document.decisions.iter().map(|d| (d.id.key(), d)).collect();
-    let mut found = Vec::new();
-    for (key, decision) in &after {
-        let change = match before.get(key) {
-            None => "added",
-            Some(was) if was != decision || subjects.contains_key(key) => "changed",
-            Some(_) => continue,
-        };
-        let label = document
-            .bindings
-            .label_of(decision.id)
-            .map(|l| l.to_string());
-        let was = before.get(key).map(|was| words::of_decision(was));
-        let words = words::pair(was.as_deref(), Some(&words::of_decision(decision)));
-        let mut value = decision_json(*key, label.as_deref(), &decision.title, change, &words);
-        listed(&mut value, subjects.get(key), now, then);
-        found.push((*key, value));
-    }
-    for (key, decision) in &before {
-        if !after.contains_key(key) {
-            let label = base.bindings.label_of(decision.id).map(|l| l.to_string());
-            let words = words::pair(Some(&words::of_decision(decision)), None);
-            let mut value =
-                decision_json(*key, label.as_deref(), &decision.title, "removed", &words);
-            listed(&mut value, subjects.get(key), now, then);
-            found.push((*key, value));
-        }
-    }
-    found
+    let gone = before.keys().filter(|key| !after.contains_key(key));
+    after
+        .keys()
+        .chain(gone)
+        .filter_map(|key| {
+            let (was, is) = (before.get(key).copied(), after.get(key).copied());
+            let change = match (was, is) {
+                (None, _) => "added",
+                (_, None) => "removed",
+                (Some(was), Some(is)) if was != is || subjects.contains_key(key) => "changed",
+                _ => return None,
+            };
+            let (decision, holder) = match is {
+                Some(is) => (is, document),
+                None => (was?, base),
+            };
+            let label = holder.bindings.label_of(decision.id).map(|l| l.to_string());
+            let words = words::pair(
+                was.map(words::of_decision).as_deref(),
+                is.map(words::of_decision).as_deref(),
+            );
+            Some(Decided {
+                key: *key,
+                removed: is.is_none(),
+                entry: decision_json(*key, label.as_deref(), &decision.title, change, &words),
+                subjects: subjects.get(key).map(|change| listed(change, now, then)),
+            })
+        })
+        .collect()
 }
 
 fn decision_json(key: Key, label: Option<&str>, title: &str, change: &str, words: &Value) -> Value {
@@ -302,12 +309,9 @@ fn decision_json(key: Key, label: Option<&str>, title: &str, change: &str, words
     })
 }
 
-/// Lists in a decision's entry, `value`, the subjects `change` holds: each gained, as the tree
-/// names it, and each lost, as the base does.
-fn listed(value: &mut Value, change: Option<&Change>, now: &Walked, then: &Walked) {
-    let Some(change) = change else {
-        return;
-    };
+/// The subjects `change` holds, as a decision's entry lists them: each gained, as the tree names
+/// it, and each lost, as the base does.
+fn listed(change: &Change, now: &Walked, then: &Walked) -> Value {
     let gained = change
         .gained
         .iter()
@@ -316,7 +320,7 @@ fn listed(value: &mut Value, change: Option<&Change>, now: &Walked, then: &Walke
         .lost
         .iter()
         .map(|named| subject(named, "removed", then));
-    value["subjects"] = Value::Array(gained.chain(lost).collect());
+    Value::Array(gained.chain(lost).collect())
 }
 
 /// A subject as a decision's entry lists it: the node's key, kind, label and name, as `walked`
@@ -340,32 +344,18 @@ fn subject((subject, role): &Named, change: &str, walked: &Walked) -> Value {
 /// The `realizes` edges between boxes drawn, and the subject edges from each decision drawn to
 /// the box of each node it names, where that box is drawn: an added or changed decision's as the
 /// tree holds them, and a removed decision's as the base did.
-fn edges(
-    shown: &[Key],
-    decisions: &[(Key, Value)],
-    document: &Document,
-    base: &Document,
-    now: &Walked,
-    then: &Walked,
-) -> Value {
+fn edges(shown: &[Key], decided: &[Decided], document: &Document, base: &Document) -> Value {
     let drawn: BTreeSet<Key> = shown.iter().copied().collect();
-    let held = |removed: bool| -> BTreeSet<Key> {
-        decisions
-            .iter()
-            .filter(|(_, value)| (value["change"] == "removed") == removed)
-            .map(|(key, _)| *key)
-            .collect()
-    };
-    let (removed, present) = (held(true), held(false));
+    let mut held: [BTreeSet<Key>; 2] = Default::default();
+    for decision in decided {
+        held[usize::from(decision.removed)].insert(decision.key);
+    }
     let mut found = BTreeSet::new();
-    for (edges, walked, named) in [
-        (&document.edges, now, &present),
-        (&base.edges, then, &removed),
-    ] {
+    for (edges, named) in [(&document.edges, &held[0]), (&base.edges, &held[1])] {
         found.extend(
             edges
                 .iter()
-                .filter_map(|edge| drawn_edge(edge, &drawn, named, walked)),
+                .filter_map(|edge| drawn_edge(edge, &drawn, named)),
         );
     }
     let edges = found.into_iter().map(|(from, to, kind, role)| {
@@ -383,12 +373,7 @@ type Drawn = (String, String, &'static str, Option<&'static str>);
 
 /// `edge` as the diagram draws it, where both its ends are drawn: a `realizes` edge between two
 /// boxes, or a subject edge from a decision drawn to the box of the node it names.
-fn drawn_edge(
-    edge: &Edge,
-    drawn: &BTreeSet<Key>,
-    named: &BTreeSet<Key>,
-    walked: &Walked,
-) -> Option<Drawn> {
+fn drawn_edge(edge: &Edge, drawn: &BTreeSet<Key>, named: &BTreeSet<Key>) -> Option<Drawn> {
     match *edge {
         Edge::Realizes { feature, component } => {
             let (from, to) = (feature.key(), component.key());
@@ -400,10 +385,15 @@ fn drawn_edge(
             subject: NodeRef::Held(node),
             role,
         } if named.contains(&decision.key()) => {
-            let to = Some(node.key())
-                .filter(|to| walked.entries.contains_key(to) && drawn.contains(to))?;
-            let from = decision.key().to_string();
-            Some((from, to.to_string(), "subject", Some(role.as_str())))
+            let (from, to) = (decision.key(), node.key());
+            drawn.contains(&to).then(|| {
+                (
+                    from.to_string(),
+                    to.to_string(),
+                    "subject",
+                    Some(role.as_str()),
+                )
+            })
         }
         _ => None,
     }

@@ -5,10 +5,8 @@
 use serde_json::Value;
 
 use crate::yard::Yard;
-use crate::yard_view_reports::{node, parent, report};
-
-/// The Feature that the Sections of [`with_sections`] are written into.
-const ADD_A_BOOK: &str = "products/reading-list/shelf/add-a-book.yaml";
+use crate::yard_view_constraints::{ADD_A_BOOK, assert_boxed_beneath, diagram};
+use crate::yard_view_reports::node;
 
 /// The Component that holds a Section in [`with_sections`].
 const SHELF_STORE: &str = "components/shelf-store.yaml";
@@ -27,6 +25,13 @@ const ORDER: &str = "Readers find the book they added last at the end.";
 
 /// The body of the Component's Section.
 const FILES: &str = "Each shelf is one file.";
+
+/// The Shelf store's Section, as [`with_sections`] writes it.
+const LAYOUT: &str = "sections:\n  - key: 00000000-0000-4000-8000-0000000000b4\n    \
+     name: \"Layout\"\n    body: \"Each shelf is one file.\"\n";
+
+/// The statement of Add a book's second Requirement, which holds a Section.
+const KEEP_ORDER: &str = "The shelf shall keep books in the order they were added.";
 
 /// The Reading List with a Section in Add a book holding a Section of its own, a Section in its
 /// second Requirement and a Section in the Shelf store, each in the base as in the tree.
@@ -49,36 +54,9 @@ fn with_sections() -> Yard {
              name: \"Why order\"\n        body: \"{ORDER}\"\n"
         ),
     );
-    yard.scratch.append(
-        SHELF_STORE,
-        &format!(
-            "sections:\n  - key: 00000000-0000-4000-8000-0000000000b4\n    \
-             name: \"Layout\"\n    body: \"{FILES}\"\n"
-        ),
-    );
+    yard.scratch.append(SHELF_STORE, LAYOUT);
     yard.rebased();
     yard
-}
-
-/// The diagram of a `spec-change` view of the tree as it now stands.
-fn diagram(yard: &Yard) -> Value {
-    report(yard, "spec-change")["graph"].clone()
-}
-
-/// Asserts that `graph` draws the Section named `name` as a box of its own marked `change`,
-/// beneath the box of `kind` that holds it, which is drawn only for context; gives that box.
-fn assert_section_beneath<'a>(graph: &'a Value, name: &str, change: &str, kind: &str) -> &'a Value {
-    let section = node(graph, name);
-    assert_eq!(section["kind"], "section", "{section}");
-    assert_eq!(section["change"], change, "{section}");
-    let above = parent(graph, section);
-    assert_eq!(above["kind"], kind, "{graph}");
-    assert_eq!(
-        above["change"],
-        Value::Null,
-        "its own content did not change: {above}"
-    );
-    above
 }
 
 #[test]
@@ -88,8 +66,7 @@ fn a_spec_change_view_draws_a_changed_section_as_a_box_of_its_own_and_its_featur
     yard.scratch
         .edit(ADD_A_BOOK, TITLES, "Readers remember a title best.");
     let graph = diagram(&yard);
-    let feature = assert_section_beneath(&graph, "Why titles", "changed", "feature");
-    assert_eq!(feature["name"], "Add a book");
+    assert_boxed_beneath(&graph, "Why titles", "section", "changed", "Add a book");
     let section = node(&graph, "Why titles");
     let entries = graph["diff"].as_array().unwrap();
     assert_eq!(entries.len(), 1, "{graph}");
@@ -110,30 +87,26 @@ fn a_spec_change_view_draws_the_changed_sections_of_a_requirement_a_component_an
     yard.scratch
         .edit(SHELF_STORE, FILES, "Each shelf is one directory.");
     let graph = diagram(&yard);
-    assert_section_beneath(&graph, "Why order", "changed", "requirement");
-    assert_section_beneath(&graph, "Layout", "changed", "component");
-    let holder = assert_section_beneath(&graph, "Spines", "changed", "section");
-    assert_eq!(holder["name"], "Why titles");
-    for kind in ["feature", "requirement", "component", "section"] {
-        let marked = graph["nodes"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .filter(|box_| box_["kind"] == kind && !box_["change"].is_null())
-            .count();
-        let expected = usize::from(kind == "section") * 3;
-        assert_eq!(marked, expected, "only the Sections are marked: {graph}");
-    }
+    assert_boxed_beneath(&graph, "Why order", "section", "changed", KEEP_ORDER);
+    assert_boxed_beneath(&graph, "Layout", "section", "changed", "Shelf store");
+    assert_boxed_beneath(&graph, "Spines", "section", "changed", "Why titles");
+    let marked: Vec<&Value> = graph["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|box_| !box_["change"].is_null())
+        .map(|box_| &box_["kind"])
+        .collect();
+    assert_eq!(
+        marked, ["section"; 3],
+        "only the Sections are marked: {graph}"
+    );
 }
 
 #[test]
 fn a_spec_change_view_draws_an_added_and_a_removed_section_as_boxes_of_their_own() {
     let yard = with_sections();
-    let section = format!(
-        "sections:\n  - key: 00000000-0000-4000-8000-0000000000b4\n    \
-         name: \"Layout\"\n    body: \"{FILES}\"\n"
-    );
-    yard.scratch.edit(SHELF_STORE, &section, "");
+    yard.scratch.edit(SHELF_STORE, LAYOUT, "");
     yard.scratch.edit(
         ADD_A_BOOK,
         "    sections:\n      - key: 00000000-0000-4000-8000-0000000000b2\n",
@@ -142,6 +115,6 @@ fn a_spec_change_view_draws_an_added_and_a_removed_section_as_boxes_of_their_own
          - key: 00000000-0000-4000-8000-0000000000b2\n",
     );
     let graph = diagram(&yard);
-    assert_section_beneath(&graph, "Covers", "added", "section");
-    assert_section_beneath(&graph, "Layout", "removed", "component");
+    assert_boxed_beneath(&graph, "Covers", "section", "added", "Why titles");
+    assert_boxed_beneath(&graph, "Layout", "section", "removed", "Shelf store");
 }
