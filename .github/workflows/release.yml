@@ -115,8 +115,10 @@ jobs:
       # Exchanges this run's identity for a short-lived crates.io token.
       - uses: rust-lang/crates-io-auth-action@v1
         id: auth
-      # Publishes the crates crates.io does not hold yet, so a failed run can run again.
-      - run: scripts/publish-crates.sh
+      # Publishes the crates crates.io does not hold yet, so a failed run can run again. The check
+      # job's dry run built each crate from its package on this commit, so they are not built
+      # again here.
+      - run: scripts/publish-crates.sh --no-verify
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
       # npm exchanges this run's identity for a short-lived token itself. Publishes the platform

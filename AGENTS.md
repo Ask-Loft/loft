@@ -375,7 +375,8 @@ A release happens only with the maintainer's approval, and in this order:
    the launcher from them (`scripts/npm-smoke.sh`) and checks them with a dry run, then waits for
    the maintainer to approve: on the run's page, "Review deployments", tick `release`, "Approve and
    deploy". Once approved, the publish job runs the tarballs it downloaded once more,
-   `scripts/publish-crates.sh` publishes the crates to crates.io in dependency order,
+   `scripts/publish-crates.sh` publishes the crates to crates.io in dependency order, without
+   building them again (the check job's dry run built each from its package on the same commit),
    `scripts/publish-npm.sh` publishes the platform packages and then `@ask-loft/loft`, and the tag
    gets a GitHub release with the binaries, whose notes are the version's changelog entry. Both
    registries trust the workflow through Trusted Publishing; no registry token is stored anywhere.
