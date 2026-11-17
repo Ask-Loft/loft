@@ -33547,11 +33547,14 @@ links:
     reviewed: 80b079c8a940087fcf56e3f60bee48d9fa370eac3bac13e91beaf4206cb1910b
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
+        name: "a plan the person stopped by interrupting the turn is withdrawn, not decided"
+        body: 3d122f07600c597e028018d781065f3ee8c56ce83be081114e8ef0bb00ad8699
+      - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the host ends records no outcome, keeps its submission open and points the agent at it"
         body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a tool error that ends ExitPlanMode is handled as a host that ends it"
-        body: cd9f86775fd894436e16491cf11d43f44267f841c2ac6a46c348549d18a89daf
+        body: 5810ee8f006dcdbfb513634c47813c48820c6cc39c68f1deff2db3a90fb51651
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan rejected in the terminal with no feedback typed is recorded as rejected with no reason"
         body: 7c40ba19cc9a11d91b55a855261781b6ea036f608206b46c3df6426576cc90c4
@@ -33563,10 +33566,13 @@ links:
         body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a tool error that ends ExitPlanMode is handled as a host that ends it"
-        body: cd9f86775fd894436e16491cf11d43f44267f841c2ac6a46c348549d18a89daf
+        body: 5810ee8f006dcdbfb513634c47813c48820c6cc39c68f1deff2db3a90fb51651
   - node: 01a1eb26-527d-769d-91c8-de414779954c
     reviewed: 51228b70f4b84df7df0c1f4bafa2e5fff98dd0ab23fc26a65b18c0aa656a4eb6
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/answers.test.js"
+        name: "every plan has the same approval explanation regardless of host or native plan flag"
+        body: 576fd1d16c893e06af89dc5a467c624bb5aad4f30a20c14cf0ffe328c0a7b6f6
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a plan the host ends records no outcome, keeps its submission open and points the agent at it"
         body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
@@ -33584,7 +33590,7 @@ links:
         body: 66ee84b5436e14a33984195a3fbc54c11d80dc7f4ca2566fde5dd17d617faa9f
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "a tool error that ends ExitPlanMode is handled as a host that ends it"
-        body: cd9f86775fd894436e16491cf11d43f44267f841c2ac6a46c348549d18a89daf
+        body: 5810ee8f006dcdbfb513634c47813c48820c6cc39c68f1deff2db3a90fb51651
   - node: 01a1eb26-527d-769d-91c8-de44b8a1b37e
     reviewed: dd870f3d4b9db7edcd9e206a8a8c687024af3024f233e54527efdc7be4783eea
     tests:

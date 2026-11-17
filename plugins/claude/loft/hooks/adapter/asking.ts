@@ -7,7 +7,7 @@
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
 import type { Doc, Ran } from '../loft'
-import { askResultOf, givenOf, planId, planPath, planTitle, questionBlocks, rejectionIn, type Asked, type Given } from './answers'
+import { askResultOf, givenOf, planId, planPath, planTitle, isCancelled, questionBlocks, rejectionIn, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { capture, checkCapture } from './capture'
 import { activeStage, idOf, isAsker, lastUnplanned, openSubmissions, pageOf, waitingOf, whoOf, type Asker, type Block } from './log'
@@ -163,7 +163,7 @@ function heldBy(doc: Doc, key: string | undefined, asker: Asker): string | undef
 }
 
 /**
- * The host's own result, telling the agent that nobody decided the plan and where it waits: an
+ * The host's own words, with a note telling the agent that nobody decided the plan and where it waits: an
  * Agent SDK host may answer `ExitPlanMode` itself, and a tool error may end it, before the person
  * saw it.
  */
@@ -172,8 +172,8 @@ function undecided(ran: ToolCallResult, submission: string, address: string | un
   const note =
     `Nobody has decided this plan: ExitPlanMode ended before the person did. The plan waits on ${where} ` +
     `as submission ${submission}; wait on it with yard_wait for the person's decision.`
-  if (ran.deny !== undefined) return { ...ran, deny: `${ran.deny}\n\n${note}` }
-  return { ...ran, text: ran.text ? `${ran.text}\n\n${note}` : note }
+  // A deny: core gives the agent its own messages for a result it got back unchanged.
+  return { deny: [ran.deny ?? ran.text, note].filter(Boolean).join('\n\n') }
 }
 
 const rejection = (reason: unknown) =>
@@ -215,7 +215,8 @@ export async function presentPlan(
   const ran = await next(e as never)
   const page = await decidedOnPage($, cwd, caller, id)
   if (page) return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
-  if (next.signal.aborted) {
+  const denial = ran.deny ?? ran.text ?? ''
+  if (next.signal.aborted || isCancelled(denial)) {
     await withdraw($, cwd, caller, submission)
     return ran
   }
@@ -223,7 +224,7 @@ export async function presentPlan(
     await record($, cwd, caller, [{ block: id, verdict: 'approved' }])
     return ran
   }
-  const rejected = rejectionIn(ran.deny ?? ran.text ?? '')
+  const rejected = rejectionIn(denial)
   if (!rejected) return undecided(ran, submission, address)
   await record($, cwd, caller, [{ block: id, verdict: 'rejected', ...rejected }])
   return ran
