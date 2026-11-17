@@ -3,8 +3,30 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.4.1-alpha.1 (2026-11-17)
+
+The first prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.1`. It lets you try Yard Log that no
+longer changes the working tree under an agent's git commands: each session's token totals,
+activity and consultation counts are kept in git's own directory and enter `.yard/` only with a
+write of Yard Log. It also lets you try a plan that a host such as T3 Code ends staying open on
+the Yard page instead of being recorded as rejected, and the `spec-change` view's drawing of
+Constraints, Quality Attributes, Sections and decisions. The entries under Unreleased below list
+everything 2.4.1 will hold.
+
 ## Unreleased
 
+- Yard Log's session files no longer change the working tree between an agent's commands. The
+  page server keeps each session's token totals, activity and consultation counts in git's own
+  directory for the worktree, under `yard/<branch>.sessions/`, and each write of Yard Log, a close
+  included, saves the copies that changed into `.yard/<branch>/` through its journal. An agent can
+  commit, switch branches, pull or stash without first clearing Yard's files, and no temporary
+  file of Yard's lands in the tree. The page and every reader take the copy in git's directory
+  first, so the page still follows a session as it works.
+- A plan that a host which answers `ExitPlanMode` itself ends, such as T3 Code, stays open on the
+  Yard page, and the agent is told to wait on it with `yard_wait`. Such a plan used to be recorded
+  as rejected by the person, though nobody had seen it. Only Claude Code's own rejection counts as
+  the person's, and a call an interrupt stopped is withdrawn.
 - The release workflow publishes the crates without building them a second time after the
   maintainer's approval: the check job's dry run has already built each crate from its package on
   the tag's commit.
