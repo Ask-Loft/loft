@@ -8,7 +8,7 @@ use serde_json::Value;
 
 use crate::yard::Yard;
 use crate::yard_view_constraints::{ADD_A_BOOK, diagram};
-use crate::yard_view_reports::node;
+use crate::yard_view_reports::{CHANGE_LOG, node};
 
 /// The Shelf store's key, which Add a book and Remove a book realize.
 const SHELF_STORE_KEY: &str = "00000000-0000-4000-8000-00000000003c";
@@ -140,13 +140,11 @@ fn a_spec_change_view_draws_a_node_and_a_decision_whose_only_change_is_a_mention
     let yard = Yard::with_spec();
     yard.scratch.edit(
         ADD_A_BOOK,
-        &format!("mentions:\n  - 00000000-0000-4000-8000-00000000001f\n  - {SHELF_STORE_KEY}\n"),
-        "mentions:\n  - 00000000-0000-4000-8000-00000000001f\n",
+        &format!("mentions:\n  - {REMOVE_A_BOOK_KEY}\n  - {SHELF_STORE_KEY}\n"),
+        &format!("mentions:\n  - {REMOVE_A_BOOK_KEY}\n"),
     );
-    yard.scratch.append(
-        "decisions/keep-a-change-log.yaml",
-        &format!("mentions:\n  - {ADD_A_BOOK_KEY}\n"),
-    );
+    yard.scratch
+        .append(CHANGE_LOG, &format!("mentions:\n  - {ADD_A_BOOK_KEY}\n"));
     let formatted = yard.scratch.loft(&["fmt"]);
     assert!(formatted.status.success(), "{formatted:?}");
     let graph = diagram(&yard);

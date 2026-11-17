@@ -20,6 +20,9 @@ const STORE_A_SHELF: &str = "decisions/store-a-shelf-in-one-file.yaml";
 /// The Feature Add a book, F-1, which realizes the Shelf store and holds RQ-2.
 const ADD_A_BOOK: &str = "products/reading-list/shelf/add-a-book.yaml";
 const ADD_A_BOOK_KEY: &str = "00000000-0000-4000-8000-00000000001e";
+/// Remove a book and the Shelf store, which Add a book mentions; it also realizes the Shelf store.
+const REMOVE_A_BOOK_KEY: &str = "00000000-0000-4000-8000-00000000001f";
+const SHELF_STORE_KEY: &str = "00000000-0000-4000-8000-00000000003c";
 /// Requirement RQ-2 of Add a book, and its criterion AC-3.
 const KEEP_ORDER_KEY: &str = "00000000-0000-4000-8000-00000000002b";
 const IN_ORDER_KEY: &str = "00000000-0000-4000-8000-00000000002c";
@@ -142,10 +145,6 @@ fn a_decision_that_loft_fmt_names_a_removed_node_in_by_its_former_label_is_not_l
     assert_eq!(keys(&document, "removed"), [KEEP_ORDER_KEY, IN_ORDER_KEY]);
 }
 
-/// The first of Add a book's `mentions` entries: Remove a book, and the Shelf store, which it
-/// also realizes.
-const MENTIONS: &str = "mentions:\n  - 00000000-0000-4000-8000-00000000001f\n  - 00000000-0000-4000-8000-00000000003c\n";
-
 #[test]
 fn a_node_whose_only_change_is_a_mentions_entry_removed_is_listed_as_changed() {
     let scratch = Scratch::with_reading_list();
@@ -153,8 +152,8 @@ fn a_node_whose_only_change_is_a_mentions_entry_removed_is_listed_as_changed() {
     // The Shelf store stays among the Components Add a book realizes.
     scratch.edit(
         ADD_A_BOOK,
-        MENTIONS,
-        "mentions:\n  - 00000000-0000-4000-8000-00000000001f\n",
+        &format!("mentions:\n  - {REMOVE_A_BOOK_KEY}\n  - {SHELF_STORE_KEY}\n"),
+        &format!("mentions:\n  - {REMOVE_A_BOOK_KEY}\n"),
     );
     let document = compared(&scratch, &git);
     assert_eq!(keys(&document, "changed"), [ADD_A_BOOK_KEY]);

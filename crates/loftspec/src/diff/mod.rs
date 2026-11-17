@@ -1,23 +1,24 @@
 //! The nodes one document added, changed and removed against another, its base (the `loft
 //! status` Feature). A node is matched by its key, so a node that moves stays the same node; it
-//! changed when its own content view differs, the hashes of its children left out, so a
-//! change to a node is not a change to each of its ancestors, or when the edges its record
-//! writes differ: a Feature's `realizes`, a Component's `scopedTo` and any node's `mentions`. A
-//! node moved when its own
-//! content view is the base's and its parent is not (the `loft review` Feature); a move alone is no
-//! change, so [`NodeChanges::is_empty`] ignores it. The comparer, [`compare`], tells the same
-//! changes by each node's record in place of its content view, and [`decision_changes`] tells the
-//! decisions added, changed and removed, with the subjects each gained and lost.
+//! changed when its own content view differs, the hashes of its children left out, so a change
+//! to a node is not a change to each of its ancestors, or when the edges its record writes
+//! differ: a Feature's `realizes`, a Component's `scopedTo` and any node's `mentions`. A node
+//! moved when its own content view is the base's and its parent is not (the `loft review`
+//! Feature); a move alone is no change, so [`NodeChanges::is_empty`] ignores it. The comparer,
+//! [`compare`], tells the same changes by each node's record in place of its content view, and
+//! [`decision_changes`] tells the decisions added, changed and removed, with the subjects each
+//! gained and lost.
 
 mod compare;
 mod decisions;
 
 use std::collections::{BTreeMap, BTreeSet};
 
-use serde_json::{Value, json};
+use serde_json::Value;
 
-use crate::document::{Document, Edge};
+use crate::document::{Document, EdgeKind, EdgeTarget};
 use crate::hash::own_views;
+use crate::identity::Key;
 use crate::ids::{ElementId, NodeId};
 use crate::index::Index;
 
@@ -68,10 +69,12 @@ pub fn content_changes(base: &Document, document: &Document) -> NodeChanges {
 }
 
 /// A document's keyed nodes: each one's own content view, and their order, parents before
-/// children.
+/// children; and, as they are compared, the edges each one's record writes.
 pub(crate) struct Keyed {
     pub views: BTreeMap<NodeId, Value>,
     pub order: Vec<NodeId>,
+    /// The kind and target of each edge a node's record writes, where it writes one.
+    pub written: BTreeMap<NodeId, BTreeSet<(EdgeKind, Key)>>,
 }
 
 impl Keyed {
@@ -79,36 +82,24 @@ impl Keyed {
         Self {
             views: own_views(document),
             order: Self::order_of(document),
+            written: BTreeMap::new(),
         }
     }
 
-    /// A document's keyed nodes as they are compared: each node's view with the edges its record
-    /// writes, by kind and key: a Feature's `realizes`, a Component's `scopedTo` and any node's
-    /// `mentions`. The content view leaves edges to the edges root, but the record writes these,
-    /// so a change to them changes the node.
+    /// A document's keyed nodes as they are compared, with the edges each one's record writes:
+    /// a Feature's `realizes`, a Component's `scopedTo` and any node's `mentions`. The content
+    /// view leaves edges to the edges root, but the record writes these, so a change to them
+    /// changes the node.
     fn compared(document: &Document) -> Self {
         let mut keyed = Self::of(document);
-        let mut written: BTreeMap<NodeId, BTreeSet<(&str, String)>> = BTreeMap::new();
         for edge in &document.edges {
-            let (from, to) = match *edge {
-                Edge::Realizes { feature, component } => (feature.into(), component.key()),
-                Edge::ScopedTo { component, product } => (component.into(), product.key()),
-                Edge::Mentions {
-                    source: ElementId::Node(source),
-                    target,
-                } => (source, target.key()),
-                Edge::Mentions { .. } | Edge::Subject { .. } => continue,
+            // A `subject` edge starts at a decision, so only the edges a node writes are kept.
+            let (ElementId::Node(from), EdgeTarget::Element(to)) = (edge.source(), edge.target())
+            else {
+                continue;
             };
-            let kind = edge.kind().as_str();
-            written
-                .entry(from)
-                .or_default()
-                .insert((kind, to.to_string()));
-        }
-        for (id, to) in written {
-            if let Some(Value::Array(fields)) = keyed.views.get_mut(&id) {
-                fields.push(json!(to));
-            }
+            let written = keyed.written.entry(from).or_default();
+            written.insert((edge.kind(), to.key()));
         }
         keyed
     }
@@ -145,7 +136,12 @@ pub(crate) fn change_of(
     let moved = parents.is_some_and(|(then, now)| then.get(&id) != now.get(&id));
     match before.views.get(&id) {
         None => Some(NodeChange::Added),
-        Some(view) if after.views.get(&id) != Some(view) => Some(NodeChange::Changed),
+        Some(view)
+            if after.views.get(&id) != Some(view)
+                || before.written.get(&id) != after.written.get(&id) =>
+        {
+            Some(NodeChange::Changed)
+        }
         Some(_) if moved => Some(NodeChange::Moved),
         Some(_) => None,
     }
