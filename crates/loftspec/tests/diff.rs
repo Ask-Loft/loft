@@ -4,8 +4,8 @@
 
 use crate::common::{criterion, key, small_document};
 use loftspec::diff::{NodeChanges, content_changes, node_changes};
-use loftspec::document::Document;
-use loftspec::ids::{ConstraintId, CriterionId, FeatureId, NodeId};
+use loftspec::document::{Document, Edge};
+use loftspec::ids::{ComponentId, ConstraintId, CriterionId, FeatureId, NodeId};
 use loftspec::tree::Requirement;
 
 fn requirement(document: &mut Document) -> &mut Requirement {
@@ -146,4 +146,65 @@ fn the_changes_of_content_alone_are_those_of_every_change_without_the_moved() {
             ..every
         }
     );
+}
+
+/// The small document without the edges `drop` picks.
+fn without_edges(drop: impl Fn(&Edge) -> bool) -> Document {
+    let mut document = small_document();
+    document.edges.retain(|edge| !drop(edge));
+    document
+}
+
+#[test]
+fn a_feature_that_gained_or_lost_a_realizes_entry_is_changed_and_its_component_is_not() {
+    let lost = without_edges(|edge| matches!(edge, Edge::Realizes { .. }));
+    let feature: NodeId = FeatureId::new(key(3)).into();
+    for changes in [
+        content_changes(&small_document(), &lost),
+        content_changes(&lost, &small_document()),
+        node_changes(&small_document(), &lost),
+    ] {
+        assert_eq!(
+            changes,
+            NodeChanges {
+                changed: vec![feature],
+                ..NodeChanges::default()
+            }
+        );
+    }
+}
+
+#[test]
+fn a_component_that_gained_or_lost_a_scoped_to_entry_is_changed_and_its_product_is_not() {
+    let lost = without_edges(|edge| matches!(edge, Edge::ScopedTo { .. }));
+    let component: NodeId = ComponentId::new(key(6)).into();
+    for changes in [
+        content_changes(&small_document(), &lost),
+        content_changes(&lost, &small_document()),
+    ] {
+        assert_eq!(
+            changes,
+            NodeChanges {
+                changed: vec![component],
+                ..NodeChanges::default()
+            }
+        );
+    }
+}
+
+#[test]
+fn a_node_that_gained_or_lost_a_mentions_entry_is_changed_and_the_node_it_names_is_not() {
+    let lost = without_edges(|edge| matches!(edge, Edge::Mentions { .. }));
+    for changes in [
+        content_changes(&small_document(), &lost),
+        content_changes(&lost, &small_document()),
+    ] {
+        assert_eq!(
+            changes,
+            NodeChanges {
+                changed: vec![criterion_id(5)],
+                ..NodeChanges::default()
+            }
+        );
+    }
 }

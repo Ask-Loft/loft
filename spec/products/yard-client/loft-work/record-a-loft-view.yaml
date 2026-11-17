@@ -61,17 +61,6 @@ requirements:
         name: "A write to a `loft` block already written is refused."
       - key: 01a1646f-546d-7042-befd-eaafc438724d
         name: "A later report of the same view is recorded as a new block."
-  - key: 01a1646f-546d-7042-befd-eab0f8479a49
-    statement:
-      form: unwanted
-      if: "a view's report lists more than 1,000 nodes, links or findings"
-      system: "`loft yard write`"
-      shall: "record the report's counts in full, its first 1,000 items, and the number of items left out."
-    criteria:
-      - key: 01a1646f-546d-7042-befd-eab13f7eb373
-        name: "The view gives the number of items the block left out."
-      - key: 01a1646f-546d-7042-befd-eab2b5d08cae
-        name: "The counts of the report are those of the whole report."
   - key: 01a1646f-546d-7042-befd-eab3b45d862a
     statement:
       form: ubiquitous

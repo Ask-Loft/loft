@@ -43,7 +43,7 @@ fn change_a_criterion(yard: &Yard) {
 pub(crate) const CHANGE_LOG: &str = "decisions/keep-a-change-log.yaml";
 
 /// Changes the outcome of the decision Keep a change log.
-pub(crate) fn change_a_decision(yard: &Yard) {
+fn change_a_decision(yard: &Yard) {
     yard.scratch.edit(
         CHANGE_LOG,
         "outcome: \"An append-only log.\"",
@@ -86,7 +86,7 @@ pub(crate) fn parent<'a>(graph: &'a Value, node: &Value) -> &'a Value {
 }
 
 /// The entry of the diff for the node or decision named `name`.
-fn diffed<'a>(graph: &'a Value, name: &str) -> &'a Value {
+pub(crate) fn diffed<'a>(graph: &'a Value, name: &str) -> &'a Value {
     graph["diff"]
         .as_array()
         .unwrap()

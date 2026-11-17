@@ -731,7 +731,6 @@ body:has(.modal[open]:not(.modal--docked)) { overflow: hidden; }
 .rule { font-family: var(--mono); font-size: 12px; font-weight: 700; }
 .site { color: var(--muted); }
 .reason { color: var(--muted); font-style: italic; }
-.left-out { color: var(--wait); font-size: 13px; }
 .coverage { display: flex; height: 8px; overflow: hidden; background: var(--line); position: relative; max-width: 480px; }
 .coverage-linked { position: absolute; inset: 0 auto 0 0; background: var(--series-task-pale); }
 .coverage-accepted { position: absolute; inset: 0 auto 0 0; background: var(--done); }
@@ -954,7 +953,8 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .diff .diff-words { margin: 4px 0 0; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
 .diff ins { text-decoration: underline; text-decoration-thickness: 2px; background: var(--done-soft); color: var(--ink); }
 .diff del { text-decoration: line-through; text-decoration-thickness: 2px; background: var(--danger-soft); color: var(--ink); }
-.diff .diff-same { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.diff .diff-same, .diff .diff-subject { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.diff .diff-subject { overflow-wrap: anywhere; }
 
 /* The Gantt chart. */
 

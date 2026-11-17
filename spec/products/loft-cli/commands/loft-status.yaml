@@ -1,7 +1,7 @@
 key: 01a144ee-c59f-7034-9c62-3c4adf1f3011
 slug: loft-status
 name: "`loft status`"
-body: "Reports where the tree stands: the lock it was last published as and whether it still matches it, the state of the git repository that holds it, and, against a base revision, the nodes that were added, changed and removed since the branch left it. It is a report for an agent host or a person to read between edits, so it exits 0 whatever it finds, and, since a host may run it every few seconds, it sends no command event and asks for no update."
+body: "Reports where the tree stands: the lock it was last published as and whether it still matches it, the state of the git repository that holds it, and, against a base revision, the nodes and decisions that were added, changed and removed since the branch left it. It is a report for an agent host or a person to read between edits, so it exits 0 whatever it finds, and, since a host may run it every few seconds, it sends no command event and asks for no update."
 tags:
   - needs-repository
   - reads-tree
@@ -41,7 +41,7 @@ requirements:
       form: optional
       where: "`--base <revision>` is given"
       system: "`loft status`"
-      shall: "report the nodes added, changed and removed between the commit where HEAD left the revision and the tree."
+      shall: "report the nodes and decisions added, changed and removed between the commit where HEAD left the revision and the tree."
     criteria:
       - key: 01a144ee-c59f-7034-9c62-3c56a97f4505
         name: "The report names the base revision and the commit that `git merge-base HEAD <revision>` gives."
@@ -55,6 +55,16 @@ requirements:
         name: "A node whose descendant changed and whose own content did not is not listed as changed."
       - key: 01a144ee-c59f-7034-9c62-3c5b29c96166
         name: "A node that only moved to another parent or file is not listed as changed."
+      - key: 01a1ea8e-b119-760b-bb98-a3320f620660
+        name: "A node whose `realizes`, `scopedTo` or `mentions` entries differ from the base commit's is listed as changed."
+      - key: 01a1ea8e-b119-760b-bb98-a3335e289149
+        name: "A decision whose key the tree holds and the base commit does not is listed as added, and one whose key the base commit holds and the tree does not is listed as removed."
+      - key: 01a1ea8e-b119-760b-bb98-a33456fcccc3
+        name: "A decision whose fields, subjects or `mentions` entries differ from the base commit's is listed as changed."
+      - key: 01a1ea8e-b119-760b-bb98-a33552d49161
+        name: "A decision that differs from the base commit's only in naming a node by its former label in one and by its key in the other is not listed as changed."
+      - key: 01a1ea8e-b119-760b-bb98-a33607f80f96
+        name: "Each list gives its decisions after its nodes, each with its key, label, the kind `decision`, file, line, column and its title as its name."
       - key: 01a144ee-c59f-7034-9c62-3c5c3885a63d
         name: "Each listed node carries its key, label, kind, file, line, column and name."
       - key: 01a144ef-6ca2-72ca-be59-57080abf3fc4

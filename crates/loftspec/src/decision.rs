@@ -35,6 +35,21 @@ pub struct Decision {
     pub consequences: Vec<Consequence>,
 }
 
+impl Decision {
+    /// The nodes the decision names in its drivers and its consequences; its subjects are edges
+    /// of its document.
+    pub fn named(&self) -> impl Iterator<Item = NodeRef> + '_ {
+        let drivers = self
+            .drivers
+            .iter()
+            .filter_map(|driver| match driver.payload {
+                DriverPayload::Subject { subject } => Some(subject),
+                DriverPayload::Local { .. } => None,
+            });
+        drivers.chain(self.consequences.iter().filter_map(|each| each.subject))
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DecisionState {
     Proposed,

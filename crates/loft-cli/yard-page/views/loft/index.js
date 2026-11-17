@@ -87,12 +87,4 @@ export function changeItem(node) {
   return h('li', {}, chip(node.change, CHANGE_TONES[node.change]), ' ', h('span', { class: 'kind' }, node.kind), ' ', named(node));
 }
 
-/**
- * How many of a report's list it left out, where it left some out.
- * @param {any} report
- * @param {string} path
- */
-export function leftOut(report, path) {
-  const count = report?.leftOut?.[path];
-  return count ? h('p', { class: 'left-out' }, `${count} more not recorded in this view.`) : null;
-}
+

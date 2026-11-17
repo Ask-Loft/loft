@@ -7,13 +7,13 @@ use std::fs;
 use serde_json::Value;
 
 use crate::yard::Yard;
-use crate::yard_view_reports::{CHANGE_LOG, change_a_decision, node, parent, report};
+use crate::yard_view_reports::{CHANGE_LOG, node, parent, report};
 
 /// The Reading List's Product, whose Shelf Feature Group holds a Constraint.
 const PRODUCT: &str = "products/reading-list/product.yaml";
 
 /// The Feature that holds a Quality Attribute.
-const ADD_A_BOOK: &str = "products/reading-list/shelf/add-a-book.yaml";
+pub(crate) const ADD_A_BOOK: &str = "products/reading-list/shelf/add-a-book.yaml";
 
 /// The Component that holds a Constraint and a Quality Attribute.
 const SHELF_STORE: &str = "components/shelf-store.yaml";
@@ -28,14 +28,14 @@ const IN_RUST_KEY: &str = "00000000-0000-4000-8000-00000000003e";
 const IN_SAFE_RUST: &str = "The shelf store shall be written in safe Rust.";
 
 /// The diagram of a `spec-change` view of the tree as it now stands.
-fn diagram(yard: &Yard) -> Value {
+pub(crate) fn diagram(yard: &Yard) -> Value {
     report(yard, "spec-change")["graph"].clone()
 }
 
 /// Asserts that `graph` draws the node named `name` as a box of its own, of `kind` and marked
 /// `change`, beneath the box of the node named `holder`, which is drawn only for context; gives
 /// the holder's box.
-fn assert_boxed_beneath<'a>(
+pub(crate) fn assert_boxed_beneath<'a>(
     graph: &'a Value,
     name: &str,
     kind: &str,
@@ -151,9 +151,6 @@ fn a_spec_change_view_draws_an_added_and_a_removed_constraint_as_boxes_of_their_
 #[test]
 fn a_spec_change_view_ends_a_decision_s_subject_edge_at_the_box_of_the_constraint_it_names() {
     let yard = Yard::with_spec();
-    // A subject is an edge, not a field of its decision: the decision and its edges are drawn
-    // only once its own words change.
-    change_a_decision(&yard);
     yard.scratch.edit(
         CHANGE_LOG,
         "subjects:\n",

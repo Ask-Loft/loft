@@ -13,6 +13,34 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   the Component that holds it. A change to one used to mark the box of the node that holds it as
   changed, although that node had not changed, and showed it only in the diff. A report recorded
   before keeps its drawing.
+- A `spec-change` view draws a changed Section as a box of its own, headed `Section`, inside the
+  panel of the Product, Feature Group or Feature that holds it, or beside the box of any other
+  node that holds it. A change to a Section used to mark the box above it as changed, and
+  choosing that box found no entry in the diff.
+- A `spec-change` view shows a decision whose only change is a subject added or removed: the
+  decision is drawn as changed, each subject it gained is drawn so that its edge has an end, a
+  subject it lost has no edge, and its entry in the diff lists the subjects added and removed with
+  their roles. Such a decision used to be missing from the view altogether.
+- A `spec-change` view no longer draws a retired or superseded decision as changed only because
+  `loft fmt` now names a node the branch removed by its former label, in a subject, a driver or a
+  consequence. `loftspec` compares decisions in `diff::decision_changes`, which reads each former
+  label as the node it names, and `Bindings::former` finds the node a departed label named.
+- `loft status --base` lists the decisions added, changed and removed, after the nodes of each
+  list, with the kind `decision` and the title as the name. It lists as changed a node whose
+  `realizes`, `scopedTo` or `mentions` entries changed, and a decision whose `mentions` entries
+  changed. Such a change used to be missing, and so was every decision. Its JSON is now
+  `loft-status/3`. `loftspec`'s `content_changes`, `node_changes` and `decision_changes` count
+  those entries too.
+- A `spec-change` view draws a node whose `realizes`, `scopedTo` or `mentions` entries changed,
+  and a decision whose `mentions` entries changed, as changed, and no longer draws a `realizes`
+  edge the branch removed between two nodes the tree still holds.
+- A `spec-change` view draws a node the branch removed beneath its parent where the tree now
+  holds that parent, so that a node that moved is drawn once, in its new place. A box could name
+  as its parent a box that was not drawn, which left the moved node outside its Feature's panel
+  and that Feature's old panel drawn empty.
+- A `loft` block records the whole report its view gives, however long. A list of more than
+  1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
+  part of Yard Log's history of the work.
 
 ## 2.4.0 (2026-11-17)
 

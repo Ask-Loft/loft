@@ -1,26 +1,32 @@
 //! The nodes one document added, changed and removed against another, its base (the `loft
 //! status` Feature). A node is matched by its key, so a node that moves stays the same node; it
-//! changed when its own content view differs, the hashes of its children left out, so a
-//! change to a node is not a change to each of its ancestors. A node moved when its own content
-//! view is the base's and its parent is not (the `loft review` Feature); a move alone is no
-//! change, so [`NodeChanges::is_empty`] ignores it. The comparer, [`compare`], tells the same
-//! changes by each node's record in place of its content view.
+//! changed when its own content view differs, the hashes of its children left out, so a change
+//! to a node is not a change to each of its ancestors, or when the edges its record writes
+//! differ: a Feature's `realizes`, a Component's `scopedTo` and any node's `mentions`. A node
+//! moved when its own content view is the base's and its parent is not (the `loft review`
+//! Feature); a move alone is no change, so [`NodeChanges::is_empty`] ignores it. The comparer,
+//! [`compare`], tells the same changes by each node's record in place of its content view, and
+//! [`decision_changes`] tells the decisions added, changed and removed, with the subjects each
+//! gained and lost.
 
 mod compare;
+mod decisions;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde_json::Value;
 
-use crate::document::Document;
+use crate::document::{Document, EdgeKind, EdgeTarget};
 use crate::hash::own_views;
-use crate::ids::NodeId;
+use crate::identity::Key;
+use crate::ids::{ElementId, NodeId};
 use crate::index::Index;
 
 pub use compare::{
     Comparison, DecisionChange, DecisionDifference, Difference, NodeDifference, Order, Part,
     Refusal, Side, Version, Which, compare,
 };
+pub use decisions::{DecisionChanges, Subject, SubjectChange, decision_changes};
 
 /// The keyed nodes a document added, changed, moved and removed against its base: the added,
 /// changed and moved in the document's order, the removed in the base's.
@@ -48,21 +54,27 @@ pub fn node_changes(base: &Document, document: &Document) -> NodeChanges {
     let (then, _, _) = Index::build(base);
     let (now, _, _) = Index::build(document);
     let parents = (then.parents(), now.parents());
-    changes(&Keyed::of(base), &Keyed::of(document), Some(parents))
+    changes(
+        &Keyed::compared(base),
+        &Keyed::compared(document),
+        Some(parents),
+    )
 }
 
 /// The nodes `document` added, changed and removed against `base`, as [`node_changes`] gives
 /// them, without the moved, which takes both documents indexed to tell.
 #[must_use]
 pub fn content_changes(base: &Document, document: &Document) -> NodeChanges {
-    changes(&Keyed::of(base), &Keyed::of(document), None)
+    changes(&Keyed::compared(base), &Keyed::compared(document), None)
 }
 
 /// A document's keyed nodes: each one's own content view, and their order, parents before
-/// children.
+/// children; and, as they are compared, the edges each one's record writes.
 pub(crate) struct Keyed {
     pub views: BTreeMap<NodeId, Value>,
     pub order: Vec<NodeId>,
+    /// The kind and target of each edge a node's record writes, where it writes one.
+    pub written: BTreeMap<NodeId, BTreeSet<(EdgeKind, Key)>>,
 }
 
 impl Keyed {
@@ -70,7 +82,23 @@ impl Keyed {
         Self {
             views: own_views(document),
             order: Self::order_of(document),
+            written: BTreeMap::new(),
         }
+    }
+
+    /// A document's keyed nodes as they are compared, with the edges each one's record writes:
+    /// a Feature's `realizes`, a Component's `scopedTo` and any node's `mentions`. The content
+    /// view leaves edges to the edges root, but the record writes these, so a change to them
+    /// changes the node.
+    fn compared(document: &Document) -> Self {
+        let mut keyed = Self::of(document);
+        keyed.written = (written(document).into_iter())
+            .filter_map(|(from, edges)| match from {
+                ElementId::Node(node) => Some((node, edges)),
+                ElementId::Decision(_) => None,
+            })
+            .collect();
+        keyed
     }
 
     /// A document's keyed nodes in order, parents before children.
@@ -79,6 +107,23 @@ impl Keyed {
         document.walk(&mut |node| order.extend(node.id()));
         order
     }
+}
+
+/// The kind and target of each edge an element's record writes, by the element: a Feature's
+/// `realizes`, a Component's `scopedTo` and any node's or decision's `mentions`. A decision's
+/// subjects are left out, since they are compared apart, each former label read as its node.
+pub(crate) fn written(document: &Document) -> BTreeMap<ElementId, BTreeSet<(EdgeKind, Key)>> {
+    let mut written: BTreeMap<ElementId, BTreeSet<(EdgeKind, Key)>> = BTreeMap::new();
+    for edge in &document.edges {
+        let EdgeTarget::Element(to) = edge.target() else {
+            continue;
+        };
+        if edge.kind() != EdgeKind::Subject {
+            let edges = written.entry(edge.source()).or_default();
+            edges.insert((edge.kind(), to.key()));
+        }
+    }
+    written
 }
 
 /// Each keyed node's parent, the nearest keyed node above it; none for a Product or a root
@@ -105,7 +150,12 @@ pub(crate) fn change_of(
     let moved = parents.is_some_and(|(then, now)| then.get(&id) != now.get(&id));
     match before.views.get(&id) {
         None => Some(NodeChange::Added),
-        Some(view) if after.views.get(&id) != Some(view) => Some(NodeChange::Changed),
+        Some(view)
+            if after.views.get(&id) != Some(view)
+                || before.written.get(&id) != after.written.get(&id) =>
+        {
+            Some(NodeChange::Changed)
+        }
         Some(_) if moved => Some(NodeChange::Moved),
         Some(_) => None,
     }

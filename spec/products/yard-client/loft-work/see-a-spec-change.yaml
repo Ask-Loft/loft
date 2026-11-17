@@ -12,12 +12,14 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Requirements, criteria, Components, Constraints, Quality Attributes and decisions, with a diff of every changed node beneath it."
+      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Requirements, criteria, Components, Constraints, Quality Attributes, Sections and decisions, with a diff of every changed node beneath it."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac1d09f5f92
         name: "The diagram shows each changed node with the Requirement, the Feature, the Feature Group and the Product above it."
       - key: 01a16475-7fbc-7732-a78c-bc4f592eb112
         name: "The diagram draws the `realizes` and decision subject edges between the nodes it shows."
+      - key: 01a1ea8e-b11b-737e-8311-c97711e8cd8c
+        name: "A node that gained or lost a `realizes`, `scopedTo` or `mentions` entry is drawn as changed."
       - key: 01a1646f-546d-7042-befd-eac271279597
         name: "Each added, changed or removed Requirement is drawn as a box inside its Feature's panel that holds its statement."
       - key: 01a16475-7fbc-7732-a78c-bc50ee43201f
@@ -26,8 +28,22 @@ requirements:
         name: "Each added, changed or removed Constraint or Quality Attribute of a Product, a Feature Group or a Feature is drawn as a box inside that node's panel that holds its name."
       - key: 01a1e8b6-b713-735b-a077-9e3ce8e88bfe
         name: "Each added, changed or removed Constraint or Quality Attribute of a Component is drawn as a box to the right of the Component's box, joined to it, that holds its name."
+      - key: 01a1e982-1425-7775-9b23-a8164b5dfab7
+        name: "Each added, changed or removed Section of a Product, a Feature Group or a Feature is drawn as a box inside that node's panel that holds its name."
+      - key: 01a1e982-1425-7775-9b23-a817c492d557
+        name: "Each added, changed or removed Section of a Requirement, a criterion, a Component, a Constraint, a Quality Attribute or a Section is drawn as a box to the right of that node's box, joined to it, that holds its name."
+      - key: 01a1e982-1425-7775-9b23-a8188b955180
+        name: "A decision whose only change is a subject added or removed is drawn as changed."
+      - key: 01a1eafb-028a-74e3-ba22-929f39442f3a
+        name: "A decision whose only change is a `mentions` entry added or removed is drawn as changed."
+      - key: 01a1e982-1425-7775-9b23-a8190c394d6e
+        name: "Each node that an added or changed decision gained as a subject is drawn, so that the decision's subject edge ends at its box."
+      - key: 01a1e982-1425-7775-9b23-a81a5843ca14
+        name: "A subject that the branch removed from a decision the tree still holds has no edge in the diagram."
+      - key: 01a1ea8e-b11b-737e-8311-c979878572ea
+        name: "A decision that differs from the base only in naming a node by its former label in one and by its key in the other is not drawn as changed."
       - key: 01a1695a-dd72-7090-817b-abea7cf0c895
-        name: "A Requirement or a criterion that did not change is drawn only where a changed criterion lies beneath it, and then only for context."
+        name: "A Requirement or a criterion that did not change is drawn only where a changed node lies beneath it or a decision gained it as a subject, and then only for context."
       - key: 01a1695a-dd72-7090-817b-abebaa96fd5a
         name: "A Feature's box gives no count of its Requirements or its criteria."
       - key: 01a1646f-546d-7042-befd-eac305fe0fe5
@@ -38,6 +54,16 @@ requirements:
         name: "The view names the base revision it compares with, and the commit it was recorded at."
       - key: 01a1646f-546d-7042-befd-eac7b48cb905
         name: "A view of no change says that the specification has not changed since the base revision."
+  - key: 01a1ea8e-e8d0-7200-b3b3-7f33a09ec515
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw each node and edge of a `spec-change` view's diagram where the tree holds it, and a removed one where the base held it."
+    criteria:
+      - key: 01a1ea8e-b11b-737e-8311-c976f10d85c2
+        name: "A `realizes` edge that the branch removed is drawn only where its Feature or its Component was removed."
+      - key: 01a1ea8e-b11b-737e-8311-c978701716bd
+        name: "A node the tree holds is drawn beneath the node above it in the tree, and a removed node beneath the node above it in the base."
   - key: 01a1a814-5ac4-7523-9962-5aca4077ab5e
     statement:
       form: ubiquitous
@@ -49,9 +75,9 @@ requirements:
       - key: 01a1a814-5ac4-7523-9962-5acc70ed77b9
         name: "A Requirement's box and the boxes of its criteria stand in one row, the criteria stacked one beneath another to its right, each joined to it by a plain line without an arrowhead."
       - key: 01a1a814-5ac4-7523-9962-5acd501df9ef
-        name: "Expanded, each box is a flat card headed by its kind's colored square and its label in monospace, or its kind's label prefix, such as `RQ` or `AC`, where the node has no label yet, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
+        name: "Expanded, each box is a flat card headed by its kind's colored square and its label in monospace, or its kind's label prefix, such as `RQ` or `AC`, where the node has no label yet, or the word `Section` for a Section, which has no label, with its name or statement beneath in the page's face, wrapped to the box's measured width so that nothing is cut."
       - key: 01a1a836-8724-73ee-8657-ce8aec3a1302
-        name: "In its block, each box is a chip of one line: its kind's colored square, its label or its kind's label prefix, its name cut to the chip's measured width, and its change in a word."
+        name: "In its block, each box is a chip of one line: its kind's colored square, its label, its kind's label prefix or the word `Section`, its name cut to the chip's measured width, and its change in a word."
       - key: 01a1a836-8725-715c-9d62-b5b2deeb88a9
         name: "A chip whose name is cut gives its whole name to a reader and shows it while the pointer rests on the chip."
       - key: 01a1a814-5ac4-7523-9962-5ace0ee365c5
@@ -82,7 +108,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "show in the diff beneath the diagram the words of each added, changed and removed node, with the words added and the words removed marked."
+      shall: "show in the diff beneath the diagram the words of each added, changed and removed node and the subjects of each changed decision, with what was added and what was removed marked."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac5a7afa6b1
         name: "The diff lists every added, changed and removed node by its kind, its label and its name."
@@ -96,6 +122,8 @@ requirements:
         name: "A changed node shows its words once, with each word removed marked as removed and each word added marked as added."
       - key: 01a1695a-dd72-7090-817b-abf130c2dda7
         name: "A changed node whose words did not change says that only its other fields changed."
+      - key: 01a1e982-1425-7775-9b23-a81bae5df3e0
+        name: "A decision's entry lists each subject added to it or removed from it by its label or its kind, its name, its role and its change."
       - key: 01a16475-7fbc-7732-a78c-bc51485eea5d
         name: "The diff starts folded."
   - key: 01a1695a-dd72-7090-817b-abf280f1f0dd
@@ -117,6 +145,6 @@ requirements:
       shall: "draw each Feature Group as one box that counts its changed nodes, and let the person open one Feature Group at a time."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac9dc2edaf7
-        name: "Opening a Feature Group draws its changed Features, Requirements, criteria, Constraints and Quality Attributes in place of its box."
+        name: "Opening a Feature Group draws its changed Features, Requirements, criteria, Constraints, Quality Attributes and Sections in place of its box."
       - key: 01a1646f-546d-7042-befd-eacaa63dddfa
         name: "Opening another Feature Group closes the one that was open."

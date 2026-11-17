@@ -139,6 +139,45 @@ test('a changed Constraint or Quality Attribute of a Component is drawn to the r
   assert.ok(joining.every((edge) => !edge.arrowEnd && !edge.arrowStart && !edge.label), 'a plain line, no arrowhead');
 });
 
+test('a changed Section of a Product, a Feature Group or a Feature is drawn inside that node’s panel, holding its name, its card and its chip headed by the word Section', async () => {
+  const why = { key: 's1', kind: 'section', label: null, name: 'Why lists', parent: 'p', change: 'changed' };
+  const how = { key: 's2', kind: 'section', label: null, name: 'How sharing works', parent: 'g', change: 'added' };
+  const notes = { key: 's3', kind: 'section', label: null, name: 'Notes', parent: 'f', change: 'removed' };
+  const nodes = [product, why, group, how, feature, notes];
+  const layout = await laid({ nodes });
+  for (const [key, holder] of [['s1', 'p'], ['s2', 'g'], ['s3', 'f']]) {
+    assert.ok(at(layout, key).card, `${key} is a card`);
+    assert.ok(within(at(layout, key), at(layout, holder)), `${key} inside the panel of ${holder}`);
+    assert.equal(at(layout, key).card.label, 'Section', 'the word Section, as a Section has no label');
+  }
+  assert.equal(at(layout, 's2').card.lines.join(' '), how.name);
+  assert.equal(at(layout, 's3').card.word, 'REMOVED');
+  assert.equal(layout.edges.filter((edge) => edge.pattern === 'tree').length, 0, 'joined to no other box');
+  const chips = placed(await new ELK().layout(specGraph({ nodes, decisions: [], edges: [] }, null, measure, true)));
+  assert.equal(at(chips, 's1').card.compact, true);
+  assert.equal(at(chips, 's1').card.label, 'Section');
+  assert.equal(flowchartSvg(chips, 'sec').querySelector('[data-key="s1"] .spec-label')?.textContent, 'Section');
+});
+
+test('a changed Section of a Requirement, a Component or a Section is drawn to the right of that node’s box, joined to it by a plain line, holding its name', async () => {
+  const why = { key: 's1', kind: 'section', label: null, name: 'Why refuse edits', parent: 'r', change: 'changed' };
+  const nested = { key: 's2', kind: 'section', label: null, name: 'Read-only links', parent: 's1', change: 'added' };
+  const store = { key: 'm', kind: 'component', label: 'CMP-1', name: 'Link service', parent: null, change: null };
+  const layout_ = { key: 's3', kind: 'section', label: null, name: 'Link layout', parent: 'm', change: 'changed' };
+  const layout = await laid({ nodes: [product, group, feature, requirement, why, nested, store, layout_] });
+  for (const [key, holder] of [['s1', 'r'], ['s2', 's1'], ['s3', 'm']]) {
+    const [held, beside] = [at(layout, key), at(layout, holder)];
+    assert.ok(held.x >= beside.x + beside.width, `${key} to the right of ${holder}`);
+    assert.equal(held.card.lines.join(' '), { s1: why.name, s2: nested.name, s3: layout_.name }[key]);
+  }
+  const joining = layout.edges.filter((edge) => edge.pattern === 'tree');
+  assert.deepEqual(
+    joining.map((edge) => [edge.from, edge.to]).sort(),
+    [['r', 's1'], ['s1', 's2'], ['m', 's3']].map(([from, to]) => [at(layout, from).id, at(layout, to).id]).sort(),
+  );
+  assert.ok(joining.every((edge) => !edge.arrowEnd && !edge.arrowStart && !edge.label), 'a plain line, no arrowhead');
+});
+
 test('a Requirement above a changed criterion is drawn only for context, and a Feature box gives no count', async () => {
   const layout = await laid({ nodes: [product, group, feature, requirement, criterion] });
   assert.equal(at(layout, 'r').card.change, null);
@@ -240,7 +279,7 @@ test('a diagram of more than 30 boxes draws each Feature Group as one box that c
   assert.deepEqual(extras(folded.shown[2]), ['9 changed', 'Open ›']);
 });
 
-test('opening a Feature Group draws its changed Features, Requirements, criteria, Constraints and Quality Attributes in place of its box, and opening another closes the first', () => {
+test('opening a Feature Group draws its changed Features, Requirements, criteria, Constraints, Quality Attributes and Sections in place of its box, and opening another closes the first', () => {
   const nodes = [product];
   for (let g = 0; g < 4; g += 1) {
     nodes.push({ key: `g${g}`, kind: 'feature_group', label: `FG-${g}`, name: `Group ${g}`, parent: 'p', change: null });
@@ -250,17 +289,18 @@ test('opening a Feature Group draws its changed Features, Requirements, criteria
       { ...criterion, key: `g${g}c`, parent: `g${g}r` },
       { key: `g${g}k`, kind: 'constraint', label: null, name: 'Every book shall carry a title.', parent: `g${g}`, change: 'changed' },
       { key: `g${g}q`, kind: 'quality_attribute', label: null, name: 'Adding a book completes quickly.', parent: `g${g}f0`, change: 'added' },
+      { key: `g${g}s`, kind: 'section', label: null, name: 'Why titles', parent: `g${g}f0`, change: 'changed' },
     );
   }
   /** The keys of the boxes `opened` draws beneath its Features, in the order it draws them. */
   const beneath = (/** @type {any} */ opened) => opened.shown.filter((node) => !['product', 'feature_group', 'feature'].includes(node.kind)).map((node) => node.key);
   const one = boxes({ nodes, decisions: [], edges: [] }, 'g1');
   assert.equal(one.shown.filter((node) => node.kind === 'feature').length, 9);
-  assert.deepEqual(beneath(one), ['g1r', 'g1c', 'g1k', 'g1q']);
+  assert.deepEqual(beneath(one), ['g1r', 'g1c', 'g1k', 'g1q', 'g1s']);
   assert.ok(one.shown.every((node) => node.kind !== 'feature' || node.parent === 'g1'));
   const other = boxes({ nodes, decisions: [], edges: [] }, 'g2');
   assert.ok(other.shown.every((node) => node.kind !== 'feature' || node.parent === 'g2'));
-  assert.deepEqual(beneath(other), ['g2r', 'g2c', 'g2k', 'g2q'], 'the first group’s boxes are folded again');
+  assert.deepEqual(beneath(other), ['g2r', 'g2c', 'g2k', 'g2q', 'g2s'], 'the first group’s boxes are folded again');
 });
 
 test('a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded', () => {
@@ -343,6 +383,38 @@ test('a changed node whose words did not change says that only its other fields 
   assert.equal(view.querySelector('.diff .diff-words').textContent, statement);
   assert.equal(view.querySelector('.diff ins, .diff del'), null);
   assert.match(view.querySelector('.diff-same').textContent, /Only its other fields changed/);
+});
+
+test('a decision’s entry lists each subject added to it or removed from it by its label or its kind, its name, its role and its change', () => {
+  const title = 'Keep a change log';
+  const view = diffView([
+    {
+      key: 'd',
+      kind: 'decision',
+      label: 'ADR-5',
+      name: title,
+      change: 'changed',
+      words: { before: title, after: title },
+      subjects: [
+        { key: 'c1', kind: 'criterion', label: 'AC-3', name: 'Books list in the order they were added.', role: 'affected', change: 'added' },
+        { key: 'r', kind: 'requirement', label: null, name: 'The shelf shall keep books.', role: 'outcome', change: 'removed' },
+        { label: 'AC-9', role: 'affected', change: 'removed' },
+      ],
+    },
+  ]);
+  const lines = [...view.querySelectorAll('.diff .diff-subject')];
+  assert.deepEqual(
+    lines.map((line) => line.textContent),
+    [
+      'Subject added: AC-3 Books list in the order they were added. as affected',
+      'Subject removed: RQ The shelf shall keep books. as outcome',
+      'Subject removed: AC-9 as affected',
+    ],
+  );
+  assert.equal(lines[0].querySelector('ins')?.textContent, 'AC-3 Books list in the order they were added.');
+  assert.equal(lines[1].querySelector('del')?.textContent, 'RQ The shelf shall keep books.');
+  assert.equal(lines[0].querySelector('del'), null);
+  assert.match(css, /\.diff \.diff-subject \{/);
 });
 
 test('a spec change view of no change says that the specification has not changed since the base revision', () => {
