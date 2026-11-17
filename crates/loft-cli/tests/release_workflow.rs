@@ -305,7 +305,7 @@ fn the_publishing_job_runs_the_tarballs_it_downloaded_before_it_publishes() {
         ["with:", "name: release", "path: release"]
     );
     let smoke = publish.position("- run: scripts/npm-smoke.sh release/npm");
-    let crates = publish.position("- run: scripts/publish-crates.sh");
+    let crates = publish.position("- run: scripts/publish-crates.sh --no-verify");
     let npm = publish.position("- run: scripts/publish-npm.sh release/npm --tag \"$CHANNEL\"");
     let github = publish.position("- name: GitHub release");
     assert!(
@@ -315,6 +315,41 @@ fn the_publishing_job_runs_the_tarballs_it_downloaded_before_it_publishes() {
     assert!(
         !publish.iter().any(|line| line.contains("npm-packages.sh")),
         "the publishing job packs the packages anew"
+    );
+}
+
+/// The line of `scripts/publish-crates.sh` that publishes, passing on the script's arguments.
+const PUBLISH_CRATES: &str = "cargo publish --workspace \"$@\"";
+
+#[test]
+fn the_crates_are_packaged_and_built_from_their_packages_before_the_approval() {
+    let workflow = release();
+    before_the_approval(&workflow);
+    job(&workflow, "check").position("- run: scripts/publish-crates.sh --dry-run");
+    let script = read("scripts/publish-crates.sh");
+    assert!(
+        script.lines().any(|line| line == PUBLISH_CRATES),
+        "{script}"
+    );
+    assert!(
+        !script.contains("--no-verify"),
+        "the dry run no longer builds the crates"
+    );
+}
+
+#[test]
+fn the_publishing_job_uploads_the_crates_without_building_them() {
+    let workflow = release();
+    let publish = job(&workflow, "publish");
+    publish.position("- run: scripts/publish-crates.sh --no-verify");
+    assert!(
+        !publish.contains(&"- run: scripts/publish-crates.sh"),
+        "the publishing job builds the crates again"
+    );
+    let script = read("scripts/publish-crates.sh");
+    assert!(
+        script.lines().any(|line| line == PUBLISH_CRATES),
+        "{script}"
     );
 }
 

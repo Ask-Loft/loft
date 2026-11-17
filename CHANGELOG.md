@@ -5,6 +5,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- The release workflow publishes the crates without building them a second time after the
+  maintainer's approval: the check job's dry run has already built each crate from its package on
+  the tag's commit.
+
 ## 2.4.0 (2026-11-17)
 
 - The specification, the code, the skill and the plugins are written in American English, and a

@@ -16958,13 +16958,25 @@ links:
     tests:
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "the_publishing_job_runs_the_tarballs_it_downloaded_before_it_publishes"
-        body: 25f5d162c9e4aec5653db4543f3295470712bd70131892de636b2200bb3121c2
+        body: eab9b3dc2e34f784d6a8b64c45ad5fa6381f502e50bc3961e6202cc7dc796465
       - file: "crates/loft-cli/tests/npm.rs"
         name: "the_smoke_check_runs_loft_from_the_tarballs_and_reports_its_version"
         body: b173295be80d34bce88476f1459570fa253950ead4ebf06743e6d6b21c05b97c
       - file: "crates/loft-cli/tests/npm.rs"
         name: "the_smoke_check_fails_where_the_packed_binary_cannot_run"
         body: a78a396f351525272e2caea651fcc73cad712488e0d4d2a7a5817a3268957908
+  - node: 01a1e77a-e2ce-77cd-8ba9-f5fadfc54bd8
+    reviewed: e71afc5aa667fe8951f9ae14afaffdfa508e3920a79e9a9a5f838bb9139d586f
+    tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "the_crates_are_packaged_and_built_from_their_packages_before_the_approval"
+        body: 017f7cfd5c3f66abb0884e57c2984711ec4e57fc29d6f5e6f2bf9bb3a185f3a6
+  - node: 01a1e77a-e2ce-77cd-8ba9-f5fb5fd532ef
+    reviewed: ccf220d7ae9bd20f18cfd2093a1223fee1dc53a6269276913db9facc5e4cbd70
+    tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "the_publishing_job_uploads_the_crates_without_building_them"
+        body: 6f84c4c5bebb370f7e2565bc367654a5c7e0ce8606137f2284c753a0add5da3f
   - node: 01a183e8-7f64-7529-8822-36a78dcfb50e
     reviewed: 7f09528a8d68f034b657cd7ac8e9931b883c4fa5e9780aef077c9f82419d4c28
     tests:
