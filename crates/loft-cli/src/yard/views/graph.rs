@@ -81,19 +81,20 @@ impl Walked {
     }
 }
 
-/// Whether nodes of `kind` are drawn as boxes of their own.
+/// Whether nodes of `kind` are drawn as boxes of their own: every kind but a Section. No arm is a
+/// wildcard, so a kind the Format gains is placed here before it is drawn.
 const fn has_box(kind: NodeKind) -> bool {
-    matches!(
-        kind,
+    match kind {
         NodeKind::Product
-            | NodeKind::FeatureGroup
-            | NodeKind::Feature
-            | NodeKind::Requirement
-            | NodeKind::Criterion
-            | NodeKind::Component
-            | NodeKind::Constraint
-            | NodeKind::QualityAttribute
-    )
+        | NodeKind::FeatureGroup
+        | NodeKind::Feature
+        | NodeKind::Requirement
+        | NodeKind::Criterion
+        | NodeKind::Component
+        | NodeKind::Constraint
+        | NodeKind::QualityAttribute => true,
+        NodeKind::Section => false,
+    }
 }
 
 const CHANGES: [&str; 3] = ["added", "changed", "removed"];

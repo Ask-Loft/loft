@@ -11,8 +11,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - A `spec-change` view on the Yard page draws a changed Constraint or Quality Attribute as a box
   of its own, inside the panel of the Product, Feature Group or Feature that holds it, or beside
   the Component that holds it. A change to one used to mark the box of the node that holds it as
-  changed, although that node had not changed, and showed the Constraint itself only in the diff.
-  A report recorded before keeps its drawing.
+  changed, although that node had not changed, and showed it only in the diff. A report recorded
+  before keeps its drawing.
 
 ## 2.4.0 (2026-11-17)
 

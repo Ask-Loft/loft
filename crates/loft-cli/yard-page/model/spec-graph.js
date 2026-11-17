@@ -343,7 +343,8 @@ export function specGraph(graph, open, measure, compact = false) {
     });
   }
   // ELK lets no edge lead on from a node of the last column, so a box that leads on, as a
-  // Component to the Components beneath it, is left to lie where its edges place it.
+  // Component to the Components, Constraints and Quality Attributes beneath it, is left to lie
+  // where its edges place it.
   const leading = new Set(root.edges.map((edge) => edge.sources[0]));
   for (const made of elkNodes.values()) {
     if (leading.has(made.id) && made.layoutOptions?.['elk.layered.layering.layerConstraint']) {

@@ -130,12 +130,12 @@ test('a changed Constraint or Quality Attribute of a Component is drawn to the r
   const rust = { key: 'k1', kind: 'constraint', label: 'CON-2', name: 'The shelf store shall be written in Rust.', parent: 'm', change: 'changed' };
   const listing = { key: 'k2', kind: 'quality_attribute', label: 'QA-2', name: 'Listing a shelf completes quickly.', parent: 'm', change: 'changed' };
   const layout = await laid({ nodes: [store, rust, listing] });
-  const held = at(layout, 'm');
-  for (const key of ['k1', 'k2']) assert.ok(at(layout, key).x >= held.x + held.width, `${key} to the right of the Component`);
+  const component = at(layout, 'm');
+  for (const key of ['k1', 'k2']) assert.ok(at(layout, key).x >= component.x + component.width, `${key} to the right of the Component`);
   assert.equal(at(layout, 'k1').card.lines.join(' '), rust.name);
   assert.equal(at(layout, 'k2').card.lines.join(' '), listing.name);
   const joining = layout.edges.filter((edge) => edge.pattern === 'tree');
-  assert.deepEqual(joining.map((edge) => [edge.from, edge.to]), [[held.id, at(layout, 'k1').id], [held.id, at(layout, 'k2').id]]);
+  assert.deepEqual(joining.map((edge) => [edge.from, edge.to]), [[component.id, at(layout, 'k1').id], [component.id, at(layout, 'k2').id]]);
   assert.ok(joining.every((edge) => !edge.arrowEnd && !edge.arrowStart && !edge.label), 'a plain line, no arrowhead');
 });
 
@@ -240,40 +240,27 @@ test('a diagram of more than 30 boxes draws each Feature Group as one box that c
   assert.deepEqual(extras(folded.shown[2]), ['9 changed', 'Open ›']);
 });
 
-test('opening a Feature Group draws its changed Features, Requirements and criteria in place of its box, and opening another closes the first', () => {
-  const nodes = [product];
-  for (let g = 0; g < 4; g += 1) {
-    nodes.push({ key: `g${g}`, kind: 'feature_group', label: `FG-${g}`, name: `Group ${g}`, parent: 'p', change: null });
-    for (let f = 0; f < 9; f += 1) nodes.push({ ...feature, key: `g${g}f${f}`, parent: `g${g}` });
-    nodes.push({ ...requirement, key: `g${g}r`, parent: `g${g}f0` }, { ...criterion, key: `g${g}c`, parent: `g${g}r` });
-  }
-  const one = boxes({ nodes, decisions: [], edges: [] }, 'g1');
-  assert.equal(one.shown.filter((node) => node.kind === 'feature').length, 9);
-  assert.deepEqual(
-    one.shown.filter((node) => node.kind === 'requirement' || node.kind === 'criterion').map((node) => node.key),
-    ['g1r', 'g1c'],
-  );
-  assert.ok(one.shown.every((node) => node.kind !== 'feature' || node.parent === 'g1'));
-  const other = boxes({ nodes, decisions: [], edges: [] }, 'g2');
-  assert.ok(other.shown.every((node) => node.kind !== 'feature' || node.parent === 'g2'));
-});
-
-test('opening a Feature Group draws its changed Constraints and Quality Attributes in place of its box', () => {
+test('opening a Feature Group draws its changed Features, Requirements, criteria, Constraints and Quality Attributes in place of its box, and opening another closes the first', () => {
   const nodes = [product];
   for (let g = 0; g < 4; g += 1) {
     nodes.push({ key: `g${g}`, kind: 'feature_group', label: `FG-${g}`, name: `Group ${g}`, parent: 'p', change: null });
     for (let f = 0; f < 9; f += 1) nodes.push({ ...feature, key: `g${g}f${f}`, parent: `g${g}` });
     nodes.push(
+      { ...requirement, key: `g${g}r`, parent: `g${g}f0` },
+      { ...criterion, key: `g${g}c`, parent: `g${g}r` },
       { key: `g${g}k`, kind: 'constraint', label: null, name: 'Every book shall carry a title.', parent: `g${g}`, change: 'changed' },
       { key: `g${g}q`, kind: 'quality_attribute', label: null, name: 'Adding a book completes quickly.', parent: `g${g}f0`, change: 'added' },
     );
   }
-  const held = (/** @type {any} */ node) => node.kind === 'constraint' || node.kind === 'quality_attribute';
-  const folded = boxes({ nodes, decisions: [], edges: [] }, null);
-  assert.equal(folded.shown.filter(held).length, 0, 'folded with their group');
-  assert.equal(folded.groups.find((each) => each.key === 'g1').count, 11, 'and counted among its changed nodes');
+  /** The keys of the boxes `opened` draws beneath its Features, in the order it draws them. */
+  const beneath = (/** @type {any} */ opened) => opened.shown.filter((node) => !['product', 'feature_group', 'feature'].includes(node.kind)).map((node) => node.key);
   const one = boxes({ nodes, decisions: [], edges: [] }, 'g1');
-  assert.deepEqual(one.shown.filter(held).map((node) => node.key), ['g1k', 'g1q']);
+  assert.equal(one.shown.filter((node) => node.kind === 'feature').length, 9);
+  assert.deepEqual(beneath(one), ['g1r', 'g1c', 'g1k', 'g1q']);
+  assert.ok(one.shown.every((node) => node.kind !== 'feature' || node.parent === 'g1'));
+  const other = boxes({ nodes, decisions: [], edges: [] }, 'g2');
+  assert.ok(other.shown.every((node) => node.kind !== 'feature' || node.parent === 'g2'));
+  assert.deepEqual(beneath(other), ['g2r', 'g2c', 'g2k', 'g2q'], 'the first group’s boxes are folded again');
 });
 
 test('a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded', () => {
