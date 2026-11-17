@@ -98,7 +98,7 @@ pub fn report(base: &Document, document: &Document) -> Value {
         then: &then,
     };
     let decided = decisions(&decided, &documents);
-    let edges = edges(&shown, &decided, document, base);
+    let edges = edges(&shown, &decided, &documents);
     // Only a decision's entry in the diff lists its subjects; its box needs none.
     let (boxes, listed): (Vec<Value>, Vec<Value>) = decided
         .into_iter()
@@ -369,10 +369,17 @@ fn subject(
     value
 }
 
-/// The `realizes` edges between boxes drawn, and the subject edges from each decision drawn to
-/// the box of each node it names, where that box is drawn: an added or changed decision's as the
-/// tree holds them, and a removed decision's as the base did.
-fn edges(shown: &[Key], decided: &[Decided], document: &Document, base: &Document) -> Value {
+/// The `realizes` edges between boxes drawn, as the tree holds them, and as the base did where
+/// the branch removed their Feature or Component; and the subject edges from each decision drawn
+/// to the box of each node it names, where that box is drawn: an added or changed decision's as
+/// the tree holds them, and a removed decision's as the base did.
+fn edges(shown: &[Key], decided: &[Decided], documents: &Documents<'_>) -> Value {
+    let Documents {
+        base,
+        document,
+        now,
+        ..
+    } = *documents;
     let drawn: BTreeSet<Key> = shown.iter().copied().collect();
     let held = |removed: bool| -> BTreeSet<Key> {
         decided
@@ -382,14 +389,18 @@ fn edges(shown: &[Key], decided: &[Decided], document: &Document, base: &Documen
             .collect()
     };
     let (in_tree, in_base) = (held(false), held(true));
-    let mut found = BTreeSet::new();
-    for (edges, named) in [(&document.edges, &in_tree), (&base.edges, &in_base)] {
-        found.extend(
-            edges
-                .iter()
-                .filter_map(|edge| drawn_edge(edge, &drawn, named)),
-        );
-    }
+    // A base `realizes` edge between two nodes the tree holds is the tree's to draw, or not.
+    let both_held = |edge: &&Edge| match **edge {
+        Edge::Realizes { feature, component } => [feature.key(), component.key()]
+            .iter()
+            .all(|key| now.entries.contains_key(key)),
+        _ => false,
+    };
+    let tree = (document.edges.iter()).filter_map(|edge| drawn_edge(edge, &drawn, &in_tree));
+    let gone = (base.edges.iter())
+        .filter(|edge| !both_held(edge))
+        .filter_map(|edge| drawn_edge(edge, &drawn, &in_base));
+    let found: BTreeSet<Drawn> = tree.chain(gone).collect();
     let edges = found.into_iter().map(|(from, to, kind, role)| {
         let mut edge = json!({ "from": from, "to": to, "kind": kind });
         if let Some(role) = role {

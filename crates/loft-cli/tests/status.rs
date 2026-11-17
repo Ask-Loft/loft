@@ -19,18 +19,18 @@ const ABSENT: &str = "00000000-0000-4000-8000-00000000002f";
 const GONE: &str = "00000000-0000-4000-8000-000000000031";
 const ADDED: &str = "00000000-0000-4000-8000-0000000000aa";
 
-fn json(output: &Output) -> Value {
+pub(crate) fn json(output: &Output) -> Value {
     schema::conforming(&output.stdout, include_str!("../../../schemas/status.json"))
 }
 
-fn status(scratch: &Scratch, args: &[&str], git: &GitScenario) -> Output {
+pub(crate) fn status(scratch: &Scratch, args: &[&str], git: &GitScenario) -> Output {
     let mut all = vec!["status"];
     all.extend_from_slice(args);
     scratch.loft_with(&all, Some(git), &Clock::fixed(EPOCH))
 }
 
 /// The keys of one of the base's lists.
-fn keys(document: &Value, list: &str) -> Vec<String> {
+pub(crate) fn keys(document: &Value, list: &str) -> Vec<String> {
     document["base"][list]
         .as_array()
         .unwrap()

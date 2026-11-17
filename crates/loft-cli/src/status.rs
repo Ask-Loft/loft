@@ -1,17 +1,17 @@
 //! `loft status` (the `loft status` Feature): where the tree stands, for an agent host or a
 //! person between edits. It reports the lock and whether the tree matches it, the state of the
-//! repository that holds it, and, with `--base <revision>`, the nodes added, changed and removed
-//! since HEAD left the revision. It writes nothing and exits 0 whatever it finds; a tree that
+//! repository that holds it, and, with `--base <revision>`, the nodes and decisions added, changed
+//! and removed since HEAD left the revision. It writes nothing and exits 0 whatever it finds; a tree that
 //! does not read, a conflict record and a base it cannot read stop it with exit 1.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::Path;
 
 use loftspec::codec::{Site, Sites};
-use loftspec::diff::content_changes;
+use loftspec::diff::{content_changes, decision_changes};
 use loftspec::document::Document;
 use loftspec::identity::Key;
-use loftspec::ids::NodeId;
+use loftspec::ids::{DecisionId, NodeId};
 use loftspec::publish::{LOCK, Lock, Operation, ReadTree, RepoState, Root, first_difference};
 use loftspec_store::repository::{GitCommand, Repository as _};
 use loftspec_store::{FileStore, StoreError};
@@ -25,7 +25,7 @@ use crate::out::outln;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-status/2";
+const SCHEMA: &str = "loft-status/3";
 const OUTCOME: &str = "reported";
 
 /// Where the tree stands: what `loft status` reports.
@@ -41,7 +41,8 @@ struct LockReport {
     differs: Option<Root>,
 }
 
-/// The nodes added, changed and removed since HEAD left `revision` at `commit`.
+/// The nodes and decisions added, changed and removed since HEAD left `revision` at `commit`,
+/// each list its nodes and then its decisions.
 struct BaseReport {
     revision: String,
     commit: String,
@@ -50,7 +51,8 @@ struct BaseReport {
     removed: Vec<Listed>,
 }
 
-/// A node as the report lists it.
+/// A node or a decision as the report lists it: a decision with the kind `decision` and its title
+/// as its name.
 struct Listed {
     key: String,
     label: Option<String>,
@@ -122,13 +124,13 @@ impl Report {
         })
     }
 
-    /// Adds the nodes `tree` added, changed and removed since `base`.
+    /// Adds the nodes and decisions `tree` added, changed and removed since `base`.
     pub fn compare(&mut self, base: &base::Tree, tree: &ReadTree) {
         self.base = Some(base_report(base, tree.document(), tree.sites()));
     }
 
-    /// The paths of the files that hold a node added or changed since the base, where the report
-    /// compares with one.
+    /// The paths of the files that hold a node or a decision added or changed since the base, where
+    /// the report compares with one.
     pub fn changed_paths(&self) -> BTreeSet<String> {
         let Some(base) = &self.base else {
             return BTreeSet::new();
@@ -168,21 +170,27 @@ fn repository_error(error: StoreError) -> Stop {
     }
 }
 
-/// The nodes `document` added, changed and removed since `base`.
+/// The nodes and decisions `document` added, changed and removed since `base`.
 fn base_report(base: &base::Tree, document: &Document, sites: &Sites) -> BaseReport {
-    let changes = content_changes(&base.document, document);
+    let nodes = content_changes(&base.document, document);
+    let decisions = decision_changes(&base.document, document);
     let now = Nodes::of(document, sites);
     let then = Nodes::of(&base.document, &base.sites);
+    let listed = |nodes: &[NodeId], decisions: &[DecisionId], side: &Nodes| {
+        let keys = nodes.iter().map(|id| id.key());
+        let keys = keys.chain(decisions.iter().map(|id| id.key()));
+        keys.map(|key| side.listed(key)).collect()
+    };
     BaseReport {
         revision: base.revision.clone(),
         commit: base.commit.clone(),
-        added: changes.added.iter().map(|id| now.listed(*id)).collect(),
-        changed: changes.changed.iter().map(|id| now.listed(*id)).collect(),
-        removed: changes.removed.iter().map(|id| then.listed(*id)).collect(),
+        added: listed(&nodes.added, &decisions.added, &now),
+        changed: listed(&nodes.changed, &decisions.changed, &now),
+        removed: listed(&nodes.removed, &decisions.removed, &then),
     }
 }
 
-/// The keyed nodes of a document by key, with what the report lists of each.
+/// The keyed nodes and the decisions of a document by key, with what the report lists of each.
 struct Nodes<'a> {
     document: &'a Document,
     sites: &'a Sites,
@@ -197,6 +205,9 @@ impl<'a> Nodes<'a> {
                 by_key.insert(id.key(), (node.kind().as_str(), node.name().into_owned()));
             }
         });
+        for decision in &document.decisions {
+            by_key.insert(decision.id.key(), ("decision", decision.title.clone()));
+        }
         Self {
             document,
             sites,
@@ -204,15 +215,14 @@ impl<'a> Nodes<'a> {
         }
     }
 
-    fn listed(&self, id: NodeId) -> Listed {
-        let key = id.key();
+    fn listed(&self, key: Key) -> Listed {
         let (kind, name) = self.by_key[&key].clone();
         Listed {
             key: key.to_string(),
             label: self
                 .document
                 .bindings
-                .label_of(id)
+                .label_of_key(key)
                 .map(|label| label.to_string()),
             kind,
             site: self

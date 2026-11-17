@@ -25,6 +25,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   `loft fmt` now names a node the branch removed by its former label, in a subject, a driver or a
   consequence. `loftspec` compares decisions in `diff::decision_changes`, which reads each former
   label as the node it names, and `Bindings::former` finds the node a departed label named.
+- `loft status --base` lists the decisions added, changed and removed, after the nodes of each
+  list, with the kind `decision` and the title as the name, and lists as changed a Feature whose
+  `realizes` entries, or a Component whose `scopedTo` entries, changed. Such a change used to be
+  missing, and so was every decision. Its JSON is now `loft-status/3`. `loftspec`'s
+  `content_changes` and `node_changes` count those entries too.
+- A `spec-change` view draws a Feature whose `realizes` entries changed, and a Component whose
+  `scopedTo` entries changed, as changed, and no longer draws a `realizes` edge the branch removed
+  between two nodes the tree still holds.
 - A `loft` block records the whole report its view gives, however long. A list of more than
   1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
   part of Yard Log's history of the work.

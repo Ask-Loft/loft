@@ -1,7 +1,8 @@
 //! The nodes one document added, changed and removed against another, its base (the `loft
 //! status` Feature). A node is matched by its key, so a node that moves stays the same node; it
 //! changed when its own content view differs, the hashes of its children left out, so a
-//! change to a node is not a change to each of its ancestors. A node moved when its own content
+//! change to a node is not a change to each of its ancestors, or when the edges its record
+//! writes differ: a Feature's `realizes` and a Component's `scopedTo`. A node moved when its own content
 //! view is the base's and its parent is not (the `loft review` Feature); a move alone is no
 //! change, so [`NodeChanges::is_empty`] ignores it. The comparer, [`compare`], tells the same
 //! changes by each node's record in place of its content view, and [`decision_changes`] tells the
@@ -10,11 +11,11 @@
 mod compare;
 mod decisions;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
-use serde_json::Value;
+use serde_json::{Value, json};
 
-use crate::document::Document;
+use crate::document::{Document, Edge};
 use crate::hash::own_views;
 use crate::ids::NodeId;
 use crate::index::Index;
@@ -51,14 +52,18 @@ pub fn node_changes(base: &Document, document: &Document) -> NodeChanges {
     let (then, _, _) = Index::build(base);
     let (now, _, _) = Index::build(document);
     let parents = (then.parents(), now.parents());
-    changes(&Keyed::of(base), &Keyed::of(document), Some(parents))
+    changes(
+        &Keyed::compared(base),
+        &Keyed::compared(document),
+        Some(parents),
+    )
 }
 
 /// The nodes `document` added, changed and removed against `base`, as [`node_changes`] gives
 /// them, without the moved, which takes both documents indexed to tell.
 #[must_use]
 pub fn content_changes(base: &Document, document: &Document) -> NodeChanges {
-    changes(&Keyed::of(base), &Keyed::of(document), None)
+    changes(&Keyed::compared(base), &Keyed::compared(document), None)
 }
 
 /// A document's keyed nodes: each one's own content view, and their order, parents before
@@ -74,6 +79,29 @@ impl Keyed {
             views: own_views(document),
             order: Self::order_of(document),
         }
+    }
+
+    /// A document's keyed nodes as they are compared: each Feature's view with the keys of the
+    /// Components it realizes, and each Component's with the keys of the Products it is scoped to.
+    /// The content view leaves edges to the edges root, but the record writes these, so a change
+    /// to them changes the node.
+    fn compared(document: &Document) -> Self {
+        let mut keyed = Self::of(document);
+        let mut written: BTreeMap<NodeId, BTreeSet<String>> = BTreeMap::new();
+        for edge in &document.edges {
+            let (from, to) = match *edge {
+                Edge::Realizes { feature, component } => (feature.into(), component.key()),
+                Edge::ScopedTo { component, product } => (component.into(), product.key()),
+                Edge::Mentions { .. } | Edge::Subject { .. } => continue,
+            };
+            written.entry(from).or_default().insert(to.to_string());
+        }
+        for (id, to) in written {
+            if let Some(Value::Array(fields)) = keyed.views.get_mut(&id) {
+                fields.push(json!(to));
+            }
+        }
+        keyed
     }
 
     /// A document's keyed nodes in order, parents before children.

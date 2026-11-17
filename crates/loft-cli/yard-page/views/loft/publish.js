@@ -54,7 +54,7 @@ export function publishView(report, body, context) {
       ? kept.details(
           { path: context.key ? `${context.key}/changes` : null, open: false },
           { class: 'fold' },
-          h('summary', {}, `${changes.length} nodes added, changed or removed since the publish`),
+          h('summary', {}, `${changes.length} nodes and decisions added, changed or removed since the publish`),
           h('ul', { class: 'changes' }, changes.map(changeItem)),
         )
       : null,
