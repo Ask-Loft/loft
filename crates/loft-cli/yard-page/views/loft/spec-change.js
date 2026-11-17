@@ -1,6 +1,6 @@
 // A `spec-change` view: a diagram of the changed Products, Feature Groups, Features,
-// Requirements, criteria, Components, Constraints, Quality Attributes and decisions, drawn by the
-// page as nested panels and cards (`lib/spec-diagram.js`), each saying how it changed, with what
+// Requirements, criteria, Components, Constraints, Quality Attributes, Sections and decisions,
+// drawn by the page as nested panels and cards (`lib/spec-diagram.js`), each saying how it changed, with what
 // holds each for context and the `realizes` and subject edges between them, under a legend that
 // counts the changes; beneath it, a folded diff of the words of every changed node, which
 // choosing a card unfolds at its entry. A diagram of more than 30 boxes draws each Feature Group
@@ -12,7 +12,7 @@ import { draw } from '../../lib/diagrams.js';
 import { h } from '../../lib/dom.js';
 import * as kept from '../../lib/kept.js';
 import { digest, drawSpecChange } from '../../lib/spec-diagram.js';
-import { CHANGE_WORDS, boxes, isFolded } from '../../model/spec-graph.js';
+import { CHANGE_WORDS, boxes, isFolded, labelOf } from '../../model/spec-graph.js';
 import { compareWords } from '../../model/words.js';
 import { changeItem, leftOut } from './index.js';
 
@@ -145,9 +145,11 @@ export function specChangeView(report, body, context = {}) {
 /**
  * A node of the diff: how it changed, its kind, its label and its name, then its words: a changed
  * node's once, with the words removed and the words added marked in place; an added node's as
- * they are, the word beside them saying they were added; a removed node's struck through.
+ * they are, the word beside them saying they were added; a removed node's struck through. A
+ * decision's lists beneath them each subject it gained or lost, marked added or removed, with its
+ * role.
  * @param {{ key?: string, change: string, kind: string, label?: string | null, name?: string,
- *   words?: { before?: string, after?: string } }} entry
+ *   words?: { before?: string, after?: string }, subjects?: Subject[] }} entry
  */
 export function diffItem(entry) {
   const { before, after } = entry.words ?? {};
@@ -166,5 +168,27 @@ export function diffItem(entry) {
     ),
   );
   if (before !== undefined && before === after) item.append(h('p', { class: 'diff-same' }, 'Only its other fields changed.'));
+  item.append(...(entry.subjects ?? []).map(subjectLine));
   return item;
+}
+
+/**
+ * @typedef {{ key?: string, kind?: string, label?: string | null, name?: string, role: string,
+ *   change: 'added' | 'removed' }} Subject
+ */
+
+/**
+ * A subject a decision gained or lost: its change, its label (or what stands for it) and its
+ * name, marked as added or removed, and its role.
+ * @param {Subject} subject
+ */
+function subjectLine(subject) {
+  const named = [labelOf(subject), subject.name].filter(Boolean).join(' ');
+  return h(
+    'p',
+    { class: 'diff-subject' },
+    `Subject ${subject.change}: `,
+    h(subject.change === 'added' ? 'ins' : 'del', {}, named),
+    ` as ${subject.role}`,
+  );
 }

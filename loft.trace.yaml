@@ -30906,6 +30906,9 @@ links:
       - file: "crates/loft-cli/tests/yard_view_sections.rs"
         name: "a_spec_change_view_draws_a_changed_section_as_a_box_of_its_own_and_its_feature_only_for_context"
         body: 311673faeaae4872118482d369acf38f037b1fed83ddbf864d9c50f06e39f98b
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Section of a Product, a Feature Group or a Feature is drawn inside that node’s panel, holding its name, its card and its chip headed by the word Section"
+        body: d940d7523b3d2475d34fdd2bad8ed14b62f295397db80841d679ca6fe19d4489
   - node: 01a1e982-1425-7775-9b23-a817c492d557
     reviewed: b501f436d2b027f37e75c158c0d1d79b3eb477d1895189dab3f0375666c6271c
     tests:
@@ -30915,6 +30918,9 @@ links:
       - file: "crates/loft-cli/tests/yard_view_sections.rs"
         name: "a_spec_change_view_draws_an_added_and_a_removed_section_as_boxes_of_their_own"
         body: 64ad1ecc757a608c7f4c1467fd03fe5e8a58ba0a09df214d07ae8841df5fd93b
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Section of a Requirement, a Component or a Section is drawn to the right of that node’s box, joined to it by a plain line, holding its name"
+        body: dd643a04b480f88a26843bb93777d39aa0634757685b0854584ebf7462434d00
   - node: 01a1e982-1425-7775-9b23-a8188b955180
     reviewed: f8a64e112d5455ad154b6873030bdcf9858271695b222a14d3a092532519fa74
     tests:
@@ -31018,7 +31024,7 @@ links:
         name: "the line joining a criterion to its Requirement runs from the Requirement’s right to the criterion’s left, inside their panel"
         body: 1ee69e40174e41254231d93a1ed325924c7aa1562ba6b792c699289a2e37da7f
   - node: 01a1a814-5ac4-7523-9962-5acd501df9ef
-    reviewed: 00c3e5b3af2b91d80e1073c07f37d79fb0dabbac83ed62095e2d74d48a7463b2
+    reviewed: 3893f01c2bbd7b2d26bfe29674818204249421e72fccad226cdb7078d01e0529
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a box’s name is wrapped to its measured width, so that nothing is cut"
@@ -31032,8 +31038,11 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
         body: e52f080f03fe3479e5482f08f088aa3c055c9add0ab1084016657c80a2849524
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Section of a Product, a Feature Group or a Feature is drawn inside that node’s panel, holding its name, its card and its chip headed by the word Section"
+        body: d940d7523b3d2475d34fdd2bad8ed14b62f295397db80841d679ca6fe19d4489
   - node: 01a1a836-8724-73ee-8657-ce8aec3a1302
-    reviewed: 34f848c0bc7090e5a703515df450a4d3059ada760bdc17684ca34b4be5178b64
+    reviewed: cc70657fb498674c41ee8ae05e79b7a707e23908cf3a1ed571735f4ad15d5f2b
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "in its block, each box is a chip of one line, its name cut to fit, and its whole name given to a reader and under the pointer"
@@ -31044,6 +31053,9 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "a spec-change diagram is drawn as nested panels and cards at its own size, outlines what a card joins and fades nothing, and opens the diff at a chosen card"
         body: e52f080f03fe3479e5482f08f088aa3c055c9add0ab1084016657c80a2849524
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a changed Section of a Product, a Feature Group or a Feature is drawn inside that node’s panel, holding its name, its card and its chip headed by the word Section"
+        body: d940d7523b3d2475d34fdd2bad8ed14b62f295397db80841d679ca6fe19d4489
   - node: 01a1a836-8725-715c-9d62-b5b2deeb88a9
     reviewed: 83559a1890f06c972647bab666f3a695ececb0e927e27428f94b9dba70fa1075
     tests:
@@ -31224,6 +31236,9 @@ links:
       - file: "crates/loft-cli/tests/yard_view_subjects.rs"
         name: "a_spec_change_view_lists_no_subject_where_a_removed_node_is_named_by_its_former_label"
         body: 3158f36389e032445ce9fa32e80f735bd35e8a163658f3746aeaf94c8c3e8674
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a decision’s entry lists each subject added to it or removed from it by its label or its kind, its name, its role and its change"
+        body: a43bad29f59e500c365e2efd2c76ff61bf6f8756c065682d2bf0a09344809a52
   - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
     reviewed: dea93ed5f29437fa4001e0abc1666d588ba51096b7422c88b09feac71429f49b
     tests:
@@ -31243,17 +31258,17 @@ links:
         name: "a report recorded without the words lists every changed node by its kind, its label and its name in a tree that starts folded"
         body: 316ae92e9ff423fa714faafe0a09b407dcec10a675d50963333b0cb64a263240
   - node: 01a1646f-546d-7042-befd-eac9dc2edaf7
-    reviewed: 73440f8966bda0a0352539c0121265a534341fd8eff052fbb5c409f0ac9c0c4e
+    reviewed: 3a89e14f340920abeca25e1e19843b954e64788afa8853e804f12aca3783612c
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "opening a Feature Group draws its changed Features, Requirements, criteria, Constraints and Quality Attributes in place of its box, and opening another closes the first"
-        body: 9a959d953dafecd0e2a4837b4ab08ae80f50105b4bd3a376b3da2b924191851a
+        name: "opening a Feature Group draws its changed Features, Requirements, criteria, Constraints, Quality Attributes and Sections in place of its box, and opening another closes the first"
+        body: c7729fc399d084df236ef12d41da5640505233b1356edea50099998237a4162c
   - node: 01a1646f-546d-7042-befd-eacaa63dddfa
     reviewed: 2bdf176a550307ee7b8df2b5b4e782d0460ac22c2b7b996cc3827a64f78fae7a
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
-        name: "opening a Feature Group draws its changed Features, Requirements, criteria, Constraints and Quality Attributes in place of its box, and opening another closes the first"
-        body: 9a959d953dafecd0e2a4837b4ab08ae80f50105b4bd3a376b3da2b924191851a
+        name: "opening a Feature Group draws its changed Features, Requirements, criteria, Constraints, Quality Attributes and Sections in place of its box, and opening another closes the first"
+        body: c7729fc399d084df236ef12d41da5640505233b1356edea50099998237a4162c
   - node: 01a1646f-546d-7042-befd-eacd8a7f0685
     reviewed: c07d7b7fd3d97ceae1098764acb31345d4ff92afb894043cf6ba07ef794512c1
     tests:

@@ -13,6 +13,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   the Component that holds it. A change to one used to mark the box of the node that holds it as
   changed, although that node had not changed, and showed it only in the diff. A report recorded
   before keeps its drawing.
+- A `spec-change` view draws a changed Section as a box of its own, headed `Section`, inside the
+  panel of the Product, Feature Group or Feature that holds it, or beside the box of any other
+  node that holds it. A change to a Section used to mark the box above it as changed, and
+  choosing that box found no entry in the diff.
+- A `spec-change` view shows a decision whose only change is a subject added or removed: the
+  decision is drawn as changed, each subject it gained is drawn so that its edge has an end, a
+  subject it lost has no edge, and its entry in the diff lists the subjects added and removed with
+  their roles. Such a decision used to be missing from the view altogether.
 
 ## 2.4.0 (2026-11-17)
 

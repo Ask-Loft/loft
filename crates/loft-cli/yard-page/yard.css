@@ -955,6 +955,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .diff ins { text-decoration: underline; text-decoration-thickness: 2px; background: var(--done-soft); color: var(--ink); }
 .diff del { text-decoration: line-through; text-decoration-thickness: 2px; background: var(--danger-soft); color: var(--ink); }
 .diff .diff-same { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.diff .diff-subject { margin: 2px 0 0; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
 
 /* The Gantt chart. */
 
