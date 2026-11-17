@@ -48,15 +48,18 @@ impl Yard {
     /// the tree as it is now and whose HEAD is [`HEAD`], with the person named, at [`EPOCH`].
     pub fn with_spec() -> Self {
         let scratch = Scratch::with_reading_list();
-        let git = based_on_now(&scratch)
-            .base("HEAD", HEAD)
-            .with_config("user.name", "Ada Reader")
-            .with_config("user.email", "ada@example.com");
+        let git = spec_based_on_now(&scratch);
         Self {
             scratch,
             git,
             clock: Clock::fixed(EPOCH),
         }
+    }
+
+    /// Makes the tree as it now is the base [`Yard::with_spec`] compares with, so that a test
+    /// can change what the base already holds.
+    pub fn rebased(&mut self) {
+        self.git = spec_based_on_now(&self.scratch);
     }
 
     /// Runs `loft` itself, not `loft yard`, with `args`, printing JSON.
@@ -154,6 +157,15 @@ impl Yard {
         let path = self.scratch.home().join(".yard").join(name);
         serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap()
     }
+}
+
+/// A repository on `feature` whose base for `develop` holds `scratch`'s tree as it now is, whose
+/// HEAD is [`HEAD`], with the person named.
+fn spec_based_on_now(scratch: &Scratch) -> GitScenario {
+    based_on_now(scratch)
+        .base("HEAD", HEAD)
+        .with_config("user.name", "Ada Reader")
+        .with_config("user.email", "ada@example.com")
 }
 
 /// The JSON document `output` holds, after asserting that the schema of `loft yard <command>`

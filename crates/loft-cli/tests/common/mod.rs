@@ -142,6 +142,13 @@ impl Scratch {
         fs::write(self.file(path), text.replacen(from, to, 1)).unwrap();
     }
 
+    /// Writes `text` at the end of the file `path` of `spec/`.
+    pub fn append(&self, path: &str, text: &str) {
+        let mut whole = fs::read_to_string(self.file(path)).unwrap();
+        whole.push_str(text);
+        fs::write(self.file(path), whole).unwrap();
+    }
+
     /// Runs `loft` at [`EPOCH`] with no `git` on its search path, as every command but a
     /// publish needs.
     pub fn loft(&self, args: &[&str]) -> Output {

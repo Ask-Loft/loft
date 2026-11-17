@@ -7,7 +7,7 @@ use std::fs;
 use serde_json::Value;
 
 use crate::yard::Yard;
-use crate::yard_view_reports::{CHANGE_LOG, change_a_decision, node, parent, report};
+use crate::yard_view_reports::{CHANGE_LOG, node, parent, report};
 
 /// The Reading List's Product, whose Shelf Feature Group holds a Constraint.
 const PRODUCT: &str = "products/reading-list/product.yaml";
@@ -151,9 +151,6 @@ fn a_spec_change_view_draws_an_added_and_a_removed_constraint_as_boxes_of_their_
 #[test]
 fn a_spec_change_view_ends_a_decision_s_subject_edge_at_the_box_of_the_constraint_it_names() {
     let yard = Yard::with_spec();
-    // A subject is an edge, not a field of its decision: the decision and its edges are drawn
-    // only once its own words change.
-    change_a_decision(&yard);
     yard.scratch.edit(
         CHANGE_LOG,
         "subjects:\n",

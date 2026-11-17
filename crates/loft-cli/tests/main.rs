@@ -170,6 +170,8 @@ mod yard_upgrade_events;
 mod yard_upgrade_totals;
 mod yard_view_constraints;
 mod yard_view_reports;
+mod yard_view_sections;
+mod yard_view_subjects;
 mod yard_views;
 mod yard_wait;
 mod yard_working_tree;
