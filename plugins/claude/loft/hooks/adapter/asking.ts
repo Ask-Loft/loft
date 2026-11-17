@@ -7,10 +7,10 @@
 import type { EngineInterface, ToolCallResult } from 'claude-code'
 
 import type { Doc, Ran } from '../loft'
-import { askResultOf, feedbackIn, givenOf, planId, planPath, planTitle, questionBlocks, type Asked, type Given } from './answers'
+import { askResultOf, feedbackIn, givenOf, isPersonsRejection, planId, planPath, planTitle, questionBlocks, type Asked, type Given } from './answers'
 import { dialogOf, recordedOf, type DialogQuestion, type Paging } from './dialog'
 import { capture, checkCapture } from './capture'
-import { activeStage, idOf, lastUnplanned, openSubmissions, waitingOf, whoOf, type Asker, type Block } from './log'
+import { activeStage, idOf, isAsker, lastUnplanned, openSubmissions, pageOf, waitingOf, whoOf, type Asker, type Block } from './log'
 import { callerArgs, spawnYard, succeeded, type Caller, type Running } from './run'
 import { askerOf, peek, prepare, run, state, type Outcome } from './state'
 
@@ -153,6 +153,27 @@ async function decidedOnPage($: EngineInterface, cwd: string, caller: Caller, id
   return block?.outcome?.channel === 'page' ? block.outcome : undefined
 }
 
+/** The agent's own open submission that holds the stage's block `id`, which a new version of it needs withdrawn. */
+function heldBy(doc: Doc, stage: SelectedStage, id: string, asker: Asker): string | undefined {
+  const held = stage.blocks?.find(block => block.id === id)
+  if (!held) return undefined
+  return openSubmissions(doc).find(each => each.blocks.includes(held.key) && isAsker(each.agent, asker))?.key
+}
+
+/**
+ * The host's own result, telling the agent that nobody decided the plan and where it waits: an
+ * Agent SDK host may answer `ExitPlanMode` itself, and a tool error may end it, before the person
+ * saw it.
+ */
+function undecided(ran: ToolCallResult, submission: string, page: string | undefined): ToolCallResult {
+  const where = page ? `the Yard page (${page})` : 'the Yard page'
+  const note =
+    `Nobody has decided this plan: ExitPlanMode ended before the person did. The plan waits on ${where} ` +
+    `as submission ${submission}; wait on it with yard_wait for the person's decision.`
+  if (ran.deny !== undefined) return { ...ran, deny: `${ran.deny}\n\n${note}` }
+  return { ...ran, text: ran.text ? `${ran.text}\n\n${note}` : note }
+}
+
 const rejection = (reason: unknown) =>
   `The person rejected the plan on the Yard page${typeof reason === 'string' && reason !== '' ? `: ${reason}` : '.'}`
 
@@ -160,7 +181,8 @@ const rejection = (reason: unknown) =>
  * The agent's plan: sent to Yard Log, and decided in the terminal or on the page. The page's
  * decision reaches Claude Code through the plugin's `PermissionRequest` command hook, which waits
  * for it beside Claude Code's dialog; once Claude Code goes on, a decision the page made is
- * Yard Log's already, and only one made in the terminal is recorded here.
+ * Yard Log's already, and only one made in the terminal is recorded here. A call that ends with
+ * neither, as when the host answers it, leaves the plan open on the page for the agent to wait on.
  */
 export async function presentPlan(
   $: EngineInterface,
@@ -178,13 +200,15 @@ export async function presentPlan(
     const minted = mintedFor(e, caller)
     const stage = stageFor(doc, askerOf(caller), minted)
     const id = planFor(stage, path, idOf('plan', minted))
+    const held = heldBy(doc, stage, id, askerOf(caller))
+    if (held) await withdraw($, cwd, caller, held)
     const kept = planPath(typeof doc?.tree === 'string' ? doc.tree : undefined, path)
     const block = { id, kind: 'plan', stage: stage.id, title: planTitle(plan, path), markdown: plan, ...(kept ? { path: kept } : {}), planMode: true }
     const submission = await send($, cwd, caller, [...('opened' in stage && stage.opened ? [stage.opened] : []), block])
-    return submission === undefined ? undefined : { id, cwd, caller, submission }
+    return submission === undefined ? undefined : { id, cwd, caller, submission, page: pageOf(doc) }
   })
   if (!captured) return next(e as never)
-  const { id, cwd, caller, submission } = captured
+  const { id, cwd, caller, submission, page: address } = captured
   const ran = await next(e as never)
   const page = await decidedOnPage($, cwd, caller, id)
   if (page) return page.verdict === 'rejected' ? { deny: rejection(page.reason) } : ran
@@ -192,11 +216,14 @@ export async function presentPlan(
     await withdraw($, cwd, caller, submission)
     return ran
   }
-  const isApproved = ran.deny === undefined && ran.isError !== true
-  const reason = isApproved ? undefined : feedbackIn(ran.deny ?? ran.text ?? '')
-  await record($, cwd, caller, [
-    { block: id, verdict: isApproved ? 'approved' : 'rejected', ...(reason ? { reason } : {}) },
-  ])
+  if (ran.deny === undefined && ran.isError !== true) {
+    await record($, cwd, caller, [{ block: id, verdict: 'approved' }])
+    return ran
+  }
+  const denial = ran.deny ?? ran.text ?? ''
+  if (!isPersonsRejection(denial)) return undecided(ran, submission, address)
+  const reason = feedbackIn(denial)
+  await record($, cwd, caller, [{ block: id, verdict: 'rejected', ...(reason ? { reason } : {}) }])
   return ran
 }
 

@@ -160,6 +160,15 @@ export function planPath(tree: string | undefined, path: string | undefined): st
   return relative && !relative.split('/').includes('..') ? relative : undefined
 }
 
+// Claude Code opens the person's rejection of a tool call with these words, with or without
+// feedback; a host or a tool error that ends the call words it otherwise.
+const REJECTED = /^The user doesn't want to proceed with this tool use\b/
+
+/** Whether Claude Code gives the agent `text` as the person's rejection of a tool call. */
+export function isPersonsRejection(text: string): boolean {
+  return REJECTED.test(text.trim())
+}
+
 // Claude Code gives the agent a rejection's feedback after these words.
 const SAID = /the user said:\s*/i
 
