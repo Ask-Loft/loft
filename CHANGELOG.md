@@ -3,28 +3,9 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
-## 2.4.0-alpha.2 (2026-11-13)
-
-The second prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.4.0-alpha.2`. It lets you try following Yard Log
-beside the session: `/yard-pane` in Claude Code opens a pane on the branch's Yard Log, where you
-can answer what waits on you, and in Claude Code Desktop it also opens the Yard page in
-Desktop's browser pane. `loft yard page` prints the page's address, which Codex relays through
-`$loft:yard-page`, and the page's address now reaches a sandboxed run such as Codex's.
-`LOFT_YARD_HOME` runs a `loft` under development beside an installed one. The entries under
-Unreleased below list everything 2.4.0 will hold.
-
-## 2.4.0-alpha.1 (2026-11-10)
-
-The first prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.4.0-alpha.1`. It lets you try measuring how far an
-agent's work is led by the specification: the Claude Code mod and the Codex hook class each call
-that reads or edits files as `spec`, `code` or `other`, `loft yard consultation` sums them by
-stage, session and agent with an estimate of the context each class brought in, and the Yard
-page shows a line beside each stage and a Consultation view. The entries under Unreleased below
-list everything 2.4.0 will hold.
-
 ## Unreleased
+
+## 2.4.0 (2026-11-17)
 
 - The specification, the code, the skill and the plugins are written in American English, and a
   guard keeps them so. The Codex notification ledger now writes `canceled` and still reads the
@@ -60,6 +41,27 @@ list everything 2.4.0 will hold.
 - Every `loft yard` command gives the page's address where the run may not write the machine's
   home, as in Codex's sandbox, once the page server serves the tree: finding the page server only
   reads its lock, and a tree already served writes nothing.
+
+## 2.4.0-alpha.2 (2026-11-13)
+
+The second prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.0-alpha.2`. It lets you try following Yard Log
+beside the session: `/yard-pane` in Claude Code opens a pane on the branch's Yard Log, where you
+can answer what waits on you, and in Claude Code Desktop it also opens the Yard page in
+Desktop's browser pane. `loft yard page` prints the page's address, which Codex relays through
+`$loft:yard-page`, and the page's address now reaches a sandboxed run such as Codex's.
+`LOFT_YARD_HOME` runs a `loft` under development beside an installed one. The entries under
+Unreleased below list everything 2.4.0 will hold.
+
+## 2.4.0-alpha.1 (2026-11-10)
+
+The first prerelease of 2.4.0: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.0-alpha.1`. It lets you try measuring how far an
+agent's work is led by the specification: the Claude Code mod and the Codex hook class each call
+that reads or edits files as `spec`, `code` or `other`, `loft yard consultation` sums them by
+stage, session and agent with an estimate of the context each class brought in, and the Yard
+page shows a line beside each stage and a Consultation view. The entries under Unreleased below
+list everything 2.4.0 will hold.
 
 ## 2.3.0 (2026-11-05)
 
