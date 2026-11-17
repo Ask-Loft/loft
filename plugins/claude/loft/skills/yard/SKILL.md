@@ -270,8 +270,11 @@ the scope.
 
 Commit `.yard/` in each commit of the work, beside the code it describes. Answers the person gave
 since the last commit are committed with the next, and so is what Yard keeps for each session by
-itself: its token totals under `.yard/<branch>/tokens/` and its activity under
-`.yard/<branch>/activity/`.
+itself: its token totals under `.yard/<branch>/tokens/`, its activity under
+`.yard/<branch>/activity/` and its consultation counts under `.yard/<branch>/consultation/`. Yard
+keeps these up to date outside the working tree and brings them into `.yard/` with each write of
+Yard Log, so a commit carries them as of your last write, and nothing of Yard's changes the tree
+between your own commands.
 
 Where a read reports that git ignores `.yard/`, the repository keeps Yard Log on the machine
 alone: commit nothing of `.yard/`, and never add it to a commit by force.
