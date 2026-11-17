@@ -11,7 +11,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use crate::bindings::Bindings;
 use crate::decision::{Decision, DriverPayload, NodeRef};
 use crate::document::{Document, Edge, SubjectRole};
-use crate::ids::{DecisionId, ElementId};
+use crate::ids::DecisionId;
 
 /// A node a decision names as a subject, and the role it gives it.
 pub type Subject = (NodeRef, SubjectRole);
@@ -95,7 +95,7 @@ impl<'a> Read<'a> {
                 role,
             } = *edge
             {
-                let subject = (resolved(subject, bindings), role);
+                let subject = (bindings.node(subject), role);
                 subjects.entry(decision).or_default().insert(subject);
             }
         }
@@ -115,42 +115,19 @@ impl<'a> Read<'a> {
 }
 
 /// `decision` with each former label of its drivers and consequences read as its node, cloned
-/// only where one is.
+/// only where it names a node by a former label.
 fn normalized<'a>(decision: &'a Decision, bindings: &Bindings) -> Cow<'a, Decision> {
-    let drivers = decision
-        .drivers
-        .iter()
-        .filter_map(|driver| match driver.payload {
-            DriverPayload::Subject { subject } => Some(subject),
-            DriverPayload::Local { .. } => None,
-        });
-    let consequences = decision.consequences.iter().filter_map(|each| each.subject);
-    let mut references = drivers.chain(consequences);
-    if references.all(|reference| resolved(reference, bindings) == reference) {
+    if !(decision.named()).any(|reference| matches!(reference, NodeRef::Former(_))) {
         return Cow::Borrowed(decision);
     }
     let mut decision = decision.clone();
     for driver in &mut decision.drivers {
         if let DriverPayload::Subject { subject } = &mut driver.payload {
-            *subject = resolved(*subject, bindings);
+            *subject = bindings.node(*subject);
         }
     }
     for consequence in &mut decision.consequences {
-        consequence.subject = consequence
-            .subject
-            .map(|subject| resolved(subject, bindings));
+        consequence.subject = consequence.subject.map(|subject| bindings.node(subject));
     }
     Cow::Owned(decision)
-}
-
-/// The node `reference` names: a former label that a binding, live or departed, gives to a node
-/// is read as that node, and any other reference as it is.
-fn resolved(reference: NodeRef, bindings: &Bindings) -> NodeRef {
-    let NodeRef::Former(label) = reference else {
-        return reference;
-    };
-    match bindings.resolve(label).or_else(|| bindings.former(label)) {
-        Some(ElementId::Node(node)) => NodeRef::Held(node),
-        _ => reference,
-    }
 }

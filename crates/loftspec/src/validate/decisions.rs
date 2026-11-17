@@ -68,17 +68,8 @@ pub(crate) fn former_labels_of<'a>(
     decision: &'a Decision,
 ) -> impl Iterator<Item = Label> + 'a {
     let edges = edges.get(&decision.id).into_iter().flatten().copied();
-    let drivers = decision
-        .drivers
-        .iter()
-        .filter_map(|driver| match driver.payload {
-            DriverPayload::Subject { subject } => Some(subject),
-            DriverPayload::Local { .. } => None,
-        });
-    let consequences = decision.consequences.iter().filter_map(|c| c.subject);
     edges
-        .chain(drivers)
-        .chain(consequences)
+        .chain(decision.named())
         .filter_map(|subject| match subject {
             NodeRef::Former(label) => Some(label),
             NodeRef::Held(_) => None,

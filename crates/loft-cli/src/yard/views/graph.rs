@@ -8,6 +8,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use loftspec::bindings::Bindings;
 use loftspec::decision::NodeRef;
 use loftspec::diff::{DecisionChanges, Subject, SubjectChange, content_changes, decision_changes};
 use loftspec::document::{Document, Edge};
@@ -330,28 +331,32 @@ fn decision_json(key: Key, label: Option<&str>, title: &str, change: &str, words
 /// The subjects `change` holds, as a decision's entry lists them: each gained, as the tree names
 /// it, and each lost, as the base does.
 fn listed(change: &SubjectChange, documents: &Documents<'_>) -> Value {
-    let gained =
-        (change.gained.iter()).map(|named| subject(named, "added", documents.now, documents));
-    let lost =
-        (change.lost.iter()).map(|named| subject(named, "removed", documents.then, documents));
+    let gained = (change.gained.iter()).map(|named| subject(named, "added", documents, false));
+    let lost = (change.lost.iter()).map(|named| subject(named, "removed", documents, true));
     Value::Array(gained.chain(lost).collect())
 }
 
-/// A subject as a decision's entry lists it: the node's key, kind, label and name, as `walked`
-/// holds them, or the label its departed binding keeps where neither document holds it, or a
-/// former label no binding gives, with its role and its change.
+/// A subject as a decision's entry lists it: the node's key, kind, label and name, as the tree
+/// holds them, or as the base did for a subject `lost` or a node the tree no longer holds; or the
+/// label its departed binding keeps where neither document holds it, or a former label no binding
+/// gives; with its role and its change.
 fn subject(
     (subject, role): &Subject,
     change: &str,
-    walked: &Walked,
     documents: &Documents<'_>,
+    lost: bool,
 ) -> Value {
+    let (first, second) = if lost {
+        (documents.then, documents.now)
+    } else {
+        (documents.now, documents.then)
+    };
     let mut value = json!({ "role": role.as_str(), "change": change });
     match *subject {
         NodeRef::Held(node) => {
             let key = node.key();
             value["key"] = json!(key.to_string());
-            if let Some(entry) = walked.entries.get(&key) {
+            if let Some(entry) = entry(&key, first, second) {
                 value["kind"] = json!(entry.kind.as_str());
                 value["label"] = json!(entry.label);
                 value["name"] = json!(entry.name);
@@ -393,10 +398,11 @@ fn edges(shown: &[Key], decided: &[Decided], documents: &Documents<'_>) -> Value
             .all(|key| now.entries.contains_key(key)),
         _ => false,
     };
-    let tree = (document.edges.iter()).filter_map(|edge| drawn_edge(edge, &drawn, &in_tree));
+    let tree = (document.edges.iter())
+        .filter_map(|edge| drawn_edge(edge, &drawn, &in_tree, &document.bindings));
     let gone = (base.edges.iter())
         .filter(|edge| !both_held(edge))
-        .filter_map(|edge| drawn_edge(edge, &drawn, &in_base));
+        .filter_map(|edge| drawn_edge(edge, &drawn, &in_base, &base.bindings));
     let found: BTreeSet<Drawn> = tree.chain(gone).collect();
     let edges = found.into_iter().map(|(from, to, kind, role)| {
         let mut edge = json!({ "from": from, "to": to, "kind": kind });
@@ -413,7 +419,12 @@ type Drawn = (String, String, &'static str, Option<&'static str>);
 
 /// `edge` as the diagram draws it, where both its ends are drawn: a `realizes` edge between two
 /// boxes, or a subject edge from a decision drawn to the box of the node it names.
-fn drawn_edge(edge: &Edge, drawn: &BTreeSet<Key>, named: &BTreeSet<Key>) -> Option<Drawn> {
+fn drawn_edge(
+    edge: &Edge,
+    drawn: &BTreeSet<Key>,
+    named: &BTreeSet<Key>,
+    bindings: &Bindings,
+) -> Option<Drawn> {
     match *edge {
         Edge::Realizes { feature, component } => {
             let (from, to) = (feature.key(), component.key());
@@ -422,9 +433,13 @@ fn drawn_edge(edge: &Edge, drawn: &BTreeSet<Key>, named: &BTreeSet<Key>) -> Opti
         }
         Edge::Subject {
             decision,
-            subject: NodeRef::Held(node),
+            subject,
             role,
         } if named.contains(&decision.key()) => {
+            // A node named by its former label is the node the label's binding gives.
+            let NodeRef::Held(node) = bindings.node(subject) else {
+                return None;
+            };
             let (from, to) = (decision.key(), node.key());
             drawn.contains(&to).then(|| {
                 (

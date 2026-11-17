@@ -1,6 +1,6 @@
 // A `publish` view: the publish sequence and time the lock pins, the start of its state root,
-// whether the tree matches it, each node added, changed or removed since the publish, and the
-// labeled nodes and decisions counted by kind.
+// whether the tree matches it, each node and decision added, changed or removed since the publish,
+// and the labeled nodes and decisions counted by kind.
 
 import { h } from '../../lib/dom.js';
 import { when } from '../../lib/format.js';

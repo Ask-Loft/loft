@@ -241,3 +241,30 @@ fn a_spec_change_view_draws_no_decision_whose_subject_and_consequence_loft_fmt_n
         "{graph}"
     );
 }
+
+#[test]
+fn a_spec_change_view_draws_the_edge_to_a_removed_node_a_decision_gained_by_its_former_label() {
+    let yard = Yard::with_spec();
+    let criterion = format!("      - key: {IN_ORDER_KEY}\n        name: \"{IN_ORDER}\"\n");
+    yard.scratch.edit(ADD_A_BOOK, &criterion, "");
+    let formatted = yard.scratch.loft(&["fmt"]);
+    assert!(formatted.status.success(), "{formatted:?}");
+    yard.scratch.edit(
+        CHANGE_LOG,
+        OUTCOME_ONLY,
+        &format!("{OUTCOME_ONLY}  - role: affected\n    node:\n      formerLabel: AC-3\n"),
+    );
+    let graph = diagram(&yard);
+    assert_eq!(node(&graph, IN_ORDER)["change"], "removed", "{graph}");
+    let (drawn, entry) = decision(&graph, "Keep a change log");
+    let from = drawn["key"].as_str().unwrap().to_owned();
+    assert!(
+        subject_edges(&graph).contains(&(from, IN_ORDER_KEY.to_owned(), "affected".to_owned())),
+        "the edge ends at the removed criterion's box: {graph}"
+    );
+    let subjects = entry["subjects"].as_array().unwrap();
+    assert_eq!(subjects.len(), 1, "{entry}");
+    assert_eq!(subjects[0]["kind"], "criterion", "{entry}");
+    assert_eq!(subjects[0]["name"], IN_ORDER, "{entry}");
+    assert_eq!(subjects[0]["label"], "AC-3", "{entry}");
+}

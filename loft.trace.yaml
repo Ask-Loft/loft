@@ -30996,6 +30996,9 @@ links:
       - file: "crates/loft-cli/tests/yard_view_subjects.rs"
         name: "a_spec_change_view_draws_the_subjects_of_an_added_decision"
         body: 3aadb5a08104d90fdcbdee214fb051592e05b2330dd3fe7bf9fa1bafc49517de
+      - file: "crates/loft-cli/tests/yard_view_subjects.rs"
+        name: "a_spec_change_view_draws_the_edge_to_a_removed_node_a_decision_gained_by_its_former_label"
+        body: d96e942c1622fbe49f93252a33f5bd76b38c044e6aac199dfd3e5326af54816b
   - node: 01a1e982-1425-7775-9b23-a81a5843ca14
     reviewed: b9d169001357a11f7252c123ec31b39efcae59afc6135a48983575dee4f3c07d
     tests:
@@ -31323,6 +31326,9 @@ links:
       - file: "crates/loft-cli/tests/yard_view_subjects.rs"
         name: "a_spec_change_view_lists_a_subject_gained_by_its_former_label_under_that_label"
         body: 875c6576164dfc126e4b668a15768a6122e43f974991baa277b66e3dfed14c0e
+      - file: "crates/loft-cli/tests/yard_view_subjects.rs"
+        name: "a_spec_change_view_draws_the_edge_to_a_removed_node_a_decision_gained_by_its_former_label"
+        body: d96e942c1622fbe49f93252a33f5bd76b38c044e6aac199dfd3e5326af54816b
   - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
     reviewed: dea93ed5f29437fa4001e0abc1666d588ba51096b7422c88b09feac71429f49b
     tests:

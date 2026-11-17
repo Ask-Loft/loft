@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 pub use counters::Counters;
 
 use crate::canonical::Digest;
-use crate::decision::StateKind;
+use crate::decision::{NodeRef, StateKind};
 use crate::identity::{Key, Label};
 use crate::ids::ElementId;
 
@@ -367,6 +367,19 @@ impl Bindings {
         departed
             .find(|binding| binding.label == label)
             .map(|binding| binding.element)
+    }
+
+    /// The node `reference` names: a former label that a binding, live or departed, gives to a
+    /// node is read as that node, and any other reference as it is.
+    #[must_use]
+    pub fn node(&self, reference: NodeRef) -> NodeRef {
+        let NodeRef::Former(label) = reference else {
+            return reference;
+        };
+        match self.resolve(label).or_else(|| self.former(label)) {
+            Some(ElementId::Node(node)) => NodeRef::Held(node),
+            _ => reference,
+        }
     }
 
     /// Whether any binding has a withdrawn label.
