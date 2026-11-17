@@ -25,10 +25,10 @@ fn work_there(yard: &Yard, there: &Scratch, batch: &str) {
     assert_eq!(written["outcome"], "written", "{written}");
 }
 
-/// Session `s1`'s tokens file in the Yard Log of the worktree `there`, as text.
+/// The live copy of session `s1`'s tokens file for the Yard Log of the worktree `there`, in its
+/// git directory, as text.
 fn tokens_there(there: &Scratch) -> Option<String> {
-    let path = there.0.join(".yard").join(BRANCH).join("tokens/s1.yaml");
-    fs::read_to_string(path).ok()
+    fs::read_to_string(crate::yard::live_at(&there.0, BRANCH).join("tokens/s1.yaml")).ok()
 }
 
 fn request(yard: &Yard, second: u32, input: u64) -> Value {

@@ -386,7 +386,7 @@ fn note(
     files: Vec<(SessionFile, String)>,
 ) {
     for (file, text) in files {
-        let path = arrival.store.session_path(file, &event.session_key());
+        let path = arrival.store.live_session_path(file, &event.session_key());
         let entry = (
             index,
             arrival.store.clone(),

@@ -1,20 +1,25 @@
-//! The files each session writes alone in Yard Log's folder, its token totals, its activity and
-//! what its agents consulted:
-//! written whole to a temporary file beside the file and renamed into place, outside Yard Log's
-//! lock, since only that session's events change them and they change no revision. And the
-//! Yard Logs a worktree's `.yard/` holds, each branch's by its folder.
+//! The files each session writes alone for a branch's Yard Log, its token totals, its activity
+//! and what its agents consulted. Each event of the session writes the file's live copy in git's
+//! own directory for the worktree, whole to a temporary file beside it renamed into place, outside
+//! Yard Log's lock, since only that session's events change it and they change no revision. Each
+//! write of Yard Log saves the live copies that differ into Yard Log's folder through its journal,
+//! so the working tree changes only when Yard Log is written. And the Yard Logs a worktree's
+//! `.yard/` holds, each branch's by its folder.
 
+use std::collections::BTreeMap;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 
 use loft_ports::io_error;
-use loft_ports::sync::replace_synced;
+use loft_ports::journal::{Changes, RelPath};
+use loft_ports::sync::{read_if_present, replace_synced};
 use yardlog::codec::ROOT;
-use yardlog::codec::session::{ACTIVITY, CONSULTATION, TOKENS};
+use yardlog::codec::session::{ACTIVITY, CONSULTATION, TOKENS, writes_over};
 use yardlog::identity::SessionKey;
 
 use crate::files::YARD;
+use crate::store::file_name;
 use crate::{YardStore, YardStoreError};
 
 /// A file a session writes alone in Yard Log's folder.
@@ -40,21 +45,45 @@ impl SessionFile {
             Self::Consultation => CONSULTATION,
         }
     }
+
+    /// Session `session`'s file of this kind, by its path from Yard Log's folder or from the
+    /// directory of the live copies.
+    #[must_use]
+    pub fn name(self, session: &str) -> String {
+        format!("{}/{session}.yaml", self.folder())
+    }
 }
 
 pub use yardlog::identity::is_session_id;
+
+/// The directory, under `git_yard`, `yard` in a worktree's own git directory, of the live copies
+/// of the session files of `branch`'s Yard Log, named by the branch as its lock is.
+#[must_use]
+pub fn live_dir(git_yard: &Path, branch: &str) -> PathBuf {
+    git_yard.join(format!("{}.sessions", file_name(branch)))
+}
 
 impl YardStore {
     /// The path of a session's file in Yard Log's folder.
     #[must_use]
     pub fn session_path(&self, file: SessionFile, session: &str) -> PathBuf {
-        self.folder()
-            .join(file.folder())
-            .join(format!("{session}.yaml"))
+        self.folder().join(file.name(session))
     }
 
-    /// Replaces a session's file with `bytes`, through a temporary file beside it renamed into
-    /// place.
+    /// The directory of the live copies of this Yard Log's session files.
+    #[must_use]
+    pub fn live_dir(&self) -> PathBuf {
+        live_dir(&self.place().git_yard, self.branch())
+    }
+
+    /// The path of the live copy of a session's file.
+    #[must_use]
+    pub fn live_session_path(&self, file: SessionFile, session: &str) -> PathBuf {
+        self.live_dir().join(file.name(session))
+    }
+
+    /// Replaces the live copy of a session's file with `bytes`, through a temporary file beside
+    /// it renamed into place.
     ///
     /// # Errors
     ///
@@ -65,46 +94,157 @@ impl YardStore {
         session: &str,
         bytes: &[u8],
     ) -> Result<(), YardStoreError> {
-        if !SessionKey::parse(session).is_valid() {
-            return Err(YardStoreError::Session(session.to_owned()));
-        }
-        let path = self.session_path(file, session);
+        checked(session)?;
+        let path = self.live_session_path(file, session);
         let dir = path.parent().expect("a session's file lies in a folder");
         fs::create_dir_all(dir).map_err(io_error(dir))?;
         Ok(replace_synced(&path, bytes, false)?)
     }
 
-    /// Session `session`'s file of `kind` in Yard Log's folder; none where it cannot be read.
-    #[must_use]
-    pub fn session_file(&self, kind: SessionFile, session: &str) -> Option<Vec<u8>> {
-        fs::read(self.session_path(kind, session)).ok()
+    /// Rewrites a session's file, as a command that upgrades the files does outside the session's
+    /// events: its live copy where there is one, as [`Self::write_session`] does, and its copy in
+    /// Yard Log's folder, saved through the journal under Yard Log's lock, so that the next
+    /// commit carries the rewrite.
+    ///
+    /// # Errors
+    ///
+    /// `session` cannot name a file, the lock cannot be taken, or the file cannot be written.
+    pub fn rewrite_session(
+        &self,
+        file: SessionFile,
+        session: &str,
+        bytes: &[u8],
+    ) -> Result<(), YardStoreError> {
+        checked(session)?;
+        if self.live_session_path(file, session).is_file() {
+            self.write_session(file, session, bytes)?;
+        }
+        let _locked = self.locked()?;
+        let mut changes = Changes::default();
+        changes
+            .write
+            .insert(self.folder_file(file, session), bytes.to_vec());
+        Ok(self.journal().save(&changes)?)
     }
 
-    /// Every session's file of `kind` in Yard Log's folder, by the session key that names it, in
-    /// the order of their keys. A file that cannot be read is left out, since only its own
-    /// session's events change it and the next event writes it whole again.
+    /// Session `session`'s file of `kind`: its live copy where there is one, else the copy in
+    /// Yard Log's folder; none where neither can be read.
+    #[must_use]
+    pub fn session_file(&self, kind: SessionFile, session: &str) -> Option<Vec<u8>> {
+        fs::read(self.live_session_path(kind, session))
+            .or_else(|_| fs::read(self.session_path(kind, session)))
+            .ok()
+    }
+
+    /// Every session's file of `kind`, by the session key that names it, in the order of their
+    /// keys: each one's live copy where there is one, else its copy in Yard Log's folder. A file
+    /// that cannot be read is left out, since only its own session's events change it and the
+    /// next event writes it whole again.
     #[must_use]
     pub fn session_files(&self, kind: SessionFile) -> Vec<(String, Vec<u8>)> {
-        let Ok(entries) = fs::read_dir(self.folder().join(kind.folder())) else {
-            return Vec::new();
-        };
-        let mut paths: Vec<_> = entries
-            .filter_map(Result::ok)
-            .map(|entry| entry.path())
-            .filter(|path| {
-                path.extension()
-                    .is_some_and(|extension| extension == "yaml")
-            })
-            .collect();
-        paths.sort();
-        paths
-            .iter()
-            .filter_map(|path| {
-                let key = path.file_stem()?.to_str()?.to_owned();
-                Some((key, fs::read(path).ok()?))
-            })
-            .collect()
+        let mut files = listed(&self.folder().join(kind.folder()));
+        files.extend(listed(&self.live_dir().join(kind.folder())));
+        files.into_iter().collect()
     }
+
+    /// Adds to `changes` each live copy whose bytes differ from its copy in Yard Log's folder,
+    /// leaving a copy of a format this `loft` does not write as it is; whether no live copy was
+    /// left unsaved because its folder copy could not be read.
+    pub(crate) fn save_live(&self, changes: &mut Changes) -> bool {
+        let mut saved_all = true;
+        let live = SessionFile::ALL.into_iter().flat_map(|kind| {
+            let files = listed(&self.live_dir().join(kind.folder()));
+            files
+                .into_iter()
+                .map(move |(session, bytes)| (kind, session, bytes))
+        });
+        for (kind, session, bytes) in live {
+            // A folder copy that cannot be read is left, as every reader leaves it, rather than
+            // refuse the write it does not belong to.
+            let Ok(folder) = read_if_present(&self.session_path(kind, &session)) else {
+                saved_all = false;
+                continue;
+            };
+            if saves_over(kind, folder.as_deref(), &bytes) {
+                changes
+                    .write
+                    .insert(self.folder_file(kind, &session), bytes);
+            }
+        }
+        saved_all
+    }
+
+    /// Removes the live copies kept under this branch's name, where they can be removed.
+    pub(crate) fn remove_live(&self) {
+        let _ = fs::remove_dir_all(self.live_dir());
+    }
+
+    /// Moves to this branch's name the live copies kept under `was`, the name Yard Log had at its
+    /// last write, where the branch was renamed since: each one this branch's name keeps no copy
+    /// of yet. A copy that is not moved stays where it is, and the write goes on without it; only
+    /// the directories the moves emptied are removed.
+    pub(crate) fn adopt_live(&self, was: &str) {
+        let from = live_dir(&self.place().git_yard, was);
+        if was == self.branch() || !from.is_dir() {
+            return;
+        }
+        let kept = SessionFile::ALL.into_iter().flat_map(|kind| {
+            let sessions = listed(&from.join(kind.folder())).into_keys();
+            sessions.map(move |session| (kind, session))
+        });
+        for (kind, session) in kept {
+            let to = self.live_session_path(kind, &session);
+            if !to.exists() {
+                let _ = fs::create_dir_all(self.live_dir().join(kind.folder()));
+                let _ = fs::rename(from.join(kind.name(&session)), to);
+            }
+        }
+        for kind in SessionFile::ALL {
+            let _ = fs::remove_dir(from.join(kind.folder()));
+        }
+        let _ = fs::remove_dir(&from);
+    }
+
+    /// A session's file in Yard Log's folder, by its path from the top of the worktree.
+    fn folder_file(&self, kind: SessionFile, session: &str) -> RelPath {
+        RelPath::new(format!("{}/{}", self.folder_rel(), kind.name(session)))
+    }
+}
+
+/// Refuses a session id that cannot name a file.
+fn checked(session: &str) -> Result<(), YardStoreError> {
+    if SessionKey::parse(session).is_valid() {
+        Ok(())
+    } else {
+        Err(YardStoreError::Session(session.to_owned()))
+    }
+}
+
+/// Whether a live copy of `kind` that holds `live` is saved over the copy in Yard Log's folder that
+/// holds `folder`: where the folder holds none, or one that differs and is of a format this `loft`
+/// writes.
+fn saves_over(kind: SessionFile, folder: Option<&[u8]>, live: &[u8]) -> bool {
+    folder.is_none_or(|folder| folder != live && writes_over(kind.folder(), folder))
+}
+
+/// Every `.yaml` file in `dir`, by its name without the extension, with its bytes; a file that
+/// cannot be read is left out, and so is every file where `dir` cannot be read.
+fn listed(dir: &Path) -> BTreeMap<String, Vec<u8>> {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return BTreeMap::new();
+    };
+    entries
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| {
+            path.extension()
+                .is_some_and(|extension| extension == "yaml")
+        })
+        .filter_map(|path| {
+            let key = path.file_stem()?.to_str()?.to_owned();
+            Some((key, fs::read(&path).ok()?))
+        })
+        .collect()
 }
 
 /// The branches whose Yard Log the worktree whose top is `tree` holds under `.yard/`: each folder

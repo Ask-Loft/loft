@@ -1,12 +1,11 @@
-//! The files each session keeps in a branch's Yard Log folder, its token totals, its activity
-//! and its consultation, as the page reads them: each file as JSON, in the order of their session
-//! ids. A file that does not read is left out, since only its own session's events change it and
-//! the next event writes it whole again.
+//! The files each session keeps for a branch's Yard Log, its token totals, its activity and its
+//! consultation, as the page reads them: each file as JSON, its live copy where there is one, in
+//! the order of their session ids. A file that does not read is left out, since only its own
+//! session's events change it and the next event writes it whole again.
 
 use loftspec::yaml::{self, Node, Style, Value as Yaml};
 use serde_json::{Map, Number, Value};
-use yardlog::consult::Consultation;
-use yardlog::totals::TotalsFormat;
+use yardlog::codec::session::writes_over;
 use yardlog_store::YardStore;
 use yardlog_store::session::SessionFile;
 
@@ -22,33 +21,20 @@ pub fn read(store: &YardStore, kind: SessionFile) -> Vec<Value> {
 /// not write, and so is left as it is: a totals file of a newer totals format or one it does not
 /// know, or a consultation file of a format other than its own.
 pub fn foreign(store: &YardStore, file: SessionFile, session: &str) -> bool {
-    let read = || one(store, file, session);
-    match file {
-        SessionFile::Tokens => {
-            read().is_some_and(|file| !TotalsFormat::of(&file).is_some_and(TotalsFormat::is_known))
-        }
-        SessionFile::Consultation => {
-            read().is_some_and(|file| !Consultation::of_this_format(&file))
-        }
-        SessionFile::Activity => false,
-    }
-}
-
-/// Session `session`'s file of `kind` in the Yard Log of `store`, as JSON; none where it does not
-/// read.
-fn one(store: &YardStore, kind: SessionFile, session: &str) -> Option<Value> {
-    parsed(&store.session_file(kind, session)?)
-}
-
-/// A file's bytes as JSON; none where they do not read.
-fn parsed(bytes: &[u8]) -> Option<Value> {
-    Some(json(&yaml::read(bytes).ok().flatten()?))
+    store
+        .session_file(file, session)
+        .is_some_and(|bytes| !writes_over(file.folder(), &bytes))
 }
 
 /// A file's text as the page reads it, for the tests of what writes it.
 #[cfg(test)]
 pub fn as_read(text: &str) -> Value {
-    parsed(text.as_bytes()).expect("the file reads")
+    json(
+        &yaml::read(text.as_bytes())
+            .ok()
+            .flatten()
+            .expect("the file reads"),
+    )
 }
 
 /// Every file of `kind` in the Yard Log of `store`, by the session key that names it, as JSON.

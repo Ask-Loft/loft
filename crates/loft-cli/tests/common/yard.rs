@@ -14,6 +14,12 @@ use crate::base::based_on_now;
 use crate::common::{EPOCH, Scratch, workspace};
 use crate::schema;
 
+/// The directory of the live copies of the session files of `branch`'s Yard Log in the worktree
+/// whose top is `tree`, in its git directory, `.git`.
+pub fn live_at(tree: &std::path::Path, branch: &str) -> PathBuf {
+    yardlog_store::session::live_dir(&tree.join(".git/yard"), branch)
+}
+
 /// The commit HEAD names in a repository [`Yard::with_spec`] makes.
 pub const HEAD: &str = "feed0000feed0000feed0000feed0000feed0000";
 
@@ -150,6 +156,12 @@ impl Yard {
     /// The folder of the branch's Yard Log.
     pub fn folder(&self, branch: &str) -> PathBuf {
         self.scratch.0.join(".yard").join(branch)
+    }
+
+    /// The directory of the live copies of the session files of `branch`'s Yard Log, in the
+    /// worktree's git directory.
+    pub fn live(&self, branch: &str) -> PathBuf {
+        live_at(&self.scratch.0, branch)
     }
 
     /// The file `name` of `~/.yard/`, as JSON.
