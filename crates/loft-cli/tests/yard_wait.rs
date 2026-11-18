@@ -38,7 +38,7 @@ fn holder(yard: &Yard, submission: &str) -> PathBuf {
 }
 
 /// Waits until a running wait has taken the submission's lease.
-fn until_leased(yard: &Yard, submission: &str) {
+pub fn until_leased(yard: &Yard, submission: &str) {
     let started = Instant::now();
     while !holder(yard, submission).exists() {
         assert!(

@@ -4,7 +4,9 @@
 //! of the hook's agent that holds a plan-mode `plan` block, for as long as the person takes, and
 //! answers Claude Code where the page decided it: an approval ends plan mode and the agent goes
 //! on in auto mode, a rejection gives the agent the person's reason. A decision made in the
-//! terminal first ends the wait, and the hook answers nothing.
+//! terminal first ends the wait, and the hook answers nothing. The hook takes no lease on the
+//! submission: where the host ends `ExitPlanMode` itself, the agent waits on the plan with
+//! `yard_wait`, and the hook, which still runs, must not refuse that wait.
 
 use serde_json::{Value, json};
 use yardlog::YardLog;
@@ -17,7 +19,7 @@ use crate::cli::{Format, Output};
 use crate::yard::args::{Beyond, WaitArgs, Writer};
 use crate::yard::branch::{Branch, log_of};
 use crate::yard::caller::{Caller, Continuations};
-use crate::yard::wait::{LONGEST, attempt};
+use crate::yard::wait::{LONGEST, watch};
 use crate::yard::working_tree::{Follows, target};
 
 /// Claude Code's answer to the `PermissionRequest` hook for `ExitPlanMode`: the page's decision,
@@ -30,7 +32,7 @@ pub fn decide(hook: &Hook, port: u16) -> Value {
         return json!({});
     };
     loop {
-        match attempt(hook.dir(), wait_args(hook, &submission, port)) {
+        match watch(hook.dir(), wait_args(hook, &submission, port)) {
             Ok(("pending", _)) => {}
             Ok((_, fields)) => return answer(hook, &fields),
             Err(_) => return json!({}),

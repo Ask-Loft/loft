@@ -27,6 +27,11 @@ everything 2.4.1 will hold.
   Yard page, and the agent is told to wait on it with `yard_wait`. Such a plan used to be recorded
   as rejected by the person, though nobody had seen it. Only Claude Code's own rejection counts as
   the person's, and a call an interrupt stopped is withdrawn.
+- The agent's `yard_wait` on a plan such a host ended is no longer refused. In 2.4.1-alpha.1 the
+  plugin's PermissionRequest hook, which still runs beside the host, held the plan's lease until
+  the person decided, so their decision on the page never reached the agent. The hook now watches
+  the plan without the lease, and the note telling the agent to wait comes before the host's own
+  words.
 - The release workflow publishes the crates without building them a second time after the
   maintainer's approval: the check job's dry run has already built each crate from its package on
   the tag's commit.
