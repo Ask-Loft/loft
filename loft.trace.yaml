@@ -21305,7 +21305,7 @@ links:
         body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented"
-        body: dd9dfbd066283e4f502e0ec3518c7ee5e94d0038dff3d1362d22bf356bc9848d
+        body: d15e70d9127b5f38c51bbbe454853d1c9146533c6d94c9f00f4b45692a473260
   - node: 01a19951-8b23-72b2-8cb9-a4c8523130f8
     reviewed: ccf54ab1a0c59f0f37a92d809cf8c7ff16eb00858a333dc042baa61ae7028c09
     tests:
@@ -21323,7 +21323,7 @@ links:
         body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented"
-        body: dd9dfbd066283e4f502e0ec3518c7ee5e94d0038dff3d1362d22bf356bc9848d
+        body: d15e70d9127b5f38c51bbbe454853d1c9146533c6d94c9f00f4b45692a473260
   - node: 01a19951-5b6c-769f-802b-1caae94627eb
     reviewed: 580d3723b7c6fc081b6bb0b62f488401a2183db6ef4a053a1b5bfbe28e190b14
     tests:

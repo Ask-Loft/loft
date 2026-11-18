@@ -9,13 +9,16 @@
 use std::time::Duration;
 
 use serde_json::{Value, json};
+use software_plant::BrowserScenario;
 use software_plant::remote::wire::value;
 use software_plant::remote::{Remote, RemoteScenario};
 
+use crate::common::Scratch;
 use crate::common::oauth::{
     KEY, REDIRECT, authorize, coded, discover, exchange, form, location, metadata, refresh,
     register, registered,
 };
+use crate::common::signed_in::{kept_sign_in, name_remote, run};
 
 #[test]
 fn the_metadata_names_the_resource_and_an_authorization_server_that_takes_pkce_alone() {
@@ -275,12 +278,35 @@ fn a_real_remote_s_authorization_server_answers_in_the_shape_the_simulator_does(
 }
 
 #[test]
+fn a_sign_in_that_login_keeps_is_found_by_its_address_and_refreshes() {
+    let remote = Remote::start(RemoteScenario::accepting(KEY));
+    let scratch = Scratch::with_reading_list();
+    name_remote(&scratch, Some(&remote.address()), true);
+    let (output, _) = run(
+        &scratch,
+        &["remote", "login", "--format", "json"],
+        BrowserScenario::Visiting,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let kept = scratch.setting("remotes.json");
+    let sign_in = kept_sign_in(&kept, &remote.address());
+    let server = json!({ "token_endpoint": sign_in["tokenEndpoint"] });
+    let field = |name: &str| sign_in[name].as_str().expect(name).to_owned();
+    let (client, resource, old) = (field("clientId"), field("resource"), field("refreshToken"));
+    assert_eq!(refresh(&server, &client, &resource, &old).status, 200);
+    assert_eq!(remote.refreshes(), 1);
+    let elsewhere = format!("{}/documents/elsewhere", remote.origin());
+    assert!(kept_sign_in(&kept, &elsewhere).is_null());
+}
+
+#[test]
 #[ignore = "spends the sign-in that LOFT_REMOTE_CONTRACT_SIGN_IN keeps"]
 fn a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented() {
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
     let file = std::env::var("LOFT_REMOTE_CONTRACT_SIGN_IN").expect("a loft/remotes.json");
     let kept: Value = serde_json::from_slice(&std::fs::read(file).unwrap()).unwrap();
-    let sign_in = &kept[address.as_str()];
+    let sign_in = kept_sign_in(&kept, &address);
     let server = json!({ "token_endpoint": sign_in["tokenEndpoint"] });
     let field = |name: &str| sign_in[name].as_str().expect(name).to_owned();
     let (client, resource, old) = (field("clientId"), field("resource"), field("refreshToken"));

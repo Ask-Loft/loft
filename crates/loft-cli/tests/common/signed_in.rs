@@ -35,6 +35,12 @@ pub fn sign_ins(scratch: &Scratch) -> Value {
     scratch.setting("remotes.json")["remotes"].clone()
 }
 
+/// The sign-in that `file`, a `loft/remotes.json` read as JSON, keeps for `address`: the entry
+/// its `remotes` holds under the address, or `null`.
+pub fn kept_sign_in<'a>(file: &'a Value, address: &str) -> &'a Value {
+    &file["remotes"][address]
+}
+
 /// A sign-in to `remote` as `loft` keeps it, its access token expiring `seconds` from now by
 /// the system clock, as a token does, issued by the simulator so that the remote admits it.
 pub fn granted(remote: &Remote, seconds: u64) -> Value {
