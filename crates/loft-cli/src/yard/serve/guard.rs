@@ -17,8 +17,7 @@ pub enum Access {
     Change,
 }
 
-/// Whether `request`, which reached the address `reached` of the machine, may be answered, or the
-/// refusal that answers it instead.
+/// Whether `request` may be answered, or the refusal that answers it instead.
 pub fn admit(
     request: &Request,
     access: Access,

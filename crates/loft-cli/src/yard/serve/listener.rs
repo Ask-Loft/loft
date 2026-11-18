@@ -13,31 +13,25 @@ use loft_ports::clock::Clock;
 /// How long a connection may wait between the bytes of its request.
 const READING: Duration = Duration::from_secs(10);
 
-/// How long the page server waits before it tries again an address the machine does not have.
+/// Short enough that an address the machine gains is listened on within the 5 seconds the page
+/// server allows.
 const AGAIN: Duration = Duration::from_secs(1);
 
-/// An address that `--listen` names.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Address(IpAddr);
 
-/// Reads an address that `--listen` names, which is an IP address and nothing else.
-///
-/// # Errors
-///
-/// `text` is not an IP address.
 pub fn parse_address(text: &str) -> Result<Address, String> {
     text.parse::<IpAddr>()
         .map(Address)
         .map_err(|_| format!("`{text}` is not an IP address"))
 }
 
-/// The address of the machine, and the port, that a connection reached.
 #[derive(Debug, Clone, Copy)]
 pub struct Reached(SocketAddr);
 
 impl Reached {
-    /// Whether `host`, as a `Host` names an address or an `Origin` after its scheme, names this
-    /// one: `localhost` or its IP address, at its port.
+    /// Compares addresses, not their spelling, so that an IPv4 request to a socket on `::`
+    /// matches its mapped address.
     pub fn is_named_by(self, host: &str) -> bool {
         if host.eq_ignore_ascii_case(&format!("localhost:{}", self.0.port())) {
             return true;
@@ -77,7 +71,6 @@ impl Connection {
         let _ = self.stream.set_read_timeout(None);
     }
 
-    /// The address of the machine the connection reached.
     pub fn reached(&self) -> Reached {
         self.reached
     }
@@ -167,7 +160,6 @@ impl Listener {
     }
 }
 
-/// Takes the connections `socket` receives on a thread of its own.
 fn accept_apart<F>(socket: TcpListener, serve: &F)
 where
     F: Fn(Connection) + Send + Sync + Clone + 'static,
@@ -176,8 +168,8 @@ where
     thread::spawn(move || accept(&socket, &serve));
 }
 
-/// Hands each connection `socket` receives to `serve` on a thread of its own; one whose address
-/// on the machine cannot be read is closed unread.
+/// A connection whose address on the machine cannot be read is closed, since its `Host` could
+/// not be checked.
 fn accept<F>(socket: &TcpListener, serve: &F)
 where
     F: Fn(Connection) + Send + Sync + Clone + 'static,
@@ -196,8 +188,6 @@ where
     }
 }
 
-/// Tries each of `missing` again, every [`AGAIN`] as `clock` waits, until `bind` listens there,
-/// and hands each socket it takes to `taken`.
 fn take_missing(
     mut missing: Vec<SocketAddr>,
     mut bind: impl FnMut(SocketAddr) -> io::Result<TcpListener>,

@@ -25,11 +25,10 @@ pub fn free_port() -> u16 {
         .port()
 }
 
-/// The loopback address.
 pub const LOOPBACK: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
-/// An address of the machine besides the loopback interface: the one it would reach the network
-/// from. No packet is sent to learn it.
+/// A UDP socket's `connect` only picks the route, so no packet leaves the machine to learn the
+/// address it would use.
 pub fn machine_address() -> IpAddr {
     let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
     socket
@@ -120,13 +119,11 @@ impl Served {
         self.send_at(LOOPBACK, head, body)
     }
 
-    /// Whether the page server takes a connection at `address` of the machine.
     pub fn takes_at(&self, address: IpAddr) -> bool {
         TcpStream::connect_timeout(&SocketAddr::new(address, self.port), Duration::from_secs(5))
             .is_ok()
     }
 
-    /// `GET /api/version` at `address` of the machine, addressed to it by that address.
     pub fn version_at(&self, address: IpAddr) -> Reply {
         let host = SocketAddr::new(address, self.port);
         self.send_at(
@@ -136,7 +133,6 @@ impl Served {
         )
     }
 
-    /// Sends `request` to `address` of the machine, as [`Served::send`] does.
     pub fn send_at(&self, address: IpAddr, head: &str, body: &[u8]) -> Reply {
         let mut stream = TcpStream::connect((address, self.port)).unwrap();
         stream

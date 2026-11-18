@@ -1,7 +1,3 @@
-//! Where the page server listens: on every address of the machine unless `--listen` names
-//! addresses, and then on each of them and on the loopback interface; an address the machine
-//! lacks leaves the page served elsewhere; and `--listen` takes IP addresses alone.
-
 use std::net::{IpAddr, Ipv6Addr};
 use std::time::Duration;
 

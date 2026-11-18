@@ -1,5 +1,3 @@
-//! The settings the Claude Code plugin's manifest declares for the page server's addresses.
-
 use std::fs;
 
 use serde_json::Value;
