@@ -16,6 +16,14 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
+- The Yard page server listens on every address of the machine, not on the loopback interface
+  alone, so the page opens from another device, such as a phone in your tailnet, where you can
+  answer as on the machine. Anyone who reaches the machine on the same network, a public one
+  included, can then read the page and answer for you: name the addresses it listens on with
+  `loft yard serve --listen`, once for each, or the Claude Code plugin's new `yardListen`
+  setting, and it listens on those and on `127.0.0.1` alone. An address the machine does not
+  have yet is taken once it appears. `Host` and `Origin` are checked against the address a
+  request reached.
 - Yard Log's session files no longer change the working tree between an agent's commands. The
   page server keeps each session's token totals, activity and consultation counts in git's own
   directory for the worktree, under `yard/<branch>.sessions/`, and each write of Yard Log, a close

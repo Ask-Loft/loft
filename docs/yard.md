@@ -26,12 +26,21 @@ what the agent does through the host's own tools.
 
 ## The page
 
-The plugin keeps one page server running for the machine, on the loopback interface only, at
-<http://127.0.0.1:7411/>. Every session on the machine shares it, whatever its repository or
-worktree. A `loft yard` command run in a worktree adds that worktree to the page too, so a
+The plugin keeps one page server running for the machine, at <http://127.0.0.1:7411/>. Every
+session on the machine shares it, whatever its repository or worktree. A `loft yard` command run in a worktree adds that worktree to the page too, so a
 session that runs `loft` without the plugin's mod, such as one an agent host starts in a worktree
 of its own, is on the page. If the page says that it does not serve a worktree, run
 `loft yard serve --tree <worktree>` on the machine to add it.
+
+By default the page server listens on every address of the machine, so you can open the page
+from another device, such as a phone in your tailnet, at `http://<the machine's address>:7411/`,
+and answer there as you would on the machine. That also opens it to anyone who reaches the machine
+on the same network, a public one such as a coffee shop's included: they can read every Yard Log
+the page serves and answer for you. To close the page to the other networks, name the addresses
+it listens on in the plugin's `yardListen` setting, such as your tailnet address alone; it always
+listens on `127.0.0.1` as well. Run by hand, `loft yard serve --listen <address> --replace` does
+the same, `--listen` given once for each address. An address the machine does not have yet, such
+as a tailnet address before the VPN is up, is taken within seconds of appearing.
 
 - **What waits on you** comes first, across every branch. Inside a branch's Yard Log it opens in
   a panel along the bottom, over a page that stays live, so you can read the log while you
@@ -71,6 +80,7 @@ move an installed plugin to that version. The plugin's settings:
 | --- | --- | --- |
 | `loftCommand` | `loft` | The command that runs `loft`, such as `npx --no-install loft` or `pnpm exec loft` |
 | `yardPort` | `7411` | The port of the page server, shared by every session on the machine |
+| `yardListen` | empty | The IP addresses of the machine the page server listens on beside `127.0.0.1`, separated by commas; empty, it listens on every address |
 | `baseBranch` | `develop` | The base branch Yard Log records where git names none |
 
 The plugin works the same on every machine. Where an organization manages Claude Code, or the
@@ -102,7 +112,9 @@ The plugin and `loft` should be the same version: the setup report that `loft in
 The plugin's hooks run `loft yard codex hook`, and a background `loft yard codex watch` that
 Codex owns. It sends a heartbeat every five seconds, restarts the page server if it stops and
 keeps at most 1,000 queued events. A watch lasts at most 24 hours, and later activity starts
-another. This works in local Codex sessions only, not with cloud orchestration.
+another. Codex gives the plugin no setting, so a page server the watch starts listens on every
+address of the machine at port 7411; start one with `loft yard serve --listen` before Codex does
+to keep it to the addresses you name. This works in local Codex sessions only, not with cloud orchestration.
 
 Two things need a Codex app server already running on the machine, which the watch reaches over
 its Unix-domain socket, `$CODEX_HOME/app-server-control/app-server-control.sock` (`~/.codex`
