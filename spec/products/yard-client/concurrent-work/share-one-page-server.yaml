@@ -90,6 +90,10 @@ requirements:
         name: "A page server that the mod starts runs as long as the mod, or until a newer `loft yard serve` replaces it."
       - key: 01a1646f-546d-7042-befd-ea8e5a514259
         name: "A page server that the mod starts serves the plugin's `yardPort` setting, 7411 by default."
+      - key: 01a1eeea-3ba6-7330-8a73-2eb4edd533e6
+        name: "The mod passes each address of the plugin's `yardListen` setting to the `loft yard serve` it starts as a `--listen`."
+      - key: 01a1eeea-3ba6-7330-8a73-2eb5ce1eb20c
+        name: "Where the plugin's `yardListen` setting is empty, the mod passes no `--listen`."
       - key: 01a1646f-546d-7042-befd-ea8fc7b5b732
         name: "A `loft yard serve` that finds in `~/.yard/server.json` a running page server of the same or a newer version exits 0 and starts none."
       - key: 01a1646f-546d-7042-befd-ea90b3a3d660

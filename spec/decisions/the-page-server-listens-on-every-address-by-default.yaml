@@ -1,0 +1,90 @@
+key: 01a1eeea-3b9f-72c9-8a32-a5a7ca21f98a
+slug: the-page-server-listens-on-every-address-by-default
+title: "The page server listens on every address of the machine by default, and on the addresses the person names instead"
+context: "The person opens the page from other devices as well, such as a phone in their tailnet. A machine's local addresses change with the network it joins, a VPN's address exists only while the VPN is up, and the Claude Code mod starts the page server where the person does not see it. A page served on a network is served to everyone who reaches the machine there."
+state:
+  kind: accepted
+  selectedOption: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+  outcome: "`loft yard serve` listens on `0.0.0.0` unless `--listen` names addresses, and then on each of them and on the loopback interface, trying again an address that is missing until it appears. The Claude Code plugin's `yardListen` setting supplies `--listen`; Codex gives the plugin no setting. A request from another machine needs no key: the page server checks `Host` and `Origin` against the address the request reached."
+drivers:
+  - key: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    kind: local
+    label: "Open with nothing set"
+    statement: "The page opens from another device on the machine's networks with nothing set, however the machine's addresses change."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    kind: local
+    label: "Closed where the person chooses"
+    statement: "The person can keep the page off a network, such as a public one."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    kind: local
+    label: "Small change"
+    statement: "Reaching the page from another device changes the page server, the plugin and the page as little as it can."
+options:
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    title: "Every address by default"
+    description: "`0.0.0.0` unless the person names addresses, the loopback interface always, and no key for a request from the network."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    title: "Loopback by default"
+    description: "`127.0.0.1` unless the person names addresses to listen on as well."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    title: "Every address, with a key"
+    description: "`0.0.0.0` unless the person names addresses, and every request from the network carries an access key that `loft yard page` prints in the page's address."
+assessments:
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    rating: supports
+    rationale: "every address the machine has or gains is served"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    rating: supports
+    rationale: "named addresses replace `0.0.0.0`"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    rating: supports
+    rationale: "one setting and one flag, and the checks follow the address reached"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    rating: conflicts
+    rationale: "another device reaches nothing until the person names an address"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    rating: supports
+    rationale: "every network is closed until named"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    rating: supports
+    rationale: "the same setting and flag"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    rating: neutral
+    rationale: "each device opens the page once at the address with the key"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    rating: supports
+    rationale: "a request without the key is refused on every network"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    driver: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    rating: conflicts
+    rationale: "a key, a cookie, a new address from `loft yard page` and its schema"
+consequences:
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ae6d9a5018
+    kind: risk
+    statement: "On a public network, such as a coffee shop's, anyone who reaches the machine reads every Yard Log its page server serves and can answer for the person, unless the person names the addresses it listens on."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5afe5ebae08
+    kind: benefit
+    statement: "The page opens on a phone in the person's tailnet, or on the same network, with nothing set."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5b090c161b3
+    kind: cost
+    statement: "In Codex, which gives the plugin no setting, the page server listens on every address of the machine."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5b11d9febc7
+    kind: obligation
+    statement: "Turning the default to the loopback interface later is a new decision that supersedes this one, and a person who relied on it names the addresses in `yardListen`."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ac8bfc2fae
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ad0ec2fdf4
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb82421bcb23
