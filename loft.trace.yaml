@@ -23478,6 +23478,12 @@ links:
       - file: "crates/loft-cli/tests/yard_codex_watch.rs"
         name: "a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server"
         body: feba3ba0fa75cc0d314db937a00655686fc1a9b2ebaf21bb39fd1846f8e400a4
+  - node: 01a1eeea-3ba5-7122-8e30-23ee66ae5a35
+    reviewed: 7f648f628210e5588657741a01653cf90373738db10cb6d1a33dcd12e5d07549
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_watch.rs"
+        name: "a_page_server_a_codex_worker_starts_listens_on_every_address_of_the_machine"
+        body: d530a56d5d4ce471be5c223a90e1d0d8aad919499732191d1389ab46270cb487
   - node: 01a1787c-f803-70b1-b946-b7115de4d9c5
     reviewed: 8cf66230acc7c783ef7a1c7c496cad75454dc4b02873404d7be4f6bba3b4e01b
     tests:
