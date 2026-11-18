@@ -117,6 +117,17 @@ requirements:
         name: "The notice names the `yardListen` setting and each entry that is not an IP address."
       - key: 01a1f03b-b432-7709-92e2-1d47c30f8dc0
         name: "The page server the mod starts listens on the setting's other addresses."
+  - key: 01a1f074-174c-750c-b689-edaf78b8384b
+    statement:
+      form: unwanted
+      if: "the `loft` that `loftCommand` runs speaks a protocol older than 4"
+      system: "the Loft mod"
+      shall: "pass neither `--listen` nor `--join` to `loft yard serve`."
+    criteria:
+      - key: 01a1f074-174d-7385-9119-36b1ea353610
+        name: "The mod passes `--listen` and `--join` only where the `loft` it runs speaks protocol 4 or a later one."
+      - key: 01a1f074-174d-7385-9119-36b200eec8a5
+        name: "Where the plugin's `yardListen` setting names addresses, the mod tells the person once that the page opens on this machine alone until `loft` is brought up to date."
   - key: 01a18a3a-4833-7539-a772-a6431c57dc22
     statement:
       form: event_driven
