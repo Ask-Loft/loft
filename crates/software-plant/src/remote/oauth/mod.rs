@@ -21,7 +21,7 @@ use super::State;
 use super::wire::{pairs, value};
 
 pub(super) use authorize::authorize;
-pub(super) use metadata::{resource_metadata, server_metadata};
+pub(super) use metadata::{document_metadata, resource_metadata, server_metadata};
 pub(super) use register::register;
 pub(super) use token::{refreshing, token};
 
@@ -162,11 +162,11 @@ impl Auth {
 }
 
 impl State {
-    fn issuer(&self) -> String {
+    pub(super) fn issuer(&self) -> String {
         format!("{}/auth", self.origin)
     }
 
-    fn resource(&self) -> String {
+    pub(super) fn resource(&self) -> String {
         format!("{}{}", self.origin, super::RESOURCE)
     }
 }

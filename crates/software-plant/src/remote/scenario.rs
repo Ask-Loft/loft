@@ -4,7 +4,9 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use super::StoredState;
+use serde_json::Value;
+
+use super::{Related, StoredState};
 
 /// How the person answers an authorization request.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -40,6 +42,9 @@ pub enum Metadata {
     /// Authorization server metadata whose `authorization_endpoint` is `http` off the loopback
     /// interface.
     Unencrypted,
+    /// Protected resource metadata that the challenge names on another origin, which a second
+    /// port of the loopback interface stands for, naming the protected resource there.
+    OnAnotherOrigin,
 }
 
 /// The skill package a scenario serves: its manifest's `name` and `version`, and its bytes.
@@ -110,6 +115,10 @@ pub struct RemoteScenario {
     pub(super) misstating: Vec<Misstating>,
     /// The skill package the scenario serves, if any.
     pub(super) skill: Option<Skill>,
+    /// The related resources that the document's protected resource metadata lists, in order.
+    pub(super) related: Vec<Related>,
+    /// The member that lists the related resources, as the scenario scripts it.
+    pub(super) listing: Option<Value>,
 }
 
 impl RemoteScenario {
@@ -139,6 +148,8 @@ impl RemoteScenario {
             invalid_publish: None,
             misstating: Vec::new(),
             skill: None,
+            related: Vec::new(),
+            listing: None,
         }
     }
 

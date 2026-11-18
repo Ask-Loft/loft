@@ -1,7 +1,8 @@
 //! The calls a contract suite makes of a remote's authorization server, as OAuth 2.0 shapes them,
 //! of the simulator and of a real remote alike: the two metadata documents found from the
-//! challenge of a request without a token, the registration of a public client, an authorization
-//! request with PKCE and the redirect that answers it, the exchange of its code, and a refresh.
+//! challenge of a request without a token, the parameters of that challenge, the metadata of a
+//! related resource, the registration of a public client, an authorization request with PKCE and
+//! the redirect that answers it, the exchange of its code, and a refresh.
 
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
@@ -60,6 +61,35 @@ pub fn fetch(address: &str) -> (String, Value, Value) {
     )
     .body;
     (challenge, resource, server)
+}
+
+/// The value of the parameter `name` of the `Bearer` challenge `challenge`, if it names one as a
+/// quoted string.
+pub fn parameter(challenge: &str, name: &str) -> Option<String> {
+    let quoted = format!("{name}=\"");
+    let start = challenge
+        .match_indices(&quoted)
+        .map(|(at, _)| at)
+        .find(|at| matches!(challenge[..*at].chars().last(), Some(' ' | ',')))?
+        + quoted.len();
+    let length = challenge[start..].find('"')?;
+    Some(challenge[start..start + length].to_owned())
+}
+
+/// The answer to a request without a token for the protected resource metadata of the resource
+/// `identifier`, at the address RFC 9728 derives from it: its origin, then
+/// `/.well-known/oauth-protected-resource`, then its path without a terminating `/`, then its
+/// query.
+pub fn related_metadata(identifier: &str) -> Answer {
+    let authority = identifier.find("://").map_or(0, |at| at + 3);
+    let end = identifier[authority..]
+        .find(['/', '?'])
+        .map_or(identifier.len(), |at| authority + at);
+    let (origin, rest) = identifier.split_at(end);
+    let (path, query) = rest.find('?').map_or((rest, ""), |at| rest.split_at(at));
+    let path = path.trim_end_matches('/');
+    let url = format!("{origin}/.well-known/oauth-protected-resource{path}{query}");
+    call("GET", &url, None, None)
 }
 
 /// The id of a public client registered with `server`.

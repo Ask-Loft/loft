@@ -1,17 +1,21 @@
 //! The contract suite of the failures a remote simulator scripts: metadata a misconfigured
-//! authorization server serves, refused registrations and exchanges, a refresh whose answer is
-//! lost or slow, and the publish and import answers no faithful remote gives. A real remote is
-//! not asked to fail, so each scenario is asked of the simulator alone.
+//! authorization server serves, related resources it misserves or places on another origin, a
+//! list of them it scripts, refused registrations and exchanges, a refresh whose answer is lost
+//! or slow, and the publish and import answers no faithful remote gives. A real remote is not
+//! asked to fail, so each scenario is asked of the simulator alone.
 
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
-use software_plant::remote::{Metadata, Remote, RemoteScenario};
+use software_plant::http::Request;
+use software_plant::remote::{Metadata, Related, RelatedFault, Remote, RemoteScenario};
 
 use crate::common::oauth::{
-    KEY, coded, exchange, fetch, metadata, refresh, register, send_refresh,
+    KEY, coded, exchange, fetch, metadata, parameter, refresh, register, related_metadata,
+    send_refresh,
 };
 use crate::common::remote::{spec, wire, with_criterion};
+use crate::common::resources::{RELATED_RESOURCES, origin_of};
 use crate::remote_contract::{assert_problem, holding, post};
 use crate::remote_contract_writes::{import_body, publish_body};
 
@@ -56,6 +60,169 @@ fn each_misconfigured_metadata_serves_what_its_scenario_names() {
         endpoint.starts_with("http://") && !endpoint.starts_with("http://127.0.0.1"),
         "{endpoint}"
     );
+}
+
+#[test]
+fn each_misserved_related_resource_serves_what_its_scenario_names() {
+    let faults = [
+        ("other", RelatedFault::UnderAnotherIssuer),
+        ("misnamed", RelatedFault::Misnamed),
+        ("nameless", RelatedFault::Unnamed),
+        ("unscoped", RelatedFault::Scopeless),
+        ("empty", RelatedFault::EmptyScopes),
+        ("unreadable", RelatedFault::Unreadable),
+        ("array", RelatedFault::NotAnObject),
+        ("relisting", RelatedFault::Relisting),
+    ];
+    let scenario = faults
+        .iter()
+        .fold(RemoteScenario::accepting(KEY), |scenario, (kind, fault)| {
+            scenario.relating(Related::new(kind, &[*kind]).faulty(*fault))
+        });
+    let remote = Remote::start(scenario);
+    let (resource, _) = metadata(&remote);
+    let listed: Vec<&Value> = resource[RELATED_RESOURCES]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|entry| &entry["kind"])
+        .collect();
+    let kinds = faults.map(|(kind, _)| json!(kind));
+    assert_eq!(listed, kinds.iter().collect::<Vec<_>>());
+    let answer_for = |kind: &str| related_metadata(&remote.related(kind));
+    for kind in [
+        "other", "misnamed", "nameless", "unscoped", "empty", "array",
+    ] {
+        assert_eq!(answer_for(kind).status, 200, "{kind}");
+    }
+    let issuer = json!(remote.issuer());
+    let other = answer_for("other").body;
+    let servers = other["authorization_servers"].as_array().unwrap();
+    assert!(!servers.is_empty() && !servers.contains(&issuer), "{other}");
+    let misnamed = answer_for("misnamed").body["resource"].clone();
+    assert!(misnamed.is_string(), "{misnamed}");
+    assert_ne!(misnamed, json!(remote.related("misnamed")));
+    assert!(answer_for("nameless").body.get("resource").is_none());
+    assert!(
+        answer_for("unscoped")
+            .body
+            .get("scopes_supported")
+            .is_none()
+    );
+    assert_eq!(answer_for("empty").body["scopes_supported"], json!([]));
+    assert_problem(&answer_for("unreadable"), 404, "not_found");
+    assert!(answer_for("array").body.is_array());
+    let relisting = answer_for("relisting");
+    assert_eq!(relisting.status, 200);
+    let mut faithful = relisting.body;
+    let relisted = faithful
+        .as_object_mut()
+        .and_then(|fields| fields.remove(RELATED_RESOURCES));
+    let listing = relisted.is_some_and(|list| list.as_array().is_some_and(|l| !l.is_empty()));
+    assert!(listing, "{faithful}");
+    assert_eq!(
+        faithful,
+        json!({
+            "resource": remote.related("relisting"),
+            "authorization_servers": [issuer],
+            "scopes_supported": ["relisting"],
+            "bearer_methods_supported": ["header"],
+        })
+    );
+}
+
+#[test]
+fn a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its_own_requests() {
+    let paths = |requests: Vec<Request>| -> Vec<String> {
+        requests.into_iter().map(|request| request.path).collect()
+    };
+    let away = Related::new("away", &["away"]).faulty(RelatedFault::OnAnotherOrigin);
+    let remote = Remote::start(RemoteScenario::accepting(KEY).relating(away));
+    let (resource, _) = metadata(&remote);
+    let identifier = remote.related("away");
+    let elsewhere = origin_of(&identifier);
+    assert!(elsewhere.starts_with("http://127.0.0.1:"), "{elsewhere}");
+    assert_ne!(elsewhere, remote.origin());
+    assert_eq!(
+        resource[RELATED_RESOURCES],
+        json!([{ "resource": identifier, "kind": "away" }])
+    );
+    assert!(remote.requests_elsewhere().is_empty());
+    let answer = related_metadata(&identifier);
+    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(
+        answer.body,
+        json!({
+            "resource": identifier,
+            "authorization_servers": [remote.issuer()],
+            "scopes_supported": ["away"],
+            "bearer_methods_supported": ["header"],
+        })
+    );
+    let metadata_path = "/.well-known/oauth-protected-resource";
+    let away_metadata = format!("{metadata_path}/away");
+    assert_eq!(paths(remote.requests_elsewhere()), [away_metadata.as_str()]);
+    let first = paths(remote.requests());
+    assert!(
+        first.iter().all(|path| !path.ends_with("/away")),
+        "{first:?}"
+    );
+
+    let moved = Remote::start(RemoteScenario::accepting(KEY).metadata(Metadata::OnAnotherOrigin));
+    let (challenge, resource, _) = fetch(&moved.address());
+    let named = parameter(&challenge, "resource_metadata").unwrap();
+    let elsewhere = origin_of(&named);
+    assert!(elsewhere.starts_with("http://127.0.0.1:"), "{challenge}");
+    assert_ne!(elsewhere, moved.origin());
+    assert_eq!(
+        resource,
+        json!({
+            "resource": format!("{elsewhere}/documents"),
+            "authorization_servers": [moved.issuer()],
+            "scopes_supported": ["documents"],
+            "bearer_methods_supported": ["header"],
+        })
+    );
+    let documents_metadata = format!("{metadata_path}/documents");
+    assert_eq!(
+        paths(moved.requests_elsewhere()),
+        [documents_metadata.as_str()]
+    );
+    let first = paths(moved.requests());
+    assert!(
+        first.iter().all(|path| !path.starts_with(metadata_path)),
+        "{first:?}"
+    );
+}
+
+#[test]
+fn a_scripted_listing_of_related_resources_is_served_as_scripted() {
+    let scripted = [
+        json!([]),
+        json!("x"),
+        json!(["{origin}/notes"]),
+        json!([{ "resource": "{origin}/notes" }]),
+        json!([
+            { "resource": "{origin}/notes", "kind": "notes" },
+            { "resource": "{origin}/notes", "kind": "inbox" },
+        ]),
+        json!([{ "resource": "{origin}/documents", "kind": "documents" }]),
+    ];
+    for raw in scripted {
+        let remote = Remote::start(RemoteScenario::accepting(KEY).listing(raw.clone()));
+        let (resource, _) = metadata(&remote);
+        let read = raw.to_string().replace("{origin}", remote.origin());
+        let expected: Value = serde_json::from_str(&read).unwrap();
+        assert_eq!(resource.get(RELATED_RESOURCES), Some(&expected), "{raw}");
+    }
+    let both = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .relating(Related::new("notes", &["notes"]))
+            .listing(json!([])),
+    );
+    let (resource, _) = metadata(&both);
+    assert_eq!(resource.get(RELATED_RESOURCES), Some(&json!([])));
+    assert_eq!(related_metadata(&both.related("notes")).status, 200);
 }
 
 #[test]

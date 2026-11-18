@@ -34,7 +34,7 @@ impl State {
         let mut response = refusal("unauthenticated");
         let metadata = format!(
             "{}/.well-known/oauth-protected-resource{}",
-            self.origin,
+            self.metadata_origin(),
             super::RESOURCE
         );
         let scope = match self.scenario.metadata {

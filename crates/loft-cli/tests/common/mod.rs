@@ -9,6 +9,7 @@ pub mod connected;
 pub mod npm;
 pub mod oauth;
 pub mod remote;
+pub mod resources;
 pub mod signed_in;
 pub mod telemetry;
 

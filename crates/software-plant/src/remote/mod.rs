@@ -6,12 +6,15 @@
 //!
 //! The document lies at `<origin>/documents/<key>`, the address the binary is given. The
 //! authorization server's issuer is `<origin>/auth`, and both metadata documents lie under
-//! `<origin>/.well-known/`. A publish is published with the Format's own publisher, made as the
-//! document's remote, so its labels and its lock are the ones a remote would return.
+//! `<origin>/.well-known/`, beside the metadata of each related resource a scenario lists. What a
+//! scenario places on another origin lies on a second port of the loopback interface. A publish
+//! is published with the Format's own publisher, made as the document's remote, so its labels and
+//! its lock are the ones a remote would return.
 
 mod documents;
 mod oauth;
 pub mod problem;
+mod related;
 mod scenario;
 mod skill;
 pub mod wire;
@@ -27,6 +30,7 @@ use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
 
 pub use documents::misstated_root;
 pub use oauth::Grant;
+pub use related::{Related, RelatedFault};
 use scenario::{Call, Held, Misstating, Mode};
 pub use scenario::{Consent, Metadata, RemoteScenario};
 
@@ -57,6 +61,9 @@ impl StoredState {
 struct State {
     scenario: RemoteScenario,
     origin: String,
+    /// The origin of the second port, which stands for another origin, if the scenario places
+    /// metadata there.
+    elsewhere: Option<String>,
     held: Option<Held>,
     replies: HashMap<String, Value>,
     auth: oauth::Auth,
@@ -73,6 +80,8 @@ impl State {
 /// A running remote simulator.
 pub struct Remote {
     server: Option<Server>,
+    /// The second port, which stands for another origin, if the scenario places metadata there.
+    elsewhere: Option<Server>,
     origin: String,
     key: String,
     state: Arc<Mutex<State>>,
@@ -85,26 +94,30 @@ impl Remote {
     pub fn start(mut scenario: RemoteScenario) -> Self {
         let key = scenario.key.clone();
         let refusing = matches!(scenario.mode, Mode::Refusing);
+        let placed_elsewhere = scenario.places_elsewhere();
         let state = Arc::new(Mutex::new(State {
             held: scenario.held.take(),
             scenario,
             origin: String::new(),
+            elsewhere: None,
             replies: HashMap::new(),
             auth: oauth::Auth::default(),
             answer_lost: false,
         }));
-        let (server, origin) = if refusing {
-            (None, refusing_url())
+        let (server, origin) = listen(&state, refusing, route);
+        let (elsewhere, elsewhere_origin) = if placed_elsewhere {
+            let (server, origin) = listen(&state, refusing, related::elsewhere);
+            (server, Some(origin))
         } else {
-            let server = Server::start(Simulated {
-                state: Arc::clone(&state),
-            });
-            let origin = server.url();
-            (Some(server), origin)
+            (None, None)
         };
-        lock(&state).origin.clone_from(&origin);
+        let mut locked = lock(&state);
+        locked.origin.clone_from(&origin);
+        locked.elsewhere = elsewhere_origin;
+        drop(locked);
         Self {
             server,
+            elsewhere,
             origin,
             key,
             state,
@@ -123,10 +136,46 @@ impl Remote {
         format!("{}/documents/{}", self.origin, self.key)
     }
 
+    /// The document's protected resource, as `<origin>/documents`.
+    #[must_use]
+    pub fn resource(&self) -> String {
+        lock(&self.state).resource()
+    }
+
+    /// The issuer of the simulator's authorization server, as `<origin>/auth`.
+    #[must_use]
+    pub fn issuer(&self) -> String {
+        lock(&self.state).issuer()
+    }
+
+    /// The identifier that the document's protected resource metadata lists for the first
+    /// related resource of `kind`.
+    ///
+    /// # Panics
+    ///
+    /// The scenario relates no resource of `kind`.
+    #[must_use]
+    pub fn related(&self, kind: &str) -> String {
+        lock(&self.state)
+            .related_identifier(kind)
+            .unwrap_or_else(|| panic!("the scenario relates no resource of the kind {kind}"))
+    }
+
     /// Every request received so far, in the order received.
     #[must_use]
     pub fn requests(&self) -> Vec<Request> {
         self.server
+            .as_ref()
+            .map(Server::requests)
+            .unwrap_or_default()
+    }
+
+    /// Every request that the second port received so far, in the order received: the port of
+    /// the loopback interface that stands for another origin, which a scenario starts when it
+    /// places metadata there.
+    #[must_use]
+    pub fn requests_elsewhere(&self) -> Vec<Request> {
+        self.elsewhere
             .as_ref()
             .map(Server::requests)
             .unwrap_or_default()
@@ -182,8 +231,28 @@ fn lock(state: &Mutex<State>) -> std::sync::MutexGuard<'_, State> {
     state.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
+/// The answer of an accepting simulator to a request on one of its ports.
+type Route = fn(&mut State, &Request) -> Response;
+
+/// A server on a free port of the loopback interface that answers from `state` by `route`, and
+/// its origin; or, for a refusing scenario, no server and a port where nothing listens.
+fn listen(state: &Arc<Mutex<State>>, refusing: bool, route: Route) -> (Option<Server>, String) {
+    if refusing {
+        return (None, refusing_url());
+    }
+    let server = Server::start(Simulated {
+        state: Arc::clone(state),
+        route,
+    });
+    let origin = server.url();
+    (Some(server), origin)
+}
+
+/// A port of the simulator: its state, shared with the test and its other port, and how it
+/// answers a scenario that accepts.
 struct Simulated {
     state: Arc<Mutex<State>>,
+    route: Route,
 }
 
 impl Responder for Simulated {
@@ -195,7 +264,7 @@ impl Responder for Simulated {
                 Some(code) => problem::problem(*status, code, serde_json::Map::new()),
                 None => problem::plain(*status),
             },
-            Mode::Accepting | Mode::Refusing => route(&mut state, request),
+            Mode::Accepting | Mode::Refusing => (self.route)(&mut state, request),
         };
         let retry = state
             .scenario
@@ -221,7 +290,7 @@ impl Responder for Simulated {
     }
 }
 
-/// The answer of an accepting simulator, by the request's path.
+/// The answer of an accepting simulator on its origin, by the request's path.
 fn route(state: &mut State, request: &Request) -> Response {
     let (path, query) = request
         .path
@@ -243,8 +312,8 @@ fn route(state: &mut State, request: &Request) -> Response {
         "/auth/authorize" => only("GET", request, || oauth::authorize(state, query)),
         "/auth/token" => only("POST", request, || oauth::token(state, request)),
         skill::MANIFEST => only("GET", request, || skill::manifest(state)),
-        _ => match skill::package(state, path) {
-            Some(package) => only("GET", request, || package),
+        _ => match skill::package(state, path).or_else(|| state.related_metadata(&request.path)) {
+            Some(answer) => only("GET", request, || answer),
             None => problem::refusal("not_found"),
         },
     }
