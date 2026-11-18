@@ -207,12 +207,29 @@ impl Remote {
     }
 
     /// A sign-in issued without a browser, as an accepted exchange would issue it: a registered
-    /// client, an access token and a refresh token.
+    /// client, an access token for the document's protected resource and a refresh token.
     #[must_use]
     pub fn grant(&self) -> Grant {
+        self.grant_over(&[self.resource().as_str()])
+    }
+
+    /// A sign-in over `resources` issued without a browser: a registered client, an access token
+    /// for each resource alone, the first of them as `access_token`, and one refresh token. The
+    /// sign-in is granted every scope that a resource it holds accepts. A resource the scenario
+    /// does not serve, such as one it served before, accepts no scope, and its access token is
+    /// admitted by that resource alone.
+    #[must_use]
+    pub fn grant_over(&self, resources: &[&str]) -> Grant {
         let mut state = lock(&self.state);
         let expires_in = state.scenario.expires_in;
-        state.auth.grant(expires_in)
+        let accepted: Vec<(String, Vec<String>)> = resources
+            .iter()
+            .map(|resource| {
+                let scopes = state.accepted(resource).unwrap_or_default();
+                ((*resource).to_owned(), scopes)
+            })
+            .collect();
+        state.auth.grant(expires_in, &accepted)
     }
 
     /// Moves the simulator's clock on by `by`, without waiting.
@@ -220,10 +237,18 @@ impl Remote {
         lock(&self.state).auth.moved += by;
     }
 
-    /// Whether the access token `token` is admitted now.
+    /// Whether a request under the document's address bearing `token` is admitted now.
     #[must_use]
     pub fn admits(&self, token: &str) -> bool {
         lock(&self.state).admits(token)
+    }
+
+    /// Whether the protected resource `resource` admits the access token `token` now: a token
+    /// the simulator issued for that resource, not yet expired, of a sign-in it has not revoked.
+    /// A related resource has no routes of its own, so a test asks this in place of a request.
+    #[must_use]
+    pub fn admits_at(&self, resource: &str, token: &str) -> bool {
+        lock(&self.state).auth.admits_at(resource, token)
     }
 }
 

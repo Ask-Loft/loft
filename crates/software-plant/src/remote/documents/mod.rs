@@ -25,9 +25,10 @@ use states::{draft, published};
 pub use head::misstated_root;
 
 impl State {
-    /// Whether a request bearing `token` is admitted.
+    /// Whether a request under the document's address bearing `token` is admitted: the bearer
+    /// token its scenario names, or an access token issued for the document's protected resource.
     pub(super) fn admits(&self, token: &str) -> bool {
-        token == TOKEN || self.auth.admits(token)
+        token == TOKEN || self.auth.admits_at(&self.resource(), token)
     }
 
     fn challenge(&self) -> Response {

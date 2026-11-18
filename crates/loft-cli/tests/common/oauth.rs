@@ -1,8 +1,9 @@
 //! The calls a contract suite makes of a remote's authorization server, as OAuth 2.0 shapes them,
 //! of the simulator and of a real remote alike: the two metadata documents found from the
 //! challenge of a request without a token, the parameters of that challenge, the metadata of a
-//! related resource, the registration of a public client, an authorization request with PKCE and
-//! the redirect that answers it, the exchange of its code, and a refresh.
+//! related resource, the registration of a public client, an authorization request with PKCE for
+//! one protected resource or more and the redirect that answers it, the exchange of its code, a
+//! refresh, and the OAuth error answer that refuses one.
 
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
@@ -19,6 +20,9 @@ const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 pub const KEY: &str = "01a18e30-0000-7000-8000-000000000010";
 /// The redirect URI a client registers, on the loopback interface.
 pub const REDIRECT: &str = "http://127.0.0.1/callback";
+/// The redirect URI of every authorization request and exchange: the registered one, on a port
+/// of its own.
+const CALLBACK: &str = "http://127.0.0.1:4567/callback";
 
 /// The protected resource metadata and the authorization server metadata of `remote`'s
 /// document.
@@ -125,26 +129,42 @@ pub fn authorize(
     resource: &str,
     overrides: &[(&str, &str)],
 ) -> Answer {
+    authorized(server, client, &[resource], "documents", overrides)
+}
+
+/// The answer to an authorization request of `client` that names `resource` once for each of
+/// `resources`, none, one or more, and asks for `scope`.
+pub fn authorize_for(server: &Value, client: &str, resources: &[&str], scope: &str) -> Answer {
+    authorized(server, client, resources, scope, &[])
+}
+
+/// The answer to an authorization request of `client` for `resources` and `scope`, with
+/// `overrides` replacing the first parameter of each name.
+fn authorized(
+    server: &Value,
+    client: &str,
+    resources: &[&str],
+    scope: &str,
+    overrides: &[(&str, &str)],
+) -> Answer {
     let challenge = base64url(&sha256(VERIFIER.as_bytes()));
-    let mut parameters = [
-        ("response_type", "code".to_owned()),
-        ("client_id", client.to_owned()),
-        ("redirect_uri", "http://127.0.0.1:4567/callback".to_owned()),
-        ("scope", "documents".to_owned()),
-        ("resource", resource.to_owned()),
-        ("state", "the-state".to_owned()),
-        ("code_challenge", challenge),
-        ("code_challenge_method", "S256".to_owned()),
+    let mut parameters = vec![
+        ("response_type", "code"),
+        ("client_id", client),
+        ("redirect_uri", CALLBACK),
+        ("scope", scope),
     ];
+    parameters.extend(resources.iter().map(|resource| ("resource", *resource)));
+    parameters.extend([
+        ("state", "the-state"),
+        ("code_challenge", challenge.as_str()),
+        ("code_challenge_method", "S256"),
+    ]);
     for (name, value) in overrides {
         if let Some(entry) = parameters.iter_mut().find(|(field, _)| field == name) {
-            (*value).clone_into(&mut entry.1);
+            entry.1 = *value;
         }
     }
-    let parameters: Vec<(&str, &str)> = parameters
-        .iter()
-        .map(|(name, value)| (*name, value.as_str()))
-        .collect();
     let url = format!(
         "{}?{}",
         server["authorization_endpoint"].as_str().unwrap(),
@@ -157,10 +177,7 @@ pub fn authorize(
 pub fn location(answer: &Answer) -> Vec<(String, String)> {
     assert_eq!(answer.status, 302, "{:?}", answer.body);
     let location = answer.header("location").unwrap();
-    assert!(
-        location.starts_with("http://127.0.0.1:4567/callback?"),
-        "{location}"
-    );
+    assert!(location.starts_with(&format!("{CALLBACK}?")), "{location}");
     pairs(location.split_once('?').unwrap().1)
 }
 
@@ -191,20 +208,46 @@ pub fn coded(remote: &Remote) -> (Value, String, String, String) {
     (server, client, resource, code)
 }
 
+/// A client registered on `remote` and the code it was given for an authorization request that
+/// names each of `resources` and asks for `scope`, with the authorization server's metadata.
+pub fn coded_for(remote: &Remote, resources: &[&str], scope: &str) -> (Value, String, String) {
+    let (_, server) = metadata(remote);
+    let client = registered(&server);
+    let answer = authorize_for(&server, &client, resources, scope);
+    let code = value(&location(&answer), "code")
+        .expect("a code")
+        .to_owned();
+    (server, client, code)
+}
+
 /// The answer to an exchange of `code` for tokens, with the verifier and the redirect it was
 /// given for.
 pub fn exchange(server: &Value, client: &str, resource: &str, code: &str) -> Answer {
-    form(
-        server["token_endpoint"].as_str().unwrap(),
-        &[
-            ("grant_type", "authorization_code"),
-            ("code", code),
-            ("redirect_uri", "http://127.0.0.1:4567/callback"),
-            ("client_id", client),
-            ("code_verifier", VERIFIER),
-            ("resource", resource),
-        ],
-    )
+    exchange_for(server, client, &[resource], code)
+}
+
+/// The answer to an exchange of `code` for tokens, with the verifier and the redirect it was
+/// given for, that names `resource` once for each of `resources`, none, one or more.
+pub fn exchange_for(server: &Value, client: &str, resources: &[&str], code: &str) -> Answer {
+    let mut fields = vec![
+        ("grant_type", "authorization_code"),
+        ("code", code),
+        ("redirect_uri", CALLBACK),
+        ("client_id", client),
+        ("code_verifier", VERIFIER),
+    ];
+    fields.extend(resources.iter().map(|resource| ("resource", *resource)));
+    form(server["token_endpoint"].as_str().unwrap(), &fields)
+}
+
+/// Requires `answer` to be an OAuth 2.0 error answer of `error` at `400 Bad Request`.
+pub fn assert_oauth_error(answer: &Answer, error: &str) {
+    assert_eq!(
+        (answer.status, &answer.body["error"]),
+        (400, &json!(error)),
+        "{:?}",
+        answer.body
+    );
 }
 
 /// The answer to a refresh of `token`.

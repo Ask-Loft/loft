@@ -18,18 +18,25 @@ pub(crate) fn document_metadata(state: &State, origin: &str) -> Value {
         Metadata::MisnamedResource => format!("{origin}/elsewhere"),
         _ => format!("{origin}{RESOURCE}"),
     };
-    let scopes = match &state.scenario.metadata {
-        Metadata::Unscoped(scopes) => json!(scopes),
-        _ => json!([state.scenario.scope]),
-    };
     let mut metadata = json!({
         "resource": resource,
         "authorization_servers": [state.issuer()],
-        "scopes_supported": scopes,
+        "scopes_supported": state.document_scopes(),
         "bearer_methods_supported": ["header"],
     });
     state.list_related(&mut metadata);
     metadata
+}
+
+impl State {
+    /// The scopes that the document's protected resource metadata lists in `scopes_supported`:
+    /// those a scenario that names no challenged scope names, or else the challenged scope.
+    pub(crate) fn document_scopes(&self) -> Vec<String> {
+        match &self.scenario.metadata {
+            Metadata::Unscoped(scopes) => scopes.clone(),
+            _ => vec![self.scenario.scope.clone()],
+        }
+    }
 }
 
 pub(crate) fn server_metadata(state: &State) -> Response {

@@ -1,9 +1,11 @@
-//! The token endpoint: a code exchanged once, with its verifier, its redirect and its resource,
-//! for an access token and a refresh token; and a refresh, which rotates the refresh token,
-//! answers a rotated one again within the grace window until its successor is presented, and
-//! revokes the whole sign-in otherwise.
+//! The token endpoint: a code exchanged once, with its verifier, its redirect and one resource its
+//! authorization request named, for an access token for that resource alone and a refresh token
+//! for the sign-in; and a refresh, which rotates the refresh token, answers a rotated one again
+//! within the grace window until its successor is presented, and revokes the whole sign-in
+//! otherwise. A resource the scenario does not serve, or none, is refused before the code is
+//! read.
 
-use super::{Form, Rotation};
+use super::{Form, Issued, Rotation};
 use crate::http::{Request, Response};
 use crate::remote::State;
 use crate::remote::problem::oauth;
@@ -26,10 +28,14 @@ pub(crate) fn token(state: &mut State, request: &Request) -> Response {
 }
 
 fn exchange(state: &mut State, form: &Form) -> Response {
+    let field = |name| form.field(name);
+    let resource = field("resource");
+    let Some(accepted) = state.accepted(&resource) else {
+        return oauth("invalid_target");
+    };
     if let Some(error) = &state.scenario.refused_exchange {
         return oauth(error);
     }
-    let field = |name| form.field(name);
     let Some(code) = state.auth.codes.get_mut(&field("code")) else {
         return oauth("invalid_grant");
     };
@@ -41,17 +47,18 @@ fn exchange(state: &mut State, form: &Form) -> Response {
     {
         return oauth("invalid_grant");
     }
-    if code.resource != field("resource") {
+    if !code.resources.contains(&resource) {
         return oauth("invalid_target");
     }
     code.used = true;
-    let client_id = code.client_id.clone();
-    let family = state.auth.sign_in();
-    let (expires_in, scope) = (state.scenario.expires_in, state.scenario.scope.clone());
-    Response::json(
-        200,
-        &state.auth.issue(family, &client_id, expires_in, &scope),
-    )
+    let (client_id, scopes) = (code.client_id.clone(), code.scopes.clone());
+    let family = state.auth.sign_in(scopes);
+    let token = Issued {
+        resource: &resource,
+        accepted: &accepted,
+        expires_in: state.scenario.expires_in,
+    };
+    Response::json(200, &state.auth.issue(family, &client_id, &token))
 }
 
 fn refresh(state: &mut State, form: &Form) -> Response {
@@ -78,8 +85,14 @@ fn refresh(state: &mut State, form: &Form) -> Response {
         return oauth("invalid_grant");
     }
     let client_id = entry.client_id.clone();
-    let (expires_in, scope) = (state.scenario.expires_in, state.scenario.scope.clone());
-    let answer = state.auth.issue(family, &client_id, expires_in, &scope);
+    let resource = field("resource");
+    let accepted = state.accepted(&resource).unwrap_or_default();
+    let token = Issued {
+        resource: &resource,
+        accepted: &accepted,
+        expires_in: state.scenario.expires_in,
+    };
+    let answer = state.auth.issue(family, &client_id, &token);
     let at = state.auth.now();
     if let Some(entry) = state.auth.refresh.get_mut(&presented) {
         entry.rotated = Some(Rotation {

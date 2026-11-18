@@ -8,11 +8,12 @@ use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 use software_plant::http::Request;
+use software_plant::remote::wire::value;
 use software_plant::remote::{Metadata, Related, RelatedFault, Remote, RemoteScenario};
 
 use crate::common::oauth::{
-    KEY, coded, exchange, fetch, metadata, parameter, refresh, register, related_metadata,
-    send_refresh,
+    KEY, authorize_for, coded, exchange, fetch, location, metadata, parameter, refresh, register,
+    registered, related_metadata, send_refresh,
 };
 use crate::common::remote::{spec, wire, with_criterion};
 use crate::common::resources::{RELATED_RESOURCES, origin_of};
@@ -129,6 +130,42 @@ fn each_misserved_related_resource_serves_what_its_scenario_names() {
             "bearer_methods_supported": ["header"],
         })
     );
+}
+
+#[test]
+fn an_authorization_request_for_a_misserved_related_resource_is_refused_invalid_target() {
+    let faults = [
+        ("other", RelatedFault::UnderAnotherIssuer),
+        ("misnamed", RelatedFault::Misnamed),
+        ("nameless", RelatedFault::Unnamed),
+        ("unscoped", RelatedFault::Scopeless),
+        ("empty", RelatedFault::EmptyScopes),
+        ("unreadable", RelatedFault::Unreadable),
+        ("array", RelatedFault::NotAnObject),
+        ("relisting", RelatedFault::Relisting),
+        ("away", RelatedFault::OnAnotherOrigin),
+    ];
+    let scenario = faults
+        .iter()
+        .fold(RemoteScenario::accepting(KEY), |scenario, (kind, fault)| {
+            scenario.relating(Related::new(kind, &[*kind]).faulty(*fault))
+        });
+    let remote = Remote::start(scenario);
+    let (_, server) = metadata(&remote);
+    let client = registered(&server);
+    let own = remote.resource();
+    // Each asks for the scope its scenario names for it, which no other resource accepts, so a
+    // resource judged after the scope would be refused `invalid_scope`.
+    for (kind, _) in faults {
+        let related = remote.related(kind);
+        let scope = format!("documents {kind}");
+        let answer = authorize_for(&server, &client, &[&own, &related], &scope);
+        let redirected = location(&answer);
+        let refused = (kind != "relisting").then_some("invalid_target");
+        assert_eq!(value(&redirected, "error"), refused, "{kind}");
+        let coded = value(&redirected, "code").is_some();
+        assert_eq!(coded, refused.is_none(), "{kind}");
+    }
 }
 
 #[test]

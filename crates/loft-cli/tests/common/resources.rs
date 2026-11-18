@@ -1,7 +1,9 @@
 //! What the contract suites of a remote's related resources share, of the simulator and of a
 //! real remote alike: the member of the remote's protected resource metadata that lists them, the
-//! list read from it, and the origin an address lies on.
+//! list read from it, the origin an address lies on, and a document's head asked for with an
+//! access token.
 
+use super::calls::{Answer, call};
 use super::oauth::fetch;
 
 /// The member of a remote's protected resource metadata that lists its related resources.
@@ -58,4 +60,10 @@ pub fn origin_of(url: &str) -> String {
         _ => &authority,
     };
     format!("{scheme}://{host_and_port}")
+}
+
+/// The answer to `GET <address>/head` with the bearer token `token`, as a client signed in to the
+/// document at `address` asks for its head.
+pub fn head_with(address: &str, token: &str) -> Answer {
+    call("GET", &format!("{address}/head"), Some(token), None)
 }
