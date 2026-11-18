@@ -66,9 +66,9 @@ requirements:
       - key: 01a1eb26-527d-769d-91c8-de421f7bdffb
         name: "The agent is not told that the person rejected the plan."
       - key: 01a1eb26-527d-769d-91c8-de43087d0ee9
-        name: "The agent's result keeps the host's own text and names the plan's submission to wait on with `yard_wait`."
+        name: "The agent's result names the plan's submission to wait on with `yard_wait` before the host's own text, which it keeps."
       - key: 01a1eb26-527d-769d-91c8-de44b8a1b37e
-        name: "The agent's `yard_wait` on that submission gives the decision the person makes on the page."
+        name: "The agent's `yard_wait` on that submission gives the decision the person makes on the page, while the plugin's PermissionRequest hook still waits on it."
   - key: 01a1646f-546c-7521-9643-bc4a2205071d
     statement:
       form: event_driven

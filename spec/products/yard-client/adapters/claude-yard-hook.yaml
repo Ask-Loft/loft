@@ -117,6 +117,8 @@ requirements:
         name: "A rejection on the page answers `deny` with the person's reason in the message."
       - key: 01a183e9-dfd2-74b1-a45a-14b7303150a4
         name: "A decision made in the terminal first ends the wait, and the hook answers nothing."
+      - key: 01a1f026-48d1-7180-bbb4-84c74fe2f2ed
+        name: "The hook's wait takes no lease on the submission, so the agent's own `yard_wait` on it is not refused while the hook waits."
       - key: 01a183e9-dfd2-74b1-a45a-14b8d540956c
         name: "With no such submission open, the hook answers nothing at once."
       - key: 01a183e9-dfd2-74b1-a45a-14b9db7714f2
