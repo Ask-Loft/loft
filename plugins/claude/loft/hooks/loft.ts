@@ -19,7 +19,7 @@ export const DEFAULT_PORT = 7411
 export type Settings = { words: string[]; base: string; port: number; listen: string[]; protocol?: number }
 
 /** The addresses the `yardListen` setting names, separated by commas or spaces. */
-export function addressesOf(setting: unknown): string[] {
+function addressesOf(setting: unknown): string[] {
   return typeof setting === 'string' ? setting.split(/[\s,]+/).filter(address => address !== '') : []
 }
 

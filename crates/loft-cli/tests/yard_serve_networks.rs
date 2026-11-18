@@ -2,38 +2,40 @@
 //! addresses, and then on each of them and on the loopback interface; an address the machine
 //! lacks leaves the page served elsewhere; and `--listen` takes IP addresses alone.
 
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv6Addr};
 use std::time::Duration;
 
-use crate::served::{Served, machine_address};
+use crate::served::{LOOPBACK, Served, machine_address};
 use crate::yard::Yard;
-
-const LOOPBACK: IpAddr = IpAddr::V4(std::net::Ipv4Addr::LOCALHOST);
 
 #[test]
 fn without_listen_the_page_server_listens_on_every_address_of_the_machine() {
     let yard = Yard::new();
-    let served = Served::start_on_every_address(&yard, &[]);
-    let machine = machine_address();
-    assert_eq!(served.version_at(machine).status, 200);
+    let served = Served::start(&yard, &[]);
+    assert_eq!(served.version_at(machine_address()).status, 200);
     assert_eq!(served.version_at(LOOPBACK).status, 200);
 }
 
 #[test]
 fn listen_serves_on_the_address_it_names_and_on_the_loopback_interface() {
     let yard = Yard::new();
-    let machine = machine_address().to_string();
-    let served = Served::start(&yard, &["--listen", &machine]);
-    assert_eq!(served.version_at(machine_address()).status, 200);
+    let machine = machine_address();
+    let served = Served::start(&yard, &["--listen", &machine.to_string()]);
+    assert_eq!(served.version_at(machine).status, 200);
     assert_eq!(served.version_at(LOOPBACK).status, 200);
 }
 
 #[test]
 fn listen_may_be_given_more_than_once_and_serves_on_each_address() {
     let yard = Yard::new();
-    let machine = machine_address().to_string();
-    let served = Served::start(&yard, &["--listen", &machine, "--listen", "127.0.0.1"]);
-    assert_eq!(served.version_at(machine_address()).status, 200);
+    let machine = machine_address();
+    let ipv6_loopback = IpAddr::V6(Ipv6Addr::LOCALHOST);
+    let served = Served::start(
+        &yard,
+        &["--listen", &machine.to_string(), "--listen", "::1"],
+    );
+    assert_eq!(served.version_at(machine).status, 200);
+    assert_eq!(served.version_at(ipv6_loopback).status, 200);
     assert_eq!(served.version_at(LOOPBACK).status, 200);
 }
 

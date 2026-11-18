@@ -6,6 +6,7 @@
 //! token instead.
 
 use super::http::{Request, Response};
+use super::listener::Reached;
 
 /// What a request does.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -16,27 +17,16 @@ pub enum Access {
     Change,
 }
 
-/// The page server's own addresses, as a `Host` names them: `localhost` at `port`, and the
-/// address of the machine the request `reached`, or the loopback address where that is unknown.
-fn hosts(reached: Option<&str>, port: u16) -> [String; 2] {
-    [
-        format!("localhost:{port}"),
-        reached.map_or_else(|| format!("127.0.0.1:{port}"), str::to_owned),
-    ]
-}
-
 /// Whether `request`, which reached the address `reached` of the machine, may be answered, or the
 /// refusal that answers it instead.
 pub fn admit(
     request: &Request,
     access: Access,
-    reached: Option<&str>,
-    port: u16,
+    reached: Reached,
     token: &str,
 ) -> Result<(), Response> {
-    let own = hosts(reached, port);
     let host = request.header("host").unwrap_or_default();
-    if !own.iter().any(|own| own.eq_ignore_ascii_case(host)) {
+    if !reached.is_named_by(host) {
         return Err(Response::refused(
             403,
             "host",
@@ -47,9 +37,10 @@ pub fn admit(
         return Ok(());
     }
     if let Some(origin) = request.header("origin") {
-        let from_page = own
-            .iter()
-            .any(|own| origin.eq_ignore_ascii_case(&format!("http://{own}")));
+        let from_page = origin
+            .get(.."http://".len())
+            .is_some_and(|scheme| scheme.eq_ignore_ascii_case("http://"))
+            && reached.is_named_by(&origin["http://".len()..]);
         return if from_page {
             Ok(())
         } else {

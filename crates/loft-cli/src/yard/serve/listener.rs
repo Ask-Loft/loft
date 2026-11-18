@@ -31,11 +31,27 @@ pub fn parse_address(text: &str) -> Result<Address, String> {
         .map_err(|_| format!("`{text}` is not an IP address"))
 }
 
+/// The address of the machine, and the port, that a connection reached.
+#[derive(Debug, Clone, Copy)]
+pub struct Reached(SocketAddr);
+
+impl Reached {
+    /// Whether `host`, as a `Host` names an address or an `Origin` after its scheme, names this
+    /// one: `localhost` or its IP address, at its port.
+    pub fn is_named_by(self, host: &str) -> bool {
+        if host.eq_ignore_ascii_case(&format!("localhost:{}", self.0.port())) {
+            return true;
+        }
+        host.parse::<SocketAddr>().is_ok_and(|named| {
+            named.port() == self.0.port() && named.ip().to_canonical() == self.0.ip().to_canonical()
+        })
+    }
+}
+
 /// A connection the page server accepted.
 pub struct Connection {
     stream: TcpStream,
-    /// The address of the machine the connection reached.
-    reached: Option<SocketAddr>,
+    reached: Reached,
 }
 
 impl Read for Connection {
@@ -61,16 +77,17 @@ impl Connection {
         let _ = self.stream.set_read_timeout(None);
     }
 
-    /// The address of the machine the connection reached, as a `Host` names it, such as
-    /// `192.168.1.5:7411` or `[fd7a::1]:7411`.
-    pub fn reached(&self) -> Option<String> {
-        self.reached.map(|address| address.to_string())
+    /// The address of the machine the connection reached.
+    pub fn reached(&self) -> Reached {
+        self.reached
     }
 }
 
-/// The sockets the page server listens on, and the addresses it waits for the machine to have.
+/// The sockets the page server listens on, the first on the loopback interface or on every
+/// address, and the addresses it waits for the machine to have.
 pub struct Listener {
-    sockets: Vec<TcpListener>,
+    first: TcpListener,
+    others: Vec<TcpListener>,
     missing: Vec<SocketAddr>,
 }
 
@@ -83,36 +100,40 @@ pub struct Listener {
 /// The port cannot be listened on, as when another program holds it.
 pub fn listen(port: u16, addresses: &[Address]) -> io::Result<Listener> {
     let loopback = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
-    let every = addresses.is_empty() || addresses.iter().any(|named| named.0.is_unspecified());
-    if every {
-        let any = addresses
-            .iter()
-            .find(|named| named.0.is_unspecified())
-            .map_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED), |named| named.0);
-        // Some platforms let a program listen on every address beside one that holds the
-        // loopback address alone; listening there first finds that program.
+    let unspecified = addresses.iter().find(|named| named.0.is_unspecified());
+    if addresses.is_empty() || unspecified.is_some() {
+        let every = unspecified.map_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED), |named| named.0);
+        // On macOS, the `SO_REUSEADDR` the standard library sets lets a socket listen on every
+        // address beside another program's on the loopback address alone; listening there
+        // first finds that program.
         drop(bind(loopback)?);
         return Ok(Listener {
-            sockets: vec![bind(SocketAddr::new(any, port))?],
+            first: bind(SocketAddr::new(every, port))?,
+            others: Vec::new(),
             missing: Vec::new(),
         });
     }
-    let mut sockets = vec![bind(loopback)?];
-    let mut missing = Vec::new();
-    let mut named: Vec<SocketAddr> = Vec::new();
-    for address in addresses.iter().map(|named| SocketAddr::new(named.0, port)) {
-        if address != loopback && !named.contains(&address) {
-            named.push(address);
-        }
-    }
+    let mut named: Vec<SocketAddr> = addresses
+        .iter()
+        .map(|named| SocketAddr::new(named.0, port))
+        .filter(|address| *address != loopback)
+        .collect();
+    named.sort_unstable();
+    named.dedup();
+    let first = bind(loopback)?;
+    let (mut others, mut missing) = (Vec::new(), Vec::new());
     for address in named {
         match bind(address) {
-            Ok(socket) => sockets.push(socket),
+            Ok(socket) => others.push(socket),
             Err(error) if error.kind() == io::ErrorKind::AddrNotAvailable => missing.push(address),
             Err(error) => return Err(error),
         }
     }
-    Ok(Listener { sockets, missing })
+    Ok(Listener {
+        first,
+        others,
+        missing,
+    })
 }
 
 /// The one place the page server takes a socket.
@@ -124,23 +145,22 @@ impl Listener {
     /// Takes each connection received on any of its sockets and hands it to `serve` on a thread
     /// of its own, and tries each address the machine did not have again every second, through
     /// `clock`, until it listens there too. It returns only where the first socket fails.
-    pub fn serve(
-        self,
-        clock: &'static (impl Clock + Sync),
-        serve: impl Fn(Connection) + Send + Sync + Clone + 'static,
-    ) {
-        let Self { sockets, missing } = self;
+    pub fn serve<F>(self, clock: &'static (impl Clock + Sync), serve: F)
+    where
+        F: Fn(Connection) + Send + Sync + Clone + 'static,
+    {
+        let Self {
+            first,
+            others,
+            missing,
+        } = self;
         if !missing.is_empty() {
             let serve = serve.clone();
             thread::spawn(move || {
                 take_missing(missing, bind, clock, |socket| accept_apart(socket, &serve));
             });
         }
-        let mut sockets = sockets.into_iter();
-        let Some(first) = sockets.next() else {
-            return;
-        };
-        for socket in sockets {
+        for socket in others {
             accept_apart(socket, &serve);
         }
         accept(&first, &serve);
@@ -148,23 +168,30 @@ impl Listener {
 }
 
 /// Takes the connections `socket` receives on a thread of its own.
-fn accept_apart(
-    socket: TcpListener,
-    serve: &(impl Fn(Connection) + Send + Sync + Clone + 'static),
-) {
+fn accept_apart<F>(socket: TcpListener, serve: &F)
+where
+    F: Fn(Connection) + Send + Sync + Clone + 'static,
+{
     let serve = serve.clone();
     thread::spawn(move || accept(&socket, &serve));
 }
 
-/// Hands each connection `socket` receives to `serve` on a thread of its own.
-fn accept(socket: &TcpListener, serve: &(impl Fn(Connection) + Send + Sync + Clone + 'static)) {
+/// Hands each connection `socket` receives to `serve` on a thread of its own; one whose address
+/// on the machine cannot be read is closed unread.
+fn accept<F>(socket: &TcpListener, serve: &F)
+where
+    F: Fn(Connection) + Send + Sync + Clone + 'static,
+{
     for stream in socket.incoming() {
         let Ok(stream) = stream else {
             continue;
         };
+        let Ok(reached) = stream.local_addr() else {
+            continue;
+        };
         let _ = stream.set_read_timeout(Some(READING));
-        let reached = stream.local_addr().ok();
         let serve = serve.clone();
+        let reached = Reached(reached);
         thread::spawn(move || serve(Connection { stream, reached }));
     }
 }
@@ -191,33 +218,14 @@ fn take_missing(
 
 #[cfg(test)]
 mod tests {
-    use std::cell::Cell;
-
-    use loft_ports::PortError;
+    use loft_ports::clock::SystemClock;
 
     use super::*;
-
-    /// A clock whose time passes only as it waits.
-    struct Waiting(Cell<Duration>);
-
-    impl Clock for Waiting {
-        fn now(&self) -> Result<u64, PortError> {
-            Ok(0)
-        }
-
-        fn elapsed(&self) -> Duration {
-            self.0.get()
-        }
-
-        fn wait(&self, length: Duration) {
-            self.0.set(self.0.get() + length);
-        }
-    }
 
     #[test]
     fn an_address_the_machine_gains_is_listened_on_within_5_seconds() {
         let appears = Duration::from_millis(3_500);
-        let clock = Waiting(Cell::new(Duration::ZERO));
+        let clock = SystemClock::with_epoch(Some("0")).passing_if(true);
         let gained = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(192, 0, 2, 1)), 7411);
         let mut tries = 0;
         let mut taken_at = None;
@@ -251,5 +259,18 @@ mod tests {
         assert!(parse_address("fd7a:115c:a1e0::1").is_ok());
         let refused = parse_address("machine.example.ts.net").unwrap_err();
         assert!(refused.contains("machine.example.ts.net"), "{refused}");
+    }
+
+    #[test]
+    fn a_host_names_the_address_reached_by_its_ip_address_or_localhost_at_its_port() {
+        let reached = Reached("192.168.1.5:7411".parse().unwrap());
+        assert!(reached.is_named_by("192.168.1.5:7411"));
+        assert!(reached.is_named_by("LOCALHOST:7411"));
+        assert!(!reached.is_named_by("192.168.1.5:7412"));
+        assert!(!reached.is_named_by("127.0.0.1:7411"));
+        assert!(!reached.is_named_by("machine.example.ts.net:7411"));
+        let mapped = Reached("[::ffff:192.168.1.5]:7411".parse().unwrap());
+        assert!(mapped.is_named_by("192.168.1.5:7411"));
+        assert!(Reached("[::1]:7411".parse().unwrap()).is_named_by("[::1]:7411"));
     }
 }

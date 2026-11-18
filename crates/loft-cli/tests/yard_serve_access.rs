@@ -21,15 +21,6 @@ fn asked() -> (Yard, Served) {
     (yard, served)
 }
 
-/// Yard Log with `q1` sent and a page server serving its tree on every address of the machine.
-fn asked_on_every_address() -> (Yard, Served) {
-    let yard = Yard::new();
-    yard.write("s1", ASK, &["--send"]);
-    let tree = yard.scratch.0.display().to_string();
-    let served = Served::start_on_every_address(&yard, &["--tree", &tree]);
-    (yard, served)
-}
-
 /// The page's answer to `q1`.
 fn answer(yard: &Yard) -> Value {
     json!({
@@ -68,7 +59,7 @@ fn a_request_with_another_host_is_refused_and_changes_no_file() {
 
 #[test]
 fn a_request_addressed_to_the_address_of_the_machine_it_reached_is_answered() {
-    let (_yard, served) = asked_on_every_address();
+    let (_yard, served) = asked();
     let machine = machine_address();
     assert_eq!(served.version_at(machine).status, 200);
     let elsewhere = served.send(
@@ -108,7 +99,7 @@ fn a_request_naming_the_machine_by_a_name_other_than_localhost_is_refused() {
 
 #[test]
 fn a_change_from_the_page_opened_at_another_address_is_accepted_without_the_control_token() {
-    let (yard, served) = asked_on_every_address();
+    let (yard, served) = asked();
     let machine = SocketAddr::new(machine_address(), served.port);
     let head =
         format!("POST /api/answer HTTP/1.1\r\nhost: {machine}\r\norigin: http://{machine}\r\n");

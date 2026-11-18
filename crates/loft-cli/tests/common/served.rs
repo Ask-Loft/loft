@@ -1,12 +1,11 @@
 //! A page server run by `loft yard serve` for a test, in front of the git simulator, and a small
 //! HTTP client that speaks to it over the loopback interface, or at another address of the
 //! machine. The client lives in the tests, not in `loft`, which opens no connection of its own but
-//! through its network client. A page server a test starts listens on the loopback interface
-//! alone, unless the test names its addresses or starts it on every address.
+//! through its network client.
 
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
-use std::net::{IpAddr, SocketAddr, TcpListener, TcpStream, UdpSocket};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::PathBuf;
 use std::process::Child;
 use std::sync::mpsc;
@@ -25,6 +24,9 @@ pub fn free_port() -> u16 {
         .unwrap()
         .port()
 }
+
+/// The loopback address.
+pub const LOOPBACK: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
 
 /// An address of the machine besides the loopback interface: the one it would reach the network
 /// from. No packet is sent to learn it.
@@ -92,23 +94,8 @@ impl Served {
         Self::start_with(yard, port, &[], extra)
     }
 
-    /// Starts `loft yard serve` on `port`, with `variables` set in its environment, on the
-    /// loopback interface alone unless `extra` names its addresses.
+    /// Starts `loft yard serve` on `port`, with `variables` set in its environment.
     pub fn start_with(yard: &Yard, port: u16, variables: &[(&str, &str)], extra: &[&str]) -> Self {
-        let mut args = extra.to_vec();
-        if !extra.contains(&"--listen") {
-            args.extend_from_slice(&["--listen", "127.0.0.1"]);
-        }
-        Self::start_as_given(yard, port, variables, &args)
-    }
-
-    /// Starts `loft yard serve` on a free port with no address named, so on every address of the
-    /// machine.
-    pub fn start_on_every_address(yard: &Yard, extra: &[&str]) -> Self {
-        Self::start_as_given(yard, free_port(), &[], extra)
-    }
-
-    fn start_as_given(yard: &Yard, port: u16, variables: &[(&str, &str)], extra: &[&str]) -> Self {
         let port_text = port.to_string();
         let mut args = vec!["serve", "--port", &port_text];
         args.extend_from_slice(extra);
@@ -130,7 +117,7 @@ impl Served {
 
     /// Sends `request`, whose head is complete but for its end, and reads the whole response.
     pub fn send(&self, head: &str, body: &[u8]) -> Reply {
-        self.send_at(IpAddr::from([127, 0, 0, 1]), head, body)
+        self.send_at(LOOPBACK, head, body)
     }
 
     /// Whether the page server takes a connection at `address` of the machine.
