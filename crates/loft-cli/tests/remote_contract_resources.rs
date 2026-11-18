@@ -3,6 +3,8 @@
 //!   metadata;
 //! - one authorization request for every resource, and a code exchanged for one of them.
 //!
+//! The refreshes of such a sign-in have a suite of their own, `remote_contract_refreshes.rs`.
+//!
 //! Each scenario runs against the simulator and, on demand, against the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS`: run a real half with
 //! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/<its name>/)'`. A scenario that

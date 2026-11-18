@@ -1,10 +1,17 @@
 //! What the contract suites of a remote's related resources share, of the simulator and of a
 //! real remote alike: the member of the remote's protected resource metadata that lists them, the
-//! list read from it, the origin an address lies on, and a document's head asked for with an
-//! access token.
+//! list read from it, the origin an address lies on, a document's head asked for with an access
+//! token, and a sign-in as a client keeps it, made on the simulator or kept by
+//! `loft remote login` for a real remote.
+
+use std::{env, fs};
+
+use serde_json::{Value, json};
+use software_plant::remote::Remote;
 
 use super::calls::{Answer, call};
-use super::oauth::fetch;
+use super::oauth::{coded_for, exchange, fetch, refresh};
+use super::signed_in::kept_sign_in;
 
 /// The member of a remote's protected resource metadata that lists its related resources.
 pub const RELATED_RESOURCES: &str = "related_resources";
@@ -66,4 +73,70 @@ pub fn origin_of(url: &str) -> String {
 /// document at `address` asks for its head.
 pub fn head_with(address: &str, token: &str) -> Answer {
     call("GET", &format!("{address}/head"), Some(token), None)
+}
+
+/// A sign-in to the remote of the document at `address`, as a client keeps it: the token
+/// endpoint, the client it was issued to, the protected resource it was made for, the access
+/// token issued for that resource, and the refresh token.
+pub struct Signed {
+    pub address: String,
+    pub token_endpoint: String,
+    pub client: String,
+    pub resource: String,
+    pub access_token: String,
+    pub refresh_token: String,
+}
+
+impl Signed {
+    /// The authorization server's metadata, as far as a refresh reads it: its token endpoint.
+    pub fn server(&self) -> Value {
+        json!({ "token_endpoint": self.token_endpoint })
+    }
+
+    /// The answer to a refresh of `token` by the sign-in's client that names `resource`.
+    pub fn refresh(&self, resource: &str, token: &str) -> Answer {
+        refresh(&self.server(), &self.client, resource, token)
+    }
+}
+
+/// A sign-in to `remote` made as a client makes one: a client registered, an authorization
+/// request that names each of `resources` and asks for `scope`, which the simulator consents to,
+/// and its code exchanged for the document's protected resource.
+pub fn signed_over(remote: &Remote, resources: &[&str], scope: &str) -> Signed {
+    let (server, client, code) = coded_for(remote, resources, scope);
+    let resource = remote.resource();
+    let answer = exchange(&server, &client, &resource, &code);
+    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    let field = |value: &Value, name: &str| value[name].as_str().unwrap().to_owned();
+    Signed {
+        address: remote.address(),
+        token_endpoint: field(&server, "token_endpoint"),
+        client,
+        resource,
+        access_token: field(&answer.body, "access_token"),
+        refresh_token: field(&answer.body, "refresh_token"),
+    }
+}
+
+/// The sign-in that `loft remote login` kept for the document at `LOFT_REMOTE_CONTRACT_ADDRESS`,
+/// read from the `loft/remotes.json` that `LOFT_REMOTE_CONTRACT_SIGN_IN` names.
+pub fn kept() -> Signed {
+    let address = env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
+    let file = env::var("LOFT_REMOTE_CONTRACT_SIGN_IN").expect("a loft/remotes.json");
+    let file: Value = serde_json::from_slice(&fs::read(file).unwrap()).unwrap();
+    let sign_in = kept_sign_in(&file, &address);
+    let field = |name: &str| {
+        sign_in[name]
+            .as_str()
+            .unwrap_or_else(|| panic!("premise: a sign-in kept for {address} with `{name}`"))
+            .to_owned()
+    };
+    Signed {
+        token_endpoint: field("tokenEndpoint"),
+        client: field("clientId"),
+        resource: field("resource"),
+        access_token: field("accessToken"),
+        refresh_token: field("refreshToken"),
+        address,
+    }
 }

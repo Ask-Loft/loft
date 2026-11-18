@@ -4,8 +4,8 @@
 //! whose port may differ from the registered one (RFC 8252), one sign-in over each protected
 //! resource its authorization request names (RFC 8707) with an access token for one resource
 //! alone, and refresh tokens that rotate on every use, with a grace window for one presented again
-//! and the whole sign-in revoked otherwise. Its clock runs from the machine's, moved on by the
-//! test.
+//! for the resource its rotation named and the whole sign-in revoked otherwise. Its clock runs
+//! from the machine's, moved on by the test.
 //!
 //! What the server holds and issues lies here; each endpoint lies in a module of its own.
 
@@ -57,17 +57,28 @@ struct Refresh {
     rotated: Option<Rotation>,
 }
 
-/// A refresh token's rotation: the answer it got, which issued its successor, and when.
+/// A refresh token's rotation: the resource it named, the answer it got, which issued its
+/// successor, and when.
 struct Rotation {
+    resource: String,
     answer: Value,
     at: Instant,
 }
 
-/// One sign-in: the scopes it was granted, its access tokens, and whether it was revoked.
+/// One sign-in: the resources it holds, the scopes it was granted, its access tokens, and whether
+/// it was revoked.
 struct Family {
+    resources: Vec<String>,
     scopes: Vec<String>,
     access: Vec<Access>,
     revoked: bool,
+}
+
+impl Family {
+    /// Whether the sign-in holds `resource`.
+    fn holds(&self, resource: &str) -> bool {
+        self.resources.iter().any(|held| held == resource)
+    }
 }
 
 /// An access token: the protected resource it was issued for alone, and the moment it expires.
@@ -122,9 +133,10 @@ impl Auth {
         })
     }
 
-    /// Begins a sign-in granted `scopes`, and gives its family.
-    fn sign_in(&mut self, scopes: Vec<String>) -> usize {
+    /// Begins a sign-in that holds `resources`, granted `scopes`, and gives its family.
+    fn sign_in(&mut self, resources: Vec<String>, scopes: Vec<String>) -> usize {
         self.families.push(Family {
+            resources,
             scopes,
             access: Vec::new(),
             revoked: false,
@@ -181,14 +193,15 @@ impl Auth {
         })
     }
 
-    /// Whether a refresh token rotated as `rotation` is answered again: within `grace` of its
-    /// rotation, and before its successor has itself been presented.
-    fn repeats(&self, rotation: &Rotation, grace: Duration) -> bool {
+    /// Whether a refresh token rotated as `rotation`, presented again for `resource`, is answered
+    /// again: for the resource its rotation named, within `grace` of its rotation, and before its
+    /// successor has itself rotated.
+    fn repeats(&self, rotation: &Rotation, resource: &str, grace: Duration) -> bool {
         let successor_rotated = rotation.answer["refresh_token"]
             .as_str()
             .and_then(|successor| self.refresh.get(successor))
             .is_some_and(|successor| successor.rotated.is_some());
-        self.now() < rotation.at + grace && !successor_rotated
+        rotation.resource == resource && self.now() < rotation.at + grace && !successor_rotated
     }
 
     /// A registered client and a new sign-in for it, without a browser, over `resources`, each
@@ -203,7 +216,8 @@ impl Auth {
                 scopes.push(scope.clone());
             }
         }
-        let family = self.sign_in(scopes);
+        let held = resources.iter().map(|(resource, _)| resource.clone());
+        let family = self.sign_in(held.collect(), scopes);
         let mut access = BTreeMap::new();
         let mut first = None;
         for (resource, accepted) in resources {

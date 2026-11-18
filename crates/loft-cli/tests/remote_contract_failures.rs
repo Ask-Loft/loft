@@ -12,11 +12,11 @@ use software_plant::remote::wire::value;
 use software_plant::remote::{Metadata, Related, RelatedFault, Remote, RemoteScenario};
 
 use crate::common::oauth::{
-    KEY, authorize_for, coded, exchange, fetch, location, metadata, parameter, refresh, register,
-    registered, related_metadata, send_refresh,
+    KEY, assert_oauth_error, authorize_for, coded, exchange, fetch, location, metadata, parameter,
+    refresh, register, registered, related_metadata, send_refresh,
 };
 use crate::common::remote::{spec, wire, with_criterion};
-use crate::common::resources::{RELATED_RESOURCES, origin_of};
+use crate::common::resources::{RELATED_RESOURCES, origin_of, signed_over};
 use crate::remote_contract::{assert_problem, holding, post};
 use crate::remote_contract_writes::{import_body, publish_body};
 
@@ -297,6 +297,45 @@ fn a_lost_refresh_answer_rotates_the_token_and_closes_the_connection_once() {
     assert_eq!(remote.refreshes(), 1);
     let next = repeated.body["refresh_token"].as_str().unwrap();
     assert_eq!(refresh(&server, &client, &resource, next).status, 200);
+}
+
+#[test]
+fn a_lost_answer_is_repeated_for_its_resource_and_a_refresh_for_another_revokes_the_sign_in() {
+    // A sign-in over the document's resource and `notes`, whose refresh for `notes` rotated its
+    // refresh token and lost the answer.
+    let lost = || {
+        let notes = Related::new("notes", &["notes"]);
+        let scenario = RemoteScenario::accepting(KEY).losing_a_refresh_answer();
+        let remote = Remote::start(scenario.relating(notes));
+        let (own, notes) = (remote.resource(), remote.related("notes"));
+        let signed = signed_over(&remote, &[&own, &notes], "documents notes");
+        let sent = send_refresh(
+            &signed.server(),
+            &signed.client,
+            &notes,
+            &signed.refresh_token,
+        );
+        assert!(sent.is_err(), "the answer is lost: {sent:?}");
+        assert_eq!(remote.refreshes(), 1, "the token rotated");
+        (remote, signed, own, notes)
+    };
+    let (remote, signed, own, notes) = lost();
+    let repeated = signed.refresh(&notes, &signed.refresh_token);
+    assert_eq!(repeated.status, 200, "{:?}", repeated.body);
+    assert_eq!(repeated.body["resource"], json!(notes));
+    let again = signed.refresh(&notes, &signed.refresh_token);
+    assert_eq!(again.body, repeated.body);
+    assert_eq!(remote.refreshes(), 1);
+    let successor = repeated.body["refresh_token"].as_str().unwrap();
+    assert_eq!(signed.refresh(&own, successor).status, 200);
+
+    // Presented first for another resource of the sign-in, the token is reused.
+    let (remote, signed, own, notes) = lost();
+    for resource in [&own, &notes] {
+        let answer = signed.refresh(resource, &signed.refresh_token);
+        assert_oauth_error(&answer, "invalid_grant");
+    }
+    assert!(!remote.admits_at(&own, &signed.access_token));
 }
 
 #[test]

@@ -3,7 +3,8 @@
 //! challenge of a request without a token, the parameters of that challenge, the metadata of a
 //! related resource, the registration of a public client, an authorization request with PKCE for
 //! one protected resource or more and the redirect that answers it, the exchange of its code, a
-//! refresh, and the OAuth error answer that refuses one.
+//! refresh that names one resource or another number of them, and the OAuth error answer that
+//! refuses one.
 
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
@@ -252,7 +253,13 @@ pub fn assert_oauth_error(answer: &Answer, error: &str) {
 
 /// The answer to a refresh of `token`.
 pub fn refresh(server: &Value, client: &str, resource: &str, token: &str) -> Answer {
-    read(send_refresh(server, client, resource, token).unwrap())
+    refresh_for(server, client, &[resource], token)
+}
+
+/// The answer to a refresh of `token` that names `resource` once for each of `resources`, none,
+/// one or more.
+pub fn refresh_for(server: &Value, client: &str, resources: &[&str], token: &str) -> Answer {
+    read(send_refresh_for(server, client, resources, token).unwrap())
 }
 
 /// The response to a refresh of `token`, or the error that kept it from coming.
@@ -262,13 +269,22 @@ pub fn send_refresh(
     resource: &str,
     token: &str,
 ) -> Result<Response<Body>, ureq::Error> {
-    send_form(
-        server["token_endpoint"].as_str().unwrap(),
-        &[
-            ("grant_type", "refresh_token"),
-            ("refresh_token", token),
-            ("client_id", client),
-            ("resource", resource),
-        ],
-    )
+    send_refresh_for(server, client, &[resource], token)
+}
+
+/// The response to a refresh of `token` that names `resource` once for each of `resources`, or
+/// the error that kept it from coming.
+fn send_refresh_for(
+    server: &Value,
+    client: &str,
+    resources: &[&str],
+    token: &str,
+) -> Result<Response<Body>, ureq::Error> {
+    let mut fields = vec![
+        ("grant_type", "refresh_token"),
+        ("refresh_token", token),
+        ("client_id", client),
+    ];
+    fields.extend(resources.iter().map(|resource| ("resource", *resource)));
+    send_form(server["token_endpoint"].as_str().unwrap(), &fields)
 }

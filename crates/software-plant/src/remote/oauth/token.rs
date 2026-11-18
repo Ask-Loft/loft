@@ -1,11 +1,15 @@
 //! The token endpoint: a code exchanged once, with its verifier, its redirect and one resource its
 //! authorization request named, for an access token for that resource alone and a refresh token
-//! for the sign-in; and a refresh, which rotates the refresh token, answers a rotated one again
-//! within the grace window until its successor is presented, and revokes the whole sign-in
-//! otherwise. A resource the scenario does not serve, or none, is refused before the code is
-//! read.
+//! for the sign-in; and a refresh for one resource the sign-in holds, which rotates the refresh
+//! token and issues an access token for that resource alone, answers a rotated one again for the
+//! resource its rotation named within the grace window until its successor rotates, and revokes
+//! the whole sign-in otherwise. A resource the scenario does not serve, or none, is refused before
+//! the code or the refresh token is read, and a resource that a live refresh token's sign-in does
+//! not hold is refused with nothing rotated.
 
-use super::{Form, Issued, Rotation};
+use std::time::Duration;
+
+use super::{Auth, Form, Issued, Rotation};
 use crate::http::{Request, Response};
 use crate::remote::State;
 use crate::remote::problem::oauth;
@@ -51,8 +55,9 @@ fn exchange(state: &mut State, form: &Form) -> Response {
         return oauth("invalid_target");
     }
     code.used = true;
+    let resources = code.resources.clone();
     let (client_id, scopes) = (code.client_id.clone(), code.scopes.clone());
-    let family = state.auth.sign_in(scopes);
+    let family = state.auth.sign_in(resources, scopes);
     let token = Issued {
         resource: &resource,
         accepted: &accepted,
@@ -61,8 +66,16 @@ fn exchange(state: &mut State, form: &Form) -> Response {
     Response::json(200, &state.auth.issue(family, &client_id, &token))
 }
 
+/// A refresh, judged in order: a resource the scenario does not serve, or none, before the
+/// refresh token is read; then a lapsing scenario, a refresh token the simulator does not know,
+/// another client's, or one of a revoked sign-in; then a rotated refresh token; then a resource
+/// that the sign-in does not hold. Otherwise the refresh token rotates.
 fn refresh(state: &mut State, form: &Form) -> Response {
     let field = |name| form.field(name);
+    let resource = field("resource");
+    let Some(accepted) = state.accepted(&resource) else {
+        return oauth("invalid_target");
+    };
     if state.scenario.lapsed {
         return oauth("invalid_grant");
     }
@@ -70,23 +83,16 @@ fn refresh(state: &mut State, form: &Form) -> Response {
     let Some(entry) = state.auth.refresh.get(&presented) else {
         return oauth("invalid_grant");
     };
-    let family = entry.family;
-    if entry.client_id != field("client_id") || state.auth.families[family].revoked {
+    let (family, client_id) = (entry.family, entry.client_id.clone());
+    if client_id != field("client_id") || state.auth.families[family].revoked {
         return oauth("invalid_grant");
     }
-    if field("resource") != state.resource() {
+    if let Some(answer) = rotated(&mut state.auth, &presented, &resource, state.scenario.grace) {
+        return answer;
+    }
+    if !state.auth.families[family].holds(&resource) {
         return oauth("invalid_target");
     }
-    if let Some(rotation) = &entry.rotated {
-        if state.auth.repeats(rotation, state.scenario.grace) {
-            return Response::json(200, &rotation.answer);
-        }
-        state.auth.families[family].revoked = true;
-        return oauth("invalid_grant");
-    }
-    let client_id = entry.client_id.clone();
-    let resource = field("resource");
-    let accepted = state.accepted(&resource).unwrap_or_default();
     let token = Issued {
         resource: &resource,
         accepted: &accepted,
@@ -96,6 +102,7 @@ fn refresh(state: &mut State, form: &Form) -> Response {
     let at = state.auth.now();
     if let Some(entry) = state.auth.refresh.get_mut(&presented) {
         entry.rotated = Some(Rotation {
+            resource,
             answer: answer.clone(),
             at,
         });
@@ -103,4 +110,18 @@ fn refresh(state: &mut State, form: &Form) -> Response {
     state.auth.refreshes += 1;
     state.answer_lost = std::mem::take(&mut state.scenario.losing_refresh);
     Response::json(200, &answer)
+}
+
+/// The answer to `presented`, a refresh token presented again for `resource` after it rotated:
+/// its rotation's answer, where it repeats within `grace`, and otherwise `invalid_grant`, with its
+/// sign-in revoked as a reuse. Nothing, where it has not rotated.
+fn rotated(auth: &mut Auth, presented: &str, resource: &str, grace: Duration) -> Option<Response> {
+    let entry = auth.refresh.get(presented)?;
+    let rotation = entry.rotated.as_ref()?;
+    if auth.repeats(rotation, resource, grace) {
+        return Some(Response::json(200, &rotation.answer));
+    }
+    let family = entry.family;
+    auth.families[family].revoked = true;
+    Some(oauth("invalid_grant"))
 }
