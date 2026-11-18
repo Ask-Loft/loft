@@ -20617,7 +20617,7 @@ links:
         name: "each_misconfigured_metadata_serves_what_its_scenario_names"
         body: 0a265284e00e941b8115b8eea79ed561b35eeefd3929702f93b7b074d1104767
   - node: 01a18e1f-8dac-71f7-847a-7244ef7a794f
-    reviewed: 66830bb3067ee4bdbc1fa3f2d679f8315114e485a34797be85cb7a9eb953a847
+    reviewed: 4312e5ffc9b143d98e475c0efaa0e3b66e8cfae42c0e730785c1d8d7bda1fb0f
     tests:
       - file: "crates/loft-cli/tests/remote_contract.rs"
         name: "a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_issued"
@@ -21253,7 +21253,7 @@ links:
         name: "an_authorization_request_is_answered_as_the_person_consents"
         body: dcfae2684dce752b71c514380768eaa5437a11fb103f2a251d5c0465d2aad6ec
   - node: 01a18e1f-8dac-71f7-847a-725794142402
-    reviewed: 98328432efa91a35a065106e260dcc991492362d3683987591a01a7447add3f2
+    reviewed: 590d55144ae2a943eb88a11e624b17a177dc359deaa46b5b5ab89c60b09f0eb5
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "an_authorization_request_is_answered_as_the_person_consents"
@@ -21277,13 +21277,13 @@ links:
         name: "a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource"
         body: e61e1e98af6ffab8c35b46305029cd6eaa09a97a3477f53d6a1d66c3c5d1e687
   - node: 01a18e1f-8dac-71f7-847a-725c1d59acb6
-    reviewed: 69dd8f2b16ef672bb6112438bdd57aae4573f48ef73bfdc3ca05a5635bb3456a
+    reviewed: 25e94e89c8b77db003142231d29501955afa9bd766705b3eb44e7fc8b6619de7
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource"
         body: e61e1e98af6ffab8c35b46305029cd6eaa09a97a3477f53d6a1d66c3c5d1e687
   - node: 01a1995a-1ff6-73c4-9f04-02309a866506
-    reviewed: dbde2c7350d38e24e3ac9a906f681d32572049bc51bd59b1396792c8121a933c
+    reviewed: c177c016c40e374c4d398cf7abd0b45747f9c222cda7165ee31325f5a9bb1d19
     tests:
       - file: "crates/loft-cli/tests/remote_contract_failures.rs"
         name: "a_scenario_refuses_every_registration_or_exchange_with_the_oauth_error_it_names"
@@ -21295,7 +21295,7 @@ links:
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
         body: 31db72cfb6c41243ec9ca2fb930e0f46ac9465b07d988538448065eabed1780d
   - node: 01a18e1f-8dac-71f7-847a-725f662f9c67
-    reviewed: fa818466ea99d89631460a4f839e254dd514dadb94b1354690c700792df4011a
+    reviewed: adeaecc35e1d8046e2668072a38d4f4b69b237b171f2afea368b99a7761ac0e0
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
@@ -21313,7 +21313,7 @@ links:
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
         body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
   - node: 01a18e1f-8dac-71f7-847a-72600450be32
-    reviewed: 27b3f8548c9a6411d958d47c4c5bdce8620d19bf1862f7c82ed64d6a68ccc412
+    reviewed: cf38949d8ddbfc43ed212a50b644ba94aa19732b9845bb827da564e01976731f
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
@@ -21331,7 +21331,7 @@ links:
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
         body: 84844f8d6e98750752e11681f2646eec9781facbd67acb6a611232b049154ef4
   - node: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
-    reviewed: 1ee3c608d6f4b75a750abe6b5d0ed4ff3d59dfcd76df5452d842f2bb189a5795
+    reviewed: 2ff11aa37b5c7ef5652eee140c5c846c0e433ecba73e192f5c7bfe8362491ee4
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace"
