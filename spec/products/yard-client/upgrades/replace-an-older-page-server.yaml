@@ -15,7 +15,7 @@ requirements:
       - key: 01a1646f-546e-76cb-8b4f-f211c919436f
         name: "The version is reported without the control token."
       - key: 01a1649f-62f0-7320-902c-7d90e88d4f61
-        name: "`~/.yard/server.json` gives the page server's port, its process id, its `loft` version and the `yardlog` formats it reads."
+        name: "`~/.yard/server.json` gives the page server's port, its process id, its `loft` version, the `yardlog` formats it reads and the addresses that `--listen` gave it."
   - key: 01a1646f-546e-76cb-8b4f-f212dc8ad1c7
     statement:
       form: event_driven
@@ -34,7 +34,7 @@ requirements:
       - key: 01a1646f-546e-76cb-8b4f-f21529feeaa0
         name: "Every tree the older page server served is served by the newer one."
       - key: 01a1646f-546e-76cb-8b4f-f2164986fd80
-        name: "A page server of the same or a newer version is left serving, and `loft yard serve` exits 0 saying that one runs."
+        name: "A page server of a newer version, or of the same version on the addresses the `loft yard serve` would listen on, is left serving, and `loft yard serve` exits 0 saying that one runs."
   - key: 01a16517-45f6-7370-99ab-21fb6385919d
     statement:
       form: event_driven

@@ -48,7 +48,7 @@ components:
         verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
     name: "Page server"
-    body: "The HTTP server that `loft yard serve` runs, one on the machine, on every address of the machine or on the addresses the person names and the loopback interface: it serves the page for every tree registered with it, takes the person's answers and decisions and the mod's events, and tells open pages of each change."
+    body: "The HTTP server that `loft yard serve` runs, one on the machine, on the loopback interface and on the addresses the person names: it serves the page for every tree registered with it, takes the person's answers and decisions and the mod's events, and tells open pages of each change."
     components:
       - key: 01a16469-559e-73c4-85f2-71a94f0aa021
         name: "Yard page"

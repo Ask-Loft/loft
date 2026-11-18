@@ -4,9 +4,9 @@ name: "Serve the page"
 body: |
   `loft yard serve` runs the page server: it serves the page's files, which `loft` holds within itself, answers the page's reads, takes the person's answers and decisions and the mod's events, and tells open pages of each change.
 
-  By default the page server is reached on every network the machine is on, so that the person opens the page from another device, such as a phone in their tailnet, with nothing set, however the machine's addresses change. On a public network, such as a coffee shop's, that lets anyone who reaches the machine read the page and answer for the person. A person who wants the page closed there names the addresses it listens on instead, such as the machine's tailnet address; in Claude Code that is the Loft plugin's `yardListen` setting. Codex gives the plugin no setting, so a page server that Codex starts listens on every address.
+  By default the page server listens on the loopback interface alone, so that only programs on the machine reach it. A person who opens the page from another device, such as a phone in their tailnet, names the addresses it listens on as well, such as the machine's tailnet address, or `0.0.0.0` for every network the machine is on; in Claude Code that is the Loft plugin's `yardListen` setting. Anyone who reaches a named address can read the page and answer for the person, and a program on that network sets `Host` and `Origin` as it likes, so a public network, such as a coffee shop's, is better left unnamed. Codex gives the plugin no setting, so a page server that Codex starts listens on the loopback interface alone.
 
-  The page server always listens on the loopback interface as well, where the mod reaches it. A request that would change Yard Log, register a tree or record an event is taken only from a page that the page server served, at whichever of its addresses the page was opened, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead. A request that only reads, as the browser's own request for the page, needs neither.
+  The page server always listens on the loopback interface, where the mod reaches it. A request that would change Yard Log, register a tree or record an event is taken only from a page that the page server served, at whichever of its addresses the page was opened, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead. A request that only reads, as the browser's own request for the page, needs neither.
 tags:
   - yard-command
 realizes:
@@ -18,14 +18,14 @@ requirements:
     statement:
       form: ubiquitous
       system: "`loft yard serve`"
-      shall: "listen on every address of the machine, or on each address that `--listen` names and on the loopback interface, at the port that `--port` names, 7411 by default."
+      shall: "listen on the loopback interface, and on each address that `--listen` names, at the port that `--port` names, 7411 by default."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb83315a9b4a
         name: "The page server serves its page at `http://127.0.0.1:<port>/`."
       - key: 01a1eeea-3ba6-7330-8a73-2eb6cf9d9691
-        name: "Without `--listen`, the page server listens on `0.0.0.0`."
+        name: "Without `--listen`, a connection to an address of the machine other than `127.0.0.1` is not accepted."
       - key: 01a1eeea-3ba6-7330-8a73-2eb722598f6f
-        name: "Without `--listen`, the page opens from another machine at any address of this machine."
+        name: "With `--listen 0.0.0.0`, the page opens from another machine at any address of this machine."
       - key: 01a1eeea-3ba6-7330-8a73-2eb8f1f19fbb
         name: "`--listen` may be given more than once, and the page server listens on each address it names."
       - key: 01a1eeea-3ba6-7330-8a73-2eb932a7ea3c
@@ -34,6 +34,19 @@ requirements:
         name: "With `--listen`, a connection to an address of the machine that `--listen` does not name is not accepted."
       - key: 01a1646f-546d-7042-befd-eb851381cb9d
         name: "`loft yard serve` needs no git repository."
+  - key: 01a1f03b-b433-747a-bd8e-3d4171c44452
+    statement:
+      form: event_driven
+      when: "`loft yard serve` finds a running page server of its own version that listens on addresses other than those it would listen on"
+      system: "`loft yard serve`"
+      shall: "replace that page server."
+    criteria:
+      - key: 01a1f03b-b433-747a-bd8e-3d435944acf4
+        name: "A `loft yard serve` without `--listen` replaces a page server started with `--listen 0.0.0.0`."
+      - key: 01a1f03b-b433-747a-bd8e-3d441b505aff
+        name: "A `loft yard serve` that names the running page server's addresses, in any order, exits 0 and starts none."
+      - key: 01a1f03b-b433-747a-bd8e-3d4536d42ec3
+        name: "A page server of a newer version is not replaced, whatever addresses it listens on."
   - key: 01a1eeea-3ba6-7330-8a73-2eba945eb028
     statement:
       form: unwanted

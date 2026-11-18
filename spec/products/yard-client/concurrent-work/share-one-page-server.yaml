@@ -82,7 +82,7 @@ requirements:
       form: event_driven
       when: "a session starts in a worktree and the mod's protocol check passes"
       system: "the Loft mod"
-      shall: "make sure that a page server of its own `loft`'s version or a newer one serves the port, starting `loft yard serve` where none does."
+      shall: "run `loft yard serve`, so that a page server of its own `loft`'s version or a newer one serves the port, on the addresses of the plugin's `yardListen` setting where it is of the same version."
     criteria:
       - key: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
         name: "The mod registers the session's tree with the page server that serves the port."
@@ -95,11 +95,26 @@ requirements:
       - key: 01a1eeea-3ba6-7330-8a73-2eb5ce1eb20c
         name: "Where the plugin's `yardListen` setting is empty, the mod passes no `--listen`."
       - key: 01a1646f-546d-7042-befd-ea8fc7b5b732
-        name: "A `loft yard serve` that finds in `~/.yard/server.json` a running page server of the same or a newer version exits 0 and starts none."
+        name: "A `loft yard serve` that finds in `~/.yard/server.json` a running page server of a newer version, or of the same version on the same addresses, exits 0 and starts none."
+      - key: 01a1f03b-b432-7709-92e2-1d43e2d50c54
+        name: "The mod runs `loft yard serve` at the session's first beat, even where a page server answers."
+      - key: 01a1f03b-b432-7709-92e2-1d44792792e2
+        name: "A page server of the same version that listens on addresses other than the `yardListen` setting names is replaced when a session starts."
       - key: 01a1646f-546d-7042-befd-ea90b3a3d660
         name: "The session starts without waiting for the page server to answer."
       - key: 01a1646f-546d-7042-befd-ea91076e0f8d
         name: "A tree that the page server already serves is not added twice."
+  - key: 01a1f03b-b432-7709-92e2-1d456d0b72d5
+    statement:
+      form: unwanted
+      if: "the plugin's `yardListen` setting names something other than an IP address"
+      system: "the Loft mod"
+      shall: "tell the person once, naming it, and pass the setting's other addresses to `loft yard serve`."
+    criteria:
+      - key: 01a1f03b-b432-7709-92e2-1d464c3a5404
+        name: "The notice names the `yardListen` setting and each entry that is not an IP address."
+      - key: 01a1f03b-b432-7709-92e2-1d47c30f8dc0
+        name: "The page server the mod starts listens on the setting's other addresses."
   - key: 01a18a3a-4833-7539-a772-a6431c57dc22
     statement:
       form: event_driven
@@ -148,12 +163,12 @@ requirements:
       form: state_driven
       while: "a session with the Loft plugin runs"
       system: "the Loft mod"
-      shall: "tell the page server every 5 seconds that its session is live, and run `loft yard serve` with its session only where no page server answers."
+      shall: "tell the page server every 5 seconds that its session is live, and after the session's first beat run `loft yard serve` with its session only where no page server answers."
     criteria:
       - key: 01a1649f-62ef-71e6-98de-e108efc946c7
         name: "Each time the page server hears a session, it records in `~/.yard/sessions.json` the time it heard it."
       - key: 01a16621-e7bc-7707-b123-2169fad97012
-        name: "While a page server answers, the mod starts no `loft yard serve`."
+        name: "After the session's first beat, while a page server answers, the mod starts no `loft yard serve`."
       - key: 01a16621-e7bc-7707-b123-216ad4648974
         name: "The session whose mod's child is the page server is heard every 5 seconds too."
       - key: 01a16621-e7bc-7707-b123-216ba39acdc8

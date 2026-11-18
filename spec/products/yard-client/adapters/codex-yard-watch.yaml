@@ -24,7 +24,7 @@ requirements:
       - key: 01a1787c-f803-70b1-b946-b71000ef7515
         name: "A worker starts or recovers the page server through loft yard serve."
       - key: 01a1eeea-3ba5-7122-8e30-23ee66ae5a35
-        name: "A worker passes no `--listen` to the `loft yard serve` it starts, so that page server listens on every address of the machine."
+        name: "A worker passes no `--listen` to the `loft yard serve` it starts, so that page server listens on the loopback interface alone."
       - key: 01a1787c-f803-70b1-b946-b7115de4d9c5
         name: "Ending a session asks its worker to stop."
       - key: 01a1787c-f803-70b1-b946-b712cbdf45bb
