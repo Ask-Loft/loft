@@ -256,6 +256,7 @@ test('a plan the host ends records no outcome, keeps its submission open and poi
   expect(ran.deny).toContain('submission sub-1')
   expect(ran.deny).toContain('yard_wait')
   expect(ran.deny).toContain(PAGE)
+  expect(ran.deny!.indexOf('yard_wait')).toBeLessThan(ran.deny!.indexOf(HOST_ENDED))
 })
 
 test('the agent is not told that the person rejected a plan the host ended', async ($, on) => {

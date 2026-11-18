@@ -163,17 +163,19 @@ function heldBy(doc: Doc, key: string | undefined, asker: Asker): string | undef
 }
 
 /**
- * The host's own words, with a note telling the agent that nobody decided the plan and where it waits: an
- * Agent SDK host may answer `ExitPlanMode` itself, and a tool error may end it, before the person
- * saw it.
+ * A note telling the agent that nobody decided the plan and where it waits, then the host's own
+ * words: an Agent SDK host may answer `ExitPlanMode` itself, and a tool error may end it, before
+ * the person saw it. The note leads, since a host such as T3 Code tells the agent to stop.
  */
 function undecided(ran: ToolCallResult, submission: string, address: string | undefined): ToolCallResult {
   const where = address ? `the Yard page (${address})` : 'the Yard page'
+  const host = ran.deny ?? ran.text
   const note =
     `Nobody has decided this plan: ExitPlanMode ended before the person did. The plan waits on ${where} ` +
-    `as submission ${submission}; wait on it with yard_wait for the person's decision.`
+    `as submission ${submission}; wait on it with yard_wait for the person's decision before you end the turn.` +
+    (host ? " The host's own words follow." : '')
   // A deny: core gives the agent its own messages for a result it got back unchanged.
-  return { deny: [ran.deny ?? ran.text, note].filter(Boolean).join('\n\n') }
+  return { deny: [note, host].filter(Boolean).join('\n\n') }
 }
 
 const rejection = (reason: unknown) =>
