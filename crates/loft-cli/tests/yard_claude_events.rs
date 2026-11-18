@@ -14,6 +14,7 @@ use crate::served::{Served, within};
 use crate::yard::{BRANCH, Yard, document};
 use crate::yard_claude_hook::{hook, input};
 use crate::yard_serve_events::{log, open, session_file};
+use crate::yard_wait::until_leased;
 
 /// A hook of `event` of session `s1`'s main agent naming the permission mode `mode`.
 fn moded(yard: &Yard, event: &str, mode: &str) -> Value {
@@ -294,7 +295,7 @@ fn the_agent_s_own_wait_on_a_plan_is_not_refused_while_the_hook_waits_on_it() {
         "--timeout",
         "10",
     ]);
-    settle();
+    until_leased(&yard, &submission);
     decide(
         &yard,
         &served,

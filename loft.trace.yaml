@@ -24437,7 +24437,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_claude_events.rs"
         name: "the_agent_s_own_wait_on_a_plan_is_not_refused_while_the_hook_waits_on_it"
-        body: 2a74a0193cd9f4b81d2f5e54f317fa46d5ba0f0724be92cf6bedcf2665991d97
+        body: fa5d9aca7ca88b9dfebf25908ff3c441bf924526294f1cc5b55f374038190713
   - node: 01a183e9-dfd2-74b1-a45a-14b8d540956c
     reviewed: abf28ca425a6502ed28be795bdc72626f1eeae64273c94bf4d720be3e8caf9e8
     tests:
@@ -33680,7 +33680,7 @@ links:
         body: a9bc07be0f947450ca33d794106d422f3cde644ee80be4b946a6c19bfa7829a1
       - file: "crates/loft-cli/tests/yard_claude_events.rs"
         name: "the_agent_s_own_wait_on_a_plan_is_not_refused_while_the_hook_waits_on_it"
-        body: 2a74a0193cd9f4b81d2f5e54f317fa46d5ba0f0724be92cf6bedcf2665991d97
+        body: fa5d9aca7ca88b9dfebf25908ff3c441bf924526294f1cc5b55f374038190713
   - node: 01a1646f-546c-7521-9643-bc4b064c0cda
     reviewed: 4cc6d766b76e707ef2f023dcecff83a982f8899eb5a1a563f29c6004b69a0c3c
     tests:

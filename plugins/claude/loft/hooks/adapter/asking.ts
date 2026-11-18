@@ -172,10 +172,9 @@ function undecided(ran: ToolCallResult, submission: string, address: string | un
   const host = ran.deny ?? ran.text
   const note =
     `Nobody has decided this plan: ExitPlanMode ended before the person did. The plan waits on ${where} ` +
-    `as submission ${submission}; wait on it with yard_wait for the person's decision before you end the turn.` +
-    (host ? " The host's own words follow." : '')
+    `as submission ${submission}; wait on it with yard_wait for the person's decision before you end the turn.`
   // A deny: core gives the agent its own messages for a result it got back unchanged.
-  return { deny: [note, host].filter(Boolean).join('\n\n') }
+  return { deny: host ? `${note} The host's own words follow.\n\n${host}` : note }
 }
 
 const rejection = (reason: unknown) =>
