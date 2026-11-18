@@ -109,7 +109,10 @@ fn waiting(dir: &Path, args: WaitArgs, lease: Lease) -> Result<(&'static str, Va
     };
     let taking_up = waiter.may_wait(&held)?;
     let (_lease, taken_up) = match lease {
-        Lease::Take => waiter.hold(taking_up, at)?,
+        Lease::Take => {
+            let (held, taken_up) = waiter.hold(taking_up, at)?;
+            (Some(held), taken_up)
+        }
         Lease::Leave => (None, false),
     };
     let (outcome, mut fields) = waiter.until(clock, deadline, closed_by_merge)?;
@@ -200,12 +203,12 @@ impl Waiter<'_> {
 
     /// Takes the submission's lease, then takes the submission up where `taking_up` and it still
     /// is open to take up; gives the lease and whether it took the submission up.
-    fn hold(&self, taking_up: bool, at: yardlog::Time) -> Result<(Option<Locked>, bool), Failure> {
+    fn hold(&self, taking_up: bool, at: yardlog::Time) -> Result<(Locked, bool), Failure> {
         let lease = self.lease()?;
         // Another wait may have taken the submission up while this one took the lease.
         let taken_up =
             taking_up && self.may_wait(&self.branch.store.read()?)? && self.take_up(at)?;
-        Ok((Some(lease), taken_up))
+        Ok((lease, taken_up))
     }
 
     /// The submission's lease, refused, naming who holds it, where another wait does. A lease
