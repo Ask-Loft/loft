@@ -8,11 +8,11 @@ use std::time::{Duration, Instant};
 use serde_json::{Value, json};
 use software_plant::remote::{Metadata, Remote, RemoteScenario};
 
-use crate::common::remote::{spec, wire, with_criterion};
-use crate::remote_contract::{assert_problem, holding, post};
-use crate::remote_contract_auth::{
+use crate::common::oauth::{
     KEY, coded, exchange, fetch, metadata, refresh, register, send_refresh,
 };
+use crate::common::remote::{spec, wire, with_criterion};
+use crate::remote_contract::{assert_problem, holding, post};
 use crate::remote_contract_writes::{import_body, publish_body};
 
 /// The challenge of a request without a token, and both metadata documents, as served by a

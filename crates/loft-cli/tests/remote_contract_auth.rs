@@ -9,185 +9,16 @@
 use std::time::Duration;
 
 use serde_json::{Value, json};
-use software_plant::remote::wire::{base64url, pairs, query, sha256, value};
+use software_plant::BrowserScenario;
+use software_plant::remote::wire::value;
 use software_plant::remote::{Remote, RemoteScenario};
 
-use ureq::Body;
-use ureq::http::Response;
-
-use crate::remote_contract::{Answer, agent, call, read};
-
-const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
-pub const KEY: &str = "01a18e30-0000-7000-8000-000000000010";
-const REDIRECT: &str = "http://127.0.0.1/callback";
-
-pub fn metadata(remote: &Remote) -> (Value, Value) {
-    discover(&remote.address())
-}
-
-/// The protected resource metadata and the authorization server metadata of the document at
-/// `address`, found from the challenge of a request without a token.
-fn discover(address: &str) -> (Value, Value) {
-    let (challenge, resource, server) = fetch(address);
-    let metadata = challenge.split('"').nth(1).unwrap();
-    let named = metadata.replacen("/.well-known/oauth-protected-resource", "", 1);
-    assert_eq!(resource["resource"], named.as_str(), "RFC 9728 3.3");
-    (resource, server)
-}
-
-/// The challenge of a request without a token to the document at `address`, and the two
-/// metadata documents it leads to, with no check of what they say.
-pub fn fetch(address: &str) -> (String, Value, Value) {
-    let challenge = call("GET", &format!("{address}/head"), None, None);
-    let challenge = challenge
-        .header("www-authenticate")
-        .expect("a challenge")
-        .to_owned();
-    let metadata = challenge.split('"').nth(1).unwrap();
-    let resource = call("GET", metadata, None, None).body;
-    let issuer = resource["authorization_servers"][0].as_str().unwrap();
-    let authority = issuer.find("://").unwrap() + 3;
-    let (origin, path) = issuer.split_at(
-        issuer[authority..]
-            .find('/')
-            .map_or(issuer.len(), |at| authority + at),
-    );
-    let server = call(
-        "GET",
-        &format!("{origin}/.well-known/oauth-authorization-server{path}"),
-        None,
-        None,
-    )
-    .body;
-    (challenge, resource, server)
-}
-
-/// The id of a public client registered with `server`.
-pub fn registered(server: &Value) -> String {
-    register(server, &[REDIRECT], "none").body["client_id"]
-        .as_str()
-        .unwrap()
-        .to_owned()
-}
-
-pub fn register(server: &Value, redirects: &[&str], method: &str) -> Answer {
-    let body = json!({
-        "client_name": "loft",
-        "redirect_uris": redirects,
-        "grant_types": ["authorization_code", "refresh_token"],
-        "response_types": ["code"],
-        "token_endpoint_auth_method": method,
-    });
-    call(
-        "POST",
-        server["registration_endpoint"].as_str().unwrap(),
-        None,
-        Some(&body),
-    )
-}
-
-/// The query of an authorization request, with `overrides` replacing its parameters.
-fn authorize(server: &Value, client: &str, resource: &str, overrides: &[(&str, &str)]) -> Answer {
-    let challenge = base64url(&sha256(VERIFIER.as_bytes()));
-    let mut parameters = [
-        ("response_type", "code".to_owned()),
-        ("client_id", client.to_owned()),
-        ("redirect_uri", "http://127.0.0.1:4567/callback".to_owned()),
-        ("scope", "documents".to_owned()),
-        ("resource", resource.to_owned()),
-        ("state", "the-state".to_owned()),
-        ("code_challenge", challenge),
-        ("code_challenge_method", "S256".to_owned()),
-    ];
-    for (name, value) in overrides {
-        if let Some(entry) = parameters.iter_mut().find(|(field, _)| field == name) {
-            (*value).clone_into(&mut entry.1);
-        }
-    }
-    let parameters: Vec<(&str, &str)> = parameters
-        .iter()
-        .map(|(name, value)| (*name, value.as_str()))
-        .collect();
-    let url = format!(
-        "{}?{}",
-        server["authorization_endpoint"].as_str().unwrap(),
-        query(&parameters)
-    );
-    call("GET", &url, None, None)
-}
-
-/// The parameters of a redirect's `Location`.
-fn location(answer: &Answer) -> Vec<(String, String)> {
-    assert_eq!(answer.status, 302, "{:?}", answer.body);
-    let location = answer.header("location").unwrap();
-    assert!(
-        location.starts_with("http://127.0.0.1:4567/callback?"),
-        "{location}"
-    );
-    pairs(location.split_once('?').unwrap().1)
-}
-
-pub fn form(url: &str, fields: &[(&str, &str)]) -> Answer {
-    read(send_form(url, fields).unwrap())
-}
-
-/// The response to a form of `fields` posted to `url`, or the error that kept it from coming.
-fn send_form(url: &str, fields: &[(&str, &str)]) -> Result<Response<Body>, ureq::Error> {
-    agent()
-        .post(url)
-        .header("Content-Type", "application/x-www-form-urlencoded")
-        .send(query(fields))
-}
-
-/// A client registered on `remote` and a code it was given, with the endpoints.
-pub fn coded(remote: &Remote) -> (Value, String, String, String) {
-    let (resource, server) = metadata(remote);
-    let client = registered(&server);
-    let resource = resource["resource"].as_str().unwrap().to_owned();
-    let code = value(
-        &location(&authorize(&server, &client, &resource, &[])),
-        "code",
-    )
-    .unwrap()
-    .to_owned();
-    (server, client, resource, code)
-}
-
-pub fn exchange(server: &Value, client: &str, resource: &str, code: &str) -> Answer {
-    form(
-        server["token_endpoint"].as_str().unwrap(),
-        &[
-            ("grant_type", "authorization_code"),
-            ("code", code),
-            ("redirect_uri", "http://127.0.0.1:4567/callback"),
-            ("client_id", client),
-            ("code_verifier", VERIFIER),
-            ("resource", resource),
-        ],
-    )
-}
-
-pub fn refresh(server: &Value, client: &str, resource: &str, token: &str) -> Answer {
-    read(send_refresh(server, client, resource, token).unwrap())
-}
-
-/// The response to a refresh of `token`, or the error that kept it from coming.
-pub fn send_refresh(
-    server: &Value,
-    client: &str,
-    resource: &str,
-    token: &str,
-) -> Result<Response<Body>, ureq::Error> {
-    send_form(
-        server["token_endpoint"].as_str().unwrap(),
-        &[
-            ("grant_type", "refresh_token"),
-            ("refresh_token", token),
-            ("client_id", client),
-            ("resource", resource),
-        ],
-    )
-}
+use crate::common::Scratch;
+use crate::common::oauth::{
+    KEY, REDIRECT, authorize, coded, discover, exchange, form, location, metadata, refresh,
+    register, registered,
+};
+use crate::common::signed_in::{kept_sign_in, name_remote, run};
 
 #[test]
 fn the_metadata_names_the_resource_and_an_authorization_server_that_takes_pkce_alone() {
@@ -447,12 +278,35 @@ fn a_real_remote_s_authorization_server_answers_in_the_shape_the_simulator_does(
 }
 
 #[test]
+fn a_sign_in_that_login_keeps_is_found_by_its_address_and_refreshes() {
+    let remote = Remote::start(RemoteScenario::accepting(KEY));
+    let scratch = Scratch::with_reading_list();
+    name_remote(&scratch, Some(&remote.address()), true);
+    let (output, _) = run(
+        &scratch,
+        &["remote", "login", "--format", "json"],
+        BrowserScenario::Visiting,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let kept = scratch.setting("remotes.json");
+    let sign_in = kept_sign_in(&kept, &remote.address());
+    let server = json!({ "token_endpoint": sign_in["tokenEndpoint"] });
+    let field = |name: &str| sign_in[name].as_str().expect(name).to_owned();
+    let (client, resource, old) = (field("clientId"), field("resource"), field("refreshToken"));
+    assert_eq!(refresh(&server, &client, &resource, &old).status, 200);
+    assert_eq!(remote.refreshes(), 1);
+    let elsewhere = format!("{}/documents/elsewhere", remote.origin());
+    assert!(kept_sign_in(&kept, &elsewhere).is_null());
+}
+
+#[test]
 #[ignore = "spends the sign-in that LOFT_REMOTE_CONTRACT_SIGN_IN keeps"]
 fn a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented() {
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
     let file = std::env::var("LOFT_REMOTE_CONTRACT_SIGN_IN").expect("a loft/remotes.json");
     let kept: Value = serde_json::from_slice(&std::fs::read(file).unwrap()).unwrap();
-    let sign_in = &kept[address.as_str()];
+    let sign_in = kept_sign_in(&kept, &address);
     let server = json!({ "token_endpoint": sign_in["tokenEndpoint"] });
     let field = |name: &str| sign_in[name].as_str().expect(name).to_owned();
     let (client, resource, old) = (field("clientId"), field("resource"), field("refreshToken"));
