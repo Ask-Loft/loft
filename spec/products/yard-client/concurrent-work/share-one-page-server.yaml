@@ -100,6 +100,8 @@ requirements:
         name: "The mod runs `loft yard serve` at the session's first beat, even where a page server answers."
       - key: 01a1f03b-b432-7709-92e2-1d44792792e2
         name: "A page server of the same version that listens on addresses other than the `yardListen` setting names is replaced when a session starts."
+      - key: 01a1f069-3ebc-77f4-882f-9102f2aee1e0
+        name: "Each `loft yard serve` the mod runs after the session's first beat is given `--join`, so that a page server that another session started on other addresses is reached and not replaced."
       - key: 01a1646f-546d-7042-befd-ea90b3a3d660
         name: "The session starts without waiting for the page server to answer."
       - key: 01a1646f-546d-7042-befd-ea91076e0f8d

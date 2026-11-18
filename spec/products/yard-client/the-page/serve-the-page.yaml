@@ -37,7 +37,7 @@ requirements:
   - key: 01a1f03b-b433-747a-bd8e-3d4171c44452
     statement:
       form: event_driven
-      when: "`loft yard serve` finds a running page server of its own version that listens on addresses other than those it would listen on"
+      when: "`loft yard serve` without `--join` finds a running page server of its own version that listens on addresses other than those it would listen on"
       system: "`loft yard serve`"
       shall: "replace that page server."
     criteria:
@@ -47,6 +47,8 @@ requirements:
         name: "A `loft yard serve` that names the running page server's addresses, in any order, exits 0 and starts none."
       - key: 01a1f03b-b433-747a-bd8e-3d4536d42ec3
         name: "A page server of a newer version is not replaced, whatever addresses it listens on."
+      - key: 01a1f069-3ebd-70c3-9e39-9698940f41a3
+        name: "With `--join`, a `loft yard serve` that finds a running page server of its own version exits 0 and starts none, whatever addresses that page server listens on."
   - key: 01a1eeea-3ba6-7330-8a73-2eba945eb028
     statement:
       form: unwanted
