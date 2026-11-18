@@ -1,8 +1,9 @@
-//! Who the page server answers. Every request names the page server's own address as its
-//! `Host`, so that a web page under another name that resolves to this machine reaches nothing.
-//! A request that changes something, Yard Log, the trees served or a session's events, comes
-//! either from the page the page server served, whose `Origin` is its own, or from the mod,
-//! which sends no `Origin` and carries the control token instead.
+//! Who the page server answers. Every request names as its `Host` `localhost` or the address of
+//! the machine it reached, so that a web page under another name that resolves to this machine
+//! reaches nothing. A request that changes something, Yard Log, the trees served or a session's
+//! events, comes either from the page the page server served, whose `Origin` is its own at the
+//! address the request reached, or from the mod, which sends no `Origin` and carries the control
+//! token instead.
 
 use super::http::{Request, Response};
 
@@ -15,14 +16,25 @@ pub enum Access {
     Change,
 }
 
-/// The page server's own addresses, as a `Host` names them, at `port`.
-fn hosts(port: u16) -> [String; 2] {
-    [format!("127.0.0.1:{port}"), format!("localhost:{port}")]
+/// The page server's own addresses, as a `Host` names them: `localhost` at `port`, and the
+/// address of the machine the request `reached`, or the loopback address where that is unknown.
+fn hosts(reached: Option<&str>, port: u16) -> [String; 2] {
+    [
+        format!("localhost:{port}"),
+        reached.map_or_else(|| format!("127.0.0.1:{port}"), str::to_owned),
+    ]
 }
 
-/// Whether `request` may be answered, or the refusal that answers it instead.
-pub fn admit(request: &Request, access: Access, port: u16, token: &str) -> Result<(), Response> {
-    let own = hosts(port);
+/// Whether `request`, which reached the address `reached` of the machine, may be answered, or the
+/// refusal that answers it instead.
+pub fn admit(
+    request: &Request,
+    access: Access,
+    reached: Option<&str>,
+    port: u16,
+    token: &str,
+) -> Result<(), Response> {
+    let own = hosts(reached, port);
     let host = request.header("host").unwrap_or_default();
     if !own.iter().any(|own| own.eq_ignore_ascii_case(host)) {
         return Err(Response::refused(

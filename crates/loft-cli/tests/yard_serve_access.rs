@@ -1,11 +1,14 @@
-//! Who the page server answers: a request addressed to it by its own address alone; a request
+//! Who the page server answers: a request addressed to it as `localhost` or by the address of the
+//! machine it reached alone; a request
 //! that changes Yard Log, the trees served or a session's events only from the page it served or
 //! with the control token; a request that only reads with neither. A refused request changes no
 //! file.
 
+use std::net::SocketAddr;
+
 use serde_json::{Value, json};
 
-use crate::served::Served;
+use crate::served::{Served, machine_address};
 use crate::snapshot::snapshot;
 use crate::yard::{ASK, Yard};
 
@@ -15,6 +18,15 @@ fn asked() -> (Yard, Served) {
     yard.write("s1", ASK, &["--send"]);
     let tree = yard.scratch.0.display().to_string();
     let served = Served::start(&yard, &["--tree", &tree]);
+    (yard, served)
+}
+
+/// Yard Log with `q1` sent and a page server serving its tree on every address of the machine.
+fn asked_on_every_address() -> (Yard, Served) {
+    let yard = Yard::new();
+    yard.write("s1", ASK, &["--send"]);
+    let tree = yard.scratch.0.display().to_string();
+    let served = Served::start_on_every_address(&yard, &["--tree", &tree]);
     (yard, served)
 }
 
@@ -52,6 +64,62 @@ fn a_request_with_another_host_is_refused_and_changes_no_file() {
         b"",
     );
     assert_eq!(read.status, 403);
+}
+
+#[test]
+fn a_request_addressed_to_the_address_of_the_machine_it_reached_is_answered() {
+    let (_yard, served) = asked_on_every_address();
+    let machine = machine_address();
+    assert_eq!(served.version_at(machine).status, 200);
+    let elsewhere = served.send(
+        &format!(
+            "GET /api/version HTTP/1.1\r\nhost: {}\r\n",
+            SocketAddr::new(machine, served.port)
+        ),
+        b"",
+    );
+    assert_eq!(
+        elsewhere.status, 403,
+        "an address the request did not reach"
+    );
+}
+
+#[test]
+fn a_request_naming_the_machine_by_a_name_other_than_localhost_is_refused() {
+    let (_yard, served) = asked();
+    let read = served.send(
+        &format!(
+            "GET /api/version HTTP/1.1\r\nhost: machine.example.ts.net:{}\r\n",
+            served.port
+        ),
+        b"",
+    );
+    assert_eq!(read.status, 403);
+    assert_eq!(read.json()["errors"][0]["kind"], "host");
+    let local = served.send(
+        &format!(
+            "GET /api/version HTTP/1.1\r\nhost: localhost:{}\r\n",
+            served.port
+        ),
+        b"",
+    );
+    assert_eq!(local.status, 200);
+}
+
+#[test]
+fn a_change_from_the_page_opened_at_another_address_is_accepted_without_the_control_token() {
+    let (yard, served) = asked_on_every_address();
+    let machine = SocketAddr::new(machine_address(), served.port);
+    let head =
+        format!("POST /api/answer HTTP/1.1\r\nhost: {machine}\r\norigin: http://{machine}\r\n");
+    let answered = served.send_at(machine.ip(), &head, answer(&yard).to_string().as_bytes());
+    assert_eq!(
+        answered.status,
+        200,
+        "{}",
+        String::from_utf8_lossy(&answered.body)
+    );
+    assert_eq!(answered.json()["outcome"], "answered");
 }
 
 #[test]

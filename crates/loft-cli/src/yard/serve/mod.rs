@@ -3,8 +3,9 @@
 //! tree as served; where a page server of this `loft`'s version or a newer one already runs, it
 //! leaves it serving and exits; where an older one runs, it asks it to stop through
 //! `~/.yard/stop.json` and waits for its lock to be freed. Then it takes the lock on
-//! `~/.yard/server.lock`, which it holds while it runs, listens on the loopback interface, names
-//! itself in `~/.yard/server.json`, and serves until a newer one asks it to stop.
+//! `~/.yard/server.lock`, which it holds while it runs, listens on every address of the machine or
+//! on the addresses `--listen` names and the loopback interface, names itself in
+//! `~/.yard/server.json`, and serves until a newer one asks it to stop.
 
 mod activity;
 mod assets;
@@ -50,6 +51,7 @@ use crate::out::outln;
 use crate::version::VERSION;
 use events::Sessions;
 use listener::Listener;
+pub(super) use listener::{Address, parse_address};
 
 const SCHEMA: &str = "loft-yard-serve/1";
 
@@ -134,7 +136,9 @@ pub fn run(args: &ServeArgs) -> Finished {
             report("serving", fields, as_json);
             let following = Arc::clone(&server);
             thread::spawn(move || live::follow(&following));
-            listener.serve(move |connection| routes::handle(&server, connection));
+            listener.serve(clock(), move |connection| {
+                routes::handle(&server, connection);
+            });
             Failure::one("port", "the page server's socket failed").finish(SCHEMA, as_json)
         }
         Err(failure) => failure.finish(SCHEMA, as_json),
@@ -189,7 +193,8 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
             })));
         }
     };
-    let listener = listener::listen(args.port).map_err(|error| held(args.port, &error))?;
+    let listener =
+        listener::listen(args.port, &args.listen).map_err(|error| held(args.port, &error))?;
     super::page::serving(args.port);
     let token = token(&home)?;
     let formats = protocol::report()["formats"]["reads"].clone();

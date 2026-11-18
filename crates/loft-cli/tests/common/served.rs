@@ -1,10 +1,12 @@
 //! A page server run by `loft yard serve` for a test, in front of the git simulator, and a small
-//! HTTP client that speaks to it over the loopback interface. The client lives in the tests, not
-//! in `loft`, which opens no connection of its own but through its network client.
+//! HTTP client that speaks to it over the loopback interface, or at another address of the
+//! machine. The client lives in the tests, not in `loft`, which opens no connection of its own but
+//! through its network client. A page server a test starts listens on the loopback interface
+//! alone, unless the test names its addresses or starts it on every address.
 
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::net::{IpAddr, SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::PathBuf;
 use std::process::Child;
 use std::sync::mpsc;
@@ -22,6 +24,21 @@ pub fn free_port() -> u16 {
         .local_addr()
         .unwrap()
         .port()
+}
+
+/// An address of the machine besides the loopback interface: the one it would reach the network
+/// from. No packet is sent to learn it.
+pub fn machine_address() -> IpAddr {
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket
+        .connect("192.0.2.1:9")
+        .expect("the machine has a route beside the loopback interface");
+    let address = socket.local_addr().unwrap().ip();
+    assert!(
+        !address.is_loopback() && !address.is_unspecified(),
+        "the machine has no address besides the loopback interface: {address}"
+    );
+    address
 }
 
 /// A running page server, stopped when the test drops it.
@@ -75,8 +92,23 @@ impl Served {
         Self::start_with(yard, port, &[], extra)
     }
 
-    /// Starts `loft yard serve` on `port`, with `variables` set in its environment.
+    /// Starts `loft yard serve` on `port`, with `variables` set in its environment, on the
+    /// loopback interface alone unless `extra` names its addresses.
     pub fn start_with(yard: &Yard, port: u16, variables: &[(&str, &str)], extra: &[&str]) -> Self {
+        let mut args = extra.to_vec();
+        if !extra.contains(&"--listen") {
+            args.extend_from_slice(&["--listen", "127.0.0.1"]);
+        }
+        Self::start_as_given(yard, port, variables, &args)
+    }
+
+    /// Starts `loft yard serve` on a free port with no address named, so on every address of the
+    /// machine.
+    pub fn start_on_every_address(yard: &Yard, extra: &[&str]) -> Self {
+        Self::start_as_given(yard, free_port(), &[], extra)
+    }
+
+    fn start_as_given(yard: &Yard, port: u16, variables: &[(&str, &str)], extra: &[&str]) -> Self {
         let port_text = port.to_string();
         let mut args = vec!["serve", "--port", &port_text];
         args.extend_from_slice(extra);
@@ -98,7 +130,28 @@ impl Served {
 
     /// Sends `request`, whose head is complete but for its end, and reads the whole response.
     pub fn send(&self, head: &str, body: &[u8]) -> Reply {
-        let mut stream = TcpStream::connect(("127.0.0.1", self.port)).unwrap();
+        self.send_at(IpAddr::from([127, 0, 0, 1]), head, body)
+    }
+
+    /// Whether the page server takes a connection at `address` of the machine.
+    pub fn takes_at(&self, address: IpAddr) -> bool {
+        TcpStream::connect_timeout(&SocketAddr::new(address, self.port), Duration::from_secs(5))
+            .is_ok()
+    }
+
+    /// `GET /api/version` at `address` of the machine, addressed to it by that address.
+    pub fn version_at(&self, address: IpAddr) -> Reply {
+        let host = SocketAddr::new(address, self.port);
+        self.send_at(
+            address,
+            &format!("GET /api/version HTTP/1.1\r\nhost: {host}\r\n"),
+            b"",
+        )
+    }
+
+    /// Sends `request` to `address` of the machine, as [`Served::send`] does.
+    pub fn send_at(&self, address: IpAddr, head: &str, body: &[u8]) -> Reply {
+        let mut stream = TcpStream::connect((address, self.port)).unwrap();
         stream
             .set_read_timeout(Some(Duration::from_secs(30)))
             .unwrap();

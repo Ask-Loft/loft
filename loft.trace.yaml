@@ -30384,21 +30384,69 @@ links:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "the_page_server_serves_its_page_at_the_loopback_address_and_port"
         body: 406fa51a6c5f17aae4828dbe3c1d4daab7d6afaa88c6960d6b08874ce4300a87
-  - node: 01a1646f-546d-7042-befd-eb84ba1f667f
-    reviewed: 0d6651fad01b1e961695af7322872ede1d740c563c7b119357db87b0573b9a71
+  - node: 01a1eeea-3ba6-7330-8a73-2eb6cf9d9691
+    reviewed: f86aaff5effce5afde5e2ecfc7e1772ab9872924a6bc54b6194ce3c8657d55ef
     tests:
-      - file: "crates/loft-cli/tests/network_client.rs"
-        name: "the_page_server_listens_only_on_the_loopback_interface_and_opens_no_connection"
-        body: 0d17b37afffb06183a0411f57c03449a9eec767ac0968594b080260b197ab7bd
-      - file: "crates/loft-cli/tests/network_client.rs"
-        name: "the_page_server_takes_only_connections_received_on_the_loopback_interface"
-        body: c5de9537fd268b764b4069fc91f006bc52f36740f96e1e69384187d66cd14f78
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "without_listen_the_page_server_listens_on_every_address_of_the_machine"
+        body: c9ebf7f8393aca59df0ca207dacd04840553786c303964eda91ed437f0b9fa87
+  - node: 01a1eeea-3ba6-7330-8a73-2eb722598f6f
+    reviewed: abf98ff4b6a84eb7969dfbae6ccccd3c20d83447f3b24ea5914dbe559b1f0786
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "without_listen_the_page_server_listens_on_every_address_of_the_machine"
+        body: c9ebf7f8393aca59df0ca207dacd04840553786c303964eda91ed437f0b9fa87
+  - node: 01a1eeea-3ba6-7330-8a73-2eb8f1f19fbb
+    reviewed: 17cd3b77f0d3ecfc29669373af54ead82e56db94c777893176ffc285da56f34d
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "listen_may_be_given_more_than_once_and_serves_on_each_address"
+        body: 282ab6616444ca7ae4bf0470ab7e08ae4a52e2ad50b409e6181abbee1735a0da
+  - node: 01a1eeea-3ba6-7330-8a73-2eb932a7ea3c
+    reviewed: 8c2f8837ccd29a7cd83265ba70a281385e4b638fe837ebc31372ac1f9fbda5f9
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "listen_serves_on_the_address_it_names_and_on_the_loopback_interface"
+        body: 424c023095ffeb776b3e7735c3ae5c92c10108075727d6900f87c91f7818e5bb
+  - node: 01a1646f-546d-7042-befd-eb84ba1f667f
+    reviewed: c6174fbb8c69a36ada8e801e38ba2387e374e348c31429c160f2259f25393ca7
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "with_listen_a_connection_to_an_address_it_does_not_name_is_not_accepted"
+        body: b9abe1c75aacac3a68900dbcbd024c4deafbafe91e90cbd46e30a2dc84de2f80
   - node: 01a1646f-546d-7042-befd-eb851381cb9d
     reviewed: be7922d0048d548f6fd6a38fbab51c8489080283c720a9e986af727881e3ed73
     tests:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "serve_needs_no_git_repository"
         body: e94cf7b49f7e6e63e14e9fcc8b7239e666ded739ef71e0095ce437e7a8ca8c8e
+  - node: 01a1eeea-3ba6-7330-8a73-2ebbef46e951
+    reviewed: 3c2c5a8156e742c88b5dabd9bdfc1f605a1e6492a2e127d321a061801f38e73a
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "an_address_the_machine_lacks_leaves_the_page_served_on_the_loopback_interface"
+        body: f6c42add939fcba40beb3441b4357f1e0a5d6354d578fcccdaacc3421d29b01f
+  - node: 01a1eeea-3ba6-7330-8a73-2ebc0ab7411f
+    reviewed: 0b971cbbce226bab85bd510969a119c784b84026f7686c9a30833b98e445ec09
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/listener.rs"
+        name: "an_address_the_machine_gains_is_listened_on_within_5_seconds"
+        body: d5f1cbd28f676f832ea317c256f731273310a57e2b1efde76c541772f0de188a
+  - node: 01a1eeea-3ba6-7330-8a73-2ebdf0d4919c
+    reviewed: 0967b163c2ca0e3b9b88341ac383ef763f2bce76a894518b72e7ad1536fc8d32
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "an_address_the_machine_lacks_leaves_the_page_served_on_the_loopback_interface"
+        body: f6c42add939fcba40beb3441b4357f1e0a5d6354d578fcccdaacc3421d29b01f
+  - node: 01a1eeea-3ba6-7330-8a73-2ebf11eba3c7
+    reviewed: 87e91d7f601c28dcf3101f117acba18c53151173cdad9843c180100edfd7de36
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "listen_naming_something_other_than_an_ip_address_exits_2_and_names_it"
+        body: 26d80eb1c479feaa135f498fdff1fbecbfc7dc348a567db76fce6f533509ccd9
+      - file: "crates/loft-cli/src/yard/serve/listener.rs"
+        name: "an_ip_address_is_read_and_anything_else_is_refused_by_name"
+        body: 4ceff0323c50bbd8b0a3fb3b6bfb8afd2fe1dd9ba3ffc12c641edcf8ce09224b
   - node: 01a1646f-546d-7042-befd-eb87a374ef2e
     reviewed: b87a7fc89e3456346b91a3a1b23fb521a02c4df03dc5e7f45afc2c3620673c42
     tests:
@@ -30426,6 +30474,18 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_access.rs"
         name: "a_request_with_another_host_is_refused_and_changes_no_file"
         body: f76ff1b2c54d02eaca296ab598d3df2e2adbaf64520a92f3a937a7bf0b988f30
+  - node: 01a1eeea-3ba6-7330-8a73-2ec02a9114ce
+    reviewed: a3222b0c83b01ad506c28182adaa554b73fe8ca0adf3d76d373890f9906ff98b
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_access.rs"
+        name: "a_request_addressed_to_the_address_of_the_machine_it_reached_is_answered"
+        body: eeb43ad7d9b10d963a881b7d5c0ac7ef74b84e1729ae288036f5b316ee156829
+  - node: 01a1eeea-3ba6-7330-8a73-2ec1a6326269
+    reviewed: ba273b4114c5b281c5b6eaa0804d03e7b8b9775de8012a6e1d57bf87a8ee8b82
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_access.rs"
+        name: "a_request_naming_the_machine_by_a_name_other_than_localhost_is_refused"
+        body: f0fd7890dc7561fbf453d50c4d4c2e6a1908efc99eb1ba73569db2e07ee5d00f
   - node: 01a1646f-546d-7042-befd-eb8c9938bbaf
     reviewed: 95dab0dbfac115a9f7e0acfa39011bc8e5b1b2c685cebbeb58b3a6cfeb92b188
     tests:
@@ -30438,6 +30498,12 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_access.rs"
         name: "a_change_from_the_page_the_page_server_served_is_accepted"
         body: 515337fc4f65154ffad6667195c1897a23124aeab95903583fc1b1775f2e088c
+  - node: 01a1eeea-3ba6-7330-8a73-2ec293481a5e
+    reviewed: 2567cb5568ba30ce46185cdb3aed9cd9cabc7b5e577328bf43edc98e2b1f3d09
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_access.rs"
+        name: "a_change_from_the_page_opened_at_another_address_is_accepted_without_the_control_token"
+        body: 845c45769f9e7dc6ce7d8221a0e268153e5d2de7ce7817c4fb6b35d6a3f6b30a
   - node: 01a1646f-546d-7042-befd-eb8f6176fd0a
     reviewed: d610fea86a17d448672b73e555442e6a805ca30ae53a75deaff896cb2f06f9a7
     tests:
@@ -35617,20 +35683,20 @@ links:
         name: "every_script_style_and_font_the_page_loads_comes_from_the_page_server"
         body: 90d2c214e6bb5f44b4f216861842703e083f387f2541ebb6a732d0e2849895f3
   - node: 01a16469-559e-73c4-85f2-71ac8bfc2fae
-    reviewed: 3d7bbe3eb134dc6c874b68bb926bfd8e0fcd6915f8c87a1c2779c90aa566b44a
+    reviewed: 520cc820c9481a12612c62c7d087e7db62503599bc01facb886e55a939fb959d
     tests:
-      - file: "crates/loft-cli/tests/network_client.rs"
-        name: "the_page_server_listens_only_on_the_loopback_interface_and_opens_no_connection"
-        body: 0d17b37afffb06183a0411f57c03449a9eec767ac0968594b080260b197ab7bd
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "listen_serves_on_the_address_it_names_and_on_the_loopback_interface"
+        body: 424c023095ffeb776b3e7735c3ae5c92c10108075727d6900f87c91f7818e5bb
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "without_listen_the_page_server_listens_on_every_address_of_the_machine"
+        body: c9ebf7f8393aca59df0ca207dacd04840553786c303964eda91ed437f0b9fa87
   - node: 01a16469-559e-73c4-85f2-71ad0ec2fdf4
-    reviewed: 571d5aba47c0339000dca8fb4faee5f00652b4b0edf9b35227a4c3777c5ae65a
+    reviewed: f0e76835c3d36858daf6f605bc61633b3f25d4aedc55c23f25acc29b15b1de0d
     tests:
       - file: "crates/loft-cli/tests/network_client.rs"
-        name: "the_page_server_listens_only_on_the_loopback_interface_and_opens_no_connection"
-        body: 0d17b37afffb06183a0411f57c03449a9eec767ac0968594b080260b197ab7bd
-      - file: "crates/loft-cli/tests/network_client.rs"
-        name: "the_page_server_takes_only_connections_received_on_the_loopback_interface"
-        body: c5de9537fd268b764b4069fc91f006bc52f36740f96e1e69384187d66cd14f78
+        name: "the_page_server_opens_no_network_connection"
+        body: 00003ddee9d2873a7040d9c09f4e21db35107ea854cf392eb16bc0464eef50d2
   - node: 58f9679b-7e68-44c5-a566-39c56384ffdd
     reviewed: 95f27f5be911589d20e9f9b4be90d3e4d726fbe7484f028aca78777d73ae0f14
     tests:

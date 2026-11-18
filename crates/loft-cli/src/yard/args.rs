@@ -99,6 +99,10 @@ pub struct ServeArgs {
     /// The port to serve the page on.
     #[arg(long, value_name = "PORT", default_value_t = DEFAULT_PORT)]
     pub port: u16,
+    /// An IP address of the machine to serve the page on, beside the loopback interface, in
+    /// place of every address; given once for each address.
+    #[arg(long, value_name = "ADDRESS", value_parser = super::serve::parse_address)]
+    pub listen: Vec<super::serve::Address>,
     /// The session whose mod runs the command, recorded as heard.
     #[arg(long, value_name = "ID")]
     pub session: Option<String>,
