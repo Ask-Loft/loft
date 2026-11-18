@@ -127,17 +127,24 @@ fn a_post_compact_hook_with_no_page_server_running_exits_0_and_drops_its_event()
 /// Yard Log with a plan-mode plan, `p1`, sent by session `s1`'s agent named by `agent`, and a
 /// page server.
 fn presented(agent: &[&str]) -> (Yard, Served) {
+    let (yard, served, _) = sent(agent);
+    (yard, served)
+}
+
+/// [`presented`], with the key of the submission that sent the plan.
+fn sent(agent: &[&str]) -> (Yard, Served, String) {
     let yard = Yard::new();
     let mut args = vec!["--send"];
     args.extend_from_slice(agent);
-    yard.write(
+    let written = yard.write(
         "s1",
         r#"[{"id":"build","kind":"stage","title":"Build","status":"active"},
             {"id":"p1","kind":"plan","stage":"build","title":"The plan","markdown":"1. Do it","planMode":true}]"#,
         &args,
     );
     let served = Served::start(&yard, &["--tree", &yard.scratch.0.display().to_string()]);
-    (yard, served)
+    let submission = written["submission"].as_str().unwrap().to_owned();
+    (yard, served, submission)
 }
 
 /// The permission request for `ExitPlanMode` of the hook's agent, running.
@@ -269,6 +276,34 @@ fn a_subagent_s_request_waits_on_the_plan_that_subagent_presented() {
     let output = answered(child);
     assert_eq!(
         output["hookOutput"]["hookSpecificOutput"]["decision"]["behavior"],
+        "allow"
+    );
+}
+
+#[test]
+fn the_agent_s_own_wait_on_a_plan_is_not_refused_while_the_hook_waits_on_it() {
+    let (yard, served, submission) = sent(&[]);
+    let hook = asking(&yard, None);
+    settle();
+    let agent = yard.spawn(&[
+        "wait",
+        "--session",
+        "s1",
+        "--submission",
+        &submission,
+        "--timeout",
+        "10",
+    ]);
+    settle();
+    decide(
+        &yard,
+        &served,
+        &json!({"block": "p1", "verdict": "approved"}),
+    );
+    let waited = agent.wait_with_output().unwrap();
+    assert_eq!(document("wait", &waited)["outcome"], "answered");
+    assert_eq!(
+        answered(hook)["hookOutput"]["hookSpecificOutput"]["decision"]["behavior"],
         "allow"
     );
 }

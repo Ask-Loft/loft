@@ -24432,6 +24432,12 @@ links:
       - file: "crates/loft-cli/tests/yard_claude_events.rs"
         name: "a_plan_decided_in_the_terminal_first_ends_the_wait_and_the_hook_answers_nothing"
         body: 1fadefb381ef4769e73be7aa8bd4caa744ccf5f146fd657595a59ac2cda87677
+  - node: 01a1f026-48d1-7180-bbb4-84c74fe2f2ed
+    reviewed: 0e4f4c231aa441e496a317d2fa3e947f503f06efbe43ad6c1af9ed3ff6b6bc22
+    tests:
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "the_agent_s_own_wait_on_a_plan_is_not_refused_while_the_hook_waits_on_it"
+        body: 2a74a0193cd9f4b81d2f5e54f317fa46d5ba0f0724be92cf6bedcf2665991d97
   - node: 01a183e9-dfd2-74b1-a45a-14b8d540956c
     reviewed: abf28ca425a6502ed28be795bdc72626f1eeae64273c94bf4d720be3e8caf9e8
     tests:
@@ -33667,11 +33673,14 @@ links:
         name: "a tool error that ends ExitPlanMode is handled as a host that ends it"
         body: 5810ee8f006dcdbfb513634c47813c48820c6cc39c68f1deff2db3a90fb51651
   - node: 01a1eb26-527d-769d-91c8-de44b8a1b37e
-    reviewed: dd870f3d4b9db7edcd9e206a8a8c687024af3024f233e54527efdc7be4783eea
+    reviewed: f286205cd126d2b73565f2fa863d988b5be79de809fe762ab34f15b2073b2c37
     tests:
       - file: "plugins/claude/loft/tests/yard-asking.test.ts"
         name: "the agent's yard_wait on a plan the host ended gives the decision the person makes on the page"
         body: a9bc07be0f947450ca33d794106d422f3cde644ee80be4b946a6c19bfa7829a1
+      - file: "crates/loft-cli/tests/yard_claude_events.rs"
+        name: "the_agent_s_own_wait_on_a_plan_is_not_refused_while_the_hook_waits_on_it"
+        body: 2a74a0193cd9f4b81d2f5e54f317fa46d5ba0f0724be92cf6bedcf2665991d97
   - node: 01a1646f-546c-7521-9643-bc4b064c0cda
     reviewed: 4cc6d766b76e707ef2f023dcecff83a982f8899eb5a1a563f29c6004b69a0c3c
     tests:

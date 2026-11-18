@@ -49,16 +49,36 @@ const LEASE_AGAIN: Duration = Duration::from_millis(50);
 
 pub fn run(root: &Path, args: WaitArgs) -> Finished {
     let as_json = args.output.json();
-    failure::end(SCHEMA, as_json, attempt(root, args), |outcome, fields| {
-        format!(
-            "Submission {} is {outcome}; Yard Log at revision {}",
-            fields["submission"].as_str().unwrap_or_default(),
-            fields["revision"]
-        )
-    })
+    failure::end(
+        SCHEMA,
+        as_json,
+        attempt(root, args, Lease::Take),
+        |outcome, fields| {
+            format!(
+                "Submission {} is {outcome}; Yard Log at revision {}",
+                fields["submission"].as_str().unwrap_or_default(),
+                fields["revision"]
+            )
+        },
+    )
 }
 
-pub(super) fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {
+/// Whether a wait holds its submission's lease.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Lease {
+    /// An agent's wait: it holds the lease, and may take the submission up.
+    Take,
+    /// A watch beside the agent's own wait: it takes no lease and takes nothing up.
+    Leave,
+}
+
+/// Waits on the submission as `loft yard wait` does, without its lease: the Claude Yard hook
+/// watches a plan this way, so that the agent's own wait on it is never refused.
+pub(super) fn watch(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {
+    attempt(dir, args, Lease::Leave)
+}
+
+fn attempt(dir: &Path, args: WaitArgs, lease: Lease) -> Result<(&'static str, Value), Failure> {
     let submission = Key::parse(&args.submission)
         .map(SubmissionKey::new)
         .map_err(|error| Failure::Usage(format!("--submission: {error}")))?;
@@ -87,8 +107,11 @@ pub(super) fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value
         agent,
         home,
     };
-    let taking_up = waiter.may_wait(&held)?;
-    let _lease = waiter.lease()?;
+    let taking_up = waiter.may_wait(&held)? && lease == Lease::Take;
+    let _lease = match lease {
+        Lease::Take => Some(waiter.lease()?),
+        Lease::Leave => None,
+    };
     // Another wait may have taken the submission up while this one took the lease.
     let taking_up = taking_up && waiter.may_wait(&branch.store.read()?)?;
     let taken_up = taking_up && waiter.take_up(at)?;
