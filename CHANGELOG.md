@@ -3,6 +3,15 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.4.1-alpha.2 (2026-11-18)
+
+The second prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.2`. It lets you try a plan that a host
+such as T3 Code ends, now decided on the Yard page and answered to the agent: in 2.4.1-alpha.1
+the plugin's own hook held the plan, so the agent's `yard_wait` on it was refused and the
+person's decision never reached it. Everything 2.4.1-alpha.1 let you try is here too, and the
+entries under Unreleased below list everything 2.4.1 will hold.
+
 ## 2.4.1-alpha.1 (2026-11-17)
 
 The first prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
