@@ -64,7 +64,8 @@ function portOf(doc: Record<string, unknown>): number | undefined {
  * resolves, and ends with the child.
  */
 export function serve($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
-  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree], true)
+  const listen = settings.listen.flatMap(address => ['--listen', address])
+  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, ...listen], true)
   const stream = $.process.spawn({ argv, cwd: tree, env: QUIET })
   return new Promise<string | undefined>(settled => {
     let stdout = ''

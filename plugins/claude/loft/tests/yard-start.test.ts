@@ -181,6 +181,16 @@ test('where no page server answers, the mod runs loft yard serve for the session
   expect(serves().length).toBeGreaterThan(1)
 })
 
+test('the mod passes each address of the yardListen setting to the loft yard serve it starts', { options: { yardListen: '100.64.0.1, 192.168.1.5' } }, async ($, on) => {
+  const w = world(on, { serve: 'serving' })
+  await start($)
+  await w.clock.advance(1)
+  const serve = w.state.runs.find(run => run.argv.includes('serve'))!
+  expect(serve.argv).toEqual(['loft', 'yard', 'serve', '--session', SESSION, '--tree', TREE, '--listen', '100.64.0.1', '--listen', '192.168.1.5', '--port', '7411', '--format', 'json'])
+  await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  expect(w.state.runs.at(-1)!.argv).not.toContain('--listen')
+})
+
 test('where no page server answers the beat, the mod runs loft yard serve at every beat', async ($, on) => {
   const w = world(on, { serve: 'running' })
   await start($)

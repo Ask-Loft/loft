@@ -27009,6 +27009,18 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "each tool runs its command in the session directory with the page server port, and a write with the baseBranch setting as its default base"
         body: 8ef4d7a671fcaa67baa428f89000d6078e982529f20aaa1c6970682eac8a33e3
+  - node: 01a1eeea-3ba6-7330-8a73-2eb4edd533e6
+    reviewed: a1715e6c4575538ea5b99f5f5ced196474f6748b316b51978fc2c6e48be27d60
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "the mod passes each address of the yardListen setting to the loft yard serve it starts"
+        body: 40fe4ab7cda764f121008eafec9afc460cfbf94ab56a136b4e73fc67a966b808
+  - node: 01a1eeea-3ba6-7330-8a73-2eb5ce1eb20c
+    reviewed: 19c28ff8d0e69d634a050a92d45115c10154c2e5beefc4b2850550d42e4c4e50
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where no page server answers, the mod runs loft yard serve for the session and its tree, and one that serves is not run again"
+        body: 93ccddf9935ba11e85b597f52ce48e4aef8fe664bb74af8a29e7fe887871bbaa
   - node: 01a1646f-546d-7042-befd-ea8fc7b5b732
     reviewed: 8ff3c50454413ab86e3c2ccaf7ad72a10a180a208f41e6cbb13a79c0d969defa
     tests:
@@ -33990,6 +34002,12 @@ links:
       - file: "crates/loft-cli/tests/yard_callers.rs"
         name: "the_continuing_session_starts_from_the_revision_the_ended_session_last_read"
         body: ec02b5486218537651457db5cd2ee221c40616f65fcf5b52ce15a2bb71ecbee9
+  - node: 01a1eeea-3ba5-7122-8e30-23eff22cdb05
+    reviewed: 79c10c6c9e801dea6a1efc281e1d84b3e460530a9b7cf9da4e1688fcda5f3683
+    tests:
+      - file: "crates/loft-cli/tests/plugin_settings.rs"
+        name: "the_claude_code_manifest_declares_the_yard_listen_setting_empty_by_default"
+        body: 01277272eb20a86adfab5aa4b8e8bec6461acaa19b259c9a343caaff1936eeea
   - node: 01a1646f-546c-7521-9643-bc72fc00b830
     reviewed: 3c22ab6158564ca67cff544ff4612d677892041251f9a69865347c1148796832
     tests:

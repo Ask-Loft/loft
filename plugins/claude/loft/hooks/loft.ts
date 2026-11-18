@@ -12,8 +12,16 @@ export const QUIET = { LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' }
 /** The page server's port unless the `yardPort` setting names another. */
 export const DEFAULT_PORT = 7411
 
-/** The plugin's settings: the words that run loft, the base branch and the page server's port. */
-export type Settings = { words: string[]; base: string; port: number; protocol?: number }
+/**
+ * The plugin's settings: the words that run loft, the base branch, the page server's port and the
+ * addresses it listens on beside the loopback interface, none where it is to listen on every one.
+ */
+export type Settings = { words: string[]; base: string; port: number; listen: string[]; protocol?: number }
+
+/** The addresses the `yardListen` setting names, separated by commas or spaces. */
+export function addressesOf(setting: unknown): string[] {
+  return typeof setting === 'string' ? setting.split(/[\s,]+/).filter(address => address !== '') : []
+}
 
 export function settingsOf(options: PluginOptions): Settings {
   const command = typeof options.loftCommand === 'string' ? options.loftCommand : 'loft'
@@ -24,6 +32,7 @@ export function settingsOf(options: PluginOptions): Settings {
     words: commandWords(command),
     base,
     port: Number.isInteger(port) && port > 0 && port < 65536 ? port : DEFAULT_PORT,
+    listen: addressesOf(options.yardListen),
   }
 }
 
