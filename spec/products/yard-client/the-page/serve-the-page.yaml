@@ -49,6 +49,10 @@ requirements:
         name: "A page server of a newer version is not replaced, whatever addresses it listens on."
       - key: 01a1f069-3ebd-70c3-9e39-9698940f41a3
         name: "With `--join`, a `loft yard serve` that finds a running page server of its own version exits 0 and starts none, whatever addresses that page server listens on."
+      - key: 01a1f2ba-ae5b-7356-b8f4-04521641f082
+        name: "Where another page server takes the lock while `loft yard serve` waits for the one it asked to stop, it asks that page server to stop as well, unless it is one to leave serving."
+      - key: 01a1f2ba-ae5b-7356-b8f4-0453897e157d
+        name: "`--join` and `--replace` given together are a usage error."
   - key: 01a1eeea-3ba6-7330-8a73-2eba945eb028
     statement:
       form: unwanted
