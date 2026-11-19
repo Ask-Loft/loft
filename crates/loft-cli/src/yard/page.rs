@@ -36,6 +36,7 @@ pub struct Running {
     pub version: String,
     /// The process id the file gives, never used to tell whether the page server runs.
     pub pid: Option<u64>,
+    pub listen: Vec<String>,
 }
 
 /// The page server that runs, where one does: the lock on `~/.yard/server.lock` is held and
@@ -60,9 +61,21 @@ pub fn running(home: &Home) -> Result<Option<Running>, YardStoreError> {
         .and_then(|port| u16::try_from(port).ok());
     let version = server["version"].as_str().map(ToOwned::to_owned);
     let pid = server["pid"].as_u64();
-    Ok(port
-        .zip(version)
-        .map(|(port, version)| Running { port, version, pid }))
+    let listen = server["listen"]
+        .as_array()
+        .map(|named| {
+            named
+                .iter()
+                .filter_map(|address| address.as_str().map(ToOwned::to_owned))
+                .collect()
+        })
+        .unwrap_or_default();
+    Ok(port.zip(version).map(|(port, version)| Running {
+        port,
+        version,
+        pid,
+        listen,
+    }))
 }
 
 /// The page server's lock, taken where no process holds it, so that no page server starts while

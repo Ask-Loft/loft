@@ -1,16 +1,18 @@
-// The page server: every BEAT the mod tells it that the session is live; only where no page server
-// answers does it run `loft yard serve`, which records the session as heard, registers its tree
-// and exits where a page server of its version or a newer one serves the port, and where none
-// does becomes the page server and lives as long as the mod (the Feature "Share one page
-// server"). The mod then reaches the page server on the port the command reports, which is not
-// the plugin's `yardPort` where another `loft` started it elsewhere. A tree a tool call reaches is
-// registered through `loft yard serve` too.
+// The page server: every BEAT the mod tells it that the session is live; at the session's first
+// beat, and after it only where no page server answers, it runs `loft yard serve`, which records
+// the session as heard, registers its tree and exits where a page server of a newer version, or
+// of its version on the addresses of `yardListen`, serves the port, and otherwise becomes the
+// page server and lives as long as the mod (the Feature "Share one page server"). The first beat
+// runs it even where a page server answers, so that one listening on other addresses than the
+// setting names is replaced. The mod then reaches the page server on the port the command
+// reports, which is not the plugin's `yardPort` where another `loft` started it elsewhere. A
+// tree a tool call reaches is registered through `loft yard serve` too.
 
 import type { EngineInterface } from 'claude-code'
 
 import { QUIET, type Settings } from '../loft'
 import { parseDocument } from '../model'
-import { HOST } from './contract'
+import { HOST, LISTENS } from './contract'
 import { answerOf, type Outbox } from './outbox'
 import { argvOf } from './run'
 
@@ -18,15 +20,16 @@ import { argvOf } from './run'
 export const BEAT = 5000
 
 /**
- * What the mod knows of the page server: whether its own child serves; the trees the mod
+ * What the mod knows of the page server: whether its own child serves; whether a beat has run
+ * `loft yard serve` yet, the one run that may replace a page server; the trees the mod
  * registered, as its session spells them; for each tree whose registration the page server
  * answered, the top of its worktree by its real path and as spelled; and the real path of each
  * tree served, as the last answer named them.
  */
-export type Server = { isServing: boolean; isBeating: boolean; trees: Set<string>; tops: Map<string, string[]>; served: Set<string> }
+export type Server = { isServing: boolean; isBeating: boolean; hasServed: boolean; trees: Set<string>; tops: Map<string, string[]>; served: Set<string> }
 
 export function serverOf(): Server {
-  return { isServing: false, isBeating: false, trees: new Set(), tops: new Map(), served: new Set() }
+  return { isServing: false, isBeating: false, hasServed: false, trees: new Set(), tops: new Map(), served: new Set() }
 }
 
 /**
@@ -61,11 +64,15 @@ function portOf(doc: Record<string, unknown>): number | undefined {
 /**
  * Runs `loft yard serve` for the session and the tree; resolves with its first document's outcome,
  * and points `box` at the port it reports. Where it says it serves, its loop runs on after this
- * resolves, and ends with the child.
+ * resolves, and ends with the child. Only the session's first beat replaces a page server of its
+ * version on other addresses; every other run joins it, so that two sessions naming different
+ * addresses never replace each other in turn.
  */
-export function serve($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
-  const listen = settings.listen.flatMap(address => ['--listen', address])
-  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, ...listen], true)
+export function serve($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string, join: boolean) {
+  const isListening = (settings.protocol ?? 1) >= LISTENS
+  const listen = isListening ? settings.listen.flatMap(address => ['--listen', address]) : []
+  const joins = isListening && join ? ['--join'] : []
+  const argv = argvOf(settings, ['serve', '--session', session, '--tree', tree, ...listen, ...joins], true)
   const stream = $.process.spawn({ argv, cwd: tree, env: QUIET })
   return new Promise<string | undefined>(settled => {
     let stdout = ''
@@ -104,36 +111,45 @@ async function hear($: EngineInterface, box: Outbox, server: Server, session: st
 
 /**
  * One beat: tells the page server the session is live, and registers the session's tree with one
- * that answers until it takes it, learning the tree's top from the answer; where none answers,
- * runs `loft yard serve`, which registers the tree itself, unless the mod's own child serves or
- * the last run has yet to say what it did. `loft yard serve` reports no top, so a beat that
+ * that answers until it takes it, learning the tree's top from the answer; until a beat has run
+ * `loft yard serve`, and after that where none answers, runs it, unless the mod's own child
+ * serves or the last run has yet to say what it did. The first run joins no page server, so
+ * that one on other addresses than `yardListen` names is replaced, even where a beat that hangs
+ * on its answer leaves the run to a later beat. `loft yard serve` reports no top, so a beat that
  * reaches the page server registers the tree once more to learn it.
  */
 export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
-  if (await hear($, box, server, session, settings.protocol)) {
-    if (server.tops.has(tree)) return
-    const answer = await answerOf($, box, '/api/register', { tree })
-    if (answer === undefined) return
-    server.trees.add(tree)
-    learn(server, answer)
-    // An answer that names no top, as from a page server that wrote no JSON, is asked again.
-    const tops = [...textsOf(answer, 'tree'), ...textsOf(answer, 'spelled')]
-    if (tops.length > 0) server.tops.set(tree, tops)
-    return
-  }
-  if (server.isBeating || server.isServing) return
+  const isHeard = await hear($, box, server, session, settings.protocol)
+  const isBusy = server.isBeating || server.isServing
+  if (isHeard && (server.hasServed || isBusy)) return learnTop($, server, box, tree)
+  if (isBusy) return
+  const join = server.hasServed
+  server.hasServed = true
   server.isBeating = true
   try {
-    const outcome = await serve($, settings, server, box, session, tree)
+    const outcome = await serve($, settings, server, box, session, tree, join)
     if (outcome === 'serving' || outcome === 'running') server.trees.add(tree)
   } finally {
     server.isBeating = false
   }
+  if (isHeard) await learnTop($, server, box, tree)
+}
+
+/** Registers the session's tree with the page server that answers, until it names the tree's top. */
+async function learnTop($: EngineInterface, server: Server, box: Outbox, tree: string) {
+  if (server.tops.has(tree)) return
+  const answer = await answerOf($, box, '/api/register', { tree })
+  if (answer === undefined) return
+  server.trees.add(tree)
+  learn(server, answer)
+  // An answer that names no top, as from a page server that wrote no JSON, is asked again.
+  const tops = [...textsOf(answer, 'tree'), ...textsOf(answer, 'spelled')]
+  if (tops.length > 0) server.tops.set(tree, tops)
 }
 
 /** Registers a tree that a tool call reached and the page server does not serve yet. */
 export async function register($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
   if (server.trees.has(tree)) return
   server.trees.add(tree)
-  await serve($, settings, server, box, session, tree)
+  await serve($, settings, server, box, session, tree, true)
 }

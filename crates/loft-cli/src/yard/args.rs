@@ -99,8 +99,8 @@ pub struct ServeArgs {
     /// The port to serve the page on.
     #[arg(long, value_name = "PORT", default_value_t = DEFAULT_PORT)]
     pub port: u16,
-    /// An IP address of the machine to serve the page on, beside the loopback interface, in
-    /// place of every address; given once for each address.
+    /// An IP address of the machine to serve the page on as well as the loopback interface,
+    /// `0.0.0.0` for every address; given once for each address.
     #[arg(long, value_name = "ADDRESS", value_parser = super::serve::parse_address)]
     pub listen: Vec<super::serve::Address>,
     /// The session whose mod runs the command, recorded as heard.
@@ -109,10 +109,14 @@ pub struct ServeArgs {
     /// A directory of a worktree whose Yard Logs the page server is to serve.
     #[arg(long, value_name = "DIR")]
     pub tree: Option<PathBuf>,
-    /// Replace the running page server whatever its version, as one built anew from the same
-    /// version would not otherwise.
+    /// Replace the running page server whatever its version and addresses, as one built anew
+    /// from the same version on the same addresses would not otherwise.
     #[arg(long)]
     pub replace: bool,
+    /// Join a running page server of this version whatever addresses it listens on, rather than
+    /// replace one that listens on other addresses than this command would.
+    #[arg(long, conflicts_with = "replace")]
+    pub join: bool,
     #[command(flatten)]
     pub output: Output,
 }

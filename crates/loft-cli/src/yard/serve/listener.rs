@@ -1,7 +1,7 @@
-//! The page server's sockets: it listens on every address of the machine, or on each address it
-//! is given and on the loopback interface, takes each connection it receives on a thread of its
-//! own, and opens none. This is the only source of `loft` beside the network client and a
-//! sign-in's listener that names a socket, and it never connects.
+//! The page server's sockets: it listens on the loopback interface and on each address it is
+//! given, takes each connection it receives on a thread of its own, and opens none. This is the
+//! only source of `loft` beside the network client and a sign-in's listener that names a socket,
+//! and it never connects.
 
 use std::io::{self, Read, Write};
 use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream};
@@ -24,6 +24,24 @@ pub fn parse_address(text: &str) -> Result<Address, String> {
     text.parse::<IpAddr>()
         .map(Address)
         .map_err(|_| format!("`{text}` is not an IP address"))
+}
+
+/// The addresses a page server given `addresses` listens on, as `~/.yard/server.json` names them
+/// to compare one page server with another: the loopback address, which every one listens on,
+/// left out, and every other address left out beside `0.0.0.0`.
+pub fn recorded(addresses: &[Address]) -> Vec<String> {
+    let loopback = IpAddr::V4(Ipv4Addr::LOCALHOST);
+    let mut named: Vec<IpAddr> = match every_address(addresses) {
+        Some(every) => vec![every],
+        None => addresses
+            .iter()
+            .map(|named| named.0)
+            .filter(|address| *address != loopback)
+            .collect(),
+    };
+    named.sort_unstable();
+    named.dedup();
+    named.iter().map(ToString::to_string).collect()
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -84,18 +102,16 @@ pub struct Listener {
     missing: Vec<SocketAddr>,
 }
 
-/// Listens at `port` on every address of the machine where `addresses` is empty or names
-/// `0.0.0.0`, and otherwise on each of `addresses` and on the loopback interface. An address the
-/// machine does not have yet is left for [`Listener::serve`] to try again.
+/// Listens at `port` on every address of the machine where `addresses` names `0.0.0.0`, and
+/// otherwise on the loopback interface and on each of `addresses`. An address the machine does
+/// not have yet is left for [`Listener::serve`] to try again.
 ///
 /// # Errors
 ///
 /// The port cannot be listened on, as when another program holds it.
 pub fn listen(port: u16, addresses: &[Address]) -> io::Result<Listener> {
     let loopback = SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port);
-    let unspecified = addresses.iter().find(|named| named.0.is_unspecified());
-    if addresses.is_empty() || unspecified.is_some() {
-        let every = unspecified.map_or(IpAddr::V4(Ipv4Addr::UNSPECIFIED), |named| named.0);
+    if let Some(every) = every_address(addresses) {
         // On macOS, the `SO_REUSEADDR` the standard library sets lets a socket listen on every
         // address beside another program's on the loopback address alone; listening there
         // first finds that program.
@@ -127,6 +143,16 @@ pub fn listen(port: u16, addresses: &[Address]) -> io::Result<Listener> {
         others,
         missing,
     })
+}
+
+/// The address that names every address, `0.0.0.0` before `::` whatever order they are named in,
+/// so that the same addresses named in another order are listened on and recorded alike.
+fn every_address(addresses: &[Address]) -> Option<IpAddr> {
+    addresses
+        .iter()
+        .map(|named| named.0)
+        .filter(IpAddr::is_unspecified)
+        .min()
 }
 
 /// The one place the page server takes a socket.
@@ -249,6 +275,29 @@ mod tests {
         assert!(parse_address("fd7a:115c:a1e0::1").is_ok());
         let refused = parse_address("machine.example.ts.net").unwrap_err();
         assert!(refused.contains("machine.example.ts.net"), "{refused}");
+    }
+
+    #[test]
+    fn the_addresses_recorded_leave_out_the_loopback_address_and_any_beside_every_address() {
+        let named = |texts: &[&str]| -> Vec<Address> {
+            texts
+                .iter()
+                .map(|text| parse_address(text).unwrap())
+                .collect()
+        };
+        assert_eq!(recorded(&[]), Vec::<String>::new());
+        assert_eq!(recorded(&named(&["127.0.0.1"])), Vec::<String>::new());
+        assert_eq!(
+            recorded(&named(&[
+                "192.168.1.5",
+                "100.64.0.1",
+                "127.0.0.1",
+                "100.64.0.1"
+            ])),
+            ["100.64.0.1", "192.168.1.5"]
+        );
+        assert_eq!(recorded(&named(&["100.64.0.1", "0.0.0.0"])), ["0.0.0.0"]);
+        assert_eq!(recorded(&named(&["::", "0.0.0.0"])), ["0.0.0.0"]);
     }
 
     #[test]

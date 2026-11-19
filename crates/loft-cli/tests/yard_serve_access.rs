@@ -14,10 +14,18 @@ use crate::yard::{ASK, Yard};
 
 /// Yard Log with `q1` sent and a page server serving its tree.
 fn asked() -> (Yard, Served) {
+    asked_listening(&[])
+}
+
+fn asked_listening(addresses: &[&str]) -> (Yard, Served) {
     let yard = Yard::new();
     yard.write("s1", ASK, &["--send"]);
     let tree = yard.scratch.0.display().to_string();
-    let served = Served::start(&yard, &["--tree", &tree]);
+    let mut args = vec!["--tree", tree.as_str()];
+    for address in addresses {
+        args.extend(["--listen", address]);
+    }
+    let served = Served::start(&yard, &args);
     (yard, served)
 }
 
@@ -59,8 +67,8 @@ fn a_request_with_another_host_is_refused_and_changes_no_file() {
 
 #[test]
 fn a_request_addressed_to_the_address_of_the_machine_it_reached_is_answered() {
-    let (_yard, served) = asked();
     let machine = machine_address();
+    let (_yard, served) = asked_listening(&[&machine.to_string()]);
     assert_eq!(served.version_at(machine).status, 200);
     let elsewhere = served.send(
         &format!(
@@ -99,7 +107,7 @@ fn a_request_naming_the_machine_by_a_name_other_than_localhost_is_refused() {
 
 #[test]
 fn a_change_from_the_page_opened_at_another_address_is_accepted_without_the_control_token() {
-    let (yard, served) = asked();
+    let (yard, served) = asked_listening(&[&machine_address().to_string()]);
     let machine = SocketAddr::new(machine_address(), served.port);
     let head =
         format!("POST /api/answer HTTP/1.1\r\nhost: {machine}\r\norigin: http://{machine}\r\n");

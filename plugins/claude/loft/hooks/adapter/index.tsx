@@ -12,7 +12,7 @@ import { QUIET, type Ran } from '../loft'
 import { isAskable } from './answers'
 import { askQuestions, ownDialog, presentPlan, waitOn } from './asking'
 import { capture, checkCapture } from './capture'
-import { descriptor } from './contract'
+import { descriptor, LISTENS } from './contract'
 import { registerEvents } from './events'
 import { flush } from './outbox'
 import { registerDraw } from './pane/draw'
@@ -27,7 +27,7 @@ import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './too
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
 export const PLUGIN_VERSION = '2.4.1-alpha.1'
 /** The oldest and the newest yard protocol this mod speaks. */
-export const PROTOCOLS = { oldest: 1, newest: 3 } as const
+export const PROTOCOLS = { oldest: 1, newest: 4 } as const
 
 function protocolRange({ oldest, newest }: { oldest: number; newest: number }): string {
   return `${oldest}${newest === oldest ? '' : `–${newest}`}`
@@ -50,6 +50,14 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   state.box.tokenPath = await tokenPathOf($, checked.doc?.home)
   state.isOn = true
   await registerCommand($)
+  const notIp = state.settings.notIp ?? []
+  if (notIp.length > 0) {
+    const named = notIp.map(entry => `\`${entry}\``).join(', ')
+    $.ui.toast(`The loft plugin's yardListen setting names ${named}, which the page server does not listen on: name IP addresses there, such as the machine's tailnet address.`, { timeoutMs: 15000 })
+  }
+  if (protocol < LISTENS && state.settings.listen.length > 0) {
+    $.ui.toast(`The loft plugin's yardListen setting waits for a newer loft: loft ${String(checked.doc?.loft ?? '')} speaks the yard protocol ${protocol}, so the page opens on this machine alone until loft is brought up to date.`, { timeoutMs: 15000 })
+  }
   void beat($, state.settings, state.server, state.box, await continued($), cwd)
   $.clock.every(BEAT, async () => {
     void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())

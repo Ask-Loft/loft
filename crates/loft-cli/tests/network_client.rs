@@ -60,6 +60,7 @@ fn listener() -> String {
 #[test]
 fn the_page_server_opens_no_network_connection() {
     let text = listener();
+    assert_eq!(text.matches("::bind(").count(), 1, "one socket is bound");
     for name in ["::connect", ".connect(", "UdpSocket", "ureq"] {
         assert!(!text.contains(name), "the listener names {name}");
     }

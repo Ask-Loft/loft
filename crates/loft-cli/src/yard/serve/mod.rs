@@ -1,11 +1,12 @@
 //! `loft yard serve` (the Serve the page, Share one page server and Replace an older page server
 //! Features): the page server, one on the machine. A run records its session as heard and its
-//! tree as served; where a page server of this `loft`'s version or a newer one already runs, it
-//! leaves it serving and exits; where an older one runs, it asks it to stop through
-//! `~/.yard/stop.json` and waits for its lock to be freed. Then it takes the lock on
-//! `~/.yard/server.lock`, which it holds while it runs, listens on every address of the machine or
-//! on the addresses `--listen` names and the loopback interface, names itself in
-//! `~/.yard/server.json`, and serves until a newer one asks it to stop.
+//! tree as served; where a page server of a newer version, or of this `loft`'s version on the
+//! addresses it would listen on, already runs, it leaves it serving and exits; where an older one
+//! runs, or one of this version on other addresses, it asks it to stop through
+//! `~/.yard/stop.json`, naming its process, and waits for its lock to be freed. Then it takes the
+//! lock on `~/.yard/server.lock`, which it holds while it runs, listens on the loopback interface
+//! and on the addresses `--listen` names, names itself and those addresses in
+//! `~/.yard/server.json`, and serves until another one asks it to stop.
 
 mod activity;
 mod assets;
@@ -183,7 +184,8 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
     if let Some(tree) = &args.tree {
         trees::register(&home, tree)?;
     }
-    let lock = match take_over(&home, args.replace)? {
+    let listen = listener::recorded(&args.listen);
+    let lock = match take_over(&home, args, &listen)? {
         Ok(lock) => lock,
         Err(running) => {
             return Ok(Started::Running(json!({
@@ -204,7 +206,9 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
         "version": VERSION,
         "formats": formats,
     });
-    home.write(HomeFile::Server, format!("{named:#}\n").as_bytes())?;
+    let mut recorded = named.clone();
+    recorded["listen"] = json!(listen);
+    home.write(HomeFile::Server, format!("{recorded:#}\n").as_bytes())?;
     home.remove(HomeFile::Stop)?;
     let server = Arc::new(Server {
         port: args.port,
@@ -233,20 +237,35 @@ fn held(port: u16, error: &io::Error) -> Failure {
     Failure::one("port", message)
 }
 
-/// The lock on `~/.yard/server.lock`, once no page server holds it: an older one, or any one
-/// where it is to `replace` it, asked to stop and waited for, or none; or the page server of
-/// this version or a newer one that runs.
-fn take_over(home: &Home, replace: bool) -> Result<Result<Locked, discovery::Running>, Failure> {
+/// The lock on `~/.yard/server.lock`, once no page server holds it: an older one, one of this
+/// version that listens on other addresses than `listen` unless `args` joins it, or any one
+/// where `args` replaces it, asked to stop and waited for, or none; or the page server of a
+/// newer version, or of this version on `listen` or joined, that runs.
+fn take_over(
+    home: &Home,
+    args: &ServeArgs,
+    listen: &[String],
+) -> Result<Result<Locked, discovery::Running>, Failure> {
+    let replace = args.replace;
     let clock = clock();
     let began = clock.elapsed();
     let mut asked = None;
     loop {
         if let Some(running) = discovery::running(home)? {
-            if !replace && discovery::against_ours(&running.version) != Compared::Less {
+            let ordered = discovery::against_ours(&running.version);
+            let elsewhere = !args.join && ordered == Compared::Equal && running.listen != listen;
+            if !replace && !elsewhere && ordered != Compared::Less {
                 return Ok(Err(running));
             }
-            if asked.is_none() {
-                discovery::request_stop(home, replace)?;
+            // Another `loft yard serve` may take the lock between the one asked stopping and this
+            // one taking it, and removes the request once it serves; that page server is asked
+            // in turn, unless it is one to leave serving.
+            let unasked = asked
+                .as_ref()
+                .is_none_or(|before: &discovery::Running| before.pid != running.pid)
+                || home.read(HomeFile::Stop)?.is_none();
+            if unasked {
+                discovery::request_stop(home, replace || elsewhere, running.pid)?;
             }
             asked = Some(running);
         } else if let Some(locked) = lock::try_lock(&home.dir().join(SERVER_LOCK))? {
