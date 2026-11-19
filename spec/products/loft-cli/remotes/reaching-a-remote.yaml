@@ -19,6 +19,8 @@ requirements:
         name: "The file is a JSON object whose `remotes` maps each remote's address to its sign-in, an object of `tokenEndpoint`, `resource`, `clientId`, `accessToken`, `expiresAt` and `refreshToken`."
       - key: 01a156aa-d531-70a7-88e0-0befdde18d29
         name: "An address that the file does not name has no sign-in in the file."
+      - key: 01a1f4f1-4309-7056-a238-4b394d224dd7
+        name: "A kept sign-in whose `resource` lies on another origin than the address it is kept under counts as no sign-in for that address."
       - key: 01a18e1f-8daa-7674-9603-5ad333b36e05
         name: "No file of the repository holds a sign-in or a token."
   - key: 01a156aa-d531-70a7-88e0-0bf010f56964
