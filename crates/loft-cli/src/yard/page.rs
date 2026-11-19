@@ -40,7 +40,7 @@ pub struct Running {
 }
 
 /// The page server that runs, where one does: the lock on `~/.yard/server.lock` is held and
-/// `~/.yard/server.json` names it.
+/// `~/.yard/server.json` names it with its port.
 ///
 /// # Errors
 ///
@@ -61,15 +61,7 @@ pub fn running(home: &Home) -> Result<Option<Running>, YardStoreError> {
         .and_then(|port| u16::try_from(port).ok());
     let version = server["version"].as_str().map(ToOwned::to_owned);
     let pid = server["pid"].as_u64();
-    let listen = server["listen"]
-        .as_array()
-        .map(|named| {
-            named
-                .iter()
-                .filter_map(|address| address.as_str().map(ToOwned::to_owned))
-                .collect()
-        })
-        .unwrap_or_default();
+    let listen = listen_of(&server);
     Ok(port.zip(version).map(|(port, version)| Running {
         port,
         version,
@@ -78,9 +70,30 @@ pub fn running(home: &Home) -> Result<Option<Running>, YardStoreError> {
     }))
 }
 
+pub(super) fn last_listen(home: &Home) -> Result<Vec<String>, YardStoreError> {
+    let Some(bytes) = home.read(HomeFile::Server)? else {
+        return Ok(Vec::new());
+    };
+    Ok(serde_json::from_slice::<Value>(&bytes)
+        .map(|server| listen_of(&server))
+        .unwrap_or_default())
+}
+
+fn listen_of(server: &Value) -> Vec<String> {
+    server["listen"]
+        .as_array()
+        .map(|named| {
+            named
+                .iter()
+                .filter_map(|address| address.as_str().map(ToOwned::to_owned))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 /// The page server's lock, taken where no process holds it, so that no page server starts while
-/// the result lives; else the page server that holds it, or none where its holder has not named
-/// itself in `~/.yard/server.json` yet, as a page server that is starting has not.
+/// the result lives; else the page server that holds it, or none where its holder has not given
+/// its port in `~/.yard/server.json` yet, as a page server that is starting has not.
 ///
 /// # Errors
 ///

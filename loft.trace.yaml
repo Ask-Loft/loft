@@ -23479,7 +23479,7 @@ links:
         name: "a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server"
         body: feba3ba0fa75cc0d314db937a00655686fc1a9b2ebaf21bb39fd1846f8e400a4
   - node: 01a1eeea-3ba5-7122-8e30-23ee66ae5a35
-    reviewed: 3cd7332ab9fb05b8068f7c0de2c5f15b5aa045c25e69b8948f127093e25cf0f9
+    reviewed: 148e452371987c10c997bf970b49bad9f097b9025b20b59cac10b37ff89fb5eb
     tests:
       - file: "crates/loft-cli/tests/yard_codex_watch.rs"
         name: "a_page_server_a_codex_worker_starts_listens_on_the_loopback_interface_alone"
@@ -27051,6 +27051,21 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "where the first beat's answer hangs past the next beat, the mod's first loft yard serve still joins no page server"
         body: 0d513a8a4f8f091ab196658e2f59ee05cd72513b10f0b9334980445d8ec8ca1e
+  - node: 01a1f46d-ccf3-74a1-826b-00138817d7b6
+    reviewed: 072d0eb4a8a307c74e15ac299cfc67c287b6869055bfb94abef8a42730168401
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where the first beat's answer hangs past the next beat, the mod's first loft yard serve still joins no page server"
+        body: 0d513a8a4f8f091ab196658e2f59ee05cd72513b10f0b9334980445d8ec8ca1e
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a first loft yard serve the mod could not run within 30 seconds of the session's start joins the page server"
+        body: d395e66ba495f130d0e55e65bbcf468090a188dbe91012ad5010375a49096b0d
+  - node: 01a1f46e-0730-77fd-88d2-5fe5a5fcde0f
+    reviewed: 495a90cb97468ff33fb350832cffa67995b5e369ec9934c3783a45b38e16fd64
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a first loft yard serve the mod could not run within 30 seconds of the session's start joins the page server"
+        body: d395e66ba495f130d0e55e65bbcf468090a188dbe91012ad5010375a49096b0d
   - node: 01a1f03b-b432-7709-92e2-1d44792792e2
     reviewed: 0d3ffc83b559c178b728a3a46a986df715f7d01cf90b6e876e527c51c15c0ca4
     tests:
@@ -27066,6 +27081,15 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
         body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+  - node: 01a1f41d-c02f-775e-9141-8c77128977d3
+    reviewed: d3c45767b0f8cfae698bf48a058c2c46e118f65203165b89426dd634242cfca6
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
+        body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_join_where_none_runs_after_a_loopback_page_server_listens_on_the_loopback_interface_alone"
+        body: 51a31d454678724fe44cb5d7a7494b178b22ba46dcd4f03212d3fb0ef6f94e09
   - node: 01a1646f-546d-7042-befd-ea90b3a3d660
     reviewed: 2a625aaa33170aa8e6f2472ecac6b873711ff364209a4887135810b45fd90e7c
     tests:
@@ -27082,20 +27106,20 @@ links:
         name: "a tree a tool call reaches is registered with the page server once"
         body: 6efca2c58b6734331c6d095b8edd84ffac8e3ebaec24a95dabb2d9470e1ea14f
   - node: 01a1f03b-b432-7709-92e2-1d464c3a5404
-    reviewed: 6660616f8b945f559cc4d016907b48f0e9d72ccdf206648d72e2d6d099a411e7
+    reviewed: 52b831c3ba2844f1ab8393339e83969d01a58e33dcfc32287c097ab78227ed09
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the mod names once each entry of the yardListen setting that is not an IP address, and passes the other addresses"
-        body: d6ef45fc50ef3874987d9bb71b2285c9f3478192e5d629633dea5c4691cdcba1
+        name: "the mod names once each entry of the yardListen setting that is not an IP address or is the unspecified IPv6 address, and passes the other addresses"
+        body: 8983fb7e678fcfb31ad1f3ce48d24f45a4f86aab7b2bb9c699da22aa040a49aa
       - file: "plugins/claude/loft/tests/model.test.ts"
-        name: "an IP address is told from anything else as loft yard serve --listen reads one"
-        body: 4efa650d8c22a4c8ee4e060b3238332b05a8a6cd97da0cf5316e876fb1e92ac4
+        name: "an address is told from anything else as loft yard serve --listen reads one, the unspecified IPv6 address refused"
+        body: 39a904d85bfea9bff22e617cc9e09d95c66c3634a26fb89f2c9e8116dc8ccdd6
   - node: 01a1f03b-b432-7709-92e2-1d47c30f8dc0
     reviewed: 307c6a601852e78cfb6386efe3aa19bf49d858136c87b948475eb6dcbf3bdb42
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "the mod names once each entry of the yardListen setting that is not an IP address, and passes the other addresses"
-        body: d6ef45fc50ef3874987d9bb71b2285c9f3478192e5d629633dea5c4691cdcba1
+        name: "the mod names once each entry of the yardListen setting that is not an IP address or is the unspecified IPv6 address, and passes the other addresses"
+        body: 8983fb7e678fcfb31ad1f3ce48d24f45a4f86aab7b2bb9c699da22aa040a49aa
   - node: 01a1f074-174d-7385-9119-36b1ea353610
     reviewed: a3bf98e7847cca85cb5221ad1617fbb8c692bd79e0f9c080a5aa319e4d2add84
     tests:
@@ -28110,6 +28134,33 @@ links:
       - file: "crates/loft-cli/tests/yard_serve.rs"
         name: "server_json_gives_the_port_process_id_version_formats_and_addresses"
         body: e4ddd6b1c7e88d2d38c5fea02dc15924a3fa058a73b3dc45f9970b89e9a4395b
+  - node: 01a1f41d-c030-764d-a122-1ae315dcf549
+    reviewed: 4bb711994face6cde13c8cab11cd6f18f798010abae09676b6a9df818a2b75a2
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "a_start_that_does_not_serve_keeps_every_address_the_last_page_server_served_on"
+        body: 3af0650a37a33a823d85e1bac83e1fa2aa58cea771f84afa018746643a212462
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "a_start_that_does_not_serve_leaves_no_port_and_the_addresses_the_last_page_server_served_on"
+        body: 74f7e0e8196dd7ee6349b7d8f2d00e7de3d062c86dcb3d90229e55035cc7179c
+  - node: 01a1f46e-0731-70de-9f4e-e8b47292a02b
+    reviewed: 9a97117e33ca9a619a59fde7b598473d68e6cb219f7a06fc232d9084cd509d7d
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "a_start_that_does_not_serve_leaves_no_port_and_the_addresses_the_last_page_server_served_on"
+        body: 74f7e0e8196dd7ee6349b7d8f2d00e7de3d062c86dcb3d90229e55035cc7179c
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_join_where_none_runs_after_a_page_server_on_every_address_listens_on_every_address"
+        body: f41d48bbcc3adabb266977808a11d55ce0d6cbedb183309353485c7bd52c0a87
+  - node: 01a1f46d-ccf4-743c-9d4e-97adc5688342
+    reviewed: 3325c75b8527a0fbace84c2f74667152cec09b6e4ffd4b6ad9f18648c1627c1e
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "a_start_that_does_not_serve_keeps_every_address_the_last_page_server_served_on"
+        body: 3af0650a37a33a823d85e1bac83e1fa2aa58cea771f84afa018746643a212462
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "a_start_that_does_not_serve_leaves_no_port_and_the_addresses_the_last_page_server_served_on"
+        body: 74f7e0e8196dd7ee6349b7d8f2d00e7de3d062c86dcb3d90229e55035cc7179c
   - node: 01a16517-45f6-7370-99ab-21fa38d8b291
     reviewed: 5563678e1d5a0d83c31965bbb8631db97b8eb46dc435ce167cb966ba8f307c0f
     tests:
@@ -28670,34 +28721,34 @@ links:
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
-        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+        body: c37e3bde861a9da9583f02fbd277af03e4d0d213249b00fb969d741b3b4fbd7f
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
-        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+        body: 1ce2c0ebe06699ef11e56daf42795b0522ebe9f486ac9b7e709277a600497c0c
   - node: 01a1877b-6de6-72d5-a7d7-a99cc522b333
-    reviewed: 60b68f98ec2796f1906d6985e61b0824e40965e498b688c05736335563f8db7b
+    reviewed: e9158f0d9ebe56c6507a92740c75ffbcc422e7a83b3efbf9dd8de122df3f9afc
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
-        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+        body: c37e3bde861a9da9583f02fbd277af03e4d0d213249b00fb969d741b3b4fbd7f
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
-        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+        body: 1ce2c0ebe06699ef11e56daf42795b0522ebe9f486ac9b7e709277a600497c0c
   - node: 01a1877b-6de6-72d5-a7d7-a99d4765ea18
     reviewed: e8c5886f7f12d6e4dc7f8d7928cdc2cab02078d982eb8523a0b516f308b1dd7d
     tests:
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "an address whose tree the page server does not serve names the tree and how to add it, and no unreadable files"
-        body: 9f7f8af1940f69878f0425bfcbfd8a9e98a7a717e309d40ab35abc47e20a3596
+        body: c37e3bde861a9da9583f02fbd277af03e4d0d213249b00fb969d741b3b4fbd7f
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
-        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+        body: 1ce2c0ebe06699ef11e56daf42795b0522ebe9f486ac9b7e709277a600497c0c
   - node: 01a1877b-6de6-72d5-a7d7-a99e4cab6125
     reviewed: 5a7aacb1a3dc9b160acbbc4497990d66296a536a9887cbae6ccab8b824afe109
     tests:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "an address whose tree the page server does not serve says so, and an agent's command there brings its Yard Log without a reload"
-        body: 3ad1de9b176f86e8c43a24a8df84768dabdb62af92b725871df60075f3c31df3
+        body: 1ce2c0ebe06699ef11e56daf42795b0522ebe9f486ac9b7e709277a600497c0c
   - node: 01a1649f-62ef-71e6-98de-e10e6e6ea6ed
     reviewed: 3a2d7afe1a244fce40772757ece7d21948a477048b99a102e3e40e2118772728
     tests:
@@ -30549,6 +30600,36 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_networks.rs"
         name: "serve_join_and_replace_together_are_a_usage_error"
         body: b5c0b2a0aee80aad30d1f177ef7756eaa69c2181ad7ccb0dad769127d8867416
+  - node: 01a1f41d-c030-764d-a122-1addf8f15675
+    reviewed: b7b973c6d834a1b27988e63c5537822ab25394c5c09c0ec3a1496d9ca33b37fc
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_waits_for_a_starting_page_server_to_give_its_port_and_compares_with_its_addresses"
+        body: 5dd1040df39639e1bc82512ec51b4c432132a2aab2cb9446ba4688dd1b139e64
+  - node: 01a1f41d-c030-764d-a122-1adf4c0b8ac3
+    reviewed: a0c6556e8a63b27b066851ee0716cd7ad6c6b7bc58e56daad200b1402591d74b
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_join_where_none_runs_after_a_loopback_page_server_listens_on_the_loopback_interface_alone"
+        body: 51a31d454678724fe44cb5d7a7494b178b22ba46dcd4f03212d3fb0ef6f94e09
+  - node: 01a1f41d-c030-764d-a122-1ae0e3f6b3eb
+    reviewed: cdd11b6d2eacf6fd14865e3e01bea4edc22c8eea23decf844a38cac3fbd8bf67
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_join_where_none_runs_after_a_page_server_on_every_address_listens_on_every_address"
+        body: f41d48bbcc3adabb266977808a11d55ce0d6cbedb183309353485c7bd52c0a87
+  - node: 01a1f41d-c030-764d-a122-1ae168cbe365
+    reviewed: ca6948af3fdd28bf6e02075941a8e341c5fbc65dcd58fd318089a7d92d9188c2
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_join_where_no_addresses_were_recorded_listens_on_the_loopback_interface_alone"
+        body: e652fa17e226d286a9c207291bf05778fe97b4432d84c154d6db79ed746c1313
+  - node: 01a1f457-73e6-775d-a421-cefcaf691e13
+    reviewed: c497023d1e1c25e9f5e8f1d6866ee1c8e0a5a4c686b6011177951deef36a4b55
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_join_replacing_a_page_server_of_an_older_version_listens_on_the_recorded_addresses"
+        body: a67d742dba8de43e6b5b909b52b0e51eacca08cd0984fbba29bc1ae93d056e3a
   - node: 01a1eeea-3ba6-7330-8a73-2ebbef46e951
     reviewed: 3c2c5a8156e742c88b5dabd9bdfc1f605a1e6492a2e127d321a061801f38e73a
     tests:
@@ -30567,6 +30648,12 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_networks.rs"
         name: "an_address_the_machine_lacks_leaves_the_page_served_on_the_loopback_interface"
         body: f6c42add939fcba40beb3441b4357f1e0a5d6354d578fcccdaacc3421d29b01f
+  - node: 01a1f41d-c030-764d-a122-1ae25c45f654
+    reviewed: 7c39cabff461a6dfed8175a0498d01d2d4e951d5c9716d8006ab1c0053ef19f1
+    tests:
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "listen_naming_the_unspecified_ipv6_address_in_any_form_exits_2_pointing_to_every_ipv4_address"
+        body: 7ed7b394d18e0754cf302f11a3b1972de590e09ddaff4a8920ac65a5cae93f0b
   - node: 01a1eeea-3ba6-7330-8a73-2ebf11eba3c7
     reviewed: 87e91d7f601c28dcf3101f117acba18c53151173cdad9843c180100edfd7de36
     tests:
@@ -30575,7 +30662,10 @@ links:
         body: 26d80eb1c479feaa135f498fdff1fbecbfc7dc348a567db76fce6f533509ccd9
       - file: "crates/loft-cli/src/yard/serve/listener.rs"
         name: "an_ip_address_is_read_and_anything_else_is_refused_by_name"
-        body: 4ceff0323c50bbd8b0a3fb3b6bfb8afd2fe1dd9ba3ffc12c641edcf8ce09224b
+        body: 0b95fd3a2ec671b4c79d65ab48eddfef1daa52b63e3073dba810bb70e38155e4
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "listen_naming_the_unspecified_ipv6_address_in_any_form_exits_2_pointing_to_every_ipv4_address"
+        body: 7ed7b394d18e0754cf302f11a3b1972de590e09ddaff4a8920ac65a5cae93f0b
   - node: 01a1646f-546d-7042-befd-eb87a374ef2e
     reviewed: b87a7fc89e3456346b91a3a1b23fb521a02c4df03dc5e7f45afc2c3620673c42
     tests:
@@ -35738,7 +35828,7 @@ links:
         body: 570bd207d5b182013a8240a5d8164fe01226f7fd8f1f05bc7a1dfe4cce9826ae
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serve_and_exits_1"
-        body: 63dd5bfb8291312e4dd04543e58fce885bd0eef0f31b1e2beb197e4a45f4e066
+        body: 8917b6269264cedc95f429e22c653a404214021016f5aa1e1a88d36f48bbc09a
   - node: 01a1d123-dd40-7261-9ea6-093488d97c8c
     reviewed: f4661b2262bb40c357301494ef46e09cb87ad7abb2d77534d38cba3d46fb9d32
     tests:
@@ -35758,17 +35848,17 @@ links:
         name: "a_missing_lock_file_is_held_by_no_one_and_probing_it_creates_nothing"
         body: 9a87db0323ad97d44d906cc88ec8018195384947e49d71662fd6c70b4ff28440
   - node: 01a1d123-dd40-7261-9ea6-0936f8c5acc8
-    reviewed: ce3d3c3b7de07531b9b75102d0d9c5a2e2e31e6dbd3f9b4b79a86e5f388276de
+    reviewed: 09b87103d17041cc8746dee4b364aaddae031c620f47938bb893badb20926970
     tests:
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serve_and_exits_1"
-        body: 63dd5bfb8291312e4dd04543e58fce885bd0eef0f31b1e2beb197e4a45f4e066
+        body: 8917b6269264cedc95f429e22c653a404214021016f5aa1e1a88d36f48bbc09a
   - node: 01a1d123-dd40-7261-9ea6-09375f70aceb
     reviewed: 472c4d68e6bb6e1d49e0b07addf7b0e29d31135f140686ea759eb028a7c99ba7
     tests:
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serve_and_exits_1"
-        body: 63dd5bfb8291312e4dd04543e58fce885bd0eef0f31b1e2beb197e4a45f4e066
+        body: 8917b6269264cedc95f429e22c653a404214021016f5aa1e1a88d36f48bbc09a
   - node: 01a1d144-b628-7658-b662-a69ef5586fb3
     reviewed: a5257fa667c25bf9eca508a4750d61725eda5367bd52ad6167a9c9c50e427ac7
     tests:

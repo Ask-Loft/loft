@@ -1,10 +1,10 @@
 // The page server: every BEAT the mod tells it that the session is live; at the session's first
 // beat, and after it only where no page server answers, it runs `loft yard serve`, which records
 // the session as heard, registers its tree and exits where a page server of a newer version, or
-// of its version on the addresses of `yardListen`, serves the port, and otherwise becomes the
-// page server and lives as long as the mod (the Feature "Share one page server"). The first beat
-// runs it even where a page server answers, so that one listening on other addresses than the
-// setting names is replaced. The mod then reaches the page server on the port the command
+// of its version on the addresses of `yardListen` or, given `--join`, on any, serves the port, and
+// otherwise becomes the page server and lives as long as the mod (the Feature "Share one page
+// server"). The first beat runs it even where a page server answers, so that one listening on
+// other addresses than the setting names is replaced. The mod then reaches the page server on the port the command
 // reports, which is not the plugin's `yardPort` where another `loft` started it elsewhere. A
 // tree a tool call reaches is registered through `loft yard serve` too.
 
@@ -19,17 +19,21 @@ import { argvOf } from './run'
 /** How often the mod tells the page server its session is live, in milliseconds. */
 export const BEAT = 5000
 
+/** How long after the session's first beat the mod may run `loft yard serve` without `--join`, in milliseconds. */
+export const FIRST_RUN = 30000
+
 /**
  * What the mod knows of the page server: whether its own child serves; whether a beat has run
- * `loft yard serve` yet, the one run that may replace a page server; the trees the mod
+ * `loft yard serve` yet, the one run that may replace a page server, and how many beats have
+ * come since the session's first, which bound when that run may come; the trees the mod
  * registered, as its session spells them; for each tree whose registration the page server
  * answered, the top of its worktree by its real path and as spelled; and the real path of each
  * tree served, as the last answer named them.
  */
-export type Server = { isServing: boolean; isBeating: boolean; hasServed: boolean; trees: Set<string>; tops: Map<string, string[]>; served: Set<string> }
+export type Server = { isServing: boolean; isBeating: boolean; hasServed: boolean; ticks: number; trees: Set<string>; tops: Map<string, string[]>; served: Set<string> }
 
 export function serverOf(): Server {
-  return { isServing: false, isBeating: false, hasServed: false, trees: new Set(), tops: new Map(), served: new Set() }
+  return { isServing: false, isBeating: false, hasServed: false, ticks: 0, trees: new Set(), tops: new Map(), served: new Set() }
 }
 
 /**
@@ -115,7 +119,8 @@ async function hear($: EngineInterface, box: Outbox, server: Server, session: st
  * `loft yard serve`, and after that where none answers, runs it, unless the mod's own child
  * serves or the last run has yet to say what it did. The first run joins no page server, so
  * that one on other addresses than `yardListen` names is replaced, even where a beat that hangs
- * on its answer leaves the run to a later beat. `loft yard serve` reports no top, so a beat that
+ * on its answer leaves the run to a later beat, unless it comes later than FIRST_RUN after the
+ * session's start. `loft yard serve` reports no top, so a beat that
  * reaches the page server registers the tree once more to learn it.
  */
 export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
@@ -123,7 +128,7 @@ export async function beat($: EngineInterface, settings: Settings, server: Serve
   const isBusy = server.isBeating || server.isServing
   if (isHeard && (server.hasServed || isBusy)) return learnTop($, server, box, tree)
   if (isBusy) return
-  const join = server.hasServed
+  const join = server.hasServed || server.ticks * BEAT >= FIRST_RUN
   server.hasServed = true
   server.isBeating = true
   try {

@@ -65,8 +65,9 @@ pub enum YardAction {
     /// Give the address of the branch's Yard Log on the Yard page, with a line on what the page
     /// shows, or say that no page server serves it.
     Page(PageArgs),
-    /// Run the page server on the loopback interface, unless one of this `loft`'s version or a
-    /// newer one already serves the port; record the session as heard and its tree as served.
+    /// Run the page server on the loopback interface and the addresses `--listen` names, unless one
+    /// of a newer `loft`, or of this version on those addresses or, with `--join`, on any, already
+    /// serves the port; record the session as heard and its tree as served.
     Serve(ServeArgs),
 }
 
@@ -114,7 +115,8 @@ pub struct ServeArgs {
     #[arg(long)]
     pub replace: bool,
     /// Join a running page server of this version whatever addresses it listens on, rather than
-    /// replace one that listens on other addresses than this command would.
+    /// replace one that listens on other addresses than this command would; where this command
+    /// starts a page server, it listens on the addresses the last one served on, not on `--listen`.
     #[arg(long, conflicts_with = "replace")]
     pub join: bool,
     #[command(flatten)]

@@ -56,7 +56,7 @@ function unserved(tree) {
     h('h2', {}, 'The page server does not serve this tree'),
     h('p', {}, h('code', { class: 'tree' }, tree)),
     h('p', {}, 'No session has registered it with the page server yet. A session with the Loft mod, or a loft yard command run in the tree, adds it. To add it now, run on this machine:'),
-    h('p', {}, h('code', { class: 'command' }, `loft yard serve --tree ${tree}`)),
+    h('p', {}, h('code', { class: 'command' }, `loft yard serve --join --tree ${tree}`)),
   );
 }
 

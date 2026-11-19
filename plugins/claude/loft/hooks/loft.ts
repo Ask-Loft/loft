@@ -14,8 +14,8 @@ export const DEFAULT_PORT = 7411
 
 /**
  * The plugin's settings: the words that run loft, the base branch and the page server's port.
- * `notIp` holds each entry of `yardListen` that is not an IP address, which `listen` leaves out,
- * so that one typo does not keep the page server from starting.
+ * `notIp` holds each entry of `yardListen` that `loft yard serve --listen` refuses, which `listen`
+ * leaves out, so that one typo does not keep the page server from starting.
  */
 export type Settings = { words: string[]; base: string; port: number; listen: string[]; notIp?: string[]; protocol?: number }
 
@@ -23,14 +23,13 @@ function addressesOf(setting: unknown): string[] {
   return typeof setting === 'string' ? setting.split(/[\s,]+/).filter(address => address !== '') : []
 }
 
-export function isIpAddress(text: string): boolean {
+export function isListenAddress(text: string): boolean {
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(text)) {
     return text.split('.').every(part => Number(part) <= 255 && (part === '0' || !part.startsWith('0')))
   }
   if (!text.includes(':') || !/^[0-9a-fA-F:.]+$/.test(text)) return false
   try {
-    new URL(`http://[${text}]/`)
-    return true
+    return !['[::]', '[::ffff:0:0]'].includes(new URL(`http://[${text}]/`).hostname)
   } catch {
     return false
   }
@@ -46,8 +45,8 @@ export function settingsOf(options: PluginOptions): Settings {
     words: commandWords(command),
     base,
     port: Number.isInteger(port) && port > 0 && port < 65536 ? port : DEFAULT_PORT,
-    listen: addresses.filter(isIpAddress),
-    notIp: addresses.filter(address => !isIpAddress(address)),
+    listen: addresses.filter(isListenAddress),
+    notIp: addresses.filter(address => !isListenAddress(address)),
   }
 }
 

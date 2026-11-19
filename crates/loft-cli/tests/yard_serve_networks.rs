@@ -1,5 +1,5 @@
 use std::fs;
-use std::net::{IpAddr, Ipv6Addr};
+use std::net::{IpAddr, Ipv6Addr, SocketAddr, TcpListener, TcpStream};
 use std::time::Duration;
 
 use serde_json::{Value, json};
@@ -88,6 +88,28 @@ fn listen_naming_something_other_than_an_ip_address_exits_2_and_names_it() {
     assert_eq!(output.status.code(), Some(2));
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(stderr.contains("machine.example.ts.net"), "{stderr}");
+    assert!(!yard.scratch.home().join(".yard/server.json").exists());
+}
+
+#[test]
+fn listen_naming_the_unspecified_ipv6_address_in_any_form_exits_2_pointing_to_every_ipv4_address() {
+    let yard = Yard::new();
+    for unspecified in ["::", "::0", "0:0:0:0:0:0:0:0", "::ffff:0.0.0.0"] {
+        let port = free_port().to_string();
+        let mut child = yard.spawn(&["serve", "--port", &port, "--listen", unspecified]);
+        let ended = within(Duration::from_secs(10), || {
+            child.try_wait().unwrap().is_some()
+        });
+        if !ended {
+            let _ = child.kill();
+        }
+        let output = child.wait_with_output().unwrap();
+        assert!(ended, "{unspecified} was served");
+        assert_eq!(output.status.code(), Some(2), "{unspecified}");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(stderr.contains(unspecified), "{stderr}");
+        assert!(stderr.contains("name `0.0.0.0`"), "{stderr}");
+    }
     assert!(!yard.scratch.home().join(".yard/server.json").exists());
 }
 
@@ -220,4 +242,145 @@ fn serve_join_and_replace_together_are_a_usage_error() {
     let output = yard.run(&["serve", "--join", "--replace"]);
     assert_eq!(output.status.code(), Some(2));
     assert!(!yard.scratch.home().join(".yard/server.json").exists());
+}
+
+#[test]
+fn serve_join_where_none_runs_after_a_loopback_page_server_listens_on_the_loopback_interface_alone()
+{
+    let yard = Yard::new();
+    drop(Served::start(&yard, &[]));
+    let joined = Served::start(&yard, &["--join", "--listen", "0.0.0.0"]);
+    assert!(joined.takes_at(LOOPBACK));
+    assert!(!joined.takes_at(machine_address()));
+    assert_eq!(yard.home_file("server.json")["listen"], json!([]));
+}
+
+#[test]
+fn serve_join_where_none_runs_after_a_page_server_on_every_address_listens_on_every_address() {
+    let yard = Yard::new();
+    drop(Served::start(&yard, &["--listen", "0.0.0.0"]));
+    let joined = Served::start(&yard, &["--join"]);
+    assert_eq!(joined.version_at(machine_address()).status, 200);
+    assert_eq!(yard.home_file("server.json")["listen"], json!(["0.0.0.0"]));
+}
+
+#[test]
+fn serve_join_where_no_addresses_were_recorded_listens_on_the_loopback_interface_alone() {
+    let yard = Yard::new();
+    let joined = Served::start(&yard, &["--join", "--listen", "0.0.0.0"]);
+    assert!(!joined.takes_at(machine_address()));
+    drop(joined);
+    let earlier = json!({ "port": free_port(), "pid": 1, "version": "0.0.1" });
+    fs::write(
+        yard.scratch.home().join(".yard/server.json"),
+        earlier.to_string(),
+    )
+    .unwrap();
+    let joined = Served::start(&yard, &["--join", "--listen", "0.0.0.0"]);
+    assert!(joined.takes_at(LOOPBACK));
+    assert!(!joined.takes_at(machine_address()));
+}
+
+#[test]
+fn a_start_that_does_not_serve_leaves_no_port_and_the_addresses_the_last_page_server_served_on() {
+    let yard = Yard::new();
+    drop(Served::start(&yard, &[]));
+    let other = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = other.local_addr().unwrap().port().to_string();
+    let output = yard.run(&["serve", "--port", &port, "--listen", "0.0.0.0"]);
+    assert_eq!(output.status.code(), Some(1));
+    let named = yard.home_file("server.json");
+    assert!(named["pid"].as_u64().is_some(), "{named}");
+    assert_eq!(named["version"], VERSION);
+    assert_eq!(named["listen"], json!([]));
+    assert!(named.get("port").is_none(), "{named}");
+    let joined = Served::start(&yard, &["--join"]);
+    assert!(!joined.takes_at(machine_address()));
+}
+
+#[test]
+fn a_start_that_does_not_serve_keeps_every_address_the_last_page_server_served_on() {
+    let yard = Yard::new();
+    let served = Served::start(&yard, &["--listen", "0.0.0.0"]);
+    let pid = served.child.id();
+    drop(served);
+    let other = TcpListener::bind("127.0.0.1:0").unwrap();
+    let port = other.local_addr().unwrap().port().to_string();
+    let output = yard.run(&["serve", "--port", &port]);
+    assert_eq!(output.status.code(), Some(1));
+    let named = yard.home_file("server.json");
+    assert_ne!(named["pid"], json!(pid), "{named}");
+    assert_eq!(named["listen"], json!(["0.0.0.0"]));
+    assert!(named.get("port").is_none(), "{named}");
+    let joined = Served::start(&yard, &["--join"]);
+    assert!(joined.takes_at(machine_address()));
+}
+
+#[test]
+fn serve_join_replacing_a_page_server_of_an_older_version_listens_on_the_recorded_addresses() {
+    let yard = Yard::new();
+    let dir = yard.scratch.home().join(".yard");
+    fs::create_dir_all(&dir).unwrap();
+    let port = free_port();
+    let older = json!({ "port": port, "pid": 1, "version": "0.0.1" });
+    fs::write(dir.join("server.json"), older.to_string()).unwrap();
+    let held = lock::lock(&dir.join("server.lock")).unwrap();
+    let mut joining = yard.spawn(&[
+        "serve",
+        "--port",
+        &port.to_string(),
+        "--join",
+        "--listen",
+        "0.0.0.0",
+    ]);
+    assert!(within(Duration::from_secs(5), || dir
+        .join("stop.json")
+        .exists()));
+    drop(held);
+    let started = first_document(&mut joining);
+    let reached = TcpStream::connect_timeout(
+        &SocketAddr::new(machine_address(), port),
+        Duration::from_secs(5),
+    );
+    let _ = joining.kill();
+    let _ = joining.wait();
+    assert_eq!(started["outcome"], "serving", "{started}");
+    assert!(
+        reached.is_err(),
+        "the page server listened on every address"
+    );
+    assert_eq!(yard.home_file("server.json")["listen"], json!([]));
+}
+
+#[test]
+fn serve_waits_for_a_starting_page_server_to_give_its_port_and_compares_with_its_addresses() {
+    let yard = Yard::new();
+    let dir = yard.scratch.home().join(".yard");
+    fs::create_dir_all(&dir).unwrap();
+    let port = free_port();
+    let named = |record: Value| fs::write(dir.join("server.json"), record.to_string()).unwrap();
+    let held = lock::lock(&dir.join("server.lock")).unwrap();
+    named(json!({ "pid": 2, "version": VERSION, "listen": ["0.0.0.0"] }));
+    let mut serving = yard.spawn(&["serve", "--port", &port.to_string()]);
+    assert!(
+        !within(Duration::from_millis(1_500), || serving
+            .try_wait()
+            .unwrap()
+            .is_some()),
+        "loft yard serve did not wait for the starting page server's port"
+    );
+    assert!(!dir.join("stop.json").exists());
+    named(json!({ "port": port, "pid": 2, "version": VERSION, "listen": ["0.0.0.0"] }));
+    let stop = dir.join("stop.json");
+    assert!(within(Duration::from_secs(5), || {
+        fs::read(&stop)
+            .ok()
+            .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok())
+            .is_some_and(|request| request["target"] == json!(2))
+    }));
+    drop(held);
+    let started = first_document(&mut serving);
+    let _ = serving.kill();
+    let _ = serving.wait();
+    assert_eq!(started["outcome"], "serving", "{started}");
 }

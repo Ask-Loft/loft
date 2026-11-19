@@ -191,12 +191,12 @@ test('the mod passes each address of the yardListen setting to the loft yard ser
   expect(w.state.runs.at(-1)!.argv).not.toContain('--listen')
 })
 
-test('the mod names once each entry of the yardListen setting that is not an IP address, and passes the other addresses', { options: { yardListen: '100.64.0.1, machine.example.ts.net 999.1.1.1' } }, async ($, on) => {
+test('the mod names once each entry of the yardListen setting that is not an IP address or is the unspecified IPv6 address, and passes the other addresses', { options: { yardListen: '100.64.0.1, machine.example.ts.net 999.1.1.1 ::' } }, async ($, on) => {
   const w = world(on, { serve: 'running', protocol: 4 })
   await start($)
   await w.clock.advance(10000)
   expect(w.state.toasts).toEqual([
-    "The loft plugin's yardListen setting names `machine.example.ts.net`, `999.1.1.1`, which the page server does not listen on: name IP addresses there, such as the machine's tailnet address.",
+    "The loft plugin's yardListen setting names `machine.example.ts.net`, `999.1.1.1`, `::`, which the page server does not listen on: name IP addresses there, such as the machine's tailnet address, and `0.0.0.0`, not `::`, for every address.",
   ])
   const serve = w.state.runs.find(run => run.argv.includes('serve'))!
   expect(serve.argv.filter((_, at) => serve.argv[at - 1] === '--listen')).toEqual(['100.64.0.1'])
@@ -244,6 +244,20 @@ test("where the first beat's answer hangs past the next beat, the mod's first lo
   expect(serves[0]!.argv).not.toContain('--join')
   hanging.resolve()
   await w.clock.settle()
+})
+
+test("a first loft yard serve the mod could not run within 30 seconds of the session's start joins the page server", { options: { yardListen: '100.64.0.1' } }, async ($, on) => {
+  const w = world(on, { serve: 'running', protocol: 4 })
+  const hanging = deferred<void>()
+  w.state.hearing = hanging.promise
+  await start($)
+  await w.clock.advance(30000)
+  w.state.hearing = Promise.resolve()
+  hanging.resolve()
+  await w.clock.advance(5000)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves.length).toBeGreaterThan(0)
+  for (const run of serves) expect(run.argv).toContain('--join')
 })
 
 test("after the session's first beat each loft yard serve the mod runs joins the page server that runs", async ($, on) => {

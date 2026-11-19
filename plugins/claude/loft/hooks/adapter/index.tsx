@@ -53,13 +53,14 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   const notIp = state.settings.notIp ?? []
   if (notIp.length > 0) {
     const named = notIp.map(entry => `\`${entry}\``).join(', ')
-    $.ui.toast(`The loft plugin's yardListen setting names ${named}, which the page server does not listen on: name IP addresses there, such as the machine's tailnet address.`, { timeoutMs: 15000 })
+    $.ui.toast(`The loft plugin's yardListen setting names ${named}, which the page server does not listen on: name IP addresses there, such as the machine's tailnet address, and \`0.0.0.0\`, not \`::\`, for every address.`, { timeoutMs: 15000 })
   }
   if (protocol < LISTENS && state.settings.listen.length > 0) {
     $.ui.toast(`The loft plugin's yardListen setting waits for a newer loft: loft ${String(checked.doc?.loft ?? '')} speaks the yard protocol ${protocol}, so the page opens on this machine alone until loft is brought up to date.`, { timeoutMs: 15000 })
   }
   void beat($, state.settings, state.server, state.box, await continued($), cwd)
   $.clock.every(BEAT, async () => {
+    state.server.ticks += 1
     void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())
     void flush($, state.box)
   })

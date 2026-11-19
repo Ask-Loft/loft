@@ -21,9 +21,13 @@ const AGAIN: Duration = Duration::from_secs(1);
 pub struct Address(IpAddr);
 
 pub fn parse_address(text: &str) -> Result<Address, String> {
-    text.parse::<IpAddr>()
-        .map(Address)
-        .map_err(|_| format!("`{text}` is not an IP address"))
+    match text.parse::<IpAddr>() {
+        Ok(IpAddr::V6(address)) if address.to_canonical().is_unspecified() => Err(format!(
+            "`{text}` is not accepted: name `0.0.0.0` for every address"
+        )),
+        Ok(address) => Ok(Address(address)),
+        Err(_) => Err(format!("`{text}` is not an IP address")),
+    }
 }
 
 /// The addresses a page server given `addresses` listens on, as `~/.yard/server.json` names them
@@ -48,8 +52,8 @@ pub fn recorded(addresses: &[Address]) -> Vec<String> {
 pub struct Reached(SocketAddr);
 
 impl Reached {
-    /// Compares addresses, not their spelling, so that an IPv4 request to a socket on `::`
-    /// matches its mapped address.
+    /// Compares addresses, not their spelling, so that a request to an IPv4-mapped address
+    /// matches the IPv4 address it maps.
     pub fn is_named_by(self, host: &str) -> bool {
         if host.eq_ignore_ascii_case(&format!("localhost:{}", self.0.port())) {
             return true;
@@ -145,14 +149,11 @@ pub fn listen(port: u16, addresses: &[Address]) -> io::Result<Listener> {
     })
 }
 
-/// The address that names every address, `0.0.0.0` before `::` whatever order they are named in,
-/// so that the same addresses named in another order are listened on and recorded alike.
 fn every_address(addresses: &[Address]) -> Option<IpAddr> {
     addresses
         .iter()
         .map(|named| named.0)
-        .filter(IpAddr::is_unspecified)
-        .min()
+        .find(IpAddr::is_unspecified)
 }
 
 /// The one place the page server takes a socket.
@@ -269,8 +270,8 @@ mod tests {
     #[test]
     fn an_ip_address_is_read_and_anything_else_is_refused_by_name() {
         assert_eq!(
-            parse_address("100.76.101.57"),
-            Ok(Address(IpAddr::V4(Ipv4Addr::new(100, 76, 101, 57))))
+            parse_address("100.64.0.1"),
+            Ok(Address(IpAddr::V4(Ipv4Addr::new(100, 64, 0, 1))))
         );
         assert!(parse_address("fd7a:115c:a1e0::1").is_ok());
         let refused = parse_address("machine.example.ts.net").unwrap_err();
@@ -297,7 +298,6 @@ mod tests {
             ["100.64.0.1", "192.168.1.5"]
         );
         assert_eq!(recorded(&named(&["100.64.0.1", "0.0.0.0"])), ["0.0.0.0"]);
-        assert_eq!(recorded(&named(&["::", "0.0.0.0"])), ["0.0.0.0"]);
     }
 
     #[test]

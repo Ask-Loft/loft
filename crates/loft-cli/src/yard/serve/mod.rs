@@ -4,9 +4,11 @@
 //! addresses it would listen on, already runs, it leaves it serving and exits; where an older one
 //! runs, or one of this version on other addresses, it asks it to stop through
 //! `~/.yard/stop.json`, naming its process, and waits for its lock to be freed. Then it takes the
-//! lock on `~/.yard/server.lock`, which it holds while it runs, listens on the loopback interface
-//! and on the addresses `--listen` names, names itself and those addresses in
-//! `~/.yard/server.json`, and serves until another one asks it to stop.
+//! lock on `~/.yard/server.lock`, which it holds while it runs, names itself in
+//! `~/.yard/server.json` with the addresses of the last page server that served, listens on the
+//! loopback interface and on the addresses `--listen` names or, with `--join`, on those of the
+//! last page server, gives its port and its own addresses there once it serves, and serves until
+//! another one asks it to stop.
 
 mod activity;
 mod assets;
@@ -195,20 +197,34 @@ fn start(args: &ServeArgs) -> Result<Started, Failure> {
             })));
         }
     };
+    let last = super::page::last_listen(&home)?;
+    let mut recorded = json!({
+        "pid": std::process::id(),
+        "version": VERSION,
+        "formats": protocol::report()["formats"]["reads"].clone(),
+        "listen": last,
+    });
+    home.write(HomeFile::Server, format!("{recorded:#}\n").as_bytes())?;
+    let addresses = if args.join {
+        last.iter()
+            .filter_map(|text| parse_address(text).ok())
+            .collect()
+    } else {
+        args.listen.clone()
+    };
     let listener =
-        listener::listen(args.port, &args.listen).map_err(|error| held(args.port, &error))?;
+        listener::listen(args.port, &addresses).map_err(|error| held(args.port, &error))?;
     super::page::serving(args.port);
     let token = token(&home)?;
-    let formats = protocol::report()["formats"]["reads"].clone();
+    recorded["port"] = json!(args.port);
+    recorded["listen"] = json!(listener::recorded(&addresses));
+    home.write(HomeFile::Server, format!("{recorded:#}\n").as_bytes())?;
     let named = json!({
         "port": args.port,
         "pid": std::process::id(),
         "version": VERSION,
-        "formats": formats,
+        "formats": recorded["formats"],
     });
-    let mut recorded = named.clone();
-    recorded["listen"] = json!(listen);
-    home.write(HomeFile::Server, format!("{recorded:#}\n").as_bytes())?;
     home.remove(HomeFile::Stop)?;
     let server = Arc::new(Server {
         port: args.port,
