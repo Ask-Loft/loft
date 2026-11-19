@@ -2,7 +2,7 @@
 //! the document's protected resource metadata lists by identifier and kind: the metadata each one
 //! serves where RFC 9728 places it, faithfully or with the one fault its scenario names, which of
 //! them the authorization server serves and the scopes each accepts, and the second port of the
-//! loopback interface that stands for another origin. A related resource has no routes of its
+//! loopback interface that stands for another origin. A companion resource has no routes of its
 //! own.
 
 use serde_json::{Value, json};
@@ -12,27 +12,27 @@ use super::problem::refusal;
 use super::{Metadata, RESOURCE, RemoteScenario, State, only};
 use crate::http::{Request, Response};
 
-/// The member of a protected resource metadata document that lists the related resources.
-const RELATED_RESOURCES: &str = "related_resources";
+/// The member of a protected resource metadata document that lists the companion resources.
+const COMPANION_RESOURCES: &str = "companion_resources";
 
 /// Where a protected resource metadata document lies on its resource's origin, before the
 /// resource's path and query (RFC 9728).
 const WELL_KNOWN: &str = "/.well-known/oauth-protected-resource";
 
-/// A protected resource that the document's protected resource metadata lists as related: its
-/// kind, its path on its origin, the scopes its own metadata lists, and the fault its scenario
+/// A protected resource that the document's protected resource metadata lists as a companion:
+/// its kind, its path on its origin, the scopes its own metadata lists, and the fault its scenario
 /// serves it with, if any.
 #[derive(Clone, Debug)]
-pub struct Related {
+pub struct Companion {
     kind: String,
     path: String,
     scopes: Vec<String>,
-    fault: Option<RelatedFault>,
+    fault: Option<CompanionFault>,
 }
 
-impl Related {
-    /// A related resource of `kind` at `<origin>/<kind>`, whose protected resource metadata lists
-    /// `scopes` and is served faithfully.
+impl Companion {
+    /// A companion resource of `kind` at `<origin>/<kind>`, whose protected resource metadata
+    /// lists `scopes` and is served faithfully.
     #[must_use]
     pub fn new(kind: &str, scopes: &[&str]) -> Self {
         Self {
@@ -53,20 +53,20 @@ impl Related {
 
     /// Serves the resource with `fault`, in place of any fault named before.
     #[must_use]
-    pub fn faulty(mut self, fault: RelatedFault) -> Self {
+    pub fn faulty(mut self, fault: CompanionFault) -> Self {
         self.fault = Some(fault);
         self
     }
 
     /// Whether the resource lies on the second port, which stands for another origin.
     fn elsewhere(&self) -> bool {
-        self.fault == Some(RelatedFault::OnAnotherOrigin)
+        self.fault == Some(CompanionFault::OnAnotherOrigin)
     }
 }
 
-/// How a scenario misserves a related resource, or where else it places one.
+/// How a scenario misserves a companion resource, or where else it places one.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum RelatedFault {
+pub enum CompanionFault {
     /// Listed, and its metadata served faithfully, on another origin: a second port of the
     /// loopback interface, which records its requests apart.
     OnAnotherOrigin,
@@ -84,21 +84,21 @@ pub enum RelatedFault {
     Unreadable,
     /// Metadata that is a JSON array, not an object.
     NotAnObject,
-    /// Faithful metadata that lists a related resource of its own.
+    /// Faithful metadata that lists a companion resource of its own.
     Relisting,
 }
 
 impl RemoteScenario {
-    /// Lists `related` after the related resources listed before it, and serves its metadata.
+    /// Lists `companion` after the companion resources listed before it, and serves its metadata.
     #[must_use]
-    pub fn relating(mut self, related: Related) -> Self {
-        self.related.push(related);
+    pub fn accompanied_by(mut self, companion: Companion) -> Self {
+        self.companions.push(companion);
         self
     }
 
     /// Answers the document's protected resource metadata with `raw` as the member that lists
-    /// the related resources, in place of the list they make, each `{origin}` in a string of it
-    /// read as the simulator's origin. The related resources keep their own metadata.
+    /// the companion resources, in place of the list they make, each `{origin}` in a string of it
+    /// read as the simulator's origin. The companion resources keep their own metadata.
     #[must_use]
     pub fn listing(mut self, raw: Value) -> Self {
         self.listing = Some(raw);
@@ -107,29 +107,30 @@ impl RemoteScenario {
 
     /// Whether the scenario places metadata on another origin, which a second port stands for.
     pub(super) fn places_elsewhere(&self) -> bool {
-        self.metadata == Metadata::OnAnotherOrigin || self.related.iter().any(Related::elsewhere)
+        self.metadata == Metadata::OnAnotherOrigin
+            || self.companions.iter().any(Companion::elsewhere)
     }
 }
 
 impl State {
-    /// The identifier of `related`: its path on the simulator's origin, or on the second port's
+    /// The identifier of `companion`: its path on the simulator's origin, or on the second port's
     /// for a resource placed there.
-    fn identifier(&self, related: &Related) -> String {
+    fn identifier(&self, companion: &Companion) -> String {
         let origin = match &self.elsewhere {
-            Some(elsewhere) if related.elsewhere() => elsewhere,
+            Some(elsewhere) if companion.elsewhere() => elsewhere,
             _ => &self.origin,
         };
-        format!("{origin}{}", related.path)
+        format!("{origin}{}", companion.path)
     }
 
     /// The identifier that the document's protected resource metadata lists for the first
-    /// related resource of `kind`.
-    pub(super) fn related_identifier(&self, kind: &str) -> Option<String> {
+    /// companion resource of `kind`.
+    pub(super) fn companion_identifier(&self, kind: &str) -> Option<String> {
         self.scenario
-            .related
+            .companions
             .iter()
-            .find(|related| related.kind == kind)
-            .map(|related| self.identifier(related))
+            .find(|companion| companion.kind == kind)
+            .map(|companion| self.identifier(companion))
     }
 
     /// The origin on which the challenge names the document's protected resource metadata: the
@@ -142,47 +143,47 @@ impl State {
     }
 
     /// Adds to `metadata`, the document's protected resource metadata, the member that lists the
-    /// related resources: the value its scenario scripts, or else an object of `resource` and
-    /// `kind` for each related resource, in the order listed. A scenario with neither adds none.
-    pub(super) fn list_related(&self, metadata: &mut Value) {
+    /// companion resources: the value its scenario scripts, or else an object of `resource` and
+    /// `kind` for each companion resource, in the order listed. A scenario with neither adds none.
+    pub(super) fn list_companions(&self, metadata: &mut Value) {
         if let Some(raw) = &self.scenario.listing {
-            metadata[RELATED_RESOURCES] = with_origin(raw, &self.origin);
-        } else if !self.scenario.related.is_empty() {
-            let listed = self.scenario.related.iter().map(
-                |related| json!({ "resource": self.identifier(related), "kind": related.kind }),
-            );
-            metadata[RELATED_RESOURCES] = Value::Array(listed.collect());
+            metadata[COMPANION_RESOURCES] = with_origin(raw, &self.origin);
+        } else if !self.scenario.companions.is_empty() {
+            let listed = self.scenario.companions.iter().map(|companion| {
+                json!({ "resource": self.identifier(companion), "kind": companion.kind })
+            });
+            metadata[COMPANION_RESOURCES] = Value::Array(listed.collect());
         }
     }
 
     /// The answer on the simulator's origin to `GET` of `target`, a path and its query, where the
-    /// protected resource metadata of a related resource there lies.
-    pub(super) fn related_metadata(&self, target: &str) -> Option<Response> {
+    /// protected resource metadata of a companion resource there lies.
+    pub(super) fn companion_metadata(&self, target: &str) -> Option<Response> {
         self.placed(target, false)
-            .and_then(|related| self.served(related))
+            .and_then(|companion| self.served(companion))
             .map(|metadata| Response::json(200, &metadata))
     }
 
     /// The scopes that `resource` accepts, if the scenario serves it: the document's protected
-    /// resource, or a related resource on the simulator's origin whose metadata names it, lists
+    /// resource, or a companion resource on the simulator's origin whose metadata names it, lists
     /// the simulator's issuer and lists a scope. They are the scopes its metadata lists in
     /// `scopes_supported`.
     pub(super) fn accepted(&self, resource: &str) -> Option<Vec<String>> {
         if resource == self.resource() {
             return Some(self.document_scopes());
         }
-        let related = self.scenario.related.iter();
-        related
-            .filter(|related| !related.elsewhere() && self.identifier(related) == resource)
-            .find_map(|related| self.vouched(related))
+        let companions = self.scenario.companions.iter();
+        companions
+            .filter(|companion| !companion.elsewhere() && self.identifier(companion) == resource)
+            .find_map(|companion| self.vouched(companion))
     }
 
-    /// The scopes that the metadata of `related`, as its scenario serves it, lists, where that
+    /// The scopes that the metadata of `companion`, as its scenario serves it, lists, where that
     /// metadata names the resource and the simulator's issuer and lists a scope.
-    fn vouched(&self, related: &Related) -> Option<Vec<String>> {
-        let metadata = self.served(related)?;
+    fn vouched(&self, companion: &Companion) -> Option<Vec<String>> {
+        let metadata = self.served(companion)?;
         let issuer = json!(self.issuer());
-        let names_itself = metadata["resource"] == json!(self.identifier(related));
+        let names_itself = metadata["resource"] == json!(self.identifier(companion));
         let servers = metadata["authorization_servers"].as_array();
         let under_the_issuer = servers.is_some_and(|servers| servers.contains(&issuer));
         let listed = metadata["scopes_supported"]
@@ -196,49 +197,49 @@ impl State {
         (names_itself && under_the_issuer && !scopes.is_empty()).then_some(scopes)
     }
 
-    /// The related resource whose protected resource metadata lies at `target` on the second
+    /// The companion resource whose protected resource metadata lies at `target` on the second
     /// port, if `elsewhere`, or on the simulator's origin otherwise.
-    fn placed(&self, target: &str, elsewhere: bool) -> Option<&Related> {
-        self.scenario
-            .related
-            .iter()
-            .find(|related| related.elsewhere() == elsewhere && target == well_known(&related.path))
+    fn placed(&self, target: &str, elsewhere: bool) -> Option<&Companion> {
+        self.scenario.companions.iter().find(|companion| {
+            companion.elsewhere() == elsewhere && target == well_known(&companion.path)
+        })
     }
 
-    /// The protected resource metadata of `related` as its scenario serves it, or nothing for
+    /// The protected resource metadata of `companion` as its scenario serves it, or nothing for
     /// metadata it makes unreadable.
-    fn served(&self, related: &Related) -> Option<Value> {
-        let identifier = self.identifier(related);
+    fn served(&self, companion: &Companion) -> Option<Value> {
+        let identifier = self.identifier(companion);
         let issuer = self.issuer();
         let mut metadata = json!({
             "resource": identifier,
             "authorization_servers": [issuer],
-            "scopes_supported": related.scopes,
+            "scopes_supported": companion.scopes,
             "bearer_methods_supported": ["header"],
         });
-        match related.fault {
-            None | Some(RelatedFault::OnAnotherOrigin) => {}
-            Some(RelatedFault::UnderAnotherIssuer) => {
+        match companion.fault {
+            None | Some(CompanionFault::OnAnotherOrigin) => {}
+            Some(CompanionFault::UnderAnotherIssuer) => {
                 metadata["authorization_servers"] = json!([format!("{issuer}/elsewhere")]);
             }
-            Some(RelatedFault::Misnamed) => {
+            Some(CompanionFault::Misnamed) => {
                 metadata["resource"] = json!(format!("{identifier}/elsewhere"));
             }
-            Some(RelatedFault::Unnamed) => metadata = without(metadata, "resource"),
-            Some(RelatedFault::Scopeless) => metadata = without(metadata, "scopes_supported"),
-            Some(RelatedFault::EmptyScopes) => metadata["scopes_supported"] = json!([]),
-            Some(RelatedFault::Unreadable) => return None,
-            Some(RelatedFault::NotAnObject) => metadata = json!([metadata]),
-            Some(RelatedFault::Relisting) => {
+            Some(CompanionFault::Unnamed) => metadata = without(metadata, "resource"),
+            Some(CompanionFault::Scopeless) => metadata = without(metadata, "scopes_supported"),
+            Some(CompanionFault::EmptyScopes) => metadata["scopes_supported"] = json!([]),
+            Some(CompanionFault::Unreadable) => return None,
+            Some(CompanionFault::NotAnObject) => metadata = json!([metadata]),
+            Some(CompanionFault::Relisting) => {
                 let relisted = format!("{}/relisted", self.origin);
-                metadata[RELATED_RESOURCES] = json!([{ "resource": relisted, "kind": "relisted" }]);
+                metadata[COMPANION_RESOURCES] =
+                    json!([{ "resource": relisted, "kind": "relisted" }]);
             }
         }
         Some(metadata)
     }
 }
 
-/// The answer of the second port, which stands for another origin: the metadata of each related
+/// The answer of the second port, which stands for another origin: the metadata of each companion
 /// resource placed there, faithfully, and of the document's protected resource for a scenario
 /// that places it there; `not_found` to every other request.
 pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
@@ -249,7 +250,7 @@ pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
     } else {
         state
             .placed(&request.path, true)
-            .and_then(|related| state.served(related))
+            .and_then(|companion| state.served(companion))
     };
     match metadata {
         Some(metadata) => only("GET", request, || Response::json(200, &metadata)),

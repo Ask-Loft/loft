@@ -1,4 +1,4 @@
-//! What the contract suites of a remote's related resources share, of the simulator and of a
+//! What the contract suites of a remote's companion resources share, of the simulator and of a
 //! real remote alike: the member of the remote's protected resource metadata that lists them, the
 //! list read from it, the origin an address lies on, a document's head asked for with an access
 //! token, and a sign-in as a client keeps it, made on the simulator or kept by
@@ -14,24 +14,24 @@ use super::calls::{Answer, call};
 use super::oauth::{coded_for, exchange, fetch, refresh};
 use super::signed_in::{kept_sign_in, real_now};
 
-/// The member of a remote's protected resource metadata that lists its related resources.
-pub const RELATED_RESOURCES: &str = "related_resources";
+/// The member of a remote's protected resource metadata that lists its companion resources.
+pub const COMPANION_RESOURCES: &str = "companion_resources";
 
-/// The related resources that the protected resource metadata of the document at `address`
+/// The companion resources that the protected resource metadata of the document at `address`
 /// lists, found from the challenge of a request without a token: each as its `resource` and its
 /// `kind`, in the order listed, and none where the metadata lists none.
 ///
 /// # Panics
 ///
 /// The member is not a list, or one of its entries holds no string `resource` or `kind`.
-pub fn related_of(address: &str) -> Vec<(String, String)> {
+pub fn companions_of(address: &str) -> Vec<(String, String)> {
     let (_, metadata, _) = fetch(address);
-    let Some(listed) = metadata.get(RELATED_RESOURCES) else {
+    let Some(listed) = metadata.get(COMPANION_RESOURCES) else {
         return Vec::new();
     };
     let entries = listed
         .as_array()
-        .unwrap_or_else(|| panic!("the related resources are listed in an array: {listed}"));
+        .unwrap_or_else(|| panic!("the companion resources are listed in an array: {listed}"));
     entries
         .iter()
         .map(|entry| {

@@ -6,15 +6,15 @@
 //!
 //! The document lies at `<origin>/documents/<key>`, the address the binary is given. The
 //! authorization server's issuer is `<origin>/auth`, and both metadata documents lie under
-//! `<origin>/.well-known/`, beside the metadata of each related resource a scenario lists. What a
-//! scenario places on another origin lies on a second port of the loopback interface. A publish
-//! is published with the Format's own publisher, made as the document's remote, so its labels and
-//! its lock are the ones a remote would return.
+//! `<origin>/.well-known/`, beside the metadata of each companion resource a scenario lists.
+//! What a scenario places on another origin lies on a second port of the loopback interface. A
+//! publish is published with the Format's own publisher, made as the document's remote, so its
+//! labels and its lock are the ones a remote would return.
 
+mod companion;
 mod documents;
 mod oauth;
 pub mod problem;
-mod related;
 mod scenario;
 mod skill;
 pub mod wire;
@@ -28,9 +28,9 @@ use serde_json::{Value, json};
 
 use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
 
+pub use companion::{Companion, CompanionFault};
 pub use documents::misstated_root;
 pub use oauth::Grant;
-pub use related::{Related, RelatedFault};
 use scenario::{Call, Held, Misstating, Mode};
 pub use scenario::{Consent, Metadata, RemoteScenario};
 
@@ -106,7 +106,7 @@ impl Remote {
         }));
         let (server, origin) = listen(&state, refusing, route);
         let (elsewhere, elsewhere_origin) = if placed_elsewhere {
-            let (server, origin) = listen(&state, refusing, related::elsewhere);
+            let (server, origin) = listen(&state, refusing, companion::elsewhere);
             (server, Some(origin))
         } else {
             (None, None)
@@ -149,16 +149,18 @@ impl Remote {
     }
 
     /// The identifier that the document's protected resource metadata lists for the first
-    /// related resource of `kind`.
+    /// companion resource of `kind`.
     ///
     /// # Panics
     ///
-    /// The scenario relates no resource of `kind`.
+    /// The scenario lists no companion resource of `kind`.
     #[must_use]
-    pub fn related(&self, kind: &str) -> String {
+    pub fn companion(&self, kind: &str) -> String {
         lock(&self.state)
-            .related_identifier(kind)
-            .unwrap_or_else(|| panic!("the scenario relates no resource of the kind {kind}"))
+            .companion_identifier(kind)
+            .unwrap_or_else(|| {
+                panic!("the scenario lists no companion resource of the kind {kind}")
+            })
     }
 
     /// Every request received so far, in the order received.
@@ -245,7 +247,7 @@ impl Remote {
 
     /// Whether the protected resource `resource` admits the access token `token` now: a token
     /// the simulator issued for that resource, not yet expired, of a sign-in it has not revoked.
-    /// A related resource has no routes of its own, so a test asks this in place of a request.
+    /// A companion resource has no routes of its own, so a test asks this in place of a request.
     #[must_use]
     pub fn admits_at(&self, resource: &str, token: &str) -> bool {
         lock(&self.state).auth.admits_at(resource, token)
@@ -337,10 +339,12 @@ fn route(state: &mut State, request: &Request) -> Response {
         "/auth/authorize" => only("GET", request, || oauth::authorize(state, query)),
         "/auth/token" => only("POST", request, || oauth::token(state, request)),
         skill::MANIFEST => only("GET", request, || skill::manifest(state)),
-        _ => match skill::package(state, path).or_else(|| state.related_metadata(&request.path)) {
-            Some(answer) => only("GET", request, || answer),
-            None => problem::refusal("not_found"),
-        },
+        _ => {
+            match skill::package(state, path).or_else(|| state.companion_metadata(&request.path)) {
+                Some(answer) => only("GET", request, || answer),
+                None => problem::refusal("not_found"),
+            }
+        }
     }
 }
 

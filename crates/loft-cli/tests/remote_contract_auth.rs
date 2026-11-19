@@ -11,7 +11,7 @@ use std::time::Duration;
 use serde_json::{Value, json};
 use software_plant::BrowserScenario;
 use software_plant::remote::wire::value;
-use software_plant::remote::{Related, Remote, RemoteScenario};
+use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::Scratch;
 use crate::common::oauth::{
@@ -114,8 +114,8 @@ fn an_authorization_request_is_answered_as_the_person_consents() {
 
 #[test]
 fn an_authorization_request_is_answered_for_the_first_step_it_fails_in_the_order_judged() {
-    let notes = Related::new("notes", &["notes"]);
-    let remote = Remote::start(RemoteScenario::accepting(KEY).relating(notes.clone()));
+    let notes = Companion::new("notes", &["notes"]);
+    let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(notes.clone()));
     let (_, server) = metadata(&remote);
     let client = registered(&server);
     let own = remote.resource();
@@ -149,12 +149,12 @@ fn an_authorization_request_is_answered_for_the_first_step_it_fails_in_the_order
     // The scopes asked of each resource are judged before the person's consent.
     let refusing = Remote::start(
         RemoteScenario::accepting(KEY)
-            .relating(notes)
+            .accompanied_by(notes)
             .refusing_consent(),
     );
     let (_, server) = metadata(&refusing);
     let client = registered(&server);
-    let asked = [refusing.resource(), refusing.related("notes")];
+    let asked = [refusing.resource(), refusing.companion("notes")];
     let asked = [asked[0].as_str(), asked[1].as_str()];
     let unasked = authorize_for(&server, &client, &asked, "documents");
     assert_eq!(value(&location(&unasked), "error"), Some("invalid_target"));

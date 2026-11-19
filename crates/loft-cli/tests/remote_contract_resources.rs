@@ -1,5 +1,5 @@
-//! The contract suite of a sign-in over a remote's related resources:
-//! - the related resources that its protected resource metadata lists, and each one's own
+//! The contract suite of a sign-in over a remote's companion resources:
+//! - the companion resources that its protected resource metadata lists, and each one's own
 //!   metadata;
 //! - one authorization request for every resource, and a code exchanged for one of them.
 //!
@@ -8,39 +8,39 @@
 //! Each scenario runs against the simulator and, on demand, against the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS`: run a real half with
 //! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/<its name>/)'`. A scenario that
-//! needs a person to consent, or asks which access tokens a related resource admits, runs against
-//! the simulator alone. A real half learns the related resources from the remote's own metadata,
-//! and shares its scenario with its simulator half, so that the two cannot drift. A real half
-//! whose premise does not hold fails with a message that names the premise; none passes without
-//! checking.
+//! needs a person to consent, or asks which access tokens a companion resource admits, runs
+//! against the simulator alone. A real half learns the companion resources from the remote's own
+//! metadata, and shares its scenario with its simulator half, so that the two cannot drift. A
+//! real half whose premise does not hold fails with a message that names the premise; none
+//! passes without checking.
 
 use serde_json::{Value, json};
 use software_plant::remote::wire::value;
-use software_plant::remote::{Related, Remote, RemoteScenario};
+use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::calls::Answer;
 use crate::common::oauth::{
-    KEY, assert_oauth_error, authorize, authorize_for, coded_for, exchange, exchange_for, fetch,
-    location, metadata, parameter, refresh, registered, related_metadata,
+    KEY, assert_oauth_error, authorize, authorize_for, coded_for, companion_metadata, exchange,
+    exchange_for, fetch, location, metadata, parameter, refresh, registered,
 };
-use crate::common::resources::{RELATED_RESOURCES, head_with, origin_of, related_of};
+use crate::common::resources::{COMPANION_RESOURCES, companions_of, head_with, origin_of};
 use crate::remote_contract::assert_problem;
 
 /// What a remote's challenge, and the protected resource metadata it names, say of the remote's
-/// related resources.
+/// companion resources.
 struct Listing {
     /// The challenge of a request without a token.
     challenge: String,
     /// The protected resource metadata that the challenge names.
     metadata: Value,
-    /// Each related resource that the metadata lists, as its `resource` and its `kind`.
-    related: Vec<(String, String)>,
+    /// Each companion resource that the metadata lists, as its `resource` and its `kind`.
+    companions: Vec<(String, String)>,
 }
 
 /// The listing of the document at `address`, held to what a remote promises of it: its challenge
 /// names metadata on the address's origin that lists each scope the challenge names; and each
-/// related resource lies on that origin, is not the remote's own, is listed once, and vouches for
-/// itself under the remote's issuer.
+/// companion resource lies on that origin, is not the remote's own, is listed once, and vouches
+/// for itself under the remote's issuer.
 fn listing_as_promised(address: &str) -> Listing {
     let origin = origin_of(address);
     let (challenge, metadata, _) = fetch(address);
@@ -54,15 +54,15 @@ fn listing_as_promised(address: &str) -> Listing {
     {
         assert!(supported.contains(&json!(scope)), "{scope}: {metadata}");
     }
-    let related = related_of(address);
-    for (at, (resource, kind)) in related.iter().enumerate() {
+    let companions = companions_of(address);
+    for (at, (resource, kind)) in companions.iter().enumerate() {
         assert_eq!(origin_of(resource), origin, "{kind} lies on the origin");
         assert_ne!(
             metadata["resource"],
             json!(resource),
             "{kind} is the remote's"
         );
-        let earlier = &related[..at];
+        let earlier = &companions[..at];
         let repeated = earlier.iter().any(|(r, k)| r == resource || k == kind);
         assert!(!repeated, "{kind} is listed twice");
         vouches_for_itself(resource, kind, &metadata["authorization_servers"][0]);
@@ -70,14 +70,14 @@ fn listing_as_promised(address: &str) -> Listing {
     Listing {
         challenge,
         metadata,
-        related,
+        companions,
     }
 }
 
-/// Requires the protected resource metadata of the related resource `resource`, of `kind`, at
+/// Requires the protected resource metadata of the companion resource `resource`, of `kind`, at
 /// the address RFC 9728 derives from it, to be a JSON object that names it, `issuer` and a scope.
 fn vouches_for_itself(resource: &str, kind: &str, issuer: &Value) {
-    let answer = related_metadata(resource);
+    let answer = companion_metadata(resource);
     let metadata = &answer.body;
     assert_eq!(answer.status, 200, "{kind}: {metadata}");
     assert!(metadata.is_object(), "{kind}: {metadata}");
@@ -101,11 +101,11 @@ fn present(value: &Value, fields: &[&str]) -> Vec<bool> {
 }
 
 #[test]
-fn the_metadata_lists_each_related_resource_and_each_names_itself_and_the_issuer() {
+fn the_metadata_lists_each_companion_resource_and_each_names_itself_and_the_issuer() {
     let remote = Remote::start(
         RemoteScenario::accepting(KEY)
-            .relating(Related::new("notes", &["notes", "notes.archive"]))
-            .relating(Related::new("inbox", &["inbox"]).at("/mail/inbox?view=all")),
+            .accompanied_by(Companion::new("notes", &["notes", "notes.archive"]))
+            .accompanied_by(Companion::new("inbox", &["inbox"]).at("/mail/inbox?view=all")),
     );
     let listing = listing_as_promised(&remote.address());
     let named = parameter(&listing.challenge, "resource_metadata").unwrap();
@@ -113,11 +113,11 @@ fn the_metadata_lists_each_related_resource_and_each_names_itself_and_the_issuer
     let scope = parameter(&listing.challenge, "scope");
     assert_eq!(scope.as_deref(), Some("documents"));
     assert_eq!(listing.metadata["scopes_supported"], json!(["documents"]));
-    let (notes, inbox) = (remote.related("notes"), remote.related("inbox"));
+    let (notes, inbox) = (remote.companion("notes"), remote.companion("inbox"));
     assert_eq!(notes, format!("{}/notes", remote.origin()));
     assert_eq!(inbox, format!("{}/mail/inbox?view=all", remote.origin()));
     assert_eq!(
-        listing.metadata[RELATED_RESOURCES],
+        listing.metadata[COMPANION_RESOURCES],
         json!([
             { "resource": notes, "kind": "notes" },
             { "resource": inbox, "kind": "inbox" },
@@ -129,7 +129,7 @@ fn the_metadata_lists_each_related_resource_and_each_names_itself_and_the_issuer
         (&notes, json!(["notes", "notes.archive"])),
         (&inbox, json!(["inbox"])),
     ] {
-        let answer = related_metadata(resource);
+        let answer = companion_metadata(resource);
         assert_eq!(answer.status, 200, "{:?}", answer.body);
         assert_eq!(answer.header("content-type"), Some("application/json"));
         assert_eq!(
@@ -146,19 +146,19 @@ fn the_metadata_lists_each_related_resource_and_each_names_itself_and_the_issuer
     let inbox_metadata = "/.well-known/oauth-protected-resource/mail/inbox?view=all";
     assert!(paths.iter().any(|path| path == inbox_metadata), "{paths:?}");
 
-    let unrelated = Remote::start(RemoteScenario::accepting(KEY));
-    let listing = listing_as_promised(&unrelated.address());
-    let member = listing.metadata.get(RELATED_RESOURCES);
+    let unaccompanied = Remote::start(RemoteScenario::accepting(KEY));
+    let listing = listing_as_promised(&unaccompanied.address());
+    let member = listing.metadata.get(COMPANION_RESOURCES);
     assert!(member.is_none(), "{}", listing.metadata);
-    assert_eq!(listing.related, Vec::<(String, String)>::new());
+    assert_eq!(listing.companions, Vec::<(String, String)>::new());
 }
 
 #[test]
-fn the_metadata_of_a_related_resource_whose_path_ends_in_a_slash_lies_at_the_path_without_it() {
+fn the_metadata_of_a_companion_resource_whose_path_ends_in_a_slash_lies_at_the_path_without_it() {
     let remote = Remote::start(
         RemoteScenario::accepting(KEY)
-            .relating(Related::new("inbox", &["inbox"]).at("/mail/inbox/?view=all"))
-            .relating(Related::new("home", &["home"]).at("/")),
+            .accompanied_by(Companion::new("inbox", &["inbox"]).at("/mail/inbox/?view=all"))
+            .accompanied_by(Companion::new("home", &["home"]).at("/")),
     );
     for (kind, path, metadata) in [
         (
@@ -168,9 +168,9 @@ fn the_metadata_of_a_related_resource_whose_path_ends_in_a_slash_lies_at_the_pat
         ),
         ("home", "/", "/.well-known/oauth-protected-resource"),
     ] {
-        let identifier = remote.related(kind);
+        let identifier = remote.companion(kind);
         assert_eq!(identifier, format!("{}{path}", remote.origin()));
-        let answer = related_metadata(&identifier);
+        let answer = companion_metadata(&identifier);
         assert_eq!(answer.status, 200, "{kind}: {:?}", answer.body);
         assert_eq!(answer.body["resource"], json!(identifier), "{kind}");
         let paths: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
@@ -180,21 +180,21 @@ fn the_metadata_of_a_related_resource_whose_path_ends_in_a_slash_lies_at_the_pat
 
 #[test]
 #[ignore = "reaches the remote at LOFT_REMOTE_CONTRACT_ADDRESS"]
-fn a_real_remote_lists_its_related_resources_in_the_shape_the_simulator_does() {
+fn a_real_remote_lists_its_companion_resources_in_the_shape_the_simulator_does() {
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
     let real = listing_as_promised(&address);
     let scenario = RemoteScenario::accepting(KEY);
-    let remote = Remote::start(if real.related.is_empty() {
+    let remote = Remote::start(if real.companions.is_empty() {
         scenario
     } else {
-        scenario.relating(Related::new("notes", &["notes"]))
+        scenario.accompanied_by(Companion::new("notes", &["notes"]))
     });
     let simulated = listing_as_promised(&remote.address());
     let fields = [
         "resource",
         "authorization_servers",
         "scopes_supported",
-        RELATED_RESOURCES,
+        COMPANION_RESOURCES,
     ];
     assert_eq!(
         present(&real.metadata, &fields),
@@ -206,12 +206,12 @@ fn a_real_remote_lists_its_related_resources_in_the_shape_the_simulator_does() {
         "scopes_supported",
         "bearer_methods_supported",
     ];
-    let shape = |resource: &str| present(&related_metadata(resource).body, &fields);
+    let shape = |resource: &str| present(&companion_metadata(resource).body, &fields);
     let expected = simulated
-        .related
+        .companions
         .first()
         .map(|(resource, _)| shape(resource));
-    for (resource, kind) in &real.related {
+    for (resource, kind) in &real.companions {
         assert_eq!(Some(shape(resource)), expected, "{kind}");
     }
 }
@@ -220,15 +220,15 @@ fn a_real_remote_lists_its_related_resources_in_the_shape_the_simulator_does() {
 fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them() {
     let remote = Remote::start(
         RemoteScenario::accepting(KEY)
-            .relating(Related::new(
+            .accompanied_by(Companion::new(
                 "notes",
                 &["notes", "notes.archive", "notes.share"],
             ))
-            .relating(Related::new("inbox", &["inbox"])),
+            .accompanied_by(Companion::new("inbox", &["inbox"])),
     );
-    let (own, notes) = (remote.resource(), remote.related("notes"));
-    let inbox = remote.related("inbox");
-    let listed = related_metadata(&notes).body["scopes_supported"].clone();
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
+    let inbox = remote.companion("inbox");
+    let listed = companion_metadata(&notes).body["scopes_supported"].clone();
     assert_eq!(listed, json!(["notes", "notes.archive", "notes.share"]));
     let asked = [own.as_str(), notes.as_str()];
     let scope = "documents notes notes.archive";
@@ -271,14 +271,17 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
         answer.body
     };
     assert_eq!(exchanged(&own)["scope"], "documents");
-    let related = exchanged(&notes);
-    assert_eq!(related["scope"], "notes notes.archive");
+    let companion = exchanged(&notes);
+    assert_eq!(companion["scope"], "notes notes.archive");
     let (challenge, _, _) = fetch(&remote.address());
-    let at_the_document = head_with(&remote.address(), related["access_token"].as_str().unwrap());
+    let at_the_document = head_with(
+        &remote.address(),
+        companion["access_token"].as_str().unwrap(),
+    );
     assert_problem(&at_the_document, 401, "unauthenticated");
     let challenged = at_the_document.header("www-authenticate");
     assert_eq!(challenged, Some(challenge.as_str()));
-    let successor = related["refresh_token"].as_str().unwrap();
+    let successor = companion["refresh_token"].as_str().unwrap();
     let refreshed = refresh(&server, &client, &own, successor);
     assert_eq!(refreshed.status, 200, "{:?}", refreshed.body);
     assert_eq!(refreshed.body["scope"], "documents");
@@ -286,12 +289,13 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
 
 #[test]
 fn an_authorization_request_is_refused_for_a_resource_or_a_scope_the_remote_does_not_serve() {
-    let remote =
-        Remote::start(RemoteScenario::accepting(KEY).relating(Related::new("notes", &["notes"])));
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY).accompanied_by(Companion::new("notes", &["notes"])),
+    );
     let (_, server) = metadata(&remote);
     let client = registered(&server);
-    let (own, notes) = (remote.resource(), remote.related("notes"));
-    let listed = related_metadata(&notes).body["scopes_supported"].clone();
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
+    let listed = companion_metadata(&notes).body["scopes_supported"].clone();
     assert_eq!(listed, json!(["notes"]));
     let elsewhere = format!("{}/elsewhere", remote.origin());
     let error = |answer: &Answer| value(&location(answer), "error").map(str::to_owned);
@@ -328,8 +332,8 @@ fn an_authorization_request_is_refused_for_a_resource_or_a_scope_the_remote_does
             "{response_type:?}"
         );
     }
-    let unrelated = Remote::start(RemoteScenario::accepting(KEY));
-    for remote in [&remote, &unrelated] {
+    let unaccompanied = Remote::start(RemoteScenario::accepting(KEY));
+    for remote in [&remote, &unaccompanied] {
         let own = remote.resource();
         let (server, client, code) = coded_for(remote, &[&own], "documents");
         let answer = exchange(&server, &client, &own, &code);

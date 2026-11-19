@@ -12,7 +12,7 @@
 //! after a fresh sign-in made as its own comment says, or with a kept one no older than its
 //! comment allows, with `cargo nextest run -p loft-cli --run-ignored only -E 'test(/<its name>/)'`.
 //! A real half reads the kept sign-in's token endpoint, client, resource, access token and
-//! refresh token, and when that access token expires where it presents it, learns the related
+//! refresh token, and when that access token expires where it presents it, learns the companion
 //! resources from the remote's own metadata, and shares its scenario with its simulator half, so
 //! that the two cannot drift. A real half whose premise does not hold fails with a message that
 //! names the premise; none passes without checking. The simulator alone is asked what a real
@@ -21,14 +21,15 @@
 //! half.
 
 use serde_json::{Value, json};
-use software_plant::remote::{Related, Remote, RemoteScenario};
+use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::calls::Answer;
 use crate::common::oauth::{
-    KEY, assert_oauth_error, fetch, metadata, parameter, refresh_for, registered, related_metadata,
+    KEY, assert_oauth_error, companion_metadata, fetch, metadata, parameter, refresh_for,
+    registered,
 };
 use crate::common::resources::{
-    Signed, head_with, kept, kept_unexpired, origin_of, related_of, signed_over,
+    Signed, companions_of, head_with, kept, kept_unexpired, origin_of, signed_over,
 };
 use crate::remote_contract::assert_problem;
 
@@ -90,9 +91,13 @@ fn a_refresh_for_a_resource_the_remote_does_not_serve_is_refused_and_rotates_not
     assert_eq!(remote.refreshes(), 2);
     // A lapsing scenario refuses a resource it does not serve before it refuses the lapse, and
     // the lapse before it asks whether the sign-in holds the resource.
-    let notes = Related::new("notes", &["notes"]);
-    let lapsing = Remote::start(RemoteScenario::accepting(KEY).lapsing().relating(notes));
-    let (own, notes) = (lapsing.resource(), lapsing.related("notes"));
+    let notes = Companion::new("notes", &["notes"]);
+    let lapsing = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .lapsing()
+            .accompanied_by(notes),
+    );
+    let (own, notes) = (lapsing.resource(), lapsing.companion("notes"));
     let signed = signed_over(&lapsing, &[&own], "documents");
     let elsewhere = format!("{}/elsewhere", lapsing.origin());
     for (resource, refused) in [
@@ -114,42 +119,42 @@ fn a_real_remote_refuses_a_refresh_for_a_resource_it_does_not_serve_and_rotates_
     refuses_a_resource_it_does_not_serve(&kept());
 }
 
-/// Refreshes `signed`, a sign-in that holds the related resource `related`, for that resource,
+/// Refreshes `signed`, a sign-in that holds the companion resource `companion`, for that resource,
 /// and gives the answer: an access token for it alone, which the document refuses, with a `scope`
 /// of the scopes it lists, and a `resource`, where the answer holds one, that names it.
-fn refreshes_a_related_resource(signed: &Signed, related: &str) -> Value {
-    let answer = signed.refresh(related, &signed.refresh_token);
+fn refreshes_a_companion_resource(signed: &Signed, companion: &str) -> Value {
+    let answer = signed.refresh(companion, &signed.refresh_token);
     let body = answer.body;
-    let premise = "premise: a sign-in whose authorization request named each related resource";
+    let premise = "premise: a sign-in whose authorization request named each companion resource";
     assert_eq!(
         answer.status, 200,
-        "{premise}, {related} among them: {body:?}"
+        "{premise}, {companion} among them: {body:?}"
     );
-    let listed = related_metadata(related).body["scopes_supported"].clone();
+    let listed = companion_metadata(companion).body["scopes_supported"].clone();
     let scope = body["scope"].as_str().unwrap_or_default();
     assert!(!scope.is_empty(), "{body:?}");
     for granted in scope.split(' ') {
         let lists = listed
             .as_array()
             .is_some_and(|l| l.contains(&json!(granted)));
-        assert!(lists, "{related} lists {granted}: {listed}");
+        assert!(lists, "{companion} lists {granted}: {listed}");
     }
     if let Some(resource) = body.get("resource") {
-        assert_eq!(resource, &json!(related));
+        assert_eq!(resource, &json!(companion));
     }
     let access = body["access_token"].as_str().unwrap();
     refused_at_the_document(&signed.address, &head_with(&signed.address, access));
     body
 }
 
-/// Presents the refresh token of `signed` again, after `answer` rotated it for the related
-/// resource `related`: for `related`, it gets `answer` again, unchanged; for the sign-in's own
+/// Presents the refresh token of `signed` again, after `answer` rotated it for the companion
+/// resource `companion`: for `companion`, it gets `answer` again, unchanged; for the sign-in's own
 /// resource, it is a reuse, which revokes the sign-in, so that `answer`'s refresh token is
 /// refused too.
-fn repeats_only_for_its_resource(signed: &Signed, related: &str, answer: &Value) {
+fn repeats_only_for_its_resource(signed: &Signed, companion: &str, answer: &Value) {
     let rotated = signed.refresh_token.as_str();
-    let repeated = signed.refresh(related, rotated);
-    assert_eq!(&repeated.body, answer, "a repeat for {related}");
+    let repeated = signed.refresh(companion, rotated);
+    assert_eq!(&repeated.body, answer, "a repeat for {companion}");
     assert_oauth_error(&signed.refresh(&signed.resource, rotated), "invalid_grant");
     let successor = answer["refresh_token"].as_str().unwrap();
     let revoked = signed.refresh(&signed.resource, successor);
@@ -157,12 +162,12 @@ fn repeats_only_for_its_resource(signed: &Signed, related: &str, answer: &Value)
 }
 
 #[test]
-fn one_sign_in_issues_a_token_for_each_related_resource_and_a_reuse_for_another_revokes_it() {
-    let notes = Related::new("notes", &["notes", "notes.archive"]);
-    let remote = Remote::start(RemoteScenario::accepting(KEY).relating(notes));
-    let (own, notes) = (remote.resource(), remote.related("notes"));
+fn one_sign_in_issues_a_token_for_each_companion_resource_and_a_reuse_for_another_revokes_it() {
+    let notes = Companion::new("notes", &["notes", "notes.archive"]);
+    let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(notes));
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
     let signed = signed_over(&remote, &[&own, &notes], "documents notes notes.archive");
-    let answer = refreshes_a_related_resource(&signed, &notes);
+    let answer = refreshes_a_companion_resource(&signed, &notes);
     assert_eq!(answer["scope"], "notes notes.archive");
     assert_eq!(answer["resource"], json!(notes));
     let access = answer["access_token"].as_str().unwrap();
@@ -175,64 +180,64 @@ fn one_sign_in_issues_a_token_for_each_related_resource_and_a_reuse_for_another_
 
 #[test]
 #[ignore = "spends the sign-in that LOFT_REMOTE_CONTRACT_SIGN_IN keeps"]
-fn a_real_remote_issues_a_token_for_each_related_resource_and_revokes_a_sign_in_reused_for_another()
-{
-    // Needs a remote that lists a related resource, and a sign-in kept for the address whose
-    // authorization request named each listed related resource, which nothing has refreshed
+fn a_real_remote_issues_a_token_for_each_companion_resource_and_revokes_a_sign_in_reused_for_another()
+ {
+    // Needs a remote that lists a companion resource, and a sign-in kept for the address whose
+    // authorization request named each listed companion resource, which nothing has refreshed
     // since. The run revokes it.
     let signed = kept();
-    let related = related_of(&signed.address);
-    let (first, _) = related
+    let companions = companions_of(&signed.address);
+    let (first, _) = companions
         .first()
-        .expect("premise: the remote lists a related resource");
-    let answer = refreshes_a_related_resource(&signed, first);
+        .expect("premise: the remote lists a companion resource");
+    let answer = refreshes_a_companion_resource(&signed, first);
     repeats_only_for_its_resource(&signed, first, &answer);
 }
 
 /// Refuses a refresh of `signed`, a sign-in made for the remote's own resource alone, for the
-/// related resource `related` `invalid_target`, which rotates and revokes nothing; once its
-/// refresh token has rotated for its own resource, presenting it for `related` is a reuse, which
-/// revokes the sign-in, whose live refresh token is then refused `invalid_grant` for either
-/// resource.
-fn refuses_a_related_resource_it_does_not_hold(signed: &Signed, related: &str) {
+/// companion resource `companion` `invalid_target`, which rotates and revokes nothing; once its
+/// refresh token has rotated for its own resource, presenting it for `companion` is a reuse,
+/// which revokes the sign-in, whose live refresh token is then refused `invalid_grant` for
+/// either resource.
+fn refuses_a_companion_resource_it_does_not_hold(signed: &Signed, companion: &str) {
     let live = signed.refresh_token.as_str();
-    let unheld = signed.refresh(related, live);
+    let unheld = signed.refresh(companion, live);
     let premise = "premise: the sign-in was made for the remote's own resource alone";
     assert_ne!(unheld.status, 200, "{premise}: {:?}", unheld.body);
     assert_oauth_error(&unheld, "invalid_target");
     let rotated = signed.refresh(&signed.resource, live);
     let unrotated = format!("a refused refresh rotates nothing ({UNREFRESHED})");
     assert_eq!(rotated.status, 200, "{unrotated}: {:?}", rotated.body);
-    assert_oauth_error(&signed.refresh(related, live), "invalid_grant");
+    assert_oauth_error(&signed.refresh(companion, live), "invalid_grant");
     let successor = rotated.body["refresh_token"].as_str().unwrap();
-    for resource in [signed.resource.as_str(), related] {
+    for resource in [signed.resource.as_str(), companion] {
         assert_oauth_error(&signed.refresh(resource, successor), "invalid_grant");
     }
 }
 
 #[test]
-fn a_refresh_for_a_related_resource_the_sign_in_does_not_hold_is_refused_and_rotates_nothing() {
-    let notes = Related::new("notes", &["notes"]);
-    let remote = Remote::start(RemoteScenario::accepting(KEY).relating(notes));
-    let (own, notes) = (remote.resource(), remote.related("notes"));
+fn a_refresh_for_a_companion_resource_the_sign_in_does_not_hold_is_refused_and_rotates_nothing() {
+    let notes = Companion::new("notes", &["notes"]);
+    let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(notes));
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
     let signed = signed_over(&remote, &[&own], "documents");
-    refuses_a_related_resource_it_does_not_hold(&signed, &notes);
+    refuses_a_companion_resource_it_does_not_hold(&signed, &notes);
     assert_eq!(remote.refreshes(), 1);
     assert!(!remote.admits_at(&own, &signed.access_token));
 }
 
 #[test]
 #[ignore = "spends the sign-in that LOFT_REMOTE_CONTRACT_SIGN_IN keeps"]
-fn a_real_remote_refuses_a_related_resource_that_a_sign_in_for_its_own_resource_does_not_hold() {
-    // Needs a remote that lists a related resource, and a sign-in kept for the address whose
+fn a_real_remote_refuses_a_companion_resource_that_a_sign_in_for_its_own_resource_does_not_hold() {
+    // Needs a remote that lists a companion resource, and a sign-in kept for the address whose
     // authorization request named the remote's own resource alone, which nothing has refreshed
     // since. The run revokes it.
     let signed = kept();
-    let related = related_of(&signed.address);
-    let (first, _) = related
+    let companions = companions_of(&signed.address);
+    let (first, _) = companions
         .first()
-        .expect("premise: the remote lists a related resource");
-    refuses_a_related_resource_it_does_not_hold(&signed, first);
+        .expect("premise: the remote lists a companion resource");
+    refuses_a_companion_resource_it_does_not_hold(&signed, first);
 }
 
 /// Refuses `signed`, a sign-in made for a resource that the remote no longer serves: the document
@@ -292,13 +297,13 @@ fn a_real_remote_refuses_a_sign_in_made_for_a_resource_it_no_longer_serves() {
 fn a_refresh_for_one_resource_leaves_the_tokens_of_every_other_resource_admitted() {
     let remote = Remote::start(
         RemoteScenario::accepting(KEY)
-            .relating(Related::new("notes", &["notes", "notes.archive"]))
-            .relating(Related::new("inbox", &["inbox"])),
+            .accompanied_by(Companion::new("notes", &["notes", "notes.archive"]))
+            .accompanied_by(Companion::new("inbox", &["inbox"])),
     );
-    let (own, notes) = (remote.resource(), remote.related("notes"));
-    let inbox = remote.related("inbox");
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
+    let inbox = remote.companion("inbox");
     let signed = signed_over(&remote, &[&own, &notes, &inbox], "documents notes inbox");
-    let listed = related_metadata(&notes).body["scopes_supported"].clone();
+    let listed = companion_metadata(&notes).body["scopes_supported"].clone();
     assert_eq!(listed, json!(["notes", "notes.archive"]));
     // Whether `access` is admitted at `resource` and at no other resource of the sign-in.
     let alone = |resource: &str, access: &str| {
@@ -329,11 +334,11 @@ fn a_sign_in_granted_without_a_browser_holds_an_access_token_for_each_resource_a
  {
     let remote = Remote::start(
         RemoteScenario::accepting(KEY)
-            .relating(Related::new("notes", &["notes", "notes.archive"]))
-            .relating(Related::new("inbox", &["inbox"])),
+            .accompanied_by(Companion::new("notes", &["notes", "notes.archive"]))
+            .accompanied_by(Companion::new("inbox", &["inbox"])),
     );
-    let (own, notes) = (remote.resource(), remote.related("notes"));
-    let inbox = remote.related("inbox");
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
+    let inbox = remote.companion("inbox");
     let held = [&own, &notes, &inbox];
     let grant = remote.grant_over(&[&own, &notes, &inbox]);
     assert_eq!(grant.access.len(), held.len(), "{:?}", grant.access);
@@ -363,9 +368,9 @@ fn a_sign_in_granted_without_a_browser_holds_an_access_token_for_each_resource_a
 #[test]
 fn an_unknown_refresh_token_another_client_s_or_a_revoked_sign_in_s_is_refused_and_changes_nothing()
 {
-    let notes = Related::new("notes", &["notes"]);
-    let remote = Remote::start(RemoteScenario::accepting(KEY).relating(notes));
-    let (own, notes) = (remote.resource(), remote.related("notes"));
+    let notes = Companion::new("notes", &["notes"]);
+    let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(notes));
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
     let signed = signed_over(&remote, &[&own], "documents");
     let (_, server) = metadata(&remote);
     let other = registered(&server);

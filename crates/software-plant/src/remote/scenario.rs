@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::{Related, StoredState};
+use super::{Companion, StoredState};
 
 /// How the person answers an authorization request.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -115,9 +115,9 @@ pub struct RemoteScenario {
     pub(super) misstating: Vec<Misstating>,
     /// The skill package the scenario serves, if any.
     pub(super) skill: Option<Skill>,
-    /// The related resources that the document's protected resource metadata lists, in order.
-    pub(super) related: Vec<Related>,
-    /// The member that lists the related resources, as the scenario scripts it.
+    /// The companion resources that the document's protected resource metadata lists, in order.
+    pub(super) companions: Vec<Companion>,
+    /// The member that lists the companion resources, as the scenario scripts it.
     pub(super) listing: Option<Value>,
 }
 
@@ -148,7 +148,7 @@ impl RemoteScenario {
             invalid_publish: None,
             misstating: Vec::new(),
             skill: None,
-            related: Vec::new(),
+            companions: Vec::new(),
             listing: None,
         }
     }

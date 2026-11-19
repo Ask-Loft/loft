@@ -1,5 +1,5 @@
 //! The two metadata documents a client finds the authorization server by: the protected
-//! resource metadata (RFC 9728), which names the resource, the issuer and the related resources,
+//! resource metadata (RFC 9728), which names the resource, the issuer and the companion resources,
 //! and the authorization server metadata (RFC 8414), which names the issuer's endpoints and what
 //! they take, each as the contract states it or as a misconfigured scenario serves it.
 
@@ -24,7 +24,7 @@ pub(crate) fn document_metadata(state: &State, origin: &str) -> Value {
         "scopes_supported": state.document_scopes(),
         "bearer_methods_supported": ["header"],
     });
-    state.list_related(&mut metadata);
+    state.list_companions(&mut metadata);
     metadata
 }
 

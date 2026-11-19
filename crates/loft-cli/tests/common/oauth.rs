@@ -1,9 +1,9 @@
 //! The calls a contract suite makes of a remote's authorization server, as OAuth 2.0 shapes them,
 //! of the simulator and of a real remote alike: the two metadata documents found from the
 //! challenge of a request without a token, the parameters of that challenge, the metadata of a
-//! related resource, the registration of a public client, an authorization request with PKCE for
-//! one protected resource or more and the redirect that answers it, the exchange of its code, a
-//! refresh that names one resource or another number of them, and the OAuth error answer that
+//! companion resource, the registration of a public client, an authorization request with PKCE
+//! for one protected resource or more and the redirect that answers it, the exchange of its code,
+//! a refresh that names one resource or another number of them, and the OAuth error answer that
 //! refuses one.
 
 use serde_json::{Value, json};
@@ -85,7 +85,7 @@ pub fn parameter(challenge: &str, name: &str) -> Option<String> {
 /// `identifier`, at the address RFC 9728 derives from it: its origin, then
 /// `/.well-known/oauth-protected-resource`, then its path without a terminating `/`, then its
 /// query.
-pub fn related_metadata(identifier: &str) -> Answer {
+pub fn companion_metadata(identifier: &str) -> Answer {
     let authority = identifier.find("://").map_or(0, |at| at + 3);
     let end = identifier[authority..]
         .find(['/', '?'])

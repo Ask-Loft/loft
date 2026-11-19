@@ -1,5 +1,5 @@
 //! The contract suite of the failures a remote simulator scripts: metadata a misconfigured
-//! authorization server serves, related resources it misserves or places on another origin, a
+//! authorization server serves, companion resources it misserves or places on another origin, a
 //! list of them it scripts, refused registrations and exchanges, a refresh whose answer is lost
 //! or slow, and the publish and import answers no faithful remote gives. A real remote is not
 //! asked to fail, so each scenario is asked of the simulator alone.
@@ -9,14 +9,14 @@ use std::time::{Duration, Instant};
 use serde_json::{Value, json};
 use software_plant::http::Request;
 use software_plant::remote::wire::value;
-use software_plant::remote::{Metadata, Related, RelatedFault, Remote, RemoteScenario};
+use software_plant::remote::{Companion, CompanionFault, Metadata, Remote, RemoteScenario};
 
 use crate::common::oauth::{
-    KEY, assert_oauth_error, authorize_for, coded, exchange, fetch, location, metadata, parameter,
-    refresh, register, registered, related_metadata, send_refresh,
+    KEY, assert_oauth_error, authorize_for, coded, companion_metadata, exchange, fetch, location,
+    metadata, parameter, refresh, register, registered, send_refresh,
 };
 use crate::common::remote::{spec, wire, with_criterion};
-use crate::common::resources::{RELATED_RESOURCES, origin_of, signed_over};
+use crate::common::resources::{COMPANION_RESOURCES, origin_of, signed_over};
 use crate::remote_contract::{assert_problem, holding, post};
 use crate::remote_contract_writes::{import_body, publish_body};
 
@@ -64,25 +64,25 @@ fn each_misconfigured_metadata_serves_what_its_scenario_names() {
 }
 
 #[test]
-fn each_misserved_related_resource_serves_what_its_scenario_names() {
+fn each_misserved_companion_resource_serves_what_its_scenario_names() {
     let faults = [
-        ("other", RelatedFault::UnderAnotherIssuer),
-        ("misnamed", RelatedFault::Misnamed),
-        ("nameless", RelatedFault::Unnamed),
-        ("unscoped", RelatedFault::Scopeless),
-        ("empty", RelatedFault::EmptyScopes),
-        ("unreadable", RelatedFault::Unreadable),
-        ("array", RelatedFault::NotAnObject),
-        ("relisting", RelatedFault::Relisting),
+        ("other", CompanionFault::UnderAnotherIssuer),
+        ("misnamed", CompanionFault::Misnamed),
+        ("nameless", CompanionFault::Unnamed),
+        ("unscoped", CompanionFault::Scopeless),
+        ("empty", CompanionFault::EmptyScopes),
+        ("unreadable", CompanionFault::Unreadable),
+        ("array", CompanionFault::NotAnObject),
+        ("relisting", CompanionFault::Relisting),
     ];
     let scenario = faults
         .iter()
         .fold(RemoteScenario::accepting(KEY), |scenario, (kind, fault)| {
-            scenario.relating(Related::new(kind, &[*kind]).faulty(*fault))
+            scenario.accompanied_by(Companion::new(kind, &[*kind]).faulty(*fault))
         });
     let remote = Remote::start(scenario);
     let (resource, _) = metadata(&remote);
-    let listed: Vec<&Value> = resource[RELATED_RESOURCES]
+    let listed: Vec<&Value> = resource[COMPANION_RESOURCES]
         .as_array()
         .unwrap()
         .iter()
@@ -90,7 +90,7 @@ fn each_misserved_related_resource_serves_what_its_scenario_names() {
         .collect();
     let kinds = faults.map(|(kind, _)| json!(kind));
     assert_eq!(listed, kinds.iter().collect::<Vec<_>>());
-    let answer_for = |kind: &str| related_metadata(&remote.related(kind));
+    let answer_for = |kind: &str| companion_metadata(&remote.companion(kind));
     for kind in [
         "other", "misnamed", "nameless", "unscoped", "empty", "array",
     ] {
@@ -102,7 +102,7 @@ fn each_misserved_related_resource_serves_what_its_scenario_names() {
     assert!(!servers.is_empty() && !servers.contains(&issuer), "{other}");
     let misnamed = answer_for("misnamed").body["resource"].clone();
     assert!(misnamed.is_string(), "{misnamed}");
-    assert_ne!(misnamed, json!(remote.related("misnamed")));
+    assert_ne!(misnamed, json!(remote.companion("misnamed")));
     assert!(answer_for("nameless").body.get("resource").is_none());
     assert!(
         answer_for("unscoped")
@@ -118,13 +118,13 @@ fn each_misserved_related_resource_serves_what_its_scenario_names() {
     let mut faithful = relisting.body;
     let relisted = faithful
         .as_object_mut()
-        .and_then(|fields| fields.remove(RELATED_RESOURCES));
+        .and_then(|fields| fields.remove(COMPANION_RESOURCES));
     let listing = relisted.is_some_and(|list| list.as_array().is_some_and(|l| !l.is_empty()));
     assert!(listing, "{faithful}");
     assert_eq!(
         faithful,
         json!({
-            "resource": remote.related("relisting"),
+            "resource": remote.companion("relisting"),
             "authorization_servers": [issuer],
             "scopes_supported": ["relisting"],
             "bearer_methods_supported": ["header"],
@@ -133,22 +133,22 @@ fn each_misserved_related_resource_serves_what_its_scenario_names() {
 }
 
 #[test]
-fn an_authorization_request_for_a_misserved_related_resource_is_refused_invalid_target() {
+fn an_authorization_request_for_a_misserved_companion_resource_is_refused_invalid_target() {
     let faults = [
-        ("other", RelatedFault::UnderAnotherIssuer),
-        ("misnamed", RelatedFault::Misnamed),
-        ("nameless", RelatedFault::Unnamed),
-        ("unscoped", RelatedFault::Scopeless),
-        ("empty", RelatedFault::EmptyScopes),
-        ("unreadable", RelatedFault::Unreadable),
-        ("array", RelatedFault::NotAnObject),
-        ("relisting", RelatedFault::Relisting),
-        ("away", RelatedFault::OnAnotherOrigin),
+        ("other", CompanionFault::UnderAnotherIssuer),
+        ("misnamed", CompanionFault::Misnamed),
+        ("nameless", CompanionFault::Unnamed),
+        ("unscoped", CompanionFault::Scopeless),
+        ("empty", CompanionFault::EmptyScopes),
+        ("unreadable", CompanionFault::Unreadable),
+        ("array", CompanionFault::NotAnObject),
+        ("relisting", CompanionFault::Relisting),
+        ("away", CompanionFault::OnAnotherOrigin),
     ];
     let scenario = faults
         .iter()
         .fold(RemoteScenario::accepting(KEY), |scenario, (kind, fault)| {
-            scenario.relating(Related::new(kind, &[*kind]).faulty(*fault))
+            scenario.accompanied_by(Companion::new(kind, &[*kind]).faulty(*fault))
         });
     let remote = Remote::start(scenario);
     let (_, server) = metadata(&remote);
@@ -157,9 +157,9 @@ fn an_authorization_request_for_a_misserved_related_resource_is_refused_invalid_
     // Each asks for the scope its scenario names for it, which no other resource accepts, so a
     // resource judged after the scope would be refused `invalid_scope`.
     for (kind, _) in faults {
-        let related = remote.related(kind);
+        let companion = remote.companion(kind);
         let scope = format!("documents {kind}");
-        let answer = authorize_for(&server, &client, &[&own, &related], &scope);
+        let answer = authorize_for(&server, &client, &[&own, &companion], &scope);
         let redirected = location(&answer);
         let refused = (kind != "relisting").then_some("invalid_target");
         assert_eq!(value(&redirected, "error"), refused, "{kind}");
@@ -173,19 +173,19 @@ fn a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its
     let paths = |requests: Vec<Request>| -> Vec<String> {
         requests.into_iter().map(|request| request.path).collect()
     };
-    let away = Related::new("away", &["away"]).faulty(RelatedFault::OnAnotherOrigin);
-    let remote = Remote::start(RemoteScenario::accepting(KEY).relating(away));
+    let away = Companion::new("away", &["away"]).faulty(CompanionFault::OnAnotherOrigin);
+    let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(away));
     let (resource, _) = metadata(&remote);
-    let identifier = remote.related("away");
+    let identifier = remote.companion("away");
     let elsewhere = origin_of(&identifier);
     assert!(elsewhere.starts_with("http://127.0.0.1:"), "{elsewhere}");
     assert_ne!(elsewhere, remote.origin());
     assert_eq!(
-        resource[RELATED_RESOURCES],
+        resource[COMPANION_RESOURCES],
         json!([{ "resource": identifier, "kind": "away" }])
     );
     assert!(remote.requests_elsewhere().is_empty());
-    let answer = related_metadata(&identifier);
+    let answer = companion_metadata(&identifier);
     assert_eq!(answer.status, 200, "{:?}", answer.body);
     assert_eq!(
         answer.body,
@@ -233,7 +233,7 @@ fn a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its
 }
 
 #[test]
-fn a_scripted_listing_of_related_resources_is_served_as_scripted() {
+fn a_scripted_listing_of_companion_resources_is_served_as_scripted() {
     let scripted = [
         json!([]),
         json!("x"),
@@ -250,16 +250,16 @@ fn a_scripted_listing_of_related_resources_is_served_as_scripted() {
         let (resource, _) = metadata(&remote);
         let read = raw.to_string().replace("{origin}", remote.origin());
         let expected: Value = serde_json::from_str(&read).unwrap();
-        assert_eq!(resource.get(RELATED_RESOURCES), Some(&expected), "{raw}");
+        assert_eq!(resource.get(COMPANION_RESOURCES), Some(&expected), "{raw}");
     }
     let both = Remote::start(
         RemoteScenario::accepting(KEY)
-            .relating(Related::new("notes", &["notes"]))
+            .accompanied_by(Companion::new("notes", &["notes"]))
             .listing(json!([])),
     );
     let (resource, _) = metadata(&both);
-    assert_eq!(resource.get(RELATED_RESOURCES), Some(&json!([])));
-    assert_eq!(related_metadata(&both.related("notes")).status, 200);
+    assert_eq!(resource.get(COMPANION_RESOURCES), Some(&json!([])));
+    assert_eq!(companion_metadata(&both.companion("notes")).status, 200);
 }
 
 #[test]
@@ -304,10 +304,10 @@ fn a_lost_answer_is_repeated_for_its_resource_and_a_refresh_for_another_revokes_
     // A sign-in over the document's resource and `notes`, whose refresh for `notes` rotated its
     // refresh token and lost the answer.
     let lost = || {
-        let notes = Related::new("notes", &["notes"]);
+        let notes = Companion::new("notes", &["notes"]);
         let scenario = RemoteScenario::accepting(KEY).losing_a_refresh_answer();
-        let remote = Remote::start(scenario.relating(notes));
-        let (own, notes) = (remote.resource(), remote.related("notes"));
+        let remote = Remote::start(scenario.accompanied_by(notes));
+        let (own, notes) = (remote.resource(), remote.companion("notes"));
         let signed = signed_over(&remote, &[&own, &notes], "documents notes");
         let sent = send_refresh(
             &signed.server(),
