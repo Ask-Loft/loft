@@ -4,9 +4,9 @@ name: "Remote simulator"
 body: |
   An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, or signs in to it as a person would, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. Its Requirements state the remote's wire contract for each call that a client signed in to it makes, `loft` among them, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on.
 
-  It also stands in for the remote's authorization server, under paths of its own on the same origin. It challenges a request without a token as a protected resource, serves the protected resource metadata of the document's protected resource, of each related resource its scenario lists and of the authorization server, registers clients and consents to each authorization request as its scenario names. A related resource is another protected resource that one sign-in to the remote covers: the document's protected resource metadata lists it in `related_resources`, by its identifier and its kind, and it has no routes of its own, so a test asks the simulator which access tokens it admits. A scenario may place a related resource, or the document's protected resource metadata, on another origin, which a second port of the loopback interface stands for.
+  It also stands in for the remote's authorization server, under paths of its own on the same origin. It challenges a request without a token as a protected resource, serves the authorization server's metadata and the protected resource metadata of the document's protected resource and of each related resource its scenario lists, registers clients and consents to each authorization request as its scenario names. A related resource is another protected resource that one sign-in to the remote covers: the document's protected resource metadata lists it in `related_resources`, by its identifier and its kind, and it has no routes of its own, so a test asks the simulator which access tokens it admits. A scenario may place a related resource, or the document's protected resource metadata, on another origin, which a second port of the loopback interface stands for.
 
-  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a related resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked, and one refresh token that rotates on every use, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707).
+  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a related resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A related resource's kind, the `kind` that the document's protected resource metadata lists beside its identifier, is a word that the remote chooses to name what the resource serves: the contract fixes no list of kinds, and the simulator lists the word its scenario names for the resource. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked. It holds one refresh token for all of them, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707). That token rotates on every use.
 tags:
   - plant-simulator
 realizes:
@@ -343,7 +343,7 @@ requirements:
       shall: "answer with that resource's metadata, as its scenario serves it."
     criteria:
       - key: 01a1f09b-189b-76b3-863f-c7b53cc6eb84
-        name: "The metadata lies where RFC 9728 places it: the related resource's origin, then `/.well-known/oauth-protected-resource`, then the resource's path and query."
+        name: "The metadata lies where RFC 9728 places it: the related resource's origin, then `/.well-known/oauth-protected-resource`, then the resource's path without a terminating `/`, then its query."
       - key: 01a1f09b-189b-76b3-863f-c7b634afcc00
         name: "A related resource that its scenario serves faithfully is answered `200 OK` with a JSON object holding `resource`, `authorization_servers`, `scopes_supported` and `bearer_methods_supported`."
       - key: 01a1f09b-189b-76b3-863f-c7b753ca84c2
@@ -439,6 +439,8 @@ requirements:
         name: "A request whose `scope` is empty, repeats a scope, or holds a scope that no resource it names lists in `scopes_supported` redirects with `error` `invalid_scope`."
       - key: 01a1f09b-189b-76b3-863f-c7c93c9cb108
         name: "A request that names a resource but asks for none of the scopes it lists in `scopes_supported` redirects with `error` `invalid_target`."
+      - key: 01a1f2fa-4284-7544-90ec-f11470abc5da
+        name: "A request is answered for the first step it fails, judged in this order: its client and redirect URI, its `response_type`, its PKCE challenge, its resources, its `scope`, whether it asks each resource it names for one of the scopes that resource lists, then the person's consent."
   - key: 01a18e1f-8dac-71f7-847a-7258160a723f
     statement:
       form: event_driven
@@ -453,7 +455,7 @@ requirements:
       - key: 01a18e1f-8dac-71f7-847a-725b26986a58
         name: "A code presented a second time, a `redirect_uri` other than the authorization request's, or a `code_verifier` whose SHA-256 digest is not the `code_challenge`, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
       - key: 01a18e1f-8dac-71f7-847a-725c1d59acb6
-        name: "A `resource` that the sign-in does not hold is refused `400 Bad Request` with the OAuth error `invalid_target`."
+        name: "An exchange that would otherwise be accepted but names a `resource` that the scenario serves and the sign-in does not hold is refused `400 Bad Request` with the OAuth error `invalid_target`."
       - key: 01a1995a-1ff6-73c4-9f04-02309a866506
         name: "A scenario that refuses the exchange refuses every exchange for a resource it serves `400 Bad Request` with the OAuth error its scenario names."
       - key: 01a1f09b-189b-76b3-863f-c7cad5e556a5
@@ -472,11 +474,11 @@ requirements:
       - key: 01a18e1f-8dac-71f7-847a-725e4c95828e
         name: "An accepted refresh is answered as an accepted exchange is, with a new access token and a new refresh token."
       - key: 01a18e1f-8dac-71f7-847a-725f662f9c67
-        name: "A refresh token presented again for the resource its rotation named, after its successor was issued, within the grace window and before that successor has itself rotated, is answered as it was the first time."
+        name: "A refresh token of a sign-in that has not been revoked, presented again by the client it was issued to for the resource its rotation named, after its successor was issued, within the grace window and before that successor has itself rotated, is answered as it was the first time."
       - key: 01a19951-8b23-72b2-8cb9-a4c8523130f8
         name: "A refresh token answered as it was the first time issues no token and revokes none."
       - key: 01a18e1f-8dac-71f7-847a-72600450be32
-        name: "A refresh token presented again for a resource the scenario serves, after its successor was issued, past the grace window or once that successor has itself rotated, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in."
+        name: "A refresh token of a sign-in that has not been revoked, presented again by the client it was issued to for a resource the scenario serves, after its successor was issued, past the grace window or once that successor has itself rotated, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in."
       - key: 01a19951-5b6c-769f-802b-1caae94627eb
         name: "The grace window is the 120 seconds after the rotation, unless its scenario names another length, and is counted on the simulator's clock, which a test can move on without waiting."
       - key: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
@@ -486,7 +488,9 @@ requirements:
       - key: 01a1995a-1ff6-73c4-9f04-0232d8302baa
         name: "A scenario that delays refreshes answers each refresh only after the delay its scenario names."
       - key: 01a1f09b-189b-76b3-863f-c7cd6ac24538
-        name: "A refresh token presented again for a resource the scenario serves other than the one its rotation named is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in, even within the grace window."
+        name: "A refresh token of a sign-in that has not been revoked, presented again by the client it was issued to for a resource the scenario serves other than the one its rotation named, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in, even within the grace window."
+      - key: 01a1f2fa-4284-7544-90ec-f115a1a7b153
+        name: "A refresh for a resource the scenario serves, with an unknown refresh token, one that another client presents or one of a revoked sign-in, is refused `400 Bad Request` with the OAuth error `invalid_grant`, with nothing rotated or revoked."
       - key: 01a1f09b-189b-76b3-863f-c7ce8fa40ae5
         name: "The access token of an accepted refresh is issued for the `resource` that the refresh names, and for no other resource."
       - key: 01a1f09b-189b-76b3-863f-c7cf05684d6e
@@ -498,12 +502,12 @@ requirements:
   - key: 01a1f09b-189b-76b3-863f-c7d2b456cd2e
     statement:
       form: unwanted
-      if: "a token request names no resource, a resource that the remote simulator does not serve, or, with a refresh token that has not rotated, a resource that the sign-in does not hold"
+      if: "a code exchange or a refresh names no resource, a resource that the remote simulator does not serve, or, in a refresh that would otherwise be accepted, a resource that the sign-in does not hold"
       system: "the remote simulator"
       shall: "refuse it `400 Bad Request` with the OAuth error `invalid_target`, and issue, rotate and revoke nothing."
     criteria:
       - key: 01a1f09b-189b-76b3-863f-c7d3c0e9a364
-        name: "A token request that names no `resource` is refused `400 Bad Request` with the OAuth error `invalid_target`."
+        name: "A code exchange or a refresh that names no `resource` is refused `400 Bad Request` with the OAuth error `invalid_target`, whatever code or refresh token it presents."
       - key: 01a1f09b-189b-76b3-863f-c7d4a251dc1e
         name: "A code exchange that names a resource the scenario does not serve is refused `400 Bad Request` with the OAuth error `invalid_target`, whatever code it presents."
       - key: 01a1f09b-189b-76b3-863f-c7d5cd31a709
@@ -511,6 +515,6 @@ requirements:
       - key: 01a1f09b-189b-76b3-863f-c7d64a0f6fbf
         name: "A lapsing scenario refuses a refresh that names a resource it does not serve `400 Bad Request` with the OAuth error `invalid_target`."
       - key: 01a1f09b-189b-76b3-863f-c7d7837789fd
-        name: "A refresh that names a resource the scenario serves and the sign-in does not hold, with a refresh token that has not rotated, is refused `400 Bad Request` with the OAuth error `invalid_target`."
+        name: "A refresh that would otherwise be accepted but names a resource that the scenario serves and the sign-in does not hold is refused `400 Bad Request` with the OAuth error `invalid_target`."
       - key: 01a1f09b-189b-76b3-863f-c7d86d04c50a
         name: "A refused request issues no token, rotates no refresh token and revokes none."
