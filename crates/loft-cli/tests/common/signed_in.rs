@@ -159,7 +159,7 @@ pub fn repository(scratch: &Scratch, history: &History, sequences: &[usize]) -> 
 }
 
 /// The time now by the system clock, in seconds since the Unix epoch.
-fn real_now() -> u64 {
+pub fn real_now() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()

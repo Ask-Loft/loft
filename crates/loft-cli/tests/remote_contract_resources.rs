@@ -154,6 +154,31 @@ fn the_metadata_lists_each_related_resource_and_each_names_itself_and_the_issuer
 }
 
 #[test]
+fn the_metadata_of_a_related_resource_whose_path_ends_in_a_slash_lies_at_the_path_without_it() {
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .relating(Related::new("inbox", &["inbox"]).at("/mail/inbox/?view=all"))
+            .relating(Related::new("home", &["home"]).at("/")),
+    );
+    for (kind, path, metadata) in [
+        (
+            "inbox",
+            "/mail/inbox/?view=all",
+            "/.well-known/oauth-protected-resource/mail/inbox?view=all",
+        ),
+        ("home", "/", "/.well-known/oauth-protected-resource"),
+    ] {
+        let identifier = remote.related(kind);
+        assert_eq!(identifier, format!("{}{path}", remote.origin()));
+        let answer = related_metadata(&identifier);
+        assert_eq!(answer.status, 200, "{kind}: {:?}", answer.body);
+        assert_eq!(answer.body["resource"], json!(identifier), "{kind}");
+        let paths: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
+        assert!(paths.iter().any(|at| at == metadata), "{kind}: {paths:?}");
+    }
+}
+
+#[test]
 #[ignore = "reaches the remote at LOFT_REMOTE_CONTRACT_ADDRESS"]
 fn a_real_remote_lists_its_related_resources_in_the_shape_the_simulator_does() {
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");

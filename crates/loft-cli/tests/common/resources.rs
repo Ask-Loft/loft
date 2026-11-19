@@ -6,12 +6,13 @@
 
 use std::{env, fs};
 
+use loftspec::publish::PublishedAt;
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
 
 use super::calls::{Answer, call};
 use super::oauth::{coded_for, exchange, fetch, refresh};
-use super::signed_in::kept_sign_in;
+use super::signed_in::{kept_sign_in, real_now};
 
 /// The member of a remote's protected resource metadata that lists its related resources.
 pub const RELATED_RESOURCES: &str = "related_resources";
@@ -121,10 +122,39 @@ pub fn signed_over(remote: &Remote, resources: &[&str], scope: &str) -> Signed {
 /// The sign-in that `loft remote login` kept for the document at `LOFT_REMOTE_CONTRACT_ADDRESS`,
 /// read from the `loft/remotes.json` that `LOFT_REMOTE_CONTRACT_SIGN_IN` names.
 pub fn kept() -> Signed {
+    let (address, sign_in) = kept_entry();
+    signed_as_kept(address, &sign_in)
+}
+
+/// The sign-in that [`kept`] reads, whose access token must expire more than a minute from now
+/// by the system clock: a remote refuses an expired access token whatever resource it was issued
+/// for, so that a refusal of one would prove nothing of its resource.
+pub fn kept_unexpired() -> Signed {
+    let (address, sign_in) = kept_entry();
+    let expires = sign_in["expiresAt"].as_str();
+    let expires = expires.and_then(|at| at.parse::<PublishedAt>().ok());
+    let expires =
+        expires.unwrap_or_else(|| panic!("premise: a sign-in kept for {address} with `expiresAt`"));
+    assert!(
+        expires.unix_seconds() > real_now() + 60,
+        "premise: the kept access token has not expired (it expires at {expires})"
+    );
+    signed_as_kept(address, &sign_in)
+}
+
+/// `LOFT_REMOTE_CONTRACT_ADDRESS`, and the entry for it of the `loft/remotes.json` that
+/// `LOFT_REMOTE_CONTRACT_SIGN_IN` names.
+fn kept_entry() -> (String, Value) {
     let address = env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
     let file = env::var("LOFT_REMOTE_CONTRACT_SIGN_IN").expect("a loft/remotes.json");
     let file: Value = serde_json::from_slice(&fs::read(file).unwrap()).unwrap();
-    let sign_in = kept_sign_in(&file, &address);
+    let sign_in = kept_sign_in(&file, &address).clone();
+    (address, sign_in)
+}
+
+/// The sign-in to the document at `address` that `sign_in`, an entry of `loft/remotes.json`,
+/// keeps.
+fn signed_as_kept(address: String, sign_in: &Value) -> Signed {
     let field = |name: &str| {
         sign_in[name]
             .as_str()

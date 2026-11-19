@@ -11,12 +11,12 @@ use std::time::Duration;
 use serde_json::{Value, json};
 use software_plant::BrowserScenario;
 use software_plant::remote::wire::value;
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{Related, Remote, RemoteScenario};
 
 use crate::common::Scratch;
 use crate::common::oauth::{
-    KEY, REDIRECT, authorize, coded, discover, exchange, form, location, metadata, refresh,
-    register, registered,
+    KEY, REDIRECT, authorize, authorize_for, coded, discover, exchange, form, location, metadata,
+    refresh, register, registered,
 };
 use crate::common::signed_in::{kept_sign_in, name_remote, run};
 
@@ -110,6 +110,56 @@ fn an_authorization_request_is_answered_as_the_person_consents() {
     let denied = location(&authorize(&server, &client, resource, &[]));
     assert_eq!(value(&denied, "error"), Some("access_denied"));
     assert_eq!(value(&denied, "state"), Some("the-state"));
+}
+
+#[test]
+fn an_authorization_request_is_answered_for_the_first_step_it_fails_in_the_order_judged() {
+    let notes = Related::new("notes", &["notes"]);
+    let remote = Remote::start(RemoteScenario::accepting(KEY).relating(notes.clone()));
+    let (_, server) = metadata(&remote);
+    let client = registered(&server);
+    let own = remote.resource();
+    let elsewhere = format!("{}/elsewhere", remote.origin());
+    // A client that is not registered is answered without a redirect, whatever else it fails.
+    let unregistered = authorize(&server, "client-0", &own, &[("response_type", "")]);
+    assert_eq!(unregistered.status, 400);
+    assert_eq!(unregistered.header("location"), None);
+    // Each request fails a step and a later one, and is answered for the first.
+    for (resource, failing, error) in [
+        (
+            &own,
+            vec![
+                ("response_type", "token"),
+                ("code_challenge_method", "plain"),
+            ],
+            "unsupported_response_type",
+        ),
+        (
+            &elsewhere,
+            vec![("code_challenge_method", "plain")],
+            "invalid_request",
+        ),
+        (&elsewhere, vec![("scope", "")], "invalid_target"),
+        (&own, vec![("scope", "")], "invalid_scope"),
+    ] {
+        let answer = authorize(&server, &client, resource, &failing);
+        let named = format!("{resource} with {failing:?}");
+        assert_eq!(value(&location(&answer), "error"), Some(error), "{named}");
+    }
+    // The scopes asked of each resource are judged before the person's consent.
+    let refusing = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .relating(notes)
+            .refusing_consent(),
+    );
+    let (_, server) = metadata(&refusing);
+    let client = registered(&server);
+    let asked = [refusing.resource(), refusing.related("notes")];
+    let asked = [asked[0].as_str(), asked[1].as_str()];
+    let unasked = authorize_for(&server, &client, &asked, "documents");
+    assert_eq!(value(&location(&unasked), "error"), Some("invalid_target"));
+    let denied = authorize_for(&server, &client, &asked, "documents notes");
+    assert_eq!(value(&location(&denied), "error"), Some("access_denied"));
 }
 
 #[test]

@@ -95,7 +95,7 @@ pub struct RemoteScenario {
     pub(super) state_limit: Option<usize>,
     pub(super) consent: Consent,
     pub(super) expires_in: u64,
-    /// How long a rotated refresh token is answered again.
+    /// How long a rotated refresh token is answered again for the resource its rotation named.
     pub(super) grace: Duration,
     pub(super) lapsed: bool,
     pub(super) scope: String,
@@ -103,7 +103,7 @@ pub struct RemoteScenario {
     pub(super) metadata: Metadata,
     /// The OAuth error every registration is refused with.
     pub(super) refused_registration: Option<String>,
-    /// The OAuth error every code exchange is refused with.
+    /// The OAuth error every code exchange for a resource the scenario serves is refused with.
     pub(super) refused_exchange: Option<String>,
     /// Whether the next refresh's answer is lost after the token rotates.
     pub(super) losing_refresh: bool,
@@ -258,8 +258,8 @@ impl RemoteScenario {
         self
     }
 
-    /// Answers a rotated refresh token presented again for `grace` after its rotation, in
-    /// place of 120 seconds.
+    /// Answers a rotated refresh token presented again for the resource its rotation named
+    /// within `grace` of its rotation, in place of 120 seconds.
     #[must_use]
     pub fn grace(mut self, grace: Duration) -> Self {
         self.grace = grace;
@@ -300,7 +300,8 @@ impl RemoteScenario {
         self
     }
 
-    /// Refuses every code exchange with the OAuth error `error`.
+    /// Refuses every code exchange for a resource the scenario serves with the OAuth error
+    /// `error`.
     #[must_use]
     pub fn refusing_exchange(mut self, error: &str) -> Self {
         self.refused_exchange = Some(error.to_owned());

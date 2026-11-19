@@ -199,9 +199,10 @@ impl State {
     /// The related resource whose protected resource metadata lies at `target` on the second
     /// port, if `elsewhere`, or on the simulator's origin otherwise.
     fn placed(&self, target: &str, elsewhere: bool) -> Option<&Related> {
-        self.scenario.related.iter().find(|related| {
-            related.elsewhere() == elsewhere && target == format!("{WELL_KNOWN}{}", related.path)
-        })
+        self.scenario
+            .related
+            .iter()
+            .find(|related| related.elsewhere() == elsewhere && target == well_known(&related.path))
     }
 
     /// The protected resource metadata of `related` as its scenario serves it, or nothing for
@@ -242,7 +243,7 @@ impl State {
 /// that places it there; `not_found` to every other request.
 pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
     let moved = state.scenario.metadata == Metadata::OnAnotherOrigin
-        && request.path == format!("{WELL_KNOWN}{RESOURCE}");
+        && request.path == well_known(RESOURCE);
     let metadata = if moved {
         Some(document_metadata(state, state.metadata_origin()))
     } else {
@@ -254,6 +255,14 @@ pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
         Some(metadata) => only("GET", request, || Response::json(200, &metadata)),
         None => refusal("not_found"),
     }
+}
+
+/// Where RFC 9728 places the protected resource metadata of the resource at `path`, a path that
+/// may end in a query: `/.well-known/oauth-protected-resource`, then the path without a
+/// terminating `/`, then the query.
+fn well_known(path: &str) -> String {
+    let (path, query) = path.find('?').map_or((path, ""), |at| path.split_at(at));
+    format!("{WELL_KNOWN}{}{query}", path.trim_end_matches('/'))
 }
 
 /// `metadata` without its member `name`.
