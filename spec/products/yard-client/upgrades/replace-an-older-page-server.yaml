@@ -16,6 +16,8 @@ requirements:
         name: "The version is reported without the control token."
       - key: 01a1649f-62f0-7320-902c-7d90e88d4f61
         name: "`~/.yard/server.json` gives the page server's port, its process id, its `loft` version, the `yardlog` formats it reads and the addresses it listens on beside `127.0.0.1`, `0.0.0.0` alone where it listens on every address."
+      - key: 01a1f41d-c030-764d-a122-1ae315dcf549
+        name: "Once a page server takes the lock on `~/.yard/server.lock`, `~/.yard/server.json` names its process, its `loft` version and its addresses, and gives a port only once the page server serves it."
   - key: 01a1646f-546e-76cb-8b4f-f212dc8ad1c7
     statement:
       form: event_driven

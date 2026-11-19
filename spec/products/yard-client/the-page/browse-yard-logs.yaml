@@ -142,7 +142,7 @@ requirements:
       - key: 01a1877b-6de6-72d5-a7d7-a99b2ec84e15
         name: "The page names the tree and says that no session has registered it with the page server."
       - key: 01a1877b-6de6-72d5-a7d7-a99cc522b333
-        name: "The page names `loft yard serve --tree <tree>`, run on the machine, as the way to add the tree."
+        name: "The page names `loft yard serve --join --tree <tree>`, run on the machine, as the way to add the tree, which joins the running page server and does not replace it."
       - key: 01a1877b-6de6-72d5-a7d7-a99d4765ea18
         name: "The page does not say that the Yard Log's files cannot be read."
       - key: 01a1877b-6de6-72d5-a7d7-a99e4cab6125

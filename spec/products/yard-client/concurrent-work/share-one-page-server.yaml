@@ -4,7 +4,7 @@ name: "Share one page server"
 body: |
   One page server on the machine serves the page for every tree whose sessions use Yard Client, in every repository. The first mod that needs it starts it, every other mod registers its tree with it, and when the session that started it ends, a live mod starts another. A `loft yard` command that gives the page's address adds its tree to those served as well, so that a session that runs `loft` without the mod, such as one an agent host starts in a worktree of its own, is on the page too. The person keeps one address for every branch's Yard Log on the machine. A `loft` under development, run by the dogfood launcher with `LOFT_YARD_HOME`, keeps a page server of its own beside it, on the dogfood port.
 
-  A mod starts the page server as a child that lives as long as the mod does, or until another `loft yard serve` replaces it, so the page is up while any session with the Loft plugin runs. Each mod tells the page server every 5 seconds that its session is live. It runs `loft yard serve`, which reads `~/.yard/server.json`, once when its session starts, so that a page server of its version that listens on other addresses than the `yardListen` setting names is replaced; after that it runs it only where no page server answers, and joins whatever page server of its version runs by then.
+  A mod starts the page server as a child that lives as long as the mod does, or until another `loft yard serve` replaces it, so the page is up while any session with the Loft plugin runs. Each mod tells the page server every 5 seconds that its session is live. It runs `loft yard serve`, which reads `~/.yard/server.json`, once when its session starts, so that a page server of its version that listens on other addresses than the `yardListen` setting names is replaced; after that it runs it only where no page server answers, and joins whatever page server of its version runs by then. Where none runs by then, the page server it starts listens where the last one listened, not on the session's `yardListen`, so that a session started before the setting changed never opens the page wider again.
 realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
@@ -102,6 +102,8 @@ requirements:
         name: "A page server of the same version that listens on addresses other than the `yardListen` setting names is replaced when a session starts."
       - key: 01a1f069-3ebc-77f4-882f-9102f2aee1e0
         name: "Each `loft yard serve` the mod runs after the session's first beat is given `--join`, so that a page server that another session started on other addresses is reached and not replaced."
+      - key: 01a1f41d-c02f-775e-9141-8c77128977d3
+        name: "Where no page server runs, a page server that a later `loft yard serve` of the mod starts listens on the addresses the last page server listened on, not on the session's `yardListen` setting."
       - key: 01a1646f-546d-7042-befd-ea90b3a3d660
         name: "The session starts without waiting for the page server to answer."
       - key: 01a1646f-546d-7042-befd-ea91076e0f8d
@@ -109,12 +111,12 @@ requirements:
   - key: 01a1f03b-b432-7709-92e2-1d456d0b72d5
     statement:
       form: unwanted
-      if: "the plugin's `yardListen` setting names something other than an IP address"
+      if: "the plugin's `yardListen` setting names something other than an IP address, or the unspecified IPv6 address in any of its forms, such as `::`"
       system: "the Loft mod"
       shall: "tell the person once, naming it, and pass the setting's other addresses to `loft yard serve`."
     criteria:
       - key: 01a1f03b-b432-7709-92e2-1d464c3a5404
-        name: "The notice names the `yardListen` setting and each entry that is not an IP address."
+        name: "The notice names the `yardListen` setting and each entry that is not an IP address or is the unspecified IPv6 address."
       - key: 01a1f03b-b432-7709-92e2-1d47c30f8dc0
         name: "The page server the mod starts listens on the setting's other addresses."
   - key: 01a1f074-174c-750c-b689-edaf78b8384b

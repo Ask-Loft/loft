@@ -4,7 +4,7 @@ name: "Serve the page"
 body: |
   `loft yard serve` runs the page server: it serves the page's files, which `loft` holds within itself, answers the page's reads, takes the person's answers and decisions and the mod's events, and tells open pages of each change.
 
-  By default the page server listens on the loopback interface alone, so that only programs on the machine reach it. A person who opens the page from another device, such as a phone in their tailnet, names the addresses it listens on as well, such as the machine's tailnet address, or `0.0.0.0` for every network the machine is on; in Claude Code that is the Loft plugin's `yardListen` setting. Anyone who reaches a named address can read the page and answer for the person, and a program on that network sets `Host` and `Origin` as it likes, so a public network, such as a coffee shop's, is better left unnamed. Codex gives the plugin no setting, so a page server that Codex starts listens on the loopback interface alone.
+  By default the page server listens on the loopback interface alone, so that only programs on the machine reach it. A person who opens the page from another device, such as a phone in their tailnet, names the addresses it listens on as well, such as the machine's tailnet address, or `0.0.0.0` for every network the machine is on; in Claude Code that is the Loft plugin's `yardListen` setting. Anyone who reaches a named address can read the page and answer for the person, and a program on that network sets `Host` and `Origin` as it likes, so a public network, such as a coffee shop's, is better left unnamed. Codex gives the plugin no setting, so a page server that Codex starts listens on the loopback interface alone. A `loft yard serve --join` that finds no page server running listens where the last page server listened, never on addresses of its own, so that a session started before the person narrowed the setting never opens the page wider again.
 
   The page server always listens on the loopback interface, where the mod reaches it. A request that would change Yard Log, register a tree or record an event is taken only from a page that the page server served, at whichever of its addresses the page was opened, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead. A request that only reads, as the browser's own request for the page, needs neither.
 tags:
@@ -53,6 +53,21 @@ requirements:
         name: "Where another page server takes the lock while `loft yard serve` waits for the one it asked to stop, it asks that page server to stop as well, unless it is one to leave serving."
       - key: 01a1f2ba-ae5b-7356-b8f4-0453897e157d
         name: "`--join` and `--replace` given together are a usage error."
+      - key: 01a1f41d-c030-764d-a122-1addf8f15675
+        name: "A `loft yard serve` that finds the lock on `~/.yard/server.lock` held and `~/.yard/server.json` giving no port waits for a port, and then compares its addresses with those that record gives."
+  - key: 01a1f41d-c030-764d-a122-1adee0f09a97
+    statement:
+      form: event_driven
+      when: "`loft yard serve --join` finds no page server running"
+      system: "`loft yard serve`"
+      shall: "listen on the loopback interface and on the addresses that `~/.yard/server.json` last recorded, in place of those that `--listen` names."
+    criteria:
+      - key: 01a1f41d-c030-764d-a122-1adf4c0b8ac3
+        name: "A `loft yard serve --join --listen 0.0.0.0`, after a page server that listened on the loopback interface alone has exited, listens on the loopback interface alone."
+      - key: 01a1f41d-c030-764d-a122-1ae0e3f6b3eb
+        name: "A `loft yard serve --join`, after a page server started with `--listen 0.0.0.0` has exited, listens on every address."
+      - key: 01a1f41d-c030-764d-a122-1ae168cbe365
+        name: "Where `~/.yard/server.json` records no addresses, or there is no `~/.yard/server.json`, a `loft yard serve --join` that finds no page server running listens on the loopback interface alone."
   - key: 01a1eeea-3ba6-7330-8a73-2eba945eb028
     statement:
       form: unwanted
@@ -69,10 +84,13 @@ requirements:
   - key: 01a1eeea-3ba6-7330-8a73-2ebe9edde96c
     statement:
       form: unwanted
-      if: "`--listen` names something other than an IP address"
+      if: "`--listen` names something other than an IP address, or the unspecified IPv6 address in any of its forms, such as `::`"
       system: "`loft yard serve`"
       shall: "exit 2 and name it."
+    body: "A socket on every IPv6 address takes no IPv4 connection on Windows, so the unspecified IPv6 address would leave `127.0.0.1` unreached; `0.0.0.0` names every address."
     criteria:
+      - key: 01a1f41d-c030-764d-a122-1ae25c45f654
+        name: "`::`, `::0` and `0:0:0:0:0:0:0:0` are each refused, and the error names `0.0.0.0` as the address for every address."
       - key: 01a1eeea-3ba6-7330-8a73-2ebf11eba3c7
         name: "No page server is started."
   - key: 01a1646f-546d-7042-befd-eb860dc2fc11
