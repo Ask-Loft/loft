@@ -30,7 +30,7 @@ The plugin keeps one page server running for the machine, at <http://127.0.0.1:7
 session on the machine shares it, whatever its repository or worktree. A `loft yard` command run in a worktree adds that worktree to the page too, so a
 session that runs `loft` without the plugin's mod, such as one an agent host starts in a worktree
 of its own, is on the page. If the page says that it does not serve a worktree, run
-`loft yard serve --tree <worktree>` on the machine to add it.
+`loft yard serve --join --tree <worktree>` on the machine to add it.
 
 By default the page server listens on `127.0.0.1` alone, so only this machine opens the page.
 To open it from another device, such as a phone in your tailnet, name the addresses it listens on
@@ -42,9 +42,16 @@ page on every network, a coffee shop's included. Run by hand, `loft yard serve -
 does the same, `--listen` given once for each address; it replaces a running page server of its
 version that listens on other addresses, and so does each Claude Code session when it starts, so
 keep `yardListen` and a page server you start by hand to the same addresses. A page server of a
-newer `loft` is never replaced. `yardListen` needs a `loft` of the yard protocol 4 or later; with
-an older one the plugin says so once and the page opens on this machine alone. An address the machine does not have yet, such as a
-tailnet address before the VPN is up, is taken within seconds of appearing.
+newer `loft` is never replaced, and a Claude Code session replaces one only within its first 30
+seconds. Where no page server runs, the one the plugin or the Codex watch starts again listens
+where the last one listened, so a session started before you narrowed `yardListen` never opens
+the page wider again; those addresses hold across restarts until a session starts or you run
+`loft yard serve` with other ones, so run it once without `--listen` to close the page to other
+devices. Name `0.0.0.0` for every address: `::` and `::ffff:0.0.0.0` are
+refused, since on Windows `::` would leave `127.0.0.1` unreached. `yardListen` needs a `loft` of
+the yard protocol 4 or later; with an older one the plugin says so once and the page opens on this
+machine alone. An address the machine does not have yet, such as a tailnet address before the VPN
+is up, is taken within seconds of appearing.
 
 - **What waits on you** comes first, across every branch. Inside a branch's Yard Log it opens in
   a panel along the bottom, over a page that stays live, so you can read the log while you
@@ -116,10 +123,12 @@ The plugin and `loft` should be the same version: the setup report that `loft in
 The plugin's hooks run `loft yard codex hook`, and a background `loft yard codex watch` that
 Codex owns. It sends a heartbeat every five seconds, restarts the page server if it stops and
 keeps at most 1,000 queued events. A watch lasts at most 24 hours, and later activity starts
-another. Codex gives the plugin no setting, so a page server the watch starts listens on
-`127.0.0.1` alone; to open the page on another device, start one with `loft yard serve --listen`
-before Codex does, and the watch keeps to it, until a Claude Code session whose `yardListen`
-names other addresses starts. This works in local Codex sessions only, not with cloud orchestration.
+another. Codex gives the plugin no setting, so a page server the watch starts listens where the
+last one listened, on `127.0.0.1` alone where none did; to open the page on another device, start
+one with `loft yard serve --listen` before Codex does, and the watch keeps to it, until a Claude
+Code session whose `yardListen` names other addresses starts; run `loft yard serve` once without
+`--listen` to close it again. This works in local Codex sessions only, not with cloud
+orchestration.
 
 Two things need a Codex app server already running on the machine, which the watch reaches over
 its Unix-domain socket, `$CODEX_HOME/app-server-control/app-server-control.sock` (`~/.codex`

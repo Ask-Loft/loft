@@ -25,8 +25,14 @@ everything 2.4.1 will hold.
   have yet is taken once it appears, and `Host` and `Origin` are checked against the address a
   request reached. A `loft yard serve` that would listen on other addresses than the running
   page server of its version replaces it, and each Claude Code session runs one when it starts,
-  so a changed `yardListen` takes effect with the next session; every other `loft yard serve`
-  that the plugin or the Codex watch runs is given `--join` and joins the running page server.
+  within its first 30 seconds, so a changed `yardListen` takes effect with the next session; every
+  other `loft yard serve` that the plugin or the Codex watch runs is given `--join` and joins the
+  running page server, or, where none runs or in place of an older one, starts one where the last
+  page server listened, so a recovery never opens the page wider than the last session start or
+  `loft yard serve` left it; a start that does not come to serve leaves those addresses as they
+  were. The page and `loft yard page` suggest `loft yard serve --join`. `--listen ::` and
+  `::ffff:0.0.0.0` are refused, since on Windows `::` would leave `127.0.0.1` unreached; `0.0.0.0`
+  names every address.
   The yard protocol is now 4, and the plugin passes `--listen` and `--join` only to a `loft` that
   speaks it; a Claude Code plugin from before it leaves Yard Client off with this `loft`, so
   update the plugin with `loft`.
