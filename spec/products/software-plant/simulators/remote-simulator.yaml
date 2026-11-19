@@ -6,7 +6,7 @@ body: |
 
   It also stands in for the remote's authorization server, under paths of its own on the same origin. It challenges a request without a token as a protected resource, serves the authorization server's metadata and the protected resource metadata of the document's protected resource and of each companion resource its scenario lists, registers clients and consents to each authorization request as its scenario names. A companion resource is another protected resource that one sign-in to the remote covers: the document's protected resource metadata lists it in `companion_resources`, by its identifier and its kind, and it has no routes of its own, so a test asks the simulator which access tokens it admits. A scenario may place a companion resource, or the document's protected resource metadata, on another origin, which a second port of the loopback interface stands for.
 
-  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a companion resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A companion resource's kind, the `kind` that the document's protected resource metadata lists beside its identifier, is a word that the remote chooses to name what the resource serves: the contract fixes no list of kinds, and the simulator lists the word its scenario names for the resource. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked. It holds one refresh token for all of them, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707). That token rotates on every use.
+  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a companion resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A companion resource's kind, the `kind` that the document's protected resource metadata lists beside its identifier, is a word that the remote chooses to name what the resource serves: the contract fixes no list of kinds. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked. It holds one refresh token for all of them, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707). That token rotates on every use.
 tags:
   - plant-simulator
 realizes:
@@ -333,6 +333,12 @@ requirements:
         name: "A scenario that lists no companion resource, and scripts no `companion_resources`, answers without `companion_resources`."
       - key: 01a1f09b-189b-76b3-863f-c7b258ae2a77
         name: "Each `resource` that a listed `companion_resources` names is an address on the simulator's origin, or, for a resource its scenario places on another origin, on a second port of the loopback interface."
+      - key: 01a1f4de-35cc-734c-a894-dc4070edf57d
+        name: "No two entries of the `companion_resources` that a scenario's companion resources make share a `resource` or a `kind`."
+      - key: 01a1f4de-35cc-734c-a894-dc417b0e367f
+        name: "No entry of the `companion_resources` that a scenario's companion resources make names the document's protected resource."
+      - key: 01a1f4de-35cc-734c-a894-dc42c1d5cc20
+        name: "Each `kind` of the `companion_resources` that a scenario's companion resources make is the non-empty word that its scenario names for the resource."
       - key: 01a1f09b-189b-76b3-863f-c7b38d38b18c
         name: "A scenario that scripts `companion_resources` answers with the value it scripts, each `{origin}` in it read as the simulator's origin, in place of the list its companion resources make."
   - key: 01a1f09b-189b-76b3-863f-c7b48d1e9893
@@ -453,7 +459,9 @@ requirements:
       - key: 01a18e1f-8dac-71f7-847a-725add9f5191
         name: "`expires_in` is the number of seconds its scenario names."
       - key: 01a18e1f-8dac-71f7-847a-725b26986a58
-        name: "A code presented a second time, a `redirect_uri` other than the authorization request's, or a `code_verifier` whose SHA-256 digest is not the `code_challenge`, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
+        name: "A code already exchanged, a `redirect_uri` other than the authorization request's, or a `code_verifier` whose SHA-256 digest is not the `code_challenge`, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
+      - key: 01a1f4de-35cc-734c-a894-dc43230fa9f8
+        name: "An exchange for a resource the scenario serves, with a code the simulator did not issue or one that another client presents, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
       - key: 01a18e1f-8dac-71f7-847a-725c1d59acb6
         name: "An exchange that would otherwise be accepted but names a `resource` that the scenario serves and the sign-in does not hold is refused `400 Bad Request` with the OAuth error `invalid_target`."
       - key: 01a1995a-1ff6-73c4-9f04-02309a866506

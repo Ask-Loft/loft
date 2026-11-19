@@ -21514,7 +21514,7 @@ links:
         name: "a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource"
         body: e61e1e98af6ffab8c35b46305029cd6eaa09a97a3477f53d6a1d66c3c5d1e687
   - node: 01a18e1f-8dac-71f7-847a-725b26986a58
-    reviewed: 33fad5c7baea57927e8c83f84fdf925894982338c1fee8a2898f546a458aac3a
+    reviewed: 12233ddfd2ce523c34e6fd0832d520a9d7ac4c66d37b12b4440ffd85bbfa0ae9
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource"
