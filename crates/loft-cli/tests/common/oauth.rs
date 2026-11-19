@@ -16,14 +16,14 @@ use ureq::http::Response;
 use super::calls::{Answer, agent, call, read};
 
 /// The code verifier of every authorization request, whose challenge the request sends.
-const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+pub const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 /// The document key of each remote that the suites of the authorization server start.
 pub const KEY: &str = "01a18e30-0000-7000-8000-000000000010";
 /// The redirect URI a client registers, on the loopback interface.
 pub const REDIRECT: &str = "http://127.0.0.1/callback";
 /// The redirect URI of every authorization request and exchange: the registered one, on a port
 /// of its own.
-const CALLBACK: &str = "http://127.0.0.1:4567/callback";
+pub const CALLBACK: &str = "http://127.0.0.1:4567/callback";
 
 /// The protected resource metadata and the authorization server metadata of `remote`'s
 /// document.

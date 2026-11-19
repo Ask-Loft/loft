@@ -15,8 +15,8 @@ use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::Scratch;
 use crate::common::oauth::{
-    KEY, REDIRECT, authorize, authorize_for, coded, discover, exchange, form, location, metadata,
-    refresh, register, registered,
+    CALLBACK, KEY, REDIRECT, VERIFIER, assert_oauth_error, authorize, authorize_for, coded,
+    discover, exchange, form, location, metadata, refresh, register, registered,
 };
 use crate::common::signed_in::{kept_sign_in, name_remote, run};
 
@@ -167,18 +167,24 @@ fn a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource()
     let remote = Remote::start(RemoteScenario::accepting(KEY).expiring_in(600));
     let (server, client, resource, code) = coded(&remote);
     let token_url = server["token_endpoint"].as_str().unwrap();
-    let wrong_verifier = form(
-        token_url,
-        &[
-            ("grant_type", "authorization_code"),
-            ("code", &code),
-            ("redirect_uri", "http://127.0.0.1:4567/callback"),
-            ("client_id", &client),
-            ("code_verifier", "wrong"),
-            ("resource", &resource),
-        ],
-    );
-    assert_eq!(wrong_verifier.body["error"], "invalid_grant");
+    let presented = |redirect_uri: &str, verifier: &str| {
+        form(
+            token_url,
+            &[
+                ("grant_type", "authorization_code"),
+                ("code", &code),
+                ("redirect_uri", redirect_uri),
+                ("client_id", &client),
+                ("code_verifier", verifier),
+                ("resource", &resource),
+            ],
+        )
+    };
+    assert_oauth_error(&presented(CALLBACK, "wrong"), "invalid_grant");
+    // A loopback redirect on another port matches the registered one, but is not the one the
+    // authorization request named.
+    let another_port = "http://127.0.0.1:4568/callback";
+    assert_oauth_error(&presented(another_port, VERIFIER), "invalid_grant");
     let wrong_resource = exchange(&server, &client, "https://elsewhere.example", &code);
     assert_eq!(wrong_resource.body["error"], "invalid_target");
     let answer = exchange(&server, &client, &resource, &code);
@@ -189,10 +195,8 @@ fn a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource()
         assert!(answer.body[field].is_string(), "{field}");
     }
     assert!(remote.admits(answer.body["access_token"].as_str().unwrap()));
-    assert_eq!(
-        exchange(&server, &client, &resource, &code).body["error"],
-        "invalid_grant"
-    );
+    let again = exchange(&server, &client, &resource, &code);
+    assert_oauth_error(&again, "invalid_grant");
 }
 
 #[test]

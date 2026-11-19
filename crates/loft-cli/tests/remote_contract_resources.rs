@@ -1,7 +1,8 @@
 //! The contract suite of a sign-in over a remote's companion resources:
 //! - the companion resources that its protected resource metadata lists, and each one's own
 //!   metadata;
-//! - one authorization request for every resource, and a code exchanged for one of them.
+//! - one authorization request for every resource, and a code exchanged for one of them by the
+//!   client it was issued to alone.
 //!
 //! The refreshes of such a sign-in have a suite of their own, `remote_contract_refreshes.rs`.
 //!
@@ -39,8 +40,8 @@ struct Listing {
 
 /// The listing of the document at `address`, held to what a remote promises of it: its challenge
 /// names metadata on the address's origin that lists each scope the challenge names; and each
-/// companion resource lies on that origin, is not the remote's own, is listed once, and vouches
-/// for itself under the remote's issuer.
+/// companion resource has a kind, lies on that origin, is not the remote's own, is listed once,
+/// and vouches for itself under the remote's issuer.
 fn listing_as_promised(address: &str) -> Listing {
     let origin = origin_of(address);
     let (challenge, metadata, _) = fetch(address);
@@ -56,6 +57,7 @@ fn listing_as_promised(address: &str) -> Listing {
     }
     let companions = companions_of(address);
     for (at, (resource, kind)) in companions.iter().enumerate() {
+        assert!(!kind.is_empty(), "{resource} names a kind");
         assert_eq!(origin_of(resource), origin, "{kind} lies on the origin");
         assert_ne!(
             metadata["resource"],
@@ -271,20 +273,37 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
         answer.body
     };
     assert_eq!(exchanged(&own)["scope"], "documents");
-    let companion = exchanged(&notes);
-    assert_eq!(companion["scope"], "notes notes.archive");
+    let answer = exchanged(&notes);
+    assert_eq!(answer["scope"], "notes notes.archive");
     let (challenge, _, _) = fetch(&remote.address());
-    let at_the_document = head_with(
-        &remote.address(),
-        companion["access_token"].as_str().unwrap(),
-    );
+    let at_the_document = head_with(&remote.address(), answer["access_token"].as_str().unwrap());
     assert_problem(&at_the_document, 401, "unauthenticated");
     let challenged = at_the_document.header("www-authenticate");
     assert_eq!(challenged, Some(challenge.as_str()));
-    let successor = companion["refresh_token"].as_str().unwrap();
+    let successor = answer["refresh_token"].as_str().unwrap();
     let refreshed = refresh(&server, &client, &own, successor);
     assert_eq!(refreshed.status, 200, "{:?}", refreshed.body);
     assert_eq!(refreshed.body["scope"], "documents");
+}
+
+#[test]
+fn an_unknown_code_or_one_another_client_presents_is_refused_for_any_resource_the_remote_serves() {
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY).accompanied_by(Companion::new("notes", &["notes"])),
+    );
+    let (own, notes) = (remote.resource(), remote.companion("notes"));
+    let (server, client, code) = coded_for(&remote, &[&own], "documents");
+    let other = registered(&server);
+    // The remote serves `notes`, which the code's authorization request did not name: the code
+    // is judged first, so that `notes` too is refused `invalid_grant`, not `invalid_target`.
+    for resource in [&own, &notes] {
+        let unknown = exchange(&server, &client, resource, "a-code-never-issued");
+        assert_oauth_error(&unknown, "invalid_grant");
+        assert_oauth_error(&exchange(&server, &other, resource, &code), "invalid_grant");
+    }
+    let answer = exchange(&server, &client, &own, &code);
+    let kept = "a refused exchange leaves the code to its client";
+    assert_eq!(answer.status, 200, "{kept}: {:?}", answer.body);
 }
 
 #[test]

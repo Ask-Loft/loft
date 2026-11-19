@@ -148,8 +148,8 @@ impl Remote {
         lock(&self.state).issuer()
     }
 
-    /// The identifier that the document's protected resource metadata lists for the first
-    /// companion resource of `kind`.
+    /// The identifier that the document's protected resource metadata lists for the companion
+    /// resource of `kind`.
     ///
     /// # Panics
     ///

@@ -62,6 +62,12 @@ impl Companion {
     fn elsewhere(&self) -> bool {
         self.fault == Some(CompanionFault::OnAnotherOrigin)
     }
+
+    /// Where the resource's protected resource metadata lies: whether on the second port, and at
+    /// which path and query there.
+    fn metadata_at(&self) -> (bool, String) {
+        (self.elsewhere(), well_known(&self.path))
+    }
 }
 
 /// How a scenario misserves a companion resource, or where else it places one.
@@ -90,8 +96,24 @@ pub enum CompanionFault {
 
 impl RemoteScenario {
     /// Lists `companion` after the companion resources listed before it, and serves its metadata.
+    ///
+    /// # Panics
+    ///
+    /// `companion` has no kind, or the kind of a companion resource listed before it; or its
+    /// metadata would lie where the document's protected resource metadata lies on either
+    /// origin, or where that of a companion resource listed before it on its origin lies.
     #[must_use]
     pub fn accompanied_by(mut self, companion: Companion) -> Self {
+        let apart = |listed: &Companion| {
+            listed.kind != companion.kind && listed.metadata_at() != companion.metadata_at()
+        };
+        assert!(
+            !companion.kind.is_empty()
+                && well_known(&companion.path) != well_known(RESOURCE)
+                && self.companions.iter().all(apart),
+            "a companion resource has a kind of its own and its metadata at an address of its \
+             own: {companion:?}"
+        );
         self.companions.push(companion);
         self
     }
@@ -123,8 +145,8 @@ impl State {
         format!("{origin}{}", companion.path)
     }
 
-    /// The identifier that the document's protected resource metadata lists for the first
-    /// companion resource of `kind`.
+    /// The identifier that the document's protected resource metadata lists for the companion
+    /// resource of `kind`.
     pub(super) fn companion_identifier(&self, kind: &str) -> Option<String> {
         self.scenario
             .companions
@@ -286,5 +308,32 @@ fn with_origin(value: &Value, origin: &str) -> Value {
                 .collect(),
         ),
         other => other.clone(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::panic::catch_unwind;
+
+    use super::{Companion, CompanionFault, RemoteScenario};
+
+    #[test]
+    fn a_scenario_lists_a_companion_resource_only_with_a_kind_and_a_metadata_address_of_its_own() {
+        let listed =
+            || RemoteScenario::accepting("key").accompanied_by(Companion::new("notes", &["notes"]));
+        let away = |companion: Companion| companion.faulty(CompanionFault::OnAnotherOrigin);
+        for refused in [
+            Companion::new("", &["any"]),
+            Companion::new("notes", &["any"]).at("/any"),
+            Companion::new("any", &["any"]).at("/notes"),
+            Companion::new("any", &["any"]).at("/notes/"),
+            Companion::new("documents", &["documents"]),
+            away(Companion::new("documents", &["documents"])),
+        ] {
+            let listing = catch_unwind(|| listed().accompanied_by(refused.clone()));
+            assert!(listing.is_err(), "{refused:?}");
+        }
+        let apart = away(Companion::new("any", &["any"]).at("/notes"));
+        assert_eq!(listed().accompanied_by(apart).companions.len(), 2);
     }
 }

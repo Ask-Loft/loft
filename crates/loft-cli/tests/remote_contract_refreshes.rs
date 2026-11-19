@@ -4,6 +4,8 @@
 //!   or none, and for one that the sign-in does not hold;
 //! - a repeat answered only for the resource of its rotation, and a reuse for another that
 //!   revokes the sign-in;
+//! - `invalid_grant` that rotates and revokes nothing, for an unknown refresh token, another
+//!   client's or a revoked sign-in's;
 //! - a sign-in made for a resource that the remote no longer serves.
 //!
 //! Each scenario runs against the simulator and, on demand, against the remote at
@@ -13,19 +15,19 @@
 //! comment allows, with `cargo nextest run -p loft-cli --run-ignored only -E 'test(/<its name>/)'`.
 //! A real half reads the kept sign-in's token endpoint, client, resource, access token and
 //! refresh token, and when that access token expires where it presents it, learns the companion
-//! resources from the remote's own metadata, and shares its scenario with its simulator half, so
-//! that the two cannot drift. A real half whose premise does not hold fails with a message that
-//! names the premise; none passes without checking. The simulator alone is asked what a real
-//! remote does not tell: which access tokens a resource admits, how many refreshes it accepted,
-//! and a sign-in seeded without a browser. A scenario that cannot do without them has no real
-//! half.
+//! resources from the remote's own metadata, registers a client of its own where its scenario
+//! needs another client, and shares its scenario with its simulator half, so that the two cannot
+//! drift. A real half whose premise does not hold fails with a message that names the premise;
+//! none passes without checking. The simulator alone is asked what a real remote does not tell:
+//! which access tokens a resource admits, how many refreshes it accepted, and a sign-in seeded
+//! without a browser. A scenario that cannot do without them has no real half.
 
 use serde_json::{Value, json};
 use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::calls::Answer;
 use crate::common::oauth::{
-    KEY, assert_oauth_error, companion_metadata, fetch, metadata, parameter, refresh_for,
+    KEY, assert_oauth_error, companion_metadata, discover, fetch, metadata, parameter, refresh_for,
     registered,
 };
 use crate::common::resources::{
@@ -125,10 +127,11 @@ fn a_real_remote_refuses_a_refresh_for_a_resource_it_does_not_serve_and_rotates_
 fn refreshes_a_companion_resource(signed: &Signed, companion: &str) -> Value {
     let answer = signed.refresh(companion, &signed.refresh_token);
     let body = answer.body;
-    let premise = "premise: a sign-in whose authorization request named each companion resource";
+    let premise = "premise: a sign-in that holds each companion resource: its authorization \
+                   request named each, and the person consented to each";
     assert_eq!(
         answer.status, 200,
-        "{premise}, {companion} among them: {body:?}"
+        "{premise}, {companion} among them ({UNREFRESHED}): {body:?}"
     );
     let listed = companion_metadata(companion).body["scopes_supported"].clone();
     let scope = body["scope"].as_str().unwrap_or_default();
@@ -182,9 +185,9 @@ fn one_sign_in_issues_a_token_for_each_companion_resource_and_a_reuse_for_anothe
 #[ignore = "spends the sign-in that LOFT_REMOTE_CONTRACT_SIGN_IN keeps"]
 fn a_real_remote_issues_a_token_for_each_companion_resource_and_revokes_a_sign_in_reused_for_another()
  {
-    // Needs a remote that lists a companion resource, and a sign-in kept for the address whose
-    // authorization request named each listed companion resource, which nothing has refreshed
-    // since. The run revokes it.
+    // Needs a remote that lists a companion resource, and a sign-in kept for the address, which
+    // nothing has refreshed since, that holds each listed companion resource: its authorization
+    // request named each, and the person consented to each. The run revokes it.
     let signed = kept();
     let companions = companions_of(&signed.address);
     let (first, _) = companions
@@ -365,6 +368,51 @@ fn a_sign_in_granted_without_a_browser_holds_an_access_token_for_each_resource_a
     }
 }
 
+/// Refuses `invalid_grant` each refresh, for the sign-in's own resource and for the companion
+/// resource `companion` alike, whether `signed` holds it or not, that presents a refresh token
+/// never issued, a refresh token of `signed` by another client, or one of `signed` once a reuse
+/// has revoked it; and rotates and revokes nothing: the live refresh token still refreshes, and
+/// so does its successor, until that reuse.
+fn refuses_an_unknown_another_client_s_or_a_revoked_sign_in_s_refresh_token(
+    signed: &Signed,
+    companion: &str,
+) {
+    let (_, server) = discover(&signed.address);
+    let other = registered(&server);
+    let by_other = |resource: &str, token: &str| refresh_for(&server, &other, &[resource], token);
+    // Each is refused for its refresh token, before the sign-in is asked whether it holds the
+    // resource.
+    let own = signed.resource.as_str();
+    let both = [own, companion];
+    let first = signed.refresh_token.as_str();
+    for resource in both {
+        let unknown = signed.refresh(resource, "a-refresh-token-never-issued");
+        assert_oauth_error(&unknown, "invalid_grant");
+        assert_oauth_error(&by_other(resource, first), "invalid_grant");
+    }
+    let rotated = signed.refresh(own, first);
+    let unrotated = format!("a refused refresh rotates nothing ({UNREFRESHED})");
+    assert_eq!(rotated.status, 200, "{unrotated}: {:?}", rotated.body);
+    // Presented by another client within the grace window, the rotated token is refused, not
+    // answered again, and revokes nothing: its successor still refreshes.
+    assert_oauth_error(&by_other(own, first), "invalid_grant");
+    let second = rotated.body["refresh_token"].as_str().unwrap();
+    let next = signed.refresh(own, second);
+    assert_eq!(
+        next.status, 200,
+        "a refused refresh revokes nothing: {:?}",
+        next.body
+    );
+    // A reuse revokes the sign-in. Then its live refresh token is refused, for either resource,
+    // and so is its rotated one within the grace window.
+    assert_oauth_error(&signed.refresh(own, first), "invalid_grant");
+    let third = next.body["refresh_token"].as_str().unwrap();
+    for resource in both {
+        assert_oauth_error(&signed.refresh(resource, third), "invalid_grant");
+    }
+    assert_oauth_error(&signed.refresh(own, second), "invalid_grant");
+}
+
 #[test]
 fn an_unknown_refresh_token_another_client_s_or_a_revoked_sign_in_s_is_refused_and_changes_nothing()
 {
@@ -372,38 +420,20 @@ fn an_unknown_refresh_token_another_client_s_or_a_revoked_sign_in_s_is_refused_a
     let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(notes));
     let (own, notes) = (remote.resource(), remote.companion("notes"));
     let signed = signed_over(&remote, &[&own], "documents");
-    let (_, server) = metadata(&remote);
-    let other = registered(&server);
-    let by_other = |resource: &str, token: &str| refresh_for(&server, &other, &[resource], token);
-    // Each is refused for its refresh token, for the resource the sign-in holds and for one it
-    // does not hold alike, before the sign-in is asked whether it holds the resource.
-    let both = [own.as_str(), notes.as_str()];
-    let first = signed.refresh_token.as_str();
-    for resource in both {
-        let unknown = signed.refresh(resource, "a-refresh-token-never-issued");
-        assert_oauth_error(&unknown, "invalid_grant");
-        assert_oauth_error(&by_other(resource, first), "invalid_grant");
-    }
-    assert_eq!(remote.refreshes(), 0, "a refused refresh rotates nothing");
-    let rotated = signed.refresh(&own, first);
-    assert_eq!(rotated.status, 200, "{:?}", rotated.body);
-    // Presented by another client within the grace window, the rotated token is refused, not
-    // answered again, and revokes nothing: its successor still refreshes.
-    assert_oauth_error(&by_other(&own, first), "invalid_grant");
-    let second = rotated.body["refresh_token"].as_str().unwrap();
-    let next = signed.refresh(&own, second);
-    assert_eq!(
-        next.status, 200,
-        "a refused refresh revokes nothing: {:?}",
-        next.body
-    );
-    // A reuse revokes the sign-in. Then its live refresh token is refused, for either resource,
-    // and so is its rotated one within the grace window, and none of them rotates.
-    assert_oauth_error(&signed.refresh(&own, first), "invalid_grant");
-    let third = next.body["refresh_token"].as_str().unwrap();
-    for resource in both {
-        assert_oauth_error(&signed.refresh(resource, third), "invalid_grant");
-    }
-    assert_oauth_error(&signed.refresh(&own, second), "invalid_grant");
+    refuses_an_unknown_another_client_s_or_a_revoked_sign_in_s_refresh_token(&signed, &notes);
+    // The two refreshes it accepted are all that rotated.
     assert_eq!(remote.refreshes(), 2);
+}
+
+#[test]
+#[ignore = "spends the sign-in that LOFT_REMOTE_CONTRACT_SIGN_IN keeps"]
+fn a_real_remote_refuses_an_unknown_refresh_token_another_client_s_or_a_revoked_sign_in_s() {
+    // Needs a remote that lists a companion resource, and a sign-in kept for the address, which
+    // nothing has refreshed since. The run registers a client and revokes the sign-in.
+    let signed = kept();
+    let companions = companions_of(&signed.address);
+    let (first, _) = companions
+        .first()
+        .expect("premise: the remote lists a companion resource");
+    refuses_an_unknown_another_client_s_or_a_revoked_sign_in_s_refresh_token(&signed, first);
 }

@@ -266,13 +266,15 @@ impl RemoteScenario {
         self
     }
 
-    /// Refuses a rotated refresh token presented again, and revokes its sign-in.
+    /// Answers no rotated refresh token again: one that its client presents again for a resource
+    /// the scenario serves is refused `invalid_grant`, and revokes its sign-in.
     #[must_use]
     pub fn without_grace(self) -> Self {
         self.grace(Duration::ZERO)
     }
 
-    /// Refuses every refresh, as a sign-in that has lapsed.
+    /// Refuses every refresh for a resource the scenario serves `invalid_grant`, as a sign-in that
+    /// has lapsed.
     #[must_use]
     pub fn lapsing(mut self) -> Self {
         self.lapsed = true;
