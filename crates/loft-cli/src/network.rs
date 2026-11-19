@@ -2,7 +2,8 @@
 //! work a command leaves for the network after the command's own work is done, all of it within
 //! one time limit, and never writes to standard error: a service that refuses, fails or stays
 //! silent changes nothing a person sees. It also makes the calls to a connected document's
-//! remote that a command exists to make, each under the time limit its caller gives.
+//! remote that a command exists to make, each under the time limit its caller gives, and tells
+//! whether two addresses lie on one origin, as the parser its requests use reads them.
 
 use std::net::IpAddr;
 use std::sync::mpsc;
@@ -184,9 +185,33 @@ pub fn allowed(url: &str) -> Option<Uri> {
     }
 }
 
+/// Whether `one` and `other` lie on one origin, as RFC 6454 compares origins: the same scheme,
+/// the same host without regard to case, and the same port, the scheme's default where an
+/// address names none. Both are read by the parser the request uses, so the origin compared is
+/// the origin contacted. An address that is not an absolute `https` or `http` one lies on no
+/// origin, not even its own.
+#[must_use]
+pub fn same_origin(one: &str, other: &str) -> bool {
+    matches!((origin(one), origin(other)), (Some(one), Some(other)) if one == other)
+}
+
+/// The origin of `url` as its scheme, its host in lower case and its port, or none for an
+/// address that is not an absolute `https` or `http` one.
+fn origin(url: &str) -> Option<(String, String, u16)> {
+    let uri: Uri = url.parse().ok()?;
+    let scheme = uri.scheme_str()?;
+    let default = match scheme {
+        "https" => 443,
+        "http" => 80,
+        _ => return None,
+    };
+    let host = uri.host()?.to_ascii_lowercase();
+    Some((scheme.to_owned(), host, uri.port_u16().unwrap_or(default)))
+}
+
 #[cfg(test)]
 mod tests {
-    use super::allowed;
+    use super::{allowed, same_origin};
 
     #[test]
     fn https_is_allowed_anywhere_and_http_only_on_the_loopback_interface() {
@@ -212,5 +237,51 @@ mod tests {
         ] {
             assert!(allowed(url).is_none(), "{url}");
         }
+    }
+
+    #[test]
+    fn addresses_with_one_scheme_host_and_effective_port_lie_on_one_origin() {
+        let address = "https://remote.example/documents/one";
+        for other in [
+            "https://remote.example/.well-known/oauth-protected-resource/documents",
+            "https://REMOTE.Example/x",
+            "HTTPS://remote.example/x",
+            "https://remote.example:443/x",
+            "https://someone@remote.example/x?y=z",
+        ] {
+            assert!(same_origin(address, other), "{other}");
+            assert!(same_origin(other, address), "{other}");
+        }
+        assert!(same_origin("http://127.0.0.1/a", "http://127.0.0.1:80/b"));
+        assert!(same_origin("http://[::1]:8080/a", "http://[::1]:8080/b"));
+    }
+
+    #[test]
+    fn an_address_of_another_scheme_host_or_port_lies_on_another_origin() {
+        let address = "https://remote.example/documents/one";
+        for other in [
+            "http://remote.example/x",
+            "https://elsewhere.example/x",
+            "https://notes.remote.example/x",
+            "https://remote.example@elsewhere.example/x",
+            "https://remote.example:8443/x",
+            "https://remote.example./x",
+            // An address that is not an absolute `https` or `http` one lies on no origin.
+            "/.well-known/oauth-protected-resource/documents",
+            "ftp://remote.example/x",
+            "not an address",
+        ] {
+            assert!(!same_origin(address, other), "{other}");
+            assert!(!same_origin(other, address), "{other}");
+        }
+        for (one, other) in [
+            ("http://127.0.0.1:8080/a", "http://127.0.0.1:8081/b"),
+            ("http://127.0.0.1:8080/a", "http://localhost:8080/b"),
+            // Two spellings of one IPv6 address are two hosts, as RFC 6454 compares them.
+            ("http://[::1]:8080/a", "http://[0:0:0:0:0:0:0:1]:8080/b"),
+        ] {
+            assert!(!same_origin(one, other), "{one} {other}");
+        }
+        assert!(!same_origin("not an address", "not an address"));
     }
 }

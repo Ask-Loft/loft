@@ -1,14 +1,18 @@
-//! A sign-in that the remote's metadata or its authorization server refuses: metadata that names
-//! another resource or issuer, leaves out what a sign-in needs or names an address no remote may
-//! have, and a refused registration or code exchange, each run under the remote and browser
-//! simulators; and the scope a sign-in asks for.
+//! A sign-in that the remote's metadata or its authorization server refuses: a challenge that
+//! names metadata on another origin, metadata that names another resource or issuer, leaves out
+//! what a sign-in needs or names an address no remote may have, and a refused registration or
+//! code exchange, each run under the remote and browser simulators; and the scope a sign-in asks
+//! for.
 
 use software_plant::BrowserScenario;
 use software_plant::remote::wire::{pairs, value};
 use software_plant::remote::{Metadata, Remote, RemoteScenario};
 
-use crate::common::Scratch;
+use crate::common::calls::call;
+use crate::common::oauth::parameter;
 use crate::common::signed_in::{name_remote, run, sign_ins_file};
+use crate::common::{Scratch, tree};
+use crate::schema;
 
 /// Runs `loft remote login` for a Reading List connected to a simulator of `scenario`, and gives
 /// the simulator, the scratch directory, the output and the addresses the browser was given.
@@ -89,4 +93,48 @@ fn a_refused_registration_or_exchange_ends_the_sign_in_naming_its_oauth_error() 
         assert_eq!(visits.len(), visited);
         assert!(!sign_ins_file(&scratch).exists(), "nothing is written");
     }
+}
+
+#[test]
+fn a_challenge_naming_metadata_on_another_origin_is_refused_before_that_metadata_is_requested() {
+    let remote = Remote::start(
+        RemoteScenario::accepting("doc-elsewhere").metadata(Metadata::OnAnotherOrigin),
+    );
+    let address = remote.address();
+    let scratch = Scratch::with_reading_list();
+    name_remote(&scratch, Some(&address), true);
+    let before = tree(&scratch.0);
+    let (output, browser) = run(
+        &scratch,
+        &["remote", "login", "--format", "json"],
+        BrowserScenario::Visiting,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    // The challenge alone was requested: no metadata, no authorization server, no registration.
+    let requested: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
+    assert_eq!(requested, ["/documents/doc-elsewhere/head"]);
+    let elsewhere = remote.requests_elsewhere();
+    assert!(
+        elsewhere.is_empty(),
+        "the other origin is asked nothing: {elsewhere:?}"
+    );
+    assert_eq!(
+        browser.visits(),
+        Vec::<String>::new(),
+        "no browser is opened"
+    );
+    assert!(!sign_ins_file(&scratch).exists(), "no sign-in is kept");
+    assert_eq!(tree(&scratch.0), before, "no file of the tree is written");
+    let result = schema::conforming(&output.stdout, include_str!("../../../schemas/remote.json"));
+    assert_eq!(result["outcome"], "error");
+    assert_eq!(result["errors"][0]["kind"], "remote");
+    let message = result["errors"][0]["message"].as_str().unwrap();
+    let challenge = call("GET", &format!("{address}/head"), None, None);
+    let header = challenge.header("www-authenticate").unwrap();
+    let named = parameter(header, "resource_metadata").unwrap();
+    for part in [address.as_str(), named.as_str(), "another origin"] {
+        assert!(message.contains(part), "{part}: {message}");
+    }
+    assert!(String::from_utf8_lossy(&output.stderr).contains(message));
 }

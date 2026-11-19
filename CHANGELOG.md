@@ -25,6 +25,15 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
+- `loft remote set` and `loft remote login` refuse a remote whose challenge names its protected
+  resource metadata, or whose metadata names its protected resource, on another origin than the
+  remote's address. The refusal comes before anything is asked of that origin, before a client is
+  registered and before a browser opens, and the error names both addresses. A sign-in used to
+  follow the challenge to any `https` address, and to accept metadata whose path named a resource
+  on another host or port, so an address committed to a manifest could lead you to consent at
+  another remote's authorization server and then receive the access token issued for that remote.
+  Two addresses lie on one origin when they have the same scheme, host and port, the host compared
+  without regard to case and a missing port read as the scheme's default.
 - The Yard page can open from another device, such as a phone in your tailnet, where you can
   answer as on the machine. Name the addresses the page server listens on beside `127.0.0.1`
   with `loft yard serve --listen`, once for each, `0.0.0.0` for every network, or with the

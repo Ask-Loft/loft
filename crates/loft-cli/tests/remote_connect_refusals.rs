@@ -1,6 +1,7 @@
-//! `loft remote set` refusing: a manifest its journal cannot save, a name the remote refuses, an
-//! import answered with another head, and what the command never takes: a token as an argument
-//! or on standard input. Each runs under the remote, browser and git simulators.
+//! `loft remote set` refusing: a remote whose challenge names its metadata on another origin, a
+//! manifest its journal cannot save, a name the remote refuses, an import answered with another
+//! head, and what the command never takes: a token as an argument or on standard input. Each runs
+//! under the remote, browser and git simulators.
 
 use std::fs;
 use std::io::Write as _;
@@ -10,12 +11,14 @@ use std::time::Duration;
 use loftspec::codec;
 use serde_json::json;
 use software_plant::BrowserScenario;
-use software_plant::remote::{Remote, RemoteScenario, misstated_root};
+use software_plant::remote::{Metadata, Remote, RemoteScenario, misstated_root};
 
+use crate::common::calls::call;
+use crate::common::oauth::parameter;
 use crate::common::remote::history;
 use crate::common::signed_in::{self, granted, keep, name_remote};
 use crate::common::tree;
-use crate::remote_connect::{head_of, published, set};
+use crate::remote_connect::{assert_nothing_written, head_of, published, set};
 use crate::served::within;
 
 #[test]
@@ -121,4 +124,44 @@ fn set_takes_no_token_as_an_argument_and_never_reads_standard_input() {
     drop(stdin);
     assert_eq!(child.wait().unwrap().code(), Some(0));
     assert!(codec::read(&tree(&scratch.0)).unwrap().connected);
+}
+
+#[test]
+fn a_set_whose_challenge_names_metadata_on_another_origin_is_refused_and_nothing_is_written() {
+    let history = history(1);
+    let (scratch, git) = published(&history);
+    let before = tree(&scratch.0);
+    let remote =
+        Remote::start(RemoteScenario::accepting(&history.key).metadata(Metadata::OnAnotherOrigin));
+    let address = remote.address();
+    let (output, browser) = signed_in::run(
+        &scratch,
+        &["remote", "set", &address, "--format", "json"],
+        BrowserScenario::Visiting,
+        Some(&git),
+    );
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    // Neither a create nor an import: the sign-in ended at the challenge.
+    let requested: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
+    assert_eq!(requested, [format!("/documents/{}/head", history.key)]);
+    let elsewhere = remote.requests_elsewhere();
+    assert!(
+        elsewhere.is_empty(),
+        "the other origin is asked nothing: {elsewhere:?}"
+    );
+    assert_eq!(
+        browser.visits(),
+        Vec::<String>::new(),
+        "no browser is opened"
+    );
+    assert_nothing_written(&scratch);
+    assert_eq!(tree(&scratch.0), before);
+    let result = signed_in::document(&output);
+    let message = result["errors"][0]["message"].as_str().unwrap();
+    let challenge = call("GET", &format!("{address}/head"), None, None);
+    let header = challenge.header("www-authenticate").unwrap();
+    let named = parameter(header, "resource_metadata").unwrap();
+    for part in [address.as_str(), named.as_str(), "another origin"] {
+        assert!(message.contains(part), "{part}: {message}");
+    }
 }
