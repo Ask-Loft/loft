@@ -1,6 +1,7 @@
 //! `loft publish` of a connected document, as the shared rules of reaching a remote hold it:
-//! the address and token the environment names, the sign-in and its refresh, the refusals and
-//! their waits, and the time limit, run under the remote and git simulators.
+//! the address and token the environment names, the sign-in and its refresh, a kept sign-in for
+//! a resource on another origin, the refusals and their waits, and the time limit, run under the
+//! remote and git simulators.
 
 use std::fs;
 
@@ -68,6 +69,40 @@ fn without_a_sign_in_the_publish_is_refused_naming_the_address_and_login() {
         assert!(message.contains(said), "{said}: {message}");
     }
     assert!(run.remote.requests().is_empty(), "no connection is opened");
+}
+
+#[test]
+fn a_kept_sign_in_for_a_resource_on_another_origin_counts_as_no_sign_in_for_its_address() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    run.change();
+    let before = tree(&run.scratch.0);
+    // With an hour left its token would be sent; with a minute left it would be refreshed first.
+    for seconds in [3600, 60] {
+        let mut kept = granted(&run.remote, seconds);
+        kept["resource"] = json!("http://127.0.0.1:9/documents");
+        keep(&run.scratch, &json!({ run.remote.address(): kept }));
+        let output = run.publish();
+        assert_eq!(output.status.code(), Some(1), "{seconds}: {output:?}");
+        let message = Connected::message(&output);
+        let address = run.remote.address();
+        for said in [address.as_str(), "LOFT_REMOTE_TOKEN", "loft remote login"] {
+            assert!(message.contains(said), "{seconds}: {said}: {message}");
+        }
+        assert!(
+            run.remote.requests().is_empty(),
+            "{seconds}: no connection is opened"
+        );
+        assert_eq!(
+            sign_ins(&run.scratch)[address.as_str()],
+            kept,
+            "{seconds}: nothing is written"
+        );
+        assert_eq!(
+            tree(&run.scratch.0),
+            before,
+            "{seconds}: no file of the tree is written"
+        );
+    }
 }
 
 #[test]

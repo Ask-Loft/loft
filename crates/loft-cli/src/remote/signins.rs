@@ -14,7 +14,7 @@ use serde_json::{Map, Value, json};
 use yardlog_store::lock::{self, Locked};
 
 use super::{RemoteError, signin};
-use crate::settings;
+use crate::{network, settings};
 
 /// The file's name in the configuration directory.
 const FILE: &str = "remotes.json";
@@ -65,9 +65,13 @@ fn entries() -> Result<Map<String, Value>, RemoteError> {
     Ok(file["remotes"].as_object().cloned().unwrap_or_default())
 }
 
-/// The sign-in an entry holds, if it reads as one.
-fn sign_in(entry: &Value) -> Option<SignIn> {
-    serde_json::from_value(entry.clone()).ok()
+/// The sign-in that an entry kept under `address` holds, if it reads as one and its resource lies
+/// on the address's origin: one for a protected resource on another origin, which an earlier
+/// `loft` could keep, is no sign-in for the address, and is neither refreshed nor sent.
+fn sign_in(entry: &Value, address: &str) -> Option<SignIn> {
+    serde_json::from_value::<SignIn>(entry.clone())
+        .ok()
+        .filter(|held| network::same_origin(&held.resource, address))
 }
 
 /// Writes `sign_ins` as the whole file, with permission for its owner alone, through a file
@@ -121,14 +125,15 @@ pub fn forget(address: &str) -> Result<bool, RemoteError> {
 ///
 /// # Errors
 ///
-/// The file holds no sign-in for `address`, or the refresh is refused or cannot be made.
+/// The file holds no sign-in for `address`, or one only for a protected resource on another
+/// origin, or the refresh is refused or cannot be made.
 pub fn live(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
     let missing = || RemoteError::NoSignIn {
         address: address.to_owned(),
     };
     let held = entries()?
         .get(address)
-        .and_then(sign_in)
+        .and_then(|entry| sign_in(entry, address))
         .ok_or_else(missing)?;
     if !held.expiring(now()) {
         return Ok(held);
@@ -137,7 +142,7 @@ pub fn live(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
     let mut sign_ins = entries()?;
     let held = sign_ins
         .get(address)
-        .and_then(sign_in)
+        .and_then(|entry| sign_in(entry, address))
         .ok_or_else(missing)?;
     if !held.expiring(now()) {
         return Ok(held);

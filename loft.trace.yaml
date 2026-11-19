@@ -18963,6 +18963,12 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "without_a_sign_in_the_publish_is_refused_naming_the_address_and_login"
         body: 24c7066ff222ea0bad357a534776dd60bf2e14db2ac23687a6bee4d45b47bbd4
+  - node: 01a1f4f1-4309-7056-a238-4b394d224dd7
+    reviewed: 3246a0da3e43418bfad06fa601e8d49cd597ef8fd9c64d97f57858b71b2df12c
+    tests:
+      - file: "crates/loft-cli/tests/publish_connected_reach.rs"
+        name: "a_kept_sign_in_for_a_resource_on_another_origin_counts_as_no_sign_in_for_its_address"
+        body: 87170ee036c120ef65c512f320213161f15a450a840f94867fbd4c5a0407fc10
   - node: 01a18e1f-8daa-7674-9603-5ad333b36e05
     reviewed: 6f8e361fca1ee375d070e2b40143ef2382aa4bd303e62c8e199d2f0a9a3c5310
     tests:
@@ -19017,18 +19023,27 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "without_a_sign_in_the_publish_is_refused_naming_the_address_and_login"
         body: 24c7066ff222ea0bad357a534776dd60bf2e14db2ac23687a6bee4d45b47bbd4
+      - file: "crates/loft-cli/tests/publish_connected_reach.rs"
+        name: "a_kept_sign_in_for_a_resource_on_another_origin_counts_as_no_sign_in_for_its_address"
+        body: 87170ee036c120ef65c512f320213161f15a450a840f94867fbd4c5a0407fc10
   - node: 01a156aa-d531-70a7-88e0-0bf9810a25c3
     reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
     tests:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "without_a_sign_in_the_publish_is_refused_naming_the_address_and_login"
         body: 24c7066ff222ea0bad357a534776dd60bf2e14db2ac23687a6bee4d45b47bbd4
+      - file: "crates/loft-cli/tests/publish_connected_reach.rs"
+        name: "a_kept_sign_in_for_a_resource_on_another_origin_counts_as_no_sign_in_for_its_address"
+        body: 87170ee036c120ef65c512f320213161f15a450a840f94867fbd4c5a0407fc10
   - node: 01a156aa-d531-70a7-88e0-0bfae3b7a232
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "without_a_sign_in_the_publish_is_refused_naming_the_address_and_login"
         body: 24c7066ff222ea0bad357a534776dd60bf2e14db2ac23687a6bee4d45b47bbd4
+      - file: "crates/loft-cli/tests/publish_connected_reach.rs"
+        name: "a_kept_sign_in_for_a_resource_on_another_origin_counts_as_no_sign_in_for_its_address"
+        body: 87170ee036c120ef65c512f320213161f15a450a840f94867fbd4c5a0407fc10
   - node: 01a156aa-d531-70a7-88e0-0bfcfa55f191
     reviewed: 4f18a00f6c671ca074ad3097741868532bb6089b0c7152057dfa91f6f7047716
     tests:
