@@ -98,6 +98,10 @@ requirements:
         name: "A `loft yard serve` that finds in `~/.yard/server.json` a running page server of a newer version, or of the same version on the same addresses, exits 0 and starts none."
       - key: 01a1f03b-b432-7709-92e2-1d43e2d50c54
         name: "The mod runs `loft yard serve` at the session's first beat, even where a page server answers."
+      - key: 01a1f46d-ccf3-74a1-826b-00138817d7b6
+        name: "The mod runs `loft yard serve` without `--join` only within 30 seconds of its session's start, so that a session started before the setting changed never applies its older setting later."
+      - key: 01a1f46e-0730-77fd-88d2-5fe5a5fcde0f
+        name: "A first run that the mod could not make within 30 seconds of its session's start is given `--join`."
       - key: 01a1f03b-b432-7709-92e2-1d44792792e2
         name: "A page server of the same version that listens on addresses other than the `yardListen` setting names is replaced when a session starts."
       - key: 01a1f069-3ebc-77f4-882f-9102f2aee1e0
@@ -111,12 +115,12 @@ requirements:
   - key: 01a1f03b-b432-7709-92e2-1d456d0b72d5
     statement:
       form: unwanted
-      if: "the plugin's `yardListen` setting names something other than an IP address, or the unspecified IPv6 address in any of its forms, such as `::`"
+      if: "the plugin's `yardListen` setting names something other than an IP address, or an IPv6 address that names every address, in any of its forms, such as `::` or `::ffff:0.0.0.0`"
       system: "the Loft mod"
       shall: "tell the person once, naming it, and pass the setting's other addresses to `loft yard serve`."
     criteria:
       - key: 01a1f03b-b432-7709-92e2-1d464c3a5404
-        name: "The notice names the `yardListen` setting and each entry that is not an IP address or is the unspecified IPv6 address."
+        name: "The notice names the `yardListen` setting and each entry that is not an IP address or is an IPv6 address that names every address."
       - key: 01a1f03b-b432-7709-92e2-1d47c30f8dc0
         name: "The page server the mod starts listens on the setting's other addresses."
   - key: 01a1f074-174c-750c-b689-edaf78b8384b
