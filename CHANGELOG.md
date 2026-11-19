@@ -16,14 +16,20 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
-- The Yard page server listens on every address of the machine, not on the loopback interface
-  alone, so the page opens from another device, such as a phone in your tailnet, where you can
-  answer as on the machine. Anyone who reaches the machine on the same network, a public one
-  included, can then read the page and answer for you: name the addresses it listens on with
-  `loft yard serve --listen`, once for each, or the Claude Code plugin's new `yardListen`
-  setting, and it listens on those and on `127.0.0.1` alone. An address the machine does not
-  have yet is taken once it appears. `Host` and `Origin` are checked against the address a
-  request reached.
+- The Yard page can open from another device, such as a phone in your tailnet, where you can
+  answer as on the machine. Name the addresses the page server listens on beside `127.0.0.1`
+  with `loft yard serve --listen`, once for each, `0.0.0.0` for every network, or with the
+  Claude Code plugin's new `yardListen` setting; by default it still listens on `127.0.0.1`
+  alone. Anyone who reaches a named address can read the page and answer for you, which the
+  agent takes as your word, so leave a public network unnamed. An address the machine does not
+  have yet is taken once it appears, and `Host` and `Origin` are checked against the address a
+  request reached. A `loft yard serve` that would listen on other addresses than the running
+  page server of its version replaces it, and each Claude Code session runs one when it starts,
+  so a changed `yardListen` takes effect with the next session; every other `loft yard serve`
+  that the plugin or the Codex watch runs is given `--join` and joins the running page server.
+  The yard protocol is now 4, and the plugin passes `--listen` and `--join` only to a `loft` that
+  speaks it; a Claude Code plugin from before it leaves Yard Client off with this `loft`, so
+  update the plugin with `loft`.
 - Yard Log's session files no longer change the working tree between an agent's commands. The
   page server keeps each session's token totals, activity and consultation counts in git's own
   directory for the worktree, under `yard/<branch>.sessions/`, and each write of Yard Log, a close
