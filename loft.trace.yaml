@@ -27998,7 +27998,7 @@ links:
         body: 191ce29b20f9cf5ddec43571c46c8ef7a66c9446fbb4c763c6a9e5e04f79589d
       - file: "plugins/claude/loft/tests/yard-dialog.test.tsx"
         name: "with Yard Client off, the dialog is drawn as Claude Code draws it"
-        body: a33abc7abfaac482906939c91d97c0b3370919cafb8582136764750f3e456b66
+        body: ee27dac8f3f40f97dae7e62efe678552c9c1d651b977a7699adad50e6f4c5848
   - node: 01a1646f-546e-76cb-8b4f-f202028cdac3
     reviewed: 26562d624d38ead959e49565359e8e5a51c43baa1c998f597e31b6af4b0e3977
     tests:
