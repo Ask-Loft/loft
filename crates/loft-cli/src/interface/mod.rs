@@ -18,7 +18,7 @@ use std::num::NonZeroU64;
 use std::path::Path;
 
 use loftspec::codec::{self, Files};
-use loftspec::copy::Copy;
+use loftspec::copy::{self, Clash, Copy, Shared};
 use loftspec::document::{Document, OtherDocument};
 use loftspec::identity::{Key, Label};
 use loftspec::slug::Slug;
@@ -47,9 +47,7 @@ pub enum Action {
         at: Option<NonZeroU64>,
         browser: bool,
     },
-    Status {
-        browser: bool,
-    },
+    Status,
     Remove {
         interface: String,
     },
@@ -81,7 +79,7 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
             at,
             browser,
         } => update::run(root, target.as_deref(), *at, *browser),
-        Action::Status { browser } => status::run(root, *browser),
+        Action::Status => status::run(root),
         Action::Remove { interface } => remove::run(root, interface),
         Action::Login { handle, browser } => login::run(root, handle, *browser),
     };
@@ -141,6 +139,32 @@ fn held<'a>(document: &'a Document, target: &str) -> Result<&'a Copy, Stop> {
             "the document holds no copy of {target}: `loft interface add` takes one"
         ))
     })
+}
+
+/// Refuses `copies`, the copies a command would leave in the tree, where two share a file or a
+/// node's key, which the reader refuses.
+fn clashing(copies: &[&Copy]) -> Result<(), Stop> {
+    let Some(Clash {
+        first,
+        second,
+        shared,
+    }) = copy::clash(copies)
+    else {
+        return Ok(());
+    };
+    let (one, other) = (first.name_of(first.key()), second.name_of(second.key()));
+    Err(refused(match shared {
+        Shared::File(path) => format!(
+            "{one} and {other} would both be written to spec/{}: `loft interface remove` drops \
+             one first",
+            path.as_str()
+        ),
+        Shared::Key(key) => format!(
+            "{one} and {other} would both hold the node {key}: the copies under {} are taken \
+             from one publish sequence together, as `loft interface update {}` takes them",
+            second.handle, second.handle
+        ),
+    }))
 }
 
 /// The entry of `documents` that lists the handle of `copy`.

@@ -12,12 +12,19 @@ use loftspec::slug::Slug;
 use super::refused;
 use crate::remote::head::{self, Head};
 use crate::remote::states::{self, StateError};
-use crate::remote::{self, Client};
+use crate::remote::{self, Client, RemoteError, SignIn};
 use crate::stop::Stop;
 
 /// The publish sequence of the head of the remote `client` reaches.
 pub(super) fn head_sequence(client: &Client, handle: &Slug) -> Result<u64, Stop> {
-    let head = head::fetch(client, handle.as_str())?;
+    let head = head::fetch(client, handle.as_str()).map_err(|error| match error {
+        RemoteError::NotHeld { .. } => refused(format!(
+            "{handle}: the remote at {} holds no such document; check the address `documents` \
+             lists under {handle}",
+            client.address()
+        )),
+        error => error.into(),
+    })?;
     match Head::read(&head) {
         Some(head) if head.sequence > 0 => Ok(head.sequence),
         _ => Err(refused(format!(
@@ -71,17 +78,17 @@ type State = (Files, Lock);
 /// The remotes of other documents a command reaches, each once: its client, the publish
 /// sequence of its head, and each state taken from it, none where the remote holds none.
 pub(super) struct Remotes {
-    browser: bool,
+    sign_in: SignIn,
     clients: BTreeMap<Slug, Client>,
     heads: BTreeMap<Slug, u64>,
     states: BTreeMap<(Slug, u64), Option<State>>,
 }
 
 impl Remotes {
-    /// The remotes, reached with a sign-in that opens the person's browser where `browser`.
-    pub fn new(browser: bool) -> Self {
+    /// The remotes, each reached with the person's sign-in as `sign_in` holds it.
+    pub fn new(sign_in: SignIn) -> Self {
         Self {
-            browser,
+            sign_in,
             clients: BTreeMap::new(),
             heads: BTreeMap::new(),
             states: BTreeMap::new(),
@@ -90,7 +97,16 @@ impl Remotes {
 
     fn client(&mut self, entry: &OtherDocument) -> Result<&Client, Stop> {
         if !self.clients.contains_key(&entry.handle) {
-            let client = remote::other(&entry.remote, self.browser)?;
+            let client = match remote::other(&entry.remote, self.sign_in) {
+                Ok(client) => client,
+                Err(RemoteError::NoSignIn { .. } | RemoteError::Lapsed { .. }) => {
+                    return Err(refused(format!(
+                        "no live sign-in to {} for {}: `loft interface login {}` signs in",
+                        entry.remote, entry.handle, entry.handle
+                    )));
+                }
+                Err(error) => return Err(error.into()),
+            };
             self.clients.insert(entry.handle.clone(), client);
         }
         Ok(&self.clients[&entry.handle])

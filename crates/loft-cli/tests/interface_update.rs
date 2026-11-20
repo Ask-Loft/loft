@@ -222,3 +222,17 @@ fn without_a_kept_sign_in_an_update_signs_the_person_in_to_the_other_remote_firs
     let kept = crate::common::signed_in::sign_ins(&scratch);
     assert!(kept[remote.address()]["accessToken"].is_string());
 }
+
+#[test]
+fn a_copy_at_the_head_that_is_not_the_copy_its_state_gives_is_taken_again() {
+    let (scratch, _history, _remote) = ready(true);
+    let output = interface(&scratch, &["add", "shelves:IF-1"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let taken = fs::read(scratch.file(COPY)).unwrap();
+    scratch.edit(COPY, "label: IF-1\n", "label: IF-7\n");
+    let (code, document) = update(&scratch, &[]);
+    assert_eq!(code, 0, "{document}");
+    assert_eq!(document["outcome"], "updated");
+    assert_eq!(document["copies"][0]["publishSequence"], 2);
+    assert_eq!(fs::read(scratch.file(COPY)).unwrap(), taken);
+}

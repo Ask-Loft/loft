@@ -42,11 +42,9 @@ pub enum InterfaceAction {
         #[command(flatten)]
         output: Output,
     },
-    /// Compare each copy with the state its pin names and with its remote's head.
+    /// Compare each copy with the state its pin names and with its remote's head, with the
+    /// sign-ins `loft interface login` keeps.
     Status {
-        /// Print the address to open for a sign-in, without opening a browser.
-        #[arg(long)]
-        no_browser: bool,
         #[command(flatten)]
         output: Output,
     },
@@ -101,12 +99,7 @@ impl InterfaceAction {
                 },
                 output.json(),
             ),
-            Self::Status { no_browser, output } => (
-                interface::Action::Status {
-                    browser: !no_browser,
-                },
-                output.json(),
-            ),
+            Self::Status { output } => (interface::Action::Status, output.json()),
             Self::Remove { interface, output } => (
                 interface::Action::Remove {
                     interface: interface.clone(),

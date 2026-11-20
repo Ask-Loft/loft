@@ -6,6 +6,7 @@ use std::num::NonZeroU64;
 use std::path::Path;
 
 use loftspec::codec::{self, CopyError, Files, MANIFEST, SpecPath};
+use loftspec::copy::Copy;
 use loftspec::document::{Document, OtherDocument};
 use loftspec::identity::Key;
 use loftspec::ids::{ElementId, NodeId};
@@ -14,8 +15,8 @@ use loftspec::slug::Slug;
 use serde_json::json;
 
 use super::reach::{another, head_sequence, not_held, state, unreadable};
-use super::{Interface, Named, Report, connected, document, named, refused, save};
-use crate::remote;
+use super::{Interface, Named, Report, clashing, connected, document, named, refused, save};
+use crate::remote::{self, SignIn};
 use crate::stop::Stop;
 
 pub(super) fn run(
@@ -30,7 +31,7 @@ pub(super) fn run(
     connected(&document)?;
     let listed = (document.documents.iter()).find(|entry| entry.handle == handle);
     let address = address(&handle, listed, remote)?;
-    let client = remote::other(&address, browser)?;
+    let client = remote::other(&address, SignIn::First { browser })?;
     let sequence = match at {
         Some(at) => at.get(),
         None => head_sequence(&client, &handle)?,
@@ -57,6 +58,9 @@ pub(super) fn run(
             CopyError::Unreadable(errors) => unreadable(&handle, sequence, &errors),
         },
     )?;
+    let mut after: Vec<&Copy> = document.copies.iter().collect();
+    after.push(&copy);
+    clashing(&after)?;
     let first = listed.is_none();
     if first {
         document.documents.push(OtherDocument {
@@ -108,9 +112,21 @@ fn served(
             other.key()
         )));
     }
-    match listed.filter(|entry| entry.key != other) {
-        Some(entry) => Err(another(entry, lock)),
-        None => Ok(()),
+    if let Some(entry) = listed.filter(|entry| entry.key != other) {
+        return Err(another(entry, lock));
+    }
+    match (
+        listed,
+        document.documents.iter().find(|entry| entry.key == other),
+    ) {
+        (None, Some(entry)) => Err(refused(format!(
+            "the remote at {address} serves the document {}, which `documents` lists under {} \
+             already: name the Interface as {}:<interface>",
+            other.key(),
+            entry.handle,
+            entry.handle
+        ))),
+        _ => Ok(()),
     }
 }
 

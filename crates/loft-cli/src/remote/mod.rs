@@ -239,19 +239,32 @@ pub fn login(address: &str, browser: bool) -> Result<(), RemoteError> {
     signins::save(address, &sign_in)
 }
 
+/// How a command that reaches another document's remote holds the person's sign-in to it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SignIn {
+    /// A sign-in is made first where none is kept, in the person's browser where `browser`
+    /// allows.
+    First { browser: bool },
+    /// Only a kept sign-in, refreshed where it needs to be, is used.
+    Kept,
+}
+
 /// The client of another document's remote at `address`, with the person's sign-in to that
-/// address, made first where none is kept. Neither `LOFT_REMOTE_ENDPOINT` nor
-/// `LOFT_REMOTE_TOKEN` is read: they name the document's own remote alone.
+/// address as `sign_in` holds it. Neither `LOFT_REMOTE_ENDPOINT` nor `LOFT_REMOTE_TOKEN` is
+/// read: they name the document's own remote alone.
 ///
 /// # Errors
 ///
-/// A timeout variable is not a whole number of seconds, the address may not be contacted, or no
-/// sign-in can be made.
-pub fn other(address: &str, browser: bool) -> Result<Client, RemoteError> {
+/// A timeout variable is not a whole number of seconds, the address may not be contacted, no
+/// sign-in can be made, or, for [`SignIn::Kept`], none is kept or its refresh is refused.
+pub fn other(address: &str, sign_in: SignIn) -> Result<Client, RemoteError> {
     let timeout = timeout()?;
     let wait = seconds(WAIT_ENV)?;
     checked(address)?;
-    let token = signed_in(address, browser, timeout)?;
+    let token = match sign_in {
+        SignIn::First { browser } => signed_in(address, browser, timeout)?,
+        SignIn::Kept => signins::live(address, timeout)?.access_token,
+    };
     Ok(Client::new(address, Some(token), timeout, wait))
 }
 

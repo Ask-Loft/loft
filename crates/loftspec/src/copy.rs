@@ -132,6 +132,50 @@ pub enum CopyDifference {
     Bytes,
 }
 
+/// Two copies that cannot stand in one tree, and what they share.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Clash<'a> {
+    pub first: &'a Copy,
+    pub second: &'a Copy,
+    pub shared: Shared,
+}
+
+/// What two clashing copies share: their file, or a node's key.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Shared {
+    File(SpecPath),
+    Key(Key),
+}
+
+/// The first two of `copies` that share a file or a node's key, which no tree may hold.
+#[must_use]
+pub fn clash<'a>(copies: &[&'a Copy]) -> Option<Clash<'a>> {
+    let mut files: BTreeMap<SpecPath, &Copy> = BTreeMap::new();
+    let mut keys: BTreeMap<Key, &Copy> = BTreeMap::new();
+    for &copy in copies {
+        let path = copy.path();
+        if let Some(&first) = files.get(&path) {
+            return Some(Clash {
+                first,
+                second: copy,
+                shared: Shared::File(path),
+            });
+        }
+        files.insert(path, copy);
+        for key in copy.keys() {
+            if let Some(&first) = keys.get(&key) {
+                return Some(Clash {
+                    first,
+                    second: copy,
+                    shared: Shared::Key(key),
+                });
+            }
+            keys.insert(key, copy);
+        }
+    }
+    None
+}
+
 /// The key of the node that the copies under `handle` bind to `label`.
 #[must_use]
 pub fn labeled(copies: &[Copy], handle: &str, label: Label) -> Option<Key> {

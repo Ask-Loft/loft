@@ -17,7 +17,8 @@ use serde_json::{Value, json};
 
 use super::reach::Remotes;
 use super::references::references;
-use super::{Report, connected, document, held, refused};
+use super::{Report, clashing, connected, document, held, refused};
+use crate::remote::SignIn;
 use crate::stop::Stop;
 use moves::Move;
 
@@ -30,7 +31,7 @@ pub(super) fn run(
     let (_, document) = document(root)?;
     connected(&document)?;
     let selected = select(&document, target, at.is_some())?;
-    let mut remotes = Remotes::new(browser);
+    let mut remotes = Remotes::new(SignIn::First { browser });
     let mut moves = Vec::new();
     for copy in selected {
         moves.push(Move::of(
@@ -40,6 +41,17 @@ pub(super) fn run(
             at.map(NonZeroU64::get),
         )?);
     }
+    let after: Vec<&Copy> = (document.copies.iter())
+        .map(|copy| {
+            (moves.iter())
+                .find_map(|change| match change {
+                    Move::Moved { from, to, .. } if std::ptr::eq(*from, copy) => Some(&**to),
+                    _ => None,
+                })
+                .unwrap_or(copy)
+        })
+        .collect();
+    clashing(&after)?;
     let dangling = dangling(&document, &moves);
     write(root, &moves)?;
     Ok(report(&moves, &dangling))

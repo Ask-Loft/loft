@@ -17,7 +17,8 @@ use crate::stop::Stop;
 
 /// What an update did to one copy.
 pub(super) enum Move<'a> {
-    /// The copy is pinned to the publish sequence it would move to.
+    /// The copy is pinned to the publish sequence it would move to, and is the copy that state
+    /// gives.
     Current { copy: &'a Copy },
     /// The state it would move to no longer holds its Interface; it stays at its pin.
     Withdrawn { copy: &'a Copy, head: u64 },
@@ -57,10 +58,18 @@ impl Move<'_> {
                 copy.publish_sequence
             )],
             Self::Moved { from, to, changes } => {
-                let mut lines = vec![format!(
-                    "updated {name} from publish sequence {} to {}",
-                    from.publish_sequence, to.publish_sequence
-                )];
+                let mut lines = vec![if from.publish_sequence == to.publish_sequence {
+                    format!(
+                        "took {name} again at publish sequence {}: its copy was not the one its \
+                         remote published",
+                        to.publish_sequence
+                    )
+                } else {
+                    format!(
+                        "updated {name} from publish sequence {} to {}",
+                        from.publish_sequence, to.publish_sequence
+                    )
+                }];
                 for (verb, copy, ids) in parts(from, to, changes) {
                     let nodes = described(copy, ids).into_iter();
                     lines.extend(nodes.map(|(label, name)| format!("  {verb} {label} · {name}")));
@@ -139,14 +148,15 @@ impl Move<'_> {
             Some(at) => at,
             None => remotes.head(entry)?,
         };
-        if sequence == copy.publish_sequence {
-            return Ok(Move::Current { copy });
-        }
         let (files, lock) = remotes
             .state(entry, sequence)?
             .ok_or_else(|| not_held(&entry.remote, sequence))?;
         let interface = copy.key();
         match codec::copy_of(handle, files, interface, sequence, lock.state_root) {
+            // A copy at the head stays as it is, unless it is not the copy its state gives.
+            Ok(to) if sequence == copy.publish_sequence && copy.difference(&to).is_none() => {
+                Ok(Move::Current { copy })
+            }
             Ok(to) => Ok(Move::Moved {
                 changes: interface_changes(&copy.interface, &to.interface),
                 from: copy,

@@ -10,8 +10,9 @@ use loftspec::document::Document;
 use loftspec::identity::Label;
 use serde_json::{Value, json};
 
-use super::reach::Remotes;
+use super::reach::{Remotes, unreadable};
 use super::{Report, connected, document, entry_of};
+use crate::remote::SignIn;
 use crate::stop::Stop;
 
 /// One copy as its remote serves it: its pin confirmed or its first difference, and how the
@@ -23,10 +24,10 @@ struct Checked<'a> {
     freshness: &'static str,
 }
 
-pub(super) fn run(root: &Path, browser: bool) -> Result<Report, Stop> {
+pub(super) fn run(root: &Path) -> Result<Report, Stop> {
     let (_, document) = document(root)?;
     connected(&document)?;
-    let mut remotes = Remotes::new(browser);
+    let mut remotes = Remotes::new(SignIn::Kept);
     let mut checked = Vec::new();
     for copy in &document.copies {
         checked.push(check(&mut remotes, &document, copy)?);
@@ -52,7 +53,10 @@ fn check<'a>(
                 match codec::copy_of(&copy.handle, files, copy.key(), head, lock.state_root) {
                     Ok(at_head) if at_head.interface_hash == copy.interface_hash => "current",
                     Ok(_) => "behind",
-                    Err(_) => "withdrawn",
+                    Err(CopyError::NotHeld(_)) => "withdrawn",
+                    Err(CopyError::Unreadable(errors)) => {
+                        return Err(unreadable(&copy.handle, head, &errors));
+                    }
                 }
             }
         }
@@ -92,7 +96,7 @@ fn pinned_difference(
 /// A remote cannot be reached or refuses, or a copy differs: the error names the copy's file and
 /// its first difference.
 pub fn confirm(document: &Document) -> Result<(), String> {
-    let mut remotes = Remotes::new(true);
+    let mut remotes = Remotes::new(SignIn::Kept);
     for copy in &document.copies {
         let difference = pinned_difference(&mut remotes, document, copy)
             .map_err(|stop| stop.lines.join("; "))?;

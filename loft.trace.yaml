@@ -14089,6 +14089,9 @@ links:
     reviewed: 1baba34a28c64db38e0c20d68e9878ef5efea4c69d6891bbd292dc1de9a657c6
     tests:
       - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_publish_without_a_sign_in_to_a_copys_remote_is_refused_before_anything_is_sent"
+        body: e877dc668252282fc6f6f92af7eec23a5282cdbcef87921aa1dacfd137e3c096
+      - file: "crates/loft-cli/tests/publish_copies.rs"
         name: "a_publish_whose_copies_match_is_sent_as_any_publish_is"
         body: bcd34e2adb9f08c7f59438b8a7ad1fb6df794583e8df73e688134dae743e83ff
   - node: 01a1f981-4db0-72b8-8a39-a6e7b8094995
@@ -16975,6 +16978,9 @@ links:
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
       - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "a_document_another_handle_lists_is_refused_naming_that_handle"
+        body: c5183b306f4feeb835c3da1779f2e94e975bc432793fe8c65b4dc692abc945c6
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
         name: "an_add_in_a_document_that_is_not_connected_says_that_remote_set_connects_it"
         body: 70a4c6c27d9ec6bb55fe61d3fa80c5aef7aaeb1fdaf8d83127d1c5cf3d7aa8a5
       - file: "crates/loft-cli/tests/interface_add_refusals.rs"
@@ -17034,6 +17040,9 @@ links:
   - node: 01a1f981-4db0-72b8-8a39-a6c5f824ead2
     reviewed: cd2e8058851ea0c8d50aa8906e87a46def74fd82a0563cdda90e24ba393eed15
     tests:
+      - file: "crates/loft-cli/tests/interface_update.rs"
+        name: "a_copy_at_the_head_that_is_not_the_copy_its_state_gives_is_taken_again"
+        body: a1e6bef27b53c5e5c18b17504e658e116d7ebaa92d2dccafd368c15070bda17d
       - file: "crates/loft-cli/tests/interface_update.rs"
         name: "a_copy_already_at_the_head_is_reported_current_and_left_as_it_was"
         body: efc7ffabb761f3b9f80b9d2d5d243e660271e715d31ecd23beb6a572394e6b44
@@ -17199,6 +17208,9 @@ links:
   - node: 01a1f981-4db0-72b8-8a39-a6e327973022
     reviewed: 762599754d6190eb9b8509cf21ccff7be1c6f7c038a16ff05b34e7d8dea094e6
     tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "a_remote_that_holds_no_such_document_is_named_by_its_handle"
+        body: 4e4232cfeceb36015059f60b5ece2dcc6f71aa4bec2406e680dfb313d58ceccf
       - file: "crates/loft-cli/tests/interface_add_refusals.rs"
         name: "another_documents_address_is_held_to_the_rule_of_a_remotes_address"
         body: 157948b21124fa954263ac8b806be74c45c3e7553cdd5a7a1a9f8296919e1d02

@@ -90,3 +90,22 @@ fn a_copy_that_differs_is_refused_naming_its_file_and_nothing_is_sent_or_written
     assert_eq!(tree(&run.scratch.0), before);
     assert_eq!(run.lock(), lock);
 }
+
+#[test]
+fn a_publish_without_a_sign_in_to_a_copys_remote_is_refused_before_anything_is_sent() {
+    let (run, other) = holding_a_copy();
+    keep(
+        &run.scratch,
+        &json!({ run.remote.address(): granted(&run.remote, 3600) }),
+    );
+    let asked = other.requests().len();
+    let output = run.publish();
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = Connected::message(&output);
+    assert!(
+        message.contains("loft interface login shelves"),
+        "{message}"
+    );
+    assert!(run.calls().is_empty(), "{:?}", run.calls());
+    assert_eq!(other.requests().len(), asked);
+}

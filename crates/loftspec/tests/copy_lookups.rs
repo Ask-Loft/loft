@@ -9,7 +9,7 @@ use crate::common::interfaces::INTERFACE;
 use crate::common::key;
 use crate::common::text::replaced;
 use loftspec::codec;
-use loftspec::copy::{CopyDifference, labeled, references};
+use loftspec::copy::{CopyDifference, Shared, clash, labeled, references};
 use loftspec::document::{Edge, EdgeKind};
 use loftspec::identity::Label;
 use loftspec::ids::{ComponentId, ElementId, InterfaceId};
@@ -81,4 +81,16 @@ fn a_copy_whose_interface_carries_no_key_is_refused() {
     let interface = format!("  key: {}\n", key(INTERFACE));
     let keyless = replaced(&files, COPY, &interface, "");
     assert!(codec::read(&keyless).is_err());
+}
+
+#[test]
+fn two_copies_that_share_a_file_or_a_nodes_key_clash() {
+    let lookup = copy_at(&owner(), HANDLE, 3);
+    let again = copy_at(&owner(), HANDLE, 4);
+    let same_file = clash(&[&lookup, &again]).expect("one file");
+    assert_eq!(same_file.shared, Shared::File(lookup.path()));
+    let elsewhere = copy_at(&owner(), "elsewhere", 3);
+    let same_key = clash(&[&lookup, &elsewhere]).expect("one key");
+    assert_eq!(same_key.shared, Shared::Key(key(INTERFACE)));
+    assert!(clash(&[&lookup]).is_none());
 }

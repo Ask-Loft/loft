@@ -114,3 +114,25 @@ fn another_documents_address_is_held_to_the_rule_of_a_remotes_address() {
     );
     assert!(message.contains("loopback"), "{message}");
 }
+
+#[test]
+fn a_document_another_handle_lists_is_refused_naming_that_handle() {
+    let (scratch, _history, remote) = ready(true);
+    let address = remote.address();
+    let message = refused(&scratch, &["stock:IF-2", "--remote", &address]);
+    assert!(message.contains("under shelves"), "{message}");
+}
+
+#[test]
+fn a_remote_that_holds_no_such_document_is_named_by_its_handle() {
+    let (scratch, _history, remote) = ready(false);
+    let address = format!("{}/documents/missing", remote.origin());
+    crate::common::signed_in::keep(
+        &scratch,
+        &serde_json::json!({ address.clone(): crate::common::signed_in::granted(&remote, 3600) }),
+    );
+    let message = refused(&scratch, &["shelves:IF-1", "--remote", &address]);
+    assert!(message.contains("shelves: the remote at"), "{message}");
+    assert!(message.contains("holds no such document"), "{message}");
+    assert!(!message.contains("loft remote set"), "{message}");
+}

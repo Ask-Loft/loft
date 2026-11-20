@@ -116,3 +116,28 @@ fn a_copy_whose_labels_differ_from_its_pinned_state_is_a_mismatch_naming_the_lab
         "{difference}"
     );
 }
+
+#[test]
+fn status_without_a_kept_sign_in_says_that_login_makes_one_and_opens_no_browser() {
+    let (scratch, _remote) = holding(&["shelves:IF-1"], &[]);
+    crate::common::signed_in::keep(&scratch, &serde_json::json!({}));
+    let before = tree(&scratch.0);
+    let args = ["interface", "status", "--format", "json"];
+    let (output, browser) = crate::common::signed_in::run(
+        &scratch,
+        &args,
+        software_plant::BrowserScenario::Visiting,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    let message = conforming(&output)["errors"][0]["message"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    assert!(
+        message.contains("loft interface login shelves"),
+        "{message}"
+    );
+    assert_eq!(browser.visits(), Vec::<String>::new());
+    assert_eq!(tree(&scratch.0), before);
+}
