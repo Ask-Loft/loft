@@ -30,6 +30,16 @@ It is yours alone: `loft` keeps it by address in `loft/remotes.json` in your con
 directory, readable only by you, and refreshes it before it expires. Run `loft remote login` in
 a fresh clone, or once a sign-in has lapsed.
 
+The address must lie on the origin, the scheme, host and port, on which the server serves its
+sign-in metadata and its documents. `loft` refuses to sign in where the server names another
+origin, so that an address committed to a manifest cannot lead you to sign in to one server and
+hand its token to another. A server reached through another name than its own is refused for
+the same reason: a port forward to `127.0.0.1`, `localhost` for `127.0.0.1`, a name with a
+trailing dot, or a CNAME. The refusal names the origin the server expects; run
+`loft remote set` with the document's address on that origin, which signs you in to it, and
+commit `spec/loftspec.yaml`. A sign-in an earlier `loft` kept for such an address is not used,
+and `loft publish` and `loft pull` say so and name the origin it was for.
+
 `loft publish` of a connected document runs on any branch over a committed `spec/`. It sends the
 change since the state its lock names, and writes the labels and the lock the server returns;
 commit both together. A publish whose answer was lost is replayed safely. When someone else has
