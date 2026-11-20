@@ -11,6 +11,8 @@ mod remove;
 mod status;
 mod update;
 
+pub use status::confirm;
+
 use std::num::NonZeroU64;
 use std::path::Path;
 

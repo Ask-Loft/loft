@@ -41,16 +41,7 @@ fn check<'a>(
 ) -> Result<Checked<'a>, Stop> {
     let entry = entry_of(document, copy);
     let pinned = copy.publish_sequence;
-    let difference = match remotes.state(entry, pinned)? {
-        None => Some(format!(
-            "the remote holds no published state of publish sequence {pinned}"
-        )),
-        Some((files, lock)) => {
-            let taken =
-                codec::copy_of(&copy.handle, files, copy.keys()[0], pinned, lock.state_root);
-            first_difference(copy, taken)
-        }
-    };
+    let difference = pinned_difference(remotes, document, copy)?;
     let head = remotes.head(entry)?;
     let freshness = if head == pinned {
         "current"
@@ -72,6 +63,49 @@ fn check<'a>(
         head,
         freshness,
     })
+}
+
+/// How `copy` differs from what its remote serves at the publish sequence its pin names: none
+/// where it is the copy `loft interface` takes from that state.
+fn pinned_difference(
+    remotes: &mut Remotes,
+    document: &Document,
+    copy: &Copy,
+) -> Result<Option<String>, Stop> {
+    let pinned = copy.publish_sequence;
+    Ok(match remotes.state(entry_of(document, copy), pinned)? {
+        None => Some(format!(
+            "the remote holds no published state of publish sequence {pinned}"
+        )),
+        Some((files, lock)) => {
+            let taken =
+                codec::copy_of(&copy.handle, files, copy.keys()[0], pinned, lock.state_root);
+            first_difference(copy, taken)
+        }
+    })
+}
+
+/// Confirms each copy of `document` against the state its pin names at the remote of its
+/// entry, with the person's sign-in to that address, before a publish is sent.
+///
+/// # Errors
+///
+/// A remote cannot be reached or refuses, or a copy differs: the error names the copy's file and
+/// its first difference.
+pub fn confirm(document: &Document) -> Result<(), String> {
+    let mut remotes = Remotes::new(true);
+    for copy in &document.copies {
+        let difference = pinned_difference(&mut remotes, document, copy)
+            .map_err(|stop| stop.lines.join("; "))?;
+        if let Some(difference) = difference {
+            return Err(format!(
+                "spec/{}: {difference}; the copy is not the one its remote published, and \
+                 `loft interface update` takes it again",
+                copy.path().as_str()
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// How `copy` differs from the copy `taken` from the state its pin names: none where it is that

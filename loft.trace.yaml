@@ -14070,6 +14070,45 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_refusal_is_reported_with_its_status_and_code_and_says_when_to_try_again"
         body: 84c0b1d75fdb9cd78e217514d66e1cff163ef52608ffcdbfe4333a17300045c2
+  - node: 01a1f981-4db0-72b8-8a39-a6e5771ac948
+    reviewed: 7e46551fead4e4268269fe2a961eda91f2f1d82aa298ebf933ee6cc233ca5b9a
+    tests:
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_publish_whose_copies_match_is_sent_as_any_publish_is"
+        body: bcd34e2adb9f08c7f59438b8a7ad1fb6df794583e8df73e688134dae743e83ff
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_copy_that_differs_is_refused_naming_its_file_and_nothing_is_sent_or_written"
+        body: 63838185723ffb04ab368fe0df5d83745a6d18a7636ef3cd714f62da9695f414
+  - node: 01a1f981-4db0-72b8-8a39-a6e65044ec03
+    reviewed: 1baba34a28c64db38e0c20d68e9878ef5efea4c69d6891bbd292dc1de9a657c6
+    tests:
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_publish_whose_copies_match_is_sent_as_any_publish_is"
+        body: bcd34e2adb9f08c7f59438b8a7ad1fb6df794583e8df73e688134dae743e83ff
+  - node: 01a1f981-4db0-72b8-8a39-a6e7b8094995
+    reviewed: 853a3d9466ee7280c202f67a58b52350285817ea449efae72b09f2d0e3ff98fb
+    tests:
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_copy_that_differs_is_refused_naming_its_file_and_nothing_is_sent_or_written"
+        body: 63838185723ffb04ab368fe0df5d83745a6d18a7636ef3cd714f62da9695f414
+  - node: 01a1f981-4db0-72b8-8a39-a6e82724e226
+    reviewed: 2574327805e90a1be6a1f681665b2e9cc06b7b629ae93aba7f95265fd5e44912
+    tests:
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_copy_that_differs_is_refused_naming_its_file_and_nothing_is_sent_or_written"
+        body: 63838185723ffb04ab368fe0df5d83745a6d18a7636ef3cd714f62da9695f414
+  - node: 01a1f981-4db0-72b8-8a39-a6e9335161cc
+    reviewed: 8affee947ca863e0ef080396c33f8180808c9d64bc993b07da538137fc61ecc5
+    tests:
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_copy_that_differs_is_refused_naming_its_file_and_nothing_is_sent_or_written"
+        body: 63838185723ffb04ab368fe0df5d83745a6d18a7636ef3cd714f62da9695f414
+  - node: 01a1f981-4db0-72b8-8a39-a6eaea9836e8
+    reviewed: 83898c218f2635aec8b39362b972d48890bf851850c87cbee1aa898ce69ee316
+    tests:
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_publish_whose_copies_match_is_sent_as_any_publish_is"
+        body: bcd34e2adb9f08c7f59438b8a7ad1fb6df794583e8df73e688134dae743e83ff
   - node: 36ea9839-0d28-4140-bf9d-28523d58675e
     reviewed: 0f0564ca3f2bc9a46febb338fe00a03a54607e5a8e019b79990be4f0a8535e95
     tests:

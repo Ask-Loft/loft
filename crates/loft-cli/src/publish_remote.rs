@@ -1,8 +1,9 @@
-//! The publish of a connected document, through its remote: `loft publish` asks for the remote's
-//! head, takes the base the lock names from the head, the history or the remote, sends the
-//! change from it as a delta under a retry key, and applies the labels, files and lock the remote
-//! returns once the roots it recomputes agree with that lock. The publisher never runs here as
-//! the document's remote.
+//! The publish of a connected document, through its remote: `loft publish` confirms each copy
+//! of another document's Interface at that document's remote, asks for the remote's head, takes
+//! the base the lock names from the head, the history or the remote, sends the change from it as
+//! a delta under a retry key, and applies the labels, files and lock the remote returns once the
+//! roots it recomputes agree with that lock. The publisher never runs here as the document's
+//! remote.
 
 use std::collections::BTreeMap;
 use std::fmt::Display;
@@ -15,6 +16,7 @@ use loftspec::publish::{Lock, ReadTree, Unverified, verify};
 use loftspec_store::FileStore;
 use serde_json::{Value, json};
 
+use crate::interface;
 use crate::remote::head::{self, Head};
 use crate::remote::sha256_hex;
 use crate::remote::{self, Client, RemoteError, files, history};
@@ -40,8 +42,9 @@ pub enum Outcome {
 ///
 /// # Errors
 ///
-/// The remote cannot be reached or refuses, the base cannot be found, or the returned lock does
-/// not agree with the tree it returns.
+/// A copy of another document's Interface is not the one its remote published, a remote cannot
+/// be reached or refuses, the base cannot be found, or the returned lock does not agree with the
+/// tree it returns.
 pub fn publish(
     root: &Path,
     store: &FileStore,
@@ -51,6 +54,7 @@ pub fn publish(
     previous: Option<&Lock>,
 ) -> Result<Outcome, String> {
     let key = &document.id.key().to_string();
+    interface::confirm(document)?;
     let client = remote::connected(document.remote.as_deref(), key).map_err(through)?;
     let head = head::fetch(&client, key).map_err(through)?;
     let base = Head::of_lock(previous);
