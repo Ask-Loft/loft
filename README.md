@@ -72,9 +72,9 @@ this specification to our Loft server at <host>, tenant <tenant-slug>." The agen
 `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, taking
 `<documentKey>` from `spec/loftspec.yaml`. The command signs you in, brings over what the
 repository has already published, and records the remote in `spec/loftspec.yaml` for every
-clone. From then on, "publish" works from any branch,
-the server gives the labels, and when someone else has published first, `loft pull` brings your
-tree up to date. More in [docs/publishing.md](docs/publishing.md#connected-documents).
+clone. From then on, "publish" works from any branch, the server gives the labels, and when
+someone else has published first, `loft pull` brings your tree up to date. More in
+[docs/publishing.md](docs/publishing.md#connected-documents).
 
 ## Yard
 

@@ -19700,10 +19700,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: a569be1cc020b9af1063b2bad17fecd29aa75b1417f1a60d9b13487e5d52e1c5
+        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
         body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "a_bearer_challenge_that_names_no_metadata_is_refused_naming_the_request"
+        body: 5646a85a1a1bf0d1a6ba655b2359c8df5a06967fd5d5018112ac116f00592a40
   - node: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
@@ -19715,7 +19718,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: a569be1cc020b9af1063b2bad17fecd29aa75b1417f1a60d9b13487e5d52e1c5
+        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
         body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
@@ -19724,7 +19727,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: a569be1cc020b9af1063b2bad17fecd29aa75b1417f1a60d9b13487e5d52e1c5
+        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
         body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
@@ -19733,13 +19736,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: a569be1cc020b9af1063b2bad17fecd29aa75b1417f1a60d9b13487e5d52e1c5
+        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
   - node: 01a1f967-f816-765c-9e69-fb9a9ccbbaaa
     reviewed: e1b11baaa9ddef2217369a353df293aa881e0fa18518d52356754becc81bc937
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: a569be1cc020b9af1063b2bad17fecd29aa75b1417f1a60d9b13487e5d52e1c5
+        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
   - node: 01a18e1f-8daa-7674-9603-5ae5c87d9c4b
     reviewed: 98b07311ee6e2786cc816b756e5779e8956656bed6522f29bd3cc23206db923c
     tests:

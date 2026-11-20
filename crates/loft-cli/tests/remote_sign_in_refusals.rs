@@ -5,8 +5,9 @@
 //! sign-in asks for.
 
 use software_plant::BrowserScenario;
+use software_plant::http::{Answer, Request, Responder, Response, Server};
 use software_plant::remote::wire::{pairs, value};
-use software_plant::remote::{Metadata, Remote, RemoteScenario};
+use software_plant::remote::{Metadata, Remote, RemoteScenario, document_address};
 
 use crate::common::Scratch;
 use crate::common::remote::history;
@@ -110,6 +111,7 @@ fn an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_
             "may not be a document's remote",
             FORM,
             "`documentKey` of spec/loftspec.yaml",
+            "`loft remote set` with the document's address replaces",
         ] {
             assert_eq!(
                 stderr.contains(hint),
@@ -142,4 +144,41 @@ fn a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form() {
     assert!(stderr.contains(FORM), "{stderr}");
     assert_eq!(browser.visits(), Vec::<String>::new());
     assert_nothing_written(&scratch);
+}
+
+/// A remote that challenges every request as `Bearer` without naming its metadata.
+struct Unnamed;
+
+impl Responder for Unnamed {
+    fn answer(&mut self, _: &Request) -> Answer {
+        let mut response = Response::empty(401);
+        response
+            .headers
+            .push(("WWW-Authenticate".into(), "Bearer realm=\"loft\"".into()));
+        response.into()
+    }
+}
+
+#[test]
+fn a_bearer_challenge_that_names_no_metadata_is_refused_naming_the_request() {
+    let server = Server::start(Unnamed);
+    let address = document_address(&server.url(), "doc-unnamed");
+    let scratch = Scratch::with_reading_list();
+    name_remote(&scratch, Some(&address), true);
+    let (output, browser) = run(
+        &scratch,
+        &["remote", "login"],
+        BrowserScenario::Visiting,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains(&format!("GET {address}/head answered 401")),
+        "{stderr}"
+    );
+    assert!(stderr.contains("names no `resource_metadata`"), "{stderr}");
+    assert!(!stderr.contains(FORM), "{stderr}");
+    assert_eq!(browser.visits(), Vec::<String>::new());
+    assert!(!sign_ins_file(&scratch).exists());
 }

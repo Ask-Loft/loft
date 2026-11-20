@@ -51,8 +51,12 @@ pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteEr
             .find(|(field, _)| field == name)
             .map(|(_, value)| value.clone())
     };
-    let metadata_url = named("resource_metadata")
-        .ok_or_else(|| failed("the challenge names no `resource_metadata`".to_owned()))?;
+    let metadata_url = named("resource_metadata").ok_or_else(|| {
+        failed(format!(
+            "GET {address}/head answered 401 with a `Bearer` challenge that names no \
+             `resource_metadata`"
+        ))
+    })?;
     let metadata = fetch(&metadata_url, timeout).map_err(failed)?;
     let resource = metadata["resource"].as_str().unwrap_or_default().to_owned();
     if resource != metadata_url.replacen(RESOURCE_METADATA, "", 1) {
@@ -129,7 +133,9 @@ fn unchallenged(address: &str, status: u16) -> String {
     let hint = concat!(
         ", so the address may not be a document's remote. A Loft server gives each document the \
          address ",
-        crate::remote::document_address_form!()
+        crate::remote::document_address_form!(),
+        ". `loft remote set` with the document's address replaces the `remote` that \
+         spec/loftspec.yaml names"
     );
     format!("{refused}{hint}")
 }

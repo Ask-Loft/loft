@@ -36,8 +36,9 @@ sign-in challenge back is refused, naming the request and its status; unless tha
 
 The command signs you in, creates the document on the server and imports every state the
 repository has already published, so every label keeps its node. It then names the remote in
-`spec/loftspec.yaml`, as `remote` beside `connected: true`. Commit that file, and every clone shares the connection. The
-sign-in is standard OAuth in your browser (`--no-browser` prints the address to open instead).
+`spec/loftspec.yaml`, as `remote` beside `connected: true`. Commit that file, and every clone
+shares the connection. The sign-in is standard OAuth in your browser (`--no-browser` prints the
+address to open instead).
 It is yours alone: `loft` keeps it by address in `loft/remotes.json` in your configuration
 directory, readable only by you, and refreshes it before it expires. Run `loft remote login` in
 a fresh clone, or once a sign-in has lapsed.
