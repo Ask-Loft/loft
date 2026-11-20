@@ -33,7 +33,12 @@ everything 2.4.1 will hold.
   on another host or port, so an address committed to a manifest could lead you to consent at
   another remote's authorization server and then receive the access token issued for that remote.
   Two addresses lie on one origin when they have the same scheme, host and port, the host compared
-  without regard to case and a missing port read as the scheme's default.
+  without regard to case and a missing port read as the scheme's default. This also refuses a
+  remote that you reach through another name than the origin on which it serves its metadata and
+  resource, such as a port forward to `127.0.0.1`, `localhost` for `127.0.0.1`, a name with a
+  trailing dot or a CNAME, and a sign-in kept for such a remote counts as none. Name the remote by
+  an address on the origin that the refusal names, with `loft remote set`, which signs you in to
+  that address; once the manifest names it, everyone else signs in with `loft remote login`.
 - A sign-in that an earlier `loft` kept under a remote's address, for a protected resource on
   another origin, counts as no sign-in: it is neither refreshed nor sent, and `loft remote set`
   signs in anew. `loft publish` and `loft pull` refuse with an error of its own, which names the
