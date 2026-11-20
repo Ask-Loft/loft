@@ -141,3 +141,16 @@ fn status_without_a_kept_sign_in_says_that_login_makes_one_and_opens_no_browser(
     assert_eq!(browser.visits(), Vec::<String>::new());
     assert_eq!(tree(&scratch.0), before);
 }
+
+#[test]
+fn a_copy_whose_node_the_head_replaced_under_a_new_key_is_behind() {
+    let history = crate::common::others::rekeyed();
+    let remote = crate::common::others::shelves_remote(&history);
+    let scratch = Scratch::with_reading_list();
+    crate::common::others::listing(&scratch, &remote, true);
+    let output = interface(&scratch, &["add", "shelves:IF-1", "--at", "1"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let (code, document) = status(&scratch);
+    assert_eq!(code, 0, "{document}");
+    assert_eq!(copy(&document, "shelves:IF-1")["freshness"], "behind");
+}

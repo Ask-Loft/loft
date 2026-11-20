@@ -5,7 +5,7 @@
 use std::fs;
 
 use loftspec::codec::{self, MANIFEST, SpecPath};
-use loftspec::document::OtherDocument;
+use loftspec::document::{Document, OtherDocument};
 use loftspec::identity::Key;
 use loftspec::ids::{CriterionId, DocumentId};
 use loftspec::publish::{Lock, publish_labels};
@@ -80,20 +80,12 @@ pub fn shelves() -> History {
     }
 }
 
-/// The other document's first state, then a second in which "Shelf lookup" and "Shelf stock"
-/// trade slugs, each keeping its key, and "Shelf stock" is renamed "Shelf stock count".
-pub fn swapping() -> History {
+/// The other document's first state, then a second that `change` makes of it.
+fn after_first(change: impl FnOnce(&mut Document)) -> History {
     let first = shelves().states.swap_remove(0);
     let mut document = codec::read(&spec(&first.files)).unwrap();
-    let slugs: Vec<Slug> = (document.interfaces.iter())
-        .map(|interface| interface.slug.clone())
-        .collect();
-    for (interface, slug) in document.interfaces.iter_mut().zip(slugs.into_iter().rev()) {
-        interface.slug = slug;
-        if interface.name == "Shelf stock" {
-            interface.name.push_str(" count");
-        }
-    }
+    change(&mut document);
+    publish_labels(&mut document);
     let previous = Lock::read(first.lock.to_string().as_bytes()).unwrap();
     let (second, files) = publish_at(&codec::write(&document), Some(&previous), EPOCH + 180);
     History {
@@ -102,25 +94,49 @@ pub fn swapping() -> History {
     }
 }
 
+/// The other document's first state, then a second in which "Shelf lookup" and "Shelf stock"
+/// trade slugs, each keeping its key, and "Shelf stock" is renamed "Shelf stock count".
+pub fn swapping() -> History {
+    after_first(|document| {
+        let slugs: Vec<Slug> = (document.interfaces.iter())
+            .map(|interface| interface.slug.clone())
+            .collect();
+        for (interface, slug) in document.interfaces.iter_mut().zip(slugs.into_iter().rev()) {
+            interface.slug = slug;
+            if interface.name == "Shelf stock" {
+                interface.name.push_str(" count");
+            }
+        }
+    })
+}
+
 /// The other document's first state, then a second in which the lookup's criterion
 /// [`DROPPED`] moves, keeping its key, to the Requirement of "Shelf stock".
 pub fn moving() -> History {
-    let first = shelves().states.swap_remove(0);
-    let mut document = codec::read(&spec(&first.files)).unwrap();
-    let dropped = Some(CriterionId::new(Key::parse(DROPPED).unwrap()));
-    let criteria = &mut document.interfaces[0].requirements[0].criteria;
-    let at = criteria
-        .iter()
-        .position(|criterion| criterion.id == dropped)
-        .unwrap();
-    let moved = criteria.remove(at);
-    document.interfaces[1].requirements[0].criteria.push(moved);
-    let previous = Lock::read(first.lock.to_string().as_bytes()).unwrap();
-    let (second, files) = publish_at(&codec::write(&document), Some(&previous), EPOCH + 180);
-    History {
-        key: OTHER.to_owned(),
-        states: vec![first, stored(&second, &files)],
-    }
+    after_first(|document| {
+        let dropped = Some(CriterionId::new(Key::parse(DROPPED).unwrap()));
+        let criteria = &mut document.interfaces[0].requirements[0].criteria;
+        let at = criteria
+            .iter()
+            .position(|criterion| criterion.id == dropped)
+            .unwrap();
+        let moved = criteria.remove(at);
+        document.interfaces[1].requirements[0].criteria.push(moved);
+    })
+}
+
+/// The other document's first state, then a second in which the lookup's criterion
+/// [`DROPPED`] is replaced by one of the same text under the key [`ADDED`].
+pub fn rekeyed() -> History {
+    after_first(|document| {
+        let dropped = Some(CriterionId::new(Key::parse(DROPPED).unwrap()));
+        let criteria = &mut document.interfaces[0].requirements[0].criteria;
+        let criterion = criteria
+            .iter_mut()
+            .find(|criterion| criterion.id == dropped)
+            .unwrap();
+        criterion.id = Some(CriterionId::new(Key::parse(ADDED).unwrap()));
+    })
 }
 
 /// A remote of the other document that holds `history`.

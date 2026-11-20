@@ -17122,6 +17122,9 @@ links:
     reviewed: b77302ced64a0a9c3dcdf23e0aa80d82183038500d0901bcbc6d81ba4cb6542e
     tests:
       - file: "crates/loft-cli/tests/interface_status.rs"
+        name: "a_copy_whose_node_the_head_replaced_under_a_new_key_is_behind"
+        body: c9de5fbb6fe284eaa076cad7b3ed1bc0ec9b087a5840c95f49f480052c704459
+      - file: "crates/loft-cli/tests/interface_status.rs"
         name: "a_copy_whose_interface_the_head_changed_is_behind_and_the_command_exits_0"
         body: 10f240c6192658133a6c033b169cae9bd3cfc28b83d9e0159187f1c679240612
   - node: 01a1f981-4db0-72b8-8a39-a6d3acadc49b

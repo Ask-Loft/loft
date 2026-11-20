@@ -51,7 +51,14 @@ fn check<'a>(
             None => return Err(super::reach::not_held(&entry.remote, head)),
             Some((files, lock)) => {
                 match codec::copy_of(&copy.handle, files, copy.key(), head, lock.state_root) {
-                    Ok(at_head) if at_head.interface_hash == copy.interface_hash => "current",
+                    // The Interface hash leaves keys out, so a node replaced under a new key
+                    // is seen by the keys alone.
+                    Ok(at_head)
+                        if at_head.interface_hash == copy.interface_hash
+                            && at_head.keys() == copy.keys() =>
+                    {
+                        "current"
+                    }
                     Ok(_) => "behind",
                     Err(CopyError::NotHeld(_)) => "withdrawn",
                     Err(CopyError::Unreadable(errors)) => {
