@@ -3,11 +3,16 @@
 //! a link keeps only an address of the web, of mail or within the page, and an image is shown
 //! as a link to it, so that no element a block names is made in the page and nothing is loaded
 //! from elsewhere. A fenced code block marked `mermaid` stays a code block of that language,
-//! which the page draws as a diagram. The names of the nodes a `loft` view reports are rendered
-//! the same way, each on one line.
+//! which the page draws as a diagram. A bare address of the web or of mail in a block's Markdown
+//! is made a link. The names of the nodes a `loft` view reports are rendered the same way, each
+//! on one line, but leave a bare address as text.
 
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html};
+mod autolink;
+
+use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, TextMergeStream, html};
 use serde_json::Value;
+
+use autolink::Autolink;
 
 /// The Markdown fields of a stage's or a block's body, each with the field its HTML is given in:
 /// a note's, an approval's and a plan's Markdown, a question's context, a stage's goal, a
@@ -21,21 +26,28 @@ const FIELDS: [(&str, &str); 6] = [
     ("note", "noteHtml"),
 ];
 
-/// `markdown` as HTML.
-pub fn to_html(markdown: &str) -> String {
+/// The parser of `markdown`, with the extensions the page draws.
+fn parser(markdown: &str) -> Parser<'_> {
     let options = Options::ENABLE_TABLES
         | Options::ENABLE_STRIKETHROUGH
         | Options::ENABLE_TASKLISTS
         | Options::ENABLE_FOOTNOTES;
+    Parser::new_ext(markdown, options)
+}
+
+/// `markdown` as HTML, each bare address in it a link.
+pub fn to_html(markdown: &str) -> String {
     let mut out = String::new();
-    html::push_html(&mut out, Safe::new(Parser::new_ext(markdown, options)));
+    let events = Autolink::new(TextMergeStream::new(parser(markdown)));
+    html::push_html(&mut out, Safe::new(events));
     out
 }
 
 /// `markdown` as HTML for one line, such as a node's name: the inside of the one paragraph it
-/// makes, or none where it makes anything else.
+/// makes, or none where it makes anything else. A bare address in it stays text.
 pub fn to_inline_html(markdown: &str) -> Option<String> {
-    let html = to_html(markdown);
+    let mut html = String::new();
+    html::push_html(&mut html, Safe::new(parser(markdown)));
     let inner = html.strip_prefix("<p>")?.strip_suffix("</p>\n")?;
     (!inner.contains("</p>")).then(|| inner.to_owned())
 }

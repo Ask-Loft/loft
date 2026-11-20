@@ -30435,6 +30435,63 @@ links:
       - file: "crates/loft-cli/src/yard/serve/markdown.rs"
         name: "html_in_a_task_s_detail_is_shown_as_text"
         body: b67ca37983c7af5573dd8a90b54327172f49c12d6a0a90d50400ddf3ba7d17d9
+  - node: 01a1f804-56bc-77a4-94e6-74881760b7f4
+    reviewed: 3654b2ef53efe011eca09014aca608987d413391576a31e4fba2855269987995
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "a_bare_https_address_in_a_note_is_drawn_as_a_link_to_it"
+        body: e8ac6e321c64a538fd9806a251ef18c7a0b9f79f430ce43a319c1d8eeeafe7ab
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "a_bare_address_in_a_block_s_markdown_reaches_the_page_as_a_link"
+        body: b82ab90a967efab7da15942d3c24b204cba8fc6f34a18041c09d3871c3174c03
+  - node: 01a1f804-56bc-77a4-94e6-7489ef413b64
+    reviewed: df72ed9f642436560d68607f785f6a11f4688299412309357de5ea54a78347d1
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "a_bare_http_address_and_a_bare_mailto_address_are_each_drawn_as_a_link"
+        body: a7f6560aff5d438d687c96b1cedebf069f6e776f697c4d31f08052167a16e756
+  - node: 01a1f804-56bc-77a4-94e6-748a1481c64b
+    reviewed: ce53e94a2a094e59c44a31118e43563901c62cee978db402e54b926739ccbfb8
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "a_bare_address_in_every_markdown_field_is_drawn_as_a_link"
+        body: 31b5b3462ba4e2121688c9e5087c8315e48acf06044547724f9ac3fb4e0fc0e5
+  - node: 01a1f804-56bc-77a4-94e6-748bc1fff885
+    reviewed: 03c9068c23940c1361c3bad962311806b7505b512290db25200a7f2621420733
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "an_address_within_a_code_span_is_drawn_as_text"
+        body: f27e00fde1c77e3c48635c55612d407bdd866f4ccfa9e8b34bab6fc87d63b2e1
+  - node: 01a1f804-56bc-77a4-94e6-748c732b5a29
+    reviewed: 5c7444339d8f7ed430105e839b0dc8676ed8995d0fdc844c3d9910e9bdc37e49
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "an_address_within_a_fenced_code_block_is_drawn_as_text"
+        body: 202af0cae6d9daa019ffe0b87e90f6285ab0e9fe6055f31840d9840015fe7e22
+  - node: 01a1f804-56bc-77a4-94e6-748d568ac06c
+    reviewed: d0050898904fda9ccce3375d501e19fd472027607974fc5b5924b71eca228589
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "an_address_that_a_written_link_holds_is_not_linked_again"
+        body: 974c199262d837903708300b69a81e031d819704e30a48fecc31ab0531135027
+  - node: 01a1f804-56bc-77a4-94e6-748eebcde366
+    reviewed: 72c85af9f5ae11fd8cf4e0c0d238fa60cbfe6d476b91a7614182e1e6b4270883
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "punctuation_that_ends_an_address_is_drawn_after_the_link"
+        body: ab20a1321b115c2b93b172a5c9e13046afdf52c8200674957900f60560fd001b
+  - node: 01a1f804-56bc-77a4-94e6-748fb9de9b7d
+    reviewed: 38a6e1a6c504b8313dcd31e9b33130860205be132cac264a4835380d9f85e2be
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "a_closing_parenthesis_ends_the_link_unless_the_address_opens_one"
+        body: 8a925f27d15335c72be52fa3f0eb9cb4e14058fa9e89f11555e4a5fcc530673f
+  - node: 01a1f804-56bc-77a4-94e6-749076569e91
+    reviewed: 36f06ad029ead23a79146ad29343423b5165e98e08eb0cb341d4fdfc90addba5
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/autolink.rs"
+        name: "an_address_of_any_other_scheme_is_drawn_as_text"
+        body: 5fa0ced240664cb1606e3d009332747ef612f59c74c882ea5eac62952779ea2a
   - node: 01a16838-8fdb-7127-a23e-c559b4afac18
     reviewed: ab3a6127984cfba8c9fb6ed658bb0a401921e14da4ec2b2d8232cdbd57688935
     tests:

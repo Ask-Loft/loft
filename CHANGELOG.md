@@ -18,6 +18,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - Every edge the Yard page lets you drag ends a drag the browser cancels where it reached, and
   drags by the main button only. Such a drag used to stay in hand, so the edge followed a pointer
   that merely passed over it.
+- The Yard page draws a bare `http://`, `https://` or `mailto:` address in a block's Markdown as
+  a link, as GitHub does, where it used to show it as text. An address in code or in a link the
+  Markdown writes out stays as it is, a mark that ends a sentence stays out of the link, and a
+  node's name still shows an address as text.
 
 ## 2.4.1 (2026-11-22)
 
