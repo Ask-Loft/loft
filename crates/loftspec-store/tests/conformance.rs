@@ -27,14 +27,14 @@ const READING_LIST: &str =
 const D11: &str = include_str!("../../../testdata/v1/d11-sequence-3/loft-authored-state.json");
 
 /// A memory store and a file store saved in step.
-struct Pair {
-    scratch: Scratch,
+pub(crate) struct Pair {
+    pub(crate) scratch: Scratch,
     memory: MemoryStore,
     file: FileStore,
 }
 
 impl Pair {
-    fn new() -> Self {
+    pub(crate) fn new() -> Self {
         let scratch = with_lint();
         let file = FileStore::open(&scratch.0).unwrap();
         Self {
@@ -45,7 +45,7 @@ impl Pair {
     }
 
     /// Saves the document to both stores and checks that they agree.
-    fn step(&mut self, document: &Document) -> Saved {
+    pub(crate) fn step(&mut self, document: &Document) -> Saved {
         let saved = self.memory.save(document).unwrap();
         assert_eq!(self.file.save(document).unwrap(), saved, "files saved");
         assert_eq!(
@@ -80,11 +80,11 @@ impl Pair {
     }
 }
 
-fn key(n: u32) -> Key {
+pub(crate) fn key(n: u32) -> Key {
     Key::parse(&format!("00000000-0000-7000-8000-{n:012x}")).unwrap()
 }
 
-fn paths(paths: &[&str]) -> Vec<SpecPath> {
+pub(crate) fn paths(paths: &[&str]) -> Vec<SpecPath> {
     paths.iter().map(|path| SpecPath::new(path)).collect()
 }
 
@@ -111,7 +111,7 @@ fn group(n: u32, name: &str, features: Vec<Feature>) -> FeatureGroup {
     }
 }
 
-fn criterion(n: u32, name: &str) -> Criterion {
+pub(crate) fn criterion(n: u32, name: &str) -> Criterion {
     Criterion {
         id: Some(CriterionId::new(key(n))),
         name: name.to_owned(),
@@ -120,7 +120,7 @@ fn criterion(n: u32, name: &str) -> Criterion {
 }
 
 /// Step 1: a Product with two Feature Groups, each holding one Feature.
-fn created() -> Document {
+pub(crate) fn created() -> Document {
     let mut document = Document::empty(DocumentId::new(key(0)));
     document.products.push(Product {
         id: Some(ProductId::new(key(1))),
@@ -141,7 +141,7 @@ fn borrowing(document: &mut Document) -> &mut Feature {
 }
 
 /// Step 2: a Requirement with two criteria under "Borrowing".
-fn with_requirement() -> Document {
+pub(crate) fn with_requirement() -> Document {
     let mut document = created();
     borrowing(&mut document).requirements.push(Requirement {
         id: Some(RequirementId::new(key(10))),
@@ -160,7 +160,7 @@ fn with_requirement() -> Document {
 }
 
 /// Step 3: a registered tag applied to the Feature and its Requirement.
-fn tagged() -> Document {
+pub(crate) fn tagged() -> Document {
     let mut document = with_requirement();
     let tag = TagName::parse("loans").unwrap();
     document.tags.push(TagEntry {
@@ -176,7 +176,7 @@ fn tagged() -> Document {
 
 /// Step 4: a root Component the Feature realizes, scoped to the Product, and a criterion that
 /// mentions its Requirement.
-fn linked() -> Document {
+pub(crate) fn linked() -> Document {
     let mut document = tagged();
     document.components.push(RootComponent {
         slug: Slug::derive("Ledger", "component"),
@@ -254,7 +254,7 @@ fn conflicted() -> Document {
     document
 }
 
-fn walk(steps: &[fn() -> Document]) -> Saved {
+pub(crate) fn walk(steps: &[fn() -> Document]) -> Saved {
     let mut pair = Pair::new();
     let mut last = Saved::default();
     for step in steps {
