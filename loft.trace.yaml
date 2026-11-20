@@ -1016,7 +1016,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_document_roots_match_their_vectors"
-        body: 4c0e4c4dfbd6dacbfb339c3d8a98d525c999fbd3dd9a4a94344cd9195fdbe824
+        body: 4368b0d1f4923f28b38ac1a4a759431c2ca53c65c56a97f832f888cd1b0dc2cc
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_document_vectors_are_reproduced_byte_for_byte"
         body: d6fb6ce17a34f61bc0acf71fc88be05fe1df092bfd0f02f10b4227c96ec78385
@@ -1226,7 +1226,7 @@ links:
         body: 5f114d1057f85cd9a6737f57a8d0e548aa89962cba5bd3478bc1c2c0bc890b73
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_document_roots_match_their_vectors"
-        body: 4c0e4c4dfbd6dacbfb339c3d8a98d525c999fbd3dd9a4a94344cd9195fdbe824
+        body: 4368b0d1f4923f28b38ac1a4a759431c2ca53c65c56a97f832f888cd1b0dc2cc
   - node: 75dc8c6e-6e73-4244-8933-5410888d35c4
     reviewed: db1018f5b49fa9ee7b3857c1d05f63c813b2c1bb044525d68581af61d429a371
     tests:
@@ -1319,7 +1319,7 @@ links:
         body: 8ba2352a8924efec631bd2735ca215f0f46246ffb001c91ce594396e16cc4b9a
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_document_roots_match_their_vectors"
-        body: 4c0e4c4dfbd6dacbfb339c3d8a98d525c999fbd3dd9a4a94344cd9195fdbe824
+        body: 4368b0d1f4923f28b38ac1a4a759431c2ca53c65c56a97f832f888cd1b0dc2cc
   - node: de051f91-ee1f-4458-8a19-90548afa005f
     reviewed: 430d6fa6c896131cd380d56462b333ae5adcaf44092092ec7ffd86091b53029e
     tests:
@@ -1388,7 +1388,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_document_roots_match_their_vectors"
-        body: 4c0e4c4dfbd6dacbfb339c3d8a98d525c999fbd3dd9a4a94344cd9195fdbe824
+        body: 4368b0d1f4923f28b38ac1a4a759431c2ca53c65c56a97f832f888cd1b0dc2cc
   - node: 0b7b632e-d0ba-4b3e-ac3a-614196546029
     reviewed: 7da6337d82df6765a3b43f626a21ee9b4ca2d5d04f3d7663052a92ad6475e458
     tests:
@@ -1811,7 +1811,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/own_record_views.rs"
         name: "an_interface_s_own_record_view_holds_its_slug_and_a_component_s_its_provides_and_requires"
-        body: 64fd1a013453daa5b531ba359f0f05b5f503b810fa1f3ac253fedcf4eb764ed7
+        body: 7cae3fb354bc5c08a2876bc55104459199b36a0f2c27919966c62ce48862147d
       - file: "crates/loftspec/tests/own_record_views.rs"
         name: "the_own_record_view_holds_the_slug_of_each_record_that_has_one"
         body: 175c943d62cd801efa5c41ea5b3f854c44a622795c278fac1b47bb5107ea52a7
@@ -1838,7 +1838,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/own_record_views.rs"
         name: "an_interface_s_own_record_view_holds_its_slug_and_a_component_s_its_provides_and_requires"
-        body: 64fd1a013453daa5b531ba359f0f05b5f503b810fa1f3ac253fedcf4eb764ed7
+        body: 7cae3fb354bc5c08a2876bc55104459199b36a0f2c27919966c62ce48862147d
       - file: "crates/loftspec/tests/own_record_views.rs"
         name: "the_own_record_view_holds_the_edges_its_record_writes"
         body: 82dd6a51c65d424069fe505a17f9a11dc4fee4ae39919b895630d702db8bdb88
@@ -3068,7 +3068,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "provides_and_requires_follow_scoped_to_in_a_component_record_sorted_by_key"
-        body: 553cd5d6890c1c80552876342df316fb0357f510625cde24f001cb11f2504610
+        body: 809f41d2ba2969f214357006d455a2961253d9a88bc1d9038bc4caa1053c7b3f
       - file: "crates/loftspec/tests/boundary.rs"
         name: "boundary_is_written_after_the_body_and_tags_and_before_scoped_to"
         body: a996bd30449acdad4a189eca13526666e94dea2608b0fb9cd31e34b1e91f6bf0
@@ -11984,25 +11984,25 @@ links:
     tests:
       - file: "crates/loftspec/tests/interfaces_codec.rs"
         name: "an_interface_file_holds_everything_beneath_its_interface"
-        body: 503c56bbc03123f67a5b7667689a0b4d7e8ad6cc05fcbb381114c3046298cce9
+        body: a52f640c8f77adf3d49eff273f1eadcddb676601fbfea47aa93cea8017536125
   - node: 01a1f981-4db1-765f-a897-21ec6c8088b5
     reviewed: acc8e8ec48a40edf3d02b1b13468d5b08d7b938729f52a5218c220f4cb219db2
     tests:
       - file: "crates/loftspec/tests/interfaces_codec.rs"
         name: "an_interface_record_holds_its_fields_in_the_formats_order"
-        body: 40c2bd70265dbc14caa7dafa9fa2eaf707e17a654e6e21475a137e3b04e9bb99
+        body: 9449d15d427919f5047beaaad8d30ff74d1f6cc8985c94e75dad3a167f4f10f1
   - node: 01a1f981-4db1-765f-a897-21ed63a77c69
     reviewed: db40b440cfb243fdcbc7ae73764a797bb170b2c5bc6b15b2497a077c143a2f25
     tests:
       - file: "crates/loftspec/tests/interfaces_codec.rs"
         name: "an_interface_record_without_its_key_slug_or_name_is_refused"
-        body: 0c2119f367f1ce2cfc7ab7e95760fb1e5232c8eed048505c05fafe4e2d9c54e0
+        body: 79caf3d24192afc5a294fd37e16440333e7261afc9e5b905717a032adf7dd77f
   - node: 01a1f981-4db1-765f-a897-21ee6c26fcb2
     reviewed: d9b89365779af9297d38a959a50fd54afefcabc735c714879c601e0ef99a2be3
     tests:
       - file: "crates/loftspec/tests/interfaces_codec.rs"
         name: "a_document_without_an_interface_is_written_without_an_interfaces_directory"
-        body: 744a9cd3e1ba887cd39d33151068535fd2adf68a5cd72e71ff8822933d906d8d
+        body: bc88b69997df18157b28e70b6aff4d64d155e9960fa78f12fc5d79dbfa13b171
   - node: 01a1f981-4db1-765f-a897-21f01899621d
     reviewed: 4aba82c747adf181f3c1d5a67455317d26c2e63f6fe812c97a4be74192d82c38
     tests:
@@ -12032,25 +12032,25 @@ links:
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "provides_and_requires_follow_scoped_to_in_a_component_record_sorted_by_key"
-        body: 553cd5d6890c1c80552876342df316fb0357f510625cde24f001cb11f2504610
+        body: 809f41d2ba2969f214357006d455a2961253d9a88bc1d9038bc4caa1053c7b3f
   - node: 01a1f981-4db1-765f-a897-21f7f578e23e
     reviewed: 3c2bb3d83c9aae711e5cf547f5ee1940c0f7ba5d0fb44127b400f3ca3778a2e8
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "provides_and_requires_follow_scoped_to_in_a_component_record_sorted_by_key"
-        body: 553cd5d6890c1c80552876342df316fb0357f510625cde24f001cb11f2504610
+        body: 809f41d2ba2969f214357006d455a2961253d9a88bc1d9038bc4caa1053c7b3f
   - node: 01a1f981-4db1-765f-a897-21f87ebbf22a
     reviewed: 841e0f85a2483c62dd8536ff0b30c2e10687894989908ca0e571a0abbeafbbab
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "provides_and_requires_follow_scoped_to_in_a_component_record_sorted_by_key"
-        body: 553cd5d6890c1c80552876342df316fb0357f510625cde24f001cb11f2504610
+        body: 809f41d2ba2969f214357006d455a2961253d9a88bc1d9038bc4caa1053c7b3f
   - node: 01a1f981-4db1-765f-a897-21f964017881
     reviewed: 5da817a5aea65f9ecf82461be0d17f67b5baa5c9fd24b6f8716b1d607b376be2
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "a_nested_component_may_provide_and_require_an_interface"
-        body: 9d8709a94b0b4fb4a56bfedcf3c7ac80e6465dc5901ae419d1a55164c87bd745
+        body: ca472e2c8c5c1a5a2175c18280c990727bb469cf7da31cda6a0c1ebc2329744a
   - node: 01a1f981-4db1-765f-a897-21fb1731766b
     reviewed: d9d84e56f16161c529aa039d9c4b0f819ce51c07f6a21c7810aa2dacfc3e2054
     tests:
@@ -12074,13 +12074,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "a_component_that_both_provides_and_requires_one_interface_is_an_error"
-        body: 34ac0c9a1167e09fae4248889cd248edbc9a13e49dfd5f542ccb277acc71b2fe
+        body: 0ec07889546dc335bb334702ec89ef5c6accb8fc119e21e4211d6ea2c39c718e
   - node: 01a1f981-4db1-765f-a897-21ff39e916bd
     reviewed: 324d9c6aeceb637992de4780ad9e32e8a602421b8a66290dd544cd0bf220ce23
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "a_provides_or_requires_target_that_no_element_carries_is_an_error_naming_the_key"
-        body: a8c01d21420034c53b39a90632e2ef31a6f9ca11050ec358ff4429c551aaa477
+        body: 079376cf8b62064aea104ada00c188b8581db0eba882a659531b0811e1ae4182
   - node: 01a1f981-4db1-765f-a897-22010c9ca833
     reviewed: 86cbba99bc64526556835aa8c8364935981669859ea10c12a8d61087d94cb65b
     tests:
@@ -12098,25 +12098,25 @@ links:
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "a_name_that_only_another_kind_carries_matches_no_interface"
-        body: c501d2702663d71442434dea4ac294d060be8e2887f3876ede13ffd15442a169
+        body: 2cbcfee20dfd847600d11f66fcf495a836a94e382206a895333f6d410b9bba62
   - node: 01a1f981-4db1-765f-a897-2205cece0871
     reviewed: d904933d1830eab25ca6ae5ab560cc7662fa11c8eddf9affd75ab076afbe26b6
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "provides_and_requires_enter_the_edges_root_with_their_type_and_no_role"
-        body: 37adbad6863a2b19da7620c4c9b82d0b5cb3e4f0a9e45d5006a85436edafc34e
+        body: 409e74d2c2ac81ed3acfbdd4eb54e4c966dd609b0dece2c758328d80574a3afd
   - node: 01a1f981-4db1-765f-a897-22069f38d685
     reviewed: 70fcd543ddcf4419a86f1752a7f7b784639456011dc5310b24c2db6d625c6713
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "provides_and_requires_enter_the_edges_root_with_their_type_and_no_role"
-        body: 37adbad6863a2b19da7620c4c9b82d0b5cb3e4f0a9e45d5006a85436edafc34e
+        body: 409e74d2c2ac81ed3acfbdd4eb54e4c966dd609b0dece2c758328d80574a3afd
   - node: 01a1f981-4db1-765f-a897-220731804259
     reviewed: e8bc6e31f1b280108f1d2fd9ad9f44e19325b0cfa2fd1a282c16c3eb9c26b9b4
     tests:
       - file: "crates/loftspec/tests/interfaces_edges.rs"
         name: "provides_and_requires_enter_the_edges_root_with_their_type_and_no_role"
-        body: 37adbad6863a2b19da7620c4c9b82d0b5cb3e4f0a9e45d5006a85436edafc34e
+        body: 409e74d2c2ac81ed3acfbdd4eb54e4c966dd609b0dece2c758328d80574a3afd
   - node: 01a1f981-4db1-765f-a897-2209cbd93d04
     reviewed: 8cbefe992edfa38f820a1f2ac60fa4be010e1cea78762af280a73f69f9b8c57b
     tests:
@@ -12140,7 +12140,7 @@ links:
         body: 7490256d2f9e20a10cff5f52ae32546194dabce4735cc8f867fb75b545305296
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_roots_of_a_document_with_a_provided_interface_match_their_vectors"
-        body: ca50fbf1592f5d80ba4a079cf7d1613318eb965509903a54d950d75048e0214a
+        body: 8e7b230f8cd0cffaa6747fc2fd42c3d8a156d46e9fd64a229ccbe83deac2a791
       - file: "crates/loftspec/tests/roots.rs"
         name: "interface_order_leaves_the_content_root_and_the_interface_roots_are_sorted"
         body: 0073ccb24ed73ce36c13b529eef37ca72f2e76a567e64cab439db19b80070528
@@ -12152,7 +12152,7 @@ links:
         body: d6fb6ce17a34f61bc0acf71fc88be05fe1df092bfd0f02f10b4227c96ec78385
       - file: "crates/loftspec/tests/golden.rs"
         name: "the_small_document_roots_match_their_vectors"
-        body: 4c0e4c4dfbd6dacbfb339c3d8a98d525c999fbd3dd9a4a94344cd9195fdbe824
+        body: 4368b0d1f4923f28b38ac1a4a759431c2ca53c65c56a97f832f888cd1b0dc2cc
   - node: 01a1f981-4db1-765f-a897-220d5df2bfc6
     reviewed: bc63facebfd47297802c370913fb1d39b3e1b66b0834ba67d85953959deca088
     tests:

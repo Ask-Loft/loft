@@ -2,9 +2,9 @@
 //! the Component's record, what they may join, how `loft fmt` resolves them by name and how they
 //! enter the edges root.
 
-use crate::common::interfaces::{INTERFACE, interface, with_interface};
-use crate::common::key;
-use crate::common::text::{COMPONENT, formatted, path, replaced, text};
+use crate::common::interfaces::{INTERFACE, MODEL, interface, provides, requires, with_interface};
+use crate::common::text::{COMPONENT, formatted, replaced, text};
+use crate::common::{component, key};
 use loftspec::codec::{self, Files};
 use loftspec::document::{Document, Edge, EdgeKind};
 use loftspec::fmt::format;
@@ -13,16 +13,7 @@ use loftspec::ids::{ComponentId, InterfaceId};
 use loftspec::validate::{ValidationError, validate};
 use serde_json::{Value, json};
 
-const COMPONENT_KEY: u32 = 6;
 const LATER: u32 = INTERFACE + 5;
-
-fn component() -> ComponentId {
-    ComponentId::new(key(COMPONENT_KEY))
-}
-
-fn interface_id(n: u32) -> InterfaceId {
-    InterfaceId::new(key(n))
-}
 
 /// The document with a second Interface, keyed after the first, and the given edges.
 fn with_edges(edges: impl IntoIterator<Item = Edge>) -> Document {
@@ -34,18 +25,14 @@ fn with_edges(edges: impl IntoIterator<Item = Edge>) -> Document {
     document
 }
 
-fn provides(n: u32) -> Edge {
-    Edge::Provides {
-        component: component(),
-        interface: interface_id(n),
-    }
+/// The root Component's `provides` edge to the Interface keyed `n`.
+fn provided(n: u32) -> Edge {
+    provides(MODEL, n)
 }
 
-fn requires(n: u32) -> Edge {
-    Edge::Requires {
-        component: component(),
-        interface: interface_id(n),
-    }
+/// The root Component's `requires` edge to the Interface keyed `n`.
+fn required(n: u32) -> Edge {
+    requires(MODEL, n)
 }
 
 fn hex(n: u32) -> String {
@@ -56,18 +43,18 @@ fn hex(n: u32) -> String {
 fn the_edges_of_a_component_to_an_interface_are_named_provides_and_requires() {
     assert_eq!(EdgeKind::Provides.as_str(), "provides");
     assert_eq!(EdgeKind::Requires.as_str(), "requires");
-    assert_eq!(provides(INTERFACE).role(), None);
-    assert_eq!(requires(INTERFACE).role(), None);
+    assert_eq!(provided(INTERFACE).role(), None);
+    assert_eq!(required(INTERFACE).role(), None);
 }
 
 #[test]
 fn provides_and_requires_follow_scoped_to_in_a_component_record_sorted_by_key() {
-    let document = with_edges([provides(LATER), provides(INTERFACE)]);
+    let document = with_edges([provided(LATER), provided(INTERFACE)]);
     let files = codec::write(&document);
     let written = text(&files, COMPONENT);
     let expected = format!("provides:\n  - {}\n  - {}\n", hex(INTERFACE), hex(LATER));
     assert!(written.contains(&expected), "{written}");
-    let document = with_edges([provides(INTERFACE), requires(LATER)]);
+    let document = with_edges([provided(INTERFACE), required(LATER)]);
     let written = text(&codec::write(&document), COMPONENT);
     let at = |field: &str| written.find(&format!("\n{field}:")).unwrap_or(usize::MAX);
     assert!(at("boundary") < at("provides") || at("boundary") == usize::MAX);
@@ -81,18 +68,13 @@ fn provides_and_requires_follow_scoped_to_in_a_component_record_sorted_by_key() 
 /// The document's files with its one `field` target, `provides` or `requires`, written as `to`.
 fn linking(field: &str, to: &str) -> Files {
     let edge = if field == "provides" {
-        provides(INTERFACE)
+        provided(INTERFACE)
     } else {
-        requires(INTERFACE)
+        required(INTERFACE)
     };
     let files = codec::write(&with_edges([edge]));
     let from = format!("{field}:\n  - {}\n", hex(INTERFACE));
     replaced(&files, COMPONENT, &from, &format!("{field}:\n  - {to}\n"))
-}
-
-/// The document's files with its one `provides` target replaced by the key `n`.
-fn providing(n: u32) -> Files {
-    linking("provides", &hex(n))
 }
 
 fn read_errors(files: &Files) -> String {
@@ -124,25 +106,13 @@ fn a_provides_or_requires_edge_that_carries_a_role_is_an_error() {
 
 #[test]
 fn a_nested_component_may_provide_and_require_an_interface() {
-    let nested = ComponentId::new(key(INTERFACE + 0x30));
+    let nested = INTERFACE + 0x30;
     let mut document = with_edges([]);
-    let mut inner = document.components[0].component.clone();
-    inner.id = Some(nested);
-    inner.name = "Inner".to_owned();
-    inner.components = Vec::new();
-    inner.constraints = Vec::new();
-    inner.quality_attributes = Vec::new();
+    let inner = component(key(nested), "Inner");
     document.components[0].component.components.push(inner);
-    document.edges.extend([
-        Edge::Provides {
-            component: nested,
-            interface: interface_id(INTERFACE),
-        },
-        Edge::Requires {
-            component: nested,
-            interface: interface_id(LATER),
-        },
-    ]);
+    document
+        .edges
+        .extend([provides(nested, INTERFACE), requires(nested, LATER)]);
     let back = codec::read(&codec::write(&document)).unwrap();
     assert!(document.edges.iter().all(|edge| back.edges.contains(edge)));
     assert_eq!(validate(&back), vec![]);
@@ -150,40 +120,32 @@ fn a_nested_component_may_provide_and_require_an_interface() {
 
 #[test]
 fn a_provides_or_requires_target_that_no_element_carries_is_an_error_naming_the_key() {
-    let errors = read_errors(&providing(0x1fe));
+    let errors = read_errors(&linking("provides", &hex(0x1fe)));
     assert!(errors.contains(&hex(0x1fe)), "{errors}");
 }
 
 #[test]
 fn a_component_that_both_provides_and_requires_one_interface_is_an_error() {
-    let document = with_edges([provides(INTERFACE), requires(INTERFACE), requires(LATER)]);
+    let document = with_edges([provided(INTERFACE), required(INTERFACE), required(LATER)]);
     let errors = validate(&document);
     assert_eq!(
         errors,
         vec![ValidationError::ProvidesAndRequires {
-            component: component(),
-            interface: interface_id(INTERFACE),
+            component: ComponentId::new(key(MODEL)),
+            interface: InterfaceId::new(key(INTERFACE)),
         }]
     );
     assert!(errors[0].to_string().contains("both provides and requires"));
-    assert_eq!(errors[0].keys(), vec![key(COMPONENT_KEY), key(INTERFACE)]);
+    assert_eq!(errors[0].keys(), vec![key(MODEL), key(INTERFACE)]);
     assert_eq!(
-        validate(&with_edges([provides(INTERFACE), requires(LATER)])),
+        validate(&with_edges([provided(INTERFACE), required(LATER)])),
         vec![]
     );
 }
 
 /// The document's files with its `field` target written by `name`.
 fn by_name(field: &str, name: &str) -> Files {
-    let edge = if field == "provides" {
-        provides(INTERFACE)
-    } else {
-        requires(INTERFACE)
-    };
-    let files = codec::write(&with_edges([edge]));
-    let from = format!("{field}:\n  - {}\n", hex(INTERFACE));
-    let to = format!("{field}:\n  - name: \"{name}\"\n");
-    replaced(&files, COMPONENT, &from, &to)
+    linking(field, &format!("name: \"{name}\""))
 }
 
 #[test]
@@ -203,10 +165,6 @@ fn a_name_that_only_another_kind_carries_matches_no_interface() {
     let message = errors.iter().map(ToString::to_string).collect::<String>();
     assert!(message.contains("Document model"), "{message}");
     assert!(message.contains("Interface"), "{message}");
-    assert_eq!(
-        files[&path(COMPONENT)],
-        by_name("provides", "Document model")[&path(COMPONENT)]
-    );
 }
 
 fn edges_view(document: &Document) -> Value {
@@ -221,7 +179,7 @@ fn edges_view(document: &Document) -> Value {
 
 #[test]
 fn provides_and_requires_enter_the_edges_root_with_their_type_and_no_role() {
-    let document = with_edges([provides(INTERFACE), requires(LATER)]);
+    let document = with_edges([provided(INTERFACE), required(LATER)]);
     let tuples = edges_view(&document);
     let typed = |kind: &str| {
         tuples

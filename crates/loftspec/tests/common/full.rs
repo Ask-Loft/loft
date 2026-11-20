@@ -10,8 +10,7 @@ use loftspec::ids::{
     FeatureId, InterfaceId, ProductId, QualityAttributeId, RequirementId, SectionId,
 };
 use loftspec::names::TagName;
-use loftspec::slug::Slug;
-use loftspec::tree::{Details, Interface, Section};
+use loftspec::tree::{Details, Section};
 
 use super::{component, key, label, section, small_document};
 
@@ -85,15 +84,11 @@ fn fill_interfaces(document: &mut Document) {
     requirement.criteria.truncate(1);
     requirement.criteria[0].id = Some(CriterionId::new(key(0x1d4)));
     requirement.criteria[0].details = details(0x1dd);
-    document.interfaces = vec![Interface {
-        id: Some(InterfaceId::new(key(0x1d0))),
-        slug: Slug::derive("Document lookup", "interface"),
-        name: "Document lookup".to_owned(),
-        details: details(0x1d1),
-        requirements: vec![requirement],
-        constraints: vec![constraint],
-        quality_attributes: vec![quality],
-    }];
+    let mut lookup = super::interfaces::interface(key(0x1d0), "Document lookup", vec![requirement]);
+    lookup.details = details(0x1d1);
+    lookup.constraints = vec![constraint];
+    lookup.quality_attributes = vec![quality];
+    document.interfaces = vec![lookup];
 }
 
 /// A `mentions` edge from every node kind and from the decision, each to the Requirement or,

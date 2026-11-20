@@ -4,20 +4,13 @@
 use std::num::NonZeroU64;
 
 use crate::common::interfaces::{INTERFACE, interface, with_interface};
+use crate::common::publishing::allocated;
 use crate::common::text::{path, text};
 use crate::common::{component, key, label, root, slug, small_document};
 use loftspec::codec;
-use loftspec::document::Document;
 use loftspec::identity::LabelPrefix;
 use loftspec::ids::{DecisionId, InterfaceId};
 use loftspec::publish::allocate;
-
-fn allocated(document: &mut Document) -> Vec<String> {
-    allocate(document)
-        .into_iter()
-        .map(|allocated| allocated.label.to_string())
-        .collect()
-}
 
 #[test]
 fn interfaces_are_labeled_after_the_root_components_and_before_the_decisions() {

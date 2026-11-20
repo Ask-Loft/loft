@@ -1,32 +1,16 @@
 //! Interfaces in the Markdown projection: their own section after the Components, each rendered
 //! with its Requirements as a Feature is, and each Component's `provides` and `requires` lines.
 
-use crate::common::interfaces::{INTERFACE, interface, with_interface};
-use crate::common::{key, small_document};
-use loftspec::document::{Document, Edge};
-use loftspec::ids::{ComponentId, InterfaceId};
+use crate::common::interfaces::provided_and_required;
+use crate::common::small_document;
+use loftspec::document::Document;
 use loftspec::publish::allocate;
 use loftspec::render::render;
 
 /// The small document, published, whose root Component provides "Document lookup" (`IF-1`) and
 /// requires "Zeta feed" (`IF-2`).
 fn linked() -> Document {
-    let mut document = with_interface();
-    let later = key(INTERFACE + 0x40);
-    document
-        .interfaces
-        .push(interface(later, "Zeta feed", Vec::new()));
-    let component = ComponentId::new(key(6));
-    document.edges.extend([
-        Edge::Provides {
-            component,
-            interface: InterfaceId::new(key(INTERFACE)),
-        },
-        Edge::Requires {
-            component,
-            interface: InterfaceId::new(later),
-        },
-    ]);
+    let mut document = provided_and_required();
     allocate(&mut document);
     document
 }

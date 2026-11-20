@@ -5,10 +5,10 @@
 use std::fs;
 
 use crate::base::based_on_now;
-use crate::common::{EPOCH, Scratch, stderr, stdout};
+use crate::common::{Scratch, stderr, stdout};
 use crate::schema;
+use crate::status::{json, status};
 use serde_json::Value;
-use software_plant::Clock;
 
 const STORE: &str = "components/shelf-store.yaml";
 /// The Shelf store's key.
@@ -70,12 +70,11 @@ fn an_added_interface_and_what_it_holds_are_listed_added_against_a_base() {
     let scratch = Scratch::with_reading_list();
     let git = based_on_now(&scratch);
     add_lookup(&scratch);
-    let output = scratch.loft_with(
-        &["status", "--base", "develop", "--format", "json"],
-        Some(&git),
-        &Clock::fixed(EPOCH),
-    );
-    let document = schema::conforming(&output.stdout, include_str!("../../../schemas/status.json"));
+    let document = json(&status(
+        &scratch,
+        &["--base", "develop", "--format", "json"],
+        &git,
+    ));
     let added: Vec<(&str, &str)> = document["base"]["added"]
         .as_array()
         .unwrap()

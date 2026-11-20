@@ -10,6 +10,7 @@ use loftspec::ids::{ComponentId, InterfaceId, RequirementId};
 use loftspec::slug::Slug;
 use loftspec::statement::{EarsForm, Statement};
 use loftspec::tree::{Component, Details, Interface, Requirement, RootComponent};
+use loftspec_store::Saved;
 
 const LEDGER: u32 = 30;
 const DESK: u32 = 31;
@@ -108,11 +109,11 @@ fn changing_an_interface_writes_only_its_file() {
 #[test]
 fn withdrawing_an_interface_removes_its_file_and_its_directory() {
     let mut pair = Pair::new();
+    let mut saved = Saved::default();
     for step in after(&[promised, promise_withdrawn]) {
-        pair.step(&step());
+        saved = pair.step(&step());
     }
     assert!(!pair.scratch.0.join("spec/interfaces").exists());
-    let saved = walk(&after(&[promised, promise_withdrawn]));
     assert_eq!(
         saved.written,
         paths(&["components/front-desk.yaml", "components/ledger.yaml"])

@@ -1,39 +1,21 @@
 //! The rules of Interfaces: `V2-012`, an Interface that holds no Requirement and so promises
 //! nothing, and `V2-013`, an Interface that no Component of its document provides or requires.
 
-use crate::common::interfaces::{INTERFACE, interface, with_interface};
+use crate::common::interfaces::{INTERFACE, MODEL, interface, provides, requires, with_interface};
 use crate::common::key;
 use crate::common::lint::{findings, keys_of, severity};
 use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
-use loftspec::ids::{ComponentId, InterfaceId};
 use loftspec::lint::{RuleId, Severity};
 
 /// No finding's keys.
 const NONE: [Vec<Key>; 0] = [];
 
 /// The small document whose root Component links to its Interface with `link`.
-fn linked(link: fn(ComponentId, InterfaceId) -> Edge) -> Document {
+fn linked(link: fn(u32, u32) -> Edge) -> Document {
     let mut document = with_interface();
-    document.edges.push(link(
-        ComponentId::new(key(6)),
-        InterfaceId::new(key(INTERFACE)),
-    ));
+    document.edges.push(link(MODEL, INTERFACE));
     document
-}
-
-fn provides(component: ComponentId, interface: InterfaceId) -> Edge {
-    Edge::Provides {
-        component,
-        interface,
-    }
-}
-
-fn requires(component: ComponentId, interface: InterfaceId) -> Edge {
-    Edge::Requires {
-        component,
-        interface,
-    }
 }
 
 #[test]

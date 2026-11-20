@@ -5,17 +5,17 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use loftspec::codec::{self, RecordKind};
-use loftspec::document::{Document, Edge};
+use loftspec::document::Document;
 use loftspec::ext::ExtValue;
 use loftspec::identity::Key;
-use loftspec::ids::{ComponentId, InterfaceId, RequirementId};
+use loftspec::ids::RequirementId;
 use loftspec::kind::NodeKind;
 use loftspec::names::{Namespace, TagName};
 use loftspec::statement::Statement;
 use serde_json::{Value, json};
 
 use crate::common::full::{full_document, full_nested_document};
-use crate::common::interfaces::{INTERFACE, interface, with_interface};
+use crate::common::interfaces::{INTERFACE, LATER, provided_and_required};
 use crate::common::own::{
     COMPONENT, CONSTRAINT, CRITERION, FEATURE, GROUP, PRODUCT, QUALITY, REQUIREMENT, own, view,
 };
@@ -378,25 +378,10 @@ fn outside_ext_every_scalar_of_an_own_record_view_is_a_string_or_true() {
 
 #[test]
 fn an_interface_s_own_record_view_holds_its_slug_and_a_component_s_its_provides_and_requires() {
-    let mut document = with_interface();
-    let later = INTERFACE + 0x50;
-    document
-        .interfaces
-        .push(interface(key(later), "Audit feed", Vec::new()));
-    let component = ComponentId::new(key(6));
-    document.edges.extend([
-        Edge::Provides {
-            component,
-            interface: InterfaceId::new(key(INTERFACE)),
-        },
-        Edge::Requires {
-            component,
-            interface: InterfaceId::new(key(later)),
-        },
-    ]);
+    let document = provided_and_required();
     let promise = view(&document, RecordKind::Node(NodeKind::Interface), INTERFACE);
     assert_eq!(promise["slug"], json!("document-lookup"));
     let component = view(&document, COMPONENT, 6);
     assert_eq!(component["provides"], json!([text(INTERFACE)]));
-    assert_eq!(component["requires"], json!([text(later)]));
+    assert_eq!(component["requires"], json!([text(LATER)]));
 }

@@ -2,15 +2,14 @@
 //! vectors in `testdata/golden/` were computed by an independent implementation; never
 //! regenerate them to make this test pass.
 
-use crate::common::interfaces::{INTERFACE, with_interface};
-use crate::common::{key, small_document};
+use crate::common::interfaces::{INTERFACE, MODEL, provides, with_interface};
+use crate::common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
 use loftspec::codec::{self, SpecPath};
-use loftspec::document::{Document, Edge};
+use loftspec::document::Document;
 use loftspec::hash::{
     StateView, hash_document, hash_indexed_with_views, lint_digest, state_root, state_view,
 };
-use loftspec::ids::{ComponentId, InterfaceId};
 use serde_json::Value;
 
 const SMALL_DOCUMENT: &str = include_str!("../../../testdata/golden/small-document.json");
@@ -54,10 +53,7 @@ fn vectors(golden: &str) -> Vec<Value> {
 /// The small document with an Interface, "Document lookup", that its root Component provides.
 fn small_document_with_a_provided_interface() -> Document {
     let mut document = with_interface();
-    document.edges.push(Edge::Provides {
-        component: ComponentId::new(key(6)),
-        interface: InterfaceId::new(key(INTERFACE)),
-    });
+    document.edges.push(provides(MODEL, INTERFACE));
     document
 }
 
@@ -77,20 +73,23 @@ fn the_vectors_of_a_document_with_a_provided_interface_are_reproduced_byte_for_b
 #[test]
 fn the_roots_of_a_document_with_a_provided_interface_match_their_vectors() {
     let vectors = vectors(SMALL_DOCUMENT_INTERFACE);
-    let vector = |name: &str| {
-        vectors
-            .iter()
-            .find(|vector| vector["name"] == name)
-            .unwrap()["digest"]
-            .as_str()
-            .unwrap()
-            .to_owned()
-    };
+    let vector = |name: &str| digest_of(&vectors, name);
     let roots = hash_document(&small_document_with_a_provided_interface())
         .unwrap()
         .roots;
     assert_eq!(roots.content.to_string(), vector("root:content"));
     assert_eq!(roots.state.to_string(), vector("root:state"));
+}
+
+/// The digest of the vector named `name`.
+fn digest_of(vectors: &[Value], name: &str) -> String {
+    vectors
+        .iter()
+        .find(|vector| vector["name"] == name)
+        .unwrap()["digest"]
+        .as_str()
+        .unwrap()
+        .to_owned()
 }
 
 fn assert_reproduced(golden: &str, document: &Document) {
@@ -120,15 +119,7 @@ fn assert_reproduced(golden: &str, document: &Document) {
 #[test]
 fn the_small_document_roots_match_their_vectors() {
     let vectors = vectors(SMALL_DOCUMENT);
-    let vector = |name: &str| {
-        vectors
-            .iter()
-            .find(|vector| vector["name"] == name)
-            .unwrap()["digest"]
-            .as_str()
-            .unwrap()
-            .to_owned()
-    };
+    let vector = |name: &str| digest_of(&vectors, name);
     let roots = hash_document(&small_document()).unwrap().roots;
     assert_eq!(roots.content.to_string(), vector("root:content"));
     assert_eq!(roots.bindings.to_string(), vector("root:bindings"));

@@ -4,14 +4,12 @@
 //! configuration and the label bindings differ.
 
 use crate::common::comparing::compared;
-use crate::common::interfaces::{INTERFACE, with_interface};
+use crate::common::interfaces::{INTERFACE, MODEL, provides, with_interface};
 use crate::common::{criterion, key, product, requirement, section, small_document};
 use loftspec::diff::{Comparison, DecisionChange, Difference, NodeDifference};
 use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
-use loftspec::ids::{
-    ComponentId, ConstraintId, DecisionId, InterfaceId, NodeId, ProductId, RequirementId,
-};
+use loftspec::ids::{ConstraintId, DecisionId, NodeId, ProductId, RequirementId};
 use serde_json::{Value, json};
 
 /// The difference reported for the node keyed `n`.
@@ -441,10 +439,7 @@ fn an_added_interface_is_reported_added_with_its_record_and_what_it_holds() {
 fn a_components_new_provides_edge_changes_the_component() {
     let older = with_interface();
     let mut newer = with_interface();
-    newer.edges.push(Edge::Provides {
-        component: ComponentId::new(key(6)),
-        interface: InterfaceId::new(key(INTERFACE)),
-    });
+    newer.edges.push(provides(MODEL, INTERFACE));
     assert_eq!(
         reported(&compared(&older, &newer)),
         [(6, Difference::Changed)]

@@ -4,6 +4,7 @@
 use std::num::NonZeroU64;
 
 use crate::common;
+use crate::common::publishing::allocated;
 use crate::common::{component, criterion, feature, key, label, root, slug, small_document};
 use loftspec::codec::{self, SpecPath};
 use loftspec::decision::NodeRef;
@@ -15,14 +16,6 @@ use loftspec::ids::{
 use loftspec::node::Node;
 use loftspec::publish::{Allocated, allocate};
 use loftspec::tree::Section;
-
-/// The labels allocation gives, as text, in the order given.
-fn allocated(document: &mut Document) -> Vec<String> {
-    allocate(document)
-        .into_iter()
-        .map(|allocated| allocated.label.to_string())
-        .collect()
-}
 
 fn counter(document: &Document, prefix: LabelPrefix) -> u64 {
     document.counters.next(prefix).get()
