@@ -18,11 +18,14 @@ use serde_json::json;
 use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::oauth::{
-    KEY, UNKNOWN_CODE, UNSERVED, assert_oauth_error, coded, coded_for, discover, exchange,
-    exchange_for, refresh_for, registered,
+    KEY, UNKNOWN_CODE, UNSERVED, assert_oauth_error, assert_oauth_error_for, coded, coded_for,
+    discover, exchange, exchange_for, refresh_for, registered,
 };
 use crate::common::resources::{Signed, companions_at, companions_of, kept, signed_over};
 use crate::remote_contract_refreshes::UNREFRESHED;
+
+/// A code that no remote issued, beside the words that name it in a failure.
+const NEVER_ISSUED: (&str, &str) = ("a code never issued", UNKNOWN_CODE);
 
 /// The resources of each token request that names `resource` more than once, of a remote whose
 /// own protected resource is `own` and which lists `companions`: `own` and a resource that no
@@ -38,21 +41,23 @@ fn several<'a>(own: &'a str, companions: &'a [(String, String)]) -> Vec<Vec<&'a 
 
 /// Refuses `invalid_target` each code exchange by `client`, at the remote of the document at
 /// `address`, that names `resource` more than once, as [`several`] lists them, whichever of
-/// `codes` it presents.
+/// `codes` it presents: each code beside the words that name it in a failure, which never shows
+/// the code itself.
 fn refuses_an_exchange_that_names_resource_more_than_once(
     address: &str,
     client: &str,
-    codes: &[&str],
+    codes: &[(&str, &str)],
 ) {
     let (metadata, server) = discover(address);
     let own = metadata["resource"]
         .as_str()
         .expect("protected resource metadata that names its resource");
     let companions = companions_of(&metadata);
-    for code in codes {
+    for (which, code) in codes {
         for named in several(own, &companions) {
             let answer = exchange_for(&server, client, &named, code);
-            assert_oauth_error(&answer, "invalid_target");
+            let asked = format!("an exchange of {which} that names {named:?}");
+            assert_oauth_error_for(&answer, "invalid_target", &asked);
         }
     }
 }
@@ -64,7 +69,7 @@ fn an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code
     let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(notes));
     let (own, notes) = (remote.resource(), remote.companion("notes"));
     let (server, client, code) = coded_for(&remote, &[&own, &notes], "documents notes");
-    let codes = [code.as_str(), UNKNOWN_CODE];
+    let codes = [("the code issued", code.as_str()), NEVER_ISSUED];
     refuses_an_exchange_that_names_resource_more_than_once(&remote.address(), &client, &codes);
     // No refusal used the code up: it is exchanged once, for one resource it names.
     let answer = exchange(&server, &client, &notes, &code);
@@ -72,12 +77,14 @@ fn an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code
     assert_eq!(answer.body["resource"], json!(notes));
     assert_oauth_error(&exchange(&server, &client, &own, &code), "invalid_grant");
     // Presented again once exchanged, the code is refused `invalid_target` all the same.
-    refuses_an_exchange_that_names_resource_more_than_once(&remote.address(), &client, &[&code]);
+    let exchanged = [("the code once exchanged", code.as_str())];
+    refuses_an_exchange_that_names_resource_more_than_once(&remote.address(), &client, &exchanged);
     // A scenario that refuses every exchange judges its resources first.
     let refusing = RemoteScenario::accepting(KEY).refusing_exchange("unauthorized_client");
     let refusing = Remote::start(refusing);
     let (server, client, own, code) = coded(&refusing);
-    refuses_an_exchange_that_names_resource_more_than_once(&refusing.address(), &client, &[&code]);
+    let issued = [("the code issued", code.as_str())];
+    refuses_an_exchange_that_names_resource_more_than_once(&refusing.address(), &client, &issued);
     let refused = exchange(&server, &client, &own, &code);
     assert_oauth_error(&refused, "unauthorized_client");
 }
@@ -90,7 +97,7 @@ fn a_real_remote_refuses_an_exchange_that_names_resource_more_than_once() {
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
     let (_, server) = discover(&address);
     let client = registered(&server);
-    refuses_an_exchange_that_names_resource_more_than_once(&address, &client, &[UNKNOWN_CODE]);
+    refuses_an_exchange_that_names_resource_more_than_once(&address, &client, &[NEVER_ISSUED]);
 }
 
 /// Refuses `invalid_target` each refresh of `signed` that names `resource` more than once, as
@@ -99,19 +106,22 @@ fn a_real_remote_refuses_an_exchange_that_names_resource_more_than_once() {
 /// that answer's refresh token after it.
 fn refuses_a_refresh_that_names_resource_more_than_once(signed: &Signed) {
     let companions = companions_at(&signed.address);
-    let refused = |token: &str| {
+    // `which` names the refresh token in a failure, which never shows the token itself.
+    let refused = |which: &str, token: &str| {
         for named in several(&signed.resource, &companions) {
             let answer = refresh_for(&signed.server(), &signed.client, &named, token);
-            assert_oauth_error(&answer, "invalid_target");
+            let asked = format!("a refresh of {which} that names {named:?}");
+            assert_oauth_error_for(&answer, "invalid_target", &asked);
         }
     };
     let live = signed.refresh_token.as_str();
-    refused(live);
-    refused("a-refresh-token-never-issued");
+    refused("the live refresh token", live);
+    let never = "a-refresh-token-never-issued";
+    refused("a refresh token never issued", never);
     let rotated = signed.refresh(&signed.resource, live);
     let unrotated = format!("a refused refresh rotates nothing ({UNREFRESHED})");
     assert_eq!(rotated.status, 200, "{unrotated}: {rotated:?}");
-    refused(live);
+    refused("the rotated refresh token", live);
     let successor = rotated.body["refresh_token"].as_str().unwrap();
     let next = signed.refresh(&signed.resource, successor);
     let unrevoked = "a refused refresh revokes nothing";

@@ -14,25 +14,30 @@
 //! the real halves may run together. It reads the remote's own protected resource, the scopes it
 //! lists and its companion resources from the remote's metadata, and shares its scenario with its
 //! simulator half, so that the two cannot drift. A real half that needs a companion resource says
-//! so, and fails naming its premise where the remote lists none that its scenario can ask; none
-//! passes without checking. A real half that gets any answer but the refusal it expects fails,
-//! naming the request and showing the answer's status, `Location` and body with every token and
-//! code hidden, so that a remote that answers a refusal otherwise, or judges the steps in another
-//! order, is told plainly. The simulator alone is asked what needs a person: a code, and a consent
-//! it refuses, which shows that each refusal comes before the person's consent.
+//! so, and fails naming its premise where the remote lists none that it serves and its scenario
+//! can ask, so that no step passes for a refusal of a companion resource the remote does not
+//! serve; none passes without checking. A real half that gets any answer but the refusal it
+//! expects fails, naming the request and showing the answer's status, `Location` and body with
+//! every token and code hidden, so that a remote that answers a refusal otherwise, or judges the
+//! steps in another order, is told plainly. The simulator alone is asked what needs a person: a
+//! code, and a consent it refuses, which shows that each refusal comes before the person's
+//! consent.
 
+use std::any::Any;
+use std::collections::BTreeMap;
 use std::env;
+use std::panic::{AssertUnwindSafe, catch_unwind};
 
 use serde_json::{Value, json};
 use software_plant::remote::wire::value;
-use software_plant::remote::{Companion, Remote, RemoteScenario};
+use software_plant::remote::{Companion, CompanionFault, Remote, RemoteScenario};
 
 use crate::common::calls::Answer;
 use crate::common::oauth::{
     CALLBACK, KEY, UNSERVED, authorized, coded_for, companion_metadata, discover, exchange,
     location, registered,
 };
-use crate::common::resources::companions_of;
+use crate::common::resources::{companions_of, origin_of};
 
 /// A client id that no remote registered.
 const UNREGISTERED: &str = "loft-contract-unregistered-client";
@@ -41,8 +46,10 @@ const UNMATCHED: &str = "http://127.0.0.1:4567/elsewhere";
 /// A scope that no remote lists.
 const UNKNOWN_SCOPE: &str = "loft-contract-unknown-scope";
 /// The premise of each real half that asks a companion resource.
-const APART: &str = "premise: the remote lists a companion resource that lists a scope, and none \
-                     of the scopes that the remote's own protected resource lists";
+const APART: &str = "premise: the remote lists a companion resource that it serves, on the origin \
+                     of its own protected resource, whose metadata names it and the remote's \
+                     issuer and lists a scope, and none of the scopes that the remote's own \
+                     protected resource lists";
 
 /// A client registered with the authorization server of a document's remote, and what it read of
 /// the remote's protected resource metadata.
@@ -116,13 +123,22 @@ impl Client {
         assert_redirected(&answer, &asked, error);
     }
 
-    /// A companion resource that the remote lists, none of whose scopes the remote's own protected
-    /// resource lists, with the first scope it lists.
+    /// A companion resource that the remote lists and serves, none of whose scopes the remote's
+    /// own protected resource lists, with the first scope it lists. The remote serves it where it
+    /// lies on the origin of the remote's own protected resource and its metadata names it and the
+    /// remote's issuer, so that a refusal of a request for it cannot come of its being unserved.
     fn apart(&self) -> (&str, String) {
+        let issuer = &self.server["issuer"];
         let found = self.companions.iter().find_map(|companion| {
-            let theirs = listed(&companion_metadata(companion).body);
+            let metadata = companion_metadata(companion).body;
+            let named = metadata["resource"] == json!(companion);
+            let servers = metadata["authorization_servers"].as_array();
+            let vouched = servers.is_some_and(|servers| servers.contains(issuer));
+            let here = origin_of(companion) == origin_of(&self.own);
+            let theirs = listed(&metadata);
             let shared = theirs.iter().any(|scope| self.scopes.contains(scope));
-            let first = theirs.into_iter().next().filter(|_| !shared)?;
+            let served = named && vouched && here;
+            let first = theirs.into_iter().next().filter(|_| served && !shared)?;
             Some((companion.as_str(), first))
         });
         let companions = &self.companions;
@@ -145,11 +161,11 @@ fn assert_redirected(answer: &Answer, asked: &str, error: &str) {
 }
 
 /// Requires `answer`, to the authorization request `asked`, to be `400 Bad Request` without a
-/// redirect.
+/// redirect. A failure shows the answer with every token and code hidden.
 fn assert_unredirected(answer: &Answer, asked: &str) {
-    let answered = (answer.status, answer.header("location"));
+    let unredirected = answer.status == 400 && answer.header("location").is_none();
     let expected = "`400 Bad Request` without a redirect";
-    assert_eq!(answered, (400, None), "{asked}: {expected}: {answer:?}");
+    assert!(unredirected, "{asked}: {expected}: {answer:?}");
 }
 
 /// Refuses each authorization request of `client` without a PKCE challenge of method `S256`
@@ -339,4 +355,64 @@ fn a_real_remote_answers_an_authorization_request_for_the_first_step_it_fails_in
     // Needs a remote that lists a companion resource none of whose scopes its own protected
     // resource lists, for the last step.
     answers_the_first_step_it_fails(&real_client());
+}
+
+/// The message of a failure whose payload is `payload`.
+fn failure(payload: &(dyn Any + Send)) -> String {
+    match (
+        payload.downcast_ref::<String>(),
+        payload.downcast_ref::<&str>(),
+    ) {
+        (Some(message), _) => message.clone(),
+        (None, Some(message)) => (*message).to_owned(),
+        (None, None) => String::new(),
+    }
+}
+
+#[test]
+fn a_redirect_where_none_is_expected_fails_without_showing_its_code() {
+    let location = format!("{CALLBACK}?code=a-live-code&state=the-state");
+    let redirected = Answer {
+        status: 302,
+        headers: BTreeMap::from([("location".to_owned(), location)]),
+        body: Value::Null,
+    };
+    let failed = catch_unwind(AssertUnwindSafe(|| {
+        assert_unredirected(&redirected, "a request");
+    }));
+    let payload = failed.expect_err("a redirect is not `400 Bad Request` without one");
+    let message = failure(payload.as_ref());
+    let hidden = message.contains("code=<redacted>") && !message.contains("a-live-code");
+    assert!(hidden, "{message}");
+}
+
+#[test]
+fn a_real_half_takes_as_its_premise_only_a_companion_resource_that_the_remote_serves() {
+    let unserved = [
+        Companion::new("misnamed", &["misnamed"]).faulty(CompanionFault::Misnamed),
+        Companion::new("other", &["other"]).faulty(CompanionFault::UnderAnotherIssuer),
+        Companion::new("away", &["away"]).elsewhere(),
+    ];
+    for companion in &unserved {
+        let scenario = RemoteScenario::accepting(KEY).accompanied_by(companion.clone());
+        let remote = Remote::start(scenario);
+        let client = client_of(&remote.address());
+        let failed = catch_unwind(AssertUnwindSafe(|| client.apart().0.to_owned()));
+        let payload = failed.expect_err("an unserved companion resource is no premise");
+        let message = failure(payload.as_ref());
+        assert!(message.starts_with(APART), "{companion:?}: {message}");
+    }
+    // Listed after them, a companion resource that the remote serves is the one taken.
+    let listed = unserved
+        .into_iter()
+        .fold(RemoteScenario::accepting(KEY), |scenario, companion| {
+            scenario.accompanied_by(companion)
+        });
+    let remote = Remote::start(listed.accompanied_by(Companion::new("notes", &["notes"])));
+    let client = client_of(&remote.address());
+    let (companion, scope) = client.apart();
+    assert_eq!(
+        (companion, scope.as_str()),
+        (remote.companion("notes").as_str(), "notes")
+    );
 }

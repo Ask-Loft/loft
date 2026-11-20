@@ -30,8 +30,8 @@ use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::calls::Answer;
 use crate::common::oauth::{
-    KEY, UNSERVED, assert_oauth_error, assert_same_answer, challenge_at, companion_metadata,
-    discover, fetch, metadata, parameter, refresh_for, registered,
+    KEY, UNSERVED, assert_oauth_error, assert_oauth_error_for, assert_same_answer, challenge_at,
+    companion_metadata, discover, fetch, metadata, parameter, refresh_for, registered,
 };
 use crate::common::resources::{
     Signed, companions_at, head_with, kept, kept_unexpired, signed_over,
@@ -62,19 +62,22 @@ fn refused_at_the_document(address: &str, answer: &Answer) {
 /// that answer's refresh token after it.
 fn refuses_a_resource_it_does_not_serve(signed: &Signed) {
     let live = signed.refresh_token.as_str();
-    let refused = |resources: &[&str], token: &str| {
+    // `which` names the refresh token in a failure, which never shows the token itself.
+    let refused = |resources: &[&str], which: &str, token: &str| {
         let answer = refresh_for(&signed.server(), &signed.client, resources, token);
-        assert_oauth_error(&answer, "invalid_target");
+        let asked = format!("a refresh of {which} that names {resources:?}");
+        assert_oauth_error_for(&answer, "invalid_target", &asked);
         let issued = answer.body.get("access_token").is_some();
-        assert!(!issued, "a refusal issues no token: {answer:?}");
+        assert!(!issued, "{asked}: a refusal issues no token: {answer:?}");
     };
-    refused(&[UNSERVED], live);
-    refused(&[], live);
-    refused(&[UNSERVED], "a-refresh-token-never-issued");
+    refused(&[UNSERVED], "the live refresh token", live);
+    refused(&[], "the live refresh token", live);
+    let never = "a-refresh-token-never-issued";
+    refused(&[UNSERVED], "a refresh token never issued", never);
     let rotated = signed.refresh(&signed.resource, live);
     let unrotated = format!("a refused refresh rotates nothing ({UNREFRESHED})");
     assert_eq!(rotated.status, 200, "{unrotated}: {rotated:?}");
-    refused(&[UNSERVED], live);
+    refused(&[UNSERVED], "the rotated refresh token", live);
     let successor = rotated.body["refresh_token"].as_str().unwrap();
     let next = signed.refresh(&signed.resource, successor);
     assert_eq!(

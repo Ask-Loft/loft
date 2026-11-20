@@ -5,7 +5,8 @@
 //! for one protected resource or more and the redirect that answers it, the exchange of its code,
 //! a refresh that names one resource or another number of them, the OAuth error answer that
 //! refuses one, a token answer given again, compared without showing its tokens, a resource that
-//! no remote serves and a code that no remote issued.
+//! no remote serves and a code that no remote issued. A step that finds no member it needs fails
+//! naming the member and what it found instead, never a token or a secret.
 
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
@@ -41,9 +42,10 @@ pub fn metadata(remote: &Remote) -> (Value, Value) {
 /// `address`, found from the challenge of a request without a token.
 pub fn discover(address: &str) -> (Value, Value) {
     let (challenge, resource, server) = fetch(address);
-    let metadata = challenge.split('"').nth(1).unwrap();
+    let metadata = metadata_named(&challenge);
     let named = metadata.replacen("/.well-known/oauth-protected-resource", "", 1);
-    assert_eq!(resource["resource"], named.as_str(), "RFC 9728 3.3");
+    let rule = format!("RFC 9728 3.3: the metadata at {metadata} names its resource: {resource}");
+    assert_eq!(resource["resource"], named.as_str(), "{rule}");
     (resource, server)
 }
 
@@ -51,10 +53,16 @@ pub fn discover(address: &str) -> (Value, Value) {
 /// metadata documents it leads to, with no check of what they say.
 pub fn fetch(address: &str) -> (String, Value, Value) {
     let challenge = challenge_at(address);
-    let metadata = challenge.split('"').nth(1).unwrap();
-    let resource = call("GET", metadata, None, None).body;
-    let issuer = resource["authorization_servers"][0].as_str().unwrap();
-    let authority = issuer.find("://").unwrap() + 3;
+    let resource = call("GET", &metadata_named(&challenge), None, None).body;
+    let issuer = resource["authorization_servers"][0]
+        .as_str()
+        .unwrap_or_else(|| {
+            panic!("protected resource metadata that names an authorization server: {resource}")
+        });
+    let authority = issuer
+        .find("://")
+        .unwrap_or_else(|| panic!("an issuer that is an absolute URL: {issuer}"))
+        + 3;
     let (origin, path) = issuer.split_at(
         issuer[authority..]
             .find('/')
@@ -77,6 +85,19 @@ pub fn challenge_at(address: &str) -> String {
     challenge
         .unwrap_or_else(|| panic!("a challenge: {answer:?}"))
         .to_owned()
+}
+
+/// The address of the protected resource metadata that `challenge` names in `resource_metadata`.
+fn metadata_named(challenge: &str) -> String {
+    parameter(challenge, "resource_metadata")
+        .unwrap_or_else(|| panic!("a challenge that names `resource_metadata`: {challenge}"))
+}
+
+/// The endpoint `name` of the authorization server whose metadata is `server`.
+fn endpoint<'a>(server: &'a Value, name: &str) -> &'a str {
+    server[name]
+        .as_str()
+        .unwrap_or_else(|| panic!("authorization server metadata that names `{name}`: {server}"))
 }
 
 /// The value of the parameter `name` of the `Bearer` challenge `challenge`, if it names one as a
@@ -108,12 +129,15 @@ pub fn companion_metadata(identifier: &str) -> Answer {
     call("GET", &url, None, None)
 }
 
-/// The id of a public client registered with `server`.
+/// The id of a public client registered with `server`. A registration answered without one fails
+/// showing its status and its `error` alone: the body of a registration may hold a secret.
 pub fn registered(server: &Value) -> String {
-    register(server, &[REDIRECT], "none").body["client_id"]
-        .as_str()
-        .unwrap()
-        .to_owned()
+    let answer = register(server, &[REDIRECT], "none");
+    let id = answer.body["client_id"].as_str().map(str::to_owned);
+    id.unwrap_or_else(|| {
+        let (status, error) = (answer.status, &answer.body["error"]);
+        panic!("a public client registered with a `client_id`, not {status} with `error` {error}")
+    })
 }
 
 /// The answer to a registration with `server` of a client that redirects to `redirects` and
@@ -126,12 +150,8 @@ pub fn register(server: &Value, redirects: &[&str], method: &str) -> Answer {
         "response_types": ["code"],
         "token_endpoint_auth_method": method,
     });
-    call(
-        "POST",
-        server["registration_endpoint"].as_str().unwrap(),
-        None,
-        Some(&body),
-    )
+    let registration = endpoint(server, "registration_endpoint");
+    call("POST", registration, None, Some(&body))
 }
 
 /// The query of an authorization request, with `overrides` replacing its parameters.
@@ -177,11 +197,8 @@ pub fn authorized(
             entry.1 = *value;
         }
     }
-    let url = format!(
-        "{}?{}",
-        server["authorization_endpoint"].as_str().unwrap(),
-        query(&parameters)
-    );
+    let authorization = endpoint(server, "authorization_endpoint");
+    let url = format!("{authorization}?{}", query(&parameters));
     call("GET", &url, None, None)
 }
 
@@ -250,15 +267,24 @@ pub fn exchange_for(server: &Value, client: &str, resources: &[&str], code: &str
         ("code_verifier", VERIFIER),
     ];
     fields.extend(resources.iter().map(|resource| ("resource", *resource)));
-    form(server["token_endpoint"].as_str().unwrap(), &fields)
+    form(endpoint(server, "token_endpoint"), &fields)
 }
 
 /// Requires `answer` to be an OAuth 2.0 error answer of `error` at `400 Bad Request`.
+#[track_caller]
 pub fn assert_oauth_error(answer: &Answer, error: &str) {
+    assert_oauth_error_for(answer, error, "the request");
+}
+
+/// Requires `answer`, to the request that `asked` describes, to be an OAuth 2.0 error answer of
+/// `error` at `400 Bad Request`. A failure names the request, which `asked` describes without a
+/// code or a token, and shows the answer with every token hidden.
+#[track_caller]
+pub fn assert_oauth_error_for(answer: &Answer, error: &str, asked: &str) {
     assert_eq!(
         (answer.status, &answer.body["error"]),
         (400, &json!(error)),
-        "{answer:?}"
+        "{asked}: {answer:?}"
     );
 }
 
@@ -309,16 +335,38 @@ fn send_refresh_for(
         ("client_id", client),
     ];
     fields.extend(resources.iter().map(|resource| ("resource", *resource)));
-    send_form(server["token_endpoint"].as_str().unwrap(), &fields)
+    send_form(endpoint(server, "token_endpoint"), &fields)
 }
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
     use std::panic::catch_unwind;
 
     use serde_json::json;
 
-    use super::assert_same_answer;
+    use super::{Answer, assert_oauth_error_for, assert_same_answer};
+
+    #[test]
+    fn an_answer_that_is_not_the_refusal_expected_fails_naming_its_request_without_a_token() {
+        let accepted = Answer {
+            status: 200,
+            headers: BTreeMap::new(),
+            body: json!({ "access_token": "a-live-access-token", "scope": "documents" }),
+        };
+        let asked = "a refresh of the live refresh token that names [\"notes\", \"notes\"]";
+        let failed = catch_unwind(|| assert_oauth_error_for(&accepted, "invalid_target", asked));
+        let failure = failed.expect_err("an accepted request is no refusal");
+        let message = failure
+            .downcast_ref::<String>()
+            .cloned()
+            .unwrap_or_default();
+        let named = message.contains(asked) && message.contains("invalid_target");
+        assert!(
+            named && !message.contains("a-live-access-token"),
+            "{message}"
+        );
+    }
 
     #[test]
     fn two_token_answers_that_differ_only_in_a_token_are_told_apart_without_showing_it() {

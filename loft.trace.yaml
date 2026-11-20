@@ -21860,10 +21860,10 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code_to_be_exchanged_once"
-        body: 2bd516bca388f3da5747c216a5227f1a3f8967350d041e8743381f8fce01d77c
+        body: 89288e7c548fb27ccada72dbd7bbd38a9396ca9341a2f1059cbb722965a666fb
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "a_real_remote_refuses_an_exchange_that_names_resource_more_than_once"
-        body: 3d395b4aa7f1da2b137b40718b722ca4ed503c34cb3f1c37634ecca84bfb5f75
+        body: bf1fcffa0ca174acb9aa0baad646a149ede0b1b59737fcab902fd602d2916d1d
   - node: 01a1f849-e4bb-77ff-ac61-f87f63fe81d0
     reviewed: 35929e9427b642c1b3da51e7ce155138183f1d80b066611456d49ce85b3c0dfc
     tests:
@@ -21914,7 +21914,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code_to_be_exchanged_once"
-        body: 2bd516bca388f3da5747c216a5227f1a3f8967350d041e8743381f8fce01d77c
+        body: 89288e7c548fb27ccada72dbd7bbd38a9396ca9341a2f1059cbb722965a666fb
   - node: 01a1f09b-189b-76b3-863f-c7d7837789fd
     reviewed: 9e4d95b85980322bc8e95b0771889e724275a19112d4f1e9ec766daf1d82ac8b
     tests:
@@ -21953,7 +21953,7 @@ links:
         body: 16d34b2d6fae2e5109a3aa662c045765193c43747d29c1235469650127587e9e
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code_to_be_exchanged_once"
-        body: 2bd516bca388f3da5747c216a5227f1a3f8967350d041e8743381f8fce01d77c
+        body: 89288e7c548fb27ccada72dbd7bbd38a9396ca9341a2f1059cbb722965a666fb
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "a_refresh_that_names_resource_more_than_once_is_refused_and_rotates_nothing"
         body: 7504106692fba624b7fbc6b6816b6157a39e4304f6f633b3eaac1ee04df903a4
@@ -21965,7 +21965,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code_to_be_exchanged_once"
-        body: 2bd516bca388f3da5747c216a5227f1a3f8967350d041e8743381f8fce01d77c
+        body: 89288e7c548fb27ccada72dbd7bbd38a9396ca9341a2f1059cbb722965a666fb
   - node: 01a17989-a8b9-74b1-9049-073b0be616b1
     reviewed: 00040f13ba81c856e1fd2d2efd203c5508d1d845a0c37454fc2705600ac2e4bc
     tests:
