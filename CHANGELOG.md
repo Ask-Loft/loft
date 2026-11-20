@@ -42,7 +42,11 @@ everything 2.4.1 will hold.
 - A sign-in that an earlier `loft` kept under a remote's address, for a protected resource on
   another origin, counts as no sign-in: it is neither refreshed nor sent, and `loft remote set`
   signs in anew. `loft publish` and `loft pull` refuse with an error of its own, which names the
-  address and that resource and says that `loft remote login` signs in again.
+  address and that resource. It says that `loft remote set` with an address on that resource's
+  origin names the remote by it and signs you in to it, and that `loft remote login` signs in
+  again once the remote serves its resource on the address's origin. A kept sign-in whose
+  resource does not read as an `https` or `http` address counts as none too, with the error for
+  no sign-in.
 - `loft skill install --server <origin>` reads the origin as `loft` reads every address, with the
   parser its requests use. A text that does not read as an address with a scheme and a host, such
   as one holding a space or a host outside ASCII, or one whose scheme is empty or does not begin

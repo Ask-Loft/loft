@@ -94,7 +94,8 @@ fn publish_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_namin
             resource,
             "another origin",
             "LOFT_REMOTE_TOKEN",
-            "`loft remote login` signs in again",
+            "`loft remote set <address>` with an address on http://127.0.0.1:9 names the remote",
+            "`loft remote login` signs in again once the remote serves its protected resource on the address's origin",
         ] {
             assert!(message.contains(said), "{seconds}: {said}: {message}");
         }
@@ -112,6 +113,39 @@ fn publish_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_namin
             tree(&run.scratch.0),
             before,
             "{seconds}: no file of the tree is written"
+        );
+    }
+}
+
+#[test]
+fn a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    run.change();
+    let address = run.remote.address();
+    // With an hour left its token would be sent; with a minute left it would be refreshed first.
+    let cases = ["", "documents", "ftp://127.0.0.1/documents"]
+        .into_iter()
+        .flat_map(|resource| [(resource, 3600), (resource, 60)]);
+    for (resource, seconds) in cases {
+        let mut kept = granted(&run.remote, seconds);
+        kept["resource"] = json!(resource);
+        keep(&run.scratch, &json!({ address.as_str(): kept }));
+        let output = run.publish();
+        assert_eq!(output.status.code(), Some(1), "{resource:?}: {output:?}");
+        let error = &signed_in::document(&output)["errors"][0];
+        assert_eq!(error["kind"], "refused", "{resource:?}: {error}");
+        let message = error["message"].as_str().unwrap_or_default();
+        assert!(
+            message.starts_with(&format!("no sign-in to {address}")),
+            "{resource:?}: {message}"
+        );
+        assert!(
+            !message.contains("another origin"),
+            "{resource:?}: {message}"
+        );
+        assert!(
+            run.remote.requests().is_empty(),
+            "{resource:?} {seconds}: neither refreshed nor sent"
         );
     }
 }

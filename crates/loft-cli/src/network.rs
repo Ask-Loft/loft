@@ -248,7 +248,8 @@ pub fn same_origin(one: &str, other: &str) -> bool {
 
 /// The origin of `url`, as [`origin_and_path`] reads it, or none for an address that is not an
 /// absolute `https` or `http` one.
-fn origin(url: &str) -> Option<Origin> {
+#[must_use]
+pub fn origin(url: &str) -> Option<Origin> {
     origin_and_path(url)
         .map(|(origin, _)| origin)
         .filter(|origin| matches!(origin.scheme.as_str(), "https" | "http"))

@@ -127,7 +127,8 @@ fn pull_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_t
         resource,
         "another origin",
         "LOFT_REMOTE_TOKEN",
-        "`loft remote login` signs in again",
+        "`loft remote set <address>` with an address on http://127.0.0.1:9 names the remote",
+        "`loft remote login` signs in again once the remote serves its protected resource on the address's origin",
     ] {
         assert!(message.contains(said), "{said}: {message}");
     }

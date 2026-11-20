@@ -70,21 +70,26 @@ fn entries() -> Result<Map<String, Value>, RemoteError> {
 ///
 /// # Errors
 ///
-/// There is no entry, or it does not read as a sign-in. Or it is one for a protected resource on
+/// There is no entry, or it does not read as a sign-in, or its resource reads as no `https` or
+/// `http` address. Or it is one for a protected resource on
 /// another origin, which an earlier `loft` could keep: it is no sign-in for the address and is
 /// neither refreshed nor sent, and its error, unlike that of a missing one, names that resource.
 fn sign_in(entry: Option<&Value>, address: &str) -> Result<SignIn, RemoteError> {
+    let none = || RemoteError::NoSignIn {
+        address: address.to_owned(),
+    };
     let held = entry
         .and_then(|entry| SignIn::deserialize(entry).ok())
-        .ok_or_else(|| RemoteError::NoSignIn {
-            address: address.to_owned(),
-        })?;
+        .ok_or_else(none)?;
+    // A resource that reads as no address lies on no origin, so it is not on another one.
+    let origin = network::origin(&held.resource).ok_or_else(none)?;
     if network::same_origin(&held.resource, address) {
         Ok(held)
     } else {
         Err(RemoteError::SignInElsewhere {
             address: address.to_owned(),
             resource: held.resource,
+            origin: origin.to_string(),
         })
     }
 }
@@ -141,7 +146,8 @@ pub fn forget(address: &str) -> Result<bool, RemoteError> {
 /// # Errors
 ///
 /// The file holds no sign-in for `address`, or one only for a protected resource on another
-/// origin, or the refresh is refused or cannot be made.
+/// origin or for a resource that reads as no address, or the refresh is refused or cannot be
+/// made.
 pub fn live(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
     let held = sign_in(entries()?.get(address), address)?;
     if !held.expiring(now()) {
