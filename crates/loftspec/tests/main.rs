@@ -73,6 +73,7 @@ mod label_allocation;
 mod lint;
 mod lint_config;
 mod lint_craft;
+mod lint_foreign;
 mod lint_history;
 mod lint_interfaces;
 mod lint_language;

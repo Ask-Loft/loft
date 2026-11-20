@@ -17,14 +17,17 @@ pub fn label_references(text: &str) -> Vec<Label> {
         .collect()
 }
 
-/// A label reference in a text: where the label stands, the label, and whether a document
-/// prefix `D-n/` qualifies it.
+/// A label reference in a text: where the label stands, the label, whether a document prefix
+/// `D-n/` qualifies it, and the handle of another document it is cited under, as
+/// `<handle>:<label>`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LabelSpan {
-    /// The bytes of the label itself, without its document prefix.
+    /// The bytes of the label itself, without its document prefix or its handle.
     pub range: Range<usize>,
     pub label: Label,
     pub qualified: bool,
+    /// The handle a citation of another document's label names, as `<handle>:<label>`.
+    pub handle: Option<String>,
 }
 
 /// The label references in `text`, in order, as [`label_references`] finds them, each with
@@ -39,10 +42,14 @@ pub fn label_spans(text: &str) -> Vec<LabelSpan> {
         if starts_word && bytes[position].is_ascii_uppercase() {
             let start = after_document_prefix(bytes, position);
             if let Some((label, end)) = label_at(text, start) {
+                let qualified = start != position;
                 spans.push(LabelSpan {
                     range: start..end,
                     label,
-                    qualified: start != position,
+                    qualified,
+                    handle: (!qualified)
+                        .then(|| handle_before(text, position))
+                        .flatten(),
                 });
                 position = end;
                 continue;
@@ -51,6 +58,20 @@ pub fn label_spans(text: &str) -> Vec<LabelSpan> {
         position += 1;
     }
     spans
+}
+
+/// The handle that `<handle>:` names right before `position`: a slug that stands on its own.
+fn handle_before(text: &str, position: usize) -> Option<String> {
+    let bytes = text.as_bytes();
+    let colon = position.checked_sub(1).filter(|at| bytes[*at] == b':')?;
+    let start = (0..colon)
+        .rev()
+        .take_while(|at| matches!(bytes[*at], b'a'..=b'z' | b'0'..=b'9' | b'-'))
+        .last()?;
+    let stands = start == 0 || !continues_word(bytes[start - 1]);
+    let handle = &text[start..colon];
+    (stands && handle.starts_with(|first: char| first.is_ascii_lowercase()))
+        .then(|| handle.to_owned())
 }
 
 /// A byte that a reference cannot follow: letters, digits, `_`, `-` and `/`.

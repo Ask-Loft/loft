@@ -410,7 +410,10 @@ featureGroups:
 | `V2-004` | warning | A withdrawn label the next publish cannot rewrite, because the node mentions two candidates | Cite the node by its live label |
 | `V2-009` | info | A Markdown construct in a body outside the subset: raw HTML, a block quote, a table, an image, a thematic break, an indented code block, a footnote, a task list item or struck-through text | Rewrite it as paragraphs, lists, code spans, fenced code blocks, emphasis and links |
 
-`V2-003` and `V2-004` concern labels, so they arise only in a published tree.
+`V2-003` and `V2-004` concern labels, so they arise only in a published tree. A citation of
+another document's label, `<handle>:<label>`, is matched only against the copies under that
+handle: `V2-003` reports it until the element mentions the node the copy binds to the label, and
+a publish never rewrites it.
 
 ```yaml rule=V2-001 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"

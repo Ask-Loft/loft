@@ -12615,6 +12615,27 @@ links:
       - file: "crates/loftspec/tests/render_foreign.rs"
         name: "a_foreign_node_without_a_label_renders_as_its_handle_then_its_name"
         body: 99b05f06baefc5accf40fa6f552d211827ed8e5ea74d074cc1396c88c1154912
+  - node: 01a1f981-4db1-765f-a897-2267f3cbe165
+    reviewed: 61ea54c38d6aa470c82a9d73cf9fc9c5d41898c1ae8db6c8afdc29141de68ec6
+    tests:
+      - file: "crates/loftspec/tests/lint_foreign.rs"
+        name: "a_foreign_citation_with_a_mentions_edge_to_its_node_yields_no_finding"
+        body: 4b02b41a5a61cb3090dd08b91ec6904577773abff3459293c493e43e30acfdbf
+      - file: "crates/loftspec/tests/lint_foreign.rs"
+        name: "a_citation_under_a_handle_is_scanned_with_its_handle"
+        body: e57858e2e9007fcda39f17d02c501a2eea5390203f2d5664dff278a431c77b4e
+  - node: 01a1f981-4db1-765f-a897-226810e84dba
+    reviewed: c61a10b95c0f8af5f41ef0953b4b53508108210d00332da1279cd59c412386e6
+    tests:
+      - file: "crates/loftspec/tests/lint_foreign.rs"
+        name: "a_foreign_citation_without_such_an_edge_yields_one_finding_naming_it"
+        body: f45bd653d392c120206669d5b76ac297280b70c0f96733177239bcc699ef3303
+  - node: 01a1f981-4db1-765f-a897-2269c250e65e
+    reviewed: 36c11ce420fd889a839aea3fba4fa0f3fd9e6512f618b279205ebd9ce5f058aa
+    tests:
+      - file: "crates/loftspec/tests/lint_foreign.rs"
+        name: "a_foreign_citation_is_never_matched_against_the_documents_own_labels"
+        body: 5f8e5e269ecc86bc787c48f9a7b2a70f08aff4fc05a59b3a8de3db748a73f8a3
   - node: 01a1d600-053b-77ad-8132-b98169820900
     reviewed: 1eec5b8a9c4f69a36e631d989dad171ef286f3412d790558be031843502542ce
     tests:
