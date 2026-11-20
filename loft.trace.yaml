@@ -16803,6 +16803,24 @@ links:
       - file: "crates/loft-cli/tests/remote_connect.rs"
         name: "a_refused_create_or_import_names_the_call_its_status_and_code_and_writes_nothing"
         body: f304c9eeb505e0a0c0e00a1f23515afe1cc03c9bdf488a978dd0aa189ecb4573
+  - node: 01a1f981-4db0-72b8-8a39-a6ec70281b72
+    reviewed: 61a29eec57c12f6f521117411ad135b11ec6757ada8d8691ec1515d633a5678b
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_is_refused_while_documents_lists_another_document_and_keeps_the_sign_in"
+        body: 2e1c16cdd29f7499fd05777181dae5ca20c287c108e472bba3e5dc96f1dff32a
+  - node: 01a1f981-4db1-765f-a897-21daafdda02e
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_is_refused_while_documents_lists_another_document_and_keeps_the_sign_in"
+        body: 2e1c16cdd29f7499fd05777181dae5ca20c287c108e472bba3e5dc96f1dff32a
+  - node: 01a1f981-4db1-765f-a897-21dbcce6dbb0
+    reviewed: 3097f88711c6537c1903f444879c07f42ec7a9108d67abe2b284fb20b02330de
+    tests:
+      - file: "crates/loft-cli/tests/remote_remove.rs"
+        name: "remove_is_refused_while_documents_lists_another_document_and_keeps_the_sign_in"
+        body: 2e1c16cdd29f7499fd05777181dae5ca20c287c108e472bba3e5dc96f1dff32a
   - node: 01a1835b-defe-736c-aa9f-0f404d3d62ba
     reviewed: 5a8a5fd124915d785a352924aaf7341b669eb6978c9ba623949fc056b75e0b7f
     tests:

@@ -159,6 +159,19 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
 fn remove(root: &Path) -> Result<Report, Stop> {
     let (store, mut document) = document(root)?;
     let key = document.id.key().to_string();
+    if !document.documents.is_empty() {
+        let handles: Vec<String> = (document.documents.iter())
+            .map(|entry| entry.handle.to_string())
+            .collect();
+        return Err(Stop::one(
+            "remote",
+            format!(
+                "the document {key} lists {} in `documents`, which only a connected document \
+                 may: `loft interface remove` removes its copies first",
+                handles.join(", ")
+            ),
+        ));
+    }
     if !document.connected && document.remote.is_none() {
         return Ok(Report {
             outcome: "unchanged",
