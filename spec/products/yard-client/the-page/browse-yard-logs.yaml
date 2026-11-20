@@ -424,10 +424,12 @@ requirements:
     criteria:
       - key: 01a1f804-56bc-77a4-94e6-74881760b7f4
         name: "A bare `https://` address in a note's Markdown is drawn as a link to that address."
+      - key: 01a1f89a-bc20-773d-b058-45914917531e
+        name: "An underscore, an asterisk or a tilde within an address is drawn as part of its link, not as emphasis."
       - key: 01a1f804-56bc-77a4-94e6-7489ef413b64
         name: "A bare `http://` address and a bare `mailto:` address are each drawn as a link to that address."
       - key: 01a1f804-56bc-77a4-94e6-748a1481c64b
-        name: "A bare address in a stage's goal, a question's context, an option's detail, a decision's consequence and a task's detail is drawn as a link, as in a note."
+        name: "A bare address in every field that a block or a stage holds in Markdown is drawn as a link, as in a note: a stage's goal, a question's context and each option's detail, a decision's consequence, a task's detail and a `loft` block's note, as well as the Markdown of an approval and a plan."
       - key: 01a1f804-56bc-77a4-94e6-748bc1fff885
         name: "An address within a code span is drawn as text."
       - key: 01a1f804-56bc-77a4-94e6-748c732b5a29
@@ -435,11 +437,13 @@ requirements:
       - key: 01a1f804-56bc-77a4-94e6-748d568ac06c
         name: "An address that is already the text of a link the Markdown writes out is not drawn as a second link within it."
       - key: 01a1f804-56bc-77a4-94e6-748eebcde366
-        name: "A period, a comma, a colon, a semicolon, an exclamation mark or a question mark that ends an address is drawn after the link, not in it."
+        name: "A period, a comma, a colon, a semicolon, an exclamation mark, a question mark, an asterisk, an underscore, a tilde, a single quote or a double quote that ends an address is drawn after the link, not in it."
       - key: 01a1f804-56bc-77a4-94e6-748fb9de9b7d
         name: "A closing parenthesis that ends an address is part of the link only where the address opens a parenthesis before it."
+      - key: 01a1f89a-bc20-773d-b058-4592653a19af
+        name: "A closing square bracket that ends an address is part of the link only where the address opens a square bracket before it."
       - key: 01a1f804-56bc-77a4-94e6-749076569e91
-        name: "Text that begins with any other scheme, such as `javascript:`, is drawn as text."
+        name: "No link is drawn to an address of any other scheme, such as `javascript:`."
   - key: 01a16838-8fdb-7127-a23e-c5588e3201c7
     statement:
       form: optional
@@ -453,6 +457,8 @@ requirements:
         name: "Any HTML that a node's name holds is shown as text."
       - key: 01a16838-8fdb-7127-a23e-c55bc6dabc5f
         name: "A name whose Markdown is more than one line of text is shown as its text."
+      - key: 01a1f89a-bc20-773d-b058-459379a6bdb4
+        name: "A bare address in a node's name is shown as text, not as a link."
       - key: 01a16844-c9d1-72df-8cfa-5cd7aa95dc74
         name: "Each slot of a Requirement's statement in an EARS form is drawn as Markdown, as a name is."
   - key: 01a16844-c9d1-72df-8cfa-5cd8fc1947f1
