@@ -39,6 +39,7 @@ mod fmt;
 mod import;
 mod import_openspec;
 mod init;
+mod interfaces;
 mod merge_contract;
 mod merge_driver;
 mod merge_driver_install;

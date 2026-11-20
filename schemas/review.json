@@ -241,7 +241,8 @@
             "component",
             "constraint",
             "quality_attribute",
-            "section"
+            "section",
+            "interface"
           ]
         },
         "path": {
