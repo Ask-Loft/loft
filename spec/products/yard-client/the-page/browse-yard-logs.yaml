@@ -446,6 +446,14 @@ requirements:
         name: "A closing square bracket that ends an address is part of the link only where the address opens a square bracket before it."
       - key: 01a1f804-56bc-77a4-94e6-749076569e91
         name: "No link is drawn to an address of any other scheme, such as `javascript:`."
+      - key: 01a1f935-07ff-7063-ad69-b209303e008a
+        name: "An `http://` or `https://` that punctuation follows, such as `https:///etc`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20affda0376
+        name: "An address whose host name holds an underscore in either of its last two parts, such as `https://a.b_c.com`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20b4d3df35e
+        name: "A `mailto:` that no email address with a dot in its domain follows, such as `mailto:someone`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20c5aaebd64
+        name: "The link of a `mailto:` address ends where its email address ends, so that in `mailto:a@b.com?subject=x` the `?subject=x` is drawn after it."
   - key: 01a16838-8fdb-7127-a23e-c5588e3201c7
     statement:
       form: optional
