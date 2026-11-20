@@ -48,8 +48,16 @@ impl Companion {
 
     /// Places the resource at `path` on its origin: a path that begins with `/`, and may end in
     /// a query.
+    ///
+    /// # Panics
+    ///
+    /// `path` does not begin with `/`.
     #[must_use]
     pub fn at(mut self, path: &str) -> Self {
+        assert!(
+            path.starts_with('/'),
+            "a companion resource's path begins with `/`: {path:?}"
+        );
         path.clone_into(&mut self.path);
         self
     }
@@ -349,5 +357,15 @@ mod tests {
         }
         let apart = Companion::new("any", &["any"]).at("/notes").elsewhere();
         assert_eq!(listed().accompanied_by(apart).companions.len(), 2);
+    }
+
+    #[test]
+    fn a_companion_resource_lies_only_at_a_path_that_begins_with_a_slash() {
+        let refused = catch_unwind(|| Companion::new("notes", &["notes"]).at("notes/all"));
+        let payload = refused.expect_err("a path without a leading `/` is refused");
+        let message = payload.downcast_ref::<String>().map_or("", String::as_str);
+        assert!(message.contains("\"notes/all\""), "{message}");
+        let placed = Companion::new("notes", &["notes"]).at("/notes/all?view=mine");
+        assert_eq!(placed.path, "/notes/all?view=mine");
     }
 }

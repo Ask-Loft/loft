@@ -204,9 +204,10 @@ impl Auth {
         rotation.resource == resource && self.now() < rotation.at + grace && !successor_rotated
     }
 
-    /// A registered client and a new sign-in for it, without a browser, over `resources`, each
-    /// with the scopes it accepts: an access token for each resource alone, and one refresh
-    /// token. The sign-in is granted every scope that one of its resources accepts.
+    /// A registered client and a new sign-in for it, without a browser, over `resources`, one or
+    /// more as its caller ensures, each with the scopes it accepts: an access token for each
+    /// resource alone, and one refresh token. The sign-in is granted every scope that one of its
+    /// resources accepts.
     pub(super) fn grant(&mut self, expires_in: u64, resources: &[(String, Vec<String>)]) -> Grant {
         let client_id = self.next("client");
         self.clients.insert(client_id.clone(), Vec::new());

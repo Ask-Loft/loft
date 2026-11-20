@@ -220,8 +220,16 @@ impl Remote {
     /// sign-in is granted every scope that a resource it holds accepts. A resource the scenario
     /// does not serve, such as one it served before, accepts no scope, and its access token is
     /// admitted by that resource alone.
+    ///
+    /// # Panics
+    ///
+    /// `resources` is empty: a sign-in holds at least one resource.
     #[must_use]
     pub fn grant_over(&self, resources: &[&str]) -> Grant {
+        assert!(
+            !resources.is_empty(),
+            "a sign-in holds at least one resource, and none was named"
+        );
         let mut state = lock(&self.state);
         let expires_in = state.scenario.expires_in;
         let accepted: Vec<(String, Vec<String>)> = resources
@@ -377,4 +385,23 @@ fn head_mark(held: &Held) -> Value {
             })
         },
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use std::panic::{AssertUnwindSafe, catch_unwind};
+
+    use super::{Remote, RemoteScenario};
+
+    #[test]
+    fn a_sign_in_granted_without_a_browser_holds_at_least_one_resource() {
+        let remote = Remote::start(RemoteScenario::accepting("key"));
+        let refused = catch_unwind(AssertUnwindSafe(|| remote.grant_over(&[])));
+        let payload = refused.expect_err("a sign-in over no resource is refused");
+        let message = payload.downcast_ref::<&str>().copied().unwrap_or_default();
+        assert!(message.contains("at least one resource"), "{message:?}");
+        let own = remote.resource();
+        let grant = remote.grant_over(&[&own]);
+        assert!(remote.admits_at(&own, &grant.access_token));
+    }
 }
