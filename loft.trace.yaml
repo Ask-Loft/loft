@@ -1547,7 +1547,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/writes_tree.rs"
         name: "no_tagged_command_changes_the_document_key_once_a_tree_is_written"
-        body: fa1ba60897fa92307be3459b29c41893e211a9779ef27a9d8d2e4b627f5eee80
+        body: 940ad2344b8f7e74a7f930ecdbbe9d7a8067b3ef1ddcd89b8163a1a7c41f85f3
   - node: b9512543-5235-42f5-bebd-89ef442b7025
     reviewed: 34693a0932fe69e84d3e8f9faa0ded32f9458337d3eb6c148c783716b65e4aa7
     tests:
@@ -16821,6 +16821,138 @@ links:
       - file: "crates/loft-cli/tests/skill_package.rs"
         name: "skill_package_check_does_not_report_current_while_a_source_differs"
         body: b6d0948fc381219c32c7d1ca952d4602cf648254aaf8ab4c9ebaf3d00ff5cc2c
+  - node: 01a1f981-4db0-72b8-8a39-a6b1f62859f7
+    reviewed: 5245c343d55dc9fd4899dede1c306c42f236ded2e01201e683197b56ad5b87ae
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "an_interface_named_by_its_label_is_copied_from_the_state_at_the_head"
+        body: 7b185c12910652ea9463e1063beebdaf542cbc197099876054f8b4e51b86484e
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "an_interface_named_by_its_key_is_copied_from_the_publish_sequence_at_names"
+        body: bb20bcb35b9bc415d6c14c7493a3382d9dc773b7f9faec540dd6b692d1bce140
+  - node: 01a1f981-4db0-72b8-8a39-a6b2dab01971
+    reviewed: 53109432df792208dcc6064155a6d1f474e5f8bac2dd41c3e33dc7b179979b74
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "an_interface_named_by_its_label_is_copied_from_the_state_at_the_head"
+        body: 7b185c12910652ea9463e1063beebdaf542cbc197099876054f8b4e51b86484e
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "an_interface_named_by_its_key_is_copied_from_the_publish_sequence_at_names"
+        body: bb20bcb35b9bc415d6c14c7493a3382d9dc773b7f9faec540dd6b692d1bce140
+  - node: 01a1f981-4db0-72b8-8a39-a6b3d8e0c722
+    reviewed: ab347e8e9aefca3325fe96b3929fb871a4139a2d5503a9fc20ef2773f268f46e
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "an_interface_named_by_its_label_is_copied_from_the_state_at_the_head"
+        body: 7b185c12910652ea9463e1063beebdaf542cbc197099876054f8b4e51b86484e
+  - node: 01a1f981-4db0-72b8-8a39-a6b460cbbeac
+    reviewed: 4f02353e79fcec1a5aacba79281fff41f0413a8b4d8401e86dbea31ca558e20e
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "remote_lists_an_unlisted_handle_with_the_key_read_from_the_states_lock"
+        body: 2006e637c1930873704b8f30345e0eee40c2c512831fde31154facf8703ba1ce
+  - node: 01a1f981-4db0-72b8-8a39-a6b54a4ff25d
+    reviewed: 98ada160dc5077ce952053c75a94314fb97125d303cb663665d1fe05f432a879
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "remote_lists_an_unlisted_handle_with_the_key_read_from_the_states_lock"
+        body: 2006e637c1930873704b8f30345e0eee40c2c512831fde31154facf8703ba1ce
+  - node: 01a1f981-4db0-72b8-8a39-a6b61d6f174e
+    reviewed: 3ed4271da1aca2859842ade09c35e3ed5d3d4bc7ea6f8b9a2d078308a539e771
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_add_whose_journal_cannot_save_writes_neither_the_copy_nor_the_manifest"
+        body: d7abb537db0a6e7339b109aaa724093a2cfd0ccd435b7d183059338f3c061332
+  - node: 01a1f981-4db0-72b8-8a39-a6b73ea9c6a4
+    reviewed: 63cdc23fb9bbebf636ccd3c5e8c3b220dbc95dd89eff7872719e62b3baa90518
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "the_output_names_the_copy_with_its_publish_sequence_and_asks_for_a_commit"
+        body: ca73fb28cd9952ffa32824b92a51cd19905532bb7194b9f33595a668d6f4a310
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "an_interface_named_by_its_label_is_copied_from_the_state_at_the_head"
+        body: 7b185c12910652ea9463e1063beebdaf542cbc197099876054f8b4e51b86484e
+  - node: 01a1f981-4db0-72b8-8a39-a6b8a4239e51
+    reviewed: df6da0e3387897adb9ee4920102565d08d36ae67ddc3d93698ac69bfca1897f9
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "the_output_names_the_copy_with_its_publish_sequence_and_asks_for_a_commit"
+        body: ca73fb28cd9952ffa32824b92a51cd19905532bb7194b9f33595a668d6f4a310
+  - node: 01a1f981-4db0-72b8-8a39-a6ba4aa37073
+    reviewed: 2729b0ef9a502698ebd4c1e5d15e1b77dcde777f11cd317b90e8a00518b76678
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_add_in_a_document_that_is_not_connected_says_that_remote_set_connects_it"
+        body: 70a4c6c27d9ec6bb55fe61d3fa80c5aef7aaeb1fdaf8d83127d1c5cf3d7aa8a5
+  - node: 01a1f981-4db0-72b8-8a39-a6bb9bb60ee2
+    reviewed: ceeeb9874c224ffe3b2209c3e658d3f314b3451c485de6e8fc3836b99befa76d
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_unlisted_handle_without_remote_says_that_remote_lists_the_other_document"
+        body: d0b8d94b89a31914f7881074758cda325dfffb8078f0d5ca84ad11a3916c3fd1
+  - node: 01a1f981-4db0-72b8-8a39-a6bc7b631e04
+    reviewed: c62498ecec5e5c4dde149f5ef8614dc5b433da408bd7a76c245ccad4701225dc
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_interface_already_copied_says_that_update_moves_its_pin"
+        body: b2269fe45ba56f855f39496f5ff2f42baa897e2e5fcea7387988fc945c80e140
+  - node: 01a1f981-4db0-72b8-8a39-a6bdade39b27
+    reviewed: 3f2fc959a4a818cff488a5abcdc3b9414c8143b79dd5380dea483299f6e5499b
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_interface_the_state_does_not_hold_is_named_with_its_handle_and_publish_sequence"
+        body: fdfbc703f036f2c67c9f8cd8c2068c7cf96ec48f3c44ce915ee8cc5f522b0e27
+  - node: 01a1f981-4db0-72b8-8a39-a6beeab736c7
+    reviewed: 4630377e15e5c2088cfb6f99e67e13c023da9e576921e70acbba74c19f419309
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "a_remote_whose_state_names_the_documents_own_key_is_refused_naming_the_key"
+        body: 7eecb08ced082f0296183358c9c3a5d175140529fa93ea92068d05e1805518a1
+  - node: 01a1f981-4db0-72b8-8a39-a6bf86256e14
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_add_in_a_document_that_is_not_connected_says_that_remote_set_connects_it"
+        body: 70a4c6c27d9ec6bb55fe61d3fa80c5aef7aaeb1fdaf8d83127d1c5cf3d7aa8a5
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_unlisted_handle_without_remote_says_that_remote_lists_the_other_document"
+        body: d0b8d94b89a31914f7881074758cda325dfffb8078f0d5ca84ad11a3916c3fd1
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "a_remote_that_differs_from_the_listed_address_is_refused_naming_the_listed_one"
+        body: 7ed20e6b05729e70eb66c03535e4d833eb7553447891f986b53f65a0cd501751
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_interface_already_copied_says_that_update_moves_its_pin"
+        body: b2269fe45ba56f855f39496f5ff2f42baa897e2e5fcea7387988fc945c80e140
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "an_interface_the_state_does_not_hold_is_named_with_its_handle_and_publish_sequence"
+        body: fdfbc703f036f2c67c9f8cd8c2068c7cf96ec48f3c44ce915ee8cc5f522b0e27
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "a_remote_whose_state_names_the_documents_own_key_is_refused_naming_the_key"
+        body: 7eecb08ced082f0296183358c9c3a5d175140529fa93ea92068d05e1805518a1
+  - node: 01a1f981-4db0-72b8-8a39-a6e04cc92c07
+    reviewed: d7cec6cf5971e61f94e4ed38aed93dc44745fbd1c9a8fbeea377ce637940fe57
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "without_a_kept_sign_in_the_person_is_signed_in_to_the_other_remote_first"
+        body: 6658f42dcf37e85697b9062691de762a1ae8ffa9d416d093059cf3a8e65181da
+  - node: 01a1f981-4db0-72b8-8a39-a6e1b6d6cb59
+    reviewed: bff9df52f4a6ce2d862f7303724f2544bcb063a7c804f88367b4a6b5b4fcb00d
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "the_own_remotes_variables_change_no_call_to_another_documents_remote"
+        body: 278003577a35da392bf6241f7f0c9ffeee3d911f128941b357f8a46d3a65964a
+  - node: 01a1f981-4db0-72b8-8a39-a6e264c76548
+    reviewed: 17ada4910afa0af8e3086e2b6b095b9fd0f82f33e10b67230b73833726c5610a
+    tests:
+      - file: "crates/loft-cli/tests/interface_add.rs"
+        name: "the_calls_made_are_the_head_and_the_published_state"
+        body: c82283ed73a1fd271bbc5c5ab1b01925e80a602c61cef90ea4da4633682b9d52
+  - node: 01a1f981-4db0-72b8-8a39-a6e327973022
+    reviewed: 762599754d6190eb9b8509cf21ccff7be1c6f7c038a16ff05b34e7d8dea094e6
+    tests:
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "another_documents_address_is_held_to_the_rule_of_a_remotes_address"
+        body: 157948b21124fa954263ac8b806be74c45c3e7553cdd5a7a1a9f8296919e1d02
   - node: bd3fcaf8-339d-4d61-8dd9-074a0dee67b1
     reviewed: 16809ea41192c55e80617883efddd20f173c9014311f237fd3931a7d8526ec39
     tests:

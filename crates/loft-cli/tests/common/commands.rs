@@ -6,6 +6,7 @@ use std::fs;
 use std::process::Command;
 use std::sync::OnceLock;
 
+use crate::common::others::{self, listing, shelves_remote};
 use crate::common::remote::{History, history};
 use crate::common::signed_in::{name_remote, place};
 use crate::common::{EPOCH, Scratch};
@@ -54,6 +55,9 @@ pub enum Fixture {
     /// a second one after it, which `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` name for
     /// each run: a pull merges the second state in.
     Behind,
+    /// The connected fixture listing another document, under the handle `shelves`, at a remote
+    /// of its own that holds two of its states, with a sign-in to that remote kept.
+    Other,
     /// An empty directory, on a machine where a page server of this `loft`'s version already
     /// runs: `loft yard serve` leaves it serving and exits, as every command here exits.
     Served,
@@ -71,6 +75,7 @@ pub fn fixture(fixture: Fixture) -> Scratch {
         ),
         Fixture::Clean => {}
         Fixture::Connected => name_remote(&scratch, Some(CLOSED), true),
+        Fixture::Other => listing(&scratch, shelves(), true),
         Fixture::Behind => {
             place(&scratch, &behind().0.states[0]);
             name_remote(&scratch, Some(CLOSED), true);
@@ -135,13 +140,20 @@ fn behind() -> &'static (History, Remote) {
     })
 }
 
+/// The other document published twice, and its remote: one for the whole test binary, since
+/// `loft interface add` only reads from it.
+fn shelves() -> &'static Remote {
+    static SHELVES: OnceLock<Remote> = OnceLock::new();
+    SHELVES.get_or_init(|| shelves_remote(&others::shelves()))
+}
+
 /// A command: the slug of its Feature, the arguments that run it, its fixture, and the name of
 /// its schema under `schemas/`.
 pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 38] = [
+pub const COMMANDS: [Entry; 39] = [
     (
         "claude-yard-hook",
         &["yard", "claude", "hook"],
@@ -231,6 +243,13 @@ pub const COMMANDS: [Entry; 38] = [
         &["record-install", "release-binary"],
         Fixture::Empty,
         "record-install",
+    ),
+    // `loft interface add` takes a copy from the other document's remote, never the tree's own.
+    (
+        "loft-interface",
+        &["interface", "add", "shelves:IF-1"],
+        Fixture::Other,
+        "interface",
     ),
     // `loft remote remove` disconnects the document without reaching its remote.
     (

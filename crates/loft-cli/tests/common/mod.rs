@@ -9,6 +9,7 @@ pub mod copies;
 #[cfg(unix)]
 pub mod npm;
 pub mod oauth;
+pub mod others;
 pub mod remote;
 pub mod signed_in;
 pub mod telemetry;

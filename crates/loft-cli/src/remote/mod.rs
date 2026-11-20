@@ -226,6 +226,22 @@ pub fn signed_in(address: &str, browser: bool, timeout: Duration) -> Result<Stri
     }
 }
 
+/// The client of another document's remote at `address`, with the person's sign-in to that
+/// address, made first where none is kept. Neither `LOFT_REMOTE_ENDPOINT` nor
+/// `LOFT_REMOTE_TOKEN` is read: they name the document's own remote alone.
+///
+/// # Errors
+///
+/// A timeout variable is not a whole number of seconds, the address may not be contacted, or no
+/// sign-in can be made.
+pub fn other(address: &str, browser: bool) -> Result<Client, RemoteError> {
+    let timeout = timeout()?;
+    let wait = seconds(WAIT_ENV)?;
+    checked(address)?;
+    let token = signed_in(address, browser, timeout)?;
+    Ok(Client::new(address, Some(token), timeout, wait))
+}
+
 #[cfg(test)]
 mod tests {
     use std::time::Duration;

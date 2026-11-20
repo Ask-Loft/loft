@@ -20,6 +20,7 @@ export const LOFT_SUBCOMMANDS: readonly string[] = [
   'skill',
   'record-install',
   'remote',
+  'interface',
   'telemetry',
   'update-check',
   'yard',
