@@ -16,6 +16,7 @@ use ureq::Body;
 use ureq::http::Response;
 
 use super::calls::{Answer, TOKENS, agent, call, read, redacted};
+use super::resources::origin_path_and_query;
 
 /// The code verifier of every authorization request, whose challenge the request sends.
 pub const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
@@ -59,23 +60,18 @@ pub fn fetch(address: &str) -> (String, Value, Value) {
         .unwrap_or_else(|| {
             panic!("protected resource metadata that names an authorization server: {resource}")
         });
-    let authority = issuer
-        .find("://")
-        .unwrap_or_else(|| panic!("an issuer that is an absolute URL: {issuer}"))
-        + 3;
-    let (origin, path) = issuer.split_at(
-        issuer[authority..]
-            .find('/')
-            .map_or(issuer.len(), |at| authority + at),
-    );
-    let server = call(
-        "GET",
-        &format!("{origin}/.well-known/oauth-authorization-server{path}"),
-        None,
-        None,
-    )
-    .body;
+    let server = call("GET", &server_metadata_at(issuer), None, None).body;
     (challenge, resource, server)
+}
+
+/// The address of the metadata of the authorization server `issuer`, as RFC 8414, section 3.1,
+/// derives it and `loft` reads it: the issuer's origin, then
+/// `/.well-known/oauth-authorization-server`, then its path without a terminating `/`. An issuer
+/// has no query (RFC 8414, section 2), so the address carries none.
+fn server_metadata_at(issuer: &str) -> String {
+    let (origin, path, _) = origin_path_and_query(issuer);
+    let path = path.trim_end_matches('/');
+    format!("{origin}/.well-known/oauth-authorization-server{path}")
 }
 
 /// The challenge of a request without a token to the document at `address`.
@@ -114,19 +110,18 @@ pub fn parameter(challenge: &str, name: &str) -> Option<String> {
 }
 
 /// The answer to a request without a token for the protected resource metadata of the resource
-/// `identifier`, at the address RFC 9728 derives from it: its origin, then
-/// `/.well-known/oauth-protected-resource`, then its path without a terminating `/`, then its
-/// query.
+/// `identifier`, at the address [`resource_metadata_at`] derives from it.
 pub fn companion_metadata(identifier: &str) -> Answer {
-    let authority = identifier.find("://").map_or(0, |at| at + 3);
-    let end = identifier[authority..]
-        .find(['/', '?'])
-        .map_or(identifier.len(), |at| authority + at);
-    let (origin, rest) = identifier.split_at(end);
-    let (path, query) = rest.find('?').map_or((rest, ""), |at| rest.split_at(at));
+    call("GET", &resource_metadata_at(identifier), None, None)
+}
+
+/// The address of the protected resource metadata of the resource `identifier`, as RFC 9728,
+/// section 3.1, derives it: its origin, then `/.well-known/oauth-protected-resource`, then its
+/// path without a terminating `/`, then its query.
+fn resource_metadata_at(identifier: &str) -> String {
+    let (origin, path, query) = origin_path_and_query(identifier);
     let path = path.trim_end_matches('/');
-    let url = format!("{origin}/.well-known/oauth-protected-resource{path}{query}");
-    call("GET", &url, None, None)
+    format!("{origin}/.well-known/oauth-protected-resource{path}{query}")
 }
 
 /// The id of a public client registered with `server`. A registration answered without one fails
@@ -358,7 +353,53 @@ mod tests {
 
     use serde_json::json;
 
-    use super::{Answer, assert_oauth_error_for, assert_same_answer};
+    use super::{
+        Answer, assert_oauth_error_for, assert_same_answer, resource_metadata_at,
+        server_metadata_at,
+    };
+
+    #[test]
+    fn a_metadata_address_is_the_origin_the_well_known_path_and_the_path_without_its_last_slash() {
+        let server = "/.well-known/oauth-authorization-server";
+        for (issuer, address) in [
+            ("http://127.0.0.1:4000/auth", "http://127.0.0.1:4000{}/auth"),
+            ("https://as.example", "https://as.example{}"),
+            ("https://as.example/", "https://as.example{}"),
+            (
+                "https://as.example/tenants/one/",
+                "https://as.example{}/tenants/one",
+            ),
+            ("HTTPS://AS.Example:443/auth", "https://as.example{}/auth"),
+            // An issuer has no query (RFC 8414, section 2), and the address carries none.
+            ("https://as.example?tenant=a", "https://as.example{}"),
+            (
+                "https://as.example/auth?tenant=a",
+                "https://as.example{}/auth",
+            ),
+        ] {
+            let address = address.replace("{}", server);
+            assert_eq!(server_metadata_at(issuer), address, "{issuer}");
+        }
+        let resource = "/.well-known/oauth-protected-resource";
+        for (identifier, address) in [
+            (
+                "http://127.0.0.1:4000/documents",
+                "http://127.0.0.1:4000{}/documents",
+            ),
+            ("http://127.0.0.1:4000/", "http://127.0.0.1:4000{}"),
+            (
+                "http://127.0.0.1:4000/mail/inbox/?view=all",
+                "http://127.0.0.1:4000{}/mail/inbox?view=all",
+            ),
+            (
+                "http://127.0.0.1:4000/documents?view=notes",
+                "http://127.0.0.1:4000{}/documents?view=notes",
+            ),
+        ] {
+            let address = address.replace("{}", resource);
+            assert_eq!(resource_metadata_at(identifier), address, "{identifier}");
+        }
+    }
 
     #[test]
     fn an_answer_that_is_not_the_refusal_expected_fails_naming_its_request_without_a_token() {

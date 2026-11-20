@@ -1,8 +1,9 @@
 //! What the contract suites of a remote's companion resources share, of the simulator and of a
 //! real remote alike: the member of the remote's protected resource metadata that lists them, the
 //! list read from metadata already fetched or found from a document's address, the origin an
-//! address lies on, a document's head asked for with an access token, and a sign-in as a client
-//! keeps it, made on the simulator or kept by `loft remote login` for a real remote.
+//! address lies on, with its path and query, a document's head asked for with an access token,
+//! and a sign-in as a client keeps it, made on the simulator or kept by `loft remote login` for a
+//! real remote.
 
 use std::{env, fs};
 
@@ -60,6 +61,17 @@ pub fn companions_of(metadata: &Value) -> Vec<(String, String)> {
 ///
 /// `url` is not an absolute URL with a host.
 pub fn origin_of(url: &str) -> String {
+    origin_path_and_query(url).0
+}
+
+/// The absolute URL `url`, read by the parser that `loft`'s requests use, as `loft` reads an
+/// address: its origin, as [`origin_of`] writes it; its path, `/` where it names none; and its
+/// query with the `?` that opens it, or nothing where it has none. A fragment is never read.
+///
+/// # Panics
+///
+/// `url` is not an absolute URL with a host.
+pub fn origin_path_and_query(url: &str) -> (String, String, String) {
     let uri: Uri = url
         .parse()
         .unwrap_or_else(|error| panic!("an absolute URL: {url}: {error}"));
@@ -73,10 +85,14 @@ pub fn origin_of(url: &str) -> String {
         "http" => Some(80),
         _ => None,
     };
-    match uri.port_u16().filter(|port| Some(*port) != default) {
+    let origin = match uri.port_u16().filter(|port| Some(*port) != default) {
         Some(port) => format!("{scheme}://{host}:{port}"),
         None => format!("{scheme}://{host}"),
-    }
+    };
+    let query = uri
+        .query()
+        .map_or_else(String::new, |query| format!("?{query}"));
+    (origin, uri.path().to_owned(), query)
 }
 
 /// The answer to `GET <address>/head` with the bearer token `token`, as a client signed in to the
