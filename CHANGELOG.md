@@ -77,6 +77,16 @@ everything 2.4.1 will hold.
 - A `loft` block records the whole report its view gives, however long. A list of more than
   1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
   part of Yard Log's history of the work.
+- An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
+  `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its
+  own. A Component `provides` the Interfaces whose promise it keeps and `requires` those it relies
+  on, each written by key or, for `loft fmt` to resolve, by name. A publish labels Interfaces `IF`
+  after the root Components, and `spec/labels.yaml` gains the `IF` counter only once one is
+  labeled, so a document without an Interface hashes, labels and renders as before.
+- `loft check` reports an Interface that holds no Requirement (`V2-012`, warning) and one that no
+  Component provides or requires (`V2-013`, info). `loft render` gives Interfaces their own
+  section and lists each Component's `provides` and `requires`; `loft find`, `loft status`,
+  `loft review` and a `spec-change` view on the Yard page take them as they take every other kind.
 
 ## 2.4.0 (2026-11-17)
 
