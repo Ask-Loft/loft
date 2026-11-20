@@ -6810,6 +6810,12 @@ links:
       - file: "crates/loftspec/tests/lint_interfaces.rs"
         name: "an_interface_one_component_provides_or_requires_is_not_reported_as_unlinked"
         body: 6344cfe6abd5cbac45557baa87c3d69dcfc7ef85dff535bd8b80172a102c4fa0
+  - node: 01a1f981-4db1-765f-a897-22738f9c43ac
+    reviewed: 1d56a5f7ee2f65f3e46e951cf72d6f1ea0aae7bc8030c47d25baca0fded71c25
+    tests:
+      - file: "crates/loftspec/tests/lint_interfaces.rs"
+        name: "a_copy_of_another_documents_interface_yields_no_v2_013_finding"
+        body: c28f813b430b6cbbb5076fb86c1a7e0e69ca3266af069e6f7a8fbd767cb981e8
   - node: 01a1f981-4db1-765f-a897-2274b5c47615
     reviewed: 64566b6f940405ade58c724a36f58637dadab1d9a8f7c469676301477cfd7db3
     tests:

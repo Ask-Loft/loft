@@ -73,3 +73,10 @@ fn a_registry_term_an_interface_does_not_list_is_reported_on_the_interface() {
     let untagged = keys_of(&found, RuleId::Lq009);
     assert!(untagged.contains(&vec![key(INTERFACE)]), "{untagged:?}");
 }
+
+#[test]
+fn a_copy_of_another_documents_interface_yields_no_v2_013_finding() {
+    let document = crate::common::copies::requiring();
+    assert!(document.interfaces.is_empty() && !document.copies.is_empty());
+    assert_eq!(keys_of(&findings(&document), RuleId::V2013), NONE);
+}
