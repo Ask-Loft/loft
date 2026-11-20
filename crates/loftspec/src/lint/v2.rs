@@ -12,7 +12,7 @@ use super::markdown::outside_subset;
 use super::{Raw, RuleId};
 use crate::bindings::Citation;
 use crate::document::Edge;
-use crate::identity::Key;
+use crate::identity::{Key, Label};
 use crate::ids::ElementId;
 use crate::node::Node;
 use crate::prose::{LabelSpan, heading_lines, label_spans};
@@ -65,14 +65,18 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
         let source = ElementId::from(item.id);
         let mentioned = |target: Key| mentions.contains(&(source, target));
         for (span, line) in references {
-            let Some((rule, message)) = finding(context, &span, mentioned) else {
+            let found = match &span.handle {
+                Some(handle) => foreign_finding(context, handle, span.label, mentioned),
+                None => finding(context, &span, mentioned),
+            };
+            let Some((rule, message)) = found else {
                 continue;
             };
-            out.push(
-                Raw::new(rule, vec![key], message)
-                    .term(span.label.to_string())
-                    .line(line),
+            let cited = span.handle.as_ref().map_or_else(
+                || span.label.to_string(),
+                |handle| format!("{handle}:{}", span.label),
             );
+            out.push(Raw::new(rule, vec![key], message).term(cited).line(line));
         }
     }
 }
@@ -113,6 +117,26 @@ fn finding(
             None => (RuleId::V2003, "The reference names no element."),
         },
     })
+}
+
+/// The finding a citation `<handle>:<label>` yields: none where the element mentions the node
+/// the copies under the handle bind to the label, and none for a handle that names no other
+/// document, which is no citation. It is never matched against the document's own labels.
+fn foreign_finding(
+    context: &Context<'_>,
+    handle: &str,
+    label: Label,
+    mentioned: impl Fn(Key) -> bool,
+) -> Option<(RuleId, &'static str)> {
+    let document = context.document;
+    if !(document.documents.iter()).any(|other| other.handle.as_str() == handle) {
+        return None;
+    }
+    match crate::copy::labeled(&document.copies, handle, label) {
+        Some(key) if mentioned(key) => None,
+        Some(_) => Some((RuleId::V2003, "The reference has no `mentions` edge.")),
+        None => Some((RuleId::V2003, "The reference names no element.")),
+    }
 }
 
 /// The label references of a body, each with its body line.

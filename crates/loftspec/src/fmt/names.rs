@@ -9,6 +9,8 @@ use crate::codec::schema::{Kind, Target, field};
 use crate::codec::{Problem, ReadError, Rec, SpecPath, Tree, Val, keyed_records, statement_of};
 use crate::kind::NodeKind;
 
+use super::foreign::Foreign;
+
 /// An element a name may identify.
 struct Named {
     kind: Kind,
@@ -130,6 +132,7 @@ pub(super) fn resolve(tree: &mut Tree) -> Result<(), Vec<ReadError>> {
         return Ok(());
     }
     let index = Index::of(tree);
+    let foreign = Foreign::of(&crate::codec::copies_of(tree));
     let mut errors = Vec::new();
     for (path, (_, content)) in &mut tree.files {
         if !written.contains(path) {
@@ -137,6 +140,7 @@ pub(super) fn resolve(tree: &mut Tree) -> Result<(), Vec<ReadError>> {
         }
         let mut resolver = Resolver {
             index: &index,
+            foreign: &foreign,
             path,
             errors: &mut errors,
         };
@@ -153,7 +157,8 @@ pub(super) fn resolve(tree: &mut Tree) -> Result<(), Vec<ReadError>> {
 
 /// Whether a record, or any record in it, is a reference written by name.
 fn holds_by_name(record: &Rec) -> bool {
-    record.kind == Kind::ByName || record.children().any(holds_by_name)
+    matches!(record.kind, Kind::ByName | Kind::ForeignByName)
+        || record.children().any(holds_by_name)
 }
 
 /// A record's name as [`crate::node::Node::name`] gives a node's, or a decision's title: a
@@ -208,6 +213,7 @@ fn subject_name(subject: &Val, index: &Index) -> Option<String> {
 /// and the errors found so far.
 struct Resolver<'a> {
     index: &'a Index,
+    foreign: &'a Foreign,
     path: &'a SpecPath,
     errors: &'a mut Vec<ReadError>,
 }
@@ -249,11 +255,15 @@ impl Resolver<'_> {
         let Val::Record(record) = item else {
             return;
         };
-        let (Kind::ByName, Some(target)) = (record.kind, target) else {
-            self.record(record, local);
-            return;
+        let resolved = match (record.kind, target) {
+            (Kind::ByName, Some(target)) => self.target(record, target, local),
+            (Kind::ForeignByName, _) => self.foreign.resolve(record, target),
+            _ => {
+                self.record(record, local);
+                return;
+            }
         };
-        match self.target(record, target, local) {
+        match resolved {
             Ok(key) => *item = key,
             Err(problem) => {
                 let error = ReadError::at(self.path, Some(record.position), problem);

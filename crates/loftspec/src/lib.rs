@@ -9,6 +9,7 @@ pub mod check;
 pub mod codec;
 pub mod conflict;
 pub mod convert;
+pub mod copy;
 pub mod decision;
 pub mod diff;
 pub mod document;

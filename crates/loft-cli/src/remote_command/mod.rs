@@ -15,7 +15,7 @@ use serde_json::{Value, json};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
-use crate::remote::{self, Client, RemoteError, signin, signins};
+use crate::remote::{self, Client, RemoteError, signins};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
@@ -68,7 +68,7 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
 }
 
 /// The tree's store and the document it holds.
-fn document(root: &Path) -> Result<(FileStore, Document), Stop> {
+pub(crate) fn document(root: &Path) -> Result<(FileStore, Document), Stop> {
     let store = FileStore::open(root)?;
     let document = codec::read(&store.read_files()?).map_err(Stop::from)?;
     Ok((store, document))
@@ -96,7 +96,7 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
     let mut fields = json!({ "documentKey": key, "address": address });
     let mut lines = Vec::new();
     let outcome = if document.connected {
-        signed_in(address, browser, timeout)?;
+        remote::signed_in(address, browser, timeout)?;
         lines.push(format!("the document {key} now names its remote {address}"));
         "set"
     } else {
@@ -105,7 +105,7 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
             Some(lock) => connect::history(root, lock)?,
             None => Vec::new(),
         };
-        let token = signed_in(address, browser, timeout)?;
+        let token = remote::signed_in(address, browser, timeout)?;
         let client = Client::new(address, Some(token), timeout, wait);
         let connected = connect::connect(&client, &document, lock.as_ref(), &states)?;
         fields["head"] = connected.head.json();
@@ -131,22 +131,6 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
     })
 }
 
-/// The access token of the person's sign-in to `address`: the one `loft/remotes.json` holds,
-/// refreshed where it needs to be, or else, or where its refresh is refused, a new sign-in kept
-/// there.
-fn signed_in(address: &str, browser: bool, timeout: std::time::Duration) -> Result<String, Stop> {
-    match signins::live(address, timeout) {
-        Ok(sign_in) => Ok(sign_in.access_token),
-        Err(RemoteError::NoSignIn { .. } | RemoteError::Lapsed { .. }) => {
-            let sign_in = signin::sign_in(address, browser, timeout)?;
-            let token = sign_in.access_token.clone();
-            signins::save(address, &sign_in)?;
-            Ok(token)
-        }
-        Err(error) => Err(error.into()),
-    }
-}
-
 /// `loft remote login`: a new sign-in to the remote the manifest names.
 fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
     let (_, document) = document(root)?;
@@ -160,10 +144,7 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
             ),
         )
     })?;
-    remote::checked(&address)?;
-    let timeout = remote::timeout()?;
-    let sign_in = signin::sign_in(&address, browser, timeout)?;
-    signins::save(&address, &sign_in)?;
+    remote::login(&address, browser)?;
     Ok(Report {
         outcome: "signed in",
         fields: json!({ "documentKey": key, "address": address }),
@@ -175,6 +156,19 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
 fn remove(root: &Path) -> Result<Report, Stop> {
     let (store, mut document) = document(root)?;
     let key = document.id.key().to_string();
+    if !document.documents.is_empty() {
+        let handles: Vec<String> = (document.documents.iter())
+            .map(|entry| entry.handle.to_string())
+            .collect();
+        return Err(Stop::one(
+            "remote",
+            format!(
+                "the document {key} lists {} in `documents`, which only a connected document \
+                 may: `loft interface remove` removes its copies first",
+                handles.join(", ")
+            ),
+        ));
+    }
     if !document.connected && document.remote.is_none() {
         return Ok(Report {
             outcome: "unchanged",

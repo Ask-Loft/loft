@@ -40,6 +40,17 @@ pub enum Kind {
     ByName,
     /// An Interface, which stands only at the root, in a file of its own.
     Interface,
+    /// An entry of the manifest's `documents`: another document the document links to.
+    OtherDocument,
+    /// A copy of another document's Interface, in a file of its own under `spec/documents/`.
+    Copy,
+    /// A label of a node of a copy, as the other document bound it.
+    CopyLabel,
+    /// A reference to a node of another document: its handle and the node's key.
+    ForeignRef,
+    /// A reference to a node of another document by its label or its name, which only the
+    /// formatter reads and replaces by a [`Kind::ForeignRef`].
+    ForeignByName,
 }
 
 /// What a scalar field holds, which fixes how it is checked and written.
@@ -172,7 +183,7 @@ use crate::kind::NodeKind;
 
 impl Kind {
     /// Every kind of record.
-    pub const ALL: [Self; 32] = [
+    pub const ALL: [Self; 37] = [
         Self::Manifest,
         Self::DerivedFrom,
         Self::Labels,
@@ -205,6 +216,11 @@ impl Kind {
         Self::FormerLabel,
         Self::ByName,
         Self::Interface,
+        Self::OtherDocument,
+        Self::Copy,
+        Self::CopyLabel,
+        Self::ForeignRef,
+        Self::ForeignByName,
     ];
 
     /// The kind's fields in the Format's order.

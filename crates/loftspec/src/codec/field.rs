@@ -27,6 +27,8 @@ pub const DEFINITION: &str = "definition";
 pub const DEPARTED: &str = "departed";
 pub const DERIVED_FROM: &str = "derivedFrom";
 pub const DESCRIPTION: &str = "description";
+pub const DOCUMENT: &str = "document";
+pub const DOCUMENTS: &str = "documents";
 pub const DOCUMENT_KEY: &str = "documentKey";
 pub const DRIVER: &str = "driver";
 pub const DRIVERS: &str = "drivers";
@@ -41,7 +43,11 @@ pub const FORM: &str = "form";
 pub const FORMAT: &str = "format";
 pub const FORMER_LABEL: &str = "formerLabel";
 pub const IF: &str = "if";
+pub const HANDLE: &str = "handle";
+pub const INTERFACE: &str = "interface";
+pub const INTERFACE_HASH: &str = "interfaceHash";
 pub const KEY: &str = "key";
+pub const LABELS: &str = "labels";
 pub const KIND: &str = "kind";
 pub const LABEL: &str = "label";
 pub const LOWER: &str = "lower";
@@ -72,6 +78,7 @@ pub const REALIZES: &str = "realizes";
 /// The pseudo-field a conflict over a record that one side deleted names.
 pub const RECORD: &str = "record";
 pub const REMOTE: &str = "remote";
+pub const STATE_ROOT: &str = "stateRoot";
 pub const REQUIRED_VALUE: &str = "requiredValue";
 pub const REQUIREMENTS: &str = "requirements";
 pub const ROLE: &str = "role";
@@ -101,3 +108,7 @@ pub const WHEN: &str = "when";
 pub const WHERE: &str = "where";
 pub const WHILE: &str = "while";
 pub const WITHDRAWN: &str = "withdrawn";
+
+/// The fields that may hold a reference into another document: a Component's `provides` and
+/// `requires`, any record's `mentions` and a subject's `node`.
+pub const CROSSING: [&str; 4] = [PROVIDES, REQUIRES, MENTIONS, NODE];

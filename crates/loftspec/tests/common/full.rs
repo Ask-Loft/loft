@@ -4,15 +4,16 @@
 use loftspec::attributes::{Boundary, ConservationKind};
 use loftspec::canonical::Digest;
 use loftspec::decision::StateKind;
-use loftspec::document::{DerivedFrom, Document, Edge};
+use loftspec::document::{DerivedFrom, Document, Edge, OtherDocument};
 use loftspec::ids::{
-    AuthoredStateId, ComponentId, ConstraintId, CriterionId, DecisionId, ElementId, FeatureGroupId,
-    FeatureId, InterfaceId, ProductId, QualityAttributeId, RequirementId, SectionId,
+    AuthoredStateId, ComponentId, ConstraintId, CriterionId, DecisionId, DocumentId, ElementId,
+    FeatureGroupId, FeatureId, InterfaceId, ProductId, QualityAttributeId, RequirementId,
+    SectionId,
 };
 use loftspec::names::TagName;
 use loftspec::tree::{Details, Section};
 
-use super::{component, key, label, section, small_document};
+use super::{component, key, label, section, slug, small_document};
 
 /// A Section numbered `n` holding one child Section numbered `n + 1`.
 fn notes(n: u32) -> Section {
@@ -139,6 +140,7 @@ pub fn full_document() -> Document {
     document.publish_branch = Some("release".to_owned());
     document.connected = true;
     document.remote = Some("https://remote.example/documents/one".to_owned());
+    document.documents.push(other_document("format", 80));
     document.derived_from = Some(DerivedFrom {
         authored_state_id: AuthoredStateId::new(key(70)),
         content_address: "ab".repeat(32).parse::<Digest>().unwrap(),
@@ -150,6 +152,15 @@ pub fn full_document() -> Document {
         .unwrap();
     depart_a_decision(&mut document);
     document
+}
+
+/// An entry of `documents` under `handle`, for the document keyed `n`, on its own remote.
+pub fn other_document(handle: &str, n: u32) -> OtherDocument {
+    OtherDocument {
+        handle: slug(handle),
+        key: DocumentId::new(key(n)),
+        remote: format!("https://remote.example/documents/{handle}"),
+    }
 }
 
 /// Binds key 90 as the decision `ADR-5`, aliased `ADR-4` and withdrawn `ADR-3`, accepted with the

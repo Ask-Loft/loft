@@ -100,8 +100,36 @@ const MANIFEST_FIELDS: &[Field] = &[
     opt(field::PUBLISH_BRANCH, S::Identifier),
     opt(field::CONNECTED, S::Flag),
     opt(field::REMOTE, S::Text),
+    ordered(records(field::DOCUMENTS, K::OtherDocument), Order::ByText),
     scalars(field::PRODUCTS, S::Key),
     record(field::DERIVED_FROM, false, K::DerivedFrom),
+];
+
+const OTHER_DOCUMENT_FIELDS: &[Field] = &[
+    req(field::HANDLE, S::Slug),
+    req(field::KEY, S::Key),
+    req(field::REMOTE, S::Text),
+];
+
+const COPY_FIELDS: &[Field] = &[
+    req(field::PUBLISH_SEQUENCE, S::Integer),
+    req(field::STATE_ROOT, S::Digest),
+    req(field::INTERFACE_HASH, S::Digest),
+    ordered(
+        spec(field::LABELS, true, Shape::List(Item::Record(K::CopyLabel))),
+        Order::ByKey,
+    ),
+    record(field::INTERFACE, true, K::Interface),
+];
+
+const COPY_LABEL_FIELDS: &[Field] = &[req(field::KEY, S::Key), req(field::LABEL, S::Label)];
+
+const FOREIGN_REF_FIELDS: &[Field] = &[req(field::DOCUMENT, S::Slug), req(field::KEY, S::Key)];
+
+const FOREIGN_BY_NAME_FIELDS: &[Field] = &[
+    req(field::DOCUMENT, S::Slug),
+    opt(field::LABEL, S::Label),
+    opt(field::NAME, S::Text),
 ];
 
 const DERIVED_FROM_FIELDS: &[Field] = &[
@@ -405,5 +433,10 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::FormerLabel => FORMER_LABEL_FIELDS,
         Kind::ByName => BY_NAME_FIELDS,
         Kind::Interface => INTERFACE_FIELDS,
+        Kind::OtherDocument => OTHER_DOCUMENT_FIELDS,
+        Kind::Copy => COPY_FIELDS,
+        Kind::CopyLabel => COPY_LABEL_FIELDS,
+        Kind::ForeignRef => FOREIGN_REF_FIELDS,
+        Kind::ForeignByName => FOREIGN_BY_NAME_FIELDS,
     }
 }

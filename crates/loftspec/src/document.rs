@@ -3,6 +3,7 @@
 //! a v1 source.
 
 use crate::conflict::Conflict;
+use crate::copy::Copy;
 use crate::wire::wire_names;
 use serde::Deserialize;
 
@@ -15,6 +16,7 @@ use crate::ids::{
     InterfaceId, ProductId, TagId, TermId,
 };
 use crate::names::{CategoryName, TagName};
+use crate::slug::Slug;
 use crate::tree::{Interface, Product, RootComponent};
 
 /// The type of an edge (F-13, F-14).
@@ -39,6 +41,28 @@ impl EdgeKind {
             Self::Provides => "provides",
             Self::Requires => "requires",
         }
+    }
+
+    /// The field of its source's record that writes an edge of this kind.
+    #[must_use]
+    pub const fn field(self) -> &'static str {
+        match self {
+            Self::Realizes => "realizes",
+            Self::ScopedTo => "scopedTo",
+            Self::Mentions => "mentions",
+            Self::Subject => "subjects",
+            Self::Provides => "provides",
+            Self::Requires => "requires",
+        }
+    }
+
+    /// Whether an edge of this kind may name a node of a copy of another document's Interface.
+    #[must_use]
+    pub const fn crosses(self) -> bool {
+        matches!(
+            self,
+            Self::Provides | Self::Requires | Self::Mentions | Self::Subject
+        )
     }
 }
 
@@ -189,6 +213,17 @@ pub struct DerivedFrom {
     pub publish_sequence: u64,
 }
 
+/// Another connected document whose Interfaces a connected document links to: an entry of the
+/// manifest's `documents`, under a handle of the document's own choosing. None of it enters a
+/// root, since every root names the other document by its key, and never by its handle.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OtherDocument {
+    pub handle: Slug,
+    pub key: DocumentId,
+    /// The address of the other document's remote.
+    pub remote: String,
+}
+
 /// A whole document. Products are in the manifest's order (AC-241); root Components, edges,
 /// registry entries and decisions are in no meaningful order. The publish branch is named only
 /// when it is not `main` (AC-276). A connected document publishes through its remote; the mark
@@ -214,6 +249,12 @@ pub struct Document {
     /// The address of a connected document's remote, which the manifest names as `remote` and
     /// which enters no root.
     pub remote: Option<String>,
+    /// The other documents a connected document links to, in no meaningful order; the writer
+    /// sorts them by handle.
+    pub documents: Vec<OtherDocument>,
+    /// The copies of other documents' Interfaces, in no meaningful order. Their nodes are no
+    /// nodes of the document: no walk of it visits them.
+    pub copies: Vec<Copy>,
     /// The merge conflicts the tree holds, which the validator reports until removed (RQ-126).
     pub conflicts: Vec<Conflict>,
 }
@@ -238,6 +279,8 @@ impl Document {
             publish_branch: None,
             connected: false,
             remote: None,
+            documents: Vec::new(),
+            copies: Vec::new(),
             conflicts: Vec::new(),
         }
     }

@@ -90,6 +90,27 @@ everything 2.4.1 will hold.
 - `loft review --format json` follows the schema `loft-review/2`, whose node kinds add
   `interface`, and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
   `V2-013`. The output is otherwise as it was.
+- A connected document can link to an Interface of another connected document. The manifest's
+  `documents` lists the other document under a handle of the document's own choosing, with the
+  address of its remote, and a copy of the Interface, as that document published it at one
+  publish sequence, is committed under `spec/documents/<handle>/`. The copy is the pin: a
+  Component's `provides` and `requires`, a node's `mentions` and a decision's subjects may name
+  one of its nodes as `{document: <handle>, key: <key>}`, or by label or name for `loft fmt` to
+  resolve, and the hash of the node's content enters the edges root. The state view gains a
+  trailing `pins` member only in a tree that holds a copy, so a tree without one hashes as before.
+- `loft interface add <handle>:<label>` takes a copy from the other document's remote at its head,
+  or `--at` a publish sequence, listing the other document the first time with `--remote`;
+  `loft interface update` moves pins and reports each node of each promise added, changed or
+  removed, a withdrawn Interface and each reference left dangling; `loft interface status`
+  compares each copy with its remote; `loft interface remove` deletes a copy nothing references;
+  and `loft interface login` signs in to another document's remote. Each reaches the other
+  document's remote with the person's sign-in to that address, never `LOFT_REMOTE_ENDPOINT` or
+  `LOFT_REMOTE_TOKEN`. The output follows the schema `loft-interface/1`.
+- A connected `loft publish` confirms each copy against the state its pin names at the other
+  document's remote before it sends anything, `loft remote remove` refuses while `documents`
+  lists another document, `loft reconcile` takes in the criteria of a copied Interface that a
+  Component provides, named and accepted as `<handle>:<label>`, and `V2-003` checks a citation
+  `<handle>:<label>` against the copies.
 
 ## 2.4.0 (2026-11-17)
 

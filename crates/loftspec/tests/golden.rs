@@ -2,6 +2,7 @@
 //! vectors in `testdata/golden/` were computed by an independent implementation; never
 //! regenerate them to make this test pass.
 
+use crate::common::copies::requiring;
 use crate::common::interfaces::{INTERFACE, MODEL, provides, with_interface};
 use crate::common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
@@ -15,6 +16,7 @@ use serde_json::Value;
 const SMALL_DOCUMENT: &str = include_str!("../../../testdata/golden/small-document.json");
 const SMALL_DOCUMENT_INTERFACE: &str =
     include_str!("../../../testdata/golden/small-document-interface.json");
+const SMALL_DOCUMENT_PIN: &str = include_str!("../../../testdata/golden/small-document-pin.json");
 
 struct Computed {
     name: String,
@@ -68,6 +70,35 @@ fn the_vectors_of_a_document_with_a_provided_interface_are_reproduced_byte_for_b
         SMALL_DOCUMENT_INTERFACE,
         &small_document_with_a_provided_interface(),
     );
+}
+
+/// The small document, connected, with a copy of another document's Interface pinned at
+/// publish sequence 3, which its root Component provides.
+fn small_document_providing_a_copied_interface() -> Document {
+    let mut document = requiring();
+    document.edges.push(provides(MODEL, INTERFACE));
+    document
+}
+
+#[test]
+fn the_vectors_of_a_document_providing_a_copied_interface_are_reproduced_byte_for_byte() {
+    assert_reproduced(
+        SMALL_DOCUMENT_PIN,
+        &small_document_providing_a_copied_interface(),
+    );
+    let vectors = vectors(SMALL_DOCUMENT_PIN);
+    let roots = hash_document(&small_document_providing_a_copied_interface())
+        .unwrap()
+        .roots;
+    assert_eq!(
+        roots.content.to_string(),
+        digest_of(&vectors, "root:content")
+    );
+    assert_eq!(
+        roots.pins.unwrap().to_string(),
+        digest_of(&vectors, "root:pins")
+    );
+    assert_eq!(roots.state.to_string(), digest_of(&vectors, "root:state"));
 }
 
 #[test]

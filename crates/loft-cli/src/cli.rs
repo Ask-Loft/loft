@@ -8,7 +8,13 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 use loftspec::lint::Severity;
 
 use crate::yard::args::YardAction;
-use crate::{install, pull, remote_command, review, switch_command};
+use crate::{install, pull, review, switch_command};
+
+mod interface;
+mod remote;
+
+pub use interface::InterfaceAction;
+pub use remote::RemoteAction;
 
 #[derive(Parser)]
 #[command(
@@ -146,6 +152,12 @@ pub enum Command {
         #[command(subcommand)]
         action: RemoteAction,
     },
+    /// Pin, move, check and remove the copies of other documents' Interfaces that a connected
+    /// document links to.
+    Interface {
+        #[command(subcommand)]
+        action: InterfaceAction,
+    },
     /// Switch telemetry on or off for you on this machine, or report its state.
     Telemetry {
         #[command(subcommand)]
@@ -275,60 +287,6 @@ pub enum SkillAction {
         #[command(flatten)]
         output: Output,
     },
-}
-
-#[derive(Subcommand)]
-pub enum RemoteAction {
-    /// Connect the document to the remote at the address, signing in where needed, and name it
-    /// in the manifest.
-    Set {
-        /// The remote's address.
-        address: String,
-        /// Print the address to open, without opening a browser.
-        #[arg(long)]
-        no_browser: bool,
-        #[command(flatten)]
-        output: Output,
-    },
-    /// Sign in again to the remote that the manifest names, once a sign-in has lapsed or in a
-    /// fresh clone.
-    Login {
-        /// Print the address to open, without opening a browser.
-        #[arg(long)]
-        no_browser: bool,
-        #[command(flatten)]
-        output: Output,
-    },
-    /// Disconnect the document from its remote and forget the sign-in to it.
-    Remove {
-        #[command(flatten)]
-        output: Output,
-    },
-}
-
-impl RemoteAction {
-    pub fn split(&self) -> (remote_command::Action, bool) {
-        match self {
-            Self::Set {
-                address,
-                no_browser,
-                output,
-            } => (
-                remote_command::Action::Set {
-                    address: address.clone(),
-                    browser: !no_browser,
-                },
-                output.json(),
-            ),
-            Self::Login { no_browser, output } => (
-                remote_command::Action::Login {
-                    browser: !no_browser,
-                },
-                output.json(),
-            ),
-            Self::Remove { output } => (remote_command::Action::Remove, output.json()),
-        }
-    }
 }
 
 #[derive(Subcommand)]
@@ -478,6 +436,7 @@ impl Command {
             | Self::Status { .. }
             | Self::RecordInstall { .. }
             | Self::Remote { .. }
+            | Self::Interface { .. }
             | Self::Telemetry { .. }
             | Self::UpdateCheck { .. }
             | Self::Yard { .. } => None,

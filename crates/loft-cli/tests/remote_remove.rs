@@ -153,3 +153,32 @@ fn every_subcommand_refuses_a_directory_without_a_manifest_naming_its_path() {
     }
     assert!(remote.requests().is_empty(), "no connection is opened");
 }
+
+#[test]
+fn remove_is_refused_while_documents_lists_another_document_and_keeps_the_sign_in() {
+    let remote = Remote::start(RemoteScenario::accepting("doc-remove"));
+    let scratch = Scratch::with_reading_list();
+    name_remote(&scratch, Some(&remote.address()), true);
+    crate::common::others::list(&scratch, "http://127.0.0.1:9/documents/shelves");
+    keep(
+        &scratch,
+        &json!({ remote.address(): granted(&remote, 3600) }),
+    );
+    let before = tree(&scratch.0);
+    let kept = sign_ins(&scratch);
+    let (output, _) = run(
+        &scratch,
+        &["remote", "remove", "--format", "json"],
+        BrowserScenario::Absent,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let result = document(&output);
+    assert_eq!(result["outcome"], "error");
+    let message = result["errors"][0]["message"].as_str().unwrap();
+    assert!(message.contains("shelves"), "{message}");
+    assert!(message.contains("loft interface remove"), "{message}");
+    assert_eq!(tree(&scratch.0), before);
+    assert_eq!(sign_ins(&scratch), kept);
+    assert!(remote.requests().is_empty());
+}

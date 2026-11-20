@@ -15,6 +15,7 @@ mod import;
 mod import_openspec;
 mod init;
 mod install;
+mod interface;
 mod json;
 mod locate;
 mod merge_driver;
@@ -227,6 +228,10 @@ fn dispatch(command: Command) -> Finished {
         Command::Remote { action } => {
             let (action, as_json) = action.split();
             remote_command::run(root, &action, as_json)
+        }
+        Command::Interface { action } => {
+            let (action, as_json) = action.split();
+            interface::run(root, &action, as_json)
         }
         Command::Telemetry { action } => {
             let (action, as_json) = action.split();

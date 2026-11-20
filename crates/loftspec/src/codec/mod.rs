@@ -4,6 +4,7 @@
 
 mod canon;
 mod conflict;
+mod copies;
 mod error;
 mod ext;
 pub mod field;
@@ -14,10 +15,12 @@ mod node_files;
 mod own_record;
 mod path;
 mod record;
+mod record_foreign;
 mod records;
 mod resolve;
 mod resolve_conflicts;
 mod resolve_decisions;
+mod resolve_foreign;
 mod resolve_nodes;
 pub mod schema;
 mod settle_field;
@@ -29,6 +32,7 @@ mod unresolve_singles;
 mod variants;
 
 pub use conflict::{SideShape, side_shape};
+pub use copies::{CopyError, copy_of};
 pub use error::{Problem, ReadError, Site, SpecPath, site_fields, write_sites};
 pub(crate) use files::keyed_records;
 pub use files::{
@@ -120,6 +124,11 @@ pub(crate) fn write_content(path: &SpecPath, role: Role, content: Content) -> Ve
     write_files(&tree)
         .remove(path)
         .expect("the writer writes the file")
+}
+
+/// The copies a tree holds that read; the reader reports the others.
+pub(crate) fn copies_of(tree: &Tree) -> Vec<crate::copy::Copy> {
+    copies::copies(tree).0
 }
 
 /// Whether a record holds exactly the fields its variant takes (RQ-220's variants).

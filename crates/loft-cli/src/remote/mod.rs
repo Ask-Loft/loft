@@ -11,6 +11,7 @@ pub mod head;
 pub mod history;
 pub mod signin;
 pub mod signins;
+pub mod states;
 mod wire;
 
 use std::fmt;
@@ -203,6 +204,68 @@ pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError>
         None => signins::live(&address, timeout)?.access_token,
     };
     Ok(Client::new(&address, Some(token), timeout, wait))
+}
+
+/// The access token of the person's sign-in to `address`: the one `loft/remotes.json` holds,
+/// refreshed where it needs to be, or else, or where its refresh is refused, a new sign-in kept
+/// there, opened in the person's browser where `browser` allows.
+///
+/// # Errors
+///
+/// `loft/remotes.json` cannot be read or written, or the sign-in cannot be made.
+pub fn signed_in(address: &str, browser: bool, timeout: Duration) -> Result<String, RemoteError> {
+    match signins::live(address, timeout) {
+        Ok(sign_in) => Ok(sign_in.access_token),
+        Err(RemoteError::NoSignIn { .. } | RemoteError::Lapsed { .. }) => {
+            let sign_in = signin::sign_in(address, browser, timeout)?;
+            let token = sign_in.access_token.clone();
+            signins::save(address, &sign_in)?;
+            Ok(token)
+        }
+        Err(error) => Err(error),
+    }
+}
+
+/// A new sign-in to `address`, kept in `loft/remotes.json`, opened in the person's browser where
+/// `browser` allows.
+///
+/// # Errors
+///
+/// The address may not be contacted, `LOFT_REMOTE_TIMEOUT` is not a whole number of seconds,
+/// the sign-in cannot be made, or `loft/remotes.json` cannot be written.
+pub fn login(address: &str, browser: bool) -> Result<(), RemoteError> {
+    checked(address)?;
+    let sign_in = signin::sign_in(address, browser, timeout()?)?;
+    signins::save(address, &sign_in)
+}
+
+/// How a command that reaches another document's remote holds the person's sign-in to it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SignIn {
+    /// A sign-in is made first where none is kept, in the person's browser where `browser`
+    /// allows.
+    First { browser: bool },
+    /// Only a kept sign-in, refreshed where it needs to be, is used.
+    Kept,
+}
+
+/// The client of another document's remote at `address`, with the person's sign-in to that
+/// address as `sign_in` holds it. Neither `LOFT_REMOTE_ENDPOINT` nor `LOFT_REMOTE_TOKEN` is
+/// read: they name the document's own remote alone.
+///
+/// # Errors
+///
+/// A timeout variable is not a whole number of seconds, the address may not be contacted, no
+/// sign-in can be made, or, for [`SignIn::Kept`], none is kept or its refresh is refused.
+pub fn other(address: &str, sign_in: SignIn) -> Result<Client, RemoteError> {
+    let timeout = timeout()?;
+    let wait = seconds(WAIT_ENV)?;
+    checked(address)?;
+    let token = match sign_in {
+        SignIn::First { browser } => signed_in(address, browser, timeout)?,
+        SignIn::Kept => signins::live(address, timeout)?.access_token,
+    };
+    Ok(Client::new(address, Some(token), timeout, wait))
 }
 
 #[cfg(test)]

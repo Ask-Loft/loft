@@ -3,6 +3,7 @@
 //! (RQ-30, RQ-34). Formatting, reading and writing all pass through it.
 
 use super::error::{Located, Problem};
+use super::record_foreign::{barred_crossing, foreign, foreign_kind};
 use super::schema::{Field, Item, Kind, Scalar, Shape, field};
 use crate::canonical::Digest;
 use crate::ext::Ext;
@@ -300,6 +301,9 @@ pub(crate) fn check(node: &yaml::Node, kind: Kind, mode: Mode) -> Result<Rec, Lo
                 Problem::UnknownField(entry.key.clone()),
             ));
         };
+        if let Some(at) = barred_crossing(&entry.value, field) {
+            return Err(located(at, Problem::NotCrossing(field.name)));
+        }
         let value = check_shape(&entry.value, field.shape, mode)?;
         record.fields.push((field.name, value));
     }
@@ -341,6 +345,9 @@ pub(super) fn check_shape(node: &yaml::Node, shape: Shape, mode: Mode) -> Result
 
 fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located> {
     match item {
+        Item::Scalar(Scalar::Ref(_)) | Item::NodeRef if foreign(node) => {
+            check(node, foreign_kind(node, mode)?, mode).map(Val::Record)
+        }
         Item::Scalar(Scalar::Ref(_)) | Item::NodeRef if written_by_name(node) => match mode {
             Mode::Formatting => check(node, Kind::ByName, mode).map(Val::Record),
             Mode::Strict => Err(located(node.position, Problem::ByName)),

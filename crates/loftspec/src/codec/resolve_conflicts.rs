@@ -62,6 +62,7 @@ fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
             Role::Terms => 7,
             Role::Labels => 8,
             Role::Lint => 9,
+            Role::Copy { .. } => 10,
         };
         (rank, filed.get(*path).copied().unwrap_or(usize::MAX), *path)
     });
@@ -181,7 +182,14 @@ fn side_val(side: &ConflictValue, shape: SideShape) -> Val {
 fn item_val(value: &ConflictValue, item: Item) -> Val {
     match (item, value) {
         (Item::Record(kind), ConflictValue::Record(fields)) => record_val(kind, fields),
-        (Item::NodeRef, ConflictValue::Record(fields)) => record_val(Kind::FormerLabel, fields),
+        (
+            Item::NodeRef | Item::Scalar(super::schema::Scalar::Ref(_)),
+            ConflictValue::Record(fields),
+        ) => {
+            let kind =
+                super::record_foreign::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
+            record_val(kind, fields)
+        }
         _ => scalar_val(value),
     }
 }

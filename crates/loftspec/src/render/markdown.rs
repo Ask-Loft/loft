@@ -14,7 +14,7 @@ use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
 use crate::tree::{Component, Section};
 
-pub(super) fn render(document: &Document, state: &str, labels: &Labels) -> String {
+pub(super) fn render<'a>(document: &'a Document, state: &str, labels: &Labels) -> String {
     let title = document
         .products
         .first()
@@ -26,11 +26,15 @@ pub(super) fn render(document: &Document, state: &str, labels: &Labels) -> Strin
         state
     );
     let mut nodes = BTreeMap::new();
-    document.walk(&mut |node| {
+    let mut held = |node: Node<'a>| {
         if let Some(id) = node.id() {
             nodes.insert(id, node);
         }
-    });
+    };
+    document.walk(&mut held);
+    for copy in &document.copies {
+        Node::Interface(&copy.interface).walk(&mut held);
+    }
     let mut renderer = Renderer {
         out: &mut out,
         document,

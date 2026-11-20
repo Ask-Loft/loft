@@ -202,6 +202,24 @@ fn the_lint_configuration_changed_apart_exits_1_naming_the_path_and_ours_is_unch
 }
 
 #[test]
+fn a_copy_changed_apart_exits_1_naming_the_path_and_the_copy_and_ours_is_unchanged() {
+    let scratch = Scratch::with_reading_list();
+    let pinned = |sequence: u32| format!("publishSequence: {sequence}\n");
+    let (base, ours_text, theirs_text) = (pinned(3), pinned(4), pinned(5));
+    let copy = "spec/documents/format/document-lookup.yaml";
+    let output = driver(&scratch, [&base, &ours_text, &theirs_text], copy);
+    assert_eq!(output.status.code(), Some(1));
+    assert_eq!(
+        stderr(&output),
+        format!(
+            "{copy}: both sides changed the copy of another document's Interface to different \
+             contents\n"
+        )
+    );
+    assert_eq!(ours(&scratch), ours_text);
+}
+
+#[test]
 fn an_empty_base_is_an_absent_one_and_a_field_the_sides_disagree_on_keeps_ours() {
     let (scratch, base) = setup();
     let theirs_text = edited(

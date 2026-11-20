@@ -2,7 +2,6 @@
 //! import answered with another head, and what the command never takes: a token as an argument
 //! or on standard input. Each runs under the remote, browser and git simulators.
 
-use std::fs;
 use std::io::Write as _;
 use std::process::Stdio;
 use std::time::Duration;
@@ -31,8 +30,7 @@ fn a_set_whose_manifest_its_journal_cannot_save_changes_no_file_of_the_tree() {
                 &json!({ remote.address(): granted(&remote, 3600) }),
             );
         }
-        // The journal lives under `.loft/`, which a file of that name keeps from being created.
-        fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap();
+        scratch.block_journal();
         let before = tree(&scratch.0);
         let (output, result) = set(&scratch, &remote, Some(&git));
         assert_eq!(output.status.code(), Some(1), "{connected}: {output:?}");

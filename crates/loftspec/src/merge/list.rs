@@ -1,5 +1,6 @@
 //! The merge of one list field of unkeyed values (F-32, F-33): elements matched across the
-//! sides, an assessment by its option and driver, anything else by its value (AC-471, AC-662);
+//! sides, an assessment by its option and driver, an entry of `documents` by its handle,
+//! anything else by its value (AC-471, AC-662);
 //! which elements survive; and, for a list in authored order, where each goes. Lists of keyed
 //! records are merged by key, record by record, and never reach this merge.
 
@@ -17,20 +18,47 @@ type Id = (Ident, usize);
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 enum Ident {
     Pair(String, String),
+    Handle(String),
     Value(String),
 }
 
-/// What a list's element is matched by: an assessment (`whole`) by its option and driver, and
-/// anything else by its value.
-fn ident(whole: bool, value: &Val) -> Ident {
+/// How a list's elements are matched across the sides.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Matched {
+    /// An assessment, by its option and driver.
+    Assessment,
+    /// An entry of `documents`, by its handle.
+    Handle,
+    /// Anything else, by its value.
+    Value,
+}
+
+impl Matched {
+    fn of(item: Item) -> Self {
+        match item {
+            Item::Record(Kind::Assessment) => Self::Assessment,
+            Item::Record(Kind::OtherDocument) => Self::Handle,
+            _ => Self::Value,
+        }
+    }
+
+    /// Whether an element merges as one value that a side may change: an element matched by
+    /// anything but its value.
+    fn whole(self) -> bool {
+        self != Self::Value
+    }
+}
+
+/// What a list's element is matched by.
+fn ident(matched: Matched, value: &Val) -> Ident {
     let record_text = |name: &str| match value {
         Val::Record(record) => record.text(name).unwrap_or_default().to_owned(),
         _ => String::new(),
     };
-    if whole {
-        Ident::Pair(record_text(field::OPTION), record_text(field::DRIVER))
-    } else {
-        Ident::Value(text(value))
+    match matched {
+        Matched::Assessment => Ident::Pair(record_text(field::OPTION), record_text(field::DRIVER)),
+        Matched::Handle => Ident::Handle(record_text(field::HANDLE)),
+        Matched::Value => Ident::Value(text(value)),
     }
 }
 
@@ -40,12 +68,12 @@ struct Listed<'a> {
     by_id: BTreeMap<Id, &'a Val>,
 }
 
-fn side(whole: bool, values: &[Val]) -> Listed<'_> {
+fn side(matched: Matched, values: &[Val]) -> Listed<'_> {
     let mut seen: BTreeMap<Ident, usize> = BTreeMap::new();
     let mut ids = Vec::new();
     let mut by_id = BTreeMap::new();
     for value in values {
-        let ident = ident(whole, value);
+        let ident = ident(matched, value);
         let count = seen.entry(ident.clone()).or_default();
         let id = (ident, *count);
         *count += 1;
@@ -65,10 +93,14 @@ pub(super) fn merge_list(
     let Shape::List(item) = each.shape else {
         unreachable!("only a list field merges as a list");
     };
-    let whole = item == Item::Record(Kind::Assessment);
-    let sides = [side(whole, base), side(whole, ours), side(whole, theirs)];
+    let matched = Matched::of(item);
+    let sides = [
+        side(matched, base),
+        side(matched, ours),
+        side(matched, theirs),
+    ];
     let mut merger = Merger {
-        whole,
+        whole: matched.whole(),
         disagree: false,
     };
     let mut elements = merger.elements(&sides);
@@ -93,10 +125,10 @@ pub(super) fn merge_list(
 }
 
 struct Merger {
-    /// Whether the list holds assessments, each of which merges as one value (RQ-119's whole
-    /// values); bindings, the other whole values, are merged by the labels merge before any
-    /// list merge sees them. Any other element is a scalar or a record matched by its value,
-    /// which no side can change, only add or remove.
+    /// Whether the list holds assessments or entries of `documents`, each of which merges as
+    /// one value (RQ-119's whole values); bindings, the other whole values, are merged by the
+    /// labels merge before any list merge sees them. Any other element is a scalar or a record
+    /// matched by its value, which no side can change, only add or remove.
     whole: bool,
     disagree: bool,
 }

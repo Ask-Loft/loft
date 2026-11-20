@@ -118,7 +118,7 @@ impl Resolver<'_> {
     fn feature(&mut self, record: &Rec) -> Result<Feature, ReadError> {
         let id = FeatureId::new(key(record, field::KEY));
         for target in record.list(field::REALIZES) {
-            let component = self.node(target, |node| match node {
+            let component = self.node(target, id.into(), |node| match node {
                 NodeId::Component(component) => Some(component),
                 _ => None,
             })?;
@@ -191,7 +191,7 @@ impl Resolver<'_> {
     fn component(&mut self, record: &Rec) -> Result<Component, ReadError> {
         let id = ComponentId::new(key(record, field::KEY));
         for target in record.list(field::SCOPED_TO) {
-            let product = self.node(target, |node| match node {
+            let product = self.node(target, id.into(), |node| match node {
                 NodeId::Product(product) => Some(product),
                 _ => None,
             })?;
@@ -216,7 +216,7 @@ impl Resolver<'_> {
         ];
         for (name, link) in links {
             for target in record.list(name) {
-                let interface = self.node(target, interface)?;
+                let interface = self.node(target, id.into(), interface)?;
                 self.document.edges.push(link(id, interface));
             }
         }

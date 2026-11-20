@@ -11,7 +11,9 @@ use super::record::{Rec, Val};
 use super::schema::Kind;
 use crate::canonical::Digest;
 use crate::decision::{NodeRef, StateKind};
-use crate::document::{CategoryEntry, DerivedFrom, Document, Edge, TagEntry, TermEntry};
+use crate::document::{
+    CategoryEntry, DerivedFrom, Document, Edge, OtherDocument, TagEntry, TermEntry,
+};
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::{
     AuthoredStateId, CategoryId, DecisionId, DocumentId, ElementId, NodeId, TagId, TermId,
@@ -39,6 +41,7 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
         tree,
         index: index(tree),
         files,
+        foreign: BTreeMap::new(),
         path: manifest_path,
         document: Document::empty(DocumentId::new(key(manifest, field::DOCUMENT_KEY))),
         errors: Vec::new(),
@@ -46,12 +49,18 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
     if let Err(error) = resolver.manifest(manifest) {
         resolver.errors.push(error);
     }
+    let (copies, unread) = super::copies::copies(tree);
+    resolver.errors.extend(unread);
+    resolver.foreign = super::copies::foreign(&copies);
+    resolver.document.copies = copies;
     resolver.registries();
     resolver.products(manifest);
     resolver.roots();
     resolver.interfaces();
     resolver.decisions();
     resolver.labels();
+    let crossed = super::copies::crossing(tree, &resolver.document);
+    resolver.errors.extend(crossed);
     resolver.document.conflicts = super::resolve_conflicts::collect(tree);
     if resolver.errors.is_empty() {
         Ok(resolver.document)
@@ -66,6 +75,8 @@ pub(super) struct Resolver<'t> {
     pub(super) index: BTreeMap<Key, ElementId>,
     /// The Product and Feature files, by the key their record carries.
     pub(super) files: BTreeMap<Key, (&'t SpecPath, &'t Rec)>,
+    /// The node of each copy, by its handle and key.
+    pub(super) foreign: BTreeMap<(String, Key), NodeId>,
     /// The file being resolved, for errors.
     pub(super) path: SpecPath,
     pub(super) document: Document,
@@ -131,13 +142,43 @@ pub(super) fn slug(record: &Rec) -> Slug {
     Slug::parse(record.text(field::SLUG).expect("a checked slug")).expect("a checked slug")
 }
 
+/// The tree a resolver of a copy reaches, which holds nothing: a copy's Interface lists no file.
+static NO_TREE: Tree = Tree {
+    files: BTreeMap::new(),
+};
+
+impl Resolver<'static> {
+    /// A resolver of the Interface of a copy at `path`, which resolves no reference: the caller
+    /// takes its edges out first.
+    pub(super) fn foreign(path: &SpecPath) -> Self {
+        Self {
+            tree: &NO_TREE,
+            index: BTreeMap::new(),
+            files: BTreeMap::new(),
+            foreign: BTreeMap::new(),
+            path: path.clone(),
+            document: Document::empty(DocumentId::new(Key::mint())),
+            errors: Vec::new(),
+        }
+    }
+}
+
 impl<'t> Resolver<'t> {
     pub(super) fn fail(&self, position: Option<Position>, problem: String) -> ReadError {
         ReadError::at(&self.path, position, Problem::Model(problem))
     }
 
-    /// The element a key field names.
-    pub(super) fn element(&self, value: &Val) -> Result<ElementId, ReadError> {
+    /// The element a key field of `source` names, or the node of a copy a reference into
+    /// another document names.
+    pub(super) fn element(&self, value: &Val, source: ElementId) -> Result<ElementId, ReadError> {
+        if let Val::Record(foreign) = value {
+            return self.foreign_node(foreign, source).map(ElementId::Node);
+        }
+        self.held(value)
+    }
+
+    /// The element of the document that a key field names.
+    fn held(&self, value: &Val) -> Result<ElementId, ReadError> {
         let text = value.text().unwrap_or_default();
         Key::parse(text)
             .ok()
@@ -150,13 +191,14 @@ impl<'t> Resolver<'t> {
             })
     }
 
-    /// The node a key field names, of the kind `want` says.
+    /// The node a key field of `source` names, of the kind `want` says.
     pub(super) fn node<T>(
         &self,
         value: &Val,
+        source: ElementId,
         want: fn(NodeId) -> Option<T>,
     ) -> Result<T, ReadError> {
-        match self.element(value)? {
+        match self.element(value, source)? {
             ElementId::Node(node) => want(node),
             ElementId::Decision(_) => None,
         }
@@ -168,22 +210,22 @@ impl<'t> Resolver<'t> {
         })
     }
 
-    /// A node reference: a held node's key, or a former label (AC-809).
-    pub(super) fn node_ref(&self, value: &Val) -> Result<NodeRef, ReadError> {
+    /// A node reference of `source`: a held node's key, or a former label (AC-809).
+    pub(super) fn node_ref(&self, value: &Val, source: ElementId) -> Result<NodeRef, ReadError> {
         match value {
-            Val::Record(former) => {
+            Val::Record(former) if former.kind == Kind::FormerLabel => {
                 let label = Label::parse(former.text(field::FORMER_LABEL).unwrap_or_default())
                     .map_err(|error| self.fail(Some(former.position), error.to_string()))?;
                 Ok(NodeRef::Former(label))
             }
-            _ => self.node(value, Some).map(NodeRef::Held),
+            _ => self.node(value, source, Some).map(NodeRef::Held),
         }
     }
 
     /// The `mentions` edges a record lists, from `source`.
     pub(super) fn mentions(&mut self, record: &Rec, source: ElementId) -> Result<(), ReadError> {
         for target in record.list(field::MENTIONS) {
-            let target = self.element(target)?;
+            let target = self.element(target, source)?;
             self.document.edges.push(Edge::Mentions { source, target });
         }
         Ok(())
@@ -199,6 +241,7 @@ impl<'t> Resolver<'t> {
             }
             self.document.remote = remote.text().map(str::to_owned);
         }
+        self.documents(manifest)?;
         if let Some(source) = manifest.record(field::DERIVED_FROM) {
             let address = text(source, field::CONTENT_ADDRESS);
             self.document.derived_from = Some(DerivedFrom {
@@ -208,6 +251,49 @@ impl<'t> Resolver<'t> {
                     .map_err(|error| self.fail(Some(source.position), error.to_string()))?,
                 publish_sequence: text(source, field::PUBLISH_SEQUENCE).parse().unwrap_or(1),
             });
+        }
+        Ok(())
+    }
+
+    /// The manifest's other documents: only beside `connected: true`, each handle and key once,
+    /// and never the document's own key.
+    fn documents(&mut self, manifest: &Rec) -> Result<(), ReadError> {
+        let Some(listed) = manifest.get(field::DOCUMENTS) else {
+            return Ok(());
+        };
+        if !self.document.connected {
+            let at = manifest
+                .records(field::DOCUMENTS)
+                .next()
+                .map(|entry| entry.position);
+            let problem = "`documents` lists other documents only beside `connected: true`: \
+                           only a connected document links to other documents"
+                .to_owned();
+            return Err(self.fail(at.or(listed.position()), problem));
+        }
+        for entry in manifest.records(field::DOCUMENTS) {
+            let other = OtherDocument {
+                handle: Slug::parse(&text(entry, field::HANDLE)).expect("a checked slug"),
+                key: DocumentId::new(key(entry, field::KEY)),
+                remote: text(entry, field::REMOTE),
+            };
+            let listed = &self.document.documents;
+            let problem = if other.key == self.document.id {
+                Some(format!(
+                    "the entry names the document's own key {}: a document does not link to itself",
+                    other.key
+                ))
+            } else if listed.iter().any(|seen| seen.handle == other.handle) {
+                Some(format!("a second entry has the handle {}", other.handle))
+            } else if listed.iter().any(|seen| seen.key == other.key) {
+                Some(format!("a second entry has the key {}", other.key))
+            } else {
+                None
+            };
+            if let Some(problem) = problem {
+                return Err(self.fail(Some(entry.position), problem));
+            }
+            self.document.documents.push(other);
         }
         Ok(())
     }
@@ -333,7 +419,7 @@ impl<'t> Resolver<'t> {
         let element = match self.index.get(&key(binding, field::KEY)) {
             Some(element) if departed => *element,
             None if departed => ElementId::labeled(label.prefix(), key(binding, field::KEY)),
-            _ => self.element(binding.get(field::KEY).expect("a checked key"))?,
+            _ => self.held(binding.get(field::KEY).expect("a checked key"))?,
         };
         let fail = |error: crate::bindings::BindingError| {
             ReadError::at(

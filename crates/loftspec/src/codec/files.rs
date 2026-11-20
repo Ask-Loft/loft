@@ -1,11 +1,11 @@
 //! The files of a `spec/` tree, each read as the record its path names (F-6), and written
 //! back in canonical layout.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use super::error::{Problem, ReadError, SpecPath};
 use super::record::{Mode, Rec, check, to_out};
-use super::schema::Kind;
+use super::schema::{Kind, field};
 use crate::yaml::{self, Out, Position, Value};
 
 /// The bytes of each file under `spec/`, by path.
@@ -44,6 +44,12 @@ pub enum Role {
     Decision {
         slug: String,
     },
+    /// A copy of another document's Interface, which the tree keeps as its bytes: only
+    /// `loft interface` writes it.
+    Copy {
+        handle: String,
+        slug: String,
+    },
 }
 
 impl Role {
@@ -76,6 +82,10 @@ impl Role {
             ["decisions", decision] => Self::Decision {
                 slug: stem(decision)?,
             },
+            ["documents", handle, interface] => Self::Copy {
+                handle: (*handle).to_owned(),
+                slug: stem(interface)?,
+            },
             _ => return None,
         })
     }
@@ -99,6 +109,7 @@ impl Role {
             Self::Component { slug } => format!("components/{slug}.yaml"),
             Self::Interface { slug } => format!("interfaces/{slug}.yaml"),
             Self::Decision { slug } => format!("decisions/{slug}.yaml"),
+            Self::Copy { handle, slug } => format!("documents/{handle}/{slug}.yaml"),
         })
     }
 
@@ -119,11 +130,17 @@ impl Role {
     /// lint configuration, which the document does not hold.
     #[must_use]
     pub const fn is_written(&self) -> bool {
-        self.kind().is_some()
+        self.kind().is_some() || matches!(self, Self::Copy { .. })
+    }
+
+    /// Whether the tree keeps the file as its bytes: the lint configuration and each copy.
+    #[must_use]
+    pub const fn is_bytes(&self) -> bool {
+        self.kind().is_none()
     }
 
     /// The record kind the file holds at its top level; none for the lint configuration,
-    /// which stage 5 reads.
+    /// which stage 5 reads, and for a copy, which the copies are read from apart.
     const fn kind(&self) -> Option<Kind> {
         match self {
             Self::Manifest => Some(Kind::Manifest),
@@ -131,7 +148,7 @@ impl Role {
             Self::Tags => Some(Kind::TagEntry),
             Self::Categories => Some(Kind::CategoryEntry),
             Self::Terms => Some(Kind::TermEntry),
-            Self::Lint => None,
+            Self::Lint | Self::Copy { .. } => None,
             Self::Product { .. } => Some(Kind::Product),
             Self::Feature { .. } => Some(Kind::Feature),
             Self::Component { .. } => Some(Kind::RootComponent),
@@ -146,12 +163,12 @@ impl Role {
     }
 }
 
-/// One file's content: its records, or for the lint configuration its bytes.
+/// One file's content: its records, or for the lint configuration and a copy its bytes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Content {
     Record(Rec),
     Registry(Vec<Rec>),
-    Lint(Vec<u8>),
+    Bytes(Vec<u8>),
 }
 
 impl Content {
@@ -160,7 +177,7 @@ impl Content {
         let records: &[Rec] = match self {
             Self::Record(record) => std::slice::from_ref(record),
             Self::Registry(entries) => entries,
-            Self::Lint(_) => &[],
+            Self::Bytes(_) => &[],
         };
         records.iter()
     }
@@ -170,7 +187,7 @@ impl Content {
         let records: &mut [Rec] = match self {
             Self::Record(record) => std::slice::from_mut(record),
             Self::Registry(entries) => entries,
-            Self::Lint(_) => &mut [],
+            Self::Bytes(_) => &mut [],
         };
         records.iter_mut()
     }
@@ -225,7 +242,7 @@ pub(crate) fn read_file(
     let role = Role::of(path).ok_or_else(|| ReadError::at(path, None, Problem::UnknownFile))?;
     let node = yaml::read(bytes).map_err(|error| ReadError::yaml(path, error))?;
     let Some(kind) = role.kind() else {
-        return Ok((role, Content::Lint(bytes.to_vec())));
+        return Ok((role, Content::Bytes(bytes.to_vec())));
     };
     let content = match node {
         None if role.is_registry() => Content::Registry(Vec::new()),
@@ -275,12 +292,12 @@ pub(super) type WrittenKey<'p> = (&'p SpecPath, String, Position);
 
 /// Each file of the tree in canonical layout, as [`write_files`] writes it, with the text and
 /// the position of every key a keyed record of each file carries, file by file in path order and
-/// within a file in the order written. `spec/labels.yaml` names keys that its bindings bind,
-/// which no record of it carries, and gives none.
+/// within a file in the order written. A key that no keyed record carries, such as a binding's
+/// in `spec/labels.yaml` or another document's in the manifest's `documents`, gives none.
 pub(super) fn write_files_keyed(tree: &Tree) -> (Files, Vec<WrittenKey<'_>>) {
     let mut files = Files::new();
     let mut keys = Vec::new();
-    for (path, (role, content)) in &tree.files {
+    for (path, (_, content)) in &tree.files {
         let out = match out(content) {
             Ok(out) => out,
             Err(bytes) => {
@@ -289,9 +306,14 @@ pub(super) fn write_files_keyed(tree: &Tree) -> (Files, Vec<WrittenKey<'_>>) {
             }
         };
         let (text, found) = yaml::write_keyed(&out);
-        if *role != Role::Labels {
-            keys.extend(found.into_iter().map(|(key, at)| (path, key, at)));
-        }
+        let carried: BTreeSet<&str> = keyed_records(content.records())
+            .into_iter()
+            .filter_map(|record| record.text(field::KEY))
+            .collect();
+        let found = found
+            .into_iter()
+            .filter(|(key, _)| carried.contains(key.as_str()));
+        keys.extend(found.map(|(key, at)| (path, key, at)));
         files.insert(path.clone(), text.into_bytes());
     }
     (files, keys)
@@ -303,7 +325,7 @@ fn out(content: &Content) -> Result<Out, &[u8]> {
     match content {
         Content::Record(record) => Ok(to_out(record)),
         Content::Registry(entries) => Ok(Out::Sequence(entries.iter().map(to_out).collect())),
-        Content::Lint(bytes) => Err(bytes),
+        Content::Bytes(bytes) => Err(bytes),
     }
 }
 

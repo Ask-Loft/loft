@@ -299,3 +299,11 @@ fn a_section_or_criterion_whose_own_mentions_leave_out_the_key_is_left_under_a_f
         "{feature}"
     );
 }
+
+#[test]
+fn a_citation_of_another_documents_label_is_never_rewritten() {
+    let (from, to) = (CRITERION_NAME, citing("format:RQ-9").2);
+    let (_, rewrites) = rewritten_tree(&[WITHDRAWN, (FEATURE, from, &to)]);
+    assert_eq!(rewrites.rewritten, []);
+    assert!(rewrites.files.is_empty());
+}

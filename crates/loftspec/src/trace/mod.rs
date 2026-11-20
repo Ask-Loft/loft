@@ -20,13 +20,15 @@ pub use found::{
 pub use read::{FILE_FIELDS, LINK_FIELDS, TEST_FIELDS, read};
 pub use write::write;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 use crate::attributes::VerificationFate;
 use crate::canonical::Digest;
 use crate::codec::Problem;
-use crate::document::Document;
+use crate::copy::Copy;
+use crate::document::{Document, Edge};
+use crate::hash::DocumentHashes;
 use crate::identity::Key;
 use crate::ids::NodeId;
 use crate::node::Node;
@@ -113,13 +115,13 @@ struct Place {
     in_scope: bool,
 }
 
-/// Every keyed node's place, by key.
+/// Every keyed node's place, by key: the document's own nodes in document order, then the nodes
+/// of its copies, by handle in byte order and then in the order of the copies' files.
 fn places(document: &Document) -> HashMap<Key, Place> {
     let mut places = HashMap::new();
-    document.walk(&mut |node| {
+    each_node(document, |node, in_scope| {
         if let Some(id) = node.id() {
             let index = places.len();
-            let in_scope = in_scope(node);
             places.insert(
                 id.key(),
                 Place {
@@ -136,14 +138,44 @@ fn places(document: &Document) -> HashMap<Key, Place> {
 /// The name of each node in scope, by key.
 fn names(document: &Document) -> HashMap<Key, String> {
     let mut names = HashMap::new();
-    document.walk(&mut |node| {
+    each_node(document, |node, in_scope| {
         if let Some(id) = node.id()
-            && in_scope(node)
+            && in_scope
         {
             names.insert(id.key(), node.name().into_owned());
         }
     });
     names
+}
+
+/// Visits every node the reconciler places, with whether it expects a link for it: the
+/// document's own nodes, then each node of a copy, whose criteria it expects a link for where a
+/// Component of the document provides the copied Interface (a foreign Interface it answers).
+fn each_node<'a>(document: &'a Document, mut visit: impl FnMut(Node<'a>, bool)) {
+    document.walk(&mut |node| visit(node, in_scope(node)));
+    let provided: HashSet<Key> = (document.edges.iter())
+        .filter_map(|edge| match edge {
+            Edge::Provides { interface, .. } => Some(interface.key()),
+            _ => None,
+        })
+        .collect();
+    let mut copies: Vec<&Copy> = document.copies.iter().collect();
+    copies.sort_by_key(|copy| (copy.handle.as_str(), copy.path()));
+    for copy in copies {
+        let answered = (copy.interface.id).is_some_and(|id| provided.contains(&id.key()));
+        Node::Interface(&copy.interface).walk(&mut |node| {
+            visit(node, answered && matches!(node, Node::Criterion(_)));
+        });
+    }
+}
+
+/// The content hash of a node the reconciler places: a node of the document, or of a copy.
+fn hash_of(hashes: &DocumentHashes, id: NodeId) -> Digest {
+    *hashes
+        .nodes
+        .get(&id)
+        .or_else(|| hashes.foreign.get(&id))
+        .expect("every placed node is hashed")
 }
 
 /// Whether the reconciler expects a link for `node`: every acceptance criterion, and every

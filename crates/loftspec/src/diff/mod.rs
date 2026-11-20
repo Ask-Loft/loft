@@ -19,8 +19,9 @@ use serde_json::Value;
 use crate::document::{Document, EdgeKind, EdgeTarget};
 use crate::hash::own_views;
 use crate::identity::Key;
-use crate::ids::{ElementId, NodeId};
+use crate::ids::{DocumentId, ElementId, InterfaceId, NodeId};
 use crate::index::Index;
+use crate::tree::Interface;
 
 pub use compare::{
     Comparison, DecisionChange, DecisionDifference, Difference, NodeDifference, Order, Part,
@@ -66,6 +67,22 @@ pub fn node_changes(base: &Document, document: &Document) -> NodeChanges {
 #[must_use]
 pub fn content_changes(base: &Document, document: &Document) -> NodeChanges {
     changes(&Keyed::compared(base), &Keyed::compared(document), None)
+}
+
+/// The nodes the Interface `newer` added, changed and removed against `older`, as
+/// [`content_changes`] tells them: what a move of a copy's pin did to the promise it copies. A
+/// copy holds its Interface without edges, so only the nodes' own content is compared.
+#[must_use]
+pub fn interface_changes(older: &Interface, newer: &Interface) -> NodeChanges {
+    let alone = |interface: &Interface| {
+        let key = (interface.id)
+            .map(InterfaceId::key)
+            .expect("a copied Interface carries its key");
+        let mut document = Document::empty(DocumentId::new(key));
+        document.interfaces.push(interface.clone());
+        document
+    };
+    content_changes(&alone(older), &alone(newer))
 }
 
 /// A document's keyed nodes: each one's own content view, and their order, parents before

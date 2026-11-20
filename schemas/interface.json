@@ -1,0 +1,429 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loft-interface-1.json",
+  "title": "The result of `loft interface <add|update|status|remove|login> --format json`, version 1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "interface",
+        "key",
+        "publishSequence",
+        "path",
+        "listed",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-interface/1"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "added"
+          ]
+        },
+        "interface": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "publishSequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "path": {
+          "type": "string"
+        },
+        "listed": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "copies",
+        "dangling",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-interface/1"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "updated",
+            "current",
+            "withdrawn",
+            "dangling"
+          ]
+        },
+        "copies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/copy"
+          }
+        },
+        "dangling": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dangling"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "copies",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-interface/1"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "mismatch"
+          ]
+        },
+        "copies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/checked"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "interface",
+        "path",
+        "unlisted",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-interface/1"
+        },
+        "outcome": {
+          "const": "removed"
+        },
+        "interface": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "unlisted": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "handle",
+        "address",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-interface/1"
+        },
+        "outcome": {
+          "const": "signed in"
+        },
+        "handle": {
+          "type": "string"
+        },
+        "address": {
+          "type": "string"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-interface/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "checked": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "interface",
+        "publishSequence",
+        "head",
+        "pin",
+        "freshness"
+      ],
+      "properties": {
+        "interface": {
+          "type": "string"
+        },
+        "publishSequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "head": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "pin": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "mismatch"
+          ]
+        },
+        "difference": {
+          "type": "string"
+        },
+        "freshness": {
+          "type": "string",
+          "enum": [
+            "current",
+            "behind",
+            "withdrawn"
+          ]
+        }
+      }
+    },
+    "copy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "interface",
+        "state",
+        "publishSequence",
+        "head",
+        "added",
+        "changed",
+        "removed"
+      ],
+      "properties": {
+        "interface": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "updated",
+            "current",
+            "withdrawn"
+          ]
+        },
+        "publishSequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "head": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "added": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "changed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "removed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "name"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "dangling": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "element",
+        "field",
+        "label"
+      ],
+      "properties": {
+        "element": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string",
+          "enum": [
+            "provides",
+            "requires",
+            "mentions",
+            "subjects"
+          ]
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message",
+        "sites"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "read",
+            "store",
+            "remote",
+            "refused"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/site"
+          }
+        },
+        "problem": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

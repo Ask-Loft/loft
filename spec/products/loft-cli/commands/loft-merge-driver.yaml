@@ -106,6 +106,17 @@ requirements:
         name: "The error names `<path>`."
       - key: 01a13070-322f-7493-9495-407f0cd0f04c
         name: "`<ours>` is unchanged."
+  - key: 01a1faaa-a9cf-72d3-a6d9-ef9bf7531ad4
+    statement:
+      form: unwanted
+      if: "both sides change a copy of another document's Interface to different contents"
+      system: "`loft merge-driver`"
+      shall: "write nothing and exit 1."
+    criteria:
+      - key: 01a1faaa-a9cf-72d3-a6d9-ef9cde1120f6
+        name: "The error names `<path>` and says that both sides changed the copy of another document's Interface."
+      - key: 01a1faaa-a9cf-72d3-a6d9-ef9d419865e6
+        name: "`<ours>` is unchanged."
   - key: 01a13070-322f-7493-9495-40801726df97
     statement:
       form: ubiquitous
