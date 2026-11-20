@@ -27,13 +27,13 @@ pub struct Discovered {
     pub registration_endpoint: String,
 }
 
-/// The authorization server of the remote at `address`.
+/// The authorization server of the remote at `address`, the address of the document of `key`.
 ///
 /// # Errors
 ///
 /// The remote gives no challenge, or a metadata document is missing, does not read, or is not
 /// one a sign-in can follow.
-pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteError> {
+pub fn discover(address: &str, key: &str, timeout: Duration) -> Result<Discovered, RemoteError> {
     let failed = |reason: String| RemoteError::SignIn {
         address: address.to_owned(),
         reason,
@@ -44,7 +44,7 @@ pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteEr
         .iter()
         .filter(|_| challenged.status == 401)
         .find_map(|header| bearer_parameters(header))
-        .ok_or_else(|| failed(unchallenged(address, challenged.status)))?;
+        .ok_or_else(|| failed(unchallenged(address, key, challenged.status)))?;
     let named = |name: &str| {
         parameters
             .iter()
@@ -122,22 +122,20 @@ fn server_metadata(issuer: &str) -> String {
 }
 
 /// Why an answer of `status` to the unauthenticated `GET <address>/head` cannot start a sign-in:
-/// the request and its status, and, for a status other than `401`, that the address may not be a
-/// document's remote and the form of one.
-fn unchallenged(address: &str, status: u16) -> String {
+/// the request and its status, and, for an answer a wrong address gives, that the address may not
+/// be a document's remote and the form of the address of the document of `key`.
+fn unchallenged(address: &str, key: &str, status: u16) -> String {
     let refused =
         format!("GET {address}/head answered {status}, not a 401 with a `Bearer` challenge");
-    if status == 401 {
+    if matches!(status, 401 | 408 | 429) || status >= 500 {
         return refused;
     }
-    let hint = concat!(
-        ", so the address may not be a document's remote. A Loft server gives each document the \
-         address ",
-        crate::remote::document_address_form!(),
-        ". `loft remote set` with the document's address replaces the `remote` that \
-         spec/loftspec.yaml names"
-    );
-    format!("{refused}{hint}")
+    format!(
+        "{refused}, so the address may not be a document's remote. A Loft server gives this \
+         document the address {}. `loft remote set` with the document's address replaces the \
+         `remote` that spec/loftspec.yaml names",
+        crate::remote::address_form_for(key)
+    )
 }
 
 /// The JSON object at `url`, an address a sign-in may contact.

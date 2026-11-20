@@ -30,9 +30,11 @@ https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote
 
 where `<host>` is your Loft server, `<tenant-slug>` is your workspace's slug on it, and
 `<documentKey>` is the `documentKey` in `spec/loftspec.yaml`. `loft` uses the address whole and
-adds each call's path under it, as in `<address>/head`. An address whose first call gets no
-sign-in challenge back is refused, naming the request and its status; unless that status is
-`401`, the error also gives this form.
+adds each call's path under it, as in `<address>/head`. Run beside `spec/`, `loft remote set --help`
+gives the form with your `documentKey` filled in. An address whose first call gets no sign-in
+challenge back is refused, naming the request and its status. Where the answer is one a wrong
+address gives, such as 404, the error also gives the form with your `documentKey`; a rate limit,
+a timeout or a server error does not cast doubt on the address.
 
 The command signs you in, creates the document on the server and imports every state the
 repository has already published, so every label keeps its node. It then names the remote in

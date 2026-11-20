@@ -15978,6 +15978,30 @@ links:
       - file: "crates/loft-cli/tests/remote_connect.rs"
         name: "a_refused_create_or_import_names_the_call_its_status_and_code_and_writes_nothing"
         body: f304c9eeb505e0a0c0e00a1f23515afe1cc03c9bdf488a978dd0aa189ecb4573
+  - node: 01a1f98b-b6a3-7425-bcd4-da9d1e88145d
+    reviewed: 488294bda3aa083084be8a43c7d09a789683f7cd95737188c1cd8f24380fbe05
+    tests:
+      - file: "crates/loft-cli/tests/remote_set_help.rs"
+        name: "beside_a_manifest_the_help_gives_the_form_with_its_document_key"
+        body: 7addadd7c5ffe56189b13b4c92e87e0704686ae1343a13a1af9991b52e4a41a4
+  - node: 01a1f98b-b6a3-7425-bcd4-da9e0c6491f5
+    reviewed: 5cee024f576880dff63ed54725ed40ff9111207cf2c1fe929e3f31afbaa48ec2
+    tests:
+      - file: "crates/loft-cli/tests/remote_set_help.rs"
+        name: "without_a_manifest_or_with_one_that_does_not_read_the_help_gives_the_placeholder"
+        body: 1cf88a900085cb802a0ebc0a2bef76724c8c49d5dca1e964381bbbda7307de33
+  - node: 01a1f98b-b6a3-7425-bcd4-da9feb137d20
+    reviewed: 87ee1a2fbb4a0ca8495505565f4330ec293f2487e10792e60d351e28f53ec4a7
+    tests:
+      - file: "crates/loft-cli/tests/remote_set_help.rs"
+        name: "without_a_manifest_or_with_one_that_does_not_read_the_help_gives_the_placeholder"
+        body: 1cf88a900085cb802a0ebc0a2bef76724c8c49d5dca1e964381bbbda7307de33
+  - node: 01a1f98b-b6a3-7425-bcd4-daa00a8aac3b
+    reviewed: 016f1efdfbb47be726e40dac3b85bb5dce9cb42b3e813e8f63f9108ebb86830e
+    tests:
+      - file: "crates/loft-cli/src/remote_command/help.rs"
+        name: "only_a_command_line_that_names_remote_reads_a_manifest_for_its_help"
+        body: 80fe74ddc770294e4db3f531b85c0e46d8251944dcef1664c8ee692a8a25b617
   - node: 01a1835b-defe-736c-aa9f-0f404d3d62ba
     reviewed: 5a8a5fd124915d785a352924aaf7341b669eb6978c9ba623949fc056b75e0b7f
     tests:
@@ -19699,11 +19723,11 @@ links:
     reviewed: 08d1b62dcf5f0a70f3dfb6dc7f5dca3bdf90bff35548ebf7e147e13375a1fb54
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
-        name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
+        name: "only_an_answer_a_wrong_address_gives_brings_the_form_with_the_manifest_s_key"
+        body: b5f1fcecd987b6965ec1d63d48a9d8116b7be15a383989992a62485ca437604e
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
-        body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
+        body: 42d36d4edf1e8e842ab0abeb21f870602c8b8b49815bb0ca7c44e435ae2265de
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_bearer_challenge_that_names_no_metadata_is_refused_naming_the_request"
         body: 5646a85a1a1bf0d1a6ba655b2359c8df5a06967fd5d5018112ac116f00592a40
@@ -19717,32 +19741,32 @@ links:
     reviewed: c391048278a8c7c80426dd39086ebb1f02b695b408a96b3e4c8b24c39d24af08
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
-        name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
+        name: "only_an_answer_a_wrong_address_gives_brings_the_form_with_the_manifest_s_key"
+        body: b5f1fcecd987b6965ec1d63d48a9d8116b7be15a383989992a62485ca437604e
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
-        body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
+        body: 42d36d4edf1e8e842ab0abeb21f870602c8b8b49815bb0ca7c44e435ae2265de
   - node: 01a1f967-f816-765c-9e69-fb9858ebd01e
-    reviewed: 13a1c5960ddf8aecfae15235e5129f8c3557a495e6e46fd2adcb792d9822c64b
+    reviewed: ec1e53f46f95b3e2b437d1d0489bb163360a9209d7a1dd4b7d917d5f5d7a773b
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
-        name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
+        name: "only_an_answer_a_wrong_address_gives_brings_the_form_with_the_manifest_s_key"
+        body: b5f1fcecd987b6965ec1d63d48a9d8116b7be15a383989992a62485ca437604e
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
-        body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
-  - node: 01a1f967-f816-765c-9e69-fb995921e4e9
-    reviewed: 56b2b5c99fc6d07395628da30f31e6f25508473dd4c98331db791f73b08781d4
+        body: 42d36d4edf1e8e842ab0abeb21f870602c8b8b49815bb0ca7c44e435ae2265de
+  - node: 01a1f97c-52bb-707f-9285-bc934b680c8f
+    reviewed: 7ff01b9c733b87afcdd19582bbe040c7dc0f937bf540eac550f350e87b3dcaeb
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
-        name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
+        name: "only_an_answer_a_wrong_address_gives_brings_the_form_with_the_manifest_s_key"
+        body: b5f1fcecd987b6965ec1d63d48a9d8116b7be15a383989992a62485ca437604e
   - node: 01a1f967-f816-765c-9e69-fb9a9ccbbaaa
-    reviewed: e1b11baaa9ddef2217369a353df293aa881e0fa18518d52356754becc81bc937
+    reviewed: d31e40127a31b039547bd62d6a86426ed6272f3c1d9fd2513788b1a4da612b58
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
-        name: "an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address"
-        body: 1b1b92f3f8603f640073ca3e68b3479a0ebb1f159901e174117c146d14a18669
+        name: "only_an_answer_a_wrong_address_gives_brings_the_form_with_the_manifest_s_key"
+        body: b5f1fcecd987b6965ec1d63d48a9d8116b7be15a383989992a62485ca437604e
   - node: 01a18e1f-8daa-7674-9603-5ae5c87d9c4b
     reviewed: 98b07311ee6e2786cc816b756e5779e8956656bed6522f29bd3cc23206db923c
     tests:
