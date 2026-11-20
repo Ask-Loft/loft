@@ -215,7 +215,8 @@ fn next_label(document: &mut Document, prefix: LabelPrefix) -> Label {
     label
 }
 
-/// Every node, then every decision, in the order labels are allocated.
+/// Every node, then every decision, in the order labels are allocated: the Products, the root
+/// Components and the Interfaces, each in the order of their file names, then the decisions.
 pub(super) fn elements_in_order(document: &Document) -> Vec<ElementId> {
     let mut elements = Vec::new();
     let mut visit = |node: Node<'_>| {
@@ -230,6 +231,11 @@ pub(super) fn elements_in_order(document: &Document) -> Vec<ElementId> {
     components.sort_by(|a, b| a.slug.as_str().cmp(b.slug.as_str()));
     for root in components {
         Node::Component(&root.component).walk(&mut visit);
+    }
+    let mut interfaces: Vec<_> = document.interfaces.iter().collect();
+    interfaces.sort_by(|a, b| a.slug.as_str().cmp(b.slug.as_str()));
+    for interface in interfaces {
+        Node::Interface(interface).walk(&mut visit);
     }
     let mut decisions: Vec<_> = document.decisions.iter().collect();
     decisions.sort_by(|a, b| a.slug.as_str().cmp(b.slug.as_str()));

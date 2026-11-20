@@ -65,6 +65,7 @@ mod identity;
 mod index;
 mod interfaces_codec;
 mod interfaces_edges;
+mod interfaces_labels;
 mod label_allocation;
 mod lint;
 mod lint_config;
