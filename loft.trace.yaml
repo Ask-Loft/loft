@@ -20645,7 +20645,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
+        body: fcc773f0970bb1b662533ce3a1628dadc30e465b2a5e4561b392dbb91660aa24
       - file: "crates/loft-cli/tests/remote_contract_refreshes.rs"
         name: "one_sign_in_issues_a_token_for_each_companion_resource_and_a_reuse_for_another_revokes_it"
         body: 464384ee8b3c797bc584742b326d4512e2944dc724a995ad0a798a99c1c6c69b
@@ -21467,19 +21467,25 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_public_client_with_loopback_redirects_is_registered_and_others_are_refused"
-        body: 4fdfaad69e8982f84dda93cb7c81e19680936d10785186e3944e956fc7c6ecb9
+        body: bef63e7e0c4391aa1dc1ead0236309be80b41d560b6551d6ee0eb7bc6078b4a7
   - node: 01a18e1f-8dac-71f7-847a-724f751851ca
     reviewed: f2ecd8b4c0277cabfde891e5f61d4a848fcc1214e6df2fe1a47e9b574ab3f4d7
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_public_client_with_loopback_redirects_is_registered_and_others_are_refused"
-        body: 4fdfaad69e8982f84dda93cb7c81e19680936d10785186e3944e956fc7c6ecb9
+        body: bef63e7e0c4391aa1dc1ead0236309be80b41d560b6551d6ee0eb7bc6078b4a7
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_real_remote_refuses_to_register_a_redirect_over_http_off_the_loopback_interface_a_secret_or_other_grants"
+        body: c1d7650e8b3075be9ac0dd629a11eb65a75c661c4b9befd98741b62c362568fe
   - node: 01a18e1f-8dac-71f7-847a-72500b13db60
     reviewed: b9895c056456bd421168849b6004c49a0ea78a69cf7affa3103addfe83b00518
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_public_client_with_loopback_redirects_is_registered_and_others_are_refused"
-        body: 4fdfaad69e8982f84dda93cb7c81e19680936d10785186e3944e956fc7c6ecb9
+        body: bef63e7e0c4391aa1dc1ead0236309be80b41d560b6551d6ee0eb7bc6078b4a7
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_real_remote_refuses_to_register_a_redirect_over_http_off_the_loopback_interface_a_secret_or_other_grants"
+        body: c1d7650e8b3075be9ac0dd629a11eb65a75c661c4b9befd98741b62c362568fe
   - node: 01a1995a-1ff6-73c4-9f04-022f8cef789e
     reviewed: 4e1871856f272228fafb9e16e3dbb6a73e0b81b5b5c6bb55c8d3e40efe461a33
     tests:
@@ -21587,7 +21593,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
+        body: fcc773f0970bb1b662533ce3a1628dadc30e465b2a5e4561b392dbb91660aa24
   - node: 01a1f09b-189b-76b3-863f-c7c79584dba7
     reviewed: 7e481eec65f7207e5b9e0693b36af2c70a37ffc9d456a4ce4147e2e0e44b2ee9
     tests:
@@ -21659,7 +21665,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
+        body: fcc773f0970bb1b662533ce3a1628dadc30e465b2a5e4561b392dbb91660aa24
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "an_unknown_code_or_one_another_client_presents_is_refused_for_any_resource_the_remote_serves"
         body: a8552999235856a75d08581c41982d1167d633413f83ae368f8925c3a07f3f2a
@@ -21669,12 +21675,15 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_failures.rs"
         name: "a_scenario_refuses_every_registration_or_exchange_with_the_oauth_error_it_names"
         body: b42931a5d4ecd8e9b17d58a215534f221ab15e067a18918fbfde5fcf807b8b84
+      - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
+        name: "an_exchange_that_names_no_resource_or_one_the_remote_does_not_serve_is_refused_and_leaves_its_code_to_be_exchanged_once"
+        body: 858654772cbe7f9bee14458a7498edf54cf6758b09af3a93b31631bf2482adea
   - node: 01a1f09b-189b-76b3-863f-c7cad5e556a5
     reviewed: 3b5c153292dc4e8d8eb44477f0371be3ff41dfcfae729caaddf3b22bb3b41c70
     tests:
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
+        body: fcc773f0970bb1b662533ce3a1628dadc30e465b2a5e4561b392dbb91660aa24
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_own"
         body: ab291a5cec45c626adf0aab21689771656d69572370ca32dbf41460a41fd5c5c
@@ -21683,7 +21692,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
+        body: fcc773f0970bb1b662533ce3a1628dadc30e465b2a5e4561b392dbb91660aa24
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_own"
         body: ab291a5cec45c626adf0aab21689771656d69572370ca32dbf41460a41fd5c5c
@@ -21692,7 +21701,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
+        body: fcc773f0970bb1b662533ce3a1628dadc30e465b2a5e4561b392dbb91660aa24
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_own"
         body: ab291a5cec45c626adf0aab21689771656d69572370ca32dbf41460a41fd5c5c
@@ -21710,10 +21719,10 @@ links:
         body: 408629c2ea514ed8a66390ecbce3b4dcbf1c7c03f12f872f5ce7c475f4c3c79e
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
-        body: c236f080dfc6999968dd1af6d783a722d4dd50b302c4a77fad75d021e4c12bb1
+        body: e83a5757e67740e335249b85dd5dbf29355252302448a25aaca0baf716ddf549
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented"
-        body: 0806ea12b451b1ece3ce3f58b1884aa7c030a20ad9fd84073a802681f16042ce
+        body: 2aef1d166829dbe9d0a37e1aaf1370fd9551671ec06608c73a63a5dd2f101d8b
       - file: "crates/loft-cli/tests/remote_contract_refreshes.rs"
         name: "one_sign_in_issues_a_token_for_each_companion_resource_and_a_reuse_for_another_revokes_it"
         body: 464384ee8b3c797bc584742b326d4512e2944dc724a995ad0a798a99c1c6c69b
@@ -21728,7 +21737,10 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
-        body: c236f080dfc6999968dd1af6d783a722d4dd50b302c4a77fad75d021e4c12bb1
+        body: e83a5757e67740e335249b85dd5dbf29355252302448a25aaca0baf716ddf549
+      - file: "crates/loft-cli/tests/remote_contract_auth.rs"
+        name: "a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented"
+        body: 2aef1d166829dbe9d0a37e1aaf1370fd9551671ec06608c73a63a5dd2f101d8b
   - node: 01a18e1f-8dac-71f7-847a-72600450be32
     reviewed: afbc98f23f3e46d7b2978b84efc54ff2ac7c169dae8b6590bd28972abc444a55
     tests:
@@ -21737,16 +21749,16 @@ links:
         body: 408629c2ea514ed8a66390ecbce3b4dcbf1c7c03f12f872f5ce7c475f4c3c79e
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
-        body: c236f080dfc6999968dd1af6d783a722d4dd50b302c4a77fad75d021e4c12bb1
+        body: e83a5757e67740e335249b85dd5dbf29355252302448a25aaca0baf716ddf549
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_presented"
-        body: 0806ea12b451b1ece3ce3f58b1884aa7c030a20ad9fd84073a802681f16042ce
+        body: 2aef1d166829dbe9d0a37e1aaf1370fd9551671ec06608c73a63a5dd2f101d8b
   - node: 01a19951-5b6c-769f-802b-1caae94627eb
     reviewed: 580d3723b7c6fc081b6bb0b62f488401a2183db6ef4a053a1b5bfbe28e190b14
     tests:
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_successor_is_presented"
-        body: c236f080dfc6999968dd1af6d783a722d4dd50b302c4a77fad75d021e4c12bb1
+        body: e83a5757e67740e335249b85dd5dbf29355252302448a25aaca0baf716ddf549
   - node: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
     reviewed: a8929e2058ffe5e86a014189971ee85c8041a2435f00be3281790c89afca8016
     tests:
@@ -21846,15 +21858,18 @@ links:
   - node: 01a1f09b-189b-76b3-863f-c7d3c0e9a364
     reviewed: dbc8038a3735f4c10e10a5686d364a1541a92caa01507dce70e0690123470976
     tests:
-      - file: "crates/loft-cli/tests/remote_contract_resources.rs"
-        name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
       - file: "crates/loft-cli/tests/remote_contract_refreshes.rs"
         name: "a_refresh_for_a_resource_the_remote_does_not_serve_is_refused_and_rotates_nothing"
         body: e0b5546ab65ad3bebac718467633b8e859b4d4642451c28bd647d79f36e29dbf
       - file: "crates/loft-cli/tests/remote_contract_refreshes.rs"
         name: "a_real_remote_refuses_a_refresh_for_a_resource_it_does_not_serve_and_rotates_nothing"
         body: 743a01453477b869eb534a534600a67c02656ae685114cf0c3951e17abc5b56e
+      - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
+        name: "an_exchange_that_names_no_resource_or_one_the_remote_does_not_serve_is_refused_and_leaves_its_code_to_be_exchanged_once"
+        body: 858654772cbe7f9bee14458a7498edf54cf6758b09af3a93b31631bf2482adea
+      - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
+        name: "a_real_remote_refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve"
+        body: 8a47060b81a9a64962f0e56aa441b92b41232d3fc6de444664e66cab18e56b37
   - node: 01a1f849-e4bb-77ff-ac61-f87ec797f1a5
     reviewed: da42eeff9f1b72d17676519841e9021e214deee61909e184900211d8cdf4936b
     tests:
@@ -21876,12 +21891,15 @@ links:
   - node: 01a1f09b-189b-76b3-863f-c7d4a251dc1e
     reviewed: c309313a248304aaeb66ecb3d00c93f3ce9d1d1e66fab56f1f63897ce7452912
     tests:
-      - file: "crates/loft-cli/tests/remote_contract_resources.rs"
-        name: "one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_any_one_of_them"
-        body: 9377961de07684b71e719d57074c460fdc6739c503d1be1d86f7ee1ccf005a38
       - file: "crates/loft-cli/tests/remote_contract_auth.rs"
         name: "a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource"
         body: 94559aa2b25cddec21d37c4e190f81f3f8455551402c51546ebb9ff1b4c5e7dc
+      - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
+        name: "an_exchange_that_names_no_resource_or_one_the_remote_does_not_serve_is_refused_and_leaves_its_code_to_be_exchanged_once"
+        body: 858654772cbe7f9bee14458a7498edf54cf6758b09af3a93b31631bf2482adea
+      - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
+        name: "a_real_remote_refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve"
+        body: 8a47060b81a9a64962f0e56aa441b92b41232d3fc6de444664e66cab18e56b37
   - node: 01a1f09b-189b-76b3-863f-c7d5cd31a709
     reviewed: 1dd188ce322dec11775d106c84094489ae51637da70d1100fdd74acf82b09c87
     tests:
@@ -21960,12 +21978,18 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "a_real_remote_refuses_a_refresh_that_names_resource_more_than_once_and_rotates_nothing"
         body: e5882ec8844a3d9f4f157228f8fe94d4dac53a7542c6836cd07f40721869631c
+      - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
+        name: "an_exchange_that_names_no_resource_or_one_the_remote_does_not_serve_is_refused_and_leaves_its_code_to_be_exchanged_once"
+        body: 858654772cbe7f9bee14458a7498edf54cf6758b09af3a93b31631bf2482adea
   - node: 01a1f849-e4bb-77ff-ac61-f88214226e90
     reviewed: 1460cb9c01925425b49479b37206bd92ca6ea18c96af4a66b7c7a9ef7a3a4b98
     tests:
       - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
         name: "an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code_to_be_exchanged_once"
         body: 89288e7c548fb27ccada72dbd7bbd38a9396ca9341a2f1059cbb722965a666fb
+      - file: "crates/loft-cli/tests/remote_contract_token_requests.rs"
+        name: "an_exchange_that_names_no_resource_or_one_the_remote_does_not_serve_is_refused_and_leaves_its_code_to_be_exchanged_once"
+        body: 858654772cbe7f9bee14458a7498edf54cf6758b09af3a93b31631bf2482adea
   - node: 01a17989-a8b9-74b1-9049-073b0be616b1
     reviewed: 00040f13ba81c856e1fd2d2efd203c5508d1d845a0c37454fc2705600ac2e4bc
     tests:

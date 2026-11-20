@@ -140,18 +140,31 @@ pub fn registered(server: &Value) -> String {
     })
 }
 
-/// The answer to a registration with `server` of a client that redirects to `redirects` and
-/// authenticates at the token endpoint by `method`.
+/// The grants of a client that signs in and refreshes its sign-in.
+pub const GRANTS: [&str; 2] = ["authorization_code", "refresh_token"];
+
+/// The answer to a registration with `server` of a client that redirects to `redirects`,
+/// authenticates at the token endpoint by `method` and uses [`GRANTS`].
 pub fn register(server: &Value, redirects: &[&str], method: &str) -> Answer {
-    let body = json!({
+    register_as(server, &client_metadata(redirects, method, &GRANTS))
+}
+
+/// The metadata of a client that redirects to `redirects`, authenticates at the token endpoint by
+/// `method` and uses `grants`.
+pub fn client_metadata(redirects: &[&str], method: &str, grants: &[&str]) -> Value {
+    json!({
         "client_name": "loft",
         "redirect_uris": redirects,
-        "grant_types": ["authorization_code", "refresh_token"],
+        "grant_types": grants,
         "response_types": ["code"],
         "token_endpoint_auth_method": method,
-    });
+    })
+}
+
+/// The answer to a registration with `server` of a client of `metadata`.
+pub fn register_as(server: &Value, metadata: &Value) -> Answer {
     let registration = endpoint(server, "registration_endpoint");
-    call("POST", registration, None, Some(&body))
+    call("POST", registration, None, Some(metadata))
 }
 
 /// The query of an authorization request, with `overrides` replacing its parameters.

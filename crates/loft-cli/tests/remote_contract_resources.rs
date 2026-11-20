@@ -5,9 +5,10 @@
 //!   client it was issued to alone.
 //!
 //! The refreshes of such a sign-in have a suite of their own, `remote_contract_refreshes.rs`; so
-//! does a code exchange or a refresh that names more than one resource,
-//! `remote_contract_token_requests.rs`, and an authorization request that the remote refuses
-//! before any person consents, `remote_contract_refusals.rs`.
+//! do a code exchange that names no resource, a resource that no remote serves or more than one,
+//! and a refresh that names more than one, `remote_contract_token_requests.rs`, and an
+//! authorization request that the remote refuses before any person consents,
+//! `remote_contract_refusals.rs`.
 //!
 //! Each scenario runs against the simulator and, on demand, against the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS`: run a real half with
@@ -27,9 +28,9 @@ use software_plant::remote::wire::value;
 use software_plant::remote::{Companion, CompanionFault, Remote, RemoteScenario};
 
 use crate::common::oauth::{
-    KEY, UNKNOWN_CODE, UNSERVED, assert_oauth_error, authorize_for, challenge_at, coded_for,
-    companion_metadata, discover, exchange, exchange_for, fetch, location, metadata, parameter,
-    refresh, registered,
+    KEY, UNKNOWN_CODE, assert_oauth_error, authorize_for, challenge_at, coded_for,
+    companion_metadata, discover, exchange, fetch, location, metadata, parameter, refresh,
+    registered,
 };
 use crate::common::resources::{COMPANION_RESOURCES, companions_of, head_with, origin_of};
 use crate::remote_contract::assert_problem;
@@ -299,21 +300,7 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
         let answer = authorize_for(&server, &client, &asked, scope);
         value(&location(&answer), "code").unwrap().to_owned()
     };
-    // A resource the scenario does not serve, or none, is refused before the code is read, and
-    // before a scenario that refuses every exchange refuses it.
-    for (named, presented) in [
-        (vec![UNSERVED], first.as_str()),
-        (vec![UNSERVED], "an-unknown-code"),
-        (Vec::new(), "an-unknown-code"),
-    ] {
-        let refused = exchange_for(&server, &client, &named, presented);
-        assert_oauth_error(&refused, "invalid_target");
-    }
-    let refusing = Remote::start(RemoteScenario::accepting(KEY).refusing_exchange("invalid_grant"));
-    let (_, refusing_server) = metadata(&refusing);
-    let refused = exchange(&refusing_server, &client, UNSERVED, "an-unknown-code");
-    assert_oauth_error(&refused, "invalid_target");
-    let unheld = exchange(&server, &client, &inbox, &code());
+    let unheld = exchange(&server, &client, &inbox, &first);
     assert_oauth_error(&unheld, "invalid_target");
     let exchanged = |resource: &str| {
         let answer = exchange(&server, &client, resource, &code());

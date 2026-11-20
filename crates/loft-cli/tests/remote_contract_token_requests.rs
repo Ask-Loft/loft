@@ -1,11 +1,14 @@
 //! The contract suite of the resource that a token request names. A code exchange or a refresh
-//! names exactly one resource, by giving `resource` once: one that gives it more than once is
-//! refused `invalid_target`, whatever code or refresh token it presents and in whichever order it
-//! names its resources, and issues, rotates and revokes nothing.
+//! names a single resource, by giving `resource` once: one that gives it more than once is refused
+//! `invalid_target`, whatever code or refresh token it presents and in whichever order it names
+//! its resources, and issues, rotates and revokes nothing; so is a code exchange that names no
+//! resource, or a resource that no remote serves, which leaves its code to be exchanged once. A
+//! refresh that names none, or a resource that no remote serves, has its scenario beside the other
+//! refusals of a refresh, in `remote_contract_refreshes.rs`.
 //!
 //! Each scenario runs against the simulator and, on demand, against the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS`: run a real half with
-//! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/<its name>/)'`. The real half of the
+//! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/<its name>/)'`. A real half of an
 //! exchange registers a client of its own and presents a code never issued, since a live code
 //! needs a person to consent. The real half of the refresh spends the sign-in that
 //! `loft remote login` kept in the `loft/remotes.json` that `LOFT_REMOTE_CONTRACT_SIGN_IN` names,
@@ -14,7 +17,7 @@
 //! drift. The simulator alone is asked how many refreshes it accepted, which access tokens a
 //! resource admits, and how a scenario that refuses every exchange or lapses answers.
 
-use serde_json::json;
+use serde_json::{Value, json};
 use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::oauth::{
@@ -39,10 +42,28 @@ fn several<'a>(own: &'a str, companions: &'a [(String, String)]) -> Vec<Vec<&'a 
     named
 }
 
+/// Refuses `invalid_target` each code exchange by `client` with the authorization server whose
+/// metadata is `server` that names `resource` once for each of the resources of one of
+/// `requests`, whichever of `codes` it presents: each code beside the words that name it in a
+/// failure, which never shows the code itself.
+fn refuses_each_exchange(
+    server: &Value,
+    client: &str,
+    requests: &[Vec<&str>],
+    codes: &[(&str, &str)],
+) {
+    for (which, code) in codes {
+        for named in requests {
+            let answer = exchange_for(server, client, named, code);
+            let asked = format!("an exchange of {which} that names {named:?}");
+            assert_oauth_error_for(&answer, "invalid_target", &asked);
+        }
+    }
+}
+
 /// Refuses `invalid_target` each code exchange by `client`, at the remote of the document at
 /// `address`, that names `resource` more than once, as [`several`] lists them, whichever of
-/// `codes` it presents: each code beside the words that name it in a failure, which never shows
-/// the code itself.
+/// `codes` it presents.
 fn refuses_an_exchange_that_names_resource_more_than_once(
     address: &str,
     client: &str,
@@ -53,13 +74,57 @@ fn refuses_an_exchange_that_names_resource_more_than_once(
         .as_str()
         .expect("protected resource metadata that names its resource");
     let companions = companions_of(&metadata);
-    for (which, code) in codes {
-        for named in several(own, &companions) {
-            let answer = exchange_for(&server, client, &named, code);
-            let asked = format!("an exchange of {which} that names {named:?}");
-            assert_oauth_error_for(&answer, "invalid_target", &asked);
-        }
-    }
+    refuses_each_exchange(&server, client, &several(own, &companions), codes);
+}
+
+/// Refuses `invalid_target` each code exchange by `client` with the authorization server whose
+/// metadata is `server` that names no resource, or a resource that no remote serves, whichever of
+/// `codes` it presents.
+fn refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve(
+    server: &Value,
+    client: &str,
+    codes: &[(&str, &str)],
+) {
+    refuses_each_exchange(server, client, &[vec![], vec![UNSERVED]], codes);
+}
+
+#[test]
+fn an_exchange_that_names_no_resource_or_one_the_remote_does_not_serve_is_refused_and_leaves_its_code_to_be_exchanged_once()
+ {
+    let remote = Remote::start(RemoteScenario::accepting(KEY));
+    let (server, client, own, code) = coded(&remote);
+    let codes = [("the code issued", code.as_str()), NEVER_ISSUED];
+    refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve(&server, &client, &codes);
+    // No refusal used the code up: it is exchanged once.
+    let answer = exchange(&server, &client, &own, &code);
+    assert_eq!(answer.status, 200, "{answer:?}");
+    assert_oauth_error(&exchange(&server, &client, &own, &code), "invalid_grant");
+    // Presented again once exchanged, the code is refused `invalid_target` all the same.
+    let exchanged = [("the code once exchanged", code.as_str())];
+    refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve(
+        &server, &client, &exchanged,
+    );
+    // A scenario that refuses every exchange judges its resources first, and refuses one that
+    // names a single resource it serves with its own error.
+    let refusing = RemoteScenario::accepting(KEY).refusing_exchange("unauthorized_client");
+    let refusing = Remote::start(refusing);
+    let (server, client, own, code) = coded(&refusing);
+    let issued = [("the code issued", code.as_str())];
+    refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve(&server, &client, &issued);
+    let refused = exchange(&server, &client, &own, &code);
+    assert_oauth_error(&refused, "unauthorized_client");
+}
+
+#[test]
+#[ignore = "reaches the remote at LOFT_REMOTE_CONTRACT_ADDRESS"]
+fn a_real_remote_refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve() {
+    // Registers a client of its own and presents a code never issued: a live code needs a person
+    // to consent.
+    let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
+    let (_, server) = discover(&address);
+    let client = registered(&server);
+    let codes = [NEVER_ISSUED];
+    refuses_an_exchange_that_names_no_resource_or_one_it_does_not_serve(&server, &client, &codes);
 }
 
 #[test]
