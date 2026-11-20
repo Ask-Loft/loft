@@ -6,7 +6,7 @@ body: |
 
   It also stands in for the remote's authorization server, under paths of its own on the same origin. It challenges a request without a token as a protected resource, serves the authorization server's metadata and the protected resource metadata of the document's protected resource and of each companion resource its scenario lists, registers clients and consents to each authorization request as its scenario names. A companion resource is another protected resource that one sign-in to the remote covers: the document's protected resource metadata lists it in `companion_resources`, by its identifier and its kind, and it has no routes of its own, so a test asks the simulator which access tokens it admits. A scenario may place a companion resource, or the document's protected resource metadata, on another origin, which a second port of the loopback interface stands for. Where a scenario places a companion resource is apart from how it serves the resource's metadata: a companion resource on another origin has its metadata served there faithfully, or with any fault its scenario names, as on the simulator's origin.
 
-  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a companion resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A companion resource's kind, the `kind` that the document's protected resource metadata lists beside its identifier, is a word that the remote chooses to name what the resource serves: the contract fixes no list of kinds. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked. It holds one refresh token for all of them, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707). That token rotates on every use. A token request, a code exchange or a refresh, names exactly one resource, by giving `resource` once, since an access token is issued for one resource alone: RFC 8707 lets a token request name several, and the remote refuses one that does.
+  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a companion resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A companion resource's kind, the `kind` that the document's protected resource metadata lists beside its identifier, is a word that the remote chooses to name what the resource serves: the contract fixes no list of kinds. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked. It holds one refresh token for all of them, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707). That token rotates on every use. A token request, a code exchange or a refresh, names a single resource, by giving `resource` once, since an access token is issued for one resource alone: RFC 8707 lets a token request name several, and the remote refuses one that does. A token request for a resource gives `resource` once, naming that resource.
 tags:
   - plant-simulator
 realizes:
@@ -463,13 +463,13 @@ requirements:
       - key: 01a18e1f-8dac-71f7-847a-725add9f5191
         name: "`expires_in` is the number of seconds its scenario names."
       - key: 01a18e1f-8dac-71f7-847a-725b26986a58
-        name: "A code already exchanged, a `redirect_uri` other than the authorization request's, or a `code_verifier` whose SHA-256 digest is not the `code_challenge`, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
+        name: "A code exchange that names a single resource the scenario serves is refused `400 Bad Request` with the OAuth error `invalid_grant` when it presents a code already exchanged, a `redirect_uri` other than the authorization request's, or a `code_verifier` whose SHA-256 digest is not the `code_challenge`."
       - key: 01a1f4de-35cc-734c-a894-dc43230fa9f8
-        name: "An exchange for a resource the scenario serves, with a code the simulator did not issue or one that another client presents, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
+        name: "A code exchange that names a single resource the scenario serves, with a code the simulator did not issue or one that another client presents, is refused `400 Bad Request` with the OAuth error `invalid_grant`."
       - key: 01a18e1f-8dac-71f7-847a-725c1d59acb6
         name: "An exchange that would otherwise be accepted but names a `resource` that the scenario serves and the sign-in does not hold is refused `400 Bad Request` with the OAuth error `invalid_target`."
       - key: 01a1995a-1ff6-73c4-9f04-02309a866506
-        name: "A scenario that refuses the exchange refuses every exchange for a resource it serves `400 Bad Request` with the OAuth error its scenario names."
+        name: "A scenario that refuses the exchange refuses every code exchange that names a single resource it serves `400 Bad Request` with the OAuth error its scenario names."
       - key: 01a1f09b-189b-76b3-863f-c7cad5e556a5
         name: "The access token is issued for the `resource` that the exchange names, and for no other resource."
       - key: 01a1f09b-189b-76b3-863f-c7cbb20aa6b5
@@ -494,7 +494,7 @@ requirements:
       - key: 01a19951-5b6c-769f-802b-1caae94627eb
         name: "The grace window is the 120 seconds after the rotation, unless its scenario names another length, and is counted on the simulator's clock, which a test can move on without waiting."
       - key: 01a18e1f-8dac-71f7-847a-7261f0f0ce7c
-        name: "A lapsing scenario refuses every refresh for a resource it serves `400 Bad Request` with the OAuth error `invalid_grant`."
+        name: "A lapsing scenario refuses every refresh that names a single resource it serves `400 Bad Request` with the OAuth error `invalid_grant`."
       - key: 01a1995a-1ff6-73c4-9f04-0231e27a1bf0
         name: "A scenario that loses a refresh's answer rotates the refresh token and closes the connection without answering, once."
       - key: 01a1995a-1ff6-73c4-9f04-0232d8302baa
@@ -502,7 +502,7 @@ requirements:
       - key: 01a1f09b-189b-76b3-863f-c7cd6ac24538
         name: "A refresh token of a sign-in that has not been revoked, presented again by the client it was issued to for a resource the scenario serves other than the one its rotation named, is refused `400 Bad Request` with the OAuth error `invalid_grant` and revokes every token issued from the same sign-in, even within the grace window."
       - key: 01a1f2fa-4284-7544-90ec-f115a1a7b153
-        name: "A refresh for a resource the scenario serves, with an unknown refresh token, one that another client presents or one of a revoked sign-in, is refused `400 Bad Request` with the OAuth error `invalid_grant`, with nothing rotated or revoked."
+        name: "A refresh that names a single resource the scenario serves, with an unknown refresh token, one that another client presents or one of a revoked sign-in, is refused `400 Bad Request` with the OAuth error `invalid_grant`, with nothing rotated or revoked."
       - key: 01a1f09b-189b-76b3-863f-c7ce8fa40ae5
         name: "The access token of an accepted refresh is issued for the `resource` that the refresh names, and for no other resource."
       - key: 01a1f09b-189b-76b3-863f-c7cf05684d6e
