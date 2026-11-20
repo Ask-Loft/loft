@@ -35,8 +35,9 @@ everything 2.4.1 will hold.
   Two addresses lie on one origin when they have the same scheme, host and port, the host compared
   without regard to case and a missing port read as the scheme's default.
 - A sign-in that an earlier `loft` kept under a remote's address, for a protected resource on
-  another origin, counts as no sign-in: it is neither refreshed nor sent, `loft publish` and
-  `loft pull` refuse as they do without a sign-in, and `loft remote set` signs in anew.
+  another origin, counts as no sign-in: it is neither refreshed nor sent, and `loft remote set`
+  signs in anew. `loft publish` and `loft pull` refuse with an error of its own, which names the
+  address and that resource and says that `loft remote login` signs in again.
 - The Yard page can open from another device, such as a phone in your tailnet, where you can
   answer as on the machine. Name the addresses the page server listens on beside `127.0.0.1`
   with `loft yard serve --listen`, once for each, `0.0.0.0` for every network, or with the

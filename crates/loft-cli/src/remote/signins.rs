@@ -65,13 +65,28 @@ fn entries() -> Result<Map<String, Value>, RemoteError> {
     Ok(file["remotes"].as_object().cloned().unwrap_or_default())
 }
 
-/// The sign-in that an entry kept under `address` holds, if it reads as one and its resource lies
-/// on the address's origin: one for a protected resource on another origin, which an earlier
-/// `loft` could keep, is no sign-in for the address, and is neither refreshed nor sent.
-fn sign_in(entry: &Value, address: &str) -> Option<SignIn> {
-    serde_json::from_value::<SignIn>(entry.clone())
-        .ok()
-        .filter(|held| network::same_origin(&held.resource, address))
+/// The sign-in that `entry`, the entry kept under `address`, holds, where it reads as one and its
+/// resource lies on the address's origin.
+///
+/// # Errors
+///
+/// There is no entry, or it does not read as a sign-in. Or it is one for a protected resource on
+/// another origin, which an earlier `loft` could keep: it is no sign-in for the address and is
+/// neither refreshed nor sent, and its error, unlike that of a missing one, names that resource.
+fn sign_in(entry: Option<&Value>, address: &str) -> Result<SignIn, RemoteError> {
+    let held = entry
+        .and_then(|entry| SignIn::deserialize(entry).ok())
+        .ok_or_else(|| RemoteError::NoSignIn {
+            address: address.to_owned(),
+        })?;
+    if network::same_origin(&held.resource, address) {
+        Ok(held)
+    } else {
+        Err(RemoteError::SignInElsewhere {
+            address: address.to_owned(),
+            resource: held.resource,
+        })
+    }
 }
 
 /// Writes `sign_ins` as the whole file, with permission for its owner alone, through a file
@@ -128,22 +143,13 @@ pub fn forget(address: &str) -> Result<bool, RemoteError> {
 /// The file holds no sign-in for `address`, or one only for a protected resource on another
 /// origin, or the refresh is refused or cannot be made.
 pub fn live(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
-    let missing = || RemoteError::NoSignIn {
-        address: address.to_owned(),
-    };
-    let held = entries()?
-        .get(address)
-        .and_then(|entry| sign_in(entry, address))
-        .ok_or_else(missing)?;
+    let held = sign_in(entries()?.get(address), address)?;
     if !held.expiring(now()) {
         return Ok(held);
     }
     let _lock = lock()?;
     let mut sign_ins = entries()?;
-    let held = sign_ins
-        .get(address)
-        .and_then(|entry| sign_in(entry, address))
-        .ok_or_else(missing)?;
+    let held = sign_in(sign_ins.get(address), address)?;
     if !held.expiring(now()) {
         return Ok(held);
     }

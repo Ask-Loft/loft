@@ -132,12 +132,16 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
 }
 
 /// The access token of the person's sign-in to `address`: the one `loft/remotes.json` holds,
-/// refreshed where it needs to be, or else, or where its refresh is refused, a new sign-in kept
-/// there.
+/// refreshed where it needs to be; or else, where it holds none, one only for a protected resource
+/// on another origin, or one whose refresh is refused, a new sign-in kept there in its place.
 fn signed_in(address: &str, browser: bool, timeout: std::time::Duration) -> Result<String, Stop> {
     match signins::live(address, timeout) {
         Ok(sign_in) => Ok(sign_in.access_token),
-        Err(RemoteError::NoSignIn { .. } | RemoteError::Lapsed { .. }) => {
+        Err(
+            RemoteError::NoSignIn { .. }
+            | RemoteError::SignInElsewhere { .. }
+            | RemoteError::Lapsed { .. },
+        ) => {
             let sign_in = signin::sign_in(address, browser, timeout)?;
             let token = sign_in.access_token.clone();
             signins::save(address, &sign_in)?;

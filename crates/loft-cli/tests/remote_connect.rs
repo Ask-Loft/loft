@@ -372,6 +372,34 @@ fn a_kept_sign_in_that_expires_soon_is_refreshed_and_one_that_lapsed_is_made_ane
 }
 
 #[test]
+fn set_with_a_sign_in_kept_for_a_resource_on_another_origin_signs_in_anew() {
+    let scratch = Scratch::with_reading_list();
+    let remote = Remote::start(RemoteScenario::accepting(&codec_key(&scratch)));
+    // The simulator admits its token, so a connect that used it would need no browser.
+    let mut kept = granted(&remote, 3600);
+    kept["resource"] = json!("http://127.0.0.1:9/documents");
+    keep(&scratch, &json!({ remote.address(): kept }));
+    let (output, browser) = run(
+        &scratch,
+        &["remote", "set", &remote.address()],
+        BrowserScenario::Visiting,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(browser.visits().len(), 1, "the person signs in anew");
+    assert_eq!(remote.refreshes(), 0);
+    let fresh = &sign_ins(&scratch)[remote.address()];
+    assert_eq!(fresh["resource"], format!("{}/documents", remote.origin()));
+    let bearer = format!("Bearer {}", fresh["accessToken"].as_str().unwrap());
+    let create = format!("POST /documents/{}/create", codec_key(&scratch));
+    assert_eq!(document_calls(&remote), [create]);
+    for request in remote.requests() {
+        let sent = request.header("authorization");
+        assert!(sent.is_none_or(|sent| sent == bearer), "{sent:?}");
+    }
+}
+
+#[test]
 fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
     let scratch = Scratch::with_reading_list();
     let before = tree(&scratch.0);

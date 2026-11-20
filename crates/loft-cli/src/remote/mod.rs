@@ -43,6 +43,9 @@ pub enum RemoteError {
     NoAddress { key: String },
     /// The address has no sign-in, and `LOFT_REMOTE_TOKEN` is not set.
     NoSignIn { address: String },
+    /// The sign-in kept under the address is for `resource`, a protected resource on another
+    /// origin, which an earlier `loft` could keep, and `LOFT_REMOTE_TOKEN` is not set.
+    SignInElsewhere { address: String, resource: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),
     /// The remote holds no document under the key.
@@ -88,6 +91,12 @@ impl fmt::Display for RemoteError {
                 formatter,
                 "no sign-in to {address} in loft/remotes.json: `loft remote login` signs in, \
                  or {TOKEN_ENV} names a token for one run"
+            ),
+            Self::SignInElsewhere { address, resource } => write!(
+                formatter,
+                "the sign-in kept under {address} in loft/remotes.json is for a protected \
+                 resource on another origin than the address, {resource}: `loft remote login` \
+                 signs in again, or {TOKEN_ENV} names a token for one run"
             ),
             Self::Address(address) => write!(
                 formatter,
@@ -187,8 +196,9 @@ pub fn now() -> Option<u64> {
 ///
 /// # Errors
 ///
-/// A variable is not a whole number of seconds, there is no address or no sign-in, the address
-/// may not be contacted, or a refresh is refused.
+/// A variable is not a whole number of seconds, there is no address, no sign-in or only one for a
+/// protected resource on another origin, the address may not be contacted, or a refresh is
+/// refused.
 pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
     let timeout = timeout()?;
     let wait = seconds(WAIT_ENV)?;

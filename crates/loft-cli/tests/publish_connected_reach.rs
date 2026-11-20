@@ -72,22 +72,33 @@ fn without_a_sign_in_the_publish_is_refused_naming_the_address_and_login() {
 }
 
 #[test]
-fn a_kept_sign_in_for_a_resource_on_another_origin_counts_as_no_sign_in_for_its_address() {
+fn publish_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_that_resource() {
     let run = connected(1, 1, RemoteScenario::accepting);
     run.change();
     let before = tree(&run.scratch.0);
+    let resource = "http://127.0.0.1:9/documents";
     // With an hour left its token would be sent; with a minute left it would be refreshed first.
     for seconds in [3600, 60] {
         let mut kept = granted(&run.remote, seconds);
-        kept["resource"] = json!("http://127.0.0.1:9/documents");
+        kept["resource"] = json!(resource);
         keep(&run.scratch, &json!({ run.remote.address(): kept }));
         let output = run.publish();
         assert_eq!(output.status.code(), Some(1), "{seconds}: {output:?}");
-        let message = Connected::message(&output);
+        let error = &signed_in::document(&output)["errors"][0];
+        // The kind of the error that a publish without a sign-in gives.
+        assert_eq!(error["kind"], "refused", "{seconds}: {error}");
+        let message = error["message"].as_str().unwrap_or_default();
         let address = run.remote.address();
-        for said in [address.as_str(), "LOFT_REMOTE_TOKEN", "loft remote login"] {
+        for said in [
+            address.as_str(),
+            resource,
+            "another origin",
+            "LOFT_REMOTE_TOKEN",
+            "`loft remote login` signs in again",
+        ] {
             assert!(message.contains(said), "{seconds}: {said}: {message}");
         }
+        assert!(!message.contains("no sign-in"), "{seconds}: {message}");
         assert!(
             run.remote.requests().is_empty(),
             "{seconds}: no connection is opened"
