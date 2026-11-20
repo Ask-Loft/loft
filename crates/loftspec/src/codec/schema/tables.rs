@@ -111,6 +111,19 @@ const OTHER_DOCUMENT_FIELDS: &[Field] = &[
     req(field::REMOTE, S::Text),
 ];
 
+const COPY_FIELDS: &[Field] = &[
+    req(field::PUBLISH_SEQUENCE, S::Integer),
+    req(field::STATE_ROOT, S::Digest),
+    req(field::INTERFACE_HASH, S::Digest),
+    ordered(
+        spec(field::LABELS, true, Shape::List(Item::Record(K::CopyLabel))),
+        Order::ByKey,
+    ),
+    record(field::INTERFACE, true, K::Interface),
+];
+
+const COPY_LABEL_FIELDS: &[Field] = &[req(field::KEY, S::Key), req(field::LABEL, S::Label)];
+
 const DERIVED_FROM_FIELDS: &[Field] = &[
     req(field::AUTHORED_STATE_ID, S::Key),
     req(field::CONTENT_ADDRESS, S::Digest),
@@ -413,5 +426,7 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::ByName => BY_NAME_FIELDS,
         Kind::Interface => INTERFACE_FIELDS,
         Kind::OtherDocument => OTHER_DOCUMENT_FIELDS,
+        Kind::Copy => COPY_FIELDS,
+        Kind::CopyLabel => COPY_LABEL_FIELDS,
     }
 }

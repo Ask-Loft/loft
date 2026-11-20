@@ -3,6 +3,7 @@
 //! a v1 source.
 
 use crate::conflict::Conflict;
+use crate::copy::Copy;
 use crate::wire::wire_names;
 use serde::Deserialize;
 
@@ -229,6 +230,9 @@ pub struct Document {
     /// The other documents a connected document links to, in no meaningful order; the writer
     /// sorts them by handle.
     pub documents: Vec<OtherDocument>,
+    /// The copies of other documents' Interfaces, in no meaningful order. Their nodes are no
+    /// nodes of the document: no walk of it visits them.
+    pub copies: Vec<Copy>,
     /// The merge conflicts the tree holds, which the validator reports until removed (RQ-126).
     pub conflicts: Vec<Conflict>,
 }
@@ -254,6 +258,7 @@ impl Document {
             connected: false,
             remote: None,
             documents: Vec::new(),
+            copies: Vec::new(),
             conflicts: Vec::new(),
         }
     }

@@ -54,6 +54,11 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
     resolver.interfaces();
     resolver.decisions();
     resolver.labels();
+    let (copies, unread) = super::copies::copies(tree);
+    resolver.errors.extend(unread);
+    resolver.document.copies = copies;
+    let crossed = super::copies::crossing(tree, &resolver.document);
+    resolver.errors.extend(crossed);
     resolver.document.conflicts = super::resolve_conflicts::collect(tree);
     if resolver.errors.is_empty() {
         Ok(resolver.document)
@@ -131,6 +136,26 @@ pub(super) fn optional<T>(parse: fn(&str) -> Option<T>, record: &Rec, field: &st
 
 pub(super) fn slug(record: &Rec) -> Slug {
     Slug::parse(record.text(field::SLUG).expect("a checked slug")).expect("a checked slug")
+}
+
+/// The tree a resolver of a copy reaches, which holds nothing: a copy's Interface lists no file.
+static NO_TREE: Tree = Tree {
+    files: BTreeMap::new(),
+};
+
+impl Resolver<'static> {
+    /// A resolver of the Interface of a copy at `path`, which resolves no reference: the caller
+    /// takes its edges out first.
+    pub(super) fn foreign(path: &SpecPath) -> Self {
+        Self {
+            tree: &NO_TREE,
+            index: BTreeMap::new(),
+            files: BTreeMap::new(),
+            path: path.clone(),
+            document: Document::empty(DocumentId::new(Key::mint())),
+            errors: Vec::new(),
+        }
+    }
 }
 
 impl<'t> Resolver<'t> {

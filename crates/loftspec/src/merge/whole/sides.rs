@@ -56,6 +56,17 @@ impl Trees {
         ]
     }
 
+    /// The path of every copy that any version holds, in path order.
+    pub(super) fn copies(&self) -> std::collections::BTreeSet<SpecPath> {
+        [self.base.as_ref(), Some(&self.ours), Some(&self.theirs)]
+            .into_iter()
+            .flatten()
+            .flat_map(|tree| tree.files.iter())
+            .filter(|(_, (role, _))| matches!(role, Role::Copy { .. }))
+            .map(|(path, _)| path.clone())
+            .collect()
+    }
+
     /// Each version of the file at `path`; none where a tree lacks it.
     pub(super) fn file(&self, path: &SpecPath) -> [Option<&Content>; 3] {
         [self.base.as_ref(), Some(&self.ours), Some(&self.theirs)].map(|tree| {

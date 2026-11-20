@@ -54,6 +54,8 @@ fn title(kind: Kind) -> &'static str {
         Kind::Subject => "Subject",
         Kind::FormerLabel => "Former label",
         Kind::OtherDocument => "`documents` entry",
+        Kind::Copy => "Copy",
+        Kind::CopyLabel => "`labels` entry",
         other => panic!("no field table is named for {other:?}"),
     }
 }

@@ -62,6 +62,7 @@ fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
             Role::Terms => 7,
             Role::Labels => 8,
             Role::Lint => 9,
+            Role::Copy { .. } => 10,
         };
         (rank, filed.get(*path).copied().unwrap_or(usize::MAX), *path)
     });

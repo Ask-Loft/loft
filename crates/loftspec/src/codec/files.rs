@@ -44,6 +44,12 @@ pub enum Role {
     Decision {
         slug: String,
     },
+    /// A copy of another document's Interface, which the tree keeps as its bytes: only
+    /// `loft interface` writes it.
+    Copy {
+        handle: String,
+        slug: String,
+    },
 }
 
 impl Role {
@@ -76,6 +82,10 @@ impl Role {
             ["decisions", decision] => Self::Decision {
                 slug: stem(decision)?,
             },
+            ["documents", handle, interface] => Self::Copy {
+                handle: (*handle).to_owned(),
+                slug: stem(interface)?,
+            },
             _ => return None,
         })
     }
@@ -99,6 +109,7 @@ impl Role {
             Self::Component { slug } => format!("components/{slug}.yaml"),
             Self::Interface { slug } => format!("interfaces/{slug}.yaml"),
             Self::Decision { slug } => format!("decisions/{slug}.yaml"),
+            Self::Copy { handle, slug } => format!("documents/{handle}/{slug}.yaml"),
         })
     }
 
@@ -119,11 +130,17 @@ impl Role {
     /// lint configuration, which the document does not hold.
     #[must_use]
     pub const fn is_written(&self) -> bool {
-        self.kind().is_some()
+        self.kind().is_some() || matches!(self, Self::Copy { .. })
+    }
+
+    /// Whether the tree keeps the file as its bytes: the lint configuration and each copy.
+    #[must_use]
+    pub const fn is_bytes(&self) -> bool {
+        self.kind().is_none()
     }
 
     /// The record kind the file holds at its top level; none for the lint configuration,
-    /// which stage 5 reads.
+    /// which stage 5 reads, and for a copy, which the copies are read from apart.
     const fn kind(&self) -> Option<Kind> {
         match self {
             Self::Manifest => Some(Kind::Manifest),
@@ -131,7 +148,7 @@ impl Role {
             Self::Tags => Some(Kind::TagEntry),
             Self::Categories => Some(Kind::CategoryEntry),
             Self::Terms => Some(Kind::TermEntry),
-            Self::Lint => None,
+            Self::Lint | Self::Copy { .. } => None,
             Self::Product { .. } => Some(Kind::Product),
             Self::Feature { .. } => Some(Kind::Feature),
             Self::Component { .. } => Some(Kind::RootComponent),
@@ -146,12 +163,12 @@ impl Role {
     }
 }
 
-/// One file's content: its records, or for the lint configuration its bytes.
+/// One file's content: its records, or for the lint configuration and a copy its bytes.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Content {
     Record(Rec),
     Registry(Vec<Rec>),
-    Lint(Vec<u8>),
+    Bytes(Vec<u8>),
 }
 
 impl Content {
@@ -160,7 +177,7 @@ impl Content {
         let records: &[Rec] = match self {
             Self::Record(record) => std::slice::from_ref(record),
             Self::Registry(entries) => entries,
-            Self::Lint(_) => &[],
+            Self::Bytes(_) => &[],
         };
         records.iter()
     }
@@ -170,7 +187,7 @@ impl Content {
         let records: &mut [Rec] = match self {
             Self::Record(record) => std::slice::from_mut(record),
             Self::Registry(entries) => entries,
-            Self::Lint(_) => &mut [],
+            Self::Bytes(_) => &mut [],
         };
         records.iter_mut()
     }
@@ -225,7 +242,7 @@ pub(crate) fn read_file(
     let role = Role::of(path).ok_or_else(|| ReadError::at(path, None, Problem::UnknownFile))?;
     let node = yaml::read(bytes).map_err(|error| ReadError::yaml(path, error))?;
     let Some(kind) = role.kind() else {
-        return Ok((role, Content::Lint(bytes.to_vec())));
+        return Ok((role, Content::Bytes(bytes.to_vec())));
     };
     let content = match node {
         None if role.is_registry() => Content::Registry(Vec::new()),
@@ -308,7 +325,7 @@ fn out(content: &Content) -> Result<Out, &[u8]> {
     match content {
         Content::Record(record) => Ok(to_out(record)),
         Content::Registry(entries) => Ok(Out::Sequence(entries.iter().map(to_out).collect())),
-        Content::Lint(bytes) => Err(bytes),
+        Content::Bytes(bytes) => Err(bytes),
     }
 }
 

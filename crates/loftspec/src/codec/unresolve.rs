@@ -41,6 +41,9 @@ pub fn unresolve(document: &Document) -> Tree {
         let terms = document.terms.iter().map(term_record).collect();
         put(&mut tree, Role::Terms, Content::Registry(terms));
     }
+    for copy in &document.copies {
+        put(&mut tree, copy.role(), Content::Bytes(copy.bytes.clone()));
+    }
     super::resolve_conflicts::attach(&mut tree, &document.conflicts);
     tree
 }

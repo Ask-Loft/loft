@@ -61,7 +61,7 @@ impl Flat {
                     flat.node(entry, (Parent::Top, field::ENTRIES));
                 }
             }
-            Content::Lint(_) => {}
+            Content::Bytes(_) => {}
         }
         flat
     }

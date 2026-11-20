@@ -20,6 +20,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 - Statements
 - Components and Constraints
 - Interfaces
+- Copies of other documents' Interfaces
 - Quality Attributes
 - Sections and bodies
 - Extension data
@@ -45,6 +46,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | `spec/components/<component>.yaml` | One root Component and everything beneath it | you and `loft fmt` |
 | `spec/interfaces/<interface>.yaml` | One Interface and everything beneath it | you and `loft fmt` |
 | `spec/decisions/<decision>.yaml` | One decision | you and `loft fmt` |
+| `spec/documents/<handle>/<interface>.yaml` | A copy of another document's Interface, pinned at one of its publishes | `loft interface` only; never edit it |
 | `loft.lock.json`, beside `spec/` | The lock that pins the published tree | `loft publish` only |
 | `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` and each test's `body`, and `--accept-stale` does so for every link whose tests are found |
 | `v1-sidecar.json`, beside `spec/` | What a Loft v1 export held that the format has no field for | `loft import v1` only |
@@ -313,6 +315,25 @@ boundary: external
 provides:
   - name: "Book lookup"
 ```
+
+## Copies of other documents' Interfaces
+
+A connected document that links to another connected document's Interface holds a copy of it
+under `spec/documents/<handle>/`, as that document published it at one publish sequence, under
+the handle its entry of `documents` names. Only `loft interface` writes a copy, and an edited
+copy no longer reads: never write or change one by hand.
+
+| Copy field | |
+|---|---|
+| `publishSequence`, `stateRoot` | required: the other document's published state the copy was taken from |
+| `interfaceHash` | required: the Interface's content hash in that state |
+| `labels` | required: the label of the Interface and of each node beneath it, by key |
+| `interface` | required: the Interface record, as the other document holds it |
+
+| `labels` entry field | |
+|---|---|
+| `key` | required: a node's key in the other document |
+| `label` | required: its label there |
 
 ## Quality Attributes
 

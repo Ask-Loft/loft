@@ -12300,6 +12300,120 @@ links:
       - file: "crates/loftspec/tests/other_documents.rs"
         name: "documents_enters_no_root"
         body: f1200a42880172162ee8b46851f00d9777c81a10f7c1dbc981a95f4dcb8e0862
+  - node: 01a1f981-4db1-765f-a897-222c224b9a83
+    reviewed: 1d39eec9ef3963b1b0aec7e59e8cbb3cbf2008212d28a941509c3997e421e7f3
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_holds_its_five_fields_in_order_and_requires_each"
+        body: b86acc177625a070de6436fa76bdb110c1678c2ad0cc2891f7e72ac4acc3011b
+  - node: 01a1f981-4db1-765f-a897-222de179603e
+    reviewed: 6fc310dc6ed701db736683678131a85f72542422a7b3d2dee99557fda0a1fbab
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_names_the_published_state_it_was_taken_from"
+        body: 8190b0b14fcd2895952be69308feb9aabfa2e440ad210c941f4bbc920e22cbce
+  - node: 01a1f981-4db1-765f-a897-222e2db26933
+    reviewed: e6d06ba736b3236c0ce989fd868b797be1153b74e05fcd7d73f47db8ca7b4464
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copys_interface_hash_is_the_interfaces_content_hash"
+        body: 7bcf422052bedbff08a4e343664185844ffff0f3ebe07adbfa9aeb277efd10ed
+  - node: 01a1f981-4db1-765f-a897-222f92ae0f29
+    reviewed: 421933d07aa98326d892c4f76b2ee6a593a916cb02768ef71ec4b570e2ba889f
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copys_labels_are_its_nodes_labels_sorted_by_key"
+        body: 2d1b51f131d6c44eba52868a469b860671b6dfcd827dd02a1f3a4c2c686cb29b
+  - node: 01a1f981-4db1-765f-a897-2230ed56a6df
+    reviewed: 47df47963b3d93f80d0e70e1ed8addabfa31ab4b0c197c1c902f22afb4732402
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_holds_the_interface_record_as_its_document_holds_it"
+        body: b9ddeca5ae6002124ce0e864cc4de5915aaa15cae3b5b4caa0bd87f6b30b55fb
+  - node: 01a1f981-4db1-765f-a897-22317c846bd6
+    reviewed: 2bc8ded85a638d9a77133d6cd0a2cae0d632a77564936a914b0071e2ab1949c3
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_file_that_holds_more_than_one_interface_is_refused"
+        body: 376e857c7fcab2927c0c2651f13e81bca09576c25ee0d0e40053acbb5bd8ebc1
+  - node: 01a1f981-4db1-765f-a897-223229b32252
+    reviewed: 010c53b34a29414e885bf3edd0ff325d029f7161c8109fb9334705d14bcae964
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "every_directory_under_documents_is_named_by_a_handle_of_documents"
+        body: a10e05617c4cc20ebc1192017f7705ddb7616a0ab8645311c1110bba054f09da
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_is_written_under_its_handle_with_the_slug_of_its_interface"
+        body: c47e09ea332168c299189e461d3ac4bac1c5ec00a91b3566d9d4322c1c2d1669
+  - node: 01a1f981-4db1-765f-a897-2234657fd6e1
+    reviewed: 0a98415d06260b026af5b8ef93d885505e8839d03092a5e5ace525698f841805
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copys_nodes_enter_neither_the_content_root_nor_the_binding_root"
+        body: 7421ab32f8fbac5e1ed04bdc4c25817f9e8374201b10d14ceb1dea9cf71a2238
+  - node: 01a1f981-4db1-765f-a897-2235b5cecd6b
+    reviewed: 6bb93654441b060fe652888531dd40f0de377e6d7b11e19d9b1452564589ad51
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_publish_labels_no_node_of_a_copy_and_binds_none"
+        body: c1da7ef9db545e5844c3ed09086718c545675a0c5e7d693c78910a3c7f24d2a7
+  - node: 01a1f981-4db1-765f-a897-22369c8cfa08
+    reviewed: 3ea96923f6ee485f7b783dea353fc58908e85621ef471fca4e0c5d6967398cba
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "the_linter_reports_no_finding_on_a_node_of_a_copy"
+        body: 5ff0954423ffa77bfc8610346e04bd966a787455d9004631857bc1f6ded9c601
+  - node: 01a1f981-4db1-765f-a897-223787e8296d
+    reviewed: 86aa2feb349245db6aa5fbd71d726fbbee1c4b5bbe17cd122c4e1d4c7852e68a
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "the_formatter_leaves_every_copy_file_as_it_is"
+        body: 7cf1dce6665464264a90927c53df17abc117993e86aee8589690015f010eba84
+  - node: 01a1f981-4db1-765f-a897-2238cc43dce3
+    reviewed: 451ac01d0172305c722c625244526a09259300232d797c823bbc2ed9c3eb593a
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_key_of_a_copy_that_an_element_of_the_document_carries_is_refused_naming_both_files"
+        body: c29983a0f457ea8a41a67425adad4303784685dd980396a20160311cf6fe8a63
+  - node: 01a1f981-4db1-765f-a897-2239973cfe6b
+    reviewed: 2a881c97aa944cd1113e4a5ded8528f8dca22b3cd1369ce12751aad39b786800
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_key_carried_by_nodes_of_two_copies_is_refused_naming_both_files"
+        body: 1026a597462089e866d6ca27e61b0e84cd5ad87a9f577eb4a04d585c0a82821a
+  - node: 01a1f981-4db1-765f-a897-223bb6674365
+    reviewed: 2b9863da71940584a7868b91122a593561f03361e7bc32d926b7c90df61704fc
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "an_edit_to_a_node_of_a_copy_is_refused_naming_the_copys_file"
+        body: 510d4f70e0f8b310745c179bbfa1ebc5810ce01fd02300bda9d747780e217ab7
+  - node: 01a1f981-4db1-765f-a897-223c0e64b716
+    reviewed: 1b93b7a7571d3a30b4c70eef68b1bdeef70c69a95f8da9e7e7d31227d73f5273
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "an_edit_to_a_node_of_a_copy_is_refused_naming_the_copys_file"
+        body: 510d4f70e0f8b310745c179bbfa1ebc5810ce01fd02300bda9d747780e217ab7
+  - node: 01a1f981-4db1-765f-a897-223d752bc4b8
+    reviewed: 2c9510b96a9f86e17a38b1630f130330205dbf93911e3622b9022c2d7dbf0e5c
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_as_it_was_written_raises_no_error"
+        body: 472e4d30f6f98ad105123bc1796410ecfadcbbc9d79ec103381c7c55e94fa11a
+  - node: 01a1f981-4db1-765f-a897-223f944d96c2
+    reviewed: 0ef227bf50fc815258c2e6915824719b2563c86d1ff47ab5e0a8efc696b23491
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_in_a_document_that_is_not_connected_is_refused_naming_the_handle"
+        body: cd3c8e41fede7a621ddb4100de764e9fe5a7561ad91ae3e522125a6fbe87e86d
+  - node: 01a1f981-4db1-765f-a897-224005473615
+    reviewed: 6e480844e579dcbd6059f017219b902f20eba60ec70c7c8e8a53d2ed0b96f6c7
+    tests:
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "every_directory_under_documents_is_named_by_a_handle_of_documents"
+        body: a10e05617c4cc20ebc1192017f7705ddb7616a0ab8645311c1110bba054f09da
+      - file: "crates/loftspec/tests/pinned_copies.rs"
+        name: "a_copy_in_a_document_that_is_not_connected_is_refused_naming_the_handle"
+        body: cd3c8e41fede7a621ddb4100de764e9fe5a7561ad91ae3e522125a6fbe87e86d
   - node: 01a1d600-053b-77ad-8132-b98169820900
     reviewed: 1eec5b8a9c4f69a36e631d989dad171ef286f3412d790558be031843502542ce
     tests:
@@ -22283,7 +22397,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/skill_files.rs"
         name: "the_files_table_names_each_command_that_writes_a_file"
-        body: f704e8e84a1b2f4985fc3b6ef3a368744de29a21628a5ba17d2ba9a233439b8d
+        body: eeb2e5f86e532fa775eff89be3b5e3c927361c2c8e67d88bacad881195a59c32
   - node: 01a1383e-2e64-72e5-b7f4-bc3c64ad28dc
     reviewed: 037fc1a27a3c61bddb715589a13d1e3c953649447af32e40225bbf79e3d7f253
     tests:

@@ -4,6 +4,7 @@
 
 mod canon;
 mod conflict;
+mod copies;
 mod error;
 mod ext;
 pub mod field;
@@ -29,6 +30,7 @@ mod unresolve_singles;
 mod variants;
 
 pub use conflict::{SideShape, side_shape};
+pub use copies::{CopyError, copy_of};
 pub use error::{Problem, ReadError, Site, SpecPath, site_fields, write_sites};
 pub(crate) use files::keyed_records;
 pub use files::{
