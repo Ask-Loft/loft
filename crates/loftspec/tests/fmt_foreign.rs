@@ -154,3 +154,23 @@ fn provides_by_name_looks_only_at_copied_interfaces() {
         text(&files, COMPONENT)
     );
 }
+
+#[test]
+fn a_foreign_reference_with_both_a_label_and_a_name_is_refused_where_it_stands() {
+    let files = providing();
+    let both = written_as(&files, "label: IF-1\n    name: \"Document lookup\"");
+    let errors = format(&both).unwrap_err();
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(
+        matches!(errors[0].problem, Problem::Shape(_)),
+        "{}",
+        errors[0]
+    );
+    assert_eq!(errors[0].sites[0].path, path(COMPONENT));
+    assert!(matches!(errors[0].sites[0].location, Some(Location::At(_))));
+    let message = errors[0].to_string();
+    assert!(
+        message.contains("`label`") && message.contains("`name`"),
+        "{message}"
+    );
+}

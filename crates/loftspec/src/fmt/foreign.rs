@@ -32,6 +32,13 @@ impl Foreign {
         let handle = written.text(field::DOCUMENT).unwrap_or_default();
         let label = written.text(field::LABEL);
         let name = written.text(field::NAME);
+        if label.is_some() && name.is_some() {
+            return Err(Problem::Shape(
+                "a reference into another document names its node by `label` or by `name`, \
+                 not both"
+                    .to_owned(),
+            ));
+        }
         let label = label.map(|label| Label::parse(label).ok());
         let interface_only = target == Some(Target::Interface);
         let matches = |held: &&Held| match label {
