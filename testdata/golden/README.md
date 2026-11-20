@@ -22,7 +22,7 @@ Absent values are `null`; an empty string is not absent.
 | Registry root | `loftspec/registry/1` | `[registryName, [[name, definition], …]]` |
 | Decision | `loftspec/decision/1` | `[title, context, state, drivers, options, assessments, consequences]` |
 | Decisions root | `loftspec/decisions/1` | `[decisionHash, …]` |
-| Content root | `loftspec/content/1` | `[productHashes, componentHashes, edgesRoot, tagsRoot, categoriesRoot, decisionsRoot]` |
+| Content root | `loftspec/content/1` | `[productHashes, componentHashes, edgesRoot, tagsRoot, categoriesRoot, decisionsRoot]`, then optional members |
 | Binding root | `loftspec/bindings/1` | `[[key, label, aliases, contentHash], …]` |
 | State root | `loftspec/state/1` | `[format, algorithm, documentKey, contentRoot, bindingRoot, derivedFrom]` |
 | Conflict | `loftspec/conflict/1` | `[holder, field, base, ours, theirs]` |
@@ -30,7 +30,7 @@ Absent values are `null`; an empty string is not absent.
 ### Node
 
 - `kind` is the kind name: `product`, `feature_group`, `feature`, `requirement`, `criterion`,
-  `component`, `constraint`, `quality_attribute` or `section`.
+  `component`, `constraint`, `quality_attribute`, `section` or `interface`.
 - `text` is a Requirement's statement rendered by its form's template, or any other node's name.
   A statement stored as `text` and the same sentence stored as slots give one view.
 - `body` is the body byte for byte, or `null`.
@@ -44,13 +44,15 @@ Absent values are `null`; an empty string is not absent.
   not part of its view.
 - `children` is the children's content hashes, grouped by kind and in order within each kind: a
   Feature Group's Features, then its Constraints; a Feature's Requirements, then its Quality
-  Attributes; a Component's Components, then its Constraints, then its Quality Attributes; and
-  last, the node's Sections. The key, the label, the aliases, the node's position among its siblings and
+  Attributes; a Component's Components, then its Constraints, then its Quality Attributes; an
+  Interface's Requirements, then its Constraints, then its Quality Attributes; and last, the
+  node's Sections. The key, the label, the aliases, the node's position among its siblings and
   every confirmation flag are not in the view.
 
 ### Edges root
 
-Each edge is its source's hash, its type (`realizes`, `scoped_to`, `mentions` or `subject`), its
+Each edge is its source's hash, its type (`realizes`, `scoped_to`, `mentions`, `subject`,
+`provides` or `requires`), its
 target's hash and its role (`affected`, `outcome` or `null`). An endpoint's hash is a node's
 content hash or a decision's view hash. The tuples are sorted by their canonical bytes and two
 equal tuples both appear.
@@ -86,7 +88,9 @@ of decision view hashes.
 `productHashes` are the Product content hashes in the manifest's order; `componentHashes` are the
 root Component content hashes sorted. The content view is `[productHashes, componentHashes,
 edgesRoot, tagsRoot, categoriesRoot, decisionsRoot]`, followed by the term list root when the
-document has a term. Binding rows are sorted by key; `aliases` keep the order in
+document has a term, and then by the Interface content hashes, sorted, as one array, when the
+document has an Interface. A document without an Interface has the content view it had before
+Interfaces existed. Binding rows are sorted by key; `aliases` keep the order in
 which they were recorded; `contentHash` is computed from the tree, never read from a file. The
 state view's `format` is `loftspec/1`, its `algorithm` `sha256-jcs/1`, and `derivedFrom` is
 `{authoredStateId, contentAddress, publishSequence}` or `null`.
@@ -119,6 +123,16 @@ Two tags, one constraint category, one accepted decision with two drivers (one l
 the Requirement), two options, four assessments and two consequences. Ten bindings, the
 Requirement's with one alias. Key `n` is `00000000-0000-7000-8000-` followed by `n` as twelve
 hexadecimal digits; the document key is key 0.
+
+## `small-document-interface.json`
+
+`small-document` with one root Interface, `Document lookup` (key `0x1c0`, body `What a reader of
+the document may rely on.`), holding the Requirement `The lookup shall answer a document by its
+key.` (key `0x1c1`, stored as text), which holds the criterion `The answer names the document.`
+(key `0x1c2`), and a sixth edge: the root Component `Document model` provides the Interface. The
+Interface has no label, so the binding root is the one `small-document.json` gives. Every view
+the Interface does not touch is the same as in `small-document.json`; the edges root gains the
+`provides` tuple, and the content view ends with `[interfaceHash]`.
 
 ## `small-document-state-view-2.json`
 
