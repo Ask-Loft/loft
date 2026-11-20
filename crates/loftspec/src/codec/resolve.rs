@@ -168,12 +168,17 @@ impl<'t> Resolver<'t> {
         ReadError::at(&self.path, position, Problem::Model(problem))
     }
 
-    /// The element a key field names, or the node of a copy a reference into another document
-    /// names.
-    pub(super) fn element(&self, value: &Val) -> Result<ElementId, ReadError> {
+    /// The element a key field of `source` names, or the node of a copy a reference into
+    /// another document names.
+    pub(super) fn element(&self, value: &Val, source: ElementId) -> Result<ElementId, ReadError> {
         if let Val::Record(foreign) = value {
-            return self.foreign_node(foreign).map(ElementId::Node);
+            return self.foreign_node(foreign, source).map(ElementId::Node);
         }
+        self.held(value)
+    }
+
+    /// The element of the document that a key field names.
+    fn held(&self, value: &Val) -> Result<ElementId, ReadError> {
         let text = value.text().unwrap_or_default();
         Key::parse(text)
             .ok()
@@ -186,13 +191,14 @@ impl<'t> Resolver<'t> {
             })
     }
 
-    /// The node a key field names, of the kind `want` says.
+    /// The node a key field of `source` names, of the kind `want` says.
     pub(super) fn node<T>(
         &self,
         value: &Val,
+        source: ElementId,
         want: fn(NodeId) -> Option<T>,
     ) -> Result<T, ReadError> {
-        match self.element(value)? {
+        match self.element(value, source)? {
             ElementId::Node(node) => want(node),
             ElementId::Decision(_) => None,
         }
@@ -204,22 +210,22 @@ impl<'t> Resolver<'t> {
         })
     }
 
-    /// A node reference: a held node's key, or a former label (AC-809).
-    pub(super) fn node_ref(&self, value: &Val) -> Result<NodeRef, ReadError> {
+    /// A node reference of `source`: a held node's key, or a former label (AC-809).
+    pub(super) fn node_ref(&self, value: &Val, source: ElementId) -> Result<NodeRef, ReadError> {
         match value {
             Val::Record(former) if former.kind == Kind::FormerLabel => {
                 let label = Label::parse(former.text(field::FORMER_LABEL).unwrap_or_default())
                     .map_err(|error| self.fail(Some(former.position), error.to_string()))?;
                 Ok(NodeRef::Former(label))
             }
-            _ => self.node(value, Some).map(NodeRef::Held),
+            _ => self.node(value, source, Some).map(NodeRef::Held),
         }
     }
 
     /// The `mentions` edges a record lists, from `source`.
     pub(super) fn mentions(&mut self, record: &Rec, source: ElementId) -> Result<(), ReadError> {
         for target in record.list(field::MENTIONS) {
-            let target = self.element(target)?;
+            let target = self.element(target, source)?;
             self.document.edges.push(Edge::Mentions { source, target });
         }
         Ok(())
@@ -413,7 +419,7 @@ impl<'t> Resolver<'t> {
         let element = match self.index.get(&key(binding, field::KEY)) {
             Some(element) if departed => *element,
             None if departed => ElementId::labeled(label.prefix(), key(binding, field::KEY)),
-            _ => self.element(binding.get(field::KEY).expect("a checked key"))?,
+            _ => self.held(binding.get(field::KEY).expect("a checked key"))?,
         };
         let fail = |error: crate::bindings::BindingError| {
             ReadError::at(

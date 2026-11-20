@@ -318,3 +318,25 @@ fn a_foreign_outcome_subject_is_an_error_naming_the_decision_and_the_node() {
 fn a_foreign_affected_subject_raises_no_error() {
     assert_eq!(validate(&crossing()), vec![]);
 }
+
+#[test]
+fn an_unresolved_foreign_reference_is_an_error_naming_the_element_that_makes_it() {
+    let files = codec::write(&crossing());
+    let source = format!("component {}", key(MODEL));
+    let unlisted = text(&files, COMPONENT).replace("document: format", "document: store");
+    let outside = text(&files, COMPONENT).replace(
+        &format!("key: {}\n", key(INTERFACE)),
+        &format!("key: {}\n", key(MODEL)),
+    );
+    let cases = [
+        (unlisted, format!("store:{}", key(INTERFACE))),
+        (outside, format!("{HANDLE}:{}", key(MODEL))),
+    ];
+    for (component, reference) in cases {
+        let mut wrong = files.clone();
+        wrong.insert(path(COMPONENT), component.into_bytes());
+        let errors = message(&read_errors(&wrong));
+        assert!(errors.contains(&source), "{errors}");
+        assert!(errors.contains(&reference), "{errors}");
+    }
+}

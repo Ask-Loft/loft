@@ -12603,6 +12603,12 @@ links:
       - file: "crates/loftspec/tests/foreign_references.rs"
         name: "a_reference_whose_copy_holds_its_key_raises_no_error"
         body: 5d489a88ec6b612fa60e5cc48842243923f0e4f89fb147a5326fc123d3ed0c1c
+  - node: 01a1faa9-1391-75ce-a1d8-a57d8e374e0f
+    reviewed: 6020312de355a5a6eb4b0f19c67d9dbad12d21824fd103b50335d582c2df717a
+    tests:
+      - file: "crates/loftspec/tests/foreign_references.rs"
+        name: "an_unresolved_foreign_reference_is_an_error_naming_the_element_that_makes_it"
+        body: 12fcafc2d47e4833cfd3481c65f4dece6a53a942b5036e1aa1ab059f9e550f9c
   - node: 01a1f981-4db1-765f-a897-2257ec695dc1
     reviewed: 445427b6efe2d7e5aecdcda3ce0d045920bd76e099a87eca694171acad66c80e
     tests:

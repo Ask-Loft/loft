@@ -15,9 +15,10 @@ use crate::ids::{ConsequenceId, DecisionId, DriverId, ElementId, OptionId};
 impl Resolver<'_> {
     pub(super) fn decision(&mut self, record: &Rec) -> Result<Decision, ReadError> {
         let id = DecisionId::new(key(record, field::KEY));
-        self.mentions(record, ElementId::Decision(id))?;
+        let source = ElementId::Decision(id);
+        self.mentions(record, source)?;
         for subject in record.records(field::SUBJECTS) {
-            let node = self.node_ref(subject.get(field::NODE).expect("a checked node"))?;
+            let node = self.node_ref(subject.get(field::NODE).expect("a checked node"), source)?;
             self.document.edges.push(Edge::Subject {
                 decision: id,
                 subject: node,
@@ -29,7 +30,7 @@ impl Resolver<'_> {
             .map(|driver| {
                 let payload = match driver.get(field::SUBJECT) {
                     Some(subject) => DriverPayload::Subject {
-                        subject: self.node_ref(subject)?,
+                        subject: self.node_ref(subject, source)?,
                     },
                     None => DriverPayload::Local {
                         label: text(driver, field::LABEL),
@@ -51,7 +52,7 @@ impl Resolver<'_> {
                     statement: text(consequence, field::STATEMENT),
                     subject: consequence
                         .get(field::SUBJECT)
-                        .map(|subject| self.node_ref(subject))
+                        .map(|subject| self.node_ref(subject, source))
                         .transpose()?,
                 })
             })
