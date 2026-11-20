@@ -2,15 +2,19 @@
 //! vectors in `testdata/golden/` were computed by an independent implementation; never
 //! regenerate them to make this test pass.
 
+use crate::common::interfaces::{INTERFACE, MODEL, provides, with_interface};
 use crate::common::small_document;
 use loftspec::canonical::{Domain, canonical_bytes, digest};
 use loftspec::codec::{self, SpecPath};
+use loftspec::document::Document;
 use loftspec::hash::{
     StateView, hash_document, hash_indexed_with_views, lint_digest, state_root, state_view,
 };
 use serde_json::Value;
 
 const SMALL_DOCUMENT: &str = include_str!("../../../testdata/golden/small-document.json");
+const SMALL_DOCUMENT_INTERFACE: &str =
+    include_str!("../../../testdata/golden/small-document-interface.json");
 
 struct Computed {
     name: String,
@@ -18,8 +22,8 @@ struct Computed {
     canonical: String,
 }
 
-fn computed_views() -> Vec<Computed> {
-    let (_, kept) = hash_indexed_with_views(&small_document().index().unwrap());
+fn computed_views(document: &Document) -> Vec<Computed> {
+    let (_, kept) = hash_indexed_with_views(&document.index().unwrap());
     let mut views = Vec::new();
     let mut push = |name: String, domain: Domain, view: &Value| {
         let canonical = String::from_utf8(canonical_bytes(view)).unwrap();
@@ -41,15 +45,56 @@ fn computed_views() -> Vec<Computed> {
     views
 }
 
-fn vectors() -> Vec<Value> {
-    let golden: Value = serde_json::from_str(SMALL_DOCUMENT).unwrap();
+fn vectors(golden: &str) -> Vec<Value> {
+    let golden: Value = serde_json::from_str(golden).unwrap();
     golden["views"].as_array().unwrap().clone()
+}
+
+/// The small document with an Interface, "Document lookup", that its root Component provides.
+fn small_document_with_a_provided_interface() -> Document {
+    let mut document = with_interface();
+    document.edges.push(provides(MODEL, INTERFACE));
+    document
 }
 
 #[test]
 fn the_small_document_vectors_are_reproduced_byte_for_byte() {
-    let expected = vectors();
-    let computed = computed_views();
+    assert_reproduced(SMALL_DOCUMENT, &small_document());
+}
+
+#[test]
+fn the_vectors_of_a_document_with_a_provided_interface_are_reproduced_byte_for_byte() {
+    assert_reproduced(
+        SMALL_DOCUMENT_INTERFACE,
+        &small_document_with_a_provided_interface(),
+    );
+}
+
+#[test]
+fn the_roots_of_a_document_with_a_provided_interface_match_their_vectors() {
+    let vectors = vectors(SMALL_DOCUMENT_INTERFACE);
+    let vector = |name: &str| digest_of(&vectors, name);
+    let roots = hash_document(&small_document_with_a_provided_interface())
+        .unwrap()
+        .roots;
+    assert_eq!(roots.content.to_string(), vector("root:content"));
+    assert_eq!(roots.state.to_string(), vector("root:state"));
+}
+
+/// The digest of the vector named `name`.
+fn digest_of(vectors: &[Value], name: &str) -> String {
+    vectors
+        .iter()
+        .find(|vector| vector["name"] == name)
+        .unwrap()["digest"]
+        .as_str()
+        .unwrap()
+        .to_owned()
+}
+
+fn assert_reproduced(golden: &str, document: &Document) {
+    let expected = vectors(golden);
+    let computed = computed_views(document);
     assert_eq!(computed.len(), expected.len(), "one view per golden vector");
     for view in &computed {
         let vector = expected
@@ -73,16 +118,8 @@ fn the_small_document_vectors_are_reproduced_byte_for_byte() {
 
 #[test]
 fn the_small_document_roots_match_their_vectors() {
-    let vectors = vectors();
-    let vector = |name: &str| {
-        vectors
-            .iter()
-            .find(|vector| vector["name"] == name)
-            .unwrap()["digest"]
-            .as_str()
-            .unwrap()
-            .to_owned()
-    };
+    let vectors = vectors(SMALL_DOCUMENT);
+    let vector = |name: &str| digest_of(&vectors, name);
     let roots = hash_document(&small_document()).unwrap().roots;
     assert_eq!(roots.content.to_string(), vector("root:content"));
     assert_eq!(roots.bindings.to_string(), vector("root:bindings"));

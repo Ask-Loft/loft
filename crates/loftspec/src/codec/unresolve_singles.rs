@@ -7,6 +7,7 @@ use super::unresolve::{keys, records};
 use crate::bindings::Binding;
 use crate::document::{CategoryEntry, Document, TagEntry, TermEntry};
 use crate::identity::{Key, LabelPrefix};
+use std::num::NonZeroU64;
 
 pub(super) fn manifest(document: &Document) -> Rec {
     let mut record = Rec::new(Kind::Manifest);
@@ -43,7 +44,12 @@ pub(super) fn manifest(document: &Document) -> Rec {
 pub(super) fn labels(document: &Document) -> Rec {
     let mut counters = Rec::new(Kind::Counters);
     for prefix in LabelPrefix::ALL {
-        counters.set_text(prefix.as_str(), document.counters.next(prefix).to_string());
+        let next = document.counters.next(prefix);
+        // An optional counter is written once a publish has moved it on.
+        if prefix.counter_optional() && next == NonZeroU64::MIN {
+            continue;
+        }
+        counters.set_text(prefix.as_str(), next.to_string());
     }
     let bindings = document.bindings.iter().map(binding_record);
     let mut record = Rec::new(Kind::Labels);

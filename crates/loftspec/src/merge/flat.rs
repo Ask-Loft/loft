@@ -124,14 +124,16 @@ impl Flat {
 pub(super) const PRODUCT_FILES: &str = "product files";
 pub(super) const FEATURE_FILES: &str = "feature files";
 pub(super) const COMPONENT_FILES: &str = "component files";
+pub(super) const INTERFACE_FILES: &str = "interface files";
 pub(super) const DECISION_FILES: &str = "decision files";
 
-/// The kind of record that a list of a whole tree holds in a file of its own: Products and root
-/// Components and decisions at the top of the tree, and Features in a Feature Group.
+/// The kind of record that a list of a whole tree holds in a file of its own: Products, root
+/// Components, Interfaces and decisions at the top of the tree, and Features in a Feature Group.
 fn filed(parent: Option<Kind>, name: &str) -> Option<Kind> {
     match (parent, name) {
         (None, PRODUCT_FILES) => Some(Kind::Product),
         (None, COMPONENT_FILES) => Some(Kind::RootComponent),
+        (None, INTERFACE_FILES) => Some(Kind::Interface),
         (None, DECISION_FILES) => Some(Kind::Decision),
         (Some(Kind::FeatureGroup), FEATURE_FILES) => Some(Kind::Feature),
         _ => None,

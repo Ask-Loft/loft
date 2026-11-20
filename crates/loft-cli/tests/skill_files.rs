@@ -37,6 +37,9 @@ fn placeholder(role: &Role) -> Role {
         Role::Component { .. } => Role::Component {
             slug: any("component"),
         },
+        Role::Interface { .. } => Role::Interface {
+            slug: any("interface"),
+        },
         Role::Decision { .. } => Role::Decision {
             slug: any("decision"),
         },
@@ -59,6 +62,7 @@ fn roles() -> Vec<Role> {
             feature: slug(),
         },
         Role::Component { slug: slug() },
+        Role::Interface { slug: slug() },
         Role::Decision { slug: slug() },
     ];
     roles.iter().map(placeholder).collect()

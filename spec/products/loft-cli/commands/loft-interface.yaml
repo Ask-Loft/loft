@@ -5,9 +5,6 @@ body: |
   Pins, moves, checks and removes the copies of other documents' Interfaces that a connected document links to. An Interface is named on the command line as its handle and its label, such as `format:IF-3`, or its handle and its key. `loft interface add` takes a copy of an Interface at the other document's head, or at the publish sequence `--at` gives, and lists the other document in the manifest the first time, from the address `--remote` gives. `loft interface update` moves pins to the head and reports how each promise changed. `loft interface status` compares each copy with what its remote serves. `loft interface remove` deletes a copy that nothing references. `loft interface login` signs the person in to another document's remote.
 
   Each other document is reached at the address its entry of `documents` names, with the person's sign-in to that address in `loft/remotes.json`, through the calls the document's own remote already answers: its head and its published states. `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` name the document's own remote, so they never redirect a call to another document's remote.
-tags:
-  - reads-tree
-  - writes-tree
 realizes:
   - 01a13a90-3554-7631-bb13-097e6805bffe
   - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d

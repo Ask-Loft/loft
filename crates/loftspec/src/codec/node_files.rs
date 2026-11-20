@@ -60,6 +60,12 @@ pub(crate) fn node_files<'a>(
             };
             each(role, node);
         }
+        (Node::Interface(interface), Under::Root) => {
+            let role = Role::Interface {
+                slug: interface.slug.to_string(),
+            };
+            each(role, node);
+        }
         (Node::Component(_), Under::Root) => {
             if let Some(slug) = slug {
                 let role = Role::Component {

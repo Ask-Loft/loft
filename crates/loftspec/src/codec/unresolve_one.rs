@@ -66,6 +66,7 @@ fn node_record(document: &Document, kind: NodeKind, key: Key) -> Option<Rec> {
         Node::Constraint(constraint) => edges.constraint(constraint),
         Node::QualityAttribute(quality) => edges.quality(quality),
         Node::Section(section) => edges.section(section),
+        Node::Interface(interface) => edges.interface(interface),
     })
 }
 

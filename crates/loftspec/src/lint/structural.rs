@@ -95,6 +95,7 @@ const fn rank(kind: NodeKind) -> u8 {
         NodeKind::Component => 1,
         NodeKind::Constraint => 2,
         NodeKind::QualityAttribute => 3,
+        NodeKind::Interface => 4,
         NodeKind::Criterion => 5,
         NodeKind::Section => 6,
     }

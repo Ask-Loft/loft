@@ -44,6 +44,7 @@ fn title(kind: Kind) -> &'static str {
         Kind::QualityTarget => "`qualityTarget`",
         Kind::Band => "`band`",
         Kind::Section => "Section",
+        Kind::Interface => "Interface",
         Kind::Decision => "Decision",
         Kind::State => "`state`",
         Kind::Driver => "Driver",
@@ -180,6 +181,7 @@ fn target_words(target: Target) -> &'static [&'static str] {
     match target {
         Target::Node => &["node"],
         Target::Component => &["component"],
+        Target::Interface => &["interface"],
         Target::Product => &["product"],
         Target::Decision => &["decision"],
         Target::NodeOrDecision => &["node", "decision"],
@@ -226,6 +228,8 @@ fn each_edge_is_described_with_the_kinds_at_its_ends() {
     let edges = [
         field::REALIZES,
         field::SCOPED_TO,
+        field::PROVIDES,
+        field::REQUIRES,
         field::SUBJECTS,
         field::MENTIONS,
     ];

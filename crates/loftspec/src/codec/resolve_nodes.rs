@@ -11,15 +11,18 @@ use crate::attributes::{
 use crate::document::Edge;
 use crate::ext::Ext;
 use crate::ids::{
-    ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, NodeId,
-    ProductId, QualityAttributeId, RequirementId, SectionId,
+    ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, InterfaceId,
+    NodeId, ProductId, QualityAttributeId, RequirementId, SectionId,
 };
 use crate::names::{CategoryName, TagName};
 use crate::statement::{EarsForm, Form, Statement};
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, RootComponent, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
+    QualityAttribute, Requirement, RootComponent, Section,
 };
+
+/// How a Component's link to an Interface is built from its two ends.
+type Link = fn(ComponentId, InterfaceId) -> Edge;
 
 /// A record's extension data; empty when it has no `ext`.
 fn ext(record: &Rec) -> Ext {
@@ -161,6 +164,23 @@ impl Resolver<'_> {
         })
     }
 
+    pub(super) fn interface(&mut self, record: &Rec) -> Result<Interface, ReadError> {
+        let id = InterfaceId::new(key(record, field::KEY));
+        Ok(Interface {
+            id: Some(id),
+            slug: slug(record),
+            name: text(record, field::NAME),
+            details: self.details(record, id.into())?,
+            requirements: self.each(record, field::REQUIREMENTS, Self::requirement)?,
+            constraints: self.each(record, field::CONSTRAINTS, Self::constraint)?,
+            quality_attributes: self.each(
+                record,
+                field::QUALITY_ATTRIBUTES,
+                Self::quality_attribute,
+            )?,
+        })
+    }
+
     pub(super) fn root_component(&mut self, record: &Rec) -> Result<RootComponent, ReadError> {
         Ok(RootComponent {
             slug: slug(record),
@@ -179,6 +199,26 @@ impl Resolver<'_> {
                 component: id,
                 product,
             });
+        }
+        let interface = |node| match node {
+            NodeId::Interface(interface) => Some(interface),
+            _ => None,
+        };
+        let links: [(&str, Link); 2] = [
+            (field::PROVIDES, |component, interface| Edge::Provides {
+                component,
+                interface,
+            }),
+            (field::REQUIRES, |component, interface| Edge::Requires {
+                component,
+                interface,
+            }),
+        ];
+        for (name, link) in links {
+            for target in record.list(name) {
+                let interface = self.node(target, interface)?;
+                self.document.edges.push(link(id, interface));
+            }
         }
         Ok(Component {
             id: Some(id),

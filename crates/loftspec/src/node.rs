@@ -9,8 +9,8 @@ use crate::ids::NodeId;
 use crate::kind::NodeKind;
 use crate::slug::Slug;
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
+    QualityAttribute, Requirement, Section,
 };
 
 /// A borrowed node of any kind.
@@ -25,6 +25,7 @@ pub enum Node<'a> {
     Constraint(&'a Constraint),
     QualityAttribute(&'a QualityAttribute),
     Section(&'a Section),
+    Interface(&'a Interface),
 }
 
 impl<'a> Node<'a> {
@@ -41,6 +42,7 @@ impl<'a> Node<'a> {
             Self::Constraint(node) => (&node.name).into(),
             Self::QualityAttribute(node) => (&node.name).into(),
             Self::Section(node) => (&node.name).into(),
+            Self::Interface(node) => (&node.name).into(),
         }
     }
 
@@ -51,6 +53,7 @@ impl<'a> Node<'a> {
             Self::Product(node) => Some(&node.slug),
             Self::FeatureGroup(node) => Some(&node.slug),
             Self::Feature(node) => Some(&node.slug),
+            Self::Interface(node) => Some(&node.slug),
             _ => None,
         }
     }
@@ -67,6 +70,7 @@ impl<'a> Node<'a> {
             Self::Constraint(_) => NodeKind::Constraint,
             Self::QualityAttribute(_) => NodeKind::QualityAttribute,
             Self::Section(_) => NodeKind::Section,
+            Self::Interface(_) => NodeKind::Interface,
         }
     }
 
@@ -83,6 +87,7 @@ impl<'a> Node<'a> {
             Self::Constraint(node) => node.id.map(NodeId::from),
             Self::QualityAttribute(node) => node.id.map(NodeId::from),
             Self::Section(node) => node.id.map(NodeId::from),
+            Self::Interface(node) => node.id.map(NodeId::from),
         }
     }
 
@@ -98,6 +103,7 @@ impl<'a> Node<'a> {
             Self::Component(node) => Some(&node.details),
             Self::Constraint(node) => Some(&node.details),
             Self::QualityAttribute(node) => Some(&node.details),
+            Self::Interface(node) => Some(&node.details),
             Self::Section(_) => None,
         }
     }
@@ -114,6 +120,7 @@ impl<'a> Node<'a> {
             Self::Component(node) => &node.details.sections,
             Self::Constraint(node) => &node.details.sections,
             Self::QualityAttribute(node) => &node.details.sections,
+            Self::Interface(node) => &node.details.sections,
             Self::Section(node) => &node.sections,
         }
     }
@@ -130,6 +137,7 @@ impl<'a> Node<'a> {
             Self::Component(node) => &node.details.ext,
             Self::Constraint(node) => &node.details.ext,
             Self::QualityAttribute(node) => &node.details.ext,
+            Self::Interface(node) => &node.details.ext,
             Self::Section(node) => &node.ext,
         }
     }
@@ -158,6 +166,11 @@ impl<'a> Node<'a> {
             }
             Self::Component(node) => {
                 children.extend(node.components.iter().map(Self::Component));
+                children.extend(node.constraints.iter().map(Self::Constraint));
+                children.extend(node.quality_attributes.iter().map(Self::QualityAttribute));
+            }
+            Self::Interface(node) => {
+                children.extend(node.requirements.iter().map(Self::Requirement));
                 children.extend(node.constraints.iter().map(Self::Constraint));
                 children.extend(node.quality_attributes.iter().map(Self::QualityAttribute));
             }
@@ -198,17 +211,23 @@ from_refs!(
     Component,
     Constraint,
     QualityAttribute,
-    Section
+    Section,
+    Interface
 );
 
 impl Document {
-    /// The Products in the manifest's order, then the root Components.
+    /// The Products in the manifest's order, then the root Components, then the Interfaces.
     pub fn root_nodes(&self) -> impl Iterator<Item = Node<'_>> {
         let components = self
             .components
             .iter()
             .map(|root| Node::Component(&root.component));
-        self.products.iter().map(Node::Product).chain(components)
+        let interfaces = self.interfaces.iter().map(Node::Interface);
+        self.products
+            .iter()
+            .map(Node::Product)
+            .chain(components)
+            .chain(interfaces)
     }
 
     /// Visits every node of the document, parents before children.

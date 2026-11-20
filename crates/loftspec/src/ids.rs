@@ -55,6 +55,7 @@ domain_ids! {
     ConstraintId,
     QualityAttributeId,
     SectionId,
+    InterfaceId,
     DecisionId,
     OptionId,
     DriverId,
@@ -89,6 +90,7 @@ pub enum NodeId {
     Constraint(ConstraintId),
     QualityAttribute(QualityAttributeId),
     Section(SectionId),
+    Interface(InterfaceId),
 }
 
 impl NodeId {
@@ -104,6 +106,7 @@ impl NodeId {
             Self::Constraint(id) => id.key(),
             Self::QualityAttribute(id) => id.key(),
             Self::Section(id) => id.key(),
+            Self::Interface(id) => id.key(),
         }
     }
 
@@ -120,6 +123,7 @@ impl NodeId {
             NodeKind::Constraint => Self::Constraint(ConstraintId(key)),
             NodeKind::QualityAttribute => Self::QualityAttribute(QualityAttributeId(key)),
             NodeKind::Section => Self::Section(SectionId(key)),
+            NodeKind::Interface => Self::Interface(InterfaceId(key)),
         }
     }
 
@@ -135,6 +139,7 @@ impl NodeId {
             Self::Constraint(_) => NodeKind::Constraint,
             Self::QualityAttribute(_) => NodeKind::QualityAttribute,
             Self::Section(_) => NodeKind::Section,
+            Self::Interface(_) => NodeKind::Interface,
         }
     }
 }
@@ -186,6 +191,7 @@ impl ElementId {
             LabelPrefix::Component => NodeKind::Component,
             LabelPrefix::Constraint => NodeKind::Constraint,
             LabelPrefix::QualityAttribute => NodeKind::QualityAttribute,
+            LabelPrefix::Interface => NodeKind::Interface,
         };
         Self::Node(NodeId::new(kind, key))
     }
@@ -232,6 +238,7 @@ into_ids! {
     ConstraintId => Constraint,
     QualityAttributeId => QualityAttribute,
     SectionId => Section,
+    InterfaceId => Interface,
 }
 
 impl From<NodeId> for ElementId {

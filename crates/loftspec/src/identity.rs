@@ -21,10 +21,11 @@ pub enum LabelPrefix {
     Constraint,
     QualityAttribute,
     Decision,
+    Interface,
 }
 
 impl LabelPrefix {
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 10] = [
         Self::Product,
         Self::FeatureGroup,
         Self::Feature,
@@ -34,6 +35,7 @@ impl LabelPrefix {
         Self::Constraint,
         Self::QualityAttribute,
         Self::Decision,
+        Self::Interface,
     ];
 
     #[must_use]
@@ -48,7 +50,16 @@ impl LabelPrefix {
             Self::Constraint => "CON",
             Self::QualityAttribute => "QA",
             Self::Decision => "ADR",
+            Self::Interface => "IF",
         }
+    }
+
+    /// Whether `spec/labels.yaml` may leave the prefix's counter out while it is still 1: a
+    /// prefix added after the Format's first release, so that a document that has never used it
+    /// keeps the labels file it had. Such a counter at 1 is never a guess.
+    #[must_use]
+    pub const fn counter_optional(self) -> bool {
+        matches!(self, Self::Interface)
     }
 
     /// The prefix written as `text`, such as `RQ`.

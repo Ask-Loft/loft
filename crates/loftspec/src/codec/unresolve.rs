@@ -17,8 +17,8 @@ use crate::identity::Key;
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
+    QualityAttribute, Requirement, Section,
 };
 
 /// The record tree of a document.
@@ -59,7 +59,10 @@ pub(crate) fn unresolve_elements(document: &Document) -> Tree {
             }
             (_, Node::Product(product)) => edges.product(product),
             (_, Node::Feature(feature)) => edges.feature(feature),
-            _ => unreachable!("only a Product, a Feature and a root Component have a file"),
+            (_, Node::Interface(interface)) => edges.interface(interface),
+            _ => unreachable!(
+                "only a Product, a Feature, a root Component and an Interface have a file"
+            ),
         };
         put(&mut tree, role, Content::Record(record));
     };
@@ -69,6 +72,9 @@ pub(crate) fn unresolve_elements(document: &Document) -> Tree {
     for root in &document.components {
         let node = Node::Component(&root.component);
         node_files(node, Some(&root.slug), &Under::Root, &mut file);
+    }
+    for interface in &document.interfaces {
+        node_files(Node::Interface(interface), None, &Under::Root, &mut file);
     }
     for decision in &document.decisions {
         let role = Role::Decision {
@@ -99,10 +105,17 @@ pub(super) fn records(items: impl IntoIterator<Item = Rec>) -> Val {
     Val::List(items.into_iter().map(Val::Record).collect())
 }
 
+/// Adds `target` to the targets `map` holds for `source`.
+fn push(map: &mut BTreeMap<NodeId, Vec<Key>>, source: NodeId, target: Key) {
+    map.entry(source).or_default().push(target);
+}
+
 /// The document's edges, indexed by the record that writes them.
 pub(super) struct Edges {
     realizes: BTreeMap<NodeId, Vec<Key>>,
     scoped: BTreeMap<NodeId, Vec<Key>>,
+    provides: BTreeMap<NodeId, Vec<Key>>,
+    requires: BTreeMap<NodeId, Vec<Key>>,
     mentions: BTreeMap<ElementId, Vec<Key>>,
     subjects: BTreeMap<ElementId, Vec<Rec>>,
     /// Whether a record is built without the nodes it holds, for its own record view.
@@ -114,6 +127,8 @@ impl Edges {
         let mut edges = Self {
             realizes: BTreeMap::new(),
             scoped: BTreeMap::new(),
+            provides: BTreeMap::new(),
+            requires: BTreeMap::new(),
             mentions: BTreeMap::new(),
             subjects: BTreeMap::new(),
             own: false,
@@ -121,19 +136,19 @@ impl Edges {
         for edge in all {
             match *edge {
                 Edge::Realizes { feature, component } => {
-                    edges
-                        .realizes
-                        .entry(feature.into())
-                        .or_default()
-                        .push(component.key());
+                    push(&mut edges.realizes, feature.into(), component.key());
                 }
                 Edge::ScopedTo { component, product } => {
-                    edges
-                        .scoped
-                        .entry(component.into())
-                        .or_default()
-                        .push(product.key());
+                    push(&mut edges.scoped, component.into(), product.key());
                 }
+                Edge::Provides {
+                    component,
+                    interface,
+                } => push(&mut edges.provides, component.into(), interface.key()),
+                Edge::Requires {
+                    component,
+                    interface,
+                } => push(&mut edges.requires, component.into(), interface.key()),
                 Edge::Mentions { source, target } => {
                     edges.mentions.entry(source).or_default().push(target.key());
                 }
@@ -282,6 +297,31 @@ impl Edges {
         record
     }
 
+    pub(super) fn interface(&self, interface: &Interface) -> Rec {
+        let id = interface.id.map(NodeId::from);
+        let mut record = self.node(
+            Kind::Interface,
+            id,
+            Some(&interface.name),
+            &interface.details,
+        );
+        record.set_text(field::SLUG, interface.slug.to_string());
+        let requirements = interface.requirements.iter();
+        let requirements = requirements.map(|requirement| self.requirement(requirement));
+        record.set(field::REQUIREMENTS, self.nested(requirements));
+        let constraints = interface.constraints.iter();
+        record.set(
+            field::CONSTRAINTS,
+            self.nested(constraints.map(|each| self.constraint(each))),
+        );
+        let qualities = interface.quality_attributes.iter();
+        record.set(
+            field::QUALITY_ATTRIBUTES,
+            self.nested(qualities.map(|each| self.quality(each))),
+        );
+        record
+    }
+
     pub(super) fn requirement(&self, requirement: &Requirement) -> Rec {
         let id = requirement.id.map(NodeId::from);
         let mut record = self.node(Kind::Requirement, id, None, &requirement.details);
@@ -316,11 +356,12 @@ impl Edges {
         if let Some(boundary) = component.boundary {
             record.set_text(field::BOUNDARY, boundary.as_str());
         }
-        let scoped = id
-            .and_then(|id| self.scoped.get(&id))
-            .cloned()
-            .unwrap_or_default();
-        record.set(field::SCOPED_TO, keys(scoped));
+        let targets = |map: &BTreeMap<NodeId, Vec<Key>>| {
+            id.and_then(|id| map.get(&id)).cloned().unwrap_or_default()
+        };
+        record.set(field::SCOPED_TO, keys(targets(&self.scoped)));
+        record.set(field::PROVIDES, keys(targets(&self.provides)));
+        record.set(field::REQUIRES, keys(targets(&self.requires)));
         record.set(
             "components",
             self.nested(

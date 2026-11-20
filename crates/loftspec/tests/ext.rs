@@ -103,6 +103,21 @@ fn every_node(document: &mut Document, set: &mut impl FnMut(&mut Ext)) {
     for root in &mut document.components {
         component(&mut root.component, set);
     }
+    for interface in &mut document.interfaces {
+        details(&mut interface.details, set);
+        for constraint in &mut interface.constraints {
+            details(&mut constraint.details, set);
+        }
+        for quality in &mut interface.quality_attributes {
+            details(&mut quality.details, set);
+        }
+        for requirement in &mut interface.requirements {
+            details(&mut requirement.details, set);
+            for criterion in &mut requirement.criteria {
+                details(&mut criterion.details, set);
+            }
+        }
+    }
 }
 
 /// The small document's first Requirement, to change.

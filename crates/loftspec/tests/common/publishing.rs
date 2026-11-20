@@ -2,8 +2,9 @@
 //! time, and the tree with what the publish wrote.
 
 use loftspec::codec::Files;
+use loftspec::document::Document;
 use loftspec::publish::{
-    Lock, Made, Publication, PublishedAt, ReadTree, Refusal, RepoState, publish,
+    Lock, Made, Publication, PublishedAt, ReadTree, Refusal, RepoState, allocate, publish,
 };
 
 /// A repository on `branch` with no uncommitted change and nothing stopped.
@@ -60,4 +61,12 @@ pub fn published(files: &Files) -> Files {
         "the tree is published"
     );
     tree
+}
+
+/// The labels a publish's allocation gives `document`, as text, in the order given.
+pub fn allocated(document: &mut Document) -> Vec<String> {
+    allocate(document)
+        .into_iter()
+        .map(|allocated| allocated.label.to_string())
+        .collect()
 }

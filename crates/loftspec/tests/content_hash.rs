@@ -173,6 +173,24 @@ fn sections_follow_the_structural_children() {
 }
 
 #[test]
+fn an_interfaces_children_are_its_requirements_constraints_quality_attributes_then_sections() {
+    let document = common::full::full_document();
+    let interface = &document.interfaces[0];
+    let view = interface.content_view();
+    assert_eq!(view[0], "interface");
+    let hashes: Vec<String> = [
+        interface.requirements[0].content_hash(),
+        interface.constraints[0].content_hash(),
+        interface.quality_attributes[0].content_hash(),
+        interface.details.sections[0].content_hash(),
+    ]
+    .iter()
+    .map(ToString::to_string)
+    .collect();
+    assert_eq!(view[10], serde_json::json!(hashes));
+}
+
+#[test]
 fn the_kind_is_content() {
     let feature_node = feature(key(1), "Keys", vec![]);
     let group = FeatureGroup {

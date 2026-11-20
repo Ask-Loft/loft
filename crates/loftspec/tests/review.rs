@@ -3,6 +3,7 @@
 //! Component CMP-1 (6) with CON-1 (7) and QA-1 (8), realized by F-1; ADR-1 (20) names RQ-2 as
 //! its outcome, through a driver and a consequence, and CMP-1 as affected.
 
+use crate::common::interfaces::{INTERFACE, with_interface};
 use crate::common::{component, criterion, key, small_document, term};
 use loftspec::decision::DecisionState;
 use loftspec::document::{Document, Edge};
@@ -392,5 +393,29 @@ fn the_same_tree_and_base_give_the_same_packet() {
     assert_eq!(
         packed(&document, Some(&base), None),
         packed(&document, Some(&base), None)
+    );
+}
+
+#[test]
+fn an_interface_is_the_scope_of_its_requirements_and_their_criteria() {
+    let packet = packed(&with_interface(), None, None);
+    assert_eq!(
+        outline(&packet),
+        [
+            (key(2), ns(&[9])),
+            (key(3), ns(&[4, 5, 10])),
+            (key(6), ns(&[7, 8])),
+            (key(INTERFACE), ns(&[INTERFACE + 1, INTERFACE + 2])),
+        ]
+    );
+    let interface = unit(&packet, INTERFACE);
+    assert_eq!(interface.scope.node.name, "Document lookup");
+    let [promise] = interface.requirements.as_slice() else {
+        panic!("one Requirement in {:?}", interface.requirements);
+    };
+    assert_eq!(promise.requirement.id.key(), key(INTERFACE + 1));
+    assert_eq!(
+        keys(promise.criteria.iter().map(|c| c.id)),
+        ns(&[INTERFACE + 2])
     );
 }

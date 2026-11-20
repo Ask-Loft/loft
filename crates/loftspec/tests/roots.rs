@@ -1,5 +1,6 @@
 //! The edges, registry, decisions, content, binding and state roots (F-4, F-5).
 
+use crate::common::interfaces::{INTERFACE, interface, with_interface};
 use crate::common::{
     component, fresh_key, key, label, product, root, small_document, small_document_with,
 };
@@ -113,6 +114,24 @@ fn root_components_are_sorted_by_content_hash() {
     sorted.sort();
     assert_eq!(hashes.components, sorted);
     document.components.reverse();
+    assert_eq!(roots(&document).content, hashes.roots.content);
+}
+
+#[test]
+fn interface_order_leaves_the_content_root_and_the_interface_roots_are_sorted() {
+    let mut document = with_interface();
+    document
+        .interfaces
+        .push(interface(key(INTERFACE + 0x10), "Audit feed", Vec::new()));
+    let hashes = hash_document(&document).unwrap();
+    let mut sorted: Vec<Digest> = document
+        .interfaces
+        .iter()
+        .map(ContentHash::content_hash)
+        .collect();
+    sorted.sort();
+    assert_eq!(hashes.interfaces, sorted);
+    document.interfaces.reverse();
     assert_eq!(roots(&document).content, hashes.roots.content);
 }
 

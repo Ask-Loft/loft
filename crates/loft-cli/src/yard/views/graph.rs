@@ -1,7 +1,7 @@
 //! What a `spec-change` view's diagram draws (the See a spec change Feature): every changed node
 //! as a box of its own, whatever its kind, the changed decisions, each node a decision gained as a
-//! subject, each box above any of them drawn for context, and the `realizes` and subject edges
-//! between them. A decision whose subjects changed is changed, and draws its subject edges as its
+//! subject, each box above any of them drawn for context, and the `realizes`, `provides`,
+//! `requires` and subject edges between them. A decision whose subjects changed is changed, and draws its subject edges as its
 //! own document holds them, so that a subject it lost has no edge. Beside the diagram, the diff
 //! gives the words of every added, changed and removed node and decision, before and after, and
 //! the subjects each decision gained and lost.
@@ -11,7 +11,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use loftspec::bindings::Bindings;
 use loftspec::decision::NodeRef;
 use loftspec::diff::{DecisionChanges, Subject, SubjectChange, content_changes, decision_changes};
-use loftspec::document::{Document, Edge};
+use loftspec::document::{Document, Edge, EdgeKind, EdgeTarget};
 use loftspec::identity::Key;
 use loftspec::ids::ElementId;
 use loftspec::kind::NodeKind;
@@ -371,8 +371,8 @@ fn subject(
     value
 }
 
-/// The `realizes` edges between boxes drawn, as the tree holds them, and as the base did where
-/// the branch removed their Feature or Component; and the subject edges from each decision drawn
+/// The `realizes`, `provides` and `requires` edges between boxes drawn, as the tree holds them,
+/// and as the base did where the branch removed one of their ends; and the subject edges from each decision drawn
 /// to the box of each node it names, where that box is drawn: an added or changed decision's as
 /// the tree holds them, and a removed decision's as the base did.
 fn edges(shown: &[Key], decided: &[Decided], documents: &Documents<'_>) -> Value {
@@ -391,12 +391,10 @@ fn edges(shown: &[Key], decided: &[Decided], documents: &Documents<'_>) -> Value
             .collect()
     };
     let (in_tree, in_base) = (held(false), held(true));
-    // A base `realizes` edge between two nodes the tree holds is the tree's to draw, or not.
-    let both_held = |edge: &&Edge| match **edge {
-        Edge::Realizes { feature, component } => [feature.key(), component.key()]
-            .iter()
-            .all(|key| now.entries.contains_key(key)),
-        _ => false,
+    // A base edge between two nodes the tree holds is the tree's to draw, or not.
+    let both_held = |edge: &&Edge| {
+        linked(edge)
+            .is_some_and(|(from, to, _)| [from, to].iter().all(|key| now.entries.contains_key(key)))
     };
     let tree = (document.edges.iter())
         .filter_map(|edge| drawn_edge(edge, &drawn, &in_tree, &document.bindings));
@@ -417,20 +415,35 @@ fn edges(shown: &[Key], decided: &[Decided], documents: &Documents<'_>) -> Value
 /// An edge as the diagram draws it: from, to, its kind and a subject edge's role.
 type Drawn = (String, String, &'static str, Option<&'static str>);
 
-/// `edge` as the diagram draws it, where both its ends are drawn: a `realizes` edge between two
-/// boxes, or a subject edge from a decision drawn to the box of the node it names.
+/// The ends and kind of a `realizes`, `provides` or `requires` edge, which joins two nodes.
+fn linked(edge: &Edge) -> Option<(Key, Key, &'static str)> {
+    let kind = edge.kind();
+    if !matches!(
+        kind,
+        EdgeKind::Realizes | EdgeKind::Provides | EdgeKind::Requires
+    ) {
+        return None;
+    }
+    let EdgeTarget::Element(target) = edge.target() else {
+        return None;
+    };
+    Some((edge.source().key(), target.key(), kind.as_str()))
+}
+
+/// `edge` as the diagram draws it, where both its ends are drawn: a `realizes`, `provides` or
+/// `requires` edge between two boxes, or a subject edge from a decision drawn to the box of the
+/// node it names.
 fn drawn_edge(
     edge: &Edge,
     drawn: &BTreeSet<Key>,
     named: &BTreeSet<Key>,
     bindings: &Bindings,
 ) -> Option<Drawn> {
+    if let Some((from, to, kind)) = linked(edge) {
+        return (drawn.contains(&from) && drawn.contains(&to))
+            .then(|| (from.to_string(), to.to_string(), kind, None));
+    }
     match *edge {
-        Edge::Realizes { feature, component } => {
-            let (from, to) = (feature.key(), component.key());
-            (drawn.contains(&from) && drawn.contains(&to))
-                .then(|| (from.to_string(), to.to_string(), "realizes", None))
-        }
         Edge::Subject {
             decision,
             subject,

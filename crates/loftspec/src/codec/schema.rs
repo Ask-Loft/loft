@@ -38,6 +38,8 @@ pub enum Kind {
     FormerLabel,
     /// A reference written by name, which only the formatter reads and replaces by a key.
     ByName,
+    /// An Interface, which stands only at the root, in a file of its own.
+    Interface,
 }
 
 /// What a scalar field holds, which fixes how it is checked and written.
@@ -74,6 +76,7 @@ pub enum Target {
     /// Any node.
     Node,
     Component,
+    Interface,
     Product,
     Decision,
     /// Any node, or a decision.
@@ -169,7 +172,7 @@ use crate::kind::NodeKind;
 
 impl Kind {
     /// Every kind of record.
-    pub const ALL: [Self; 31] = [
+    pub const ALL: [Self; 32] = [
         Self::Manifest,
         Self::DerivedFrom,
         Self::Labels,
@@ -201,6 +204,7 @@ impl Kind {
         Self::Subject,
         Self::FormerLabel,
         Self::ByName,
+        Self::Interface,
     ];
 
     /// The kind's fields in the Format's order.
@@ -253,6 +257,7 @@ impl Kind {
             Self::Constraint => NodeKind::Constraint,
             Self::QualityAttribute => NodeKind::QualityAttribute,
             Self::Section => NodeKind::Section,
+            Self::Interface => NodeKind::Interface,
             _ => return None,
         })
     }

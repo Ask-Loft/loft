@@ -9,11 +9,13 @@ use loftspec::document::Document;
 use loftspec::ext::ExtValue;
 use loftspec::identity::Key;
 use loftspec::ids::RequirementId;
+use loftspec::kind::NodeKind;
 use loftspec::names::{Namespace, TagName};
 use loftspec::statement::Statement;
 use serde_json::{Value, json};
 
 use crate::common::full::{full_document, full_nested_document};
+use crate::common::interfaces::{INTERFACE, LATER, provided_and_required};
 use crate::common::own::{
     COMPONENT, CONSTRAINT, CRITERION, FEATURE, GROUP, PRODUCT, QUALITY, REQUIREMENT, own, view,
 };
@@ -372,4 +374,14 @@ fn outside_ext_every_scalar_of_an_own_record_view_is_a_string_or_true() {
     }
     let departed = &records[&(RecordKind::Binding, key(90))].view;
     assert_eq!(departed["departed"], json!(true));
+}
+
+#[test]
+fn an_interface_s_own_record_view_holds_its_slug_and_a_component_s_its_provides_and_requires() {
+    let document = provided_and_required();
+    let promise = view(&document, RecordKind::Node(NodeKind::Interface), INTERFACE);
+    assert_eq!(promise["slug"], json!("document-lookup"));
+    let component = view(&document, COMPONENT, 6);
+    assert_eq!(component["provides"], json!([text(INTERFACE)]));
+    assert_eq!(component["requires"], json!([text(LATER)]));
 }

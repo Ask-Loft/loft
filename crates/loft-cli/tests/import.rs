@@ -116,7 +116,7 @@ fn without_counters_each_is_one_above_the_highest_and_a_warning_says_so() {
     assert!(labels.contains("  RQ: 7\n"), "{labels}");
     let warning = stderr(&output);
     assert!(
-        warning.contains("the counters for P, FG, F, RQ, AC, CMP, CON, QA, ADR"),
+        warning.contains("the counters for P, FG, F, RQ, AC, CMP, CON, QA, ADR are one above"),
         "{warning}"
     );
     assert!(

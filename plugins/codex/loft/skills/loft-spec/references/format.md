@@ -19,6 +19,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 - Features and Requirements
 - Statements
 - Components and Constraints
+- Interfaces
 - Quality Attributes
 - Sections and bodies
 - Extension data
@@ -42,6 +43,7 @@ a key that stands in for the one `loft fmt` would have minted; never copy it.
 | `spec/products/<product>/product.yaml` | A Product and its Feature Groups | you and `loft fmt` |
 | `spec/products/<product>/<group>/<feature>.yaml` | One Feature, in its group's directory | you and `loft fmt` |
 | `spec/components/<component>.yaml` | One root Component and everything beneath it | you and `loft fmt` |
+| `spec/interfaces/<interface>.yaml` | One Interface and everything beneath it | you and `loft fmt` |
 | `spec/decisions/<decision>.yaml` | One decision | you and `loft fmt` |
 | `loft.lock.json`, beside `spec/` | The lock that pins the published tree | `loft publish` only |
 | `loft.trace.yaml`, beside `spec/` | The links from nodes to the tests that verify them | you; `loft reconcile --accept` writes `reviewed` and each test's `body`, and `--accept-stale` does so for every link whose tests are found |
@@ -85,7 +87,7 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 | `spec/labels.yaml` field | | `counters` field | |
 |---|---|---|---|
 | `counters` | required | `P`, `FG`, `F`, `RQ`, `AC`, `CMP`, `CON`, `QA`, `ADR` | required: the next number of each label prefix |
-| `bindings` | optional: by key | | |
+| `bindings` | optional: by key | `IF` | optional: the next number of an Interface's label, written once a publish gives an Interface one |
 
 | Binding field | |
 |---|---|
@@ -230,13 +232,17 @@ A statement may instead be `text:` alone, a whole sentence; lint asks for the sl
 | `body`, `tags` | optional |
 | `boundary` | optional: `private` or `external` |
 | `scopedTo` | optional: Product keys |
+| `provides` | optional: the keys of the Interfaces whose promise it keeps |
+| `requires` | optional: the keys of the Interfaces whose promise it relies on |
 | `mentions` | optional |
 | `ext` | optional |
 | `components` | optional: nested Components |
 | `constraints`, `qualityAttributes`, `sections` | optional |
 
 A root Component without `boundary` is `private`; a nested one takes its parent's boundary. An
-`external` Component is a system outside the product that it depends on.
+`external` Component is a system outside the product that it depends on. A Component `provides`
+an Interface whose promise it keeps, and `requires` one whose promise it relies on; never both
+for one Interface.
 
 | Constraint field | |
 |---|---|
@@ -259,6 +265,46 @@ the Reading List above holds one for the whole product, and its Shelf group one 
 key: 00000000-0000-7000-8000-000000000001
 name: "Shelf store"
 body: "Where the shelf is kept, in the device's own storage."
+requires:
+  - name: "Book lookup"
+```
+
+## Interfaces
+
+An Interface is a promise made at a boundary: what any Component that provides it answers, and
+what any Component that requires it may rely on. It stands only at the root, in its own file,
+and holds Requirements of its own, written at the boundary, as a Feature holds them.
+
+| Interface field | |
+|---|---|
+| `key`, `slug`, `name` | required |
+| `body`, `tags`, `mentions`, `ext` | optional |
+| `requirements` | optional: as a Feature's |
+| `constraints`, `qualityAttributes`, `sections` | optional |
+
+```yaml path=spec/interfaces/book-lookup.yaml
+name: "Book lookup"
+body: "What a catalog answers when the shelf looks a book up by its title."
+requirements:
+  - statement:
+      form: event_driven
+      when: "the shelf asks for a title"
+      system: "the catalog"
+      shall: "answer the book's author and year."
+    criteria:
+      - name: "The answer names the author."
+      - name: "The answer names the year of publication."
+```
+
+The catalog is outside the product, so it stands as an `external` Component that keeps the
+promise the Shelf store relies on:
+
+```yaml path=spec/components/catalog.yaml
+name: "Catalog"
+body: "The book catalog the shelf looks titles up in."
+boundary: external
+provides:
+  - name: "Book lookup"
 ```
 
 ## Quality Attributes
@@ -460,6 +506,8 @@ The decision above is written in one pass: its options, drivers and subjects are
 |---|---|---|
 | `realizes` | a Feature | the Components that implement it |
 | `scopedTo` | a Component | the Products it serves |
+| `provides` | a Component | the Interfaces whose promise it keeps |
+| `requires` | a Component | the Interfaces whose promise it relies on |
 | `subjects` | a decision | the nodes it affects or that state its outcome |
 | `mentions` | any node or decision | any node or decision its prose refers to |
 
@@ -471,6 +519,7 @@ with the key of the one element of the kind the field takes that has that name:
 |---|---|
 | `realizes` | a Component, by its name |
 | `scopedTo` | a Product, by its name |
+| `provides`, `requires` | an Interface, by its name |
 | `mentions` | a node or a decision, by its name or title |
 | a subject's `node`, a driver's or a consequence's `subject` | a node, by its name |
 | `successor` | a decision, by its title |

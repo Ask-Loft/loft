@@ -17,6 +17,7 @@ pub enum NodeKind {
     Constraint,
     QualityAttribute,
     Section,
+    Interface,
 }
 
 /// A kind name outside the Format's closed set.
@@ -25,7 +26,7 @@ pub enum NodeKind {
 pub struct UnknownKind(pub String);
 
 impl NodeKind {
-    pub const ALL: [Self; 9] = [
+    pub const ALL: [Self; 10] = [
         Self::Product,
         Self::FeatureGroup,
         Self::Feature,
@@ -35,6 +36,7 @@ impl NodeKind {
         Self::Constraint,
         Self::QualityAttribute,
         Self::Section,
+        Self::Interface,
     ];
 
     /// The kind's name as the text form and the content view write it.
@@ -50,6 +52,7 @@ impl NodeKind {
             Self::Constraint => "constraint",
             Self::QualityAttribute => "quality_attribute",
             Self::Section => "section",
+            Self::Interface => "interface",
         }
     }
 
@@ -64,6 +67,7 @@ impl NodeKind {
             Self::Feature => &[Self::Requirement, Self::QualityAttribute],
             Self::Requirement => &[Self::Criterion],
             Self::Component => &[Self::Component, Self::Constraint, Self::QualityAttribute],
+            Self::Interface => &[Self::Requirement, Self::Constraint, Self::QualityAttribute],
             Self::Criterion | Self::Constraint | Self::QualityAttribute | Self::Section => &[],
         }
     }
@@ -86,6 +90,7 @@ impl NodeKind {
             Self::Component => Some(LabelPrefix::Component),
             Self::Constraint => Some(LabelPrefix::Constraint),
             Self::QualityAttribute => Some(LabelPrefix::QualityAttribute),
+            Self::Interface => Some(LabelPrefix::Interface),
             Self::Section => None,
         }
     }
@@ -99,12 +104,16 @@ pub enum ParentKind {
 }
 
 impl ParentKind {
-    /// Whether a node of `child`'s kind may stand under a parent of this kind: a Product or a
-    /// Component at the root, and under a node what [`NodeKind::may_contain`] allows (RQ-74).
+    /// Whether a node of `child`'s kind may stand under a parent of this kind: a Product, a
+    /// Component or an Interface at the root, and under a node what [`NodeKind::may_contain`]
+    /// allows (RQ-74).
     #[must_use]
     pub fn may_contain(self, child: NodeKind) -> bool {
         match self {
-            Self::Root => matches!(child, NodeKind::Product | NodeKind::Component),
+            Self::Root => matches!(
+                child,
+                NodeKind::Product | NodeKind::Component | NodeKind::Interface
+            ),
             Self::Node(kind) => kind.may_contain(child),
         }
     }

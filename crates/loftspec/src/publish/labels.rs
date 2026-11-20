@@ -13,6 +13,7 @@ use crate::hash::decision_history_hash;
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::{DecisionId, ElementId};
 use crate::node::Node;
+use crate::slug::Slug;
 use crate::validate::decisions::{all_former_labels, edge_subjects, former_labels_of};
 
 /// A label a publish gave an element.
@@ -215,7 +216,15 @@ fn next_label(document: &mut Document, prefix: LabelPrefix) -> Label {
     label
 }
 
-/// Every node, then every decision, in the order labels are allocated.
+/// The byte order of the files `a` and `b` name, `<slug>.yaml`, which the reader follows: it puts
+/// `a-b` before `a`, since a hyphen sorts before the dot.
+fn by_file_name(a: &Slug, b: &Slug) -> std::cmp::Ordering {
+    let file = |slug: &Slug| [slug.as_str().as_bytes(), b".yaml"].concat();
+    file(a).cmp(&file(b))
+}
+
+/// Every node, then every decision, in the order labels are allocated: the Products, the root
+/// Components and the Interfaces, each in the order of their file names, then the decisions.
 pub(super) fn elements_in_order(document: &Document) -> Vec<ElementId> {
     let mut elements = Vec::new();
     let mut visit = |node: Node<'_>| {
@@ -227,12 +236,17 @@ pub(super) fn elements_in_order(document: &Document) -> Vec<ElementId> {
         Node::Product(product).walk(&mut visit);
     }
     let mut components: Vec<_> = document.components.iter().collect();
-    components.sort_by(|a, b| a.slug.as_str().cmp(b.slug.as_str()));
+    components.sort_by(|a, b| by_file_name(&a.slug, &b.slug));
     for root in components {
         Node::Component(&root.component).walk(&mut visit);
     }
+    let mut interfaces: Vec<_> = document.interfaces.iter().collect();
+    interfaces.sort_by(|a, b| by_file_name(&a.slug, &b.slug));
+    for interface in interfaces {
+        Node::Interface(interface).walk(&mut visit);
+    }
     let mut decisions: Vec<_> = document.decisions.iter().collect();
-    decisions.sort_by(|a, b| a.slug.as_str().cmp(b.slug.as_str()));
+    decisions.sort_by(|a, b| by_file_name(&a.slug, &b.slug));
     elements.extend(
         decisions
             .into_iter()

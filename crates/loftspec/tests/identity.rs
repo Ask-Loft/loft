@@ -111,3 +111,14 @@ fn the_kind_prefixes_are_closed() {
         Err(LabelError::UnknownPrefix("FT-1".to_owned()))
     );
 }
+
+#[test]
+fn an_interface_takes_labels_of_the_prefix_if() {
+    let label = Label::parse("IF-3").unwrap();
+    assert_eq!(label.prefix(), LabelPrefix::Interface);
+    assert_eq!(label.prefix().as_str(), "IF");
+    assert_eq!(
+        NodeKind::Interface.label_prefix(),
+        Some(LabelPrefix::Interface)
+    );
+}
