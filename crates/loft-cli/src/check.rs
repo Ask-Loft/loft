@@ -22,7 +22,7 @@ use crate::stop::{self, Stop};
 use crate::{base, version};
 
 /// The schema `--format json` writes to, by name and version (RQ-156).
-const SCHEMA: &str = "loft-check/2";
+const SCHEMA: &str = "loft-check/3";
 
 const FAILED: &str = "failed";
 const PASSED: &str = "passed";

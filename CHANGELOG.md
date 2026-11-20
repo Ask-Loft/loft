@@ -87,6 +87,9 @@ everything 2.4.1 will hold.
   Component provides or requires (`V2-013`, info). `loft render` gives Interfaces their own
   section and lists each Component's `provides` and `requires`; `loft find`, `loft status`,
   `loft review` and a `spec-change` view on the Yard page take them as they take every other kind.
+- `loft review --format json` follows the schema `loft-review/2`, whose node kinds add
+  `interface`, and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
+  `V2-013`. The output is otherwise as it was.
 
 ## 2.4.0 (2026-11-17)
 
