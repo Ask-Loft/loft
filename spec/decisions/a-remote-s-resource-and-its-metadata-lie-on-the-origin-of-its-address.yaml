@@ -93,13 +93,13 @@ consequences:
     statement: "A refused sign-in asks nothing of the origin it refuses, and shows the person no consent."
   - key: 01a1f4f1-4303-70b9-a1c6-744c9d65c9c4
     kind: cost
-    statement: "A remote that serves its protected resource metadata, or names its protected resource, on another origin than its documents' addresses is refused until it serves both on their origin."
+    statement: "A remote that serves its protected resource metadata, or names its protected resource, on another origin than its documents' addresses is refused until it serves both on their origin. So is a remote reached through another name than the origin on which it serves both, such as a port forward to `127.0.0.1`, `localhost` for `127.0.0.1`, a name with a trailing dot or a CNAME, until the document names it by an address on that origin, with `loft remote set`, and each person signs in to that address."
   - key: 01a1f4f1-4303-70b9-a1c6-744d94ff518c
     kind: risk
     statement: "Remotes that share one origin are not told apart: one of them can still name the metadata of another."
   - key: 01a1f4f1-4303-70b9-a1c6-744e145648dc
     kind: risk
-    statement: "Metadata on the address's origin may name another remote's authorization server: the sign-in registers there and shows its consent, and only that server's refusal of a resource it does not serve keeps it from issuing a token that the address could present to that remote."
+    statement: "Metadata on the address's origin may name another remote's authorization server, at which the sign-in then registers and shows its consent: `loft` relies on that server refusing a resource it does not serve (RFC 8707, section 2) to keep it from issuing a token that the address could present to that remote. The authorization request's address, which `loft` prints before it opens a browser, names that server's host, so that the person sees where they are asked to consent."
 subjects:
   - role: affected
     node: 01a156aa-d52e-75b0-9a73-cb9538029bb3

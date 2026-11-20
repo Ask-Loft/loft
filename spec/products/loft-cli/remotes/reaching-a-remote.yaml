@@ -60,6 +60,8 @@ requirements:
         name: "Where there is no address, the error names the manifest's `remote` and `LOFT_REMOTE_ENDPOINT`."
       - key: 01a18e1f-8daa-7674-9603-5ad50b1d6406
         name: "Where there is no sign-in, the error names the address and `LOFT_REMOTE_TOKEN`, and says that `loft remote login` signs in."
+      - key: 01a1f900-b4fe-7506-8d0d-c55748273642
+        name: "Where the sign-in kept under the address is for a protected resource on another origin than the address, the error says so in place of saying that there is no sign-in: it names the address, that resource and `LOFT_REMOTE_TOKEN`, and says that `loft remote login` signs in again."
       - key: 01a156aa-d531-70a7-88e0-0bf9810a25c3
         name: "No connection is opened."
       - key: 01a156aa-d531-70a7-88e0-0bfae3b7a232
