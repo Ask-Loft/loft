@@ -19010,7 +19010,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in"
-        body: 29a37e7b031800ea9987823f4d12526a19f45ecb02cf8166f541cac6e0e17f7e
+        body: 529f644f777d4c03488bc6dcab4d67b2d4aef553d525c3d1f6248756272a4cb6
   - node: 01a18e1f-8daa-7674-9603-5ad333b36e05
     reviewed: 6f8e361fca1ee375d070e2b40143ef2382aa4bd303e62c8e199d2f0a9a3c5310
     tests:
@@ -19097,7 +19097,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in"
-        body: 29a37e7b031800ea9987823f4d12526a19f45ecb02cf8166f541cac6e0e17f7e
+        body: 529f644f777d4c03488bc6dcab4d67b2d4aef553d525c3d1f6248756272a4cb6
   - node: 01a156aa-d531-70a7-88e0-0bf9810a25c3
     reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
     tests:

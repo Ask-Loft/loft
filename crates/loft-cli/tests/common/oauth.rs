@@ -18,11 +18,11 @@ use ureq::http::Response;
 use super::calls::{Answer, TOKENS, agent, call, read, redacted};
 use super::resources::origin_path_and_query;
 
-/// The code verifier of every authorization request, whose challenge the request sends.
 /// Where protected resource metadata lies on its resource's origin, before the resource's path
 /// (RFC 9728).
 pub const RESOURCE_METADATA: &str = "/.well-known/oauth-protected-resource";
 
+/// The code verifier of every authorization request, whose challenge the request sends.
 pub const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 /// The document key of each remote that the suites of the authorization server start.
 pub const KEY: &str = "01a18e30-0000-7000-8000-000000000010";

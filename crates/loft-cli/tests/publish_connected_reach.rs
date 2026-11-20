@@ -121,6 +121,7 @@ fn publish_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_namin
 fn a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in() {
     let run = connected(1, 1, RemoteScenario::accepting);
     run.change();
+    let before = tree(&run.scratch.0);
     let address = run.remote.address();
     // With an hour left its token would be sent; with a minute left it would be refreshed first.
     let cases = ["", "documents", "ftp://127.0.0.1/documents"]
@@ -146,6 +147,16 @@ fn a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in() {
         assert!(
             run.remote.requests().is_empty(),
             "{resource:?} {seconds}: neither refreshed nor sent"
+        );
+        assert_eq!(
+            sign_ins(&run.scratch)[address.as_str()],
+            kept,
+            "{resource:?} {seconds}: the kept sign-in is left as it was"
+        );
+        assert_eq!(
+            tree(&run.scratch.0),
+            before,
+            "{resource:?} {seconds}: no file of the tree is written"
         );
     }
 }

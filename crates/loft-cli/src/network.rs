@@ -267,7 +267,7 @@ pub fn same_origin(one: &str, other: &str) -> bool {
 /// absolute `https` or `http` one.
 #[must_use]
 pub fn origin(url: &str) -> Option<Origin> {
-    origin_and_path(url)
+    read(url)
         .map(|(origin, _)| origin)
         .filter(|origin| matches!(origin.scheme.as_str(), "https" | "http"))
 }

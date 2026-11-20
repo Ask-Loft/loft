@@ -83,13 +83,12 @@ fn sign_in(entry: Option<&Value>, address: &str) -> Result<SignIn, RemoteError> 
         .ok_or_else(none)?;
     // A resource that reads as no address lies on no origin, so it is not on another one.
     let origin = network::origin(&held.resource).ok_or_else(none)?;
-    if network::same_origin(&held.resource, address) {
+    if network::origin(address).as_ref() == Some(&origin) {
         Ok(held)
     } else {
         Err(RemoteError::SignInElsewhere {
             address: address.to_owned(),
             resource: held.resource,
-            origin: origin.to_string(),
         })
     }
 }

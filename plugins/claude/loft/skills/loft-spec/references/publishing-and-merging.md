@@ -40,10 +40,11 @@ states in order and gives its labels, so a whole team publishes one document.
 - When a command reports that the sign-in to the remote has lapsed or been refused, ask the user
   to run `loft remote login`: the sign-in opens the user's browser, so it is theirs to complete.
 - When a command reports that the sign-in kept for the address is for a protected resource on
-  another origin, the manifest names the remote by another name than the origin it serves its
-  resource on, and `loft remote login` is refused for the same reason. Ask the user for the
-  remote's address on the origin the error names, and run `loft remote set` with the address
-  they give; commit `spec/loftspec.yaml` after it.
+  another origin, ask the user to run `loft remote login` first: it signs in again where the
+  remote now serves its resource on the address's origin. Where that login is refused for the
+  same reason, the manifest names the remote by another name than its own: ask the user to run
+  `loft remote set` with the remote's address on the origin the error names, which signs them in
+  through their browser, then commit `spec/loftspec.yaml`.
 
 ## Publish
 

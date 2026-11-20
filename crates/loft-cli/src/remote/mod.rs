@@ -43,13 +43,9 @@ pub enum RemoteError {
     NoAddress { key: String },
     /// The address has no sign-in, and `LOFT_REMOTE_TOKEN` is not set.
     NoSignIn { address: String },
-    /// The sign-in kept under the address is for `resource`, a protected resource on `origin`,
-    /// another origin, which an earlier `loft` could keep, and `LOFT_REMOTE_TOKEN` is not set.
-    SignInElsewhere {
-        address: String,
-        resource: String,
-        origin: String,
-    },
+    /// The sign-in kept under the address is for `resource`, a protected resource on another
+    /// origin, which an earlier `loft` could keep, and `LOFT_REMOTE_TOKEN` is not set.
+    SignInElsewhere { address: String, resource: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),
     /// The remote holds no document under the key.
@@ -96,18 +92,16 @@ impl fmt::Display for RemoteError {
                 "no sign-in to {address} in loft/remotes.json: `loft remote login` signs in, \
                  or {TOKEN_ENV} names a token for one run"
             ),
-            Self::SignInElsewhere {
-                address,
-                resource,
-                origin,
-            } => write!(
+            Self::SignInElsewhere { address, resource } => write!(
                 formatter,
                 "the sign-in kept under {address} in loft/remotes.json is for a protected \
                  resource on another origin than the address, {resource}: \
-                 `loft remote set <address>` with an address on {origin} names the remote by it \
+                 `loft remote set <address>` with an address on {} names the remote by it \
                  and signs in to it, `loft remote login` signs in again once the remote serves \
                  its protected resource on the address's origin, or {TOKEN_ENV} names a token \
-                 for one run"
+                 for one run",
+                network::origin(resource)
+                    .map_or_else(|| resource.clone(), |origin| origin.to_string())
             ),
             Self::Address(address) => write!(
                 formatter,
