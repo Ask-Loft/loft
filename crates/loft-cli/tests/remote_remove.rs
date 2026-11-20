@@ -115,7 +115,13 @@ fn remove_forgets_a_sign_in_kept_under_the_address_for_a_resource_on_another_ori
 #[test]
 fn a_disconnect_says_to_commit_the_manifest() {
     let scratch = Scratch::with_reading_list();
-    name_remote(&scratch, Some("https://remote.example/documents/one"), true);
+    name_remote(
+        &scratch,
+        Some(&crate::common::signed_in::example_address(
+            "https://remote.example",
+        )),
+        true,
+    );
     let (output, _) = run(
         &scratch,
         &["remote", "remove"],

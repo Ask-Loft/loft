@@ -12,7 +12,7 @@ use std::time::Duration;
 use loftspec::codec;
 use serde_json::json;
 use software_plant::BrowserScenario;
-use software_plant::remote::{Metadata, Remote, RemoteScenario, misstated_root};
+use software_plant::remote::{Metadata, Remote, RemoteScenario, document_path, misstated_root};
 
 use crate::common::calls::call;
 use crate::common::oauth::{named_elsewhere, parameter};
@@ -29,7 +29,13 @@ fn a_set_whose_manifest_its_journal_cannot_save_changes_no_file_of_the_tree() {
         let (scratch, git) = published(&history);
         let remote = Remote::start(RemoteScenario::accepting(&history.key));
         if connected {
-            name_remote(&scratch, Some("https://old.example/documents/one"), true);
+            name_remote(
+                &scratch,
+                Some(&crate::common::signed_in::example_address(
+                    "https://old.example",
+                )),
+                true,
+            );
             keep(
                 &scratch,
                 &json!({ remote.address(): granted(&remote, 3600) }),
@@ -144,7 +150,7 @@ fn a_set_whose_challenge_names_metadata_on_another_origin_is_refused_and_nothing
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     // Neither a create nor an import: the sign-in ended at the challenge.
     let requested: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
-    assert_eq!(requested, [format!("/documents/{}/head", history.key)]);
+    assert_eq!(requested, [format!("{}/head", document_path(&history.key))]);
     let elsewhere = remote.requests_elsewhere();
     assert!(
         elsewhere.is_empty(),
@@ -190,7 +196,7 @@ fn a_set_whose_metadata_names_a_resource_on_another_origin_is_refused_and_nothin
         .collect();
     // Neither a registration nor a create nor an import: the sign-in ended at the metadata.
     let (metadata, refused) = named_elsewhere(&remote);
-    let head = format!("GET /documents/{}/head", history.key);
+    let head = format!("GET {}/head", document_path(&history.key));
     assert_eq!(requested, [head, format!("GET {metadata}")]);
     let elsewhere = remote.requests_elsewhere();
     assert!(

@@ -151,6 +151,26 @@ fn a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_iss
 }
 
 #[test]
+fn the_simulator_serves_its_document_at_the_address_a_loft_server_gives_a_document() {
+    let (remote, history) = holding(1);
+    assert_eq!(
+        remote.address(),
+        format!(
+            "{}/loft/t/plant/api/v2/documents/{}/remote",
+            remote.origin(),
+            history.key
+        )
+    );
+    assert_eq!(get(&remote, "/head").status, 200);
+    let elsewhere = format!("{}/documents/{}/head", remote.origin(), history.key);
+    assert_problem(
+        &call("GET", &elsewhere, Some(TOKEN), None),
+        404,
+        "not_found",
+    );
+}
+
+#[test]
 fn every_call_but_create_for_a_document_the_simulator_does_not_hold_is_not_found() {
     let key = "01a18e30-0000-7000-8000-000000000002";
     let remote = Remote::start(RemoteScenario::accepting(key));

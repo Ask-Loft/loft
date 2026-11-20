@@ -15,7 +15,7 @@ takes `--help`.
 | `loft publish` | Allocates labels and writes the lock, on the publish branch; a connected document publishes through its Loft server instead, from any branch ([publishing and merging](publishing.md#connected-documents)) |
 | `loft pull [--sequence <n> \| --branch <name>]` | Brings a connected document's tree to its Loft server's head by a three-way merge, or writes a published state or a branch's draft over a tree still at its lock |
 | `loft verify` | Recomputes the roots and compares them with the lock |
-| `loft remote set <address> [--no-browser]` | Signs you in to the Loft server at the address, connects the document there, importing what the repository has published, and names the server in `spec/loftspec.yaml` |
+| `loft remote set <address> [--no-browser]` | Connects the document to its remote, the document's own address on your Loft server, `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote` ([publishing and merging](publishing.md#connected-documents)): signs you in, imports what the repository has published, and names the remote in `spec/loftspec.yaml` |
 | `loft remote login` | Signs you in again to the document's Loft server, in a fresh clone or once a sign-in has lapsed |
 | `loft remote remove` | Disconnects the document from its Loft server and forgets your sign-in to it |
 | `loft status [--base <revision>]` | Reports the lock and whether the tree matches it, the repository's branch and uncommitted paths under `spec/`, and the nodes added, changed and removed since HEAD left the revision; it sends no telemetry |

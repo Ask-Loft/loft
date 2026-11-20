@@ -81,6 +81,7 @@ mod remote_login;
 mod remote_reach;
 mod remote_refresh;
 mod remote_remove;
+mod remote_set_help;
 mod remote_sign_in_refusals;
 mod render;
 mod render_openspec;

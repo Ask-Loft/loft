@@ -27,8 +27,8 @@ const CALLBACK_LIMIT: Duration = Duration::from_mins(5);
 /// The redirect URI `loft` registers; each sign-in redirects to a port of its own on it.
 const REGISTERED_REDIRECT: &str = "http://127.0.0.1/callback";
 
-/// Signs the person in to the remote at `address`, opening the browser unless `open_browser` is
-/// false, and gives the sign-in to keep.
+/// Signs the person in to the remote at `address`, the address of the document of `key`, opening
+/// the browser unless `open_browser` is false, and gives the sign-in to keep.
 ///
 /// # Errors
 ///
@@ -36,6 +36,7 @@ const REGISTERED_REDIRECT: &str = "http://127.0.0.1/callback";
 /// the browser does not come back within five minutes.
 pub fn sign_in(
     address: &str,
+    key: &str,
     open_browser: bool,
     timeout: Duration,
 ) -> Result<SignIn, RemoteError> {
@@ -43,7 +44,7 @@ pub fn sign_in(
         address: address.to_owned(),
         reason,
     };
-    let discovered = discovery::discover(address, timeout)?;
+    let discovered = discovery::discover(address, key, timeout)?;
     let listener = Listener::bind().map_err(|error| failed(error.to_string()))?;
     let client_id = register(&discovered, timeout).map_err(failed)?;
     let verifier = random(32).map_err(failed)?;

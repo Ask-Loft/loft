@@ -169,3 +169,18 @@ requirements:
         name: "The document holds no token."
       - key: 01a156c0-0b7a-76b6-9a6a-68493a5b9580
         name: "A refusal has the outcome `error` and is listed among the document's errors."
+  - key: 01a1f98b-b6a3-7425-bcd4-da9cb34e39f1
+    statement:
+      form: optional
+      where: "the working directory holds `spec/loftspec.yaml` with a `documentKey`"
+      system: "`loft remote set --help`"
+      shall: "give the form of the document's address with that `documentKey` in place of `<documentKey>`."
+    criteria:
+      - key: 01a1f98b-b6a3-7425-bcd4-da9d1e88145d
+        name: "The help of the address gives `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote` with the manifest's `documentKey` in place of `<documentKey>`."
+      - key: 01a1f98b-b6a3-7425-bcd4-da9e0c6491f5
+        name: "Without a manifest in the working directory, the help gives the form with `<documentKey>` and says that it is the `documentKey` of `spec/loftspec.yaml`."
+      - key: 01a1f98b-b6a3-7425-bcd4-da9feb137d20
+        name: "A manifest that does not read leaves the help as it is without a manifest."
+      - key: 01a1f98b-b6a3-7425-bcd4-daa00a8aac3b
+        name: "A command other than `loft remote` reads no manifest to build its help."

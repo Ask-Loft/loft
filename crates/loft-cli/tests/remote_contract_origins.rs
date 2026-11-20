@@ -5,7 +5,7 @@
 //! simulator alone.
 
 use serde_json::json;
-use software_plant::remote::{Metadata, Remote, RemoteScenario};
+use software_plant::remote::{Metadata, RESOURCE, Remote, RemoteScenario};
 
 use crate::common::calls::call;
 use crate::common::oauth::{KEY, RESOURCE_METADATA, named_elsewhere};
@@ -21,7 +21,7 @@ fn a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_s
     let (path, resource) = named_elsewhere(&remote);
     let authority = path
         .strip_prefix(&format!("{RESOURCE_METADATA}@"))
-        .and_then(|rest| rest.strip_suffix("/documents"))
+        .and_then(|rest| rest.strip_suffix(RESOURCE))
         .unwrap_or_else(|| panic!("{path}"));
     let elsewhere = format!("http://{authority}");
     let loopback = elsewhere.starts_with("http://127.0.0.1:");
@@ -43,12 +43,12 @@ fn a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_s
     assert_eq!(origin_of(&resource), elsewhere, "{resource}");
     // The second port, asked nothing so far, records what it is asked.
     assert!(remote.requests_elsewhere().is_empty());
-    let probe = call("GET", &format!("{elsewhere}/documents"), None, None);
+    let probe = call("GET", &format!("{elsewhere}{RESOURCE}"), None, None);
     assert_problem(&probe, 404, "not_found");
     let asked: Vec<String> = remote
         .requests_elsewhere()
         .into_iter()
         .map(|request| request.path)
         .collect();
-    assert_eq!(asked, ["/documents"]);
+    assert_eq!(asked, [RESOURCE]);
 }

@@ -33,7 +33,7 @@ pub const REDIRECT: &str = "http://127.0.0.1/callback";
 pub const CALLBACK: &str = "http://127.0.0.1:4567/callback";
 /// A protected resource that no remote serves: one on an origin under `.invalid`, which RFC 6761
 /// reserves so that it never resolves, and so is no remote's origin.
-pub const UNSERVED: &str = "https://elsewhere.invalid/documents";
+pub const UNSERVED: &str = "https://elsewhere.invalid/loft/t/acme/api/v2/documents";
 /// A code that no remote issued.
 pub const UNKNOWN_CODE: &str = "a-code-never-issued";
 

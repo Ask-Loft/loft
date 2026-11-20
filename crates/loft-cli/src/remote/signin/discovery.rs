@@ -32,14 +32,14 @@ pub struct Discovered {
     pub registration_endpoint: String,
 }
 
-/// The authorization server of the remote at `address`.
+/// The authorization server of the remote at `address`, the address of the document of `key`.
 ///
 /// # Errors
 ///
 /// The remote gives no challenge, its challenge names metadata on another origin than
 /// `address`, or a metadata document is missing, does not read, names a resource on another
 /// origin than `address`, or is not one a sign-in can follow.
-pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteError> {
+pub fn discover(address: &str, key: &str, timeout: Duration) -> Result<Discovered, RemoteError> {
     let failed = |reason: String| RemoteError::SignIn {
         address: address.to_owned(),
         reason,
@@ -50,20 +50,19 @@ pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteEr
         .iter()
         .filter(|_| challenged.status == 401)
         .find_map(|header| bearer_parameters(header))
-        .ok_or_else(|| {
-            failed(format!(
-                "the remote answered {} without a `Bearer` challenge",
-                challenged.status
-            ))
-        })?;
+        .ok_or_else(|| failed(unchallenged(address, key, challenged.status)))?;
     let named = |name: &str| {
         parameters
             .iter()
             .find(|(field, _)| field == name)
             .map(|(_, value)| value.clone())
     };
-    let metadata_url = named("resource_metadata")
-        .ok_or_else(|| failed("the challenge names no `resource_metadata`".to_owned()))?;
+    let metadata_url = named("resource_metadata").ok_or_else(|| {
+        failed(format!(
+            "GET {address}/head answered 401 with a `Bearer` challenge that names no \
+             `resource_metadata`"
+        ))
+    })?;
     let (metadata, resource) =
         resource_metadata(address, &metadata_url, timeout).map_err(failed)?;
     let issuer = metadata["authorization_servers"][0]
@@ -166,6 +165,23 @@ fn named_resource(address: &str, url: &str, metadata: &Value) -> Result<String, 
         ));
     }
     Ok(resource.to_owned())
+}
+
+/// Why an answer of `status` to the unauthenticated `GET <address>/head` cannot start a sign-in:
+/// the request and its status, and, for an answer a wrong address gives, that the address may not
+/// be a document's remote and the form of the address of the document of `key`.
+fn unchallenged(address: &str, key: &str, status: u16) -> String {
+    let refused =
+        format!("GET {address}/head answered {status}, not a 401 with a `Bearer` challenge");
+    if matches!(status, 401 | 408 | 429) || status >= 500 {
+        return refused;
+    }
+    format!(
+        "{refused}, so the address may not be a document's remote. A Loft server gives this \
+         document the address {}. `loft remote set` with the document's address replaces the \
+         `remote` that spec/loftspec.yaml names",
+        crate::remote::address_form_for(key)
+    )
 }
 
 /// The JSON object at `url`, an address a sign-in may contact.
