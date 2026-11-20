@@ -64,6 +64,7 @@ mod publish_meet_contract;
 mod publish_settle;
 mod pull;
 mod pull_checks;
+mod pull_copies;
 mod reads_tree;
 mod reconcile;
 mod reconcile_foreign;
