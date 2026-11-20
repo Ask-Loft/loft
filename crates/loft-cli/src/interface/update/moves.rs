@@ -1,22 +1,17 @@
 //! What an update does to one copy: leaves it current, finds its Interface withdrawn, or moves
 //! its pin, with the nodes the move added, changed and removed.
 
-use std::collections::BTreeMap;
-
-use loftspec::codec::{self, CopyError, Files};
+use loftspec::codec::{self, CopyError};
 use loftspec::copy::Copy;
 use loftspec::diff::{NodeChanges, interface_changes};
 use loftspec::document::Document;
 use loftspec::identity::Key;
 use loftspec::ids::NodeId;
 use loftspec::node::Node;
-use loftspec::publish::Lock;
-use loftspec::slug::Slug;
 use serde_json::{Value, json};
 
-use super::super::reach::{head_sequence, state};
-use super::super::refused;
-use crate::remote::{self, Client};
+use super::super::reach::{Remotes, not_held};
+use super::super::{entry_of, refused};
 use crate::stop::Stop;
 
 /// What an update did to one copy.
@@ -138,66 +133,34 @@ fn described(copy: &Copy, id: NodeId) -> (String, Value) {
 }
 
 /// The node `key` of `copy` as `<handle>:<label>`, or `<handle>:<key>` where it has no label.
-pub(super) fn foreign_name(copy: &Copy, key: Key) -> String {
+pub(in super::super) fn foreign_name(copy: &Copy, key: Key) -> String {
     match copy.labels.get(&key) {
         Some(label) => format!("{}:{label}", copy.handle),
         None => format!("{}:{key}", copy.handle),
     }
 }
 
-/// The remotes an update reaches, each once: its client and the publish sequence of its head,
-/// and each state taken from it.
-pub(super) struct Remotes {
-    browser: bool,
-    reached: BTreeMap<Slug, (Client, u64)>,
-    states: BTreeMap<(Slug, u64), (Files, Lock)>,
-}
-
-impl Remotes {
-    pub fn new(browser: bool) -> Self {
-        Self {
-            browser,
-            reached: BTreeMap::new(),
-            states: BTreeMap::new(),
-        }
-    }
-
+/// What an update does to `copy`, its remote reached through `remotes`.
+impl Move<'_> {
     /// Moves `copy` of `document` to its remote's head, or to the publish sequence `at`.
-    pub fn move_copy<'a>(
-        &mut self,
+    pub fn of<'a>(
+        remotes: &mut Remotes,
         document: &Document,
         copy: &'a Copy,
         at: Option<u64>,
     ) -> Result<Move<'a>, Stop> {
         let handle = &copy.handle;
-        let entry = (document.documents.iter())
-            .find(|entry| entry.handle == *handle)
-            .expect("the reader refuses a copy whose handle is not listed");
-        if !self.reached.contains_key(handle) {
-            let client = remote::other(&entry.remote, self.browser)?;
-            let head = head_sequence(&client, handle)?;
-            self.reached.insert(handle.clone(), (client, head));
-        }
-        let (client, head) = &self.reached[handle];
-        let sequence = at.unwrap_or(*head);
+        let entry = entry_of(document, copy);
+        let sequence = match at {
+            Some(at) => at,
+            None => remotes.head(entry)?,
+        };
         if sequence == copy.publish_sequence {
             return Ok(Move::Current { copy });
         }
-        let key = (handle.clone(), sequence);
-        if !self.states.contains_key(&key) {
-            let taken = state(client, sequence)?;
-            if taken.1.document_key != entry.key {
-                return Err(refused(format!(
-                    "the remote at {} serves the document {}, not {} that `documents` lists \
-                     under {handle}",
-                    entry.remote,
-                    taken.1.document_key.key(),
-                    entry.key.key()
-                )));
-            }
-            self.states.insert(key.clone(), taken);
-        }
-        let (files, lock) = &self.states[&key];
+        let (files, lock) = remotes
+            .state(entry, sequence)?
+            .ok_or_else(|| not_held(&entry.remote, sequence))?;
         let interface = copy.keys()[0];
         match codec::copy_of(handle, files, interface, sequence, lock.state_root) {
             Ok(to) => Ok(Move::Moved {

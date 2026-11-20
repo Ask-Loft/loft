@@ -15,10 +15,12 @@ use loftspec::slug::Slug;
 use loftspec_store::journal::{self, Changes};
 use serde_json::{Value, json};
 
+use super::reach::Remotes;
 use super::references::references;
 use super::{Interface, Named, Report, connected, document, named, refused};
 use crate::stop::Stop;
-use moves::{Move, Remotes};
+use moves::Move;
+pub(super) use moves::foreign_name;
 
 pub(super) fn run(
     root: &Path,
@@ -32,7 +34,12 @@ pub(super) fn run(
     let mut remotes = Remotes::new(browser);
     let mut moves = Vec::new();
     for copy in selected {
-        moves.push(remotes.move_copy(&document, copy, at.map(NonZeroU64::get))?);
+        moves.push(Move::of(
+            &mut remotes,
+            &document,
+            copy,
+            at.map(NonZeroU64::get),
+        )?);
     }
     let dangling = dangling(&document, &moves);
     write(root, &moves)?;

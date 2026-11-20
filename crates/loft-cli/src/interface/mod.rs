@@ -7,13 +7,15 @@
 mod add;
 mod reach;
 mod references;
+mod status;
 mod update;
 
 use std::num::NonZeroU64;
 use std::path::Path;
 
 use loftspec::codec::{self, Files};
-use loftspec::document::Document;
+use loftspec::copy::Copy;
+use loftspec::document::{Document, OtherDocument};
 use loftspec::identity::{Key, Label};
 use loftspec::slug::Slug;
 use loftspec_store::FileStore;
@@ -40,6 +42,9 @@ pub enum Action {
         at: Option<NonZeroU64>,
         browser: bool,
     },
+    Status {
+        browser: bool,
+    },
 }
 
 /// What a subcommand reports: its outcome, its fields, and its lines of text; `failed` where
@@ -64,6 +69,7 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
             at,
             browser,
         } => update::run(root, target.as_deref(), *at, *browser),
+        Action::Status { browser } => status::run(root, *browser),
     };
     match report {
         Ok(report) => {
@@ -103,6 +109,13 @@ fn connected(document: &Document) -> Result<(), Stop> {
         "the document {} is not connected: `loft remote set <address>` connects it to its remote",
         document.id.key()
     )))
+}
+
+/// The entry of `documents` that lists the handle of `copy`.
+fn entry_of<'a>(document: &'a Document, copy: &Copy) -> &'a OtherDocument {
+    (document.documents.iter())
+        .find(|entry| entry.handle == copy.handle)
+        .expect("the reader refuses a copy whose handle is not listed")
 }
 
 /// The tree's store and the document it holds.

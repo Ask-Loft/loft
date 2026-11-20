@@ -12,7 +12,7 @@ use loftspec::ids::{DocumentId, ElementId, NodeId};
 use loftspec::slug::Slug;
 use serde_json::json;
 
-use super::reach::{head_sequence, state};
+use super::reach::{head_sequence, not_held, state};
 use super::{Interface, Named, Report, connected, document, named, refused, save};
 use crate::remote;
 use crate::stop::Stop;
@@ -34,7 +34,7 @@ pub(super) fn run(
         Some(at) => at.get(),
         None => head_sequence(&client, &handle)?,
     };
-    let (files, lock) = state(&client, sequence)?;
+    let (files, lock) = state(&client, sequence)?.ok_or_else(|| not_held(&address, sequence))?;
     let other = lock.document_key;
     served(&document, listed, other, &address, &handle)?;
     let missing = || {
