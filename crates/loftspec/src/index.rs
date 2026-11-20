@@ -211,6 +211,15 @@ pub(crate) fn carried_keys(document: &Document) -> BTreeSet<Key> {
     keys
 }
 
+impl Document {
+    /// Every key an element, a decision element or a registry entry of the document carries;
+    /// the nodes of its copies carry none of them.
+    #[must_use]
+    pub fn carried_keys(&self) -> BTreeSet<Key> {
+        carried_keys(self)
+    }
+}
+
 /// The keys a decision carries: its own, then its drivers', options' and consequences'.
 fn decision_keys(decision: &Decision) -> impl Iterator<Item = Key> + '_ {
     let drivers = decision.drivers.iter().map(|driver| driver.id.key());

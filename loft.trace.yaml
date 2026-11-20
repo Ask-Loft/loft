@@ -16978,6 +16978,9 @@ links:
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
       - file: "crates/loft-cli/tests/interface_add_refusals.rs"
+        name: "a_copy_whose_node_shares_a_key_with_an_element_of_the_document_is_refused"
+        body: 15e28927a716b7430bb2b6dc8c78041329b08a96be9cb09a9d26552dda6d17f6
+      - file: "crates/loft-cli/tests/interface_add_refusals.rs"
         name: "a_document_another_handle_lists_is_refused_naming_that_handle"
         body: c5183b306f4feeb835c3da1779f2e94e975bc432793fe8c65b4dc692abc945c6
       - file: "crates/loft-cli/tests/interface_add_refusals.rs"

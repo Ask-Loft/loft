@@ -136,3 +136,14 @@ fn a_remote_that_holds_no_such_document_is_named_by_its_handle() {
     assert!(message.contains("holds no such document"), "{message}");
     assert!(!message.contains("loft remote set"), "{message}");
 }
+
+#[test]
+fn a_copy_whose_node_shares_a_key_with_an_element_of_the_document_is_refused() {
+    let (scratch, _history, _remote) = ready(true);
+    crate::interfaces::add_lookup(&scratch);
+    let message = refused(&scratch, &["shelves:IF-1"]);
+    assert!(
+        message.contains("an element of this document carries"),
+        "{message}"
+    );
+}

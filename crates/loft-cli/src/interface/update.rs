@@ -51,7 +51,7 @@ pub(super) fn run(
                 .unwrap_or(copy)
         })
         .collect();
-    clashing(&after)?;
+    clashing(&document, &after)?;
     let dangling = dangling(&document, &moves);
     write(root, &moves)?;
     Ok(report(&moves, &dangling))

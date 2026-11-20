@@ -141,9 +141,19 @@ fn held<'a>(document: &'a Document, target: &str) -> Result<&'a Copy, Stop> {
     })
 }
 
-/// Refuses `copies`, the copies a command would leave in the tree, where two share a file or a
-/// node's key, which the reader refuses.
-fn clashing(copies: &[&Copy]) -> Result<(), Stop> {
+/// Refuses `copies`, the copies a command would leave in `document`, where two share a file or a
+/// node's key, or one holds a key an element of the document carries, which the reader refuses.
+fn clashing(document: &Document, copies: &[&Copy]) -> Result<(), Stop> {
+    let carried = document.carried_keys();
+    for copy in copies {
+        if let Some(key) = copy.keys().into_iter().find(|key| carried.contains(key)) {
+            return Err(refused(format!(
+                "{} holds the node {key}, which an element of this document carries too: a copy \
+                 cannot share a key with the document that holds it",
+                copy.name_of(copy.key())
+            )));
+        }
+    }
     let Some(Clash {
         first,
         second,

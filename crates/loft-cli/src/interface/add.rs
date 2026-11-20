@@ -60,7 +60,7 @@ pub(super) fn run(
     )?;
     let mut after: Vec<&Copy> = document.copies.iter().collect();
     after.push(&copy);
-    clashing(&after)?;
+    clashing(&document, &after)?;
     let first = listed.is_none();
     if first {
         document.documents.push(OtherDocument {
