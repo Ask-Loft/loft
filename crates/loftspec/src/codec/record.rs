@@ -3,6 +3,7 @@
 //! (RQ-30, RQ-34). Formatting, reading and writing all pass through it.
 
 use super::error::{Located, Problem};
+use super::record_foreign::{barred_crossing, foreign, foreign_kind};
 use super::schema::{Field, Item, Kind, Scalar, Shape, field};
 use crate::canonical::Digest;
 use crate::ext::Ext;
@@ -342,42 +343,10 @@ pub(super) fn check_shape(node: &yaml::Node, shape: Shape, mode: Mode) -> Result
     }
 }
 
-/// Where a reference field that may not hold a reference into another document holds one.
-fn barred_crossing(node: &yaml::Node, field: &Field) -> Option<Position> {
-    if field.shape.item().target().is_none() || field::CROSSING.contains(&field.name) {
-        return None;
-    }
-    match &node.value {
-        Value::Sequence(items) => items.iter().find(|item| foreign(item)),
-        _ => foreign(node).then_some(node),
-    }
-    .map(|found| found.position)
-}
-
-/// The kind of a reference written as a record whose fields are named `fields`: a reference
-/// into another document where it names one, otherwise a former label.
-pub(super) fn reference_kind<'n>(mut fields: impl Iterator<Item = &'n str>) -> Kind {
-    if fields.any(|name| name == field::DOCUMENT) {
-        Kind::ForeignRef
-    } else {
-        Kind::FormerLabel
-    }
-}
-
-/// Whether a reference is written as a record naming another document, or a node's key without
-/// a name, as only a reference into another document is.
-fn foreign(node: &yaml::Node) -> bool {
-    let Value::Mapping(entries) = &node.value else {
-        return false;
-    };
-    let has = |name: &str| entries.iter().any(|entry| entry.key == name);
-    has(field::DOCUMENT) || (has(field::KEY) && !has(field::NAME))
-}
-
 fn check_item(node: &yaml::Node, item: Item, mode: Mode) -> Result<Val, Located> {
     match item {
         Item::Scalar(Scalar::Ref(_)) | Item::NodeRef if foreign(node) => {
-            check(node, Kind::ForeignRef, mode).map(Val::Record)
+            check(node, foreign_kind(node, mode)?, mode).map(Val::Record)
         }
         Item::Scalar(Scalar::Ref(_)) | Item::NodeRef if written_by_name(node) => match mode {
             Mode::Formatting => check(node, Kind::ByName, mode).map(Val::Record),

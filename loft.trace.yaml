@@ -12573,6 +12573,36 @@ links:
       - file: "crates/loftspec/tests/foreign_hashing.rs"
         name: "renaming_a_handle_leaves_the_content_root_and_the_state_root"
         body: 45f74032f68a25e7ce1ec346e12c4b0c05ce5ea79d13fc4ca852a4dab34ce0e4
+  - node: 01a1f981-4db1-765f-a897-2260094b5a15
+    reviewed: c82c222a8345d0dae5092c8458ac0cff517887fe5473b7585da9679187974bea
+    tests:
+      - file: "crates/loftspec/tests/fmt_foreign.rs"
+        name: "a_foreign_reference_by_label_takes_the_key_its_copy_binds_to_the_label"
+        body: e1e22f27e0e524d56c347d02cdb4e8621f9eb7cfe8aea6298c91ac3abcec5d92
+  - node: 01a1f981-4db1-765f-a897-2261cb4cbbdc
+    reviewed: 98cb1431b9f733edf7ea55e94d8264088e7703a24a07a3eab7dc428cb9e7833d
+    tests:
+      - file: "crates/loftspec/tests/fmt_foreign.rs"
+        name: "a_foreign_reference_by_name_takes_the_key_of_the_node_with_that_name"
+        body: da7c5178ce5d6c1e85d6405bbd2e10feee67f5d8328c46e362d52bb8d4c36566
+  - node: 01a1f981-4db1-765f-a897-2262513e5186
+    reviewed: d9fc7105a833f51132c70a425bae445c9b91a72810d55491315dcd825a0ddb77
+    tests:
+      - file: "crates/loftspec/tests/fmt_foreign.rs"
+        name: "a_foreign_label_or_name_that_matches_nothing_under_the_handle_is_refused_where_it_stands"
+        body: c299d9547045e21602731f13e59a25730701d7e5faa0e4175574378d5cad0f31
+  - node: 01a1f982-148c-77d7-b027-64c0c3a90bcd
+    reviewed: 4f67b6df13b3bc510cae2203af2f5b4025cd259407fb456e6045d8ea0abf12f8
+    tests:
+      - file: "crates/loftspec/tests/fmt_foreign.rs"
+        name: "a_foreign_name_that_matches_more_than_one_node_is_refused_naming_each_key"
+        body: 8b523a164fd8b3a2ccfcfada4e2377e0dbcd6219252d631ed13f74bdeab13c1e
+  - node: 01a1f981-dd10-776a-aaa3-31a62956511a
+    reviewed: 1810a64b36abb78b493376e541926eb187773929c13d22a94faec29dc8cb95e1
+    tests:
+      - file: "crates/loftspec/tests/fmt_foreign.rs"
+        name: "no_file_changes_when_a_foreign_reference_matches_nothing_or_more_than_one_node"
+        body: 11f127093340e0a9f2dbb880326b9c1730525fb30be0ce165afe0c350b655fa2
   - node: 01a1d600-053b-77ad-8132-b98169820900
     reviewed: 1eec5b8a9c4f69a36e631d989dad171ef286f3412d790558be031843502542ce
     tests:

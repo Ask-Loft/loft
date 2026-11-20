@@ -15,6 +15,7 @@ mod node_files;
 mod own_record;
 mod path;
 mod record;
+mod record_foreign;
 mod records;
 mod resolve;
 mod resolve_conflicts;
@@ -123,6 +124,11 @@ pub(crate) fn write_content(path: &SpecPath, role: Role, content: Content) -> Ve
     write_files(&tree)
         .remove(path)
         .expect("the writer writes the file")
+}
+
+/// The copies a tree holds that read; the reader reports the others.
+pub(crate) fn copies_of(tree: &Tree) -> Vec<crate::copy::Copy> {
+    copies::copies(tree).0
 }
 
 /// Whether a record holds exactly the fields its variant takes (RQ-220's variants).

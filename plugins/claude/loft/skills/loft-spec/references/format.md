@@ -567,7 +567,9 @@ node of another document, one that a copy under `spec/documents/<handle>/` holds
 | `key` | required: the node's key in the other document |
 
 Such a reference stands after the keys of the document's own elements. No other field takes one,
-and a decision's outcome is always a node of its own document.
+and a decision's outcome is always a node of its own document. While you write, it may name the
+node by `label` or by `name` in place of `key`, beside `document`; `loft fmt` replaces it with the
+key of the one node of the copies under that handle that carries the label or has the name.
 
 ## Lint configuration
 

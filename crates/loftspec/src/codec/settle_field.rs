@@ -144,7 +144,8 @@ fn item_value(value: &ConflictValue, item: Item) -> Option<Val> {
             Item::NodeRef | Item::Scalar(super::schema::Scalar::Ref(_)),
             ConflictValue::Record(fields),
         ) => {
-            let kind = super::record::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
+            let kind =
+                super::record_foreign::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
             record_value(kind, fields)
         }
         (Item::Ext, ConflictValue::Ext(ext)) => Some(Val::Ext {

@@ -64,9 +64,12 @@ fn title(kind: Kind) -> &'static str {
 /// The records the trace section's field tables describe.
 const TRACE_TABLES: [&str; 3] = ["Trace file", "Link", "Test"];
 
-/// Every record kind the reader accepts: a reference by name is read by `loft fmt` alone.
+/// Every record kind the reader accepts: a reference by name, into the document or another one,
+/// is read by `loft fmt` alone.
 fn read_kinds() -> impl Iterator<Item = Kind> {
-    Kind::ALL.into_iter().filter(|kind| *kind != Kind::ByName)
+    Kind::ALL
+        .into_iter()
+        .filter(|kind| !matches!(kind, Kind::ByName | Kind::ForeignByName))
 }
 
 /// The fields of `kind` as its table describes them: the Component table describes a root

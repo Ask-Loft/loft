@@ -56,6 +56,7 @@ mod ext;
 mod ext_json;
 mod fmt;
 mod fmt_deleted;
+mod fmt_foreign;
 mod fmt_keys;
 mod fmt_names;
 mod foreign_hashing;

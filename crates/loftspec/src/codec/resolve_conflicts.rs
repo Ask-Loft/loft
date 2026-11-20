@@ -186,7 +186,8 @@ fn item_val(value: &ConflictValue, item: Item) -> Val {
             Item::NodeRef | Item::Scalar(super::schema::Scalar::Ref(_)),
             ConflictValue::Record(fields),
         ) => {
-            let kind = super::record::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
+            let kind =
+                super::record_foreign::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
             record_val(kind, fields)
         }
         _ => scalar_val(value),
