@@ -223,13 +223,22 @@ impl Remote {
     ///
     /// # Panics
     ///
-    /// `resources` is empty: a sign-in holds at least one resource.
+    /// `resources` is empty, or names a resource more than once: a sign-in holds at least one
+    /// resource, and each once, as no authorization request that names a resource twice is
+    /// answered with a code.
     #[must_use]
     pub fn grant_over(&self, resources: &[&str]) -> Grant {
         assert!(
             !resources.is_empty(),
             "a sign-in holds at least one resource, and none was named"
         );
+        let repeated = (1..resources.len()).find(|at| resources[..*at].contains(&resources[*at]));
+        if let Some(at) = repeated {
+            panic!(
+                "a sign-in holds each resource once, and {} was named more than once",
+                resources[at]
+            );
+        }
         let mut state = lock(&self.state);
         let expires_in = state.scenario.expires_in;
         let accepted: Vec<(String, Vec<String>)> = resources
@@ -393,15 +402,39 @@ mod tests {
 
     use super::{Remote, RemoteScenario};
 
+    /// The message with which `remote` refuses a sign-in over `resources` granted without a
+    /// browser.
+    fn refusal(remote: &Remote, resources: &[&str]) -> String {
+        let refused = catch_unwind(AssertUnwindSafe(|| remote.grant_over(resources)));
+        let payload = refused.expect_err("the sign-in is refused");
+        let message = payload
+            .downcast_ref::<&str>()
+            .map(|message| (*message).to_owned());
+        message
+            .or_else(|| payload.downcast_ref::<String>().cloned())
+            .unwrap_or_default()
+    }
+
     #[test]
-    fn a_sign_in_granted_without_a_browser_holds_at_least_one_resource() {
+    fn a_sign_in_granted_without_a_browser_holds_at_least_one_resource_and_each_once() {
         let remote = Remote::start(RemoteScenario::accepting("key"));
-        let refused = catch_unwind(AssertUnwindSafe(|| remote.grant_over(&[])));
-        let payload = refused.expect_err("a sign-in over no resource is refused");
-        let message = payload.downcast_ref::<&str>().copied().unwrap_or_default();
-        assert!(message.contains("at least one resource"), "{message:?}");
+        let none = refusal(&remote, &[]);
+        assert!(none.contains("at least one resource"), "{none:?}");
         let own = remote.resource();
-        let grant = remote.grant_over(&[&own]);
+        let former = format!("{}/former", remote.origin());
+        for (named, twice) in [
+            (vec![own.as_str(), own.as_str()], own.as_str()),
+            (
+                vec![own.as_str(), former.as_str(), former.as_str()],
+                former.as_str(),
+            ),
+        ] {
+            let refused = refusal(&remote, &named);
+            let says = refused.contains("each resource once") && refused.contains(twice);
+            assert!(says, "{named:?}: {refused:?}");
+        }
+        let grant = remote.grant_over(&[&own, &former]);
         assert!(remote.admits_at(&own, &grant.access_token));
+        assert!(remote.admits_at(&former, &grant.access[&former]));
     }
 }
