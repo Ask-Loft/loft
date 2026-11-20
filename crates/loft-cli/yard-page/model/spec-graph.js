@@ -1,12 +1,14 @@
 // A `spec-change` view's diagram as the page lays it out: ELK's graph of nested panels and cards.
-// Each Product, Feature Group and Feature shown is a panel that holds what belongs to it; each
+// Each Product, Feature Group, Feature and Interface shown is a panel that holds what belongs to
+// it; each
 // Requirement, criterion, Component, Constraint, Quality Attribute, Section, decision and folded
 // Feature Group is a card, headed by its label (or its kind's label prefix, or the word Section
 // for a Section, which has no label) and its change, with its name or statement beneath, wrapped
 // to the width the page's face measures. A card beneath another card, as a criterion beneath its
 // Requirement or a Section beneath a Component, stands beside it, joined to it by a plain line;
-// `realizes` and decision subject edges are dashed, and decisions and Components lie in the last
-// column, a decision's edges laid out from its subjects so that it lies beside them.
+// `realizes`, `provides`, `requires` and decision subject edges are dashed, and decisions and
+// Components lie in the last column, a decision's edges laid out from its subjects so that it lies
+// beside them.
 // Nothing here reaches the page or the network.
 
 import { PAD } from './flowchart.js';
@@ -15,7 +17,7 @@ import { PAD } from './flowchart.js';
 export const MOST_BOXES = 30;
 
 /** The kinds that are panels holding what belongs to them, unless folded. */
-const PANELS = new Set(['product', 'feature_group', 'feature']);
+const PANELS = new Set(['product', 'feature_group', 'feature', 'interface']);
 
 /** Each kind's name, for a card or a panel whose node has no label yet. */
 export const KIND_NAMES = {
@@ -28,6 +30,7 @@ export const KIND_NAMES = {
   constraint: 'Constraint',
   quality_attribute: 'Quality Attribute',
   section: 'Section',
+  interface: 'Interface',
   decision: 'Decision',
 };
 
@@ -41,6 +44,7 @@ export const KIND_PREFIXES = {
   component: 'CMP',
   constraint: 'CON',
   quality_attribute: 'QA',
+  interface: 'IF',
   decision: 'ADR',
 };
 
@@ -336,11 +340,12 @@ export function specGraph(graph, open, measure, compact = false) {
   for (const edge of graph?.edges ?? []) {
     const [from, to] = [byKey.get(edge.from), byKey.get(edge.to)];
     if (!from || !to) continue;
-    const word = edge.kind === 'realizes' ? 'realizes' : edge.role ?? 'subject';
+    // A decision's subject edge is named by its role; every other edge, by its kind.
+    const subject = edge.kind === 'subject';
+    const word = subject ? edge.role ?? 'subject' : edge.kind;
     const size = measure([word], 'flow-pill-label');
     // A decision's edge is laid out from its subject, so that the decision lies beside it; the
     // arrowhead still points at the subject.
-    const subject = edge.kind !== 'realizes';
     root.edges.push({
       id: `e${(count += 1)}`,
       sources: [subject ? to.id : from.id],

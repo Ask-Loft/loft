@@ -11,14 +11,16 @@ use serde_json::Value;
 use software_plant::Clock;
 
 const STORE: &str = "components/shelf-store.yaml";
+/// The Shelf store's key.
+pub(crate) const SHELF_STORE: &str = "00000000-0000-4000-8000-00000000003c";
 const SCOPE: &str = "scopedTo:\n  - 00000000-0000-4000-8000-00000000000a\n";
-const LOOKUP: &str = "00000000-0000-4000-8000-0000000000b0";
+pub(crate) const LOOKUP: &str = "00000000-0000-4000-8000-0000000000b0";
 const PROMISE: &str = "00000000-0000-4000-8000-0000000000b1";
 const ANSWER: &str = "00000000-0000-4000-8000-0000000000b2";
 const FILE: &str = "interfaces/shelf-lookup.yaml";
 
 /// Writes the Interface "Shelf lookup" and has the Shelf store provide it.
-fn add_lookup(scratch: &Scratch) {
+pub(crate) fn add_lookup(scratch: &Scratch) {
     let path = scratch.file(FILE);
     fs::create_dir_all(path.parent().unwrap()).unwrap();
     fs::write(

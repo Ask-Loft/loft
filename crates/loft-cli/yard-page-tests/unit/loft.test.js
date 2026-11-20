@@ -12,7 +12,7 @@ import { decisionView } from '../../yard-page/views/loft/decision.js';
 import { byRule, findingsView } from '../../yard-page/views/loft/findings.js';
 import { loftView, named } from '../../yard-page/views/loft/index.js';
 import { publishView } from '../../yard-page/views/loft/publish.js';
-import { CARD, CHIP, MOST_BOXES, TRUNK, boxes, cut, evenPanels, extras, headOf, specGraph, trunks, unconstrained, wrap } from '../../yard-page/model/spec-graph.js';
+import { CARD, CHIP, KIND_NAMES, MOST_BOXES, TRUNK, boxes, cut, evenPanels, extras, headOf, specGraph, trunks, unconstrained, wrap } from '../../yard-page/model/spec-graph.js';
 import { placed } from '../../yard-page/model/flowchart.js';
 import { flowchartSvg } from '../../yard-page/views/flowchart-svg.js';
 import { linkState, traceView } from '../../yard-page/views/loft/trace.js';
@@ -263,6 +263,33 @@ test('the diagram draws the realizes and decision subject edges between the node
   assert.ok(Math.abs(start.x - subject.x) < 1 || Math.abs(start.x - (subject.x + subject.width)) < 1 || Math.abs(start.y - subject.y) < 1 || Math.abs(start.y - (subject.y + subject.height)) < 1, 'it leaves from the subject');
   const right = at(layout, 'p').x + at(layout, 'p').width;
   assert.ok(at(layout, 'd').x >= right && at(layout, 'c').x >= right, 'decisions and Components lie beside the panels, to their right');
+});
+
+test('an Interface is a panel that holds its Requirements, and the provides and requires edges to it are drawn as a realizes edge is', async () => {
+  const store = { key: 's', kind: 'component', label: 'CMP-1', name: 'Shelf store', parent: null, change: 'changed' };
+  const link = { key: 'l', kind: 'component', label: 'CMP-3', name: 'Link service', parent: null, change: 'changed' };
+  const lookup = { key: 'i', kind: 'interface', label: null, name: 'Shelf lookup', parent: null, change: 'added' };
+  const promise = { key: 'ir', kind: 'requirement', label: null, name: 'When a reader asks for a book, the shelf store shall return it.', parent: 'i', change: 'added' };
+  const layout = await laid({
+    nodes: [store, link, lookup, promise],
+    edges: [
+      { from: 's', to: 'i', kind: 'provides' },
+      { from: 'l', to: 'i', kind: 'requires' },
+    ],
+  });
+  const panel = at(layout, 'i');
+  assert.ok(panel.panel, 'an Interface is a panel');
+  assert.deepEqual([panel.panel.label, panel.panel.kind], ['IF', 'interface']);
+  assert.ok(within(at(layout, 'ir'), panel), 'its Requirement lies within it');
+  const id = (key) => at(layout, key).id;
+  for (const [kind, from] of [['provides', 's'], ['requires', 'l']]) {
+    const edge = layout.edges.find((each) => each.label?.lines[0] === kind);
+    assert.ok(edge, `a ${kind} edge`);
+    assert.deepEqual([edge.from, edge.to, edge.pattern, edge.arrowEnd, Boolean(edge.arrowStart)], [id(from), id('i'), 'dotted', true, false], kind);
+  }
+  assert.equal(KIND_NAMES.interface, 'Interface');
+  assert.match(css, /\.spec-kind--interface \{ fill: var\(--kind-interface\); \}/);
+  assert.match(css, /\.label--if \{ --kind: var\(--kind-interface\); \}/);
 });
 
 test('a diagram of more than 30 boxes draws each Feature Group as one box that counts its changed nodes', () => {
