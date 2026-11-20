@@ -49,7 +49,7 @@ use std::path::Path;
 use std::process::ExitCode;
 use std::time::Instant;
 
-use clap::{CommandFactory, Parser};
+use clap::{CommandFactory, FromArgMatches as _};
 use loftspec::lint::Severity;
 use loftspec_store::merge_driver::LAUNCHER;
 
@@ -57,7 +57,10 @@ use cli::{Cli, Command, Format, ImportSource, MergeDriverArgs, SkillAction};
 use finish::Finished;
 
 fn main() -> ExitCode {
-    let code = run(Cli::parse());
+    let args: Vec<std::ffi::OsString> = std::env::args_os().collect();
+    let matches = remote_command::help::command(&args, Path::new(".")).get_matches_from(args);
+    let cli = Cli::from_arg_matches(&matches).unwrap_or_else(|error| error.exit());
+    let code = run(cli);
     out::finish(code)
 }
 

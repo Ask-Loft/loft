@@ -10,7 +10,7 @@ use serde_json::{Value, json};
 use software_plant::BrowserScenario;
 use software_plant::http::Request;
 use software_plant::remote::wire::{pairs, value};
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{RESOURCE, Remote, RemoteScenario, document_path};
 
 use crate::common::signed_in::{
     self, document, granted, keep, name_remote, run, sign_ins, sign_ins_file,
@@ -61,10 +61,7 @@ fn login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_a
         sign_in["tokenEndpoint"],
         format!("{}/auth/token", remote.origin())
     );
-    assert_eq!(
-        sign_in["resource"],
-        format!("{}/documents", remote.origin())
-    );
+    assert_eq!(sign_in["resource"], remote.resource());
     assert!(
         sign_in["clientId"]
             .as_str()
@@ -105,7 +102,10 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
     let first = &requests[0];
     assert_eq!(
         (first.method.as_str(), first.path.as_str()),
-        ("GET", "/documents/doc-request/head")
+        (
+            "GET",
+            format!("{}/head", document_path("doc-request")).as_str()
+        )
     );
     assert_eq!(first.header("authorization"), None);
     let registration = requests
@@ -133,10 +133,7 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
         query(url, "client_id").as_deref(),
         sign_in["clientId"].as_str()
     );
-    assert_eq!(
-        query(url, "resource"),
-        Some(format!("{}/documents", remote.origin()))
-    );
+    assert_eq!(query(url, "resource"), Some(remote.resource()));
     let redirect = query(url, "redirect_uri").unwrap();
     let port = redirect
         .strip_prefix("http://127.0.0.1:")
@@ -157,10 +154,7 @@ fn a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loop
 /// That no request but those under the document's address carries a token, that the code
 /// exchange sends its fields, and that `printed` holds neither its code nor its verifier.
 fn assert_exchanged_holding_no_secret(requests: &[Request], printed: &str) {
-    for request in requests
-        .iter()
-        .filter(|r| !r.path.starts_with("/documents/"))
-    {
+    for request in requests.iter().filter(|r| !r.path.starts_with(RESOURCE)) {
         assert_eq!(
             request.header("authorization"),
             None,

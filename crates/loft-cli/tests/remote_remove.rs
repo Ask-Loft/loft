@@ -86,7 +86,13 @@ fn remove_disconnects_the_document_and_forgets_its_sign_in_alone() {
 #[test]
 fn a_disconnect_says_to_commit_the_manifest() {
     let scratch = Scratch::with_reading_list();
-    name_remote(&scratch, Some("https://remote.example/documents/one"), true);
+    name_remote(
+        &scratch,
+        Some(&crate::common::signed_in::example_address(
+            "https://remote.example",
+        )),
+        true,
+    );
     let (output, _) = run(
         &scratch,
         &["remote", "remove"],

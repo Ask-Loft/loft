@@ -4,6 +4,7 @@
 //! asks for no update.
 
 mod connect;
+pub mod help;
 
 use std::path::Path;
 
@@ -96,7 +97,7 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
     let mut fields = json!({ "documentKey": key, "address": address });
     let mut lines = Vec::new();
     let outcome = if document.connected {
-        signed_in(address, browser, timeout)?;
+        signed_in(address, &key, browser, timeout)?;
         lines.push(format!("the document {key} now names its remote {address}"));
         "set"
     } else {
@@ -105,7 +106,7 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
             Some(lock) => connect::history(root, lock)?,
             None => Vec::new(),
         };
-        let token = signed_in(address, browser, timeout)?;
+        let token = signed_in(address, &key, browser, timeout)?;
         let client = Client::new(address, Some(token), timeout, wait);
         let connected = connect::connect(&client, &document, lock.as_ref(), &states)?;
         fields["head"] = connected.head.json();
@@ -131,14 +132,19 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
     })
 }
 
-/// The access token of the person's sign-in to `address`: the one `loft/remotes.json` holds,
-/// refreshed where it needs to be, or else, or where its refresh is refused, a new sign-in kept
-/// there.
-fn signed_in(address: &str, browser: bool, timeout: std::time::Duration) -> Result<String, Stop> {
+/// The access token of the person's sign-in to `address`, the address of the document of `key`:
+/// the one `loft/remotes.json` holds, refreshed where it needs to be, or else, or where its
+/// refresh is refused, a new sign-in kept there.
+fn signed_in(
+    address: &str,
+    key: &str,
+    browser: bool,
+    timeout: std::time::Duration,
+) -> Result<String, Stop> {
     match signins::live(address, timeout) {
         Ok(sign_in) => Ok(sign_in.access_token),
         Err(RemoteError::NoSignIn { .. } | RemoteError::Lapsed { .. }) => {
-            let sign_in = signin::sign_in(address, browser, timeout)?;
+            let sign_in = signin::sign_in(address, key, browser, timeout)?;
             let token = sign_in.access_token.clone();
             signins::save(address, &sign_in)?;
             Ok(token)
@@ -162,7 +168,7 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
     })?;
     remote::checked(&address)?;
     let timeout = remote::timeout()?;
-    let sign_in = signin::sign_in(&address, browser, timeout)?;
+    let sign_in = signin::sign_in(&address, &key, browser, timeout)?;
     signins::save(&address, &sign_in)?;
     Ok(Report {
         outcome: "signed in",

@@ -25,7 +25,13 @@ fn a_set_whose_manifest_its_journal_cannot_save_changes_no_file_of_the_tree() {
         let (scratch, git) = published(&history);
         let remote = Remote::start(RemoteScenario::accepting(&history.key));
         if connected {
-            name_remote(&scratch, Some("https://old.example/documents/one"), true);
+            name_remote(
+                &scratch,
+                Some(&crate::common::signed_in::example_address(
+                    "https://old.example",
+                )),
+                true,
+            );
             keep(
                 &scratch,
                 &json!({ remote.address(): granted(&remote, 3600) }),

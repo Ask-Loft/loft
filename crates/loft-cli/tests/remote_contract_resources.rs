@@ -25,7 +25,7 @@ use std::iter;
 
 use serde_json::{Value, json};
 use software_plant::remote::wire::value;
-use software_plant::remote::{Companion, CompanionFault, Remote, RemoteScenario};
+use software_plant::remote::{Companion, CompanionFault, RESOURCE, Remote, RemoteScenario};
 
 use crate::common::oauth::{
     KEY, UNKNOWN_CODE, assert_oauth_error, authorize_for, challenge_at, coded_for,
@@ -190,10 +190,12 @@ fn the_metadata_of_a_companion_resource_whose_path_ends_in_a_slash_lies_at_the_p
 
 #[test]
 fn a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_own() {
-    let gone = Companion::new("gone", &["gone"]).at("/documents?view=gone");
+    let gone = Companion::new("gone", &["gone"]).at(&format!("{RESOURCE}?view=gone"));
     let remote = Remote::start(
         RemoteScenario::accepting(KEY)
-            .accompanied_by(Companion::new("notes", &["notes"]).at("/documents?view=notes"))
+            .accompanied_by(
+                Companion::new("notes", &["notes"]).at(&format!("{RESOURCE}?view=notes")),
+            )
             .accompanied_by(gone.faulty(CompanionFault::Unreadable)),
     );
     let (own, notes, gone) = (
@@ -225,8 +227,8 @@ fn a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_o
         })
     );
     let paths: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
-    let at = "/.well-known/oauth-protected-resource/documents?view=notes";
-    assert!(paths.iter().any(|path| path == at), "{paths:?}");
+    let at = format!("/.well-known/oauth-protected-resource{RESOURCE}?view=notes");
+    assert!(paths.contains(&at), "{paths:?}");
     assert_problem(&companion_metadata(&gone), 404, "not_found");
     let (server, client, code) = coded_for(&remote, &[&own, &notes], "documents notes");
     let answer = exchange(&server, &client, &notes, &code);

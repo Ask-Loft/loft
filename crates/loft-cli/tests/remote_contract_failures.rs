@@ -9,7 +9,9 @@ use std::time::{Duration, Instant};
 use serde_json::{Value, json};
 use software_plant::http::Request;
 use software_plant::remote::wire::value;
-use software_plant::remote::{Companion, CompanionFault, Metadata, Remote, RemoteScenario};
+use software_plant::remote::{
+    Companion, CompanionFault, Metadata, RESOURCE, Remote, RemoteScenario,
+};
 
 use crate::common::calls::call;
 use crate::common::oauth::{
@@ -42,10 +44,7 @@ fn each_misconfigured_metadata_serves_what_its_scenario_names() {
     );
 
     let (remote, _, resource, _) = served(Metadata::MisnamedResource);
-    assert_ne!(
-        resource["resource"],
-        json!(format!("{}/documents", remote.origin()))
-    );
+    assert_ne!(resource["resource"], json!(remote.resource()));
 
     let (_remote, _, resource, server) = served(Metadata::MisnamedIssuer);
     assert_ne!(server["issuer"], resource["authorization_servers"][0]);
@@ -215,13 +214,13 @@ fn a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its
     assert_eq!(
         resource,
         json!({
-            "resource": format!("{elsewhere}/documents"),
+            "resource": format!("{elsewhere}{RESOURCE}"),
             "authorization_servers": [moved.issuer()],
             "scopes_supported": ["documents"],
             "bearer_methods_supported": ["header"],
         })
     );
-    let documents_metadata = format!("{metadata_path}/documents");
+    let documents_metadata = format!("{metadata_path}{RESOURCE}");
     assert_eq!(
         paths(moved.requests_elsewhere()),
         [documents_metadata.as_str()]
@@ -241,10 +240,10 @@ fn the_simulators_own_origin_does_not_serve_metadata_that_a_scenario_places_on_a
     assert_ne!(elsewhere, moved.origin(), "{challenge}");
     assert_eq!(
         resource["resource"],
-        json!(format!("{elsewhere}/documents"))
+        json!(format!("{elsewhere}{RESOURCE}"))
     );
     let own = format!(
-        "{}/.well-known/oauth-protected-resource/documents",
+        "{}/.well-known/oauth-protected-resource{RESOURCE}",
         moved.origin()
     );
     assert_problem(&call("GET", &own, None, None), 404, "not_found");
@@ -317,7 +316,7 @@ fn a_scripted_listing_of_companion_resources_is_served_as_scripted() {
             { "resource": "{origin}/notes", "kind": "notes" },
             { "resource": "{origin}/notes", "kind": "inbox" },
         ]),
-        json!([{ "resource": "{origin}/documents", "kind": "documents" }]),
+        json!([{ "resource": format!("{{origin}}{RESOURCE}"), "kind": "documents" }]),
     ];
     for raw in scripted {
         let remote = Remote::start(RemoteScenario::accepting(KEY).listing(raw.clone()));

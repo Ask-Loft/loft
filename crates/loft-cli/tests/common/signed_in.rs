@@ -47,7 +47,7 @@ pub fn granted(remote: &Remote, seconds: u64) -> Value {
     let grant = remote.grant();
     json!({
         "tokenEndpoint": format!("{}/auth/token", remote.origin()),
-        "resource": format!("{}/documents", remote.origin()),
+        "resource": remote.resource(),
         "clientId": grant.client_id,
         "accessToken": grant.access_token,
         "expiresAt": PublishedAt::from_unix_seconds(real_now() + seconds).unwrap().to_string(),
@@ -96,6 +96,12 @@ pub fn run(
 ) -> (Output, InstalledBrowser) {
     let (mut command, installed) = command(scratch, browser, git);
     (command.args(args).output().unwrap(), installed)
+}
+
+/// An address in the form a Loft server gives a document, on the made-up `origin`, for a remote
+/// that no test serves.
+pub fn example_address(origin: &str) -> String {
+    format!("{origin}/loft/t/acme/api/v2/documents/one/remote")
 }
 
 /// The JSON document a run printed.
