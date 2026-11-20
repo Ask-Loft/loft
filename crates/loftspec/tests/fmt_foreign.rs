@@ -130,3 +130,27 @@ fn no_file_changes_when_a_foreign_reference_matches_nothing_or_more_than_one_nod
     let changed = format(&files).unwrap().changed;
     assert_eq!(changed.keys().collect::<Vec<_>>(), [&path(COMPONENT)]);
 }
+
+#[test]
+fn provides_by_name_looks_only_at_copied_interfaces() {
+    let files = written_as(&providing(), "name: \"The answer names the document.\"");
+    let errors = format(&files).unwrap_err();
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(
+        matches!(errors[0].problem, Problem::NameUnresolved { .. }),
+        "{errors:?}"
+    );
+    assert!(errors[0].to_string().contains("Interface"), "{}", errors[0]);
+    let mut owner = crate::common::copies::owner();
+    let answer = &mut owner.interfaces[0].requirements[0].criteria[0].name;
+    "Document lookup".clone_into(answer);
+    let mut document = requiring();
+    document.copies = vec![copy_at(&owner, HANDLE, 3)];
+    document.edges.push(provides(MODEL, INTERFACE));
+    let files = codec::write(&document);
+    let by_name = written_as(&files, "name: \"Document lookup\"");
+    assert_eq!(
+        text(&formatted(&by_name), COMPONENT),
+        text(&files, COMPONENT)
+    );
+}

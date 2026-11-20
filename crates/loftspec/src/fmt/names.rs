@@ -257,7 +257,7 @@ impl Resolver<'_> {
         };
         let resolved = match (record.kind, target) {
             (Kind::ByName, Some(target)) => self.target(record, target, local),
-            (Kind::ForeignByName, _) => self.foreign.resolve(record),
+            (Kind::ForeignByName, _) => self.foreign.resolve(record, target),
             _ => {
                 self.record(record, local);
                 return;

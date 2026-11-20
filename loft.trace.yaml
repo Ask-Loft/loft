@@ -12646,6 +12646,9 @@ links:
     reviewed: 98cb1431b9f733edf7ea55e94d8264088e7703a24a07a3eab7dc428cb9e7833d
     tests:
       - file: "crates/loftspec/tests/fmt_foreign.rs"
+        name: "provides_by_name_looks_only_at_copied_interfaces"
+        body: dede2c52592135a7f096e77c117d41ca5d120ca36d4b2fa84769f255a79d0048
+      - file: "crates/loftspec/tests/fmt_foreign.rs"
         name: "a_foreign_reference_by_name_takes_the_key_of_the_node_with_that_name"
         body: da7c5178ce5d6c1e85d6405bbd2e10feee67f5d8328c46e362d52bb8d4c36566
   - node: 01a1f981-4db1-765f-a897-2262513e5186
