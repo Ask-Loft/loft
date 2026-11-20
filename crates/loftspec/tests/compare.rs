@@ -4,10 +4,14 @@
 //! configuration and the label bindings differ.
 
 use crate::common::comparing::compared;
+use crate::common::interfaces::{INTERFACE, with_interface};
 use crate::common::{criterion, key, product, requirement, section, small_document};
 use loftspec::diff::{Comparison, DecisionChange, Difference, NodeDifference};
 use loftspec::document::{Document, Edge};
-use loftspec::ids::{ConstraintId, DecisionId, NodeId, ProductId, RequirementId};
+use loftspec::identity::Key;
+use loftspec::ids::{
+    ComponentId, ConstraintId, DecisionId, InterfaceId, NodeId, ProductId, RequirementId,
+};
 use serde_json::{Value, json};
 
 /// The difference reported for the node keyed `n`.
@@ -409,4 +413,40 @@ fn the_comparer_changes_nothing_in_the_versions_it_is_given() {
     let (older_before, newer_before) = (older.clone(), newer.clone());
     let _ = compared(&older, &newer);
     assert_eq!((older, newer), (older_before, newer_before));
+}
+
+#[test]
+fn an_added_interface_is_reported_added_with_its_record_and_what_it_holds() {
+    let comparison = compared(&small_document(), &with_interface());
+    let added: Vec<(Key, Difference)> = comparison
+        .nodes
+        .iter()
+        .map(|node| (node.id.key(), node.difference))
+        .collect();
+    assert_eq!(
+        added,
+        [INTERFACE, INTERFACE + 1, INTERFACE + 2].map(|n| (key(n), Difference::Added))
+    );
+    let record = &node(&comparison, INTERFACE)
+        .unwrap()
+        .newer
+        .as_ref()
+        .unwrap()
+        .record;
+    assert_eq!(record["slug"], json!("document-lookup"));
+    assert_eq!(record["name"], json!("Document lookup"));
+}
+
+#[test]
+fn a_components_new_provides_edge_changes_the_component() {
+    let older = with_interface();
+    let mut newer = with_interface();
+    newer.edges.push(Edge::Provides {
+        component: ComponentId::new(key(6)),
+        interface: InterfaceId::new(key(INTERFACE)),
+    });
+    assert_eq!(
+        reported(&compared(&older, &newer)),
+        [(6, Difference::Changed)]
+    );
 }

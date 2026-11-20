@@ -82,6 +82,7 @@ mod manifest;
 mod merge_by_key;
 mod merge_decisions;
 mod merge_file;
+mod merge_interfaces;
 mod merge_labels;
 mod merge_lists;
 mod merge_moves;

@@ -17,14 +17,14 @@ type Scope = (Which, NodeId);
 /// A scope and the assertions it holds.
 type Grouped = (Scope, Vec<Assertion>);
 
-/// The scope of the assertion `id`: the Feature above a Requirement or a criterion, the node
-/// that holds a Constraint or a Quality Attribute.
+/// The scope of the assertion `id`: the Feature or Interface above a Requirement or a criterion,
+/// the node that holds a Constraint or a Quality Attribute.
 fn scope_of(side: &Side<'_>, id: NodeId) -> NodeId {
     let ancestors = side.ancestors(id);
     let found = match id.kind() {
         NodeKind::Requirement | NodeKind::Criterion => ancestors
             .iter()
-            .find(|above| above.kind() == NodeKind::Feature)
+            .find(|above| matches!(above.kind(), NodeKind::Feature | NodeKind::Interface))
             .copied(),
         _ => ancestors.first().copied(),
     };
@@ -63,13 +63,14 @@ fn above(side: &Side<'_>, id: NodeId) -> Vec<Holder> {
         .collect()
 }
 
-/// Every Requirement of the Feature `scope`, with its criteria.
+/// Every Requirement of the Feature or Interface `scope`, with its criteria.
 fn requirements(side: &Side<'_>, scope: NodeId) -> Vec<WithCriteria> {
-    let Node::Feature(feature) = side.node(scope) else {
-        return Vec::new();
+    let requirements = match side.node(scope) {
+        Node::Feature(feature) => &feature.requirements,
+        Node::Interface(interface) => &interface.requirements,
+        _ => return Vec::new(),
     };
-    feature
-        .requirements
+    requirements
         .iter()
         .filter_map(|requirement| {
             let id = requirement.id?.into();
