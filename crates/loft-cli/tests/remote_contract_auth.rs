@@ -15,8 +15,9 @@ use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::Scratch;
 use crate::common::oauth::{
-    CALLBACK, KEY, REDIRECT, VERIFIER, assert_oauth_error, authorize, authorize_for, coded,
-    discover, exchange, form, location, metadata, refresh, register, registered,
+    CALLBACK, KEY, REDIRECT, UNSERVED, VERIFIER, assert_oauth_error, assert_same_answer, authorize,
+    authorize_for, coded, discover, exchange, form, location, metadata, refresh, register,
+    registered,
 };
 use crate::common::signed_in::{kept_sign_in, name_remote, run};
 
@@ -119,7 +120,6 @@ fn an_authorization_request_is_answered_for_the_first_step_it_fails_in_the_order
     let (_, server) = metadata(&remote);
     let client = registered(&server);
     let own = remote.resource();
-    let elsewhere = format!("{}/elsewhere", remote.origin());
     // A client that is not registered is answered without a redirect, whatever else it fails.
     let unregistered = authorize(&server, "client-0", &own, &[("response_type", "")]);
     assert_eq!(unregistered.status, 400);
@@ -127,7 +127,7 @@ fn an_authorization_request_is_answered_for_the_first_step_it_fails_in_the_order
     // Each request fails a step and a later one, and is answered for the first.
     for (resource, failing, error) in [
         (
-            &own,
+            own.as_str(),
             vec![
                 ("response_type", "token"),
                 ("code_challenge_method", "plain"),
@@ -135,12 +135,12 @@ fn an_authorization_request_is_answered_for_the_first_step_it_fails_in_the_order
             "unsupported_response_type",
         ),
         (
-            &elsewhere,
+            UNSERVED,
             vec![("code_challenge_method", "plain")],
             "invalid_request",
         ),
-        (&elsewhere, vec![("scope", "")], "invalid_target"),
-        (&own, vec![("scope", "")], "invalid_scope"),
+        (UNSERVED, vec![("scope", "")], "invalid_target"),
+        (own.as_str(), vec![("scope", "")], "invalid_scope"),
     ] {
         let answer = authorize(&server, &client, resource, &failing);
         let named = format!("{resource} with {failing:?}");
@@ -191,7 +191,7 @@ fn a_code_is_exchanged_once_for_tokens_with_its_verifier_redirect_and_resource()
     let wrong_resource = exchange(&server, &client, "https://elsewhere.example", &code);
     assert_eq!(wrong_resource.body["error"], "invalid_target");
     let answer = exchange(&server, &client, &resource, &code);
-    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(answer.status, 200, "{answer:?}");
     assert_eq!(answer.body["token_type"], "Bearer");
     assert_eq!(answer.body["expires_in"], 600);
     for field in ["access_token", "refresh_token", "scope"] {
@@ -209,9 +209,12 @@ fn a_refresh_rotates_and_a_rotated_token_is_answered_again_only_within_the_grace
     let first = exchange(&server, &client, &resource, &code).body;
     let old = first["refresh_token"].as_str().unwrap();
     let rotated = refresh(&server, &client, &resource, old).body;
-    assert_ne!(rotated["refresh_token"], first["refresh_token"]);
-    assert_ne!(rotated["access_token"], first["access_token"]);
-    assert_eq!(refresh(&server, &client, &resource, old).body, rotated);
+    for token in ["refresh_token", "access_token"] {
+        let renewed = rotated[token].is_string() && rotated[token] != first[token];
+        assert!(renewed, "a refresh issues another `{token}`");
+    }
+    let repeated = refresh(&server, &client, &resource, old).body;
+    assert_same_answer(&repeated, &rotated, "a repeat within the grace window");
     assert_eq!(remote.refreshes(), 1);
     let strict = Remote::start(RemoteScenario::accepting(KEY).without_grace());
     let (server, client, resource, code) = coded(&strict);
@@ -252,7 +255,8 @@ fn a_rotated_refresh_token_is_answered_again_for_120_seconds_and_until_its_succe
     let old = first["refresh_token"].as_str().unwrap();
     let rotated = refresh(&server, &client, &resource, old).body;
     remote.advance(Duration::from_secs(119));
-    assert_eq!(refresh(&server, &client, &resource, old).body, rotated);
+    let repeated = refresh(&server, &client, &resource, old).body;
+    assert_same_answer(&repeated, &rotated, "a repeat 119 seconds on");
     assert_eq!(remote.refreshes(), 1);
     assert!(remote.admits(rotated["access_token"].as_str().unwrap()));
     remote.advance(Duration::from_secs(2));
@@ -368,12 +372,10 @@ fn a_real_remote_answers_a_rotated_refresh_token_again_until_its_successor_is_pr
     let field = |name: &str| sign_in[name].as_str().expect(name).to_owned();
     let (client, resource, old) = (field("clientId"), field("resource"), field("refreshToken"));
     let rotated = refresh(&server, &client, &resource, &old);
-    assert_eq!(rotated.status, 200, "{:?}", rotated.body);
-    assert_eq!(
-        refresh(&server, &client, &resource, &old).body,
-        rotated.body,
-        "within the grace window, the same answer"
-    );
+    assert_eq!(rotated.status, 200, "{rotated:?}");
+    let repeated = refresh(&server, &client, &resource, &old).body;
+    let within = "within the grace window, the same answer";
+    assert_same_answer(&repeated, &rotated.body, within);
     let successor = rotated.body["refresh_token"].as_str().unwrap();
     assert_eq!(refresh(&server, &client, &resource, successor).status, 200);
     assert_eq!(

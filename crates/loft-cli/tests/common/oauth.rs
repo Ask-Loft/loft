@@ -4,7 +4,8 @@
 //! companion resource, the registration of a public client, an authorization request with PKCE
 //! for one protected resource or more and the redirect that answers it, the exchange of its code,
 //! a refresh that names one resource or another number of them, the OAuth error answer that
-//! refuses one, and a resource that no remote serves.
+//! refuses one, a token answer given again, compared without showing its tokens, and a resource
+//! that no remote serves.
 
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
@@ -13,7 +14,7 @@ use software_plant::remote::wire::{base64url, pairs, query, sha256, value};
 use ureq::Body;
 use ureq::http::Response;
 
-use super::calls::{Answer, agent, call, read};
+use super::calls::{Answer, TOKENS, agent, call, read, redacted};
 
 /// The code verifier of every authorization request, whose challenge the request sends.
 pub const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
@@ -47,11 +48,7 @@ pub fn discover(address: &str) -> (Value, Value) {
 /// The challenge of a request without a token to the document at `address`, and the two
 /// metadata documents it leads to, with no check of what they say.
 pub fn fetch(address: &str) -> (String, Value, Value) {
-    let challenge = call("GET", &format!("{address}/head"), None, None);
-    let challenge = challenge
-        .header("www-authenticate")
-        .expect("a challenge")
-        .to_owned();
+    let challenge = challenge_at(address);
     let metadata = challenge.split('"').nth(1).unwrap();
     let resource = call("GET", metadata, None, None).body;
     let issuer = resource["authorization_servers"][0].as_str().unwrap();
@@ -69,6 +66,15 @@ pub fn fetch(address: &str) -> (String, Value, Value) {
     )
     .body;
     (challenge, resource, server)
+}
+
+/// The challenge of a request without a token to the document at `address`.
+pub fn challenge_at(address: &str) -> String {
+    let answer = call("GET", &format!("{address}/head"), None, None);
+    let challenge = answer.header("www-authenticate");
+    challenge
+        .unwrap_or_else(|| panic!("a challenge: {answer:?}"))
+        .to_owned()
 }
 
 /// The value of the parameter `name` of the `Bearer` challenge `challenge`, if it names one as a
@@ -177,11 +183,12 @@ fn authorized(
     call("GET", &url, None, None)
 }
 
-/// The parameters of a redirect's `Location`.
+/// The parameters of a redirect's `Location`, which leads back to the client.
 pub fn location(answer: &Answer) -> Vec<(String, String)> {
-    assert_eq!(answer.status, 302, "{:?}", answer.body);
-    let location = answer.header("location").unwrap();
-    assert!(location.starts_with(&format!("{CALLBACK}?")), "{location}");
+    assert_eq!(answer.status, 302, "a redirect: {answer:?}");
+    let location = answer.header("location").unwrap_or_default();
+    let back = location.starts_with(&format!("{CALLBACK}?"));
+    assert!(back, "a redirect back to the client: {answer:?}");
     pairs(location.split_once('?').unwrap().1)
 }
 
@@ -249,9 +256,20 @@ pub fn assert_oauth_error(answer: &Answer, error: &str) {
     assert_eq!(
         (answer.status, &answer.body["error"]),
         (400, &json!(error)),
-        "{:?}",
-        answer.body
+        "{answer:?}"
     );
+}
+
+/// Requires `repeat`, the body of an answer to a token request, to be `answer` again, member for
+/// member. A failure shows `what` and the two bodies with every token hidden, never a token: the
+/// members are compared with the tokens hidden first, then each token without being shown.
+pub fn assert_same_answer(repeat: &Value, answer: &Value, what: &str) {
+    assert_eq!(redacted(repeat), redacted(answer), "{what}");
+    for member in TOKENS {
+        let same = repeat[member] == answer[member];
+        assert!(same, "{what}: the same `{member}`");
+    }
+    assert!(repeat == answer, "{what}: the same tokens at every depth");
 }
 
 /// The answer to a refresh of `token`.
@@ -290,4 +308,46 @@ fn send_refresh_for(
     ];
     fields.extend(resources.iter().map(|resource| ("resource", *resource)));
     send_form(server["token_endpoint"].as_str().unwrap(), &fields)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::panic::catch_unwind;
+
+    use serde_json::json;
+
+    use super::assert_same_answer;
+
+    #[test]
+    fn two_token_answers_that_differ_only_in_a_token_are_told_apart_without_showing_it() {
+        let answer = json!({
+            "access_token": "a-live-access-token",
+            "granted": { "refresh_token": "a-nested-refresh-token" },
+            "refresh_token": "a-live-refresh-token",
+            "scope": "documents",
+        });
+        assert_same_answer(&answer.clone(), &answer, "the same answer");
+        for (member, differing) in [
+            ("access_token", "the same `access_token`"),
+            ("refresh_token", "the same `refresh_token`"),
+            ("granted", "the same tokens at every depth"),
+        ] {
+            let mut other = answer.clone();
+            other[member] = if member == "granted" {
+                json!({ "refresh_token": "another-token" })
+            } else {
+                json!("another-token")
+            };
+            let failed = catch_unwind(|| assert_same_answer(&other, &answer, "a repeat"));
+            let failure = failed.expect_err("answers that differ in a token are told apart");
+            let message = failure
+                .downcast_ref::<String>()
+                .cloned()
+                .unwrap_or_default();
+            assert!(message.ends_with(differing), "{member}: {message}");
+            for token in ["a-live", "a-nested", "another-token"] {
+                assert!(!message.contains(token), "{member}: {message}");
+            }
+        }
+    }
 }

@@ -47,8 +47,8 @@ pub fn mark(state: &StoredState) -> Value {
 
 /// Requires `answer` to be a problem document of `code` at `status`.
 pub fn assert_problem(answer: &Answer, status: u16, code: &str) {
-    assert_eq!(answer.status, status, "{:?}", answer.body);
-    assert_eq!(answer.body["code"], code, "{:?}", answer.body);
+    assert_eq!(answer.status, status, "{answer:?}");
+    assert_eq!(answer.body["code"], code, "{answer:?}");
     assert_eq!(answer.body["status"], status);
     assert_eq!(
         answer.header("content-type"),

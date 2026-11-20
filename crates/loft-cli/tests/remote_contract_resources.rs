@@ -23,8 +23,9 @@ use software_plant::remote::{Companion, CompanionFault, Remote, RemoteScenario};
 
 use crate::common::calls::Answer;
 use crate::common::oauth::{
-    KEY, assert_oauth_error, authorize, authorize_for, coded_for, companion_metadata, exchange,
-    exchange_for, fetch, location, metadata, parameter, refresh, registered,
+    KEY, UNSERVED, assert_oauth_error, authorize, authorize_for, challenge_at, coded_for,
+    companion_metadata, exchange, exchange_for, fetch, location, metadata, parameter, refresh,
+    registered,
 };
 use crate::common::resources::{COMPANION_RESOURCES, companions_of, head_with, origin_of};
 use crate::remote_contract::assert_problem;
@@ -57,7 +58,7 @@ fn listing_as_promised(address: &str) -> Listing {
     {
         assert!(supported.contains(&json!(scope)), "{scope}: {metadata}");
     }
-    let companions = companions_of(address);
+    let companions = companions_of(&metadata);
     for (at, (resource, kind)) in companions.iter().enumerate() {
         assert!(!kind.is_empty(), "{resource} names a kind");
         assert_eq!(origin_of(resource), origin, "{kind} lies on the origin");
@@ -134,7 +135,7 @@ fn the_metadata_lists_each_companion_resource_and_each_names_itself_and_the_issu
         (&inbox, json!(["inbox"])),
     ] {
         let answer = companion_metadata(resource);
-        assert_eq!(answer.status, 200, "{:?}", answer.body);
+        assert_eq!(answer.status, 200, "{answer:?}");
         assert_eq!(answer.header("content-type"), Some("application/json"));
         assert_eq!(
             answer.body,
@@ -175,7 +176,7 @@ fn the_metadata_of_a_companion_resource_whose_path_ends_in_a_slash_lies_at_the_p
         let identifier = remote.companion(kind);
         assert_eq!(identifier, format!("{}{path}", remote.origin()));
         let answer = companion_metadata(&identifier);
-        assert_eq!(answer.status, 200, "{kind}: {:?}", answer.body);
+        assert_eq!(answer.status, 200, "{kind}: {answer:?}");
         assert_eq!(answer.body["resource"], json!(identifier), "{kind}");
         let paths: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
         assert!(paths.iter().any(|at| at == metadata), "{kind}: {paths:?}");
@@ -208,7 +209,7 @@ fn a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_o
         ])
     );
     let answer = companion_metadata(&notes);
-    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(answer.status, 200, "{answer:?}");
     assert_eq!(
         answer.body,
         json!({
@@ -224,7 +225,7 @@ fn a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_o
     assert_problem(&companion_metadata(&gone), 404, "not_found");
     let (server, client, code) = coded_for(&remote, &[&own, &notes], "documents notes");
     let answer = exchange(&server, &client, &notes, &code);
-    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(answer.status, 200, "{answer:?}");
     assert_eq!(answer.body["resource"], json!(notes));
     assert_eq!(answer.body["scope"], "notes");
     let access = answer.body["access_token"].as_str().unwrap();
@@ -296,10 +297,9 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
     };
     // A resource the scenario does not serve, or none, is refused before the code is read, and
     // before a scenario that refuses every exchange refuses it.
-    let elsewhere = format!("{}/elsewhere", remote.origin());
     for (named, presented) in [
-        (vec![elsewhere.as_str()], first.as_str()),
-        (vec![elsewhere.as_str()], "an-unknown-code"),
+        (vec![UNSERVED], first.as_str()),
+        (vec![UNSERVED], "an-unknown-code"),
         (Vec::new(), "an-unknown-code"),
     ] {
         let refused = exchange_for(&server, &client, &named, presented);
@@ -307,14 +307,13 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
     }
     let refusing = Remote::start(RemoteScenario::accepting(KEY).refusing_exchange("invalid_grant"));
     let (_, refusing_server) = metadata(&refusing);
-    let foreign = format!("{}/elsewhere", refusing.origin());
-    let refused = exchange(&refusing_server, &client, &foreign, "an-unknown-code");
+    let refused = exchange(&refusing_server, &client, UNSERVED, "an-unknown-code");
     assert_oauth_error(&refused, "invalid_target");
     let unheld = exchange(&server, &client, &inbox, &code());
     assert_oauth_error(&unheld, "invalid_target");
     let exchanged = |resource: &str| {
         let answer = exchange(&server, &client, resource, &code());
-        assert_eq!(answer.status, 200, "{:?}", answer.body);
+        assert_eq!(answer.status, 200, "{answer:?}");
         assert_eq!(answer.body["resource"], json!(resource));
         let access = answer.body["access_token"].as_str().unwrap();
         for other in [&own, &notes, &inbox] {
@@ -330,14 +329,14 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
     assert_eq!(exchanged(&own)["scope"], "documents");
     let answer = exchanged(&notes);
     assert_eq!(answer["scope"], "notes notes.archive");
-    let (challenge, _, _) = fetch(&remote.address());
+    let challenge = challenge_at(&remote.address());
     let at_the_document = head_with(&remote.address(), answer["access_token"].as_str().unwrap());
     assert_problem(&at_the_document, 401, "unauthenticated");
     let challenged = at_the_document.header("www-authenticate");
     assert_eq!(challenged, Some(challenge.as_str()));
     let successor = answer["refresh_token"].as_str().unwrap();
     let refreshed = refresh(&server, &client, &own, successor);
-    assert_eq!(refreshed.status, 200, "{:?}", refreshed.body);
+    assert_eq!(refreshed.status, 200, "{refreshed:?}");
     assert_eq!(refreshed.body["scope"], "documents");
 }
 
@@ -358,7 +357,7 @@ fn an_unknown_code_or_one_another_client_presents_is_refused_for_any_resource_th
     }
     let answer = exchange(&server, &client, &own, &code);
     let kept = "a refused exchange leaves the code to its client";
-    assert_eq!(answer.status, 200, "{kept}: {:?}", answer.body);
+    assert_eq!(answer.status, 200, "{kept}: {answer:?}");
 }
 
 #[test]
@@ -371,15 +370,10 @@ fn an_authorization_request_is_refused_for_a_resource_or_a_scope_the_remote_does
     let (own, notes) = (remote.resource(), remote.companion("notes"));
     let listed = companion_metadata(&notes).body["scopes_supported"].clone();
     assert_eq!(listed, json!(["notes"]));
-    let elsewhere = format!("{}/elsewhere", remote.origin());
     let error = |answer: &Answer| value(&location(answer), "error").map(str::to_owned);
     for (resources, scope, refused) in [
         (vec![], "documents", "invalid_target"),
-        (
-            vec![own.as_str(), elsewhere.as_str()],
-            "documents",
-            "invalid_target",
-        ),
+        (vec![own.as_str(), UNSERVED], "documents", "invalid_target"),
         (vec![own.as_str()], "", "invalid_scope"),
         (vec![own.as_str()], "documents documents", "invalid_scope"),
         (vec![own.as_str()], "documents profile", "invalid_scope"),
@@ -421,7 +415,7 @@ fn an_authorization_request_is_refused_for_a_resource_or_a_scope_the_remote_does
         let own = remote.resource();
         let (server, client, code) = coded_for(remote, &[&own], "documents");
         let answer = exchange(&server, &client, &own, &code);
-        assert_eq!(answer.status, 200, "{:?}", answer.body);
+        assert_eq!(answer.status, 200, "{answer:?}");
         assert_eq!(answer.body["resource"], json!(own));
     }
 }

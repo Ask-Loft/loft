@@ -1,8 +1,8 @@
 //! What the contract suites of a remote's companion resources share, of the simulator and of a
 //! real remote alike: the member of the remote's protected resource metadata that lists them, the
-//! list read from it, the origin an address lies on, a document's head asked for with an access
-//! token, and a sign-in as a client keeps it, made on the simulator or kept by
-//! `loft remote login` for a real remote.
+//! list read from metadata already fetched or found from a document's address, the origin an
+//! address lies on, a document's head asked for with an access token, and a sign-in as a client
+//! keeps it, made on the simulator or kept by `loft remote login` for a real remote.
 
 use std::{env, fs};
 
@@ -18,14 +18,19 @@ use super::signed_in::{kept_sign_in, real_now};
 pub const COMPANION_RESOURCES: &str = "companion_resources";
 
 /// The companion resources that the protected resource metadata of the document at `address`
-/// lists, found from the challenge of a request without a token: each as its `resource` and its
-/// `kind`, in the order listed, and none where the metadata lists none.
+/// lists, found from the challenge of a request without a token, as [`companions_of`] reads them.
+pub fn companions_at(address: &str) -> Vec<(String, String)> {
+    let (_, metadata, _) = fetch(address);
+    companions_of(&metadata)
+}
+
+/// The companion resources that `metadata`, a remote's protected resource metadata, lists: each
+/// as its `resource` and its `kind`, in the order listed, and none where it lists none.
 ///
 /// # Panics
 ///
 /// The member is not a list, or one of its entries holds no string `resource` or `kind`.
-pub fn companions_of(address: &str) -> Vec<(String, String)> {
-    let (_, metadata, _) = fetch(address);
+pub fn companions_of(metadata: &Value) -> Vec<(String, String)> {
     let Some(listed) = metadata.get(COMPANION_RESOURCES) else {
         return Vec::new();
     };
@@ -107,7 +112,7 @@ pub fn signed_over(remote: &Remote, resources: &[&str], scope: &str) -> Signed {
     let (server, client, code) = coded_for(remote, resources, scope);
     let resource = remote.resource();
     let answer = exchange(&server, &client, &resource, &code);
-    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(answer.status, 200, "{answer:?}");
     let field = |value: &Value, name: &str| value[name].as_str().unwrap().to_owned();
     Signed {
         address: remote.address(),

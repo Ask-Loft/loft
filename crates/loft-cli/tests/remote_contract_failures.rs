@@ -13,8 +13,8 @@ use software_plant::remote::{Companion, CompanionFault, Metadata, Remote, Remote
 
 use crate::common::calls::call;
 use crate::common::oauth::{
-    KEY, assert_oauth_error, authorize_for, coded, companion_metadata, exchange, fetch, location,
-    metadata, parameter, refresh, register, registered, send_refresh,
+    KEY, assert_oauth_error, assert_same_answer, authorize_for, coded, companion_metadata,
+    exchange, fetch, location, metadata, parameter, refresh, register, registered, send_refresh,
 };
 use crate::common::remote::{spec, wire, with_criterion};
 use crate::common::resources::{COMPANION_RESOURCES, origin_of, signed_over};
@@ -187,7 +187,7 @@ fn a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its
     );
     assert!(remote.requests_elsewhere().is_empty());
     let answer = companion_metadata(&identifier);
-    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(answer.status, 200, "{answer:?}");
     assert_eq!(
         answer.body,
         json!({
@@ -367,7 +367,7 @@ fn a_lost_refresh_answer_rotates_the_token_and_closes_the_connection_once() {
     assert_eq!(remote.refreshes(), 1, "the token rotated");
     // Within the grace window, the same token gets the answer that was lost.
     let repeated = refresh(&server, &client, &resource, old);
-    assert_eq!(repeated.status, 200, "{:?}", repeated.body);
+    assert_eq!(repeated.status, 200, "{repeated:?}");
     assert_eq!(remote.refreshes(), 1);
     let next = repeated.body["refresh_token"].as_str().unwrap();
     assert_eq!(refresh(&server, &client, &resource, next).status, 200);
@@ -395,10 +395,10 @@ fn a_lost_answer_is_repeated_for_its_resource_and_a_refresh_for_another_revokes_
     };
     let (remote, signed, own, notes) = lost();
     let repeated = signed.refresh(&notes, &signed.refresh_token);
-    assert_eq!(repeated.status, 200, "{:?}", repeated.body);
+    assert_eq!(repeated.status, 200, "{repeated:?}");
     assert_eq!(repeated.body["resource"], json!(notes));
     let again = signed.refresh(&notes, &signed.refresh_token);
-    assert_eq!(again.body, repeated.body);
+    assert_same_answer(&again.body, &repeated.body, "a second repeat");
     assert_eq!(remote.refreshes(), 1);
     let successor = repeated.body["refresh_token"].as_str().unwrap();
     assert_eq!(signed.refresh(&own, successor).status, 200);

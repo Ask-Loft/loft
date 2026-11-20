@@ -21,7 +21,7 @@ use crate::common::oauth::{
     KEY, UNSERVED, assert_oauth_error, coded, coded_for, discover, exchange, exchange_for,
     refresh_for, registered,
 };
-use crate::common::resources::{Signed, companions_of, kept, signed_over};
+use crate::common::resources::{Signed, companions_at, companions_of, kept, signed_over};
 use crate::remote_contract_refreshes::UNREFRESHED;
 
 /// A code that no remote issued.
@@ -51,7 +51,7 @@ fn refuses_an_exchange_that_names_resource_more_than_once(
     let own = metadata["resource"]
         .as_str()
         .expect("protected resource metadata that names its resource");
-    let companions = companions_of(address);
+    let companions = companions_of(&metadata);
     for code in codes {
         for named in several(own, &companions) {
             let answer = exchange_for(&server, client, &named, code);
@@ -71,7 +71,7 @@ fn an_exchange_that_names_resource_more_than_once_is_refused_and_leaves_its_code
     refuses_an_exchange_that_names_resource_more_than_once(&remote.address(), &client, &codes);
     // No refusal used the code up: it is exchanged once, for one resource it names.
     let answer = exchange(&server, &client, &notes, &code);
-    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(answer.status, 200, "{answer:?}");
     assert_eq!(answer.body["resource"], json!(notes));
     assert_oauth_error(&exchange(&server, &client, &own, &code), "invalid_grant");
     // Presented again once exchanged, the code is refused `invalid_target` all the same.
@@ -101,7 +101,7 @@ fn a_real_remote_refuses_an_exchange_that_names_resource_more_than_once() {
 /// rotates and revokes nothing: its live refresh token then refreshes the sign-in's resource, and
 /// that answer's refresh token after it.
 fn refuses_a_refresh_that_names_resource_more_than_once(signed: &Signed) {
-    let companions = companions_of(&signed.address);
+    let companions = companions_at(&signed.address);
     let refused = |token: &str| {
         for named in several(&signed.resource, &companions) {
             let answer = refresh_for(&signed.server(), &signed.client, &named, token);
@@ -113,12 +113,12 @@ fn refuses_a_refresh_that_names_resource_more_than_once(signed: &Signed) {
     refused("a-refresh-token-never-issued");
     let rotated = signed.refresh(&signed.resource, live);
     let unrotated = format!("a refused refresh rotates nothing ({UNREFRESHED})");
-    assert_eq!(rotated.status, 200, "{unrotated}: {:?}", rotated.body);
+    assert_eq!(rotated.status, 200, "{unrotated}: {rotated:?}");
     refused(live);
     let successor = rotated.body["refresh_token"].as_str().unwrap();
     let next = signed.refresh(&signed.resource, successor);
     let unrevoked = "a refused refresh revokes nothing";
-    assert_eq!(next.status, 200, "{unrevoked}: {:?}", next.body);
+    assert_eq!(next.status, 200, "{unrevoked}: {next:?}");
 }
 
 #[test]
@@ -137,7 +137,7 @@ fn a_refresh_that_names_resource_more_than_once_is_refused_and_rotates_nothing()
     let (own, notes) = (lapsing.resource(), lapsing.companion("notes"));
     let signed = signed_over(&lapsing, &[&own, &notes], "documents notes");
     let token = signed.refresh_token.as_str();
-    let companions = companions_of(&lapsing.address());
+    let companions = companions_at(&lapsing.address());
     for named in several(&own, &companions) {
         let answer = refresh_for(&signed.server(), &signed.client, &named, token);
         assert_oauth_error(&answer, "invalid_target");
