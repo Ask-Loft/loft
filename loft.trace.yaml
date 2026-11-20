@@ -994,11 +994,11 @@ links:
         name: "a_components_children_are_grouped_by_kind"
         body: eea15c01e4884f553a06e2e91554879ee125164f081325b546c9510b434ff49c
   - node: ec8d0d1b-6c2a-4ff1-ae2c-bd1d0e1ebf68
-    reviewed: 00695d5dd41aeb39ea87fac870e010ffb2cf54f122e1899384c8c5da06f2ae7c
+    reviewed: dd889b24c199d69387e400b714e0bfcfe9460ed056b9fa817da12c970443cde3
     tests:
       - file: "crates/loftspec/tests/digest.rs"
         name: "the_domain_strings_are_closed"
-        body: 9b06e72ff9a52dad3a6c837e0e8dbf608d8ef5ec210431e3ddd5e987db774f96
+        body: c759c3f80778e1d56eb2437d396da4971041ba0ed4ca1fa0a2343124f0cc2d4b
   - node: f9e8c0b8-fd34-41bb-98a2-8854d25bfaea
     reviewed: 656773db7a1b8f5b77f16165dbc1500f5a74dd2733ee09aa796c87788c7bd8fc
     tests:
@@ -12297,6 +12297,9 @@ links:
   - node: 01a1f981-4db1-765f-a897-222964d64693
     reviewed: 84f5b846c5647992b8f161971ba67bdbe26f1444db5b51933ed8efae75c210cd
     tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "renaming_a_handle_leaves_the_content_root_and_the_state_root"
+        body: 45f74032f68a25e7ce1ec346e12c4b0c05ce5ea79d13fc4ca852a4dab34ce0e4
       - file: "crates/loftspec/tests/other_documents.rs"
         name: "documents_enters_no_root"
         body: f1200a42880172162ee8b46851f00d9777c81a10f7c1dbc981a95f4dcb8e0862
@@ -12414,6 +12417,51 @@ links:
       - file: "crates/loftspec/tests/pinned_copies.rs"
         name: "a_copy_in_a_document_that_is_not_connected_is_refused_naming_the_handle"
         body: cd3c8e41fede7a621ddb4100de764e9fe5a7561ad91ae3e522125a6fbe87e86d
+  - node: 01a1f981-4db1-765f-a897-2242aa337670
+    reviewed: 2e612e3c4ef9969966c7b911979b2d73136995f3de489021e3d97a09808370b5
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "the_state_view_of_a_tree_with_a_copy_ends_with_its_pins_after_the_lint_digest"
+        body: dac7d87169a7e9fa2637fe831bb3a25f3a437a65cd6da028f5965b05f3c387aa
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_vectors_of_a_document_providing_a_copied_interface_are_reproduced_byte_for_byte"
+        body: 7c9cbd6430d95f46c30c0224b327d89d466fdb7f55180fdf87c9bb0431a25bff
+  - node: 01a1f981-4db1-765f-a897-2243075e8910
+    reviewed: e7cfcc7be290f8a1abcae82a350b3f6a8a40b84220916fe1bccd77290d28168d
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "the_pins_digest_covers_each_pins_document_interface_sequence_state_root_and_hash"
+        body: a2902307b5a8847ef0378909e5cd24bb4771ac62c6d0fe6eb6785021744b2b35
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_vectors_of_a_document_providing_a_copied_interface_are_reproduced_byte_for_byte"
+        body: 7c9cbd6430d95f46c30c0224b327d89d466fdb7f55180fdf87c9bb0431a25bff
+  - node: 01a1f981-4db1-765f-a897-2244c1e52d7b
+    reviewed: e082e6a28c19ed077eed7f45e0fa3c0a073482be3b8751864765444570374f68
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "the_pins_are_sorted_by_document_key_then_interface_key"
+        body: 300e8572b98c2572a19d54946eb1d8582c01ff6fc6251fd2d4a77f021389bf13
+  - node: 01a1f981-4db1-765f-a897-2245c2d18635
+    reviewed: 4511bae0c8c339d505348e051c21a47f28f44541076ed5c9dec684f16394559b
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "a_tree_without_a_copy_has_the_state_root_it_had_before_copies"
+        body: 23d5d536342da659d9fb83db069bea0865f74615637e5ef8cd8e421d7219ba5d
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_small_document_roots_match_their_vectors"
+        body: 4368b0d1f4923f28b38ac1a4a759431c2ca53c65c56a97f832f888cd1b0dc2cc
+  - node: 01a1f981-4db1-765f-a897-2246ca3533c2
+    reviewed: a3034cf464cd974f08f88fad0607130b2fd771e9ea54d14765fb36e6242e18a3
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "moving_a_pin_to_a_state_with_the_referenced_node_unchanged_leaves_the_content_root"
+        body: f44c7212c3efdd4c9e3afaf2d7a7dc218367f6273bac6e137d196f155f34144a
+  - node: 01a1f981-4db1-765f-a897-22470c83bfee
+    reviewed: 07c3b6a9297fd2d86b7fb6f0536b2c18d2cb5093279e7d72ed334fd963b1786d
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "renaming_a_handle_leaves_the_content_root_and_the_state_root"
+        body: 45f74032f68a25e7ce1ec346e12c4b0c05ce5ea79d13fc4ca852a4dab34ce0e4
   - node: 01a1f981-4db1-765f-a897-224a0d31922d
     reviewed: 0adce667ae0098db02bca9c8db33456508f0bf555d086ca80ded4d153346458e
     tests:
@@ -12492,6 +12540,39 @@ links:
       - file: "crates/loftspec/tests/foreign_references.rs"
         name: "a_foreign_outcome_subject_is_an_error_naming_the_decision_and_the_node"
         body: f8cf671e3924d24445fec9a3a9266f3e26fe39ed2bdf69580bbc9d9ff3f75895
+  - node: 01a1f981-4db1-765f-a897-225a4370a999
+    reviewed: 21458dce28b8056751a28011fe1a1aa7f42d9510bb008cba312f2b11bf004dd2
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "an_edge_to_a_foreign_node_enters_the_edges_root_with_the_nodes_hash_in_its_copy"
+        body: 602995794562f87f8b34edd7a16027c8c714eb84cce423c848e4e95dd47e5cd6
+      - file: "crates/loftspec/tests/golden.rs"
+        name: "the_vectors_of_a_document_providing_a_copied_interface_are_reproduced_byte_for_byte"
+        body: 7c9cbd6430d95f46c30c0224b327d89d466fdb7f55180fdf87c9bb0431a25bff
+  - node: 01a1f981-4db1-765f-a897-225b38dfefe0
+    reviewed: 6a12799733b81582d76d48346ccdedbab21beb0c34f009ad2e22390618b8cf40
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "a_foreign_subject_is_named_by_its_content_hash_in_its_copy"
+        body: 01b04b2ccf8cafc3c5b9fcdda98776d1137f8d2d1360894b14716997154d7638
+  - node: 01a1f981-4db1-765f-a897-225c15199c0f
+    reviewed: 586420bffb3358fc796811a38be0e60516ecf648a95213a17a4d8b969f2c5ad9
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "moving_a_pin_to_a_state_with_the_referenced_node_unchanged_leaves_the_content_root"
+        body: f44c7212c3efdd4c9e3afaf2d7a7dc218367f6273bac6e137d196f155f34144a
+  - node: 01a1f981-4db1-765f-a897-225dca24efbe
+    reviewed: 877fe1a7fac590d23046656dfca3b25e20aac5b55f0491b7540a48f74c953157
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "moving_a_pin_to_a_state_with_the_referenced_node_changed_changes_the_content_root"
+        body: 8d5bbe1b5c8cf38e620350c01e72788a7660989c80db74853c77d08cec2ef5b4
+  - node: 01a1f981-4db1-765f-a897-225e116e8f16
+    reviewed: c898fba9b2351029299a6a6c822acf3f3ae1bfe32d436d89863368e2b739b4c8
+    tests:
+      - file: "crates/loftspec/tests/foreign_hashing.rs"
+        name: "renaming_a_handle_leaves_the_content_root_and_the_state_root"
+        body: 45f74032f68a25e7ce1ec346e12c4b0c05ce5ea79d13fc4ca852a4dab34ce0e4
   - node: 01a1d600-053b-77ad-8132-b98169820900
     reviewed: 1eec5b8a9c4f69a36e631d989dad171ef286f3412d790558be031843502542ce
     tests:

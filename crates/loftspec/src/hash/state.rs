@@ -76,7 +76,14 @@ pub fn state_view(
     if let (StateView::Two, Some(lint)) = (view, lint) {
         fields.push(json!({ "lintConfiguration": lint_digest(lint) }));
     }
+    fields.extend(pins_member(roots.pins));
     Value::Array(fields)
+}
+
+/// The member that covers the pins of a tree's copies, last in the state view; none for a tree
+/// without a copy, so that it keeps the state root it had before copies existed.
+pub(super) fn pins_member(pins: Option<Digest>) -> Option<Value> {
+    pins.map(|pins| json!({ "pins": pins }))
 }
 
 /// The state root of a document with the roots `roots` under `view`, given the text of the

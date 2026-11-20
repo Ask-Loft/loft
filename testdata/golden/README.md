@@ -24,7 +24,8 @@ Absent values are `null`; an empty string is not absent.
 | Decisions root | `loftspec/decisions/1` | `[decisionHash, …]` |
 | Content root | `loftspec/content/1` | `[productHashes, componentHashes, edgesRoot, tagsRoot, categoriesRoot, decisionsRoot]`, then optional members |
 | Binding root | `loftspec/bindings/1` | `[[key, label, aliases, contentHash], …]` |
-| State root | `loftspec/state/1` | `[format, algorithm, documentKey, contentRoot, bindingRoot, derivedFrom]` |
+| State root | `loftspec/state/1` | `[format, algorithm, documentKey, contentRoot, bindingRoot, derivedFrom]`, then optional members |
+| Pins | `loftspec/pins/1` | `[[documentKey, interfaceKey, publishSequence, stateRoot, interfaceHash], …]` |
 | Conflict | `loftspec/conflict/1` | `[holder, field, base, ours, theirs]` |
 
 ### Node
@@ -54,7 +55,9 @@ Absent values are `null`; an empty string is not absent.
 Each edge is its source's hash, its type (`realizes`, `scoped_to`, `mentions`, `subject`,
 `provides` or `requires`), its
 target's hash and its role (`affected`, `outcome` or `null`). An endpoint's hash is a node's
-content hash or a decision's view hash. The tuples are sorted by their canonical bytes and two
+content hash or a decision's view hash. A target in another document, a node of a copy of that
+document's Interface, enters by its content hash as its own document computes it; no handle is
+hashed. The tuples are sorted by their canonical bytes and two
 equal tuples both appear.
 
 ### Registry root
@@ -95,6 +98,13 @@ which they were recorded; `contentHash` is computed from the tree, never read fr
 state view's `format` is `loftspec/1`, its `algorithm` `sha256-jcs/1`, and `derivedFrom` is
 `{authoredStateId, contentAddress, publishSequence}` or `null`.
 
+A tree that holds a copy of another document's Interface adds a last member to its state view,
+`{"pins": <pins digest>}`, after the lint configuration's member where there is one. The pins
+view lists each copy as the other document's key, the Interface's key, the publish sequence it
+was copied at, that state's root and the Interface's content hash, sorted by document key and
+then by Interface key. A copy's nodes enter no other view: no node view, no content root and no
+binding root. A tree without a copy has the state view it had before copies existed.
+
 ### Conflict
 
 A conflict record's identifier is the digest of its view; no file holds it. `holder` is the key
@@ -133,6 +143,17 @@ key.` (key `0x1c1`, stored as text), which holds the criterion `The answer names
 Interface has no label, so the binding root is the one `small-document.json` gives. Every view
 the Interface does not touch is the same as in `small-document.json`; the edges root gains the
 `provides` tuple, and the content view ends with `[interfaceHash]`.
+
+## `small-document-pin.json`
+
+`small-document`, connected, listing another document (key `0x300`) under the handle `format` and
+holding a copy of that document's Interface `Document lookup` pinned at publish sequence 3, whose
+state root is `03` repeated 32 times. The copied Interface is the one `small-document-interface`
+holds, with the same keys and content hashes, and the root Component `Document model` provides it.
+Every node and decision view is the one `small-document.json` gives; the edges root gains the
+`provides` tuple, whose target is the copied Interface's content hash; the content view takes the
+new edges root and no Interface member; the binding root is unchanged; `root:pins` holds the one
+pin; and the state view ends with `{"pins": <pins digest>}`.
 
 ## `small-document-state-view-2.json`
 
