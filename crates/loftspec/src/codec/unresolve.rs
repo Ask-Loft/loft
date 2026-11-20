@@ -17,8 +17,8 @@ use crate::identity::Key;
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
+    QualityAttribute, Requirement, Section,
 };
 
 /// The record tree of a document.
@@ -59,7 +59,10 @@ pub(crate) fn unresolve_elements(document: &Document) -> Tree {
             }
             (_, Node::Product(product)) => edges.product(product),
             (_, Node::Feature(feature)) => edges.feature(feature),
-            _ => unreachable!("only a Product, a Feature and a root Component have a file"),
+            (_, Node::Interface(interface)) => edges.interface(interface),
+            _ => unreachable!(
+                "only a Product, a Feature, a root Component and an Interface have a file"
+            ),
         };
         put(&mut tree, role, Content::Record(record));
     };
@@ -69,6 +72,9 @@ pub(crate) fn unresolve_elements(document: &Document) -> Tree {
     for root in &document.components {
         let node = Node::Component(&root.component);
         node_files(node, Some(&root.slug), &Under::Root, &mut file);
+    }
+    for interface in &document.interfaces {
+        node_files(Node::Interface(interface), None, &Under::Root, &mut file);
     }
     for decision in &document.decisions {
         let role = Role::Decision {
@@ -278,6 +284,31 @@ impl Edges {
                     .iter()
                     .map(|each| self.quality(each)),
             ),
+        );
+        record
+    }
+
+    pub(super) fn interface(&self, interface: &Interface) -> Rec {
+        let id = interface.id.map(NodeId::from);
+        let mut record = self.node(
+            Kind::Interface,
+            id,
+            Some(&interface.name),
+            &interface.details,
+        );
+        record.set_text(field::SLUG, interface.slug.to_string());
+        let requirements = interface.requirements.iter();
+        let requirements = requirements.map(|requirement| self.requirement(requirement));
+        record.set(field::REQUIREMENTS, self.nested(requirements));
+        let constraints = interface.constraints.iter();
+        record.set(
+            field::CONSTRAINTS,
+            self.nested(constraints.map(|each| self.constraint(each))),
+        );
+        let qualities = interface.quality_attributes.iter();
+        record.set(
+            "qualityAttributes",
+            self.nested(qualities.map(|each| self.quality(each))),
         );
         record
     }

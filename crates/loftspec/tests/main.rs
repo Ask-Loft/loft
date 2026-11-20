@@ -63,6 +63,7 @@ mod hash_live;
 mod held_documents;
 mod identity;
 mod index;
+mod interfaces_codec;
 mod label_allocation;
 mod lint;
 mod lint_config;

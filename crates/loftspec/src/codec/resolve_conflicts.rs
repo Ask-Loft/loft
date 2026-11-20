@@ -55,12 +55,13 @@ fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
             Role::Manifest => 0,
             Role::Product { .. } | Role::Feature { .. } => 1,
             Role::Component { .. } => 2,
-            Role::Decision { .. } => 3,
-            Role::Tags => 4,
-            Role::Categories => 5,
-            Role::Terms => 6,
-            Role::Labels => 7,
-            Role::Lint => 8,
+            Role::Interface { .. } => 3,
+            Role::Decision { .. } => 4,
+            Role::Tags => 5,
+            Role::Categories => 6,
+            Role::Terms => 7,
+            Role::Labels => 8,
+            Role::Lint => 9,
         };
         (rank, filed.get(*path).copied().unwrap_or(usize::MAX), *path)
     });

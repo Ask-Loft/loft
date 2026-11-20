@@ -87,6 +87,7 @@ impl<'a> Fields<'a> {
             // A statement enters as its rendered sentence (AC-598).
             Node::Requirement(node) => Self::plain(node.statement.render(), &node.details),
             Node::Criterion(node) => Self::plain(&node.name, &node.details),
+            Node::Interface(node) => Self::plain(&node.name, &node.details),
             Node::Component(node) => Self {
                 boundary: node.boundary,
                 ..Self::plain(&node.name, &node.details)

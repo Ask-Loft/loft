@@ -11,6 +11,7 @@ pub mod edits;
 pub mod fields;
 pub mod full;
 pub mod generated;
+pub mod interfaces;
 pub mod lint;
 pub mod merge;
 pub mod merge_cases;

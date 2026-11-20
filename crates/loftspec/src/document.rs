@@ -15,7 +15,7 @@ use crate::ids::{
     ProductId, TagId, TermId,
 };
 use crate::names::{CategoryName, TagName};
-use crate::tree::{Product, RootComponent};
+use crate::tree::{Interface, Product, RootComponent};
 
 /// The type of an edge (F-13, F-14).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -177,6 +177,8 @@ pub struct Document {
     pub id: DocumentId,
     pub products: Vec<Product>,
     pub components: Vec<RootComponent>,
+    /// The Interfaces, each written to its own file; in no meaningful order.
+    pub interfaces: Vec<Interface>,
     pub edges: Vec<Edge>,
     pub tags: Vec<TagEntry>,
     pub categories: Vec<CategoryEntry>,
@@ -203,6 +205,7 @@ impl Document {
             id,
             products: Vec::new(),
             components: Vec::new(),
+            interfaces: Vec::new(),
             edges: Vec::new(),
             tags: Vec::new(),
             categories: Vec::new(),

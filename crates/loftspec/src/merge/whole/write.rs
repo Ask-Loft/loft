@@ -6,7 +6,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use super::super::flat::{
-    Build, COMPONENT_FILES, DECISION_FILES, FEATURE_FILES, Flat, PRODUCT_FILES, Parent, Place,
+    Build, COMPONENT_FILES, DECISION_FILES, FEATURE_FILES, Flat, INTERFACE_FILES, PRODUCT_FILES,
+    Parent, Place,
 };
 use super::super::tree::ByKey;
 use super::TreeMergeError;
@@ -39,6 +40,11 @@ pub(super) fn tree(
     }
     for key in writer.listed(&(Parent::Top, COMPONENT_FILES)) {
         writer.file(key, |slug| Role::Component {
+            slug: slug.to_owned(),
+        })?;
+    }
+    for key in writer.listed(&(Parent::Top, INTERFACE_FILES)) {
+        writer.file(key, |slug| Role::Interface {
             slug: slug.to_owned(),
         })?;
     }

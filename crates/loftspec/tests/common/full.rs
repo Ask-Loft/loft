@@ -6,11 +6,12 @@ use loftspec::canonical::Digest;
 use loftspec::decision::StateKind;
 use loftspec::document::{DerivedFrom, Document, Edge};
 use loftspec::ids::{
-    AuthoredStateId, ComponentId, ConstraintId, DecisionId, ElementId, FeatureGroupId, FeatureId,
-    ProductId, QualityAttributeId, RequirementId, SectionId,
+    AuthoredStateId, ComponentId, ConstraintId, CriterionId, DecisionId, ElementId, FeatureGroupId,
+    FeatureId, InterfaceId, ProductId, QualityAttributeId, RequirementId, SectionId,
 };
 use loftspec::names::TagName;
-use loftspec::tree::{Details, Section};
+use loftspec::slug::Slug;
+use loftspec::tree::{Details, Interface, Section};
 
 use super::{component, key, label, section, small_document};
 
@@ -67,11 +68,39 @@ fn fill_components(document: &mut Document) {
     root.components = vec![nested];
 }
 
+/// An Interface (key 0x1d0) holding a Requirement (key 0x1d3) with a criterion (key 0x1d4), a
+/// Constraint (key 0x1d5) and a Quality Attribute (key 0x1d6), each with a body, a tag and a
+/// Section.
+fn fill_interfaces(document: &mut Document) {
+    let mut constraint = document.components[0].constraints[0].clone();
+    constraint.id = Some(ConstraintId::new(key(0x1d5)));
+    constraint.details = details(0x1d7);
+    let mut quality = document.components[0].quality_attributes[0].clone();
+    quality.id = Some(QualityAttributeId::new(key(0x1d6)));
+    quality.details = details(0x1d9);
+    let mut requirement =
+        document.products[0].feature_groups[0].features[0].requirements[0].clone();
+    requirement.id = Some(RequirementId::new(key(0x1d3)));
+    requirement.details = details(0x1db);
+    requirement.criteria.truncate(1);
+    requirement.criteria[0].id = Some(CriterionId::new(key(0x1d4)));
+    requirement.criteria[0].details = details(0x1dd);
+    document.interfaces = vec![Interface {
+        id: Some(InterfaceId::new(key(0x1d0))),
+        slug: Slug::derive("Document lookup", "interface"),
+        name: "Document lookup".to_owned(),
+        details: details(0x1d1),
+        requirements: vec![requirement],
+        constraints: vec![constraint],
+        quality_attributes: vec![quality],
+    }];
+}
+
 /// A `mentions` edge from every node kind and from the decision, each to the Requirement or,
 /// from the Requirement, to the root Component.
 fn mentions() -> Vec<Edge> {
     let requirement: ElementId = RequirementId::new(key(4)).into();
-    let sources: [ElementId; 10] = [
+    let sources: [ElementId; 11] = [
         ProductId::new(key(1)).into(),
         FeatureGroupId::new(key(2)).into(),
         FeatureId::new(key(3)).into(),
@@ -81,6 +110,7 @@ fn mentions() -> Vec<Edge> {
         ComponentId::new(key(61)).into(),
         QualityAttributeId::new(key(8)).into(),
         SectionId::new(key(40)).into(),
+        InterfaceId::new(key(0x1d0)).into(),
         DecisionId::new(key(20)).into(),
     ];
     let mut edges: Vec<Edge> = sources
@@ -99,7 +129,8 @@ fn mentions() -> Vec<Edge> {
 
 /// The small document with every optional field of every record kind filled: each node has a
 /// body, a tag, a Section with a child Section and a mention; the root Component holds a nested
-/// Component and a boundary; a Constraint has a conservation kind; the decision mentions a node;
+/// Component and a boundary; an Interface holds a Requirement, a Constraint and a Quality
+/// Attribute; a Constraint has a conservation kind; the decision mentions a node;
 /// the manifest names a publish branch, marks the document connected, names its remote and
 /// names the state it was derived from; the Requirement's binding holds a withdrawn label; and a departed decision's
 /// binding (key 90, `ADR-5`) holds an alias, a withdrawn label and the state its last publish
@@ -108,6 +139,7 @@ pub fn full_document() -> Document {
     let mut document = small_document();
     fill_products(&mut document);
     fill_components(&mut document);
+    fill_interfaces(&mut document);
     document.edges.extend(mentions());
     document.publish_branch = Some("release".to_owned());
     document.connected = true;

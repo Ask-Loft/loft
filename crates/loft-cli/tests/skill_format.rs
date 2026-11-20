@@ -44,6 +44,7 @@ fn title(kind: Kind) -> &'static str {
         Kind::QualityTarget => "`qualityTarget`",
         Kind::Band => "`band`",
         Kind::Section => "Section",
+        Kind::Interface => "Interface",
         Kind::Decision => "Decision",
         Kind::State => "`state`",
         Kind::Driver => "Driver",

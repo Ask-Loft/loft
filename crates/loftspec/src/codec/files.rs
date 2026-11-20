@@ -38,6 +38,9 @@ pub enum Role {
     Component {
         slug: String,
     },
+    Interface {
+        slug: String,
+    },
     Decision {
         slug: String,
     },
@@ -67,6 +70,9 @@ impl Role {
             ["components", component] => Self::Component {
                 slug: stem(component)?,
             },
+            ["interfaces", interface] => Self::Interface {
+                slug: stem(interface)?,
+            },
             ["decisions", decision] => Self::Decision {
                 slug: stem(decision)?,
             },
@@ -91,6 +97,7 @@ impl Role {
                 feature,
             } => format!("products/{product}/{group}/{feature}.yaml"),
             Self::Component { slug } => format!("components/{slug}.yaml"),
+            Self::Interface { slug } => format!("interfaces/{slug}.yaml"),
             Self::Decision { slug } => format!("decisions/{slug}.yaml"),
         })
     }
@@ -101,7 +108,9 @@ impl Role {
         match self {
             Self::Product { product } => Some(product),
             Self::Feature { feature, .. } => Some(feature),
-            Self::Component { slug } | Self::Decision { slug } => Some(slug),
+            Self::Component { slug } | Self::Interface { slug } | Self::Decision { slug } => {
+                Some(slug)
+            }
             _ => None,
         }
     }
@@ -126,6 +135,7 @@ impl Role {
             Self::Product { .. } => Some(Kind::Product),
             Self::Feature { .. } => Some(Kind::Feature),
             Self::Component { .. } => Some(Kind::RootComponent),
+            Self::Interface { .. } => Some(Kind::Interface),
             Self::Decision { .. } => Some(Kind::Decision),
         }
     }

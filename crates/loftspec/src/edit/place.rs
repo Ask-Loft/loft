@@ -6,7 +6,7 @@ use crate::ids::NodeId;
 use crate::kind::NodeKind;
 use crate::node::Node;
 use crate::tree::{
-    Component, Constraint, Criterion, Feature, FeatureGroup, Product, QualityAttribute,
+    Component, Constraint, Criterion, Feature, FeatureGroup, Interface, Product, QualityAttribute,
     Requirement, RootComponent, Section,
 };
 
@@ -76,6 +76,7 @@ pub(super) enum NodeMut<'a> {
     Constraint(&'a mut Constraint),
     QualityAttribute(&'a mut QualityAttribute),
     Section(&'a mut Section),
+    Interface(&'a mut Interface),
 }
 
 impl<'a> NodeMut<'a> {
@@ -104,6 +105,13 @@ impl<'a> NodeMut<'a> {
             (Self::Component(node), K::QualityAttribute) => {
                 ListMut::QualityAttributes(&mut node.quality_attributes)
             }
+            (Self::Interface(node), K::Requirement) => {
+                ListMut::Requirements(&mut node.requirements)
+            }
+            (Self::Interface(node), K::Constraint) => ListMut::Constraints(&mut node.constraints),
+            (Self::Interface(node), K::QualityAttribute) => {
+                ListMut::QualityAttributes(&mut node.quality_attributes)
+            }
             (node, K::Section) => ListMut::Sections(node.sections()),
             _ => return None,
         })
@@ -119,16 +127,18 @@ impl<'a> NodeMut<'a> {
             Self::Component(node) => &mut node.details.sections,
             Self::Constraint(node) => &mut node.details.sections,
             Self::QualityAttribute(node) => &mut node.details.sections,
+            Self::Interface(node) => &mut node.details.sections,
             Self::Section(node) => &mut node.sections,
         }
     }
 }
 
-/// A parent's list of nodes of one kind, borrowed mutably. The root holds Products and root
-/// Components.
+/// A parent's list of nodes of one kind, borrowed mutably. The root holds Products, root
+/// Components and Interfaces.
 pub(super) enum ListMut<'a> {
     Products(&'a mut Vec<Product>),
     RootComponents(&'a mut Vec<RootComponent>),
+    Interfaces(&'a mut Vec<Interface>),
     FeatureGroups(&'a mut Vec<FeatureGroup>),
     Features(&'a mut Vec<Feature>),
     Requirements(&'a mut Vec<Requirement>),
@@ -145,6 +155,7 @@ impl<'a> ListMut<'a> {
         match kind {
             NodeKind::Product => Some(Self::Products(&mut document.products)),
             NodeKind::Component => Some(Self::RootComponents(&mut document.components)),
+            NodeKind::Interface => Some(Self::Interfaces(&mut document.interfaces)),
             _ => None,
         }
     }
@@ -171,6 +182,7 @@ impl<'a> ListMut<'a> {
             Self::RootComponents(list) => list
                 .get_mut(position)
                 .map(|root| NodeMut::Component(&mut root.component)),
+            Self::Interfaces(list) => list.get_mut(position).map(NodeMut::Interface),
             Self::FeatureGroups(list) => list.get_mut(position).map(NodeMut::FeatureGroup),
             Self::Features(list) => list.get_mut(position).map(NodeMut::Feature),
             Self::Requirements(list) => list.get_mut(position).map(NodeMut::Requirement),
@@ -187,6 +199,7 @@ impl<'a> ListMut<'a> {
         match self {
             Self::Products(list) => list.remove(position).into(),
             Self::RootComponents(list) => list.remove(position).into(),
+            Self::Interfaces(list) => list.remove(position).into(),
             Self::FeatureGroups(list) => list.remove(position).into(),
             Self::Features(list) => list.remove(position).into(),
             Self::Requirements(list) => list.remove(position).into(),
@@ -209,6 +222,7 @@ impl<'a> ListMut<'a> {
             (Self::RootComponents(list), OwnedNode::RootComponent(node)) => {
                 list.insert(position, node);
             }
+            (Self::Interfaces(list), OwnedNode::Interface(node)) => list.insert(position, node),
             (Self::FeatureGroups(list), OwnedNode::FeatureGroup(node)) => {
                 list.insert(position, node);
             }

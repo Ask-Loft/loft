@@ -49,6 +49,7 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
     resolver.registries();
     resolver.products(manifest);
     resolver.roots();
+    resolver.interfaces();
     resolver.decisions();
     resolver.labels();
     resolver.document.conflicts = super::resolve_conflicts::collect(tree);
@@ -278,6 +279,17 @@ impl<'t> Resolver<'t> {
             let root = self.root_component(record);
             if let Some(root) = self.keep(root) {
                 self.document.components.push(root);
+            }
+        }
+    }
+
+    fn interfaces(&mut self) {
+        let tree = self.tree;
+        for (path, _, record) in tree.records(|role| matches!(role, Role::Interface { .. })) {
+            self.path = path.clone();
+            let interface = self.interface(record);
+            if let Some(interface) = self.keep(interface) {
+                self.document.interfaces.push(interface);
             }
         }
     }

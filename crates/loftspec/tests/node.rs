@@ -136,3 +136,37 @@ fn the_profile_lets_each_kind_hold_exactly_these_kinds() {
         }
     }
 }
+
+#[test]
+fn an_interface_stands_only_at_the_root() {
+    use loftspec::kind::ParentKind;
+    assert!(ParentKind::Root.may_contain(NodeKind::Interface));
+    for kind in NodeKind::ALL {
+        assert!(
+            !ParentKind::Node(kind).may_contain(NodeKind::Interface),
+            "{kind}"
+        );
+    }
+}
+
+#[test]
+fn an_interface_holds_requirements_constraints_and_quality_attributes_in_that_order() {
+    use NodeKind::{
+        Component, Constraint, Feature, FeatureGroup, Interface, Product, QualityAttribute,
+        Requirement,
+    };
+    assert_eq!(
+        Interface.child_kinds(),
+        &[Requirement, Constraint, QualityAttribute]
+    );
+    for kind in [Product, FeatureGroup, Feature, Component, Interface] {
+        assert!(!Interface.may_contain(kind), "{kind}");
+    }
+    assert!(Interface.may_contain(NodeKind::Section));
+}
+
+#[test]
+fn the_interface_kind_is_named_interface() {
+    assert_eq!(NodeKind::Interface.as_str(), "interface");
+    assert_eq!("interface".parse::<NodeKind>(), Ok(NodeKind::Interface));
+}

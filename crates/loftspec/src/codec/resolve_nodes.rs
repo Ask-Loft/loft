@@ -11,14 +11,14 @@ use crate::attributes::{
 use crate::document::Edge;
 use crate::ext::Ext;
 use crate::ids::{
-    ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, NodeId,
-    ProductId, QualityAttributeId, RequirementId, SectionId,
+    ComponentId, ConstraintId, CriterionId, ElementId, FeatureGroupId, FeatureId, InterfaceId,
+    NodeId, ProductId, QualityAttributeId, RequirementId, SectionId,
 };
 use crate::names::{CategoryName, TagName};
 use crate::statement::{EarsForm, Form, Statement};
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, RootComponent, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
+    QualityAttribute, Requirement, RootComponent, Section,
 };
 
 /// A record's extension data; empty when it has no `ext`.
@@ -158,6 +158,23 @@ impl Resolver<'_> {
                     })
                 })
                 .collect::<Result<_, ReadError>>()?,
+        })
+    }
+
+    pub(super) fn interface(&mut self, record: &Rec) -> Result<Interface, ReadError> {
+        let id = InterfaceId::new(key(record, field::KEY));
+        Ok(Interface {
+            id: Some(id),
+            slug: slug(record),
+            name: text(record, field::NAME),
+            details: self.details(record, id.into())?,
+            requirements: self.each(record, field::REQUIREMENTS, Self::requirement)?,
+            constraints: self.each(record, field::CONSTRAINTS, Self::constraint)?,
+            quality_attributes: self.each(
+                record,
+                field::QUALITY_ATTRIBUTES,
+                Self::quality_attribute,
+            )?,
         })
     }
 

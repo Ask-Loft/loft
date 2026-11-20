@@ -76,12 +76,19 @@ const EXT: Field = spec(field::EXT, false, Shape::One(Item::Ext));
 const SECTIONS: Field = records(field::SECTIONS, K::Section);
 const FATE: Field = opt(field::VERIFICATION_FATE, S::Enum(VerificationFate::NAMES));
 
-/// One counter per label prefix, in the order `counters` lists them (AC-786).
+/// One counter per label prefix, in the order `counters` lists them (AC-786). Every counter is
+/// required but the Interface's, which is written only once a publish has allocated an Interface
+/// label, and reads as 1 while absent.
 const COUNTERS: [Field; LabelPrefix::ALL.len()] = {
     let mut fields = [req("P", S::Integer); LabelPrefix::ALL.len()];
     let mut index = 0;
     while index < fields.len() {
-        fields[index] = req(LabelPrefix::ALL[index].as_str(), S::Integer);
+        let prefix = LabelPrefix::ALL[index];
+        fields[index] = if matches!(prefix, LabelPrefix::Interface) {
+            opt(prefix.as_str(), S::Integer)
+        } else {
+            req(prefix.as_str(), S::Integer)
+        };
         index += 1;
     }
     fields
@@ -335,6 +342,21 @@ const COMPONENT: [Field; 12] = [
     records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
     SECTIONS,
 ];
+/// An Interface: always a root, so it carries its `slug` after its `key`.
+const INTERFACE_FIELDS: &[Field] = &[
+    KEY,
+    SLUG,
+    NAME,
+    BODY,
+    TAGS,
+    MENTIONS,
+    EXT,
+    records(field::REQUIREMENTS, K::Requirement),
+    records(field::CONSTRAINTS, K::Constraint),
+    records(field::QUALITY_ATTRIBUTES, K::QualityAttribute),
+    SECTIONS,
+];
+
 /// A root Component: `slug` after `key`, then a Component's fields (AC-757).
 const ROOT_COMPONENT: [Field; 13] = {
     let mut fields = [KEY; 13];
@@ -381,5 +403,6 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::Subject => SUBJECT_FIELDS,
         Kind::FormerLabel => FORMER_LABEL_FIELDS,
         Kind::ByName => BY_NAME_FIELDS,
+        Kind::Interface => INTERFACE_FIELDS,
     }
 }
