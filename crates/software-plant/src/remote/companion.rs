@@ -9,15 +9,11 @@ use serde_json::{Value, json};
 
 use super::oauth::document_metadata;
 use super::problem::refusal;
-use super::{Metadata, RESOURCE, RemoteScenario, State, only};
+use super::{Metadata, RESOURCE, RemoteScenario, State, WELL_KNOWN, only};
 use crate::http::{Request, Response};
 
 /// The member of a protected resource metadata document that lists the companion resources.
 const COMPANION_RESOURCES: &str = "companion_resources";
-
-/// Where a protected resource metadata document lies on its resource's origin, before the
-/// resource's path and query (RFC 9728).
-const WELL_KNOWN: &str = "/.well-known/oauth-protected-resource";
 
 /// A protected resource that the document's protected resource metadata lists as a companion:
 /// its kind, its path on its origin, whether that origin is another than the simulator's, the
@@ -162,10 +158,13 @@ impl RemoteScenario {
         self
     }
 
-    /// Whether the scenario places metadata on another origin, which a second port stands for.
+    /// Whether the scenario places metadata, or names its protected resource, on another origin,
+    /// which a second port stands for.
     pub(super) fn places_elsewhere(&self) -> bool {
-        self.metadata == Metadata::OnAnotherOrigin
-            || self.companions.iter().any(|companion| companion.elsewhere)
+        matches!(
+            self.metadata,
+            Metadata::OnAnotherOrigin | Metadata::ResourceOnAnotherOrigin
+        ) || self.companions.iter().any(|companion| companion.elsewhere)
     }
 }
 
@@ -192,11 +191,34 @@ impl State {
 
     /// The origin on which the challenge names the document's protected resource metadata: the
     /// second port's for a scenario that places it there, the simulator's otherwise.
-    pub(super) fn metadata_origin(&self) -> &str {
+    fn metadata_origin(&self) -> &str {
         match &self.elsewhere {
             Some(elsewhere) if self.scenario.metadata == Metadata::OnAnotherOrigin => elsewhere,
             _ => &self.origin,
         }
+    }
+
+    /// The address at which the challenge names the document's protected resource metadata: on
+    /// the origin where it lies, where RFC 9728 places it for the protected resource, or, for a
+    /// scenario that names its protected resource on another origin, at the path where that
+    /// scenario serves it.
+    pub(super) fn metadata_address(&self) -> String {
+        let path = self
+            .path_naming_elsewhere()
+            .unwrap_or_else(|| well_known(RESOURCE));
+        format!("{}{path}", self.metadata_origin())
+    }
+
+    /// The path on the simulator's origin at which a scenario that names its protected resource
+    /// on another origin serves the document's protected resource metadata: the well-known path,
+    /// then `@` and the second port's host and port, then the protected resource's path, so that
+    /// the metadata's address with the well-known path taken out names the resource on the second
+    /// port's origin, the simulator's origin being its user information. Nothing for any other
+    /// scenario.
+    pub(super) fn path_naming_elsewhere(&self) -> Option<String> {
+        let authority = self.elsewhere.as_deref()?.strip_prefix("http://")?;
+        (self.scenario.metadata == Metadata::ResourceOnAnotherOrigin)
+            .then(|| format!("{WELL_KNOWN}@{authority}{RESOURCE}"))
     }
 
     /// Adds to `metadata`, the document's protected resource metadata, the member that lists the
@@ -306,7 +328,7 @@ pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
 /// Where RFC 9728 places the protected resource metadata of the resource at `path`, a path that
 /// may end in a query: `/.well-known/oauth-protected-resource`, then the path without a
 /// terminating `/`, then the query.
-fn well_known(path: &str) -> String {
+pub(super) fn well_known(path: &str) -> String {
     let (path, query) = path.find('?').map_or((path, ""), |at| path.split_at(at));
     format!("{WELL_KNOWN}{}{query}", path.trim_end_matches('/'))
 }

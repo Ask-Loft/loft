@@ -1,6 +1,7 @@
 //! `loft publish` of a connected document, as the shared rules of reaching a remote hold it:
-//! the address and token the environment names, the sign-in and its refresh, the refusals and
-//! their waits, and the time limit, run under the remote and git simulators.
+//! the address and token the environment names, the sign-in and its refresh, a kept sign-in for
+//! a resource on another origin, the refusals and their waits, and the time limit, run under the
+//! remote and git simulators.
 
 use std::fs;
 
@@ -70,6 +71,96 @@ fn without_a_sign_in_the_publish_is_refused_naming_the_address_and_login() {
         assert!(message.contains(said), "{said}: {message}");
     }
     assert!(run.remote.requests().is_empty(), "no connection is opened");
+}
+
+#[test]
+fn publish_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_that_resource() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    run.change();
+    let before = tree(&run.scratch.0);
+    let resource = "http://127.0.0.1:9/documents";
+    // With an hour left its token would be sent; with a minute left it would be refreshed first.
+    for seconds in [3600, 60] {
+        let mut kept = granted(&run.remote, seconds);
+        kept["resource"] = json!(resource);
+        keep(&run.scratch, &json!({ run.remote.address(): kept }));
+        let output = run.publish();
+        assert_eq!(output.status.code(), Some(1), "{seconds}: {output:?}");
+        let error = &signed_in::document(&output)["errors"][0];
+        // The kind of the error that a publish without a sign-in gives.
+        assert_eq!(error["kind"], "refused", "{seconds}: {error}");
+        let message = error["message"].as_str().unwrap_or_default();
+        let address = run.remote.address();
+        for said in [
+            address.as_str(),
+            resource,
+            "another origin",
+            "LOFT_REMOTE_TOKEN",
+            "`loft remote set <address>` with an address on http://127.0.0.1:9 names the remote",
+            "`loft remote login` signs in again once the remote serves its protected resource on the address's origin",
+        ] {
+            assert!(message.contains(said), "{seconds}: {said}: {message}");
+        }
+        assert!(!message.contains("no sign-in"), "{seconds}: {message}");
+        assert!(
+            run.remote.requests().is_empty(),
+            "{seconds}: no connection is opened"
+        );
+        assert_eq!(
+            sign_ins(&run.scratch)[address.as_str()],
+            kept,
+            "{seconds}: nothing is written"
+        );
+        assert_eq!(
+            tree(&run.scratch.0),
+            before,
+            "{seconds}: no file of the tree is written"
+        );
+    }
+}
+
+#[test]
+fn a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    run.change();
+    let before = tree(&run.scratch.0);
+    let address = run.remote.address();
+    // With an hour left its token would be sent; with a minute left it would be refreshed first.
+    let cases = ["", "documents", "ftp://127.0.0.1/documents"]
+        .into_iter()
+        .flat_map(|resource| [(resource, 3600), (resource, 60)]);
+    for (resource, seconds) in cases {
+        let mut kept = granted(&run.remote, seconds);
+        kept["resource"] = json!(resource);
+        keep(&run.scratch, &json!({ address.as_str(): kept }));
+        let output = run.publish();
+        assert_eq!(output.status.code(), Some(1), "{resource:?}: {output:?}");
+        let error = &signed_in::document(&output)["errors"][0];
+        assert_eq!(error["kind"], "refused", "{resource:?}: {error}");
+        let message = error["message"].as_str().unwrap_or_default();
+        assert!(
+            message.starts_with(&format!("no sign-in to {address}")),
+            "{resource:?}: {message}"
+        );
+        assert!(
+            !message.contains("another origin"),
+            "{resource:?}: {message}"
+        );
+        assert!(
+            run.remote.requests().is_empty(),
+            "{resource:?} {seconds}: neither refreshed nor sent"
+        );
+        assert_eq!(
+            sign_ins(&run.scratch)[address.as_str()],
+            kept,
+            "{resource:?} {seconds}: the kept sign-in is left as it was"
+        );
+        assert_eq!(
+            tree(&run.scratch.0),
+            before,
+            "{resource:?} {seconds}: no file of the tree is written"
+        );
+    }
 }
 
 #[test]

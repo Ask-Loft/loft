@@ -1,14 +1,16 @@
 //! What the contract suites of a remote's companion resources share, of the simulator and of a
 //! real remote alike: the member of the remote's protected resource metadata that lists them, the
 //! list read from metadata already fetched or found from a document's address, the origin an
-//! address lies on, a document's head asked for with an access token, and a sign-in as a client
-//! keeps it, made on the simulator or kept by `loft remote login` for a real remote.
+//! address lies on, with its path and query, a document's head asked for with an access token,
+//! and a sign-in as a client keeps it, made on the simulator or kept by `loft remote login` for a
+//! real remote.
 
 use std::{env, fs};
 
 use loftspec::publish::PublishedAt;
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
+use ureq::http::Uri;
 
 use super::calls::{Answer, call};
 use super::oauth::{coded_for, exchange, fetch, refresh};
@@ -51,28 +53,52 @@ pub fn companions_of(metadata: &Value) -> Vec<(String, String)> {
         .collect()
 }
 
-/// The origin of the absolute URL `url`, as RFC 6454 compares origins: its scheme and its host
-/// in lower case, and its port where it is not the scheme's default.
+/// The origin of the absolute URL `url`, as RFC 6454 compares origins, read by the parser that
+/// `loft`'s requests use, as `loft` reads an origin: its scheme and its host in lower case, and
+/// its port where it is not the scheme's default.
+///
+/// # Panics
+///
+/// `url` is not an absolute URL with a host.
 pub fn origin_of(url: &str) -> String {
-    let (scheme, rest) = url
-        .split_once("://")
-        .unwrap_or_else(|| panic!("an absolute URL: {url}"));
+    origin_path_and_query(url).0
+}
+
+/// The absolute URL `url`, read by the parser that `loft`'s requests use, as `loft` reads an
+/// address: its origin, as [`origin_of`] writes it; its path, `/` where it names none; and its
+/// query with the `?` that opens it, or nothing where it has none. A fragment is never read.
+///
+/// # Panics
+///
+/// `url` is not an absolute URL with a host.
+pub fn origin_path_and_query(url: &str) -> (String, String, String) {
+    let uri: Uri = url
+        .parse()
+        .unwrap_or_else(|error| panic!("an absolute URL: {url}: {error}"));
+    // As `loft` reads an address: a scheme begins with a letter (RFC 3986, section 3.1), and a
+    // host is not empty.
+    let scheme = uri
+        .scheme_str()
+        .filter(|scheme| scheme.starts_with(|first: char| first.is_ascii_alphabetic()));
+    let host = uri.host().filter(|host| !host.is_empty());
+    let (Some(scheme), Some(host)) = (scheme, host) else {
+        panic!("an absolute URL with a host: {url}");
+    };
     let scheme = scheme.to_ascii_lowercase();
-    let authority = rest
-        .split(['/', '?', '#'])
-        .next()
-        .unwrap_or_default()
-        .to_ascii_lowercase();
+    let host = host.to_ascii_lowercase();
     let default = match scheme.as_str() {
-        "https" => ":443",
-        "http" => ":80",
-        _ => "",
+        "https" => Some(443),
+        "http" => Some(80),
+        _ => None,
     };
-    let host_and_port = match authority.strip_suffix(default) {
-        Some(host) if !default.is_empty() => host,
-        _ => &authority,
+    let origin = match uri.port_u16().filter(|port| Some(*port) != default) {
+        Some(port) => format!("{scheme}://{host}:{port}"),
+        None => format!("{scheme}://{host}"),
     };
-    format!("{scheme}://{host_and_port}")
+    let query = uri
+        .query()
+        .map_or_else(String::new, |query| format!("?{query}"));
+    (origin, uri.path().to_owned(), query)
 }
 
 /// The answer to `GET <address>/head` with the bearer token `token`, as a client signed in to the

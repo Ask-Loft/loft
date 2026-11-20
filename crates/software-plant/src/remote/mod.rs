@@ -9,8 +9,9 @@
 //! tenant slug, `plant`. The authorization server's issuer is `<origin>/auth`, and both metadata documents lie under
 //! `<origin>/.well-known/`, beside the metadata of each companion resource a scenario lists.
 //! What a scenario places on another origin lies on a second port of the loopback interface, and
-//! there alone. A publish is published with the Format's own publisher, made as the document's
-//! remote, so its labels and its lock are the ones a remote would return.
+//! there alone; a scenario that names its protected resource on another origin names it there. A
+//! publish is published with the Format's own publisher, made as the document's remote, so its
+//! labels and its lock are the ones a remote would return.
 
 mod companion;
 mod documents;
@@ -55,6 +56,10 @@ pub fn document_address(origin: &str, key: &str) -> String {
     format!("{origin}{}", document_path(key))
 }
 
+/// Where a protected resource metadata document lies on its resource's origin, before the
+/// resource's path and query (RFC 9728).
+const WELL_KNOWN: &str = "/.well-known/oauth-protected-resource";
+
 /// A published state as the remote holds it: its lock record and the text of each file under
 /// `spec/`, by its path from the top of the tree.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -76,7 +81,7 @@ struct State {
     scenario: RemoteScenario,
     origin: String,
     /// The origin of the second port, which stands for another origin, if the scenario places
-    /// metadata there.
+    /// metadata, or names its protected resource, there.
     elsewhere: Option<String>,
     held: Option<Held>,
     replies: HashMap<String, Value>,
@@ -94,7 +99,8 @@ impl State {
 /// A running remote simulator.
 pub struct Remote {
     server: Option<Server>,
-    /// The second port, which stands for another origin, if the scenario places metadata there.
+    /// The second port, which stands for another origin, if the scenario places metadata, or
+    /// names its protected resource, there.
     elsewhere: Option<Server>,
     origin: String,
     key: String,
@@ -188,7 +194,7 @@ impl Remote {
 
     /// Every request that the second port received so far, in the order received: the port of
     /// the loopback interface that stands for another origin, which a scenario starts when it
-    /// places metadata there.
+    /// places metadata, or names its protected resource, there.
     #[must_use]
     pub fn requests_elsewhere(&self) -> Vec<Request> {
         self.elsewhere
@@ -365,14 +371,19 @@ fn route(state: &mut State, request: &Request) -> Response {
     if let Some(answer) = state.companion_metadata(request) {
         return answer;
     }
-    let resource_metadata = format!("/.well-known/oauth-protected-resource{RESOURCE}");
+    let resource_metadata = companion::well_known(RESOURCE);
     // A scenario that places the document's protected resource metadata on another origin
-    // serves it there alone.
+    // serves it there alone; one that names its protected resource there serves it here at the
+    // address its challenge names, besides its usual one.
     let metadata_here = state.scenario.metadata != Metadata::OnAnotherOrigin;
+    let naming_elsewhere = state.path_naming_elsewhere();
     match path {
         _ if metadata_here && path == resource_metadata => {
             only("GET", request, || oauth::resource_metadata(state))
         }
+        _ if naming_elsewhere.as_deref() == Some(path) => only("GET", request, || {
+            oauth::metadata_naming_elsewhere(state, path)
+        }),
         "/.well-known/oauth-authorization-server/auth" => {
             only("GET", request, || oauth::server_metadata(state))
         }

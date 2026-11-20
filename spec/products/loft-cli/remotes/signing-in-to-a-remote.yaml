@@ -48,6 +48,27 @@ requirements:
         name: "Where the unauthenticated request was refused, the error names that request as `GET <address>/head` and the status the remote gave."
       - key: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
         name: "Nothing is written."
+  - key: 01a1f4f1-4309-7056-a238-4b3a5ee7086f
+    statement:
+      form: unwanted
+      if: "the remote's challenge names its protected resource metadata, or that metadata names its protected resource, on another origin than the remote's address"
+      system: "Loft"
+      shall: "refuse to sign in and exit 1."
+    criteria:
+      - key: 01a1f4f1-4309-7056-a238-4b3b10f42aed
+        name: "A challenge whose `resource_metadata` lies on another origin than the remote's address is refused before that metadata is requested."
+      - key: 01a1f4f1-4309-7056-a238-4b3cf07410b6
+        name: "Protected resource metadata whose `resource` lies on another origin than the remote's address is refused."
+      - key: 01a1f4f1-4309-7056-a238-4b3d468d9de9
+        name: "Two `https` or `http` addresses lie on one origin when they have the same scheme, the same host without regard to case, and the same port, where a port left out is the scheme's default."
+      - key: 01a1f4f1-4309-7056-a238-4b3ebed07992
+        name: "No client is registered."
+      - key: 01a1f4f1-4309-7056-a238-4b3f0a67aaca
+        name: "No browser is opened."
+      - key: 01a1f4f1-4309-7056-a238-4b40f2a6accb
+        name: "The error names the remote's address and the address on another origin that it refused."
+      - key: 01a1f4f1-4309-7056-a238-4b412fa960ee
+        name: "Nothing is written."
   - key: 01a1f967-f816-765c-9e69-fb9618c00f11
     statement:
       form: unwanted

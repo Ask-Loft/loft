@@ -14,7 +14,7 @@ use serde_json::{Map, Value, json};
 use yardlog_store::lock::{self, Locked};
 
 use super::{RemoteError, signin};
-use crate::settings;
+use crate::{network, settings};
 
 /// The file's name in the configuration directory.
 const FILE: &str = "remotes.json";
@@ -65,9 +65,32 @@ fn entries() -> Result<Map<String, Value>, RemoteError> {
     Ok(file["remotes"].as_object().cloned().unwrap_or_default())
 }
 
-/// The sign-in an entry holds, if it reads as one.
-fn sign_in(entry: &Value) -> Option<SignIn> {
-    serde_json::from_value(entry.clone()).ok()
+/// The sign-in that `entry`, the entry kept under `address`, holds, where it reads as one and its
+/// resource lies on the address's origin.
+///
+/// # Errors
+///
+/// There is no entry, or it does not read as a sign-in, or its resource reads as no `https` or
+/// `http` address. Or it is one for a protected resource on
+/// another origin, which an earlier `loft` could keep: it is no sign-in for the address and is
+/// neither refreshed nor sent, and its error, unlike that of a missing one, names that resource.
+fn sign_in(entry: Option<&Value>, address: &str) -> Result<SignIn, RemoteError> {
+    let none = || RemoteError::NoSignIn {
+        address: address.to_owned(),
+    };
+    let held = entry
+        .and_then(|entry| SignIn::deserialize(entry).ok())
+        .ok_or_else(none)?;
+    // A resource that reads as no address lies on no origin, so it is not on another one.
+    let origin = network::origin(&held.resource).ok_or_else(none)?;
+    if network::origin(address).as_ref() == Some(&origin) {
+        Ok(held)
+    } else {
+        Err(RemoteError::SignInElsewhere {
+            address: address.to_owned(),
+            resource: held.resource,
+        })
+    }
 }
 
 /// Writes `sign_ins` as the whole file, with permission for its owner alone, through a file
@@ -121,24 +144,17 @@ pub fn forget(address: &str) -> Result<bool, RemoteError> {
 ///
 /// # Errors
 ///
-/// The file holds no sign-in for `address`, or the refresh is refused or cannot be made.
+/// The file holds no sign-in for `address`, or one only for a protected resource on another
+/// origin or for a resource that reads as no address, or the refresh is refused or cannot be
+/// made.
 pub fn live(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
-    let missing = || RemoteError::NoSignIn {
-        address: address.to_owned(),
-    };
-    let held = entries()?
-        .get(address)
-        .and_then(sign_in)
-        .ok_or_else(missing)?;
+    let held = sign_in(entries()?.get(address), address)?;
     if !held.expiring(now()) {
         return Ok(held);
     }
     let _lock = lock()?;
     let mut sign_ins = entries()?;
-    let held = sign_ins
-        .get(address)
-        .and_then(sign_in)
-        .ok_or_else(missing)?;
+    let held = sign_in(sign_ins.get(address), address)?;
     if !held.expiring(now()) {
         return Ok(held);
     }

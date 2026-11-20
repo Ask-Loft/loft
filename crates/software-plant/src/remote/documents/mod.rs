@@ -33,11 +33,7 @@ impl State {
 
     fn challenge(&self) -> Response {
         let mut response = refusal("unauthenticated");
-        let metadata = format!(
-            "{}/.well-known/oauth-protected-resource{}",
-            self.metadata_origin(),
-            super::RESOURCE
-        );
+        let metadata = self.metadata_address();
         let scope = match self.scenario.metadata {
             Metadata::Unscoped(_) => String::new(),
             _ => format!(", scope=\"{}\"", self.scenario.scope),

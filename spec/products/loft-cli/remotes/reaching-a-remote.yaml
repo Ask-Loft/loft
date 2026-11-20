@@ -19,6 +19,10 @@ requirements:
         name: "The file is a JSON object whose `remotes` maps each remote's address to its sign-in, an object of `tokenEndpoint`, `resource`, `clientId`, `accessToken`, `expiresAt` and `refreshToken`."
       - key: 01a156aa-d531-70a7-88e0-0befdde18d29
         name: "An address that the file does not name has no sign-in in the file."
+      - key: 01a1f4f1-4309-7056-a238-4b394d224dd7
+        name: "A kept sign-in whose `resource` lies on another origin than the address it is kept under is neither refreshed nor sent, and counts as no sign-in for that address where a command needs one."
+      - key: 01a1f9e5-e027-761e-ba8f-3ab9ff480a0a
+        name: "A kept sign-in whose `resource` does not read as an `https` or `http` address is neither refreshed nor sent, and counts as no sign-in for that address where a command needs one."
       - key: 01a18e1f-8daa-7674-9603-5ad333b36e05
         name: "No file of the repository holds a sign-in or a token."
   - key: 01a156aa-d531-70a7-88e0-0bf010f56964
@@ -58,6 +62,14 @@ requirements:
         name: "Where there is no address, the error names the manifest's `remote` and `LOFT_REMOTE_ENDPOINT`."
       - key: 01a18e1f-8daa-7674-9603-5ad50b1d6406
         name: "Where there is no sign-in, the error names the address and `LOFT_REMOTE_TOKEN`, and says that `loft remote login` signs in."
+      - key: 01a1f900-b4fe-7506-8d0d-c55748273642
+        name: "Where the sign-in kept under the address is for a protected resource on another origin than the address, the error says so in place of saying that there is no sign-in: it names the address, that resource and `LOFT_REMOTE_TOKEN`."
+      - key: 01a1f9e5-e027-761e-ba8f-3aba99df02ee
+        name: "That error says that `loft remote set` with an address on that resource's origin names the remote by it and signs in to it."
+      - key: 01a1f9e5-e027-761e-ba8f-3abbaf996612
+        name: "That error says that `loft remote login` signs in again once the remote serves its protected resource on the address's origin."
+      - key: 01a1f9e5-e027-761e-ba8f-3abc6be91b80
+        name: "Where the sign-in kept under the address has a `resource` that does not read as an `https` or `http` address, the error is the one for no sign-in."
       - key: 01a156aa-d531-70a7-88e0-0bf9810a25c3
         name: "No connection is opened."
       - key: 01a156aa-d531-70a7-88e0-0bfae3b7a232

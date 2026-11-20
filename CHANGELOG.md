@@ -25,6 +25,35 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
+- `loft remote set` and `loft remote login` refuse a remote whose challenge names its protected
+  resource metadata, or whose metadata names its protected resource, on another origin than the
+  remote's address. The refusal comes before anything is asked of that origin, before a client is
+  registered and before a browser opens, and the error names both addresses. A sign-in used to
+  follow the challenge to any `https` address, and to accept metadata whose path named a resource
+  on another host or port, so an address committed to a manifest could lead you to consent at
+  another remote's authorization server and then receive the access token issued for that remote.
+  Two addresses lie on one origin when they have the same scheme, host and port, the host compared
+  without regard to case and a missing port read as the scheme's default. This also refuses a
+  remote that you reach through another name than the origin on which it serves its metadata and
+  resource, such as a port forward to `127.0.0.1`, `localhost` for `127.0.0.1`, a name with a
+  trailing dot or a CNAME, and a sign-in kept for such a remote counts as none. Name the remote by
+  an address on the origin that the refusal names, with `loft remote set`, which signs you in to
+  that address; once the manifest names it, everyone else signs in with `loft remote login`.
+- A sign-in that an earlier `loft` kept under a remote's address, for a protected resource on
+  another origin, counts as no sign-in: it is neither refreshed nor sent, and `loft remote set`
+  signs in anew. `loft publish` and `loft pull` refuse with an error of its own, which names the
+  address and that resource. It says that `loft remote set` with an address on that resource's
+  origin names the remote by it and signs you in to it, and that `loft remote login` signs in
+  again once the remote serves its resource on the address's origin. A kept sign-in whose
+  resource does not read as an `https` or `http` address counts as none too, with the error for
+  no sign-in.
+- `loft skill install --server <origin>` reads the origin as `loft` reads every address, with the
+  parser its requests use. A text that does not read as an address with a scheme and a host, such
+  as one holding a space or a host outside ASCII, or one whose scheme is empty or does not begin
+  with a letter, is now a usage error that exits 2 and opens no connection, as a path, a query or
+  a fragment already was; the install used to refuse some of them with exit 1. The origin is
+  written with its scheme and host in lower case, without user information or the scheme's
+  default port.
 - `loft remote set` explains an address that is not a document's remote. A Loft server gives each
   document the address `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`,
   where `<documentKey>` is the `documentKey` in `spec/loftspec.yaml`, and `loft` adds each call's

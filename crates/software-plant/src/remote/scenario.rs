@@ -46,6 +46,16 @@ pub enum Metadata {
     /// port of the loopback interface stands for, naming the protected resource there. The
     /// simulator's own origin answers `not_found` where it would otherwise lie.
     OnAnotherOrigin,
+    /// Protected resource metadata that the challenge names on the simulator's own origin, at the
+    /// well-known path followed by `@`, the host and port of a second port of the loopback
+    /// interface, which stands for another origin, and the protected resource's path. Its
+    /// `resource` is its own address with the well-known path taken out, as RFC 9728 derives it:
+    /// the simulator's origin is that address's user information, and the second port's host and
+    /// port its host and port, so that it lies on the second port's origin. The second port
+    /// serves only the metadata of a companion resource its scenario places there, and answers
+    /// `not_found` to every other request; the metadata's usual address still serves it
+    /// faithfully.
+    ResourceOnAnotherOrigin,
 }
 
 /// The skill package a scenario serves: its manifest's `name` and `version`, and its bytes.
