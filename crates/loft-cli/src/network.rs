@@ -211,7 +211,7 @@ fn origin(url: &str) -> Option<(String, String, u16)> {
 
 #[cfg(test)]
 mod tests {
-    use super::{allowed, same_origin};
+    use super::{allowed, origin, same_origin};
 
     #[test]
     fn https_is_allowed_anywhere_and_http_only_on_the_loopback_interface() {
@@ -283,5 +283,16 @@ mod tests {
             assert!(!same_origin(one, other), "{one} {other}");
         }
         assert!(!same_origin("not an address", "not an address"));
+    }
+
+    #[test]
+    fn an_address_with_user_information_lies_on_the_origin_of_its_host_and_port() {
+        // The user information names one loopback port, and the host and port another.
+        let resource = "http://127.0.0.1:4000@127.0.0.1:5000/documents";
+        assert!(origin(resource).is_some(), "{resource}");
+        assert_eq!(origin(resource), origin("http://127.0.0.1:5000/"));
+        assert_ne!(origin(resource), origin("http://127.0.0.1:4000/"));
+        assert!(!same_origin(resource, "http://127.0.0.1:4000/documents/a"));
+        assert!(same_origin(resource, "http://127.0.0.1:5000/documents/a"));
     }
 }
