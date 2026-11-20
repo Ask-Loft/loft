@@ -53,6 +53,8 @@ requirements:
         name: "A key that a copy under another handle holds is an error."
       - key: 01a1f981-4db1-765f-a897-2255947ffee7
         name: "A reference whose copy holds its key raises no such error."
+      - key: 01a1faa9-1391-75ce-a1d8-a57d8e374e0f
+        name: "The error names the element that makes the reference, the handle and the key."
   - key: 01a1f981-4db1-765f-a897-225613ddae2b
     statement:
       form: unwanted
