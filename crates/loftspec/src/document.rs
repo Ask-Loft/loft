@@ -15,6 +15,7 @@ use crate::ids::{
     InterfaceId, ProductId, TagId, TermId,
 };
 use crate::names::{CategoryName, TagName};
+use crate::slug::Slug;
 use crate::tree::{Interface, Product, RootComponent};
 
 /// The type of an edge (F-13, F-14).
@@ -189,6 +190,17 @@ pub struct DerivedFrom {
     pub publish_sequence: u64,
 }
 
+/// Another connected document whose Interfaces a connected document links to: an entry of the
+/// manifest's `documents`, under a handle of the document's own choosing. None of it enters a
+/// root, since every root names the other document by its key, and never by its handle.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OtherDocument {
+    pub handle: Slug,
+    pub key: DocumentId,
+    /// The address of the other document's remote.
+    pub remote: String,
+}
+
 /// A whole document. Products are in the manifest's order (AC-241); root Components, edges,
 /// registry entries and decisions are in no meaningful order. The publish branch is named only
 /// when it is not `main` (AC-276). A connected document publishes through its remote; the mark
@@ -214,6 +226,9 @@ pub struct Document {
     /// The address of a connected document's remote, which the manifest names as `remote` and
     /// which enters no root.
     pub remote: Option<String>,
+    /// The other documents a connected document links to, in no meaningful order; the writer
+    /// sorts them by handle.
+    pub documents: Vec<OtherDocument>,
     /// The merge conflicts the tree holds, which the validator reports until removed (RQ-126).
     pub conflicts: Vec<Conflict>,
 }
@@ -238,6 +253,7 @@ impl Document {
             publish_branch: None,
             connected: false,
             remote: None,
+            documents: Vec::new(),
             conflicts: Vec::new(),
         }
     }

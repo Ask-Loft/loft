@@ -81,8 +81,15 @@ required in a formatted tree, and `loft fmt` writes them. The names `conflicts`,
 | `publishBranch` | optional: the branch publishes run on, where it is not `main` | | |
 | `connected` | optional: `true` once the document is connected to a remote, which `loft publish` then publishes through; never set it by hand | | |
 | `remote` | optional: the address of the remote, beside `connected`; `loft remote set` writes it, never set it by hand | | |
+| `documents` | optional: the other connected documents this one links to, beside `connected`, sorted by handle; `loft interface` writes it, never set it by hand | | |
 | `products` | optional: the Products' keys, in order | | |
 | `derivedFrom` | optional: the Loft v1 Authored State an imported document derives from | | |
+
+| `documents` entry field | |
+|---|---|
+| `handle` | required: a slug of this document's own choosing that names the other document |
+| `key` | required: the other document's key |
+| `remote` | required: the address of the other document's remote |
 
 | `spec/labels.yaml` field | | `counters` field | |
 |---|---|---|---|

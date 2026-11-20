@@ -100,8 +100,15 @@ const MANIFEST_FIELDS: &[Field] = &[
     opt(field::PUBLISH_BRANCH, S::Identifier),
     opt(field::CONNECTED, S::Flag),
     opt(field::REMOTE, S::Text),
+    ordered(records(field::DOCUMENTS, K::OtherDocument), Order::ByText),
     scalars(field::PRODUCTS, S::Key),
     record(field::DERIVED_FROM, false, K::DerivedFrom),
+];
+
+const OTHER_DOCUMENT_FIELDS: &[Field] = &[
+    req(field::HANDLE, S::Slug),
+    req(field::KEY, S::Key),
+    req(field::REMOTE, S::Text),
 ];
 
 const DERIVED_FROM_FIELDS: &[Field] = &[
@@ -405,5 +412,6 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::FormerLabel => FORMER_LABEL_FIELDS,
         Kind::ByName => BY_NAME_FIELDS,
         Kind::Interface => INTERFACE_FIELDS,
+        Kind::OtherDocument => OTHER_DOCUMENT_FIELDS,
     }
 }

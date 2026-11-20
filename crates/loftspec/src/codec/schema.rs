@@ -40,6 +40,8 @@ pub enum Kind {
     ByName,
     /// An Interface, which stands only at the root, in a file of its own.
     Interface,
+    /// An entry of the manifest's `documents`: another document the document links to.
+    OtherDocument,
 }
 
 /// What a scalar field holds, which fixes how it is checked and written.
@@ -172,7 +174,7 @@ use crate::kind::NodeKind;
 
 impl Kind {
     /// Every kind of record.
-    pub const ALL: [Self; 32] = [
+    pub const ALL: [Self; 33] = [
         Self::Manifest,
         Self::DerivedFrom,
         Self::Labels,
@@ -205,6 +207,7 @@ impl Kind {
         Self::FormerLabel,
         Self::ByName,
         Self::Interface,
+        Self::OtherDocument,
     ];
 
     /// The kind's fields in the Format's order.

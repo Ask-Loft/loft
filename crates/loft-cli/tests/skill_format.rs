@@ -53,6 +53,7 @@ fn title(kind: Kind) -> &'static str {
         Kind::Consequence => "Consequence",
         Kind::Subject => "Subject",
         Kind::FormerLabel => "Former label",
+        Kind::OtherDocument => "`documents` entry",
         other => panic!("no field table is named for {other:?}"),
     }
 }

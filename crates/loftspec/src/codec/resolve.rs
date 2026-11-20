@@ -11,7 +11,9 @@ use super::record::{Rec, Val};
 use super::schema::Kind;
 use crate::canonical::Digest;
 use crate::decision::{NodeRef, StateKind};
-use crate::document::{CategoryEntry, DerivedFrom, Document, Edge, TagEntry, TermEntry};
+use crate::document::{
+    CategoryEntry, DerivedFrom, Document, Edge, OtherDocument, TagEntry, TermEntry,
+};
 use crate::identity::{Key, Label, LabelPrefix};
 use crate::ids::{
     AuthoredStateId, CategoryId, DecisionId, DocumentId, ElementId, NodeId, TagId, TermId,
@@ -199,6 +201,7 @@ impl<'t> Resolver<'t> {
             }
             self.document.remote = remote.text().map(str::to_owned);
         }
+        self.documents(manifest)?;
         if let Some(source) = manifest.record(field::DERIVED_FROM) {
             let address = text(source, field::CONTENT_ADDRESS);
             self.document.derived_from = Some(DerivedFrom {
@@ -208,6 +211,49 @@ impl<'t> Resolver<'t> {
                     .map_err(|error| self.fail(Some(source.position), error.to_string()))?,
                 publish_sequence: text(source, field::PUBLISH_SEQUENCE).parse().unwrap_or(1),
             });
+        }
+        Ok(())
+    }
+
+    /// The manifest's other documents: only beside `connected: true`, each handle and key once,
+    /// and never the document's own key.
+    fn documents(&mut self, manifest: &Rec) -> Result<(), ReadError> {
+        let Some(listed) = manifest.get(field::DOCUMENTS) else {
+            return Ok(());
+        };
+        if !self.document.connected {
+            let at = manifest
+                .records(field::DOCUMENTS)
+                .next()
+                .map(|entry| entry.position);
+            let problem = "`documents` lists other documents only beside `connected: true`: \
+                           only a connected document links to other documents"
+                .to_owned();
+            return Err(self.fail(at.or(listed.position()), problem));
+        }
+        for entry in manifest.records(field::DOCUMENTS) {
+            let other = OtherDocument {
+                handle: Slug::parse(&text(entry, field::HANDLE)).expect("a checked slug"),
+                key: DocumentId::new(key(entry, field::KEY)),
+                remote: text(entry, field::REMOTE),
+            };
+            let listed = &self.document.documents;
+            let problem = if other.key == self.document.id {
+                Some(format!(
+                    "the entry names the document's own key {}: a document does not link to itself",
+                    other.key
+                ))
+            } else if listed.iter().any(|seen| seen.handle == other.handle) {
+                Some(format!("a second entry has the handle {}", other.handle))
+            } else if listed.iter().any(|seen| seen.key == other.key) {
+                Some(format!("a second entry has the key {}", other.key))
+            } else {
+                None
+            };
+            if let Some(problem) = problem {
+                return Err(self.fail(Some(entry.position), problem));
+            }
+            self.document.documents.push(other);
         }
         Ok(())
     }

@@ -1,11 +1,11 @@
 //! The files of a `spec/` tree, each read as the record its path names (F-6), and written
 //! back in canonical layout.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use super::error::{Problem, ReadError, SpecPath};
 use super::record::{Mode, Rec, check, to_out};
-use super::schema::Kind;
+use super::schema::{Kind, field};
 use crate::yaml::{self, Out, Position, Value};
 
 /// The bytes of each file under `spec/`, by path.
@@ -275,12 +275,12 @@ pub(super) type WrittenKey<'p> = (&'p SpecPath, String, Position);
 
 /// Each file of the tree in canonical layout, as [`write_files`] writes it, with the text and
 /// the position of every key a keyed record of each file carries, file by file in path order and
-/// within a file in the order written. `spec/labels.yaml` names keys that its bindings bind,
-/// which no record of it carries, and gives none.
+/// within a file in the order written. A key that no keyed record carries, such as a binding's
+/// in `spec/labels.yaml` or another document's in the manifest's `documents`, gives none.
 pub(super) fn write_files_keyed(tree: &Tree) -> (Files, Vec<WrittenKey<'_>>) {
     let mut files = Files::new();
     let mut keys = Vec::new();
-    for (path, (role, content)) in &tree.files {
+    for (path, (_, content)) in &tree.files {
         let out = match out(content) {
             Ok(out) => out,
             Err(bytes) => {
@@ -289,9 +289,14 @@ pub(super) fn write_files_keyed(tree: &Tree) -> (Files, Vec<WrittenKey<'_>>) {
             }
         };
         let (text, found) = yaml::write_keyed(&out);
-        if *role != Role::Labels {
-            keys.extend(found.into_iter().map(|(key, at)| (path, key, at)));
-        }
+        let carried: BTreeSet<&str> = keyed_records(content.records())
+            .into_iter()
+            .filter_map(|record| record.text(field::KEY))
+            .collect();
+        let found = found
+            .into_iter()
+            .filter(|(key, _)| carried.contains(key.as_str()));
+        keys.extend(found.map(|(key, at)| (path, key, at)));
         files.insert(path.clone(), text.into_bytes());
     }
     (files, keys)

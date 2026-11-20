@@ -94,6 +94,7 @@ mod merge_tree_moves;
 mod merge_tree_props;
 mod names;
 mod node;
+mod other_documents;
 mod own_record_digest;
 mod own_record_one;
 mod own_record_views;
