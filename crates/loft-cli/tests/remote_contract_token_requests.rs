@@ -18,14 +18,11 @@ use serde_json::json;
 use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use crate::common::oauth::{
-    KEY, UNSERVED, assert_oauth_error, coded, coded_for, discover, exchange, exchange_for,
-    refresh_for, registered,
+    KEY, UNKNOWN_CODE, UNSERVED, assert_oauth_error, coded, coded_for, discover, exchange,
+    exchange_for, refresh_for, registered,
 };
 use crate::common::resources::{Signed, companions_at, companions_of, kept, signed_over};
 use crate::remote_contract_refreshes::UNREFRESHED;
-
-/// A code that no remote issued.
-const UNKNOWN_CODE: &str = "a-code-never-issued";
 
 /// The resources of each token request that names `resource` more than once, of a remote whose
 /// own protected resource is `own` and which lists `companions`: `own` and a resource that no

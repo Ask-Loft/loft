@@ -4,28 +4,32 @@
 //! - one authorization request for every resource, and a code exchanged for one of them by the
 //!   client it was issued to alone.
 //!
-//! The refreshes of such a sign-in have a suite of their own, `remote_contract_refreshes.rs`, and
-//! so does a code exchange or a refresh that names more than one resource,
-//! `remote_contract_token_requests.rs`.
+//! The refreshes of such a sign-in have a suite of their own, `remote_contract_refreshes.rs`; so
+//! does a code exchange or a refresh that names more than one resource,
+//! `remote_contract_token_requests.rs`, and an authorization request that the remote refuses
+//! before any person consents, `remote_contract_refusals.rs`.
 //!
 //! Each scenario runs against the simulator and, on demand, against the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS`: run a real half with
 //! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/<its name>/)'`. A scenario that
 //! needs a person to consent, or asks which access tokens a companion resource admits, runs
-//! against the simulator alone. A real half learns the companion resources from the remote's own
-//! metadata, and shares its scenario with its simulator half, so that the two cannot drift. A
-//! real half whose premise does not hold fails with a message that names the premise; none
-//! passes without checking.
+//! against the simulator alone, and so does such a part of a scenario: the real half of the
+//! refusal of a code registers a client of its own and presents a code that no remote issued,
+//! since another client's code needs a person to consent. A real half learns the companion
+//! resources from the remote's own metadata, and shares its scenario with its simulator half, so
+//! that the two cannot drift. A real half whose premise does not hold fails with a message that
+//! names the premise; none passes without checking.
+
+use std::iter;
 
 use serde_json::{Value, json};
 use software_plant::remote::wire::value;
 use software_plant::remote::{Companion, CompanionFault, Remote, RemoteScenario};
 
-use crate::common::calls::Answer;
 use crate::common::oauth::{
-    KEY, UNSERVED, assert_oauth_error, authorize, authorize_for, challenge_at, coded_for,
-    companion_metadata, exchange, exchange_for, fetch, location, metadata, parameter, refresh,
-    registered,
+    KEY, UNKNOWN_CODE, UNSERVED, assert_oauth_error, authorize_for, challenge_at, coded_for,
+    companion_metadata, discover, exchange, exchange_for, fetch, location, metadata, parameter,
+    refresh, registered,
 };
 use crate::common::resources::{COMPANION_RESOURCES, companions_of, head_with, origin_of};
 use crate::remote_contract::assert_problem;
@@ -340,19 +344,41 @@ fn one_authorization_request_names_every_resource_and_its_code_is_exchanged_for_
     assert_eq!(refreshed.body["scope"], "documents");
 }
 
+/// Refuses `invalid_grant` each exchange, by a client registered with the remote of the document
+/// at `address`, of a code that no remote issued, for the remote's own protected resource and for
+/// each companion resource it lists.
+fn refuses_an_unknown_code(address: &str) {
+    let (metadata, server) = discover(address);
+    let client = registered(&server);
+    let own = metadata["resource"]
+        .as_str()
+        .expect("protected resource metadata that names its resource");
+    let companions = companions_of(&metadata);
+    let resources = iter::once(own).chain(companions.iter().map(|(at, _)| at.as_str()));
+    for resource in resources {
+        let unknown = exchange(&server, &client, resource, UNKNOWN_CODE);
+        let refused = (unknown.status, &unknown.body["error"]);
+        assert_eq!(
+            refused,
+            (400, &json!("invalid_grant")),
+            "{resource}: {unknown:?}"
+        );
+    }
+}
+
 #[test]
 fn an_unknown_code_or_one_another_client_presents_is_refused_for_any_resource_the_remote_serves() {
     let remote = Remote::start(
         RemoteScenario::accepting(KEY).accompanied_by(Companion::new("notes", &["notes"])),
     );
+    refuses_an_unknown_code(&remote.address());
     let (own, notes) = (remote.resource(), remote.companion("notes"));
     let (server, client, code) = coded_for(&remote, &[&own], "documents");
     let other = registered(&server);
     // The remote serves `notes`, which the code's authorization request did not name: the code
-    // is judged first, so that `notes` too is refused `invalid_grant`, not `invalid_target`.
+    // is judged first, so that another client's is refused `invalid_grant` for `notes` too, not
+    // `invalid_target`.
     for resource in [&own, &notes] {
-        let unknown = exchange(&server, &client, resource, "a-code-never-issued");
-        assert_oauth_error(&unknown, "invalid_grant");
         assert_oauth_error(&exchange(&server, &other, resource, &code), "invalid_grant");
     }
     let answer = exchange(&server, &client, &own, &code);
@@ -361,61 +387,10 @@ fn an_unknown_code_or_one_another_client_presents_is_refused_for_any_resource_th
 }
 
 #[test]
-fn an_authorization_request_is_refused_for_a_resource_or_a_scope_the_remote_does_not_serve() {
-    let remote = Remote::start(
-        RemoteScenario::accepting(KEY).accompanied_by(Companion::new("notes", &["notes"])),
-    );
-    let (_, server) = metadata(&remote);
-    let client = registered(&server);
-    let (own, notes) = (remote.resource(), remote.companion("notes"));
-    let listed = companion_metadata(&notes).body["scopes_supported"].clone();
-    assert_eq!(listed, json!(["notes"]));
-    let error = |answer: &Answer| value(&location(answer), "error").map(str::to_owned);
-    for (resources, scope, refused) in [
-        (vec![], "documents", "invalid_target"),
-        (vec![own.as_str(), UNSERVED], "documents", "invalid_target"),
-        (vec![own.as_str()], "", "invalid_scope"),
-        (vec![own.as_str()], "documents documents", "invalid_scope"),
-        (vec![own.as_str()], "documents profile", "invalid_scope"),
-        (vec![own.as_str()], "documents notes", "invalid_scope"),
-        (
-            vec![own.as_str(), notes.as_str()],
-            "documents",
-            "invalid_target",
-        ),
-        (
-            vec![own.as_str(), own.as_str()],
-            "documents",
-            "invalid_target",
-        ),
-        (
-            vec![own.as_str(), notes.as_str(), notes.as_str()],
-            "documents notes",
-            "invalid_target",
-        ),
-    ] {
-        let answer = authorize_for(&server, &client, &resources, scope);
-        let named = format!("{resources:?} asking {scope:?}");
-        assert_eq!(error(&answer).as_deref(), Some(refused), "{named}");
-    }
-    // A parameter sent without a value is read as one left out (RFC 6749, section 3.1).
-    for (response_type, refused) in [
-        ("", "invalid_request"),
-        ("token", "unsupported_response_type"),
-    ] {
-        let answer = authorize(&server, &client, &own, &[("response_type", response_type)]);
-        assert_eq!(
-            error(&answer).as_deref(),
-            Some(refused),
-            "{response_type:?}"
-        );
-    }
-    let unaccompanied = Remote::start(RemoteScenario::accepting(KEY));
-    for remote in [&remote, &unaccompanied] {
-        let own = remote.resource();
-        let (server, client, code) = coded_for(remote, &[&own], "documents");
-        let answer = exchange(&server, &client, &own, &code);
-        assert_eq!(answer.status, 200, "{answer:?}");
-        assert_eq!(answer.body["resource"], json!(own));
-    }
+#[ignore = "reaches the remote at LOFT_REMOTE_CONTRACT_ADDRESS"]
+fn a_real_remote_refuses_an_unknown_code_for_any_resource_it_serves() {
+    // Registers a client of its own. A code that another client presents needs a person to
+    // consent to the first client's request, so that part runs against the simulator alone.
+    let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
+    refuses_an_unknown_code(&address);
 }

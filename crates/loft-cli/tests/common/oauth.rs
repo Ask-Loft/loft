@@ -4,8 +4,8 @@
 //! companion resource, the registration of a public client, an authorization request with PKCE
 //! for one protected resource or more and the redirect that answers it, the exchange of its code,
 //! a refresh that names one resource or another number of them, the OAuth error answer that
-//! refuses one, a token answer given again, compared without showing its tokens, and a resource
-//! that no remote serves.
+//! refuses one, a token answer given again, compared without showing its tokens, a resource that
+//! no remote serves and a code that no remote issued.
 
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
@@ -28,6 +28,8 @@ pub const CALLBACK: &str = "http://127.0.0.1:4567/callback";
 /// A protected resource that no remote serves: one on an origin under `.invalid`, which RFC 6761
 /// reserves so that it never resolves, and so is no remote's origin.
 pub const UNSERVED: &str = "https://elsewhere.invalid/documents";
+/// A code that no remote issued.
+pub const UNKNOWN_CODE: &str = "a-code-never-issued";
 
 /// The protected resource metadata and the authorization server metadata of `remote`'s
 /// document.
@@ -150,7 +152,7 @@ pub fn authorize_for(server: &Value, client: &str, resources: &[&str], scope: &s
 
 /// The answer to an authorization request of `client` for `resources` and `scope`, with
 /// `overrides` replacing the first parameter of each name.
-fn authorized(
+pub fn authorized(
     server: &Value,
     client: &str,
     resources: &[&str],
