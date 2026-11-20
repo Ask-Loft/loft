@@ -54,6 +54,14 @@ impl LabelPrefix {
         }
     }
 
+    /// Whether `spec/labels.yaml` may leave the prefix's counter out while it is still 1: a
+    /// prefix added after the Format's first release, so that a document that has never used it
+    /// keeps the labels file it had. Such a counter at 1 is never a guess.
+    #[must_use]
+    pub const fn counter_optional(self) -> bool {
+        matches!(self, Self::Interface)
+    }
+
     /// The prefix written as `text`, such as `RQ`.
     #[must_use]
     pub fn parse(text: &str) -> Option<Self> {

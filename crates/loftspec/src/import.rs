@@ -207,10 +207,10 @@ pub fn import(export: &str, counters: Option<&[u8]>) -> Result<Imported, ImportE
         }
         conversion.document.counters.set(prefix, value);
     }
-    // A v1 export holds no Interface, so its `IF` counter of 1 is no guess.
+    // A v1 export never uses a prefix whose counter is optional, so its counter of 1 is no guess.
     let derived = LabelPrefix::ALL
         .into_iter()
-        .filter(|prefix| *prefix != LabelPrefix::Interface)
+        .filter(|prefix| !prefix.counter_optional())
         .filter(|prefix| !given.iter().any(|(named, _)| named == prefix))
         .collect();
     Ok(Imported {

@@ -77,14 +77,13 @@ const SECTIONS: Field = records(field::SECTIONS, K::Section);
 const FATE: Field = opt(field::VERIFICATION_FATE, S::Enum(VerificationFate::NAMES));
 
 /// One counter per label prefix, in the order `counters` lists them (AC-786). Every counter is
-/// required but the Interface's, which is written only once a publish has allocated an Interface
-/// label, and reads as 1 while absent.
+/// required but an optional one, which reads as 1 while absent.
 const COUNTERS: [Field; LabelPrefix::ALL.len()] = {
     let mut fields = [req("P", S::Integer); LabelPrefix::ALL.len()];
     let mut index = 0;
     while index < fields.len() {
         let prefix = LabelPrefix::ALL[index];
-        fields[index] = if matches!(prefix, LabelPrefix::Interface) {
+        fields[index] = if prefix.counter_optional() {
             opt(prefix.as_str(), S::Integer)
         } else {
             req(prefix.as_str(), S::Integer)

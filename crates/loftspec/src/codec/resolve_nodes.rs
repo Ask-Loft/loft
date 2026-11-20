@@ -21,6 +21,9 @@ use crate::tree::{
     QualityAttribute, Requirement, RootComponent, Section,
 };
 
+/// How a Component's link to an Interface is built from its two ends.
+type Link = fn(ComponentId, InterfaceId) -> Edge;
+
 /// A record's extension data; empty when it has no `ext`.
 fn ext(record: &Rec) -> Ext {
     match record.get(field::EXT) {
@@ -201,21 +204,21 @@ impl Resolver<'_> {
             NodeId::Interface(interface) => Some(interface),
             _ => None,
         };
-        for target in record.list(field::PROVIDES) {
-            let interface = self.node(target, interface)?;
-            let component = id;
-            self.document.edges.push(Edge::Provides {
+        let links: [(&str, Link); 2] = [
+            (field::PROVIDES, |component, interface| Edge::Provides {
                 component,
                 interface,
-            });
-        }
-        for target in record.list(field::REQUIRES) {
-            let interface = self.node(target, interface)?;
-            let component = id;
-            self.document.edges.push(Edge::Requires {
+            }),
+            (field::REQUIRES, |component, interface| Edge::Requires {
                 component,
                 interface,
-            });
+            }),
+        ];
+        for (name, link) in links {
+            for target in record.list(name) {
+                let interface = self.node(target, interface)?;
+                self.document.edges.push(link(id, interface));
+            }
         }
         Ok(Component {
             id: Some(id),

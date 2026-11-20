@@ -11,7 +11,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use loftspec::bindings::Bindings;
 use loftspec::decision::NodeRef;
 use loftspec::diff::{DecisionChanges, Subject, SubjectChange, content_changes, decision_changes};
-use loftspec::document::{Document, Edge};
+use loftspec::document::{Document, Edge, EdgeKind, EdgeTarget};
 use loftspec::identity::Key;
 use loftspec::ids::ElementId;
 use loftspec::kind::NodeKind;
@@ -417,18 +417,17 @@ type Drawn = (String, String, &'static str, Option<&'static str>);
 
 /// The ends and kind of a `realizes`, `provides` or `requires` edge, which joins two nodes.
 fn linked(edge: &Edge) -> Option<(Key, Key, &'static str)> {
-    match *edge {
-        Edge::Realizes { feature, component } => Some((feature.key(), component.key(), "realizes")),
-        Edge::Provides {
-            component,
-            interface,
-        } => Some((component.key(), interface.key(), "provides")),
-        Edge::Requires {
-            component,
-            interface,
-        } => Some((component.key(), interface.key(), "requires")),
-        _ => None,
+    let kind = edge.kind();
+    if !matches!(
+        kind,
+        EdgeKind::Realizes | EdgeKind::Provides | EdgeKind::Requires
+    ) {
+        return None;
     }
+    let EdgeTarget::Element(target) = edge.target() else {
+        return None;
+    };
+    Some((edge.source().key(), target.key(), kind.as_str()))
 }
 
 /// `edge` as the diagram draws it, where both its ends are drawn: a `realizes`, `provides` or

@@ -21,33 +21,27 @@ pub(super) fn check(document: &Document, errors: &mut Vec<ValidationError>) {
 }
 
 /// One error per Component and Interface that a `provides` and a `requires` edge both join, in
-/// the order of the `requires` edges.
+/// the order of their keys.
 fn provides_and_requires(document: &Document, errors: &mut Vec<ValidationError>) {
-    let provided: BTreeSet<_> = document
-        .edges
-        .iter()
-        .filter_map(|edge| match *edge {
+    let (mut provided, mut required) = (BTreeSet::new(), BTreeSet::new());
+    for edge in &document.edges {
+        match *edge {
             Edge::Provides {
                 component,
                 interface,
-            } => Some((component, interface)),
-            _ => None,
-        })
-        .collect();
-    let mut reported = BTreeSet::new();
-    for edge in &document.edges {
-        if let Edge::Requires {
-            component,
-            interface,
-        } = *edge
-            && provided.contains(&(component, interface))
-            && reported.insert((component, interface))
-        {
-            errors.push(ValidationError::ProvidesAndRequires {
+            } => provided.insert((component, interface)),
+            Edge::Requires {
                 component,
                 interface,
-            });
-        }
+            } => required.insert((component, interface)),
+            _ => false,
+        };
+    }
+    for &(component, interface) in provided.intersection(&required) {
+        errors.push(ValidationError::ProvidesAndRequires {
+            component,
+            interface,
+        });
     }
 }
 

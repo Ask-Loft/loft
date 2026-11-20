@@ -105,6 +105,11 @@ pub(super) fn records(items: impl IntoIterator<Item = Rec>) -> Val {
     Val::List(items.into_iter().map(Val::Record).collect())
 }
 
+/// Adds `target` to the targets `map` holds for `source`.
+fn push(map: &mut BTreeMap<NodeId, Vec<Key>>, source: NodeId, target: Key) {
+    map.entry(source).or_default().push(target);
+}
+
 /// The document's edges, indexed by the record that writes them.
 pub(super) struct Edges {
     realizes: BTreeMap<NodeId, Vec<Key>>,
@@ -147,17 +152,11 @@ impl Edges {
                 Edge::Provides {
                     component,
                     interface,
-                } => {
-                    let list = edges.provides.entry(component.into()).or_default();
-                    list.push(interface.key());
-                }
+                } => push(&mut edges.provides, component.into(), interface.key()),
                 Edge::Requires {
                     component,
                     interface,
-                } => {
-                    let list = edges.requires.entry(component.into()).or_default();
-                    list.push(interface.key());
-                }
+                } => push(&mut edges.requires, component.into(), interface.key()),
                 Edge::Mentions { source, target } => {
                     edges.mentions.entry(source).or_default().push(target.key());
                 }
@@ -325,7 +324,7 @@ impl Edges {
         );
         let qualities = interface.quality_attributes.iter();
         record.set(
-            "qualityAttributes",
+            field::QUALITY_ATTRIBUTES,
             self.nested(qualities.map(|each| self.quality(each))),
         );
         record
@@ -365,14 +364,10 @@ impl Edges {
         if let Some(boundary) = component.boundary {
             record.set_text(field::BOUNDARY, boundary.as_str());
         }
-        let scoped = id
-            .and_then(|id| self.scoped.get(&id))
-            .cloned()
-            .unwrap_or_default();
-        record.set(field::SCOPED_TO, keys(scoped));
         let targets = |map: &BTreeMap<NodeId, Vec<Key>>| {
             id.and_then(|id| map.get(&id)).cloned().unwrap_or_default()
         };
+        record.set(field::SCOPED_TO, keys(targets(&self.scoped)));
         record.set(field::PROVIDES, keys(targets(&self.provides)));
         record.set(field::REQUIRES, keys(targets(&self.requires)));
         record.set(

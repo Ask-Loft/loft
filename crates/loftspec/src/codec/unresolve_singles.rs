@@ -45,7 +45,8 @@ pub(super) fn labels(document: &Document) -> Rec {
     let mut counters = Rec::new(Kind::Counters);
     for prefix in LabelPrefix::ALL {
         let next = document.counters.next(prefix);
-        if prefix == LabelPrefix::Interface && next == NonZeroU64::MIN {
+        // An optional counter is written once a publish has moved it on.
+        if prefix.counter_optional() && next == NonZeroU64::MIN {
             continue;
         }
         counters.set_text(prefix.as_str(), next.to_string());

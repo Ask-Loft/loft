@@ -9,7 +9,7 @@ use std::fmt::Write;
 
 use super::{Labels, decisions};
 use crate::attributes::{QualityBand, QualityTarget, TechnicalBinding, VerificationFate};
-use crate::document::{Document, Edge};
+use crate::document::{Document, Edge, EdgeKind, EdgeTarget};
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
 use crate::tree::{Component, Section};
@@ -136,20 +136,21 @@ impl Renderer<'_> {
     /// A Component's `provides` and `requires` edges, one line each, naming the Interface by its
     /// label and name.
     fn links(&mut self, component: &Component) {
+        let Some(id) = component.id else {
+            return;
+        };
         for edge in &self.document.edges {
-            let (word, interface) = match *edge {
-                Edge::Provides {
-                    component: from,
-                    interface,
-                } if Some(from) == component.id => ("Provides", interface),
-                Edge::Requires {
-                    component: from,
-                    interface,
-                } if Some(from) == component.id => ("Requires", interface),
+            let word = match edge.kind() {
+                EdgeKind::Provides => "Provides",
+                EdgeKind::Requires => "Requires",
                 _ => continue,
             };
-            let interface = self.link_label(interface.into());
-            let _ = writeln!(self.out, "{word}: {interface}\n");
+            if let (true, EdgeTarget::Element(ElementId::Node(interface))) =
+                (edge.source() == id.into(), edge.target())
+            {
+                let interface = self.link_label(interface);
+                let _ = writeln!(self.out, "{word}: {interface}\n");
+            }
         }
     }
 
