@@ -1,9 +1,9 @@
 //! The protected resources beside the document's that one sign-in to the remote covers, which
-//! the document's protected resource metadata lists by identifier and kind: the metadata each one
-//! serves where RFC 9728 places it, faithfully or with the one fault its scenario names, which of
-//! them the authorization server serves and the scopes each accepts, and the second port of the
-//! loopback interface that stands for another origin. A companion resource has no routes of its
-//! own.
+//! the document's protected resource metadata lists by identifier and kind: where each one lies,
+//! on the simulator's origin or on the second port of the loopback interface that stands for
+//! another origin; the metadata each one serves there, where RFC 9728 places it, faithfully or
+//! with the one fault its scenario names; and which of them the authorization server serves, with
+//! the scopes each accepts. A companion resource has no routes of its own.
 
 use serde_json::{Value, json};
 
@@ -20,24 +20,27 @@ const COMPANION_RESOURCES: &str = "companion_resources";
 const WELL_KNOWN: &str = "/.well-known/oauth-protected-resource";
 
 /// A protected resource that the document's protected resource metadata lists as a companion:
-/// its kind, its path on its origin, the scopes its own metadata lists, and the fault its scenario
-/// serves it with, if any.
+/// its kind, its path on its origin, whether that origin is another than the simulator's, the
+/// scopes its own metadata lists, and the fault its scenario serves that metadata with, if any.
 #[derive(Clone, Debug)]
 pub struct Companion {
     kind: String,
     path: String,
+    /// Whether the resource lies on the second port, which stands for another origin.
+    elsewhere: bool,
     scopes: Vec<String>,
     fault: Option<CompanionFault>,
 }
 
 impl Companion {
-    /// A companion resource of `kind` at `<origin>/<kind>`, whose protected resource metadata
-    /// lists `scopes` and is served faithfully.
+    /// A companion resource of `kind` at `/<kind>` on the simulator's origin, whose protected
+    /// resource metadata lists `scopes` and is served faithfully.
     #[must_use]
     pub fn new(kind: &str, scopes: &[&str]) -> Self {
         Self {
             kind: kind.to_owned(),
             path: format!("/{kind}"),
+            elsewhere: false,
             scopes: scopes.iter().map(|scope| (*scope).to_owned()).collect(),
             fault: None,
         }
@@ -51,31 +54,55 @@ impl Companion {
         self
     }
 
-    /// Serves the resource with `fault`, in place of any fault named before.
+    /// Places the resource on another origin: a second port of the loopback interface, which
+    /// records its requests apart. Its metadata is served there as its scenario serves it,
+    /// faithfully or with its fault; and the remote does not serve the resource, so that an
+    /// authorization request or a token request that names it is refused `invalid_target`.
+    #[must_use]
+    pub fn elsewhere(mut self) -> Self {
+        self.elsewhere = true;
+        self
+    }
+
+    /// Serves the resource's metadata with `fault`, in place of any fault named before.
     #[must_use]
     pub fn faulty(mut self, fault: CompanionFault) -> Self {
         self.fault = Some(fault);
         self
     }
 
-    /// Whether the resource lies on the second port, which stands for another origin.
-    fn elsewhere(&self) -> bool {
-        self.fault == Some(CompanionFault::OnAnotherOrigin)
-    }
-
     /// Where the resource's protected resource metadata lies: whether on the second port, and at
     /// which path and query there.
     fn metadata_at(&self) -> (bool, String) {
-        (self.elsewhere(), well_known(&self.path))
+        (self.elsewhere, well_known(&self.path))
+    }
+
+    /// The scopes that the resource accepts, if the metadata its scenario serves vouches for it:
+    /// names it and the simulator's issuer, and lists a scope, as metadata served faithfully, or
+    /// with a companion resource of its own, does where the resource lists a scope. Every other
+    /// fault leaves the resource unserved; so does another origin, which its caller judges.
+    fn vouched(&self) -> Option<Vec<String>> {
+        match self.fault {
+            None | Some(CompanionFault::Relisting) => {
+                (!self.scopes.is_empty()).then(|| self.scopes.clone())
+            }
+            Some(
+                CompanionFault::UnderAnotherIssuer
+                | CompanionFault::Misnamed
+                | CompanionFault::Unnamed
+                | CompanionFault::Scopeless
+                | CompanionFault::EmptyScopes
+                | CompanionFault::Unreadable
+                | CompanionFault::NotAnObject,
+            ) => None,
+        }
     }
 }
 
-/// How a scenario misserves a companion resource, or where else it places one.
+/// How a scenario misserves a companion resource's metadata, on whichever origin it places the
+/// resource.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CompanionFault {
-    /// Listed, and its metadata served faithfully, on another origin: a second port of the
-    /// loopback interface, which records its requests apart.
-    OnAnotherOrigin,
     /// Metadata whose `authorization_servers` names another issuer than the document's.
     UnderAnotherIssuer,
     /// Metadata whose `resource` is not the identifier listed for it.
@@ -130,7 +157,7 @@ impl RemoteScenario {
     /// Whether the scenario places metadata on another origin, which a second port stands for.
     pub(super) fn places_elsewhere(&self) -> bool {
         self.metadata == Metadata::OnAnotherOrigin
-            || self.companions.iter().any(Companion::elsewhere)
+            || self.companions.iter().any(|companion| companion.elsewhere)
     }
 }
 
@@ -139,7 +166,7 @@ impl State {
     /// for a resource placed there.
     fn identifier(&self, companion: &Companion) -> String {
         let origin = match &self.elsewhere {
-            Some(elsewhere) if companion.elsewhere() => elsewhere,
+            Some(elsewhere) if companion.elsewhere => elsewhere,
             _ => &self.origin,
         };
         format!("{origin}{}", companion.path)
@@ -206,34 +233,15 @@ impl State {
         }
         let companions = self.scenario.companions.iter();
         companions
-            .filter(|companion| !companion.elsewhere() && self.identifier(companion) == resource)
-            .find_map(|companion| self.vouched(companion))
-    }
-
-    /// The scopes that the metadata of `companion`, as its scenario serves it, lists, where that
-    /// metadata names the resource and the simulator's issuer and lists a scope.
-    fn vouched(&self, companion: &Companion) -> Option<Vec<String>> {
-        let metadata = self.served(companion)?;
-        let issuer = json!(self.issuer());
-        let names_itself = metadata["resource"] == json!(self.identifier(companion));
-        let servers = metadata["authorization_servers"].as_array();
-        let under_the_issuer = servers.is_some_and(|servers| servers.contains(&issuer));
-        let listed = metadata["scopes_supported"]
-            .as_array()
-            .into_iter()
-            .flatten();
-        let scopes: Vec<String> = listed
-            .filter_map(Value::as_str)
-            .map(str::to_owned)
-            .collect();
-        (names_itself && under_the_issuer && !scopes.is_empty()).then_some(scopes)
+            .filter(|companion| !companion.elsewhere && self.identifier(companion) == resource)
+            .find_map(Companion::vouched)
     }
 
     /// The companion resource whose protected resource metadata lies at `target` on the second
     /// port, if `elsewhere`, or on the simulator's origin otherwise.
     fn placed(&self, target: &str, elsewhere: bool) -> Option<&Companion> {
         self.scenario.companions.iter().find(|companion| {
-            companion.elsewhere() == elsewhere && target == well_known(&companion.path)
+            companion.elsewhere == elsewhere && target == well_known(&companion.path)
         })
     }
 
@@ -249,7 +257,7 @@ impl State {
             "bearer_methods_supported": ["header"],
         });
         match companion.fault {
-            None | Some(CompanionFault::OnAnotherOrigin) => {}
+            None => {}
             Some(CompanionFault::UnderAnotherIssuer) => {
                 metadata["authorization_servers"] = json!([format!("{issuer}/elsewhere")]);
             }
@@ -272,8 +280,8 @@ impl State {
 }
 
 /// The answer of the second port, which stands for another origin: the metadata of each companion
-/// resource placed there, faithfully, and of the document's protected resource for a scenario
-/// that places it there; `not_found` to every other request.
+/// resource placed there, as its scenario serves it, and of the document's protected resource for
+/// a scenario that places it there; `not_found` to every other request.
 pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
     let moved = state.scenario.metadata == Metadata::OnAnotherOrigin
         && request.path == well_known(RESOURCE);
@@ -322,25 +330,24 @@ fn with_origin(value: &Value, origin: &str) -> Value {
 mod tests {
     use std::panic::catch_unwind;
 
-    use super::{Companion, CompanionFault, RemoteScenario};
+    use super::{Companion, RemoteScenario};
 
     #[test]
     fn a_scenario_lists_a_companion_resource_only_with_a_kind_and_a_metadata_address_of_its_own() {
         let listed =
             || RemoteScenario::accepting("key").accompanied_by(Companion::new("notes", &["notes"]));
-        let away = |companion: Companion| companion.faulty(CompanionFault::OnAnotherOrigin);
         for refused in [
             Companion::new("", &["any"]),
             Companion::new("notes", &["any"]).at("/any"),
             Companion::new("any", &["any"]).at("/notes"),
             Companion::new("any", &["any"]).at("/notes/"),
             Companion::new("documents", &["documents"]),
-            away(Companion::new("documents", &["documents"])),
+            Companion::new("documents", &["documents"]).elsewhere(),
         ] {
             let listing = catch_unwind(|| listed().accompanied_by(refused.clone()));
             assert!(listing.is_err(), "{refused:?}");
         }
-        let apart = away(Companion::new("any", &["any"]).at("/notes"));
+        let apart = Companion::new("any", &["any"]).at("/notes").elsewhere();
         assert_eq!(listed().accompanied_by(apart).companions.len(), 2);
     }
 }

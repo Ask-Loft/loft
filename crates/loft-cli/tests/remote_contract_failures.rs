@@ -144,20 +144,20 @@ fn an_authorization_request_for_a_misserved_companion_resource_is_refused_invali
         ("unreadable", CompanionFault::Unreadable),
         ("array", CompanionFault::NotAnObject),
         ("relisting", CompanionFault::Relisting),
-        ("away", CompanionFault::OnAnotherOrigin),
     ];
     let scenario = faults
         .iter()
         .fold(RemoteScenario::accepting(KEY), |scenario, (kind, fault)| {
             scenario.accompanied_by(Companion::new(kind, &[*kind]).faulty(*fault))
         });
-    let remote = Remote::start(scenario);
+    let away = Companion::new("away", &["away"]).elsewhere();
+    let remote = Remote::start(scenario.accompanied_by(away));
     let (_, server) = metadata(&remote);
     let client = registered(&server);
     let own = remote.resource();
     // Each asks for the scope its scenario names for it, which no other resource accepts, so a
     // resource judged after the scope would be refused `invalid_scope`.
-    for (kind, _) in faults {
+    for kind in faults.map(|(kind, _)| kind).into_iter().chain(["away"]) {
         let companion = remote.companion(kind);
         let scope = format!("documents {kind}");
         let answer = authorize_for(&server, &client, &[&own, &companion], &scope);
@@ -174,7 +174,7 @@ fn a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its
     let paths = |requests: Vec<Request>| -> Vec<String> {
         requests.into_iter().map(|request| request.path).collect()
     };
-    let away = Companion::new("away", &["away"]).faulty(CompanionFault::OnAnotherOrigin);
+    let away = Companion::new("away", &["away"]).elsewhere();
     let remote = Remote::start(RemoteScenario::accepting(KEY).accompanied_by(away));
     let (resource, _) = metadata(&remote);
     let identifier = remote.companion("away");
@@ -248,6 +248,62 @@ fn the_simulators_own_origin_does_not_serve_metadata_that_a_scenario_places_on_a
         moved.origin()
     );
     assert_problem(&call("GET", &own, None, None), 404, "not_found");
+}
+
+#[test]
+fn a_companion_resource_on_another_origin_keeps_the_fault_its_scenario_names() {
+    let placed = |kind: &str, fault| Companion::new(kind, &[kind]).elsewhere().faulty(fault);
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .accompanied_by(placed("misnamed", CompanionFault::Misnamed))
+            .accompanied_by(placed("other", CompanionFault::UnderAnotherIssuer)),
+    );
+    let (resource, server) = metadata(&remote);
+    let (misnamed, other) = (remote.companion("misnamed"), remote.companion("other"));
+    let elsewhere = origin_of(&misnamed);
+    let loopback = elsewhere.starts_with("http://127.0.0.1:");
+    assert!(loopback && elsewhere != remote.origin(), "{misnamed}");
+    assert_eq!(origin_of(&other), elsewhere, "{other}");
+    assert_eq!(
+        resource[COMPANION_RESOURCES],
+        json!([
+            { "resource": misnamed, "kind": "misnamed" },
+            { "resource": other, "kind": "other" },
+        ])
+    );
+    let named = companion_metadata(&misnamed).body["resource"].clone();
+    assert!(named.is_string() && named != json!(misnamed), "{named}");
+    let foreign = companion_metadata(&other).body;
+    let servers = foreign["authorization_servers"].as_array().unwrap();
+    let issuer = json!(remote.issuer());
+    assert!(
+        !servers.is_empty() && !servers.contains(&issuer),
+        "{foreign}"
+    );
+    let asked: Vec<String> = remote
+        .requests_elsewhere()
+        .into_iter()
+        .map(|r| r.path)
+        .collect();
+    let metadata_path = "/.well-known/oauth-protected-resource";
+    let expected = [
+        format!("{metadata_path}/misnamed"),
+        format!("{metadata_path}/other"),
+    ];
+    assert_eq!(asked, expected);
+    // A companion resource on another origin is not one the remote serves, whatever its fault.
+    let client = registered(&server);
+    let own = remote.resource();
+    for (identifier, kind) in [(&misnamed, "misnamed"), (&other, "other")] {
+        let scope = format!("documents {kind}");
+        let answer = authorize_for(&server, &client, &[&own, identifier], &scope);
+        let redirected = location(&answer);
+        assert_eq!(
+            value(&redirected, "error"),
+            Some("invalid_target"),
+            "{kind}"
+        );
+    }
 }
 
 #[test]
