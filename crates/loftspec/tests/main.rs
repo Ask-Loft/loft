@@ -66,6 +66,7 @@ mod hash_live;
 mod held_documents;
 mod identity;
 mod index;
+mod interface_changes;
 mod interfaces_codec;
 mod interfaces_edges;
 mod interfaces_labels;

@@ -7,7 +7,8 @@ use std::fs;
 use loftspec::codec::{self, MANIFEST, SpecPath};
 use loftspec::document::OtherDocument;
 use loftspec::identity::Key;
-use loftspec::ids::DocumentId;
+use loftspec::ids::{CriterionId, DocumentId};
+use loftspec::publish::publish_labels;
 use loftspec::slug::Slug;
 use serde_json::json;
 use software_plant::remote::{Remote, RemoteScenario};
@@ -23,26 +24,55 @@ pub const OWN_REMOTE: &str = "http://127.0.0.1:9/documents/reading-list";
 /// The path of the copy of the lookup under `spec/`.
 pub const COPY: &str = "documents/shelves/shelf-lookup.yaml";
 
-/// The other document published twice.
+/// The lookup's criterion that the second state drops.
+pub const DROPPED: &str = "00000000-0000-4000-8000-0000000000b3";
+/// The lookup's criterion that the second state adds.
+pub const ADDED: &str = "00000000-0000-4000-8000-0000000000b4";
+/// The Interface "Shelf stock", which the second state withdraws.
+pub const STOCK: &str = "00000000-0000-4000-8000-0000000000c0";
+
+/// The other document published twice. The first state holds "Shelf lookup", `IF-1`, with its
+/// answer and [`DROPPED`], and "Shelf stock", `IF-2`; the second rewords the answer, drops
+/// [`DROPPED`], adds [`ADDED`] and withdraws "Shelf stock".
 pub fn shelves() -> History {
     let owner = Scratch::with_reading_list();
     add_lookup(&owner);
+    owner.edit(
+        "interfaces/shelf-lookup.yaml",
+        "        name: \"The returned book has the title asked for.\"\n",
+        &format!(
+            "        name: \"The returned book has the title asked for.\"\n      - key: {DROPPED}\n        \
+             name: \"The shelf names the place of the book.\"\n"
+        ),
+    );
+    fs::write(
+        owner.file("interfaces/shelf-stock.yaml"),
+        format!(
+            "key: {STOCK}\nslug: shelf-stock\nname: \"Shelf stock\"\nbody: \"How many copies a \
+             shelf holds.\"\nrequirements:\n  - key: 00000000-0000-4000-8000-0000000000c1\n    \
+             statement:\n      form: ubiquitous\n      system: \"the shelf store\"\n      shall: \
+             \"count the copies of each book.\"\n"
+        ),
+    )
+    .unwrap();
     let mut document = codec::read(&tree(&owner.0)).unwrap();
     document.id = DocumentId::new(Key::parse(OTHER).unwrap());
-    let files = codec::write(&document);
-    let (first, files) = publish_at(&files, None, EPOCH + 60);
+    let (first, files) = publish_at(&codec::write(&document), None, EPOCH + 60);
     let mut states = vec![stored(&first, &files)];
-    let reworded = (files.iter())
-        .map(|(path, bytes)| {
-            let text = String::from_utf8(bytes.clone()).unwrap();
-            let text = text.replace(
-                "The returned book has the title asked for.",
-                "The returned book has the title and the author asked for.",
-            );
-            (path.clone(), text.into_bytes())
-        })
-        .collect();
-    let (second, files) = publish_at(&reworded, Some(&first), EPOCH + 120);
+    let mut document = codec::read(&files).unwrap();
+    document
+        .interfaces
+        .retain(|interface| interface.slug.as_str() != "shelf-stock");
+    let criteria = &mut document.interfaces[0].requirements[0].criteria;
+    "The returned book has the title and the author asked for.".clone_into(&mut criteria[0].name);
+    let mut added = criteria[0].clone();
+    added.id = Some(CriterionId::new(Key::parse(ADDED).unwrap()));
+    "The returned book is on the shelf.".clone_into(&mut added.name);
+    criteria
+        .retain(|criterion| criterion.id != Some(CriterionId::new(Key::parse(DROPPED).unwrap())));
+    criteria.push(added);
+    publish_labels(&mut document);
+    let (second, files) = publish_at(&codec::write(&document), Some(&first), EPOCH + 120);
     states.push(stored(&second, &files));
     History {
         key: OTHER.to_owned(),

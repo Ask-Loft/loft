@@ -41,6 +41,7 @@ mod import_openspec;
 mod init;
 mod interface_add;
 mod interface_add_refusals;
+mod interface_update;
 mod interfaces;
 mod merge_contract;
 mod merge_driver;

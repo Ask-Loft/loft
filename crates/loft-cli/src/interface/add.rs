@@ -9,14 +9,12 @@ use loftspec::codec::{self, CopyError, Files, MANIFEST, SpecPath};
 use loftspec::document::{Document, OtherDocument};
 use loftspec::identity::Key;
 use loftspec::ids::{DocumentId, ElementId, NodeId};
-use loftspec::publish::Lock;
 use loftspec::slug::Slug;
 use serde_json::json;
 
-use super::{Interface, Named, Report, document, named, refused, save};
-use crate::remote::head::{self, Head};
-use crate::remote::states::{self, StateError};
-use crate::remote::{self, Client};
+use super::reach::{head_sequence, state};
+use super::{Interface, Named, Report, connected, document, named, refused, save};
+use crate::remote;
 use crate::stop::Stop;
 
 pub(super) fn run(
@@ -28,13 +26,7 @@ pub(super) fn run(
 ) -> Result<Report, Stop> {
     let Named { handle, interface } = named(text)?;
     let (store, mut document) = document(root)?;
-    if !document.connected {
-        return Err(refused(format!(
-            "the document {} is not connected: `loft remote set <address>` connects it to its \
-             remote",
-            document.id.key()
-        )));
-    }
+    connected(&document)?;
     let listed = (document.documents.iter()).find(|entry| entry.handle == handle);
     let address = address(&handle, listed, remote)?;
     let client = remote::other(&address, browser)?;
@@ -148,31 +140,8 @@ fn added(name: &str, key: Key, sequence: u64, path: &SpecPath, first: bool) -> R
             format!("added a copy of {name} at publish sequence {sequence}"),
             format!("Commit spec/: it now holds a copy of {name}."),
         ],
+        failed: false,
     }
-}
-
-/// The publish sequence of the head of the remote `client` reaches.
-fn head_sequence(client: &Client, handle: &Slug) -> Result<u64, Stop> {
-    let head = head::fetch(client, handle.as_str())?;
-    match Head::read(&head) {
-        Some(head) if head.sequence > 0 => Ok(head.sequence),
-        _ => Err(refused(format!(
-            "{handle}: the remote at {} holds no published state",
-            client.address()
-        ))),
-    }
-}
-
-/// The published state of `sequence` at the remote `client` reaches.
-fn state(client: &Client, sequence: u64) -> Result<(Files, Lock), Stop> {
-    states::state(client, sequence).map_err(|error| match error {
-        StateError::Missing => refused(format!(
-            "the remote at {} holds no published state of publish sequence {sequence}",
-            client.address()
-        )),
-        StateError::Remote(error) => error.into(),
-        StateError::Disagrees(reason) => refused(reason),
-    })
 }
 
 /// The key of the Interface `interface` names in the document whose published files are

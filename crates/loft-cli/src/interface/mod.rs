@@ -5,6 +5,9 @@
 //! `loft remote`, it sends no command event and asks for no update.
 
 mod add;
+mod reach;
+mod references;
+mod update;
 
 use std::num::NonZeroU64;
 use std::path::Path;
@@ -32,13 +35,20 @@ pub enum Action {
         remote: Option<String>,
         browser: bool,
     },
+    Update {
+        target: Option<String>,
+        at: Option<NonZeroU64>,
+        browser: bool,
+    },
 }
 
-/// What a subcommand reports: its outcome, its fields, and its lines of text.
+/// What a subcommand reports: its outcome, its fields, and its lines of text; `failed` where
+/// the outcome exits 1.
 struct Report {
     outcome: &'static str,
     fields: Value,
     lines: Vec<String>,
+    failed: bool,
 }
 
 pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
@@ -49,6 +59,11 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
             remote,
             browser,
         } => add::run(root, interface, *at, remote.as_deref(), *browser),
+        Action::Update {
+            target,
+            at,
+            browser,
+        } => update::run(root, target.as_deref(), *at, *browser),
     };
     match report {
         Ok(report) => {
@@ -64,7 +79,11 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
                     outln!("{line}");
                 }
             }
-            Finished::success(report.outcome)
+            if report.failed {
+                Finished::failure(report.outcome)
+            } else {
+                Finished::success(report.outcome)
+            }
         }
         Err(stop) => stop.exit(SCHEMA, as_json),
     }
@@ -73,6 +92,17 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
 /// A refusal of the command.
 fn refused(message: impl Into<String>) -> Stop {
     Stop::one("refused", message.into())
+}
+
+/// Refuses a document that is not connected.
+fn connected(document: &Document) -> Result<(), Stop> {
+    if document.connected {
+        return Ok(());
+    }
+    Err(refused(format!(
+        "the document {} is not connected: `loft remote set <address>` connects it to its remote",
+        document.id.key()
+    )))
 }
 
 /// The tree's store and the document it holds.
