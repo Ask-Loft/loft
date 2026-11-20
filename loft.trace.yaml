@@ -12697,6 +12697,9 @@ links:
     reviewed: 61ea54c38d6aa470c82a9d73cf9fc9c5d41898c1ae8db6c8afdc29141de68ec6
     tests:
       - file: "crates/loftspec/tests/lint_foreign.rs"
+        name: "a_handle_is_read_by_the_slug_grammar_whatever_its_first_character"
+        body: 5991a28fb0de4fff64bf9e8f7e29a5b2e30510408043a4c9b7fc7e03ce0463b0
+      - file: "crates/loftspec/tests/lint_foreign.rs"
         name: "a_foreign_citation_with_a_mentions_edge_to_its_node_yields_no_finding"
         body: 4b02b41a5a61cb3090dd08b91ec6904577773abff3459293c493e43e30acfdbf
       - file: "crates/loftspec/tests/lint_foreign.rs"

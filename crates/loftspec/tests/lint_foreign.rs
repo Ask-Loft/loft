@@ -81,3 +81,10 @@ fn a_citation_under_a_handle_is_scanned_with_its_handle() {
     assert_eq!(handles, [Some("format"), None, None, None]);
     assert_eq!(spans[0].label.to_string(), "IF-1");
 }
+
+#[test]
+fn a_handle_is_read_by_the_slug_grammar_whatever_its_first_character() {
+    let spans = label_spans("3d-model:AC-1 and 2:RQ-3 and a--b:AC-2 and x-:AC-3");
+    let handles: Vec<Option<&str>> = spans.iter().map(|span| span.handle.as_deref()).collect();
+    assert_eq!(handles, [Some("3d-model"), Some("2"), None, None]);
+}

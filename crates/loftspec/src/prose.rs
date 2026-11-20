@@ -4,6 +4,7 @@
 use std::ops::Range;
 
 use crate::identity::Label;
+use crate::slug::Slug;
 
 /// The label references in `text`, in order: `P-n`, `FG-n`, `F-n`, `RQ-n`, `AC-n`, `CMP-n`,
 /// `CON-n`, `QA-n` and `ADR-n`, each optionally after a document prefix `D-n/` (AC-188,
@@ -60,7 +61,8 @@ pub fn label_spans(text: &str) -> Vec<LabelSpan> {
     spans
 }
 
-/// The handle that `<handle>:` names right before `position`: a slug that stands on its own.
+/// The handle that `<handle>:` names right before `position`: a slug, by the slug grammar, that
+/// stands on its own.
 fn handle_before(text: &str, position: usize) -> Option<String> {
     let bytes = text.as_bytes();
     let colon = position.checked_sub(1).filter(|at| bytes[*at] == b':')?;
@@ -69,9 +71,8 @@ fn handle_before(text: &str, position: usize) -> Option<String> {
         .take_while(|at| matches!(bytes[*at], b'a'..=b'z' | b'0'..=b'9' | b'-'))
         .last()?;
     let stands = start == 0 || !continues_word(bytes[start - 1]);
-    let handle = &text[start..colon];
-    (stands && handle.starts_with(|first: char| first.is_ascii_lowercase()))
-        .then(|| handle.to_owned())
+    let handle = Slug::parse(&text[start..colon]).ok()?;
+    stands.then(|| handle.as_str().to_owned())
 }
 
 /// A byte that a reference cannot follow: letters, digits, `_`, `-` and `/`.
