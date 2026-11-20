@@ -22419,6 +22419,18 @@ links:
   - node: 01a1a922-762b-74c0-854c-edd28012b7e8
     reviewed: 314c2297c82bcf7a1f89f42b77b0f1d35f9e023eea834dd978fd5379b66d047c
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."
+  - node: 01a1f967-f815-71f5-854a-5abfee8ccc73
+    reviewed: fc0b92dc91d2a2743e074731b583c2785ab45cf6b3e5f995aead6744232a8e54
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."
+  - node: 01a1f967-f815-71f5-854a-5ac0e4856d27
+    reviewed: 8e6f9313ff543a52ba7b1a1eb53c04d569baba57910df89c8c285ef677188d82
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."
+  - node: 01a1f967-f815-71f5-854a-5ac1db8e526a
+    reviewed: b64ff996db76d527aa130aad432c8035d09dd2cb009daa6ed3df2f0166e241bc
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."
+  - node: 01a1f967-f815-71f5-854a-5ac24d64263e
+    reviewed: 74cf6ba36cd8c25ab5e5076ab32bce7ae7e614041e7fbfa3fdd17fe822500d25
+    unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."
   - node: 01a1a922-762b-74c0-854c-edd340d23301
     reviewed: 659560a457a634812d878207a072293b4dda6268fc7da400cf31f893194ab5a0
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."

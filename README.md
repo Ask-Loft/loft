@@ -67,9 +67,12 @@ suits a typo, not a feature.
 ## Working as a team
 
 A team can connect its document to a Loft server, which then publishes it for everyone: "Connect
-this specification to our Loft server at <address>." The agent runs `loft remote set <address>`,
-which signs you in, brings over what the repository has already published, and records the
-server in `spec/loftspec.yaml` for every clone. From then on, "publish" works from any branch,
+this specification to our Loft server at <host>, tenant <tenant-slug>." The agent runs
+`loft remote set` with the document's address on that server,
+`https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, taking
+`<documentKey>` from `spec/loftspec.yaml`. The command signs you in, brings over what the
+repository has already published, and records the remote in `spec/loftspec.yaml` for every
+clone. From then on, "publish" works from any branch,
 the server gives the labels, and when someone else has published first, `loft pull` brings your
 tree up to date. More in [docs/publishing.md](docs/publishing.md#connected-documents).
 

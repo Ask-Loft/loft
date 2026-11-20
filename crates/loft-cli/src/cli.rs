@@ -279,10 +279,14 @@ pub enum SkillAction {
 
 #[derive(Subcommand)]
 pub enum RemoteAction {
-    /// Connect the document to the remote at the address, signing in where needed, and name it
+    /// Connect the document to its remote at the address, signing in where needed, and name it
     /// in the manifest.
     Set {
-        /// The remote's address.
+        #[arg(help = concat!(
+            "The document's own address on your Loft server, not the server's: ",
+            crate::remote::document_address_form!(),
+            ", with <documentKey> from spec/loftspec.yaml"
+        ))]
         address: String,
         /// Print the address to open, without opening a browser.
         #[arg(long)]

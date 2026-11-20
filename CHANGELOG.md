@@ -25,6 +25,15 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
+- `loft remote set` explains an address that is not a document's remote. A Loft server gives each
+  document the address `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`,
+  where `<documentKey>` is the `documentKey` in `spec/loftspec.yaml`, and `loft` adds each call's
+  path under it. When the first, unauthenticated call gets no sign-in challenge back, the error
+  now names the request it made, `GET <address>/head`, and the status, and for any status but
+  `401` says the address may not be a document's remote and gives that form. Before, a server's
+  own address answered 404 and the error said only that no `Bearer` challenge came. `--help`, the
+  docs and the agent skill state the form, and the skill asks for the host and tenant slug rather
+  than guess them.
 - The Yard page can open from another device, such as a phone in your tailnet, where you can
   answer as on the machine. Name the addresses the page server listens on beside `127.0.0.1`
   with `loft yard serve --listen`, once for each, `0.0.0.0` for every network, or with the

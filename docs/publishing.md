@@ -21,10 +21,22 @@ A document connected to a Loft server publishes through it. The server holds the
 published states in order and gives its labels, so a team publishes one document from any clone
 and any branch, and never meets the label collisions described below.
 
-`loft remote set <address>`, with the address your Loft server gives for the document, signs you
-in, creates the document on the server and imports every state the repository has already
-published, so every label keeps its node. It then names the server in `spec/loftspec.yaml`, as
-`remote` beside `connected: true`. Commit that file, and every clone shares the connection. The
+`loft remote set <address>` connects the document to its remote: the document's own address on
+your Loft server, not the server's address. A Loft server gives each document the address
+
+```
+https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote
+```
+
+where `<host>` is your Loft server, `<tenant-slug>` is your workspace's slug on it, and
+`<documentKey>` is the `documentKey` in `spec/loftspec.yaml`. `loft` uses the address whole and
+adds each call's path under it, as in `<address>/head`. An address whose first call gets no
+sign-in challenge back is refused, naming the request and its status; unless that status is
+`401`, the error also gives this form.
+
+The command signs you in, creates the document on the server and imports every state the
+repository has already published, so every label keeps its node. It then names the remote in
+`spec/loftspec.yaml`, as `remote` beside `connected: true`. Commit that file, and every clone shares the connection. The
 sign-in is standard OAuth in your browser (`--no-browser` prints the address to open instead).
 It is yours alone: `loft` keeps it by address in `loft/remotes.json` in your configuration
 directory, readable only by you, and refreshes it before it expires. Run `loft remote login` in
