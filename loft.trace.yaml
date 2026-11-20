@@ -9333,6 +9333,18 @@ links:
       - file: "crates/loftspec/tests/merge_decisions.rs"
         name: "a_subject_each_side_replaces_differently_is_removed_and_both_replacements_are_kept"
         body: 4dc09534a873a08dd06687e65e59da334f2e6e28c354091afd45c657ca29b5fa
+  - node: 01a1faa4-2438-74b3-ac1b-e89c8e7b6f88
+    reviewed: fad35922131630aa2ca6eb99b518f3c422c3c1ff1f0c94171b92639fa1ae993d
+    tests:
+      - file: "crates/loftspec/tests/merge_copies.rs"
+        name: "an_entry_of_documents_whose_address_both_sides_changed_apart_is_a_conflict"
+        body: 60508a7b3cff56ef2ac89fb77207b359a6c0723163d39c53088882c5c71c2018
+  - node: 01a1faa4-2438-74b3-ac1b-e89d4488e8b3
+    reviewed: 999955e0b50c6a9a358ec1a737e21af02ea0d3e77d9854a995bb0af2a344a82b
+    tests:
+      - file: "crates/loftspec/tests/merge_copies.rs"
+        name: "an_entry_of_documents_whose_address_both_sides_changed_apart_is_a_conflict"
+        body: 60508a7b3cff56ef2ac89fb77207b359a6c0723163d39c53088882c5c71c2018
   - node: 01a13070-322f-7493-9495-4078bf5d780f
     reviewed: f48ad1001c1a8a52f24c071d6edcc866b09d47d7277797a79d1ed507e93bd0c8
     tests:
