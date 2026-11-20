@@ -33,6 +33,14 @@ pub const TIMEOUT_ENV: &str = "LOFT_REMOTE_TIMEOUT";
 /// The variable that lets a run wait out a refusal the remote may lift.
 pub const WAIT_ENV: &str = "LOFT_REMOTE_WAIT";
 
+/// The form of the address a Loft server gives each document, a literal that `concat!` takes.
+macro_rules! document_address_form {
+    () => {
+        "https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote"
+    };
+}
+pub(crate) use document_address_form;
+
 /// How long a call to the remote may take, unless `LOFT_REMOTE_TIMEOUT` says otherwise.
 const TIMEOUT: Duration = Duration::from_secs(30);
 

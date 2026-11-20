@@ -19695,12 +19695,54 @@ links:
       - file: "crates/loft-cli/tests/remote_login.rs"
         name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
         body: ff3022f344d4de385ef4a8fbf0911cdb7fb1ddfd7979cf724ed659906243628a
+  - node: 01a1f967-f816-765c-9e69-fb957ac55be9
+    reviewed: 08d1b62dcf5f0a70f3dfb6dc7f5dca3bdf90bff35548ebf7e147e13375a1fb54
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "an_answer_other_than_401_names_the_request_and_gives_the_form_of_a_document_s_address"
+        body: 83096ea0eadffd82e9e8d6fc06ded9e4ea19d156fd0f5af29b2132a1f70ae2b6
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "a_401_without_a_bearer_challenge_names_the_request_without_the_form"
+        body: c377439c325a362c222902869ac74ddd992b4322480c06fe29f5bd644d9c093d
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
+        body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
   - node: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
       - file: "crates/loft-cli/tests/remote_login.rs"
         name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
         body: ff3022f344d4de385ef4a8fbf0911cdb7fb1ddfd7979cf724ed659906243628a
+  - node: 01a1f967-f816-765c-9e69-fb977010945c
+    reviewed: c391048278a8c7c80426dd39086ebb1f02b695b408a96b3e4c8b24c39d24af08
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "an_answer_other_than_401_names_the_request_and_gives_the_form_of_a_document_s_address"
+        body: 83096ea0eadffd82e9e8d6fc06ded9e4ea19d156fd0f5af29b2132a1f70ae2b6
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
+        body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
+  - node: 01a1f967-f816-765c-9e69-fb9858ebd01e
+    reviewed: 13a1c5960ddf8aecfae15235e5129f8c3557a495e6e46fd2adcb792d9822c64b
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "an_answer_other_than_401_names_the_request_and_gives_the_form_of_a_document_s_address"
+        body: 83096ea0eadffd82e9e8d6fc06ded9e4ea19d156fd0f5af29b2132a1f70ae2b6
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form"
+        body: 55dfa717a127076af1827536f1c6d40339aa5c62e29adaea1cc719d821a1b6ed
+  - node: 01a1f967-f816-765c-9e69-fb995921e4e9
+    reviewed: 56b2b5c99fc6d07395628da30f31e6f25508473dd4c98331db791f73b08781d4
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "an_answer_other_than_401_names_the_request_and_gives_the_form_of_a_document_s_address"
+        body: 83096ea0eadffd82e9e8d6fc06ded9e4ea19d156fd0f5af29b2132a1f70ae2b6
+  - node: 01a1f967-f816-765c-9e69-fb9a9ccbbaaa
+    reviewed: e1b11baaa9ddef2217369a353df293aa881e0fa18518d52356754becc81bc937
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
+        name: "a_401_without_a_bearer_challenge_names_the_request_without_the_form"
+        body: c377439c325a362c222902869ac74ddd992b4322480c06fe29f5bd644d9c093d
   - node: 01a18e1f-8daa-7674-9603-5ae5c87d9c4b
     reviewed: 98b07311ee6e2786cc816b756e5779e8956656bed6522f29bd3cc23206db923c
     tests:
@@ -22366,7 +22408,7 @@ links:
     reviewed: 812b4d7af955add2f27c58cba5b9deeb4f7fe77ab1ece2e84d2e1ac99723fce1
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."
   - node: 01a1a922-762b-74c0-854c-edd28012b7e8
-    reviewed: dd49835369935a2b6209d61900e7c44c1eecf830b4343fc5ab2009d932212277
+    reviewed: 314c2297c82bcf7a1f89f42b77b0f1d35f9e023eea834dd978fd5379b66d047c
     unverified: "Guidance an agent reads and acts on; the skill text states it in references/publishing-and-merging.md, read it there."
   - node: 01a1a922-762b-74c0-854c-edd340d23301
     reviewed: 659560a457a634812d878207a072293b4dda6268fc7da400cf31f893194ab5a0

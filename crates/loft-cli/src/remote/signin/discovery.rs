@@ -44,12 +44,7 @@ pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteEr
         .iter()
         .filter(|_| challenged.status == 401)
         .find_map(|header| bearer_parameters(header))
-        .ok_or_else(|| {
-            failed(format!(
-                "the remote answered {} without a `Bearer` challenge",
-                challenged.status
-            ))
-        })?;
+        .ok_or_else(|| failed(unchallenged(address, challenged.status)))?;
     let named = |name: &str| {
         parameters
             .iter()
@@ -120,6 +115,22 @@ fn server_metadata(issuer: &str) -> String {
         .map_or(issuer.len(), |at| authority + at);
     let path = issuer[end..].trim_end_matches('/');
     format!("{}{SERVER_METADATA}{path}", &issuer[..end])
+}
+
+/// Why an answer of `status` to the unauthenticated `GET <address>/head` cannot start a sign-in:
+/// the request and its status, and, for a status other than `401`, that the address may not be a
+/// document's remote and the form of one.
+fn unchallenged(address: &str, status: u16) -> String {
+    let refused =
+        format!("GET {address}/head answered {status}, not a 401 with a `Bearer` challenge");
+    if status == 401 {
+        return refused;
+    }
+    format!(
+        "{refused}, so the address may not be a document's remote. A Loft server gives each \
+         document the address {}, where <documentKey> is the `documentKey` of spec/loftspec.yaml",
+        crate::remote::document_address_form!()
+    )
 }
 
 /// The JSON object at `url`, an address a sign-in may contact.

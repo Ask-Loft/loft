@@ -1,14 +1,17 @@
 //! A sign-in that the remote's metadata or its authorization server refuses: metadata that names
 //! another resource or issuer, leaves out what a sign-in needs or names an address no remote may
 //! have, and a refused registration or code exchange, each run under the remote and browser
-//! simulators; and the scope a sign-in asks for.
+//! simulators; an address that answers the first request with no challenge; and the scope a
+//! sign-in asks for.
 
 use software_plant::BrowserScenario;
 use software_plant::remote::wire::{pairs, value};
 use software_plant::remote::{Metadata, Remote, RemoteScenario};
 
 use crate::common::Scratch;
+use crate::common::remote::history;
 use crate::common::signed_in::{name_remote, run, sign_ins_file};
+use crate::remote_connect::{assert_nothing_written, published};
 
 /// Runs `loft remote login` for a Reading List connected to a simulator of `scenario`, and gives
 /// the simulator, the scratch directory, the output and the addresses the browser was given.
@@ -89,4 +92,69 @@ fn a_refused_registration_or_exchange_ends_the_sign_in_naming_its_oauth_error() 
         assert_eq!(visits.len(), visited);
         assert!(!sign_ins_file(&scratch).exists(), "nothing is written");
     }
+}
+
+/// The form of a document's address on a Loft server, as a refusal gives it.
+const FORM: &str = "https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote";
+
+#[test]
+fn an_answer_other_than_401_names_the_request_and_gives_the_form_of_a_document_s_address() {
+    for status in [404, 502] {
+        let (remote, scratch, output, visits) =
+            login(RemoteScenario::failing("doc-elsewhere", status, None));
+        assert_eq!(output.status.code(), Some(1), "{status}: {output:?}");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        for said in [
+            format!("GET {}/head answered {status}", remote.address()),
+            "may not be a document's remote".to_owned(),
+            FORM.to_owned(),
+            "`documentKey` of spec/loftspec.yaml".to_owned(),
+        ] {
+            assert!(stderr.contains(&said), "{status}: {said}: {stderr}");
+        }
+        assert_eq!(visits, Vec::<String>::new(), "{status}: no browser");
+        assert!(!sign_ins_file(&scratch).exists(), "{status}");
+    }
+}
+
+#[test]
+fn a_401_without_a_bearer_challenge_names_the_request_without_the_form() {
+    let (remote, scratch, output, visits) =
+        login(RemoteScenario::failing("doc-unchallenged", 401, None));
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains(&format!("GET {}/head answered 401", remote.address())),
+        "{stderr}"
+    );
+    assert!(stderr.contains("`Bearer` challenge"), "{stderr}");
+    assert!(!stderr.contains(FORM), "{stderr}");
+    assert!(
+        !stderr.contains("may not be a document's remote"),
+        "{stderr}"
+    );
+    assert_eq!(visits, Vec::<String>::new());
+    assert!(!sign_ins_file(&scratch).exists());
+}
+
+#[test]
+fn a_connect_given_the_server_s_origin_alone_names_the_request_and_the_form() {
+    let history = history(1);
+    let (scratch, git) = published(&history);
+    let remote = Remote::start(RemoteScenario::accepting(&history.key));
+    let (output, browser) = run(
+        &scratch,
+        &["remote", "set", remote.origin()],
+        BrowserScenario::Visiting,
+        Some(&git),
+    );
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        stderr.contains(&format!("GET {}/head answered 404", remote.origin())),
+        "{stderr}"
+    );
+    assert!(stderr.contains(FORM), "{stderr}");
+    assert_eq!(browser.visits(), Vec::<String>::new());
+    assert_nothing_written(&scratch);
 }
