@@ -3,6 +3,19 @@
 Releases of the `loft` command line and the `loftspec` and `loftspec-store` libraries. The
 Format and the hashing algorithm carry their own versions, which `loft --version` prints.
 
+## 2.4.1-alpha.3 (2026-11-20)
+
+The third prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.3`. It lets you try the Yard page from
+another device, such as a phone in your tailnet, with `loft yard serve --listen` or the Claude
+Code plugin's `yardListen` setting; update the plugin with `loft`, since the yard protocol is now
+4. It also lets you try connecting a document to a Loft server at the address the server gives
+it, `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, with an error
+that names the refused request and shows that form, and a sign-in that refuses a remote whose
+metadata or resource lies on another origin. The Yard page now opens its panel of what waits
+when you return to a Yard Log where something waits. Everything 2.4.1-alpha.2 let you try is
+here too, and the entries under Unreleased below list everything 2.4.1 will hold.
+
 ## 2.4.1-alpha.2 (2026-11-18)
 
 The second prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
