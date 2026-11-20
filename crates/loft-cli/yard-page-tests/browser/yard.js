@@ -61,9 +61,15 @@ export function sendAs(session, batch, epoch) {
 /**
  * Writes `batch` in the other tree the page server serves.
  * @param {object[]} batch
+ * @param {string[]} [extra]
  */
-export function writeOther(batch) {
-  return yard(setup.other, ['write', '--session', 's9'], batch);
+export function writeOther(batch, extra = []) {
+  return yard(setup.other, ['write', '--session', 's9', ...extra], batch);
+}
+
+/** The page's address of the other tree's Yard Log. */
+export function otherAddress() {
+  return `${setup.url}#${new URLSearchParams({ tree: setup.other.cwd, branch: setup.branch })}`;
 }
 
 /**

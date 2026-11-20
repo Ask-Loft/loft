@@ -45,6 +45,10 @@ everything 2.4.1 will hold.
   The yard protocol is now 4, and the plugin passes `--listen` and `--join` only to a `loft` that
   speaks it; a Claude Code plugin from before it leaves Yard Client off with this `loft`, so
   update the plugin with `loft`.
+- The Yard page opens its panel of what waits whenever the person opens a branch's Yard Log where
+  something still waits, including one they saw earlier in the visit. Moving to another worktree's
+  Yard Log and back used to leave the panel closed, with no form to answer or reject in, though
+  the page's head still counted what waited.
 - Yard Log's session files no longer change the working tree between an agent's commands. The
   page server keeps each session's token totals, activity and consultation counts in git's own
   directory for the worktree, under `yard/<branch>.sessions/`, and each write of Yard Log, a close

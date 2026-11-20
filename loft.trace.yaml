@@ -28742,7 +28742,7 @@ links:
         body: 191ce29b20f9cf5ddec43571c46c8ef7a66c9446fbb4c763c6a9e5e04f79589d
       - file: "plugins/claude/loft/tests/yard-dialog.test.tsx"
         name: "with Yard Client off, the dialog is drawn as Claude Code draws it"
-        body: a33abc7abfaac482906939c91d97c0b3370919cafb8582136764750f3e456b66
+        body: ee27dac8f3f40f97dae7e62efe678552c9c1d651b977a7699adad50e6f4c5848
   - node: 01a1646f-546e-76cb-8b4f-f202028cdac3
     reviewed: 26562d624d38ead959e49565359e8e5a51c43baa1c998f597e31b6af4b0e3977
     tests:
@@ -30483,6 +30483,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the open submissions wait in a panel over a live page: not darkened, the page above it scrolls and takes clicks, and its views switch while the panel stays open"
         body: 70d4ec9521c088d62bbf2dddc16bb1cae3fdf19d431252b22c252a8e38575b2b
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "returning to a branch’s Yard Log whose open submission the panel showed opens the panel again"
+        body: 7a0ec2cba195f21c50c22935a9b92f8c8b808dd5839fcf31a2e08558398f3c74
+      - file: "crates/loft-cli/yard-page-tests/unit/waiting.test.js"
+        name: "a panel the person closed opens again once they return to its Yard Log from another"
+        body: 672314156c27a51dea2a59f2af587aa6dcc13eb2d01d58c0f761fe48879560b5
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "after a rejection on the page, a rejection in another tree’s Yard Log and one back in the first are each recorded"
+        body: 676fb679fe0714f89aba2cfb0640cadcf31f5da0132505d1808f2484866e14dd
   - node: 01a1693f-7b72-7290-8335-f1728dce2d53
     reviewed: 9995c1cbb4df05d728c889b6c23fd0e907b6291bcb0348439a9a166845053c50
     tests:

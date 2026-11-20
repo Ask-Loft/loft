@@ -4,7 +4,7 @@
 
 import { expect, test } from '@playwright/test';
 
-import { atEpoch, address, answerInTerminal, unmeasuredCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, unservedAddress, writeOther, writeUnserved } from './yard.js';
+import { atEpoch, address, answerInTerminal, unmeasuredCodexTotals, postAsMod, read, sendAs, setup, since, withdraw, write, unservedAddress, otherAddress, writeOther, writeUnserved } from './yard.js';
 
 /** Live changes reach an open page within this many milliseconds. */
 const LIVE = 2000;
@@ -761,6 +761,26 @@ test('a Yard Log opened in another tree the page server serves shows in the list
   await expect(other).toHaveCount(0);
   writeOther([{ id: 'docs', kind: 'stage', title: 'Write the docs', status: 'active' }]);
   await expect(other).toHaveCount(1, { timeout: LIVE });
+});
+
+test('after a rejection on the page, a rejection in another tree’s Yard Log and one back in the first are each recorded', async ({ page }) => {
+  write([
+    { id: 'stain', kind: 'approval', stage: 'shape', title: 'Stain it', markdown: 'May I stain it?' },
+    { id: 'stain-plan', kind: 'plan', stage: 'shape', title: 'Stain plan', markdown: 'Stain, then dry.' },
+  ], ['--send']);
+  writeOther([{ id: 'oil', kind: 'approval', stage: 'docs', title: 'Oil it', markdown: 'May I oil it?' }], ['--send']);
+  await page.goto(address());
+  await page.locator('#reason-stain').fill('Too dark');
+  await page.locator('#reject-stain').click();
+  await expect(page.locator('#block-stain .verdict-word')).toHaveText('Rejected', { timeout: LIVE });
+  await page.evaluate((hash) => { location.hash = hash; }, new URL(otherAddress()).hash);
+  await page.locator('#reason-oil').fill('Too greasy');
+  await page.locator('#reject-oil').click();
+  await expect(page.locator('#block-oil .verdict-word')).toHaveText('Rejected', { timeout: LIVE });
+  await page.evaluate((hash) => { location.hash = hash; }, new URL(address()).hash);
+  await page.locator('#reason-stain-plan').fill('Dry first');
+  await page.locator('#reject-stain-plan').click();
+  await expect(page.locator('#block-stain-plan .verdict-word')).toHaveText('Rejected', { timeout: LIVE });
 });
 
 test('an address whose tree the page server does not serve says so, and an agent\'s command there brings its Yard Log without a reload', async ({ page }) => {

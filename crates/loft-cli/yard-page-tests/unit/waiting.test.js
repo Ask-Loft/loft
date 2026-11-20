@@ -156,6 +156,41 @@ test('a submission sent after the panel was closed opens it again', () => {
   assert.equal(dialog().querySelectorAll('.submission').length, 2);
 });
 
+/** Another worktree's Yard Log where nothing waits, and where it is shown. */
+function elsewhere() {
+  const other = log([stage('t', 'T', 'active', [])], { tree: '/work/other' });
+  return { other, at: { ...where, tree: '/work/other' } };
+}
+
+test('returning to a branch’s Yard Log whose open submission the panel showed opens the panel again', () => {
+  const asked = question('color', ['Red', 'Blue']);
+  const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
+  page(shown);
+  assert.ok(dialog().open);
+  const { other, at } = elsewhere();
+  waitingModal(other, at);
+  assert.ok(!dialog().open, 'nothing waits in the other Yard Log');
+  // The page draws the Yard Log it left once more while the one it returns to loads.
+  waitingModal(other, where);
+  assert.ok(!dialog().open);
+  waitingModal(shown, where);
+  assert.ok(dialog().open);
+  assert.equal(dialog().querySelector('.question-form').dataset.key, asked.key);
+});
+
+test('a panel the person closed opens again once they return to its Yard Log from another', () => {
+  const asked = question('color', ['Red', 'Blue']);
+  const shown = log([stage('s', 'S', 'active', [asked])], { submissions: [open([asked], '2026-01-01T10:04:00Z')] });
+  page(shown);
+  modal.close('waiting');
+  waitingModal(later(shown, shown.submissions), where);
+  assert.ok(!dialog().open, 'a change within the Yard Log leaves it closed');
+  const { other, at } = elsewhere();
+  waitingModal(other, at);
+  waitingModal(later(shown, shown.submissions, shown.revision + 2), where);
+  assert.ok(dialog().open);
+});
+
 test('a button among the controls of the page’s head gives the count of the blocks that wait and opens the panel', () => {
   const first = question('color', ['Red', 'Blue']);
   const second = question('size', ['Big', 'Small']);
