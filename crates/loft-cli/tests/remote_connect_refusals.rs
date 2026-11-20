@@ -27,7 +27,9 @@ fn a_set_whose_manifest_its_journal_cannot_save_changes_no_file_of_the_tree() {
         if connected {
             name_remote(
                 &scratch,
-                Some("https://old.example/loft/t/acme/api/v2/documents/one/remote"),
+                Some(&crate::common::signed_in::example_address(
+                    "https://old.example",
+                )),
                 true,
             );
             keep(

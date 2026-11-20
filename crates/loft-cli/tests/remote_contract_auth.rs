@@ -17,7 +17,7 @@ use std::time::Duration;
 use serde_json::{Value, json};
 use software_plant::BrowserScenario;
 use software_plant::remote::wire::value;
-use software_plant::remote::{Remote, RemoteScenario, document_path};
+use software_plant::remote::{Remote, RemoteScenario, document_address};
 
 use crate::common::Scratch;
 use crate::common::oauth::{
@@ -318,7 +318,7 @@ fn a_sign_in_that_login_keeps_is_found_by_its_address_and_refreshes() {
     let (client, resource, old) = (field("clientId"), field("resource"), field("refreshToken"));
     assert_eq!(refresh(&server, &client, &resource, &old).status, 200);
     assert_eq!(remote.refreshes(), 1);
-    let elsewhere = format!("{}{}", remote.origin(), document_path("elsewhere"));
+    let elsewhere = document_address(remote.origin(), "elsewhere");
     assert!(kept_sign_in(&kept, &elsewhere).is_null());
 }
 

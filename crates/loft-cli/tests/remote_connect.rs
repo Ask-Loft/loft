@@ -320,7 +320,9 @@ fn set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_req
     let remote = Remote::start(RemoteScenario::accepting(&history.key));
     name_remote(
         &scratch,
-        Some("https://old.example/loft/t/acme/api/v2/documents/one/remote"),
+        Some(&crate::common::signed_in::example_address(
+            "https://old.example",
+        )),
         true,
     );
     let mut expected = codec::read(&tree(&scratch.0)).unwrap();
@@ -384,15 +386,10 @@ fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
         &json!({ "https://other.example/doc": { "accessToken": "a" } }),
     );
     let file = std::fs::read(crate::common::signed_in::sign_ins_file(&scratch)).unwrap();
+    let address = crate::common::signed_in::example_address("http://remote.example");
     let (output, browser) = run(
         &scratch,
-        &[
-            "remote",
-            "set",
-            "http://remote.example/loft/t/acme/api/v2/documents/one/remote",
-            "--format",
-            "json",
-        ],
+        &["remote", "set", &address, "--format", "json"],
         BrowserScenario::Visiting,
         None,
     );
@@ -401,10 +398,7 @@ fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
         .as_str()
         .unwrap()
         .to_owned();
-    assert!(
-        message.contains("http://remote.example/loft/t/acme/api/v2/documents/one/remote"),
-        "{message}"
-    );
+    assert!(message.contains(&address), "{message}");
     assert_eq!(browser.visits(), Vec::<String>::new());
     assert_eq!(tree(&scratch.0), before);
     assert_eq!(

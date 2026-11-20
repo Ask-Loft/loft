@@ -126,11 +126,12 @@ fn unchallenged(address: &str, status: u16) -> String {
     if status == 401 {
         return refused;
     }
-    format!(
-        "{refused}, so the address may not be a document's remote. A Loft server gives each \
-         document the address {}, where <documentKey> is the `documentKey` of spec/loftspec.yaml",
+    let hint = concat!(
+        ", so the address may not be a document's remote. A Loft server gives each document the \
+         address ",
         crate::remote::document_address_form!()
-    )
+    );
+    format!("{refused}{hint}")
 }
 
 /// The JSON object at `url`, an address a sign-in may contact.

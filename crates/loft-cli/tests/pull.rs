@@ -67,15 +67,11 @@ fn set_body(scratch: &Scratch, body: &str) {
 
 /// The paths of the remote's requests, in order.
 pub fn calls(run: &Connected) -> Vec<String> {
+    let document = document_path(&run.history.key);
     run.remote
         .requests()
         .into_iter()
-        .filter_map(|request| {
-            request
-                .path
-                .strip_prefix(&document_path(&run.history.key))
-                .map(str::to_owned)
-        })
+        .filter_map(|request| request.path.strip_prefix(&document).map(str::to_owned))
         .collect()
 }
 

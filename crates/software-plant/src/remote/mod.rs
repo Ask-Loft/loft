@@ -49,6 +49,12 @@ pub fn document_path(key: &str) -> String {
     format!("{RESOURCE}/{key}/remote")
 }
 
+/// The address of the document of `key` on a remote at `origin`.
+#[must_use]
+pub fn document_address(origin: &str, key: &str) -> String {
+    format!("{origin}{}", document_path(key))
+}
+
 /// A published state as the remote holds it: its lock record and the text of each file under
 /// `spec/`, by its path from the top of the tree.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -141,7 +147,7 @@ impl Remote {
     /// The document's address, which names one origin and path.
     #[must_use]
     pub fn address(&self) -> String {
-        format!("{}{}", self.origin, document_path(&self.key))
+        document_address(&self.origin, &self.key)
     }
 
     /// The document's protected resource, as `<origin>` followed by [`RESOURCE`].

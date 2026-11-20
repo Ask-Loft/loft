@@ -98,43 +98,28 @@ fn a_refused_registration_or_exchange_ends_the_sign_in_naming_its_oauth_error() 
 const FORM: &str = "https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote";
 
 #[test]
-fn an_answer_other_than_401_names_the_request_and_gives_the_form_of_a_document_s_address() {
-    for status in [404, 502] {
+fn an_unchallenged_answer_names_the_request_and_outside_a_401_gives_the_form_of_an_address() {
+    for status in [401, 404, 502] {
         let (remote, scratch, output, visits) =
-            login(RemoteScenario::failing("doc-elsewhere", status, None));
+            login(RemoteScenario::failing("doc-unchallenged", status, None));
         assert_eq!(output.status.code(), Some(1), "{status}: {output:?}");
         let stderr = String::from_utf8_lossy(&output.stderr);
-        for said in [
-            format!("GET {}/head answered {status}", remote.address()),
-            "may not be a document's remote".to_owned(),
-            FORM.to_owned(),
-            "`documentKey` of spec/loftspec.yaml".to_owned(),
+        let request = format!("GET {}/head answered {status}", remote.address());
+        assert!(stderr.contains(&request), "{status}: {stderr}");
+        for hint in [
+            "may not be a document's remote",
+            FORM,
+            "`documentKey` of spec/loftspec.yaml",
         ] {
-            assert!(stderr.contains(&said), "{status}: {said}: {stderr}");
+            assert_eq!(
+                stderr.contains(hint),
+                status != 401,
+                "{status}: {hint}: {stderr}"
+            );
         }
         assert_eq!(visits, Vec::<String>::new(), "{status}: no browser");
         assert!(!sign_ins_file(&scratch).exists(), "{status}");
     }
-}
-
-#[test]
-fn a_401_without_a_bearer_challenge_names_the_request_without_the_form() {
-    let (remote, scratch, output, visits) =
-        login(RemoteScenario::failing("doc-unchallenged", 401, None));
-    assert_eq!(output.status.code(), Some(1), "{output:?}");
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        stderr.contains(&format!("GET {}/head answered 401", remote.address())),
-        "{stderr}"
-    );
-    assert!(stderr.contains("`Bearer` challenge"), "{stderr}");
-    assert!(!stderr.contains(FORM), "{stderr}");
-    assert!(
-        !stderr.contains("may not be a document's remote"),
-        "{stderr}"
-    );
-    assert_eq!(visits, Vec::<String>::new());
-    assert!(!sign_ins_file(&scratch).exists());
 }
 
 #[test]

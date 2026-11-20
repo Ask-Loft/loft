@@ -6,7 +6,7 @@
 
 use serde_json::json;
 use software_plant::http::{Answer, Request, Responder, Response, Server};
-use software_plant::remote::{RemoteScenario, TOKEN, document_path};
+use software_plant::remote::{RemoteScenario, TOKEN, document_address, document_path};
 use software_plant::{BrowserScenario, Clock, Collector, ReleaseFeed};
 
 use crate::common::EPOCH;
@@ -39,7 +39,7 @@ impl Responder for Redirecting {
 fn a_redirect_from_the_remote_is_not_followed() {
     let run = connected(1, 1, RemoteScenario::accepting);
     let redirecting = Server::start(Redirecting(format!("{}/head", run.remote.address())));
-    let address = format!("{}{}", redirecting.url(), document_path(&run.history.key));
+    let address = document_address(&redirecting.url(), &run.history.key);
     run.change();
     let output = run.publish_by(|command| {
         command

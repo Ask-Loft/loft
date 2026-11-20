@@ -284,8 +284,7 @@ pub enum RemoteAction {
     Set {
         #[arg(help = concat!(
             "The document's own address on your Loft server, not the server's: ",
-            crate::remote::document_address_form!(),
-            ", with <documentKey> from spec/loftspec.yaml"
+            crate::remote::document_address_form!()
         ))]
         address: String,
         /// Print the address to open, without opening a browser.

@@ -88,7 +88,9 @@ fn a_disconnect_says_to_commit_the_manifest() {
     let scratch = Scratch::with_reading_list();
     name_remote(
         &scratch,
-        Some("https://remote.example/loft/t/acme/api/v2/documents/one/remote"),
+        Some(&crate::common::signed_in::example_address(
+            "https://remote.example",
+        )),
         true,
     );
     let (output, _) = run(

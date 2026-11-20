@@ -98,6 +98,12 @@ pub fn run(
     (command.args(args).output().unwrap(), installed)
 }
 
+/// An address in the form a Loft server gives a document, on the made-up `origin`, for a remote
+/// that no test serves.
+pub fn example_address(origin: &str) -> String {
+    format!("{origin}/loft/t/acme/api/v2/documents/one/remote")
+}
+
 /// The JSON document a run printed.
 pub fn document(output: &Output) -> Value {
     serde_json::from_slice(&output.stdout).unwrap_or_else(|_| {
