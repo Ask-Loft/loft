@@ -41,6 +41,7 @@ mod import_openspec;
 mod init;
 mod interface_add;
 mod interface_add_refusals;
+mod interface_remove;
 mod interface_status;
 mod interface_update;
 mod interfaces;

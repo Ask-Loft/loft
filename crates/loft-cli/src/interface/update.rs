@@ -17,7 +17,7 @@ use serde_json::{Value, json};
 
 use super::reach::Remotes;
 use super::references::references;
-use super::{Interface, Named, Report, connected, document, named, refused};
+use super::{Report, connected, document, held, refused};
 use crate::stop::Stop;
 use moves::Move;
 pub(super) use moves::foreign_name;
@@ -70,20 +70,7 @@ fn select<'a>(
             .filter(|copy| copy.handle == handle)
             .collect());
     }
-    let Named { handle, interface } = named(target)?;
-    let copy = (document.copies.iter()).find(|copy| {
-        let key = copy.keys()[0];
-        copy.handle == handle
-            && match interface {
-                Interface::Key(named) => named == key,
-                Interface::Label(named) => copy.labels.get(&key) == Some(&named),
-            }
-    });
-    copy.map(|copy| vec![copy]).ok_or_else(|| {
-        refused(format!(
-            "the document holds no copy of {target}: `loft interface add` takes one"
-        ))
-    })
+    held(document, target).map(|copy| vec![copy])
 }
 
 /// A reference that a move leaves naming a node its copy no longer holds: the element, the

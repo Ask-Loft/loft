@@ -50,6 +50,24 @@ pub enum InterfaceAction {
         #[command(flatten)]
         output: Output,
     },
+    /// Delete a copy that nothing of the document references, named as `<handle>:<label>`, and
+    /// the handle's entry of `documents` once no copy is left under it.
+    Remove {
+        /// The copy, as its handle and its Interface's label or key.
+        interface: String,
+        #[command(flatten)]
+        output: Output,
+    },
+    /// Sign in to the remote that a handle's entry of `documents` names.
+    Login {
+        /// The handle of the other document.
+        handle: String,
+        /// Print the address to open, without opening a browser.
+        #[arg(long)]
+        no_browser: bool,
+        #[command(flatten)]
+        output: Output,
+    },
 }
 
 impl InterfaceAction {
@@ -85,6 +103,23 @@ impl InterfaceAction {
             ),
             Self::Status { no_browser, output } => (
                 interface::Action::Status {
+                    browser: !no_browser,
+                },
+                output.json(),
+            ),
+            Self::Remove { interface, output } => (
+                interface::Action::Remove {
+                    interface: interface.clone(),
+                },
+                output.json(),
+            ),
+            Self::Login {
+                handle,
+                no_browser,
+                output,
+            } => (
+                interface::Action::Login {
+                    handle: handle.clone(),
                     browser: !no_browser,
                 },
                 output.json(),

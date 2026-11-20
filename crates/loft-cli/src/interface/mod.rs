@@ -7,6 +7,7 @@
 mod add;
 mod reach;
 mod references;
+mod remove;
 mod status;
 mod update;
 
@@ -45,6 +46,13 @@ pub enum Action {
     Status {
         browser: bool,
     },
+    Remove {
+        interface: String,
+    },
+    Login {
+        handle: String,
+        browser: bool,
+    },
 }
 
 /// What a subcommand reports: its outcome, its fields, and its lines of text; `failed` where
@@ -70,6 +78,8 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
             browser,
         } => update::run(root, target.as_deref(), *at, *browser),
         Action::Status { browser } => status::run(root, *browser),
+        Action::Remove { interface } => remove::run(root, interface),
+        Action::Login { handle, browser } => remove::login(root, handle, *browser),
     };
     match report {
         Ok(report) => {
@@ -109,6 +119,24 @@ fn connected(document: &Document) -> Result<(), Stop> {
         "the document {} is not connected: `loft remote set <address>` connects it to its remote",
         document.id.key()
     )))
+}
+
+/// The copy `target` names as `<handle>:<label>` or `<handle>:<key>`.
+fn held<'a>(document: &'a Document, target: &str) -> Result<&'a Copy, Stop> {
+    let Named { handle, interface } = named(target)?;
+    let copy = (document.copies.iter()).find(|copy| {
+        let key = copy.keys()[0];
+        copy.handle == handle
+            && match interface {
+                Interface::Key(named) => named == key,
+                Interface::Label(named) => copy.labels.get(&key) == Some(&named),
+            }
+    });
+    copy.ok_or_else(|| {
+        refused(format!(
+            "the document holds no copy of {target}: `loft interface add` takes one"
+        ))
+    })
 }
 
 /// The entry of `documents` that lists the handle of `copy`.
