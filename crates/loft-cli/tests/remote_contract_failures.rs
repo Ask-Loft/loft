@@ -11,6 +11,7 @@ use software_plant::http::Request;
 use software_plant::remote::wire::value;
 use software_plant::remote::{Companion, CompanionFault, Metadata, Remote, RemoteScenario};
 
+use crate::common::calls::call;
 use crate::common::oauth::{
     KEY, assert_oauth_error, authorize_for, coded, companion_metadata, exchange, fetch, location,
     metadata, parameter, refresh, register, registered, send_refresh,
@@ -230,6 +231,23 @@ fn a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its
         first.iter().all(|path| !path.starts_with(metadata_path)),
         "{first:?}"
     );
+}
+
+#[test]
+fn the_simulators_own_origin_does_not_serve_metadata_that_a_scenario_places_on_another_origin() {
+    let moved = Remote::start(RemoteScenario::accepting(KEY).metadata(Metadata::OnAnotherOrigin));
+    let (challenge, resource, _) = fetch(&moved.address());
+    let elsewhere = origin_of(&parameter(&challenge, "resource_metadata").unwrap());
+    assert_ne!(elsewhere, moved.origin(), "{challenge}");
+    assert_eq!(
+        resource["resource"],
+        json!(format!("{elsewhere}/documents"))
+    );
+    let own = format!(
+        "{}/.well-known/oauth-protected-resource/documents",
+        moved.origin()
+    );
+    assert_problem(&call("GET", &own, None, None), 404, "not_found");
 }
 
 #[test]

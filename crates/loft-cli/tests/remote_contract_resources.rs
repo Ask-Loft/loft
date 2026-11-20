@@ -19,7 +19,7 @@
 
 use serde_json::{Value, json};
 use software_plant::remote::wire::value;
-use software_plant::remote::{Companion, Remote, RemoteScenario};
+use software_plant::remote::{Companion, CompanionFault, Remote, RemoteScenario};
 
 use crate::common::calls::Answer;
 use crate::common::oauth::{
@@ -180,6 +180,59 @@ fn the_metadata_of_a_companion_resource_whose_path_ends_in_a_slash_lies_at_the_p
         let paths: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
         assert!(paths.iter().any(|at| at == metadata), "{kind}: {paths:?}");
     }
+}
+
+#[test]
+fn a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_own() {
+    let gone = Companion::new("gone", &["gone"]).at("/documents?view=gone");
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .accompanied_by(Companion::new("notes", &["notes"]).at("/documents?view=notes"))
+            .accompanied_by(gone.faulty(CompanionFault::Unreadable)),
+    );
+    let (own, notes, gone) = (
+        remote.resource(),
+        remote.companion("notes"),
+        remote.companion("gone"),
+    );
+    assert_eq!(notes, format!("{own}?view=notes"));
+    let (listed, _) = metadata(&remote);
+    assert_eq!(listed["resource"], json!(own));
+    let issuer = &listed["authorization_servers"];
+    assert_eq!(issuer, &json!([remote.issuer()]));
+    assert_eq!(
+        listed[COMPANION_RESOURCES],
+        json!([
+            { "resource": notes, "kind": "notes" },
+            { "resource": gone, "kind": "gone" },
+        ])
+    );
+    let answer = companion_metadata(&notes);
+    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(
+        answer.body,
+        json!({
+            "resource": notes,
+            "authorization_servers": issuer,
+            "scopes_supported": ["notes"],
+            "bearer_methods_supported": ["header"],
+        })
+    );
+    let paths: Vec<String> = remote.requests().into_iter().map(|r| r.path).collect();
+    let at = "/.well-known/oauth-protected-resource/documents?view=notes";
+    assert!(paths.iter().any(|path| path == at), "{paths:?}");
+    assert_problem(&companion_metadata(&gone), 404, "not_found");
+    let (server, client, code) = coded_for(&remote, &[&own, &notes], "documents notes");
+    let answer = exchange(&server, &client, &notes, &code);
+    assert_eq!(answer.status, 200, "{:?}", answer.body);
+    assert_eq!(answer.body["resource"], json!(notes));
+    assert_eq!(answer.body["scope"], "notes");
+    let access = answer.body["access_token"].as_str().unwrap();
+    assert!(remote.admits_at(&notes, access), "{notes} admits its token");
+    assert!(
+        !remote.admits_at(&own, access),
+        "{own} admits no token of {notes}"
+    );
 }
 
 #[test]

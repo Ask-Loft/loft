@@ -43,7 +43,8 @@ pub enum Metadata {
     /// interface.
     Unencrypted,
     /// Protected resource metadata that the challenge names on another origin, which a second
-    /// port of the loopback interface stands for, naming the protected resource there.
+    /// port of the loopback interface stands for, naming the protected resource there. The
+    /// simulator's own origin answers `not_found` where it would otherwise lie.
     OnAnotherOrigin,
 }
 

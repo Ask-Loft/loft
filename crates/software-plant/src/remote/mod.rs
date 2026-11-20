@@ -7,9 +7,9 @@
 //! The document lies at `<origin>/documents/<key>`, the address the binary is given. The
 //! authorization server's issuer is `<origin>/auth`, and both metadata documents lie under
 //! `<origin>/.well-known/`, beside the metadata of each companion resource a scenario lists.
-//! What a scenario places on another origin lies on a second port of the loopback interface. A
-//! publish is published with the Format's own publisher, made as the document's remote, so its
-//! labels and its lock are the ones a remote would return.
+//! What a scenario places on another origin lies on a second port of the loopback interface, and
+//! there alone. A publish is published with the Format's own publisher, made as the document's
+//! remote, so its labels and its lock are the ones a remote would return.
 
 mod companion;
 mod documents;
@@ -317,7 +317,9 @@ impl Responder for Simulated {
     }
 }
 
-/// The answer of an accepting simulator on its origin, by the request's path.
+/// The answer of an accepting simulator on its origin, by the request's path: a companion
+/// resource's metadata by the whole target, its path and its query, before the document's
+/// protected resource metadata, whose path a companion resource's may share.
 fn route(state: &mut State, request: &Request) -> Response {
     let (path, query) = request
         .path
@@ -329,9 +331,17 @@ fn route(state: &mut State, request: &Request) -> Response {
     {
         return documents::answer(state, request, rest);
     }
+    if let Some(answer) = state.companion_metadata(request) {
+        return answer;
+    }
     let resource_metadata = format!("/.well-known/oauth-protected-resource{RESOURCE}");
+    // A scenario that places the document's protected resource metadata on another origin
+    // serves it there alone.
+    let metadata_here = state.scenario.metadata != Metadata::OnAnotherOrigin;
     match path {
-        _ if path == resource_metadata => only("GET", request, || oauth::resource_metadata(state)),
+        _ if metadata_here && path == resource_metadata => {
+            only("GET", request, || oauth::resource_metadata(state))
+        }
         "/.well-known/oauth-authorization-server/auth" => {
             only("GET", request, || oauth::server_metadata(state))
         }
@@ -339,12 +349,10 @@ fn route(state: &mut State, request: &Request) -> Response {
         "/auth/authorize" => only("GET", request, || oauth::authorize(state, query)),
         "/auth/token" => only("POST", request, || oauth::token(state, request)),
         skill::MANIFEST => only("GET", request, || skill::manifest(state)),
-        _ => {
-            match skill::package(state, path).or_else(|| state.companion_metadata(&request.path)) {
-                Some(answer) => only("GET", request, || answer),
-                None => problem::refusal("not_found"),
-            }
-        }
+        _ => match skill::package(state, path) {
+            Some(answer) => only("GET", request, || answer),
+            None => problem::refusal("not_found"),
+        },
     }
 }
 

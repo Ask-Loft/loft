@@ -178,12 +178,22 @@ impl State {
         }
     }
 
-    /// The answer on the simulator's origin to `GET` of `target`, a path and its query, where the
-    /// protected resource metadata of a companion resource there lies.
-    pub(super) fn companion_metadata(&self, target: &str) -> Option<Response> {
-        self.placed(target, false)
-            .and_then(|companion| self.served(companion))
-            .map(|metadata| Response::json(200, &metadata))
+    /// The answer on the simulator's origin to `request`, where its whole target, the path and
+    /// the query, is the address of the protected resource metadata of a companion resource
+    /// there; nothing elsewhere.
+    pub(super) fn companion_metadata(&self, request: &Request) -> Option<Response> {
+        let companion = self.placed(&request.path, false)?;
+        Some(self.metadata_answer(companion, request))
+    }
+
+    /// The answer to `request` at the address of the protected resource metadata of `companion`:
+    /// that metadata as its scenario serves it, to a `GET`, or `not_found` where its scenario
+    /// makes it unreadable.
+    fn metadata_answer(&self, companion: &Companion, request: &Request) -> Response {
+        match self.served(companion) {
+            Some(metadata) => only("GET", request, || Response::json(200, &metadata)),
+            None => refusal("not_found"),
+        }
     }
 
     /// The scopes that `resource` accepts, if the scenario serves it: the document's protected
@@ -267,15 +277,12 @@ impl State {
 pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
     let moved = state.scenario.metadata == Metadata::OnAnotherOrigin
         && request.path == well_known(RESOURCE);
-    let metadata = if moved {
-        Some(document_metadata(state, state.metadata_origin()))
-    } else {
-        state
-            .placed(&request.path, true)
-            .and_then(|companion| state.served(companion))
-    };
-    match metadata {
-        Some(metadata) => only("GET", request, || Response::json(200, &metadata)),
+    if moved {
+        let metadata = document_metadata(state, state.metadata_origin());
+        return only("GET", request, || Response::json(200, &metadata));
+    }
+    match state.placed(&request.path, true) {
+        Some(companion) => state.metadata_answer(companion, request),
         None => refusal("not_found"),
     }
 }
