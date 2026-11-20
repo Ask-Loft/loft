@@ -6147,6 +6147,9 @@ links:
   - node: c4be0084-9c44-416f-9fd0-4f7c00925f98
     reviewed: b9fb5001deec8acf20578c9bfeb638fd085c90169123f7f6495e9e6e227cc82d
     tests:
+      - file: "crates/loftspec/tests/lint_interfaces.rs"
+        name: "a_registry_term_an_interface_does_not_list_is_reported_on_the_interface"
+        body: e06cf914420445d145531543aded498be860666521419dbc893de8864724587e
       - file: "crates/loftspec/tests/lint_language.rs"
         name: "a_registry_term_the_node_does_not_list_is_lq_009"
         body: 0444fc3ff8e0b800b87e416a9ba06311224e7fe14210a88bf2d604c3257d1dbd
@@ -7371,6 +7374,9 @@ links:
   - node: 01a14b3d-fd78-7612-94d1-5e24bfd00161
     reviewed: 1065b12d6c0a6789832ce581630227ad0443563517f2ef735e5e2d718832b36e
     tests:
+      - file: "crates/loftspec/tests/term_report.rs"
+        name: "a_subject_that_names_an_interface_is_marked_as_a_node_name"
+        body: 1d9a5981ba493df2d496c1bc56ce1264a07bbac278d58c5a5becbad74c759b33
       - file: "crates/loftspec/tests/term_report.rs"
         name: "a_subject_is_marked_as_a_term_an_alias_or_a_node_name"
         body: 99c31af6ded5a07f0dec74ecc57a4b381c41370798072a3669f8f862527b35dc
@@ -12171,6 +12177,9 @@ links:
   - node: 01a1f981-4db1-765f-a897-221057f9b2f3
     reviewed: 996f1f38be6c48ff63d2b808a1e23f6d0a8c7edb8546907bff5f4f74c27ae53d
     tests:
+      - file: "crates/loftspec/tests/interfaces_labels.rs"
+        name: "interfaces_whose_slugs_differ_by_a_hyphened_suffix_are_labeled_as_their_file_names_sort"
+        body: 90af6b905011e4f107d3d144d7fb141c15c3fc5feb246b1901c1c91a24820ced
       - file: "crates/loftspec/tests/interfaces_labels.rs"
         name: "interfaces_are_labeled_after_the_root_components_and_before_the_decisions"
         body: 94d85fe1ec81af4a90a629c39c338b3f9b16c7759cebbd75659d245f01499916

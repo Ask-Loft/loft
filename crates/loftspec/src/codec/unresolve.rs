@@ -136,18 +136,10 @@ impl Edges {
         for edge in all {
             match *edge {
                 Edge::Realizes { feature, component } => {
-                    edges
-                        .realizes
-                        .entry(feature.into())
-                        .or_default()
-                        .push(component.key());
+                    push(&mut edges.realizes, feature.into(), component.key());
                 }
                 Edge::ScopedTo { component, product } => {
-                    edges
-                        .scoped
-                        .entry(component.into())
-                        .or_default()
-                        .push(product.key());
+                    push(&mut edges.scoped, component.into(), product.key());
                 }
                 Edge::Provides {
                     component,

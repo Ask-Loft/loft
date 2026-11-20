@@ -476,3 +476,17 @@ fn the_term_reporter_changes_nothing_in_the_document() {
     let _ = term_report(&document, &LintConfig::default());
     assert_eq!(document, before);
 }
+
+#[test]
+fn a_subject_that_names_an_interface_is_marked_as_a_node_name() {
+    let mut document = with_systems(&["The Document lookup"]);
+    document.interfaces = crate::common::interfaces::with_interface().interfaces;
+    let marks: Vec<(String, Option<Mark>)> = subjects(&document)
+        .into_iter()
+        .map(|subject| (subject.text, subject.mark))
+        .collect();
+    assert!(
+        marks.contains(&("Document lookup".to_owned(), Some(Mark::Node))),
+        "{marks:?}"
+    );
+}

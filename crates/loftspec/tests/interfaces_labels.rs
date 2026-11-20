@@ -79,3 +79,21 @@ fn a_publish_without_an_interface_writes_the_labels_file_it_wrote_before_interfa
         files[&path("labels.yaml")]
     );
 }
+
+#[test]
+fn interfaces_whose_slugs_differ_by_a_hyphened_suffix_are_labeled_as_their_file_names_sort() {
+    let mut document = small_document();
+    let mut shorter = interface(key(INTERFACE + 0x24), "A", Vec::new());
+    shorter.slug = slug("a");
+    let mut longer = interface(key(INTERFACE + 0x25), "A b", Vec::new());
+    longer.slug = slug("a-b");
+    document.interfaces.extend([shorter, longer]);
+    // `a-b.yaml` sorts before `a.yaml`, since a hyphen sorts before a dot.
+    assert_eq!(allocated(&mut document), ["AC-1", "IF-1", "IF-2"]);
+    assert_eq!(
+        document
+            .bindings
+            .label_of(InterfaceId::new(key(INTERFACE + 0x25))),
+        Some(label("IF-1"))
+    );
+}

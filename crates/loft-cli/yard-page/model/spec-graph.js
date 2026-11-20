@@ -1,8 +1,7 @@
 // A `spec-change` view's diagram as the page lays it out: ELK's graph of nested panels and cards.
 // Each Product, Feature Group, Feature and Interface shown is a panel that holds what belongs to
-// it; each
-// Requirement, criterion, Component, Constraint, Quality Attribute, Section, decision and folded
-// Feature Group is a card, headed by its label (or its kind's label prefix, or the word Section
+// it; each Requirement, criterion, Component, Constraint, Quality Attribute, Section, decision and
+// folded Feature Group is a card, headed by its label (or its kind's label prefix, or the word Section
 // for a Section, which has no label) and its change, with its name or statement beneath, wrapped
 // to the width the page's face measures. A card beneath another card, as a criterion beneath its
 // Requirement or a Section beneath a Component, stands beside it, joined to it by a plain line;

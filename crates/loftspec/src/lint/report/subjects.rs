@@ -118,6 +118,7 @@ fn node_names(context: &Context<'_>) -> Vec<String> {
                     | NodeKind::FeatureGroup
                     | NodeKind::Feature
                     | NodeKind::Component
+                    | NodeKind::Interface
             )
         })
         .map(|item| compared(&item.name()))

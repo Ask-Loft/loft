@@ -64,3 +64,12 @@ fn an_interface_one_component_provides_or_requires_is_not_reported_as_unlinked()
 fn an_interface_no_component_links_to_is_info_by_default() {
     assert_eq!(severity(RuleId::V2013), Severity::Info);
 }
+
+#[test]
+fn a_registry_term_an_interface_does_not_list_is_reported_on_the_interface() {
+    let mut document = linked(provides);
+    document.interfaces[0].name = "Identity lookup".to_owned();
+    let found = findings(&document);
+    let untagged = keys_of(&found, RuleId::Lq009);
+    assert!(untagged.contains(&vec![key(INTERFACE)]), "{untagged:?}");
+}
