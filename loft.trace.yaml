@@ -14364,6 +14364,18 @@ links:
       - file: "crates/loft-cli/tests/merge_driver.rs"
         name: "the_lint_configuration_changed_apart_exits_1_naming_the_path_and_ours_is_unchanged"
         body: 2cf5d53a03117f4273f7a166216d905e294e279d51ebc6315055b0e6db426376
+  - node: 01a1faaa-a9cf-72d3-a6d9-ef9cde1120f6
+    reviewed: f6976ea4316026f95771011c6a384d1c849066ea951cfbd612773cdf2e3ab2d4
+    tests:
+      - file: "crates/loft-cli/tests/merge_driver.rs"
+        name: "a_copy_changed_apart_exits_1_naming_the_path_and_the_copy_and_ours_is_unchanged"
+        body: 9cebe2aae266ad56baa03926d2d6266fea62aaca9b8c26134d3a76736fa5a3a9
+  - node: 01a1faaa-a9cf-72d3-a6d9-ef9d419865e6
+    reviewed: ad65862899318e099892a6fc190a490402205d0066093bc1f8ebbefae7237ca9
+    tests:
+      - file: "crates/loft-cli/tests/merge_driver.rs"
+        name: "a_copy_changed_apart_exits_1_naming_the_path_and_the_copy_and_ours_is_unchanged"
+        body: 9cebe2aae266ad56baa03926d2d6266fea62aaca9b8c26134d3a76736fa5a3a9
   - node: 01a13070-322f-7493-9495-40814154f6ca
     reviewed: b63504c5a2954113e9af524758a7dfa01c6f9421692fa67f11c233b295afeb9d
     tests:

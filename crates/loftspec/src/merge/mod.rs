@@ -64,7 +64,8 @@ pub enum MergeError {
     /// Each input that does not read as a file of the Format, or that carries a key twice, with
     /// where (RQ-151).
     Unreadable(Vec<(Input, ReadError)>),
-    /// Both sides changed `spec/lint.yaml` to different contents, which no record can hold.
+    /// Both sides changed a file merged as one value, `spec/lint.yaml` or a copy of another
+    /// document's Interface, to different contents, which no record can hold.
     BothChanged,
     /// The merged file does not read back, or would carry a key twice (RQ-4); the merge writes
     /// nothing rather than a file the reader refuses.

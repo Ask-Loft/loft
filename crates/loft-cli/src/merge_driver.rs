@@ -7,7 +7,7 @@
 use std::path::{Component, Path, PathBuf};
 use std::{fs, io};
 
-use loftspec::codec::{ReadError, SpecPath};
+use loftspec::codec::{ReadError, Role, SpecPath};
 use loftspec::identity::Label;
 use loftspec::merge::{Input, MergeError, merge_file};
 use loftspec_store::StoreError;
@@ -209,7 +209,8 @@ fn merge(root: &Path, inputs: &Inputs<'_>) -> Result<(usize, Vec<Label>), Vec<St
     };
     let (bytes, conflicts, disputed) = match spec_path {
         Some(spec_path) => {
-            let merged = merge_file(&spec_path, &base, &ours, &theirs).map_err(messages)?;
+            let merged = merge_file(&spec_path, &base, &ours, &theirs)
+                .map_err(|error| messages(&spec_path, error))?;
             (merged.bytes, merged.conflicts, merged.disputed)
         }
         None => (
@@ -232,7 +233,7 @@ fn spec_path(path: &str) -> Option<SpecPath> {
     (!rest.is_empty()).then(|| SpecPath::new(&rest.replace('\\', "/")))
 }
 
-fn messages(error: MergeError) -> Vec<String> {
+fn messages(path: &SpecPath, error: MergeError) -> Vec<String> {
     match error {
         MergeError::NotAFormatFile => vec![": not a file of the Format".to_owned()],
         MergeError::Unreadable(errors) => errors
@@ -240,7 +241,11 @@ fn messages(error: MergeError) -> Vec<String> {
             .map(|(input, error)| format!("{}: {input}: {}", location(error), error.problem))
             .collect(),
         MergeError::BothChanged => {
-            vec![": both sides changed the lint configuration to different contents".to_owned()]
+            let what = match Role::of(path) {
+                Some(Role::Copy { .. }) => "the copy of another document's Interface",
+                _ => "the lint configuration",
+            };
+            vec![format!(": both sides changed {what} to different contents")]
         }
         MergeError::Unwritable(error) => {
             vec![format!(
