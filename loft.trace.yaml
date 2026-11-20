@@ -17017,6 +17017,9 @@ links:
     reviewed: df65c2941fcab31a9038da3b2dff18aa16098cedb2a76d634c0c038a12090842
     tests:
       - file: "crates/loft-cli/tests/interface_update.rs"
+        name: "two_copies_whose_interfaces_trade_slugs_both_keep_a_file"
+        body: d93b2194a4549b82124fa4df5f8489f720ae4a02ab1499d577e1164dd320ea88
+      - file: "crates/loft-cli/tests/interface_update.rs"
         name: "a_named_copy_moves_to_the_head_and_each_node_added_changed_and_removed_is_reported"
         body: 510da8f063d64c7df3e7343dcf8debe20b50585aa888ac5acecd73db38694fe2
       - file: "crates/loft-cli/tests/interface_update.rs"

@@ -236,3 +236,24 @@ fn a_copy_at_the_head_that_is_not_the_copy_its_state_gives_is_taken_again() {
     assert_eq!(document["copies"][0]["publishSequence"], 2);
     assert_eq!(fs::read(scratch.file(COPY)).unwrap(), taken);
 }
+
+#[test]
+fn two_copies_whose_interfaces_trade_slugs_both_keep_a_file() {
+    let history = crate::common::others::swapping();
+    let remote = crate::common::others::shelves_remote(&history);
+    let scratch = Scratch::with_reading_list();
+    crate::common::others::listing(&scratch, &remote, true);
+    for name in ["shelves:IF-1", "shelves:IF-2"] {
+        let output = interface(&scratch, &["add", name, "--at", "1"]);
+        assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    }
+    let (code, document) = update(&scratch, &[]);
+    assert_eq!(code, 0, "{document}");
+    assert_eq!(document["outcome"], "updated");
+    let lookup = fs::read_to_string(scratch.file(COPY)).unwrap();
+    assert!(lookup.contains("Shelf stock"), "{lookup}");
+    let stock = fs::read_to_string(scratch.file(STOCK)).unwrap();
+    assert!(stock.contains("Shelf lookup"), "{stock}");
+    let check = scratch.loft(&["check"]);
+    assert_eq!(check.status.code(), Some(0), "{}", stderr(&check));
+}

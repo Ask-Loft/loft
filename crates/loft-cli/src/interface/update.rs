@@ -114,8 +114,8 @@ fn dangling(document: &Document, moves: &[Move<'_>]) -> Vec<Dangling> {
     found
 }
 
-/// Writes each moved copy, and removes its previous file where its path changed, in one
-/// journaled save.
+/// Writes each moved copy, and removes its previous file where its path changed and no moved
+/// copy writes it, in one journaled save.
 fn write(root: &Path, moves: &[Move<'_>]) -> Result<(), Stop> {
     let mut files = loftspec::codec::Files::new();
     let mut removed = Vec::new();
@@ -127,6 +127,8 @@ fn write(root: &Path, moves: &[Move<'_>]) -> Result<(), Stop> {
             }
         }
     }
+    // A path another moved copy now writes is that copy's file, not one to remove.
+    removed.retain(|path| !files.contains_key(path));
     if !files.is_empty() {
         journal::save(root, &Changes::of_tree(files, &removed))?;
     }

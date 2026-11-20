@@ -8,13 +8,13 @@ use loftspec::codec::{self, MANIFEST, SpecPath};
 use loftspec::document::OtherDocument;
 use loftspec::identity::Key;
 use loftspec::ids::{CriterionId, DocumentId};
-use loftspec::publish::publish_labels;
+use loftspec::publish::{Lock, publish_labels};
 use loftspec::slug::Slug;
 use serde_json::json;
 use software_plant::remote::{Remote, RemoteScenario};
 
 use super::copies::{HANDLE, OTHER};
-use super::remote::{History, publish_at, stored};
+use super::remote::{History, publish_at, spec, stored};
 use super::signed_in::{granted, keep, name_remote};
 use super::{EPOCH, Scratch, tree};
 use crate::interfaces::add_lookup;
@@ -77,6 +77,28 @@ pub fn shelves() -> History {
     History {
         key: OTHER.to_owned(),
         states,
+    }
+}
+
+/// The other document's first state, then a second in which "Shelf lookup" and "Shelf stock"
+/// trade slugs, each keeping its key, and "Shelf stock" is renamed "Shelf stock count".
+pub fn swapping() -> History {
+    let first = shelves().states.swap_remove(0);
+    let mut document = codec::read(&spec(&first.files)).unwrap();
+    let slugs: Vec<Slug> = (document.interfaces.iter())
+        .map(|interface| interface.slug.clone())
+        .collect();
+    for (interface, slug) in document.interfaces.iter_mut().zip(slugs.into_iter().rev()) {
+        interface.slug = slug;
+        if interface.name == "Shelf stock" {
+            interface.name.push_str(" count");
+        }
+    }
+    let previous = Lock::read(first.lock.to_string().as_bytes()).unwrap();
+    let (second, files) = publish_at(&codec::write(&document), Some(&previous), EPOCH + 180);
+    History {
+        key: OTHER.to_owned(),
+        states: vec![first, stored(&second, &files)],
     }
 }
 
