@@ -102,6 +102,27 @@ pub fn swapping() -> History {
     }
 }
 
+/// The other document's first state, then a second in which the lookup's criterion
+/// [`DROPPED`] moves, keeping its key, to the Requirement of "Shelf stock".
+pub fn moving() -> History {
+    let first = shelves().states.swap_remove(0);
+    let mut document = codec::read(&spec(&first.files)).unwrap();
+    let dropped = Some(CriterionId::new(Key::parse(DROPPED).unwrap()));
+    let criteria = &mut document.interfaces[0].requirements[0].criteria;
+    let at = criteria
+        .iter()
+        .position(|criterion| criterion.id == dropped)
+        .unwrap();
+    let moved = criteria.remove(at);
+    document.interfaces[1].requirements[0].criteria.push(moved);
+    let previous = Lock::read(first.lock.to_string().as_bytes()).unwrap();
+    let (second, files) = publish_at(&codec::write(&document), Some(&previous), EPOCH + 180);
+    History {
+        key: OTHER.to_owned(),
+        states: vec![first, stored(&second, &files)],
+    }
+}
+
 /// A remote of the other document that holds `history`.
 pub fn shelves_remote(history: &History) -> Remote {
     Remote::start(

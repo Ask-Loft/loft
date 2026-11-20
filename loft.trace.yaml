@@ -17068,6 +17068,9 @@ links:
     reviewed: dc7223ca25d127971c0726efc0bbc75234fb327f10214aef8dd93c79973dd0ad
     tests:
       - file: "crates/loft-cli/tests/interface_update.rs"
+        name: "a_node_moved_to_another_copy_under_the_handle_is_not_dangling"
+        body: d0146c3567a4d14054d2982a6a1c01fccce10f948b3d1e8fe39f17b4eae725f6
+      - file: "crates/loft-cli/tests/interface_update.rs"
         name: "a_reference_left_naming_a_node_no_copy_holds_is_named_and_the_copies_are_written"
         body: 758f241fc55c25b7260e4aa14af2d7713457c4a4f1574bce4ec242f2e59d3649
   - node: 01a1f981-4db0-72b8-8a39-a6cbd6d2002c

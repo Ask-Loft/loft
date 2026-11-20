@@ -52,7 +52,7 @@ pub(super) fn run(
         })
         .collect();
     clashing(&document, &after)?;
-    let dangling = dangling(&document, &moves);
+    let dangling = dangling(&document, &moves, &after);
     write(root, &moves)?;
     Ok(report(&moves, &dangling))
 }
@@ -92,14 +92,18 @@ struct Dangling {
     label: String,
 }
 
-/// Each reference of `document` to a node that a move takes out of its copy.
-fn dangling(document: &Document, moves: &[Move<'_>]) -> Vec<Dangling> {
+/// Each reference of `document` to a node that a move takes out of its copy and that no copy
+/// under its handle holds once the moves are made, `after` being those copies.
+fn dangling(document: &Document, moves: &[Move<'_>], after: &[&Copy]) -> Vec<Dangling> {
     let mut found = Vec::new();
     for change in moves {
-        let Move::Moved { from, to, .. } = change else {
+        let Move::Moved { from, .. } = change else {
             continue;
         };
-        let kept: BTreeSet<_> = to.keys().into_iter().collect();
+        let kept: BTreeSet<_> = (after.iter())
+            .filter(|copy| copy.handle == from.handle)
+            .flat_map(|copy| copy.keys())
+            .collect();
         let gone: BTreeSet<_> = (from.keys().into_iter())
             .filter(|key| !kept.contains(key))
             .collect();

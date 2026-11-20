@@ -257,3 +257,27 @@ fn two_copies_whose_interfaces_trade_slugs_both_keep_a_file() {
     let check = scratch.loft(&["check"]);
     assert_eq!(check.status.code(), Some(0), "{}", stderr(&check));
 }
+
+#[test]
+fn a_node_moved_to_another_copy_under_the_handle_is_not_dangling() {
+    let history = crate::common::others::moving();
+    let remote = crate::common::others::shelves_remote(&history);
+    let scratch = Scratch::with_reading_list();
+    crate::common::others::listing(&scratch, &remote, true);
+    for name in ["shelves:IF-1", "shelves:IF-2"] {
+        let output = interface(&scratch, &["add", name, "--at", "1"]);
+        assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    }
+    let dropped = crate::common::others::DROPPED;
+    scratch.edit(
+        STORE,
+        SCOPE,
+        &format!("{SCOPE}mentions:\n  - document: shelves\n    key: {dropped}\n"),
+    );
+    let (code, document) = update(&scratch, &["shelves"]);
+    assert_eq!(code, 0, "{document}");
+    assert_eq!(document["outcome"], "updated");
+    assert_eq!(document["dangling"], serde_json::json!([]));
+    let check = scratch.loft(&["check"]);
+    assert_eq!(check.status.code(), Some(0), "{}", stderr(&check));
+}
