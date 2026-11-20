@@ -391,6 +391,45 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb47a12567f2
         name: "No element that a block's text names is created in the page."
+  - key: 01a1f804-56bc-77a4-94e6-7487be7d4205
+    statement:
+      form: optional
+      where: "a block's Markdown holds a bare address that begins with `http://`, `https://` or `mailto:`"
+      system: "the page"
+      shall: "draw the address as a link to it, as it draws a link the Markdown writes out."
+    criteria:
+      - key: 01a1f804-56bc-77a4-94e6-74881760b7f4
+        name: "A bare `https://` address in a note's Markdown is drawn as a link to that address."
+      - key: 01a1f89a-bc20-773d-b058-45914917531e
+        name: "An underscore, an asterisk or a tilde within an address is drawn as part of its link, not as emphasis."
+      - key: 01a1f804-56bc-77a4-94e6-7489ef413b64
+        name: "A bare `http://` address and a bare `mailto:` address are each drawn as a link to that address."
+      - key: 01a1f804-56bc-77a4-94e6-748a1481c64b
+        name: "A bare address in every field that a block or a stage holds in Markdown is drawn as a link, as in a note: a stage's goal, a question's context and each option's detail, a decision's consequence, a task's detail and a `loft` block's note, as well as the Markdown of an approval and a plan."
+      - key: 01a1f804-56bc-77a4-94e6-748bc1fff885
+        name: "An address within a code span is drawn as text."
+      - key: 01a1f804-56bc-77a4-94e6-748c732b5a29
+        name: "An address within a fenced code block is drawn as text."
+      - key: 01a1f804-56bc-77a4-94e6-748d568ac06c
+        name: "An address that is already the text of a link the Markdown writes out is not drawn as a second link within it."
+      - key: 01a1f804-56bc-77a4-94e6-748eebcde366
+        name: "A period, a comma, a colon, a semicolon, an exclamation mark, a question mark, an asterisk, an underscore, a tilde, a single quote or a double quote that ends an address is drawn after the link, not in it."
+      - key: 01a1f89d-6ae4-70f1-a41e-0cf431548485
+        name: "An entity, such as `&amp;`, that ends an address is drawn after the link, not in it."
+      - key: 01a1f804-56bc-77a4-94e6-748fb9de9b7d
+        name: "A closing parenthesis that ends an address is part of the link only where the address opens a parenthesis before it."
+      - key: 01a1f89a-bc20-773d-b058-4592653a19af
+        name: "A closing square bracket that ends an address is part of the link only where the address opens a square bracket before it."
+      - key: 01a1f804-56bc-77a4-94e6-749076569e91
+        name: "No link is drawn to an address of any other scheme, such as `javascript:`."
+      - key: 01a1f935-07ff-7063-ad69-b209303e008a
+        name: "An `http://` or `https://` that punctuation follows, such as `https:///etc`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20affda0376
+        name: "An address whose host name holds an underscore in either of its last two parts, such as `https://a.b_c.com`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20b4d3df35e
+        name: "A `mailto:` that no email address with a dot in its domain follows, such as `mailto:someone`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20c5aaebd64
+        name: "The link of a `mailto:` address ends where its email address ends, so that in `mailto:a@b.com?subject=x` the `?subject=x` is drawn after it."
   - key: 01a16838-8fdb-7127-a23e-c5588e3201c7
     statement:
       form: optional
@@ -404,6 +443,8 @@ requirements:
         name: "Any HTML that a node's name holds is shown as text."
       - key: 01a16838-8fdb-7127-a23e-c55bc6dabc5f
         name: "A name whose Markdown is more than one line of text is shown as its text."
+      - key: 01a1f89a-bc20-773d-b058-459379a6bdb4
+        name: "A bare address in a node's name is shown as text, not as a link."
       - key: 01a16844-c9d1-72df-8cfa-5cd7aa95dc74
         name: "Each slot of a Requirement's statement in an EARS form is drawn as Markdown, as a name is."
   - key: 01a16844-c9d1-72df-8cfa-5cd8fc1947f1

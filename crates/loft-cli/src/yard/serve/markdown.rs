@@ -6,8 +6,13 @@
 //! which the page draws as a diagram. The names of the nodes a `loft` view reports are rendered
 //! the same way, each on one line.
 
+mod autolink;
+
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html};
 use serde_json::Value;
+
+// One list for the links a page keeps and the bare addresses it links, so that the two agree.
+const SCHEMES: [&str; 3] = ["https://", "http://", "mailto:"];
 
 /// The Markdown fields of a stage's or a block's body, each with the field its HTML is given in:
 /// a note's, an approval's and a plan's Markdown, a question's context, a stage's goal, a
@@ -21,21 +26,32 @@ const FIELDS: [(&str, &str); 6] = [
     ("note", "noteHtml"),
 ];
 
-/// `markdown` as HTML.
-pub fn to_html(markdown: &str) -> String {
+fn parser(markdown: &str) -> Parser<'_> {
     let options = Options::ENABLE_TABLES
         | Options::ENABLE_STRIKETHROUGH
         | Options::ENABLE_TASKLISTS
         | Options::ENABLE_FOOTNOTES;
+    Parser::new_ext(markdown, options)
+}
+
+fn safe_html<'a>(events: impl Iterator<Item = Event<'a>>) -> String {
     let mut out = String::new();
-    html::push_html(&mut out, Safe::new(Parser::new_ext(markdown, options)));
+    html::push_html(&mut out, Safe::new(events));
     out
+}
+
+/// `markdown` as HTML.
+pub fn to_html(markdown: &str) -> String {
+    match autolink::linked(markdown) {
+        Some(events) => safe_html(events.into_iter()),
+        None => safe_html(parser(markdown)),
+    }
 }
 
 /// `markdown` as HTML for one line, such as a node's name: the inside of the one paragraph it
 /// makes, or none where it makes anything else.
 pub fn to_inline_html(markdown: &str) -> Option<String> {
-    let html = to_html(markdown);
+    let html = safe_html(parser(markdown));
     let inner = html.strip_prefix("<p>")?.strip_suffix("</p>\n")?;
     (!inner.contains("</p>")).then(|| inner.to_owned())
 }
@@ -130,10 +146,7 @@ fn render_names(value: &mut Value) {
 /// relative to it, never a script's or another scheme's.
 fn is_safe(address: &str) -> bool {
     let lower = address.trim().to_ascii_lowercase();
-    if ["http://", "https://", "mailto:"]
-        .iter()
-        .any(|scheme| lower.starts_with(scheme))
-    {
+    if SCHEMES.iter().any(|scheme| lower.starts_with(scheme)) {
         return true;
     }
     // An address with no scheme: nothing before the first `/`, `?` or `#` holds a `:`.
@@ -258,6 +271,49 @@ mod tests {
         let html = to_inline_html("A <b>bold</b> name").unwrap_or_default();
         assert!(!html.contains("<b>"), "{html}");
         assert!(html.contains("&lt;b&gt;bold&lt;/b&gt;"), "{html}");
+    }
+
+    #[test]
+    fn a_bare_address_in_every_markdown_field_is_drawn_as_a_link() {
+        let mut document = serde_json::json!({"stages": [{
+            "version": {"body": {"title": "Model", "goal": "Per https://example.com/goal"}},
+            "blocks": [
+                {"version": {"body": {"title": "Ship", "consequence": "See https://example.com/consequence"}}},
+                {"version": {"body": {"title": "Fix", "detail": "See https://example.com/detail", "state": "done"}}},
+                {"version": {"body": {"prompt": "Which?", "context": "See https://example.com/context",
+                    "options": [{"label": "Top", "detail": "See https://example.com/option"}]}}},
+                {"kind": "loft", "version": {"body": {"view": "trace", "note": "See https://example.com/note"}}},
+                {"version": {"body": {"title": "Ship it?", "markdown": "See https://example.com/approval"}}},
+                {"version": {"body": {"title": "The plan", "markdown": "See https://example.com/plan"}}}
+            ]
+        }]});
+        render_document(&mut document);
+        let stage = &document["stages"][0];
+        let body = |index: usize| &stage["blocks"][index]["version"]["body"];
+        let fields = [
+            (&stage["version"]["body"]["goalHtml"], "goal"),
+            (&body(0)["consequenceHtml"], "consequence"),
+            (&body(1)["detailHtml"], "detail"),
+            (&body(2)["contextHtml"], "context"),
+            (&body(2)["options"][0]["detailHtml"], "option"),
+            (&body(3)["noteHtml"], "note"),
+            (&body(4)["html"], "approval"),
+            (&body(5)["html"], "plan"),
+        ];
+        for (html, field) in fields {
+            let html = html.as_str().unwrap_or_default();
+            let address = format!("https://example.com/{field}");
+            let expected = format!("<a href=\"{address}\">{address}</a>");
+            assert!(html.contains(&expected), "{field}: {html}");
+        }
+    }
+
+    #[test]
+    fn a_bare_address_in_a_name_stays_text() {
+        assert_eq!(
+            to_inline_html("See https://example.com/x").as_deref(),
+            Some("See https://example.com/x")
+        );
     }
 
     #[test]

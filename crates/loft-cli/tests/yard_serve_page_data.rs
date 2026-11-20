@@ -101,6 +101,25 @@ fn the_page_reads_every_markdown_field_of_a_stage_and_its_blocks_rendered_by_lof
 }
 
 #[test]
+fn a_bare_address_in_a_block_s_markdown_reaches_the_page_as_a_link() {
+    let yard = Yard::new();
+    yard.write(
+        "s1",
+        r#"[
+  {"id": "shape", "kind": "stage", "title": "Shape it", "status": "active"},
+  {"id": "n1", "kind": "note", "stage": "shape", "markdown": "See https://example.com/plan."}
+]"#,
+        &[],
+    );
+    let served = served(&yard);
+    let html = block(&log(&yard, &served), "n1")["version"]["body"]["html"].clone();
+    assert_eq!(
+        html,
+        "<p>See <a href=\"https://example.com/plan\">https://example.com/plan</a>.</p>\n"
+    );
+}
+
+#[test]
 fn html_that_a_block_s_markdown_holds_reaches_the_page_as_text() {
     let yard = Yard::new();
     yard.write("s1", NOTES, &[]);
