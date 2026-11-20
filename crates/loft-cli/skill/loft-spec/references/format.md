@@ -265,6 +265,8 @@ the Reading List above holds one for the whole product, and its Shelf group one 
 key: 00000000-0000-7000-8000-000000000001
 name: "Shelf store"
 body: "Where the shelf is kept, in the device's own storage."
+requires:
+  - name: "Book lookup"
 ```
 
 ## Interfaces
@@ -292,6 +294,17 @@ requirements:
     criteria:
       - name: "The answer names the author."
       - name: "The answer names the year of publication."
+```
+
+The catalog is outside the product, so it stands as an `external` Component that keeps the
+promise the Shelf store relies on:
+
+```yaml path=spec/components/catalog.yaml
+name: "Catalog"
+body: "The book catalog the shelf looks titles up in."
+boundary: external
+provides:
+  - name: "Book lookup"
 ```
 
 ## Quality Attributes
