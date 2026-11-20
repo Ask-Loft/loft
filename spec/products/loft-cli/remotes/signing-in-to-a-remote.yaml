@@ -44,8 +44,25 @@ requirements:
         name: "Authorization server metadata without `registration_endpoint`, or whose `code_challenge_methods_supported` leaves out `S256`, is refused."
       - key: 01a18e1f-8daa-7674-9603-5ae2c1ed7a4a
         name: "The error names the address of the document that was refused."
+      - key: 01a1f967-f816-765c-9e69-fb957ac55be9
+        name: "Where the unauthenticated request was refused, the error names that request as `GET <address>/head` and the status the remote gave."
       - key: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
         name: "Nothing is written."
+  - key: 01a1f967-f816-765c-9e69-fb9618c00f11
+    statement:
+      form: unwanted
+      if: "the unauthenticated request of a sign-in is answered with a status other than `401`"
+      system: "Loft"
+      shall: "say that the address may not be a document's remote, and give the form of a document's address on a Loft server."
+    criteria:
+      - key: 01a1f967-f816-765c-9e69-fb977010945c
+        name: "The error says that the address may not be a document's remote."
+      - key: 01a1f967-f816-765c-9e69-fb9858ebd01e
+        name: "The error gives the form `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`."
+      - key: 01a1f967-f816-765c-9e69-fb995921e4e9
+        name: "The error says that `<documentKey>` is the `documentKey` of `spec/loftspec.yaml`."
+      - key: 01a1f967-f816-765c-9e69-fb9a9ccbbaaa
+        name: "A `401` answer without a `Bearer` challenge is refused without that form."
   - key: 01a18e1f-8daa-7674-9603-5ae454b39feb
     statement:
       form: event_driven

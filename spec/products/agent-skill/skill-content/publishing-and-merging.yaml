@@ -70,7 +70,15 @@ requirements:
       shall: "teach how a document is connected to a Loft server, published through it and brought up to its head."
     criteria:
       - key: 01a1a922-762b-74c0-854c-edd28012b7e8
-        name: "The workflow tells the agent to run `loft remote set <address>` only when the user asks, with the address the user gives, and never to invent one."
+        name: "The workflow tells the agent to run `loft remote set <address>` only when the user asks to connect the document."
+      - key: 01a1f967-f815-71f5-854a-5abfee8ccc73
+        name: "The workflow gives the form of a document's address on a Loft server, `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, and tells the agent to take `<documentKey>` from `spec/loftspec.yaml`."
+      - key: 01a1f967-f815-71f5-854a-5ac0e4856d27
+        name: "The workflow tells the agent to ask the user for the server's host and the tenant slug where the user has not given them, and never to guess either."
+      - key: 01a1f967-f815-71f5-854a-5ac1db8e526a
+        name: "The workflow tells the agent to use a whole document address that the user gives as it is."
+      - key: 01a1f967-f815-71f5-854a-5ac24d64263e
+        name: "The workflow tells the agent, when `loft remote set` says the address may not be a document's remote, to check the address against the form with the user rather than try another address."
       - key: 01a1a922-762b-74c0-854c-edd340d23301
         name: "The workflow tells the agent to commit `spec/loftspec.yaml` after `loft remote set` or `loft remote remove`."
       - key: 01a1a922-762b-74c0-854c-edd4d5a126cb
