@@ -1,10 +1,11 @@
 //! Interfaces in the text form: each in its own file under `spec/interfaces/`, read back as
 //! written, and no such directory for a document without one.
 
+use crate::common::full::full_document;
 use crate::common::interfaces::{INTERFACE, interface, with_interface};
 use crate::common::small_document;
 use crate::common::text::{path, text};
-use loftspec::codec::{self, Files};
+use loftspec::codec::{self, Files, Problem, ReadError, SpecPath};
 use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 
@@ -94,4 +95,92 @@ fn a_document_without_an_interface_is_written_without_an_interfaces_directory() 
         files.keys().collect::<Vec<_>>()
     );
     assert!(!files.contains_key(&path("interfaces/document-lookup.yaml")));
+}
+
+const FILE: &str = "interfaces/document-lookup.yaml";
+
+/// The files of [`with_interface`] with `from` replaced by `to` in the file at `at`, read: one
+/// error, at that file.
+fn refused(at: &str, from: &str, to: &str) -> ReadError {
+    let mut files = codec::write(&with_interface());
+    let at = SpecPath::new(at);
+    let text = String::from_utf8(files[&at].clone()).unwrap();
+    assert!(text.contains(from), "{from:?} in\n{text}");
+    files.insert(at.clone(), text.replacen(from, to, 1).into_bytes());
+    let errors = codec::read(&files).expect_err("refused");
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert_eq!(errors[0].sites[0].path, at, "{errors:?}");
+    errors[0].clone()
+}
+
+#[test]
+fn an_interface_under_another_node_is_refused_where_it_stands() {
+    let nested = "interfaces:\n  - key: 00000000-0000-7000-8000-0000000001e0\n    slug: nested\n    name: \"Nested\"\n";
+    let error = refused(
+        "components/document-model.yaml",
+        "constraints:\n",
+        &format!("{nested}constraints:\n"),
+    );
+    assert_eq!(
+        error.problem,
+        Problem::UnknownField("interfaces".to_owned())
+    );
+}
+
+#[test]
+fn a_product_feature_group_feature_or_component_under_an_interface_is_refused_where_it_stands() {
+    for field in ["products", "featureGroups", "features", "components"] {
+        let child = format!(
+            "{field}:\n  - key: 00000000-0000-7000-8000-0000000001e1\n    name: \"Inner\"\n"
+        );
+        let error = refused(FILE, "requirements:\n", &format!("{child}requirements:\n"));
+        assert_eq!(
+            error.problem,
+            Problem::UnknownField(field.to_owned()),
+            "{field}"
+        );
+    }
+}
+
+#[test]
+fn an_interface_record_without_its_key_slug_or_name_is_refused() {
+    let written = text(&codec::write(&with_interface()), FILE);
+    for field in ["key", "slug", "name"] {
+        let line = written
+            .lines()
+            .find(|line| line.starts_with(&format!("{field}: ")))
+            .unwrap();
+        let error = refused(FILE, &format!("{line}\n"), "");
+        assert_eq!(error.problem, Problem::MissingField(field), "{field}");
+    }
+}
+
+#[test]
+fn an_interface_file_holds_everything_beneath_its_interface() {
+    let document = full_document();
+    let files = codec::write(&document);
+    let written = text(&files, FILE);
+    for field in [
+        "requirements:",
+        "criteria:",
+        "constraints:",
+        "qualityAttributes:",
+        "sections:",
+    ] {
+        assert!(written.contains(field), "{field} in\n{written}");
+    }
+    let beneath = files
+        .iter()
+        .filter(|(path, _)| path.as_str() != FILE)
+        .any(|(_, bytes)| {
+            String::from_utf8_lossy(bytes).contains("00000000-0000-7000-8000-0000000001d4")
+        });
+    assert!(
+        !beneath,
+        "the criterion beneath the Interface is in its file alone"
+    );
+    assert_eq!(
+        read_back(&files),
+        codec::read(&codec::write(&document)).unwrap()
+    );
 }

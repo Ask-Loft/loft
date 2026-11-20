@@ -78,12 +78,21 @@ fn provides_and_requires_follow_scoped_to_in_a_component_record_sorted_by_key() 
     assert!(document.edges.iter().all(|edge| back.contains(edge)));
 }
 
+/// The document's files with its one `field` target, `provides` or `requires`, written as `to`.
+fn linking(field: &str, to: &str) -> Files {
+    let edge = if field == "provides" {
+        provides(INTERFACE)
+    } else {
+        requires(INTERFACE)
+    };
+    let files = codec::write(&with_edges([edge]));
+    let from = format!("{field}:\n  - {}\n", hex(INTERFACE));
+    replaced(&files, COMPONENT, &from, &format!("{field}:\n  - {to}\n"))
+}
+
 /// The document's files with its one `provides` target replaced by the key `n`.
 fn providing(n: u32) -> Files {
-    let files = codec::write(&with_edges([provides(INTERFACE)]));
-    let from = format!("provides:\n  - {}\n", hex(INTERFACE));
-    let to = format!("provides:\n  - {}\n", hex(n));
-    replaced(&files, COMPONENT, &from, &to)
+    linking("provides", &hex(n))
 }
 
 fn read_errors(files: &Files) -> String {
@@ -96,10 +105,47 @@ fn read_errors(files: &Files) -> String {
 }
 
 #[test]
-fn a_provides_edge_whose_target_is_not_an_interface_is_an_error() {
-    let errors = read_errors(&providing(1));
-    assert!(errors.contains("another kind"), "{errors}");
-    assert!(errors.contains(COMPONENT), "{errors}");
+fn a_provides_or_requires_edge_whose_target_is_not_an_interface_is_an_error() {
+    for field in ["provides", "requires"] {
+        let errors = read_errors(&linking(field, &hex(1)));
+        assert!(errors.contains("another kind"), "{field}: {errors}");
+        assert!(errors.contains(COMPONENT), "{field}: {errors}");
+    }
+}
+
+#[test]
+fn a_provides_or_requires_edge_that_carries_a_role_is_an_error() {
+    for field in ["provides", "requires"] {
+        let carrying = format!("node: {}\n    role: outcome", hex(INTERFACE));
+        let errors = read_errors(&linking(field, &carrying));
+        assert!(errors.contains(COMPONENT), "{field}: {errors}");
+    }
+}
+
+#[test]
+fn a_nested_component_may_provide_and_require_an_interface() {
+    let nested = ComponentId::new(key(INTERFACE + 0x30));
+    let mut document = with_edges([]);
+    let mut inner = document.components[0].component.clone();
+    inner.id = Some(nested);
+    inner.name = "Inner".to_owned();
+    inner.components = Vec::new();
+    inner.constraints = Vec::new();
+    inner.quality_attributes = Vec::new();
+    document.components[0].component.components.push(inner);
+    document.edges.extend([
+        Edge::Provides {
+            component: nested,
+            interface: interface_id(INTERFACE),
+        },
+        Edge::Requires {
+            component: nested,
+            interface: interface_id(LATER),
+        },
+    ]);
+    let back = codec::read(&codec::write(&document)).unwrap();
+    assert!(document.edges.iter().all(|edge| back.edges.contains(edge)));
+    assert_eq!(validate(&back), vec![]);
 }
 
 #[test]
