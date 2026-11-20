@@ -4,9 +4,9 @@ name: "Remote simulator"
 body: |
   An HTTP endpoint on the test machine that stands in for a connected document's remote. A test points the binary under test at it with `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN`, or signs in to it as a person would, scripts the published states, the drafts and the answer to each publish, create and import, and reads the requests it received. Its Requirements state the remote's wire contract for each call that a client signed in to it makes, `loft` among them, which a real remote is built to pass in the same contract suite, whose real half runs only on demand. Every path below follows the address, which names one origin and path, is given whole and stands for one document key that the scenario names, and every refusal is an RFC 9457 problem document whose closed `code` is what `loft` acts on.
 
-  It also stands in for the remote's authorization server, under paths of its own on the same origin. It challenges a request without a token as a protected resource, serves the authorization server's metadata and the protected resource metadata of the document's protected resource and of each companion resource its scenario lists, registers clients and consents to each authorization request as its scenario names. A companion resource is another protected resource that one sign-in to the remote covers: the document's protected resource metadata lists it in `companion_resources`, by its identifier and its kind, and it has no routes of its own, so a test asks the simulator which access tokens it admits. A scenario may place a companion resource, or the document's protected resource metadata, on another origin, which a second port of the loopback interface stands for.
+  It also stands in for the remote's authorization server, under paths of its own on the same origin. It challenges a request without a token as a protected resource, serves the authorization server's metadata and the protected resource metadata of the document's protected resource and of each companion resource its scenario lists, registers clients and consents to each authorization request as its scenario names. A companion resource is another protected resource that one sign-in to the remote covers: the document's protected resource metadata lists it in `companion_resources`, by its identifier and its kind, and it has no routes of its own, so a test asks the simulator which access tokens it admits. A scenario may place a companion resource, or the document's protected resource metadata, on another origin, which a second port of the loopback interface stands for. Where a scenario places a companion resource is apart from how it serves the resource's metadata: a companion resource on another origin has its metadata served there faithfully, or with any fault its scenario names, as on the simulator's origin.
 
-  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a companion resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A companion resource's kind, the `kind` that the document's protected resource metadata lists beside its identifier, is a word that the remote chooses to name what the resource serves: the contract fixes no list of kinds. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked. It holds one refresh token for all of them, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707). That token rotates on every use.
+  The Requirements use these words. A resource the scenario serves is the document's protected resource, or a companion resource on the simulator's origin whose metadata names it, lists the simulator's issuer and lists a scope. The scopes a resource accepts are those its protected resource metadata lists in `scopes_supported`. A companion resource's kind, the `kind` that the document's protected resource metadata lists beside its identifier, is a word that the remote chooses to name what the resource serves: the contract fixes no list of kinds. A sign-in holds the resources its authorization request named, since the simulator stands for a person who consents to all that is asked. It holds one refresh token for all of them, as an OAuth 2.0 server's sign-in does with resource indicators (RFC 8707). That token rotates on every use. A token request, a code exchange or a refresh, names exactly one resource, by giving `resource` once, since an access token is issued for one resource alone: RFC 8707 lets a token request name several, and the remote refuses one that does.
 tags:
   - plant-simulator
 realizes:
@@ -327,6 +327,8 @@ requirements:
         name: "`scopes_supported` lists each scope that the challenge names in `scope`."
       - key: 01a1f09b-189b-76b3-863f-c7afc6e7fb82
         name: "A scenario that places its protected resource metadata on another origin serves it from a second port of the loopback interface, naming the protected resource at that port's origin and the simulator's issuer."
+      - key: 01a1f849-e4bb-77ff-ac61-f87ca31375c7
+        name: "In a scenario that places its protected resource metadata on another origin, a `GET` of the address on the simulator's origin where that metadata would otherwise lie is answered `404 Not Found` with the code `not_found`."
       - key: 01a1f09b-189b-76b3-863f-c7b0f61ec005
         name: "A scenario that lists companion resources, and scripts no `companion_resources`, answers with `companion_resources`, a list of an object of `resource` and `kind` for each, in the order its scenario lists them."
       - key: 01a1f09b-189b-76b3-863f-c7b139878bbe
@@ -359,7 +361,7 @@ requirements:
       - key: 01a1f09b-189b-76b3-863f-c7b93609117d
         name: "`scopes_supported` lists each scope its scenario names for the resource."
       - key: 01a1f09b-189b-76b3-863f-c7ba5b4f040a
-        name: "A companion resource that its scenario places on another origin has its metadata served faithfully on that origin."
+        name: "A companion resource that its scenario places on another origin is answered on that origin, as its scenario serves it."
       - key: 01a1f09b-189b-76b3-863f-c7bb22fcc1dd
         name: "A companion resource that its scenario places under another issuer is answered with `authorization_servers` that leave out the document's issuer."
       - key: 01a1f09b-189b-76b3-863f-c7bcf21a1783
@@ -433,6 +435,8 @@ requirements:
         name: "A request that names a `resource` the scenario does not serve redirects with `error` `invalid_target`."
       - key: 01a1f09b-189b-76b3-863f-c7c39b5051b8
         name: "A request that names no `resource` redirects with `error` `invalid_target`."
+      - key: 01a1f849-e4bb-77ff-ac61-f87d1c07ff63
+        name: "A request that names the same resource more than once redirects with `error` `invalid_target`."
       - key: 01a1f09b-189b-76b3-863f-c7c4192daf12
         name: "A request without `response_type` redirects with `error` `invalid_request`."
       - key: 01a1f09b-189b-76b3-863f-c7c5076071f6
@@ -510,19 +514,29 @@ requirements:
   - key: 01a1f09b-189b-76b3-863f-c7d2b456cd2e
     statement:
       form: unwanted
-      if: "a code exchange or a refresh names no resource, a resource that the remote simulator does not serve, or, in a refresh that would otherwise be accepted, a resource that the sign-in does not hold"
+      if: "a code exchange or a refresh names no resource, names `resource` more than once or names a resource that the remote simulator does not serve, or a refresh that would otherwise be accepted names a resource that the sign-in does not hold"
       system: "the remote simulator"
       shall: "refuse it `400 Bad Request` with the OAuth error `invalid_target`, and issue, rotate and revoke nothing."
     criteria:
       - key: 01a1f09b-189b-76b3-863f-c7d3c0e9a364
         name: "A code exchange or a refresh that names no `resource` is refused `400 Bad Request` with the OAuth error `invalid_target`, whatever code or refresh token it presents."
+      - key: 01a1f849-e4bb-77ff-ac61-f87ec797f1a5
+        name: "A code exchange that names `resource` more than once is refused `400 Bad Request` with the OAuth error `invalid_target`, whatever code it presents and in whichever order it names its resources."
+      - key: 01a1f849-e4bb-77ff-ac61-f87f63fe81d0
+        name: "A refresh that names `resource` more than once is refused `400 Bad Request` with the OAuth error `invalid_target`, whatever refresh token it presents and in whichever order it names its resources."
       - key: 01a1f09b-189b-76b3-863f-c7d4a251dc1e
         name: "A code exchange that names a resource the scenario does not serve is refused `400 Bad Request` with the OAuth error `invalid_target`, whatever code it presents."
       - key: 01a1f09b-189b-76b3-863f-c7d5cd31a709
         name: "A refresh that names a resource the scenario does not serve is refused `400 Bad Request` with the OAuth error `invalid_target`, whether its refresh token is live, rotated or unknown."
       - key: 01a1f09b-189b-76b3-863f-c7d64a0f6fbf
         name: "A lapsing scenario refuses a refresh that names a resource it does not serve `400 Bad Request` with the OAuth error `invalid_target`."
+      - key: 01a1f849-e4bb-77ff-ac61-f880e5670222
+        name: "A lapsing scenario refuses a refresh that names `resource` more than once `400 Bad Request` with the OAuth error `invalid_target`."
+      - key: 01a1f849-e4bb-77ff-ac61-f8812eeecd7e
+        name: "A scenario that refuses the exchange refuses a code exchange that names `resource` more than once `400 Bad Request` with the OAuth error `invalid_target`."
       - key: 01a1f09b-189b-76b3-863f-c7d7837789fd
         name: "A refresh that would otherwise be accepted but names a resource that the scenario serves and the sign-in does not hold is refused `400 Bad Request` with the OAuth error `invalid_target`."
       - key: 01a1f09b-189b-76b3-863f-c7d86d04c50a
         name: "A refused request issues no token, rotates no refresh token and revokes none."
+      - key: 01a1f849-e4bb-77ff-ac61-f88214226e90
+        name: "A code that a refused code exchange presents can still be exchanged once."

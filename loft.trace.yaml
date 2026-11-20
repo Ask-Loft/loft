@@ -21325,7 +21325,7 @@ links:
         name: "the_metadata_lists_each_companion_resource_and_each_names_itself_and_the_issuer"
         body: 07aad54179b469b55f16cf2793930a33566f558b9788c1156fe2fc892e5acdf4
   - node: 01a1f09b-189b-76b3-863f-c7ba5b4f040a
-    reviewed: ceb87c720a7b370b43c971bde902641bc5cc69607daf826505650a4eaf5b47b2
+    reviewed: ba509db3d4447a40824afaca49bbbd5a37d9daa73d8c2648938189d62bd96a8f
     tests:
       - file: "crates/loft-cli/tests/remote_contract_failures.rs"
         name: "a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its_own_requests"
