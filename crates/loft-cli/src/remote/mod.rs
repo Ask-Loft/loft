@@ -11,6 +11,7 @@ pub mod head;
 pub mod history;
 pub mod signin;
 pub mod signins;
+pub mod states;
 mod wire;
 
 use std::fmt;
@@ -203,6 +204,26 @@ pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError>
         None => signins::live(&address, timeout)?.access_token,
     };
     Ok(Client::new(&address, Some(token), timeout, wait))
+}
+
+/// The access token of the person's sign-in to `address`: the one `loft/remotes.json` holds,
+/// refreshed where it needs to be, or else, or where its refresh is refused, a new sign-in kept
+/// there, opened in the person's browser where `browser` allows.
+///
+/// # Errors
+///
+/// `loft/remotes.json` cannot be read or written, or the sign-in cannot be made.
+pub fn signed_in(address: &str, browser: bool, timeout: Duration) -> Result<String, RemoteError> {
+    match signins::live(address, timeout) {
+        Ok(sign_in) => Ok(sign_in.access_token),
+        Err(RemoteError::NoSignIn { .. } | RemoteError::Lapsed { .. }) => {
+            let sign_in = signin::sign_in(address, browser, timeout)?;
+            let token = sign_in.access_token.clone();
+            signins::save(address, &sign_in)?;
+            Ok(token)
+        }
+        Err(error) => Err(error),
+    }
 }
 
 #[cfg(test)]

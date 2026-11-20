@@ -21,6 +21,7 @@ use crate::json;
 use crate::out::{errln, outln};
 use crate::percent;
 use crate::remote::head::{self, Head};
+use crate::remote::states::{self, StateError};
 use crate::remote::{self, Client, RemoteError, files, history};
 use crate::stop::Stop;
 
@@ -250,32 +251,18 @@ fn asked(sequence: u64) -> Stop {
     ))
 }
 
-/// The published state of `sequence`: its files under `spec/` and its lock, which they must
-/// verify against; `missing` where the remote holds no such state.
+/// The published state of `sequence`, as [`states::state`] takes it; `missing` where the remote
+/// holds no such state.
 fn state(
     client: &Client,
     sequence: u64,
     missing: impl FnOnce() -> Stop,
 ) -> Result<(Files, Lock), Stop> {
-    let state = client.get(&format!("states/{sequence}")).map_err(|error| {
-        match error.refusal("not_found") {
-            Some(_) => missing(),
-            None => unreached(&error),
-        }
-    })?;
-    let lock = Lock::read(state["lock"].to_string().as_bytes()).map_err(|error| {
-        refused(format!(
-            "the lock of publish sequence {sequence} does not read: {error}"
-        ))
-    })?;
-    let files = wire_files(&state["files"])?;
-    if lock.publish_sequence.get() != sequence || !history::verifies(&files, &lock) {
-        return Err(refused(format!(
-            "the state the remote gave as publish sequence {sequence} does not agree with its \
-             lock"
-        )));
-    }
-    Ok((files, lock))
+    states::state(client, sequence).map_err(|error| match error {
+        StateError::Missing => missing(),
+        StateError::Remote(error) => unreached(&error),
+        StateError::Disagrees(reason) => refused(reason),
+    })
 }
 
 /// The draft the remote holds under `branch`.
