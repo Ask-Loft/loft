@@ -10,7 +10,7 @@ use std::path::Path;
 use loftspec::canonical::Digest;
 use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites, site_fields};
-use loftspec::copy::Foreign;
+use loftspec::copy::{Foreign, labeled};
 use loftspec::document::Document;
 use loftspec::hash::DocumentHashes;
 use loftspec::identity::{Key, Label};
@@ -152,6 +152,7 @@ impl<'a> Read<'a> {
         Report {
             document: self.document,
             sites: self.sites,
+            foreign: Foreign::of(&self.document.copies),
         }
     }
 }
@@ -251,14 +252,7 @@ fn resolve(document: &Document, name: &str) -> Result<Key, &'static str> {
     }
     if let Some((handle, label)) = name.split_once(':') {
         let label = Label::parse(label).map_err(|_| "it is neither a key nor a label")?;
-        let under = document
-            .copies
-            .iter()
-            .filter(|copy| copy.handle.as_str() == handle);
-        return under
-            .flat_map(|copy| copy.labels.iter())
-            .find(|(_, bound)| **bound == label)
-            .map(|(key, _)| *key)
+        return labeled(&document.copies, handle, label)
             .ok_or("no copy under the handle binds this label");
     }
     let label = Label::parse(name).map_err(|_| "it is neither a key nor a label")?;
@@ -299,6 +293,8 @@ impl fmt::Display for Place<'_> {
 struct Report<'a> {
     document: &'a Document,
     sites: &'a Sites,
+    /// The nodes of the document's copies, by key.
+    foreign: Foreign<'a>,
 }
 
 impl Report<'_> {
@@ -307,9 +303,8 @@ impl Report<'_> {
         if let Some(label) = self.document.bindings.label_of_key(key) {
             return Some(label.to_string());
         }
-        let foreign = Foreign::of(&self.document.copies);
-        let label = foreign.label(key)?;
-        Some(format!("{}:{label}", foreign.copy(key)?.handle))
+        let label = self.foreign.label(key)?;
+        Some(format!("{}:{label}", self.foreign.copy(key)?.handle))
     }
 
     /// A node by its label, or its key while it has none.

@@ -41,6 +41,7 @@ mod convert_v1_links;
 mod convert_v1_reading_list;
 mod convert_v1_sidecar;
 mod convert_v1_tag_names;
+mod copy_lookups;
 mod decision_changes;
 mod decision_history;
 mod departed;

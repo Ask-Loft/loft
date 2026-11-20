@@ -71,8 +71,7 @@ fn a_remove_whose_journal_cannot_save_deletes_no_copy_and_keeps_the_manifest() {
     let (scratch, _history, _remote) = ready(true);
     let output = interface(&scratch, &["add", "shelves:IF-1"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
-    // The journal lives under `.loft/`, which a file of that name keeps from being created.
-    fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap();
+    scratch.block_journal();
     let before = tree(&scratch.0);
     let output = interface(&scratch, &["remove", "shelves:IF-1", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));

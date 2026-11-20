@@ -5,12 +5,13 @@
 use std::fs;
 
 use loftspec::codec::{self, copy_of};
-use loftspec::document::OtherDocument;
 use loftspec::identity::Key;
 use loftspec::ids::DocumentId;
 use loftspec::publish::allocate;
 use loftspec::slug::Slug;
 
+use super::others::{OWN_REMOTE, list};
+use super::signed_in::name_remote;
 use super::{Scratch, tree};
 use crate::interfaces::{LOOKUP, add_lookup};
 
@@ -33,18 +34,9 @@ pub fn copy_lookup(scratch: &Scratch) {
     let state_root = "02".repeat(32).parse().unwrap();
     let handle = Slug::parse(HANDLE).unwrap();
     let copy = copy_of(&handle, &codec::write(&published), lookup, 2, state_root).unwrap();
-    let mut document = codec::read(&tree(&scratch.0)).unwrap();
-    document.connected = true;
-    document.remote = Some("http://127.0.0.1:9/documents/reading-list".to_owned());
-    document.documents.push(OtherDocument {
-        handle,
-        key: published.id,
-        remote: OTHER_REMOTE.to_owned(),
-    });
-    document.copies.push(copy);
-    for (path, bytes) in codec::write(&document) {
-        let target = scratch.file(path.as_str());
-        fs::create_dir_all(target.parent().unwrap()).unwrap();
-        fs::write(target, bytes).unwrap();
-    }
+    name_remote(scratch, Some(OWN_REMOTE), true);
+    list(scratch, OTHER_REMOTE);
+    let target = scratch.file(copy.path().as_str());
+    fs::create_dir_all(target.parent().unwrap()).unwrap();
+    fs::write(target, &copy.bytes).unwrap();
 }

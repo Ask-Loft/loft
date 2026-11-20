@@ -8417,7 +8417,7 @@ links:
         body: 2b5c559b0f338531df50e6e2399f4a71aa9f04f0dc5e5ba69163f11894dee5c4
       - file: "crates/loft-cli/tests/publish.rs"
         name: "a_publish_whose_journal_cannot_be_written_changes_no_file"
-        body: 8d6be0429227304ac71c79d6e54eff25f405c0c39385140057bd735852694221
+        body: 5bc6122dfc8938b6de0c571edc53c0495fb7260734a6bec7849821035d77bb6d
   - node: 01a13acc-470a-75d5-beed-efe24aef8581
     reviewed: dc271d8353b567e5c2eccec5de802e11d3be61e2a4a27a8d1ed7cf899808769a
     tests:
@@ -16550,7 +16550,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_connect_refusals.rs"
         name: "a_set_whose_manifest_its_journal_cannot_save_changes_no_file_of_the_tree"
-        body: ac10a27144656a7addab45f6b858d3a7626a959c031f127e136b95cdbea79c34
+        body: da1f896ea873392f856bb65a86f573da8eebb2b1355ab550e54429385a1dd38d
   - node: 01a156c0-0b7a-76b6-9a6a-682bc8baea7d
     reviewed: fe4bbcee53c5bc5093f427113df77ab47957a4f4b83c2f479c618dbd2bfede63
     tests:
@@ -16925,7 +16925,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/interface_add_refusals.rs"
         name: "an_add_whose_journal_cannot_save_writes_neither_the_copy_nor_the_manifest"
-        body: d7abb537db0a6e7339b109aaa724093a2cfd0ccd435b7d183059338f3c061332
+        body: fe0ba17d3e71890c4c50078ae083175779e71d1f012da2e20aec7caff90c643b
   - node: 01a1f981-4db0-72b8-8a39-a6b73ea9c6a4
     reviewed: 63cdc23fb9bbebf636ccd3c5e8c3b220dbc95dd89eff7872719e62b3baa90518
     tests:
@@ -17018,7 +17018,7 @@ links:
         body: 2fb08a03dd8b658f6a95209b08fd7ddd717905f38a19de9e176314a9f49bf22c
       - file: "crates/loft-cli/tests/interface_update.rs"
         name: "an_update_whose_journal_cannot_save_moves_no_copy"
-        body: 0b9ff11e5e13f6907bd9ad9203792798eb766f2b4e512bd6a6f24bde874b7380
+        body: 80f5890c4496e13bcb4502946ab9f9fbdfccc9d56001513690436bbfd1bcfc41
   - node: 01a1f981-4db0-72b8-8a39-a6c4a430128d
     reviewed: 739c7109a956db2315bdec3885801dce7385abe2c7c94c57c1ff26a6649a048e
     tests:
@@ -17129,7 +17129,7 @@ links:
         body: e9fa2817d438ca22046e145172d807553a90fce2d20efa574a6610a160bf3a2e
       - file: "crates/loft-cli/tests/interface_remove.rs"
         name: "a_remove_whose_journal_cannot_save_deletes_no_copy_and_keeps_the_manifest"
-        body: e70930ca6d02fcdba4026b6b0d0a7c3023bb897a3d57d9b8c325ef408fa32d78
+        body: 563e8f9c8edefd0f42642342a39be7e20b0ded2983233e7618ea038338f758da
   - node: 01a1f981-4db0-72b8-8a39-a6d62de20e1d
     reviewed: 1441645c9b81fa178d76a2b635bf3a76819d6ccbccf5899702583d6025bf3137
     tests:
@@ -20582,7 +20582,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_connect_refusals.rs"
         name: "a_set_whose_manifest_its_journal_cannot_save_changes_no_file_of_the_tree"
-        body: ac10a27144656a7addab45f6b858d3a7626a959c031f127e136b95cdbea79c34
+        body: da1f896ea873392f856bb65a86f573da8eebb2b1355ab550e54429385a1dd38d
   - node: 01a1587a-dee2-7262-8c7b-8951abd5db23
     reviewed: 2af7ab7db3c8c7fc37e909965a7ee331d449f76075885db5da0ebe807dd7b0d1
     tests:

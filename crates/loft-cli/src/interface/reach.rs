@@ -4,7 +4,7 @@
 
 use std::collections::BTreeMap;
 
-use loftspec::codec::Files;
+use loftspec::codec::{Files, ReadError};
 use loftspec::document::OtherDocument;
 use loftspec::publish::Lock;
 use loftspec::slug::Slug;
@@ -42,6 +42,15 @@ pub(super) fn state(client: &Client, sequence: u64) -> Result<Option<State>, Sto
 pub(super) fn not_held(address: &str, sequence: u64) -> Stop {
     refused(format!(
         "the remote at {address} holds no published state of publish sequence {sequence}"
+    ))
+}
+
+/// The refusal of a published state of `handle` at `sequence` that does not read: `errors` are
+/// the reader's.
+pub(super) fn unreadable(handle: &Slug, sequence: u64, errors: &[ReadError]) -> Stop {
+    refused(format!(
+        "{handle}: the published state of publish sequence {sequence} does not read: {}",
+        errors.first().map(ToString::to_string).unwrap_or_default()
     ))
 }
 

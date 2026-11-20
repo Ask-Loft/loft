@@ -1,26 +1,22 @@
 //! `loft interface remove <handle>:<interface>`: deletes a copy that nothing of the document
 //! references, and the handle's entry of `documents` once no copy is left under it, without
-//! reaching any remote; and `loft interface login <handle>`: a new sign-in to the remote that
-//! the handle's entry names.
+//! reaching any remote.
 
 use std::collections::BTreeSet;
 use std::path::Path;
 
 use loftspec::codec::{self, Files, MANIFEST, SpecPath};
-use loftspec::slug::Slug;
 use loftspec_store::journal::{self, Changes};
 use serde_json::json;
 
 use super::references::references;
-use super::update::foreign_name;
 use super::{Report, document, held, refused};
-use crate::remote::{self, signin, signins};
 use crate::stop::Stop;
 
 pub(super) fn run(root: &Path, target: &str) -> Result<Report, Stop> {
     let (_, mut document) = document(root)?;
     let copy = held(&document, target)?;
-    let name = foreign_name(copy, copy.keys()[0]);
+    let name = copy.name_of(copy.key());
     let keys: BTreeSet<_> = copy.keys().into_iter().collect();
     let naming = references(&document, &keys);
     if !naming.is_empty() {
@@ -63,25 +59,6 @@ pub(super) fn run(root: &Path, target: &str) -> Result<Report, Stop> {
             "unlisted": unlisted,
         }),
         lines,
-        failed: false,
-    })
-}
-
-/// `loft interface login <handle>`: signs the person in to the remote of the handle's entry.
-pub(super) fn login(root: &Path, handle: &str, browser: bool) -> Result<Report, Stop> {
-    let (_, document) = document(root)?;
-    let entry = Slug::parse(handle)
-        .ok()
-        .and_then(|handle| (document.documents.iter()).find(|entry| entry.handle == handle))
-        .ok_or_else(|| refused(format!("`documents` does not list {handle}")))?;
-    let address = remote::checked(&entry.remote)?;
-    let timeout = remote::timeout()?;
-    let sign_in = signin::sign_in(address, browser, timeout)?;
-    signins::save(address, &sign_in)?;
-    Ok(Report {
-        outcome: "signed in",
-        fields: json!({ "handle": handle, "address": address }),
-        lines: vec![format!("signed in to {address} for {handle}")],
         failed: false,
     })
 }

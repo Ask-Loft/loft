@@ -69,7 +69,7 @@ impl Pulled {
 
 /// A refusal of the pull.
 fn refused(message: impl Into<String>) -> Stop {
-    Stop::one("refused", message.into())
+    Stop::refused(message)
 }
 
 /// The remote's error as the refusal of the pull.

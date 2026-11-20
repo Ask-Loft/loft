@@ -4,10 +4,11 @@
 //! and the hasher reads the foreign nodes' content from it. Its nodes are kept apart from the
 //! document's own, so nothing labels, lints or formats them.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::canonical::Digest;
 use crate::codec::{Role, SpecPath};
+use crate::document::{Edge, EdgeKind, EdgeTarget};
 use crate::identity::{Key, Label};
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
@@ -61,6 +62,108 @@ impl Copy {
     pub fn keys(&self) -> Vec<Key> {
         self.ids().into_iter().map(NodeId::key).collect()
     }
+
+    /// The copied Interface's key.
+    ///
+    /// # Panics
+    ///
+    /// The Interface carries no key, which a copy `loft interface` writes always does.
+    #[must_use]
+    pub fn key(&self) -> Key {
+        self.interface
+            .id
+            .expect("a copied Interface carries its key")
+            .key()
+    }
+
+    /// The node `key` of the copy as `<handle>:<label>`, or `<handle>:<key>` where the other
+    /// document bound it no label.
+    #[must_use]
+    pub fn name_of(&self, key: Key) -> String {
+        match self.labels.get(&key) {
+            Some(label) => format!("{}:{label}", self.handle),
+            None => format!("{}:{key}", self.handle),
+        }
+    }
+
+    /// The first way this copy differs from `served`, the copy of the same Interface taken from
+    /// the state its pin names: its state root, its Interface, the label of a node, then its
+    /// bytes; none where it is that copy.
+    #[must_use]
+    pub fn difference(&self, served: &Self) -> Option<CopyDifference> {
+        if self.state_root != served.state_root {
+            return Some(CopyDifference::StateRoot {
+                held: self.state_root,
+                served: served.state_root,
+            });
+        }
+        if self.interface_hash != served.interface_hash {
+            return Some(CopyDifference::Interface);
+        }
+        let keys = self.labels.keys().chain(served.labels.keys());
+        let labeled = keys
+            .copied()
+            .find(|key| self.labels.get(key) != served.labels.get(key));
+        if let Some(key) = labeled {
+            return Some(CopyDifference::Label {
+                key,
+                held: self.labels.get(&key).copied(),
+                served: served.labels.get(&key).copied(),
+            });
+        }
+        (self.bytes != served.bytes).then_some(CopyDifference::Bytes)
+    }
+}
+
+/// How a copy differs from the copy its pinned state gives.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum CopyDifference {
+    /// The copy names another state root than the state's.
+    StateRoot { held: Digest, served: Digest },
+    /// The copy's Interface is not the one the state holds.
+    Interface,
+    /// The copy binds the node `key` another label than the state does, or none.
+    Label {
+        key: Key,
+        held: Option<Label>,
+        served: Option<Label>,
+    },
+    /// The copy says the same in other bytes than `loft interface` writes.
+    Bytes,
+}
+
+/// The key of the node that the copies under `handle` bind to `label`.
+#[must_use]
+pub fn labeled(copies: &[Copy], handle: &str, label: Label) -> Option<Key> {
+    (copies.iter())
+        .filter(|copy| copy.handle.as_str() == handle)
+        .flat_map(|copy| copy.labels.iter())
+        .find(|(_, bound)| **bound == label)
+        .map(|(key, _)| *key)
+}
+
+/// A reference of a document into a copy: the element that makes it, the kind of its edge and
+/// the key of the copy's node it names.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Reference {
+    pub source: ElementId,
+    pub kind: EdgeKind,
+    pub key: Key,
+}
+
+/// Each edge of `edges` whose target is keyed in `keys`, in the edges' order.
+#[must_use]
+pub fn references(edges: &[Edge], keys: &BTreeSet<Key>) -> Vec<Reference> {
+    (edges.iter())
+        .filter_map(|edge| match edge.target() {
+            EdgeTarget::Element(target) if keys.contains(&target.key()) => Some(Reference {
+                source: edge.source(),
+                kind: edge.kind(),
+                key: target.key(),
+            }),
+            _ => None,
+        })
+        .collect()
 }
 
 /// The nodes of a document's copies, by key: where a reference into another document points.

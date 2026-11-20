@@ -1,17 +1,18 @@
 //! What an update does to one copy: leaves it current, finds its Interface withdrawn, or moves
 //! its pin, with the nodes the move added, changed and removed.
 
+use std::collections::BTreeMap;
+
 use loftspec::codec::{self, CopyError};
 use loftspec::copy::Copy;
 use loftspec::diff::{NodeChanges, interface_changes};
 use loftspec::document::Document;
-use loftspec::identity::Key;
 use loftspec::ids::NodeId;
 use loftspec::node::Node;
 use serde_json::{Value, json};
 
-use super::super::reach::{Remotes, not_held};
-use super::super::{entry_of, refused};
+use super::super::entry_of;
+use super::super::reach::{Remotes, not_held, unreadable};
 use crate::stop::Stop;
 
 /// What an update did to one copy.
@@ -39,7 +40,7 @@ impl Move<'_> {
     /// The copied Interface as `<handle>:<label>`.
     fn name(&self) -> String {
         let copy = self.copy();
-        foreign_name(copy, copy.keys()[0])
+        copy.name_of(copy.key())
     }
 
     /// The lines that report the move.
@@ -60,46 +61,39 @@ impl Move<'_> {
                     "updated {name} from publish sequence {} to {}",
                     from.publish_sequence, to.publish_sequence
                 )];
-                lines.extend(
-                    parts(from, to, changes)
-                        .into_iter()
-                        .flat_map(|(verb, copy, ids)| {
-                            (ids.iter())
-                                .map(move |id| format!("  {verb} {}", described(copy, *id).0))
-                        }),
-                );
+                for (verb, copy, ids) in parts(from, to, changes) {
+                    let nodes = described(copy, ids).into_iter();
+                    lines.extend(nodes.map(|(label, name)| format!("  {verb} {label} · {name}")));
+                }
                 lines
             }
         }
     }
 
     pub fn json(&self) -> Value {
-        let (state, head, nodes) = match self {
-            Self::Current { copy } => ("current", copy.publish_sequence, json!({})),
-            Self::Withdrawn { head, .. } => ("withdrawn", *head, json!({})),
-            Self::Moved { from, to, changes } => {
-                let mut nodes = serde_json::Map::new();
-                for (verb, copy, ids) in parts(from, to, changes) {
-                    let listed: Vec<Value> =
-                        (ids.iter()).map(|id| described(copy, *id).1).collect();
-                    nodes.insert(verb.to_owned(), Value::Array(listed));
-                }
-                ("updated", to.publish_sequence, Value::Object(nodes))
-            }
+        let (state, sequence, head) = match self {
+            Self::Current { copy } => ("current", copy.publish_sequence, copy.publish_sequence),
+            Self::Withdrawn { copy, head } => ("withdrawn", copy.publish_sequence, *head),
+            Self::Moved { to, .. } => ("updated", to.publish_sequence, to.publish_sequence),
         };
-        let empty = Vec::new;
-        json!({
+        let mut document = json!({
             "interface": self.name(),
             "state": state,
-            "publishSequence": match self {
-                Self::Moved { to, .. } => to.publish_sequence,
-                _ => self.copy().publish_sequence,
-            },
+            "publishSequence": sequence,
             "head": head,
-            "added": nodes.get("added").cloned().unwrap_or_else(|| Value::Array(empty())),
-            "changed": nodes.get("changed").cloned().unwrap_or_else(|| Value::Array(empty())),
-            "removed": nodes.get("removed").cloned().unwrap_or_else(|| Value::Array(empty())),
-        })
+            "added": [],
+            "changed": [],
+            "removed": [],
+        });
+        if let Self::Moved { from, to, changes } = self {
+            for (verb, copy, ids) in parts(from, to, changes) {
+                let nodes = described(copy, ids).into_iter();
+                document[verb] = nodes
+                    .map(|(label, name)| json!({ "label": label, "name": name }))
+                    .collect();
+            }
+        }
+        document
     }
 }
 
@@ -117,27 +111,17 @@ fn parts<'b>(
     ]
 }
 
-/// The node `id` of `copy`, as a line and as JSON: its foreign label and its name.
-fn described(copy: &Copy, id: NodeId) -> (String, Value) {
-    let mut name = String::new();
+/// The nodes `ids` of `copy`, each as its foreign label and its name.
+fn described(copy: &Copy, ids: &[NodeId]) -> Vec<(String, String)> {
+    let mut names = BTreeMap::new();
     Node::Interface(&copy.interface).walk(&mut |node| {
-        if node.id() == Some(id) {
-            name = node.name().into_owned();
+        if let Some(id) = node.id() {
+            names.insert(id, node.name().into_owned());
         }
     });
-    let label = foreign_name(copy, id.key());
-    (
-        format!("{label} · {name}"),
-        json!({ "label": label, "name": name }),
-    )
-}
-
-/// The node `key` of `copy` as `<handle>:<label>`, or `<handle>:<key>` where it has no label.
-pub(in super::super) fn foreign_name(copy: &Copy, key: Key) -> String {
-    match copy.labels.get(&key) {
-        Some(label) => format!("{}:{label}", copy.handle),
-        None => format!("{}:{key}", copy.handle),
-    }
+    (ids.iter())
+        .map(|id| (copy.name_of(id.key()), names.remove(id).unwrap_or_default()))
+        .collect()
 }
 
 /// What an update does to `copy`, its remote reached through `remotes`.
@@ -161,7 +145,7 @@ impl Move<'_> {
         let (files, lock) = remotes
             .state(entry, sequence)?
             .ok_or_else(|| not_held(&entry.remote, sequence))?;
-        let interface = copy.keys()[0];
+        let interface = copy.key();
         match codec::copy_of(handle, files, interface, sequence, lock.state_root) {
             Ok(to) => Ok(Move::Moved {
                 changes: interface_changes(&copy.interface, &to.interface),
@@ -172,10 +156,7 @@ impl Move<'_> {
                 copy,
                 head: sequence,
             }),
-            Err(CopyError::Unreadable(errors)) => Err(refused(format!(
-                "{handle}: the published state of publish sequence {sequence} does not read: {}",
-                errors.first().map(ToString::to_string).unwrap_or_default()
-            ))),
+            Err(CopyError::Unreadable(errors)) => Err(unreadable(handle, sequence, &errors)),
         }
     }
 }

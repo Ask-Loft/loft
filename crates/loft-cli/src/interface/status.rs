@@ -5,12 +5,12 @@
 use std::path::Path;
 
 use loftspec::codec::{self, CopyError};
-use loftspec::copy::Copy;
+use loftspec::copy::{Copy, CopyDifference};
 use loftspec::document::Document;
+use loftspec::identity::Label;
 use serde_json::{Value, json};
 
 use super::reach::Remotes;
-use super::update::foreign_name;
 use super::{Report, connected, document, entry_of};
 use crate::stop::Stop;
 
@@ -49,7 +49,7 @@ fn check<'a>(
         match remotes.state(entry, head)? {
             None => return Err(super::reach::not_held(&entry.remote, head)),
             Some((files, lock)) => {
-                match codec::copy_of(&copy.handle, files, copy.keys()[0], head, lock.state_root) {
+                match codec::copy_of(&copy.handle, files, copy.key(), head, lock.state_root) {
                     Ok(at_head) if at_head.interface_hash == copy.interface_hash => "current",
                     Ok(_) => "behind",
                     Err(_) => "withdrawn",
@@ -78,8 +78,7 @@ fn pinned_difference(
             "the remote holds no published state of publish sequence {pinned}"
         )),
         Some((files, lock)) => {
-            let taken =
-                codec::copy_of(&copy.handle, files, copy.keys()[0], pinned, lock.state_root);
+            let taken = codec::copy_of(&copy.handle, files, copy.key(), pinned, lock.state_root);
             first_difference(copy, taken)
         }
     })
@@ -108,8 +107,8 @@ pub fn confirm(document: &Document) -> Result<(), String> {
     Ok(())
 }
 
-/// How `copy` differs from the copy `taken` from the state its pin names: none where it is that
-/// copy, byte for byte.
+/// How `copy` differs from the copy `taken` from the state its pin names, in words: none where
+/// it is that copy, byte for byte.
 fn first_difference(copy: &Copy, taken: Result<Copy, CopyError>) -> Option<String> {
     let served = match taken {
         Ok(served) => served,
@@ -120,29 +119,19 @@ fn first_difference(copy: &Copy, taken: Result<Copy, CopyError>) -> Option<Strin
             return Some("the state its pin names does not read".to_owned());
         }
     };
-    if copy.state_root != served.state_root {
-        return Some(format!(
-            "its state root is {}, and the remote's is {}",
-            copy.state_root, served.state_root
-        ));
-    }
-    if copy.interface_hash != served.interface_hash {
-        return Some("its Interface is not the one the remote published".to_owned());
-    }
-    let labels = (served.labels.iter()).find(|(key, label)| copy.labels.get(key) != Some(label));
-    if let Some((key, label)) = labels {
-        return Some(format!(
-            "the label of {key} is {}, and the remote's is {label}",
-            copy.labels
-                .get(key)
-                .map_or_else(|| "missing".to_owned(), ToString::to_string)
-        ));
-    }
-    if copy.labels.len() != served.labels.len() {
-        return Some("it labels a node the remote's state does not".to_owned());
-    }
-    (copy.bytes != served.bytes)
-        .then(|| "its file is not the one `loft interface` writes".to_owned())
+    let label = |label: Option<Label>| label.map_or_else(|| "none".to_owned(), |l| l.to_string());
+    Some(match copy.difference(&served)? {
+        CopyDifference::StateRoot { held, served } => {
+            format!("its state root is {held}, and the remote's is {served}")
+        }
+        CopyDifference::Interface => "its Interface is not the one the remote published".to_owned(),
+        CopyDifference::Label { key, held, served } => format!(
+            "the label of {key} is {}, and the remote's is {}",
+            label(held),
+            label(served)
+        ),
+        CopyDifference::Bytes => "its file is not the one `loft interface` writes".to_owned(),
+    })
 }
 
 fn report(checked: &[Checked<'_>]) -> Report {
@@ -150,7 +139,7 @@ fn report(checked: &[Checked<'_>]) -> Report {
     let mut lines = Vec::new();
     let mut copies = Vec::new();
     for copy in checked {
-        let name = foreign_name(copy.copy, copy.copy.keys()[0]);
+        let name = copy.copy.name_of(copy.copy.key());
         let pinned = copy.copy.publish_sequence;
         let pin = match &copy.difference {
             Some(difference) => format!("mismatch: {difference}"),

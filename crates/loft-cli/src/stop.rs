@@ -26,6 +26,11 @@ impl Stop {
         Self::all(kind, vec![message])
     }
 
+    /// A refusal of the command, its message also the line.
+    pub fn refused(message: impl Into<String>) -> Self {
+        Self::one("refused", message.into())
+    }
+
     /// One error of `kind` for each message, each message also a line.
     pub fn all(kind: &str, messages: Vec<String>) -> Self {
         Self {

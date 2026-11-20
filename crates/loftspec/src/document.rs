@@ -42,6 +42,28 @@ impl EdgeKind {
             Self::Requires => "requires",
         }
     }
+
+    /// The field of its source's record that writes an edge of this kind.
+    #[must_use]
+    pub const fn field(self) -> &'static str {
+        match self {
+            Self::Realizes => "realizes",
+            Self::ScopedTo => "scopedTo",
+            Self::Mentions => "mentions",
+            Self::Subject => "subjects",
+            Self::Provides => "provides",
+            Self::Requires => "requires",
+        }
+    }
+
+    /// Whether an edge of this kind may name a node of a copy of another document's Interface.
+    #[must_use]
+    pub const fn crosses(self) -> bool {
+        matches!(
+            self,
+            Self::Provides | Self::Requires | Self::Mentions | Self::Subject
+        )
+    }
 }
 
 /// The role a `subject` edge carries from a decision to a node.

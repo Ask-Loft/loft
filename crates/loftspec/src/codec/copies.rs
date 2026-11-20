@@ -57,11 +57,10 @@ pub fn copy_of(
         .expect("a read Interface has its file");
     let mut labels = Vec::new();
     Node::Interface(held).walk(&mut |node| {
-        let key = node.id().map(crate::ids::NodeId::key);
-        if let Some((key, label)) =
-            key.and_then(|key| Some((key, document.bindings.label_of_key(key)?)))
+        if let Some(id) = node.id()
+            && let Some(label) = document.bindings.label_of_key(id.key())
         {
-            labels.push(label_record(key, label));
+            labels.push(label_record(id.key(), label));
         }
     });
     let mut copy = Rec::new(Kind::Copy);
@@ -193,12 +192,9 @@ pub(super) fn copies(tree: &Tree) -> (Vec<Copy>, Vec<ReadError>) {
 pub(super) fn foreign(copies: &[Copy]) -> BTreeMap<(String, Key), NodeId> {
     let mut nodes = BTreeMap::new();
     for copy in copies {
-        let handle = copy.handle.as_str();
-        Node::Interface(&copy.interface).walk(&mut |node| {
-            if let Some(id) = node.id() {
-                nodes.insert((handle.to_owned(), id.key()), id);
-            }
-        });
+        for id in copy.ids() {
+            nodes.insert((copy.handle.as_str().to_owned(), id.key()), id);
+        }
     }
     nodes
 }
@@ -220,6 +216,9 @@ pub(super) fn crossing(tree: &Tree, document: &Document) -> Vec<ReadError> {
             );
             errors.push(ReadError::at(&directory, None, Problem::Model(problem)));
         }
+    }
+    if document.copies.is_empty() {
+        return errors;
     }
     let sites = Sites::of(tree);
     let mut seen: BTreeMap<Key, SpecPath> = BTreeMap::new();

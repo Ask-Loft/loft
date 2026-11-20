@@ -226,6 +226,19 @@ pub fn signed_in(address: &str, browser: bool, timeout: Duration) -> Result<Stri
     }
 }
 
+/// A new sign-in to `address`, kept in `loft/remotes.json`, opened in the person's browser where
+/// `browser` allows.
+///
+/// # Errors
+///
+/// The address may not be contacted, `LOFT_REMOTE_TIMEOUT` is not a whole number of seconds,
+/// the sign-in cannot be made, or `loft/remotes.json` cannot be written.
+pub fn login(address: &str, browser: bool) -> Result<(), RemoteError> {
+    checked(address)?;
+    let sign_in = signin::sign_in(address, browser, timeout()?)?;
+    signins::save(address, &sign_in)
+}
+
 /// The client of another document's remote at `address`, with the person's sign-in to that
 /// address, made first where none is kept. Neither `LOFT_REMOTE_ENDPOINT` nor
 /// `LOFT_REMOTE_TOKEN` is read: they name the document's own remote alone.

@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::copy::Foreign;
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
-use crate::document::{Document, EdgeKind, EdgeTarget};
+use crate::document::{Document, EdgeTarget};
 use crate::identity::Key;
 use crate::ids::{DecisionId, ElementId, NodeId, OptionId};
 use crate::node::Node;
@@ -235,10 +235,7 @@ fn references(document: &Document, index: &Index) -> Vec<IntegrityError> {
     let mut errors = Vec::new();
     let foreign = Foreign::of(&document.copies);
     for edge in &document.edges {
-        let crossing = matches!(
-            edge.kind(),
-            EdgeKind::Provides | EdgeKind::Requires | EdgeKind::Mentions | EdgeKind::Subject
-        );
+        let crossing = edge.kind().crosses();
         if !index.holds(edge.source()) {
             errors.push(IntegrityError::UnknownEdgeEndpoint(edge.source()));
         }

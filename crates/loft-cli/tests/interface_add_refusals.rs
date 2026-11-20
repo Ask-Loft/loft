@@ -3,11 +3,9 @@
 //! held, a remote that serves the document itself, and a save its journal cannot make. Each
 //! exits 1 and writes nothing.
 
-use std::fs;
-
+use crate::common::connected::Connected;
 use crate::common::others::{listing, shelves, shelves_remote};
 use crate::common::remote::history;
-use crate::common::signed_in::document;
 use crate::common::{Scratch, stderr, tree};
 use crate::interface_add::{conforming, interface, ready};
 use software_plant::remote::{Remote, RemoteScenario};
@@ -94,15 +92,11 @@ fn a_remote_whose_state_names_the_documents_own_key_is_refused_naming_the_key() 
 #[test]
 fn an_add_whose_journal_cannot_save_writes_neither_the_copy_nor_the_manifest() {
     let (scratch, _history, _remote) = ready(true);
-    // The journal lives under `.loft/`, which a file of that name keeps from being created.
-    fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap();
+    scratch.block_journal();
     let before = tree(&scratch.0);
     let output = interface(&scratch, &["add", "shelves:IF-1", "--format", "json"]);
     assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
-    let message = document(&output)["errors"][0]["message"]
-        .as_str()
-        .unwrap()
-        .to_owned();
+    let message = Connected::message(&output);
     assert!(message.contains(".loft"), "{message}");
     assert_eq!(tree(&scratch.0), before);
 }

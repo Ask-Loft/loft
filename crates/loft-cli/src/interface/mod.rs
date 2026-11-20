@@ -5,6 +5,7 @@
 //! `loft remote`, it sends no command event and asks for no update.
 
 mod add;
+mod login;
 mod reach;
 mod references;
 mod remove;
@@ -27,6 +28,7 @@ use serde_json::Value;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
+use crate::remote_command::document;
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
@@ -81,7 +83,7 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
         } => update::run(root, target.as_deref(), *at, *browser),
         Action::Status { browser } => status::run(root, *browser),
         Action::Remove { interface } => remove::run(root, interface),
-        Action::Login { handle, browser } => remove::login(root, handle, *browser),
+        Action::Login { handle, browser } => login::run(root, handle, *browser),
     };
     match report {
         Ok(report) => {
@@ -109,7 +111,7 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
 
 /// A refusal of the command.
 fn refused(message: impl Into<String>) -> Stop {
-    Stop::one("refused", message.into())
+    Stop::refused(message)
 }
 
 /// Refuses a document that is not connected.
@@ -127,7 +129,7 @@ fn connected(document: &Document) -> Result<(), Stop> {
 fn held<'a>(document: &'a Document, target: &str) -> Result<&'a Copy, Stop> {
     let Named { handle, interface } = named(target)?;
     let copy = (document.copies.iter()).find(|copy| {
-        let key = copy.keys()[0];
+        let key = copy.key();
         copy.handle == handle
             && match interface {
                 Interface::Key(named) => named == key,
@@ -146,13 +148,6 @@ fn entry_of<'a>(document: &'a Document, copy: &Copy) -> &'a OtherDocument {
     (document.documents.iter())
         .find(|entry| entry.handle == copy.handle)
         .expect("the reader refuses a copy whose handle is not listed")
-}
-
-/// The tree's store and the document it holds.
-fn document(root: &Path) -> Result<(FileStore, Document), Stop> {
-    let store = FileStore::open(root)?;
-    let document = codec::read(&store.read_files()?).map_err(Stop::from)?;
-    Ok((store, document))
 }
 
 /// Writes the files at `paths` of `document` as the writer writes them, in one journaled save.

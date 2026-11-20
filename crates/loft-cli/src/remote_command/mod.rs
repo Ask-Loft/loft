@@ -15,7 +15,7 @@ use serde_json::{Value, json};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
-use crate::remote::{self, Client, RemoteError, signin, signins};
+use crate::remote::{self, Client, RemoteError, signins};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
@@ -68,7 +68,7 @@ pub fn run(root: &Path, action: &Action, as_json: bool) -> Finished {
 }
 
 /// The tree's store and the document it holds.
-fn document(root: &Path) -> Result<(FileStore, Document), Stop> {
+pub(crate) fn document(root: &Path) -> Result<(FileStore, Document), Stop> {
     let store = FileStore::open(root)?;
     let document = codec::read(&store.read_files()?).map_err(Stop::from)?;
     Ok((store, document))
@@ -144,10 +144,7 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
             ),
         )
     })?;
-    remote::checked(&address)?;
-    let timeout = remote::timeout()?;
-    let sign_in = signin::sign_in(&address, browser, timeout)?;
-    signins::save(&address, &sign_in)?;
+    remote::login(&address, browser)?;
     Ok(Report {
         outcome: "signed in",
         fields: json!({ "documentKey": key, "address": address }),

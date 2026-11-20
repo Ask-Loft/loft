@@ -132,15 +132,7 @@ fn foreign_finding(
     if !(document.documents.iter()).any(|other| other.handle.as_str() == handle) {
         return None;
     }
-    let under = document
-        .copies
-        .iter()
-        .filter(|copy| copy.handle.as_str() == handle);
-    let held = under
-        .flat_map(|copy| copy.labels.iter())
-        .find(|(_, bound)| **bound == label)
-        .map(|(key, _)| *key);
-    match held {
+    match crate::copy::labeled(&document.copies, handle, label) {
         Some(key) if mentioned(key) => None,
         Some(_) => Some((RuleId::V2003, "The reference has no `mentions` edge.")),
         None => Some((RuleId::V2003, "The reference names no element.")),

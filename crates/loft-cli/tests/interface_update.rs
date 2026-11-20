@@ -198,8 +198,7 @@ fn a_reference_left_naming_a_node_no_copy_holds_is_named_and_the_copies_are_writ
 #[test]
 fn an_update_whose_journal_cannot_save_moves_no_copy() {
     let (scratch, _remote) = pinned_at_first(&["shelves:IF-1"]);
-    // The journal lives under `.loft/`, which a file of that name keeps from being created.
-    fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap();
+    scratch.block_journal();
     let before = crate::common::tree(&scratch.0);
     let (code, document) = update(&scratch, &[]);
     assert_eq!(code, 1, "{document}");

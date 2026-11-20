@@ -140,6 +140,12 @@ impl Scratch {
         self.0.join("spec").join(path)
     }
 
+    /// Keeps every journaled save from starting: the journal lives under `.loft/`, which a file
+    /// of that name keeps from being created.
+    pub fn block_journal(&self) {
+        fs::write(self.0.join(".loft"), "not a directory\n").unwrap();
+    }
+
     pub fn edit(&self, path: &str, from: &str, to: &str) {
         let text = fs::read_to_string(self.file(path)).unwrap();
         assert!(text.contains(from), "{from:?} in {path}");

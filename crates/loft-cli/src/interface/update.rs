@@ -20,7 +20,6 @@ use super::references::references;
 use super::{Report, connected, document, held, refused};
 use crate::stop::Stop;
 use moves::Move;
-pub(super) use moves::foreign_name;
 
 pub(super) fn run(
     root: &Path,
@@ -96,7 +95,7 @@ fn dangling(document: &Document, moves: &[Move<'_>]) -> Vec<Dangling> {
             found.push(Dangling {
                 element: reference.element,
                 field: reference.field,
-                label: moves::foreign_name(from, reference.key),
+                label: from.name_of(reference.key),
             });
         }
     }

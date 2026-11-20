@@ -75,7 +75,7 @@ pub fn content_changes(base: &Document, document: &Document) -> NodeChanges {
 #[must_use]
 pub fn interface_changes(older: &Interface, newer: &Interface) -> NodeChanges {
     let alone = |interface: &Interface| {
-        let key = (interface.id.or(newer.id).or(older.id))
+        let key = (interface.id)
             .map(InterfaceId::key)
             .expect("a copied Interface carries its key");
         let mut document = Document::empty(DocumentId::new(key));
