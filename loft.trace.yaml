@@ -11445,6 +11445,57 @@ links:
       - file: "crates/loft-cli/src/locate/tests/mod.rs"
         name: "a_part_that_does_not_parse_is_given_by_line_column_and_text_or_the_missing_token"
         body: b92ceab5b0c9994159aead689605ae91d5e7e31020418f9e9ef08650449fadcd
+  - node: 01a1f981-4db1-765f-a897-21de18a7b5c4
+    reviewed: d32f5981b74e9aa14b538c15200447a2f5a2213ef796789482c9bb6c592c40d7
+    tests:
+      - file: "crates/loftspec/tests/trace_foreign.rs"
+        name: "each_criterion_beneath_a_provided_copied_interface_is_in_scope"
+        body: 6ee5dada2fa76eba2995ce3c5071674200a5e08b13b17a4d0d996563836b60d1
+      - file: "crates/loft-cli/tests/reconcile_foreign.rs"
+        name: "a_provided_copied_criterion_no_link_names_is_reported_by_its_handle_and_label"
+        body: d117a183379ccf65cd65c7d3c27f1bde3e6e7a6f3a0d1ca572487a103bd53458
+  - node: 01a1f981-4db1-765f-a897-21df36b5d893
+    reviewed: 17aefd770c45e82807b5bac6e5d12fc2c292b3bb5516876190fed035852aabde
+    tests:
+      - file: "crates/loftspec/tests/trace_foreign.rs"
+        name: "a_criterion_beneath_a_copied_interface_no_component_provides_is_not_in_scope"
+        body: fa2b10c447d2635184c6c033317d2c0ad1df0df7b8b1b5aa4caffe186d063060
+  - node: 01a1f981-4db1-765f-a897-21e0380fcc60
+    reviewed: e117508da97f3120e25de5f34af5c9de97acbd565f5abd583e5d4ab9898da0fe
+    tests:
+      - file: "crates/loft-cli/tests/reconcile_foreign.rs"
+        name: "a_provided_copied_criterion_no_link_names_is_reported_by_its_handle_and_label"
+        body: d117a183379ccf65cd65c7d3c27f1bde3e6e7a6f3a0d1ca572487a103bd53458
+  - node: 01a1f981-4db1-765f-a897-21e26e6b513f
+    reviewed: 5351789543cd7f0cea00d1e988f20d219d067d7efc1012ab6013e22be43a0106
+    tests:
+      - file: "crates/loftspec/tests/trace_foreign.rs"
+        name: "a_link_reviewed_before_its_pin_moved_to_a_changed_criterion_is_stale"
+        body: 72b8544d0efdce9b00e0c488ac062e73025e3a6f2150bdbae112127563f01309
+  - node: 01a1f981-4db1-765f-a897-21e3f6684ab7
+    reviewed: 1ecc9a2dbaccb33de95a9e76c0475c275748940e580cf658d53c400ac088be75
+    tests:
+      - file: "crates/loftspec/tests/trace_foreign.rs"
+        name: "a_link_reviewed_before_its_pin_moved_to_a_changed_criterion_is_stale"
+        body: 72b8544d0efdce9b00e0c488ac062e73025e3a6f2150bdbae112127563f01309
+  - node: 01a1f981-4db1-765f-a897-21e407c55194
+    reviewed: 5c1b7aae0838bf5cc835995804189605732a4ee44149e23a91600f844ac3d82b
+    tests:
+      - file: "crates/loft-cli/tests/reconcile_foreign.rs"
+        name: "accepting_a_handle_and_label_accepts_the_link_to_that_foreign_criterion"
+        body: 51f592c48285674364cd8a7c275efa8abbd2083d2347e1256b653278c650fafa
+  - node: 01a1f981-4db1-765f-a897-21e653a5529f
+    reviewed: 51753c92f5844981cf647cecb054ff27eb2164f907110fad4bdce61eb01f868b
+    tests:
+      - file: "crates/loftspec/tests/trace_foreign.rs"
+        name: "links_to_foreign_criteria_follow_the_documents_own_by_handle_then_copy_order"
+        body: 6689ea342dbe2c7afe84b0e03d09d5b41373331461cfbb1cac1d906805515d2c
+  - node: 01a1f981-4db1-765f-a897-21e7301706b9
+    reviewed: dec051e9131a2018ce198e4730f49117daace2bbbe7dff923ca6838d73ae907a
+    tests:
+      - file: "crates/loftspec/tests/trace_foreign.rs"
+        name: "links_to_foreign_criteria_follow_the_documents_own_by_handle_then_copy_order"
+        body: 6689ea342dbe2c7afe84b0e03d09d5b41373331461cfbb1cac1d906805515d2c
   - node: 01a156a5-b76b-7233-8659-69ec661fc3e6
     reviewed: 3508cebd367de8717a84ba4eabe9faff8eec4f8737ba2e488e4fed3c7f6d3d36
     tests:

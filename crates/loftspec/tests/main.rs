@@ -132,6 +132,7 @@ mod statement_parse;
 mod term_report;
 mod terms;
 mod trace_findings;
+mod trace_foreign;
 mod trace_located;
 mod trace_lost;
 mod trace_read;

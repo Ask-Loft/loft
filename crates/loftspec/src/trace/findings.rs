@@ -153,7 +153,7 @@ pub fn reconcile(
                 tests,
                 found: &seen,
             };
-            checked.findings(&mut findings, hashes.nodes[&place.id]);
+            checked.findings(&mut findings, super::hash_of(hashes, place.id));
             checked.anchors(&mut findings, &literals, &seeker);
         } else {
             findings.push(out_of_scope(link, &places));

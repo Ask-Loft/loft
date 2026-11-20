@@ -60,6 +60,7 @@ mod pull;
 mod pull_checks;
 mod reads_tree;
 mod reconcile;
+mod reconcile_foreign;
 mod reconcile_located;
 mod record_install;
 mod release_check;
