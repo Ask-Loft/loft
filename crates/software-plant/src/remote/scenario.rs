@@ -103,7 +103,8 @@ pub struct RemoteScenario {
     pub(super) metadata: Metadata,
     /// The OAuth error every registration is refused with.
     pub(super) refused_registration: Option<String>,
-    /// The OAuth error every code exchange for a resource the scenario serves is refused with.
+    /// The OAuth error every code exchange that names a single resource, one the scenario serves,
+    /// is refused with.
     pub(super) refused_exchange: Option<String>,
     /// Whether the next refresh's answer is lost after the token rotates.
     pub(super) losing_refresh: bool,
@@ -273,8 +274,8 @@ impl RemoteScenario {
         self.grace(Duration::ZERO)
     }
 
-    /// Refuses every refresh for a resource the scenario serves `invalid_grant`, as a sign-in that
-    /// has lapsed.
+    /// Refuses `invalid_grant` every refresh that names a single resource, one the scenario
+    /// serves, as a sign-in that has lapsed.
     #[must_use]
     pub fn lapsing(mut self) -> Self {
         self.lapsed = true;
@@ -302,8 +303,8 @@ impl RemoteScenario {
         self
     }
 
-    /// Refuses every code exchange for a resource the scenario serves with the OAuth error
-    /// `error`.
+    /// Refuses with the OAuth error `error` every code exchange that names a single resource, one
+    /// the scenario serves.
     #[must_use]
     pub fn refusing_exchange(mut self, error: &str) -> Self {
         self.refused_exchange = Some(error.to_owned());

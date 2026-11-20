@@ -8,6 +8,9 @@
 //!   client's or a revoked sign-in's;
 //! - a sign-in made for a resource that the remote no longer serves.
 //!
+//! A refresh that names more than one resource has a suite of its own,
+//! `remote_contract_token_requests.rs`.
+//!
 //! Each scenario runs against the simulator and, on demand, against the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS`. A real half spends the sign-in that `loft remote login` kept in
 //! the `loft/remotes.json` that `LOFT_REMOTE_CONTRACT_SIGN_IN` names. Run each real half alone,
@@ -37,7 +40,7 @@ use crate::remote_contract::assert_problem;
 
 /// The premise of each real half that refreshes: the kept refresh token is the sign-in's current
 /// one.
-const UNREFRESHED: &str = "premise: nothing refreshed the sign-in since it was kept";
+pub const UNREFRESHED: &str = "premise: nothing refreshed the sign-in since it was kept";
 
 /// Requires `answer`, to a request under the document at `address` with an access token that is
 /// not for the resource its metadata names, to be a refusal with the challenge of a request

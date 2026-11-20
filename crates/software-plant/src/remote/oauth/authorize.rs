@@ -1,7 +1,7 @@
 //! The authorization endpoint: an authorization request of the code grant with PKCE (RFC 7636),
-//! from a registered client to one of its redirects, naming each protected resource it asks for
-//! (RFC 8707) and the scopes it asks of them, answered by a redirect back that carries a code for
-//! all of them, or an error, as the person consents.
+//! from a registered client to one of its redirects, naming once each protected resource it asks
+//! for (RFC 8707) and the scopes it asks of them, answered by a redirect back that carries a code
+//! for all of them, or an error, as the person consents.
 
 use super::register::{loopback, portless};
 use super::{Code, Form};
@@ -59,17 +59,23 @@ pub(crate) fn authorize(state: &mut State, query: &str) -> Response {
 }
 
 /// The resources and the scopes that the authorization request `query` asks for, or the error it
-/// is refused with. Its resources are judged first: at least one, each one the scenario serves,
-/// or `invalid_target`. Then its `scope`, which holds scopes separated by single spaces, each
-/// once and each accepted by a resource it names, or `invalid_scope`. Then each resource, which
-/// is asked for a scope it accepts, or `invalid_target`.
+/// is refused with. Its resources are judged first: at least one, each one the scenario serves
+/// and each named once, or `invalid_target`. Then its `scope`, which holds scopes separated by
+/// single spaces, each once and each accepted by a resource it names, or `invalid_scope`. Then
+/// each resource, which is asked for a scope it accepts, or `invalid_target`.
 fn judged(state: &State, query: &Form) -> Result<(Vec<String>, Vec<String>), &'static str> {
     let resources = query.fields("resource");
+    let repeated = resources
+        .iter()
+        .enumerate()
+        .any(|(at, resource)| resources[..at].contains(resource));
+    if resources.is_empty() || repeated {
+        return Err("invalid_target");
+    }
     let accepted: Option<Vec<Vec<String>>> = resources
         .iter()
         .map(|resource| state.accepted(resource))
         .collect();
-    let accepted = accepted.filter(|accepted| !accepted.is_empty());
     let accepted = accepted.ok_or("invalid_target")?;
     let mut scopes: Vec<String> = Vec::new();
     for scope in query.field("scope").split(' ') {

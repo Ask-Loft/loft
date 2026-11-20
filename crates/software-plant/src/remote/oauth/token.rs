@@ -3,9 +3,10 @@
 //! for the sign-in; and a refresh for one resource the sign-in holds, which rotates the refresh
 //! token and issues an access token for that resource alone, answers a rotated one again for the
 //! resource its rotation named within the grace window until its successor rotates, and revokes
-//! the whole sign-in otherwise. A resource the scenario does not serve, or none, is refused before
-//! the code or the refresh token is read, and a resource that a live refresh token's sign-in does
-//! not hold is refused with nothing rotated.
+//! the whole sign-in otherwise. A token request names exactly one resource: one that names none,
+//! more than one, or one the scenario does not serve is refused before the code or the refresh
+//! token is read, and a resource that a live refresh token's sign-in does not hold is refused with
+//! nothing rotated.
 
 use std::time::Duration;
 
@@ -31,15 +32,27 @@ pub(crate) fn token(state: &mut State, request: &Request) -> Response {
     }
 }
 
+/// The one resource that the token request `form` names, with the scopes it accepts: nothing,
+/// where the request names no resource, more than one, or one the scenario does not serve.
+fn named(state: &State, form: &Form) -> Option<(String, Vec<String>)> {
+    let [resource]: [String; 1] = form.fields("resource").try_into().ok()?;
+    let accepted = state.accepted(&resource)?;
+    Some((resource, accepted))
+}
+
+/// A code exchange, judged in order: a single resource, one the scenario serves, before anything
+/// else; then a scenario that refuses every exchange; then a code the simulator issued, not yet
+/// exchanged, that its client presents with its redirect and its verifier; then a resource that
+/// the code's authorization request named. Otherwise the code is used up, and begins a sign-in
+/// that holds every resource its authorization request named.
 fn exchange(state: &mut State, form: &Form) -> Response {
-    let field = |name| form.field(name);
-    let resource = field("resource");
-    let Some(accepted) = state.accepted(&resource) else {
+    let Some((resource, accepted)) = named(state, form) else {
         return oauth("invalid_target");
     };
     if let Some(error) = &state.scenario.refused_exchange {
         return oauth(error);
     }
+    let field = |name| form.field(name);
     let Some(code) = state.auth.codes.get_mut(&field("code")) else {
         return oauth("invalid_grant");
     };
@@ -66,19 +79,18 @@ fn exchange(state: &mut State, form: &Form) -> Response {
     Response::json(200, &state.auth.issue(family, &client_id, &token))
 }
 
-/// A refresh, judged in order: a resource the scenario does not serve, or none, before the
-/// refresh token is read; then a lapsing scenario, a refresh token the simulator does not know,
-/// another client's, or one of a revoked sign-in; then a rotated refresh token; then a resource
-/// that the sign-in does not hold. Otherwise the refresh token rotates.
+/// A refresh, judged in order: a single resource, one the scenario serves, before the refresh
+/// token is read; then a lapsing scenario, a refresh token the simulator does not know, another
+/// client's, or one of a revoked sign-in; then a rotated refresh token; then a resource that the
+/// sign-in does not hold. Otherwise the refresh token rotates.
 fn refresh(state: &mut State, form: &Form) -> Response {
-    let field = |name| form.field(name);
-    let resource = field("resource");
-    let Some(accepted) = state.accepted(&resource) else {
+    let Some((resource, accepted)) = named(state, form) else {
         return oauth("invalid_target");
     };
     if state.scenario.lapsed {
         return oauth("invalid_grant");
     }
+    let field = |name| form.field(name);
     let presented = field("refresh_token");
     let Some(entry) = state.auth.refresh.get(&presented) else {
         return oauth("invalid_grant");

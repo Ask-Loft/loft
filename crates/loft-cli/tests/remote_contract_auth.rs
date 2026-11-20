@@ -146,6 +146,9 @@ fn an_authorization_request_is_answered_for_the_first_step_it_fails_in_the_order
         let named = format!("{resource} with {failing:?}");
         assert_eq!(value(&location(&answer), "error"), Some(error), "{named}");
     }
+    // A resource named twice fails with the resources, before the scope.
+    let twice = authorize_for(&server, &client, &[&own, &own], "");
+    assert_eq!(value(&location(&twice), "error"), Some("invalid_target"));
     // The scopes asked of each resource are judged before the person's consent.
     let refusing = Remote::start(
         RemoteScenario::accepting(KEY)

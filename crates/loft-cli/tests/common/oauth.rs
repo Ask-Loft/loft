@@ -3,8 +3,8 @@
 //! challenge of a request without a token, the parameters of that challenge, the metadata of a
 //! companion resource, the registration of a public client, an authorization request with PKCE
 //! for one protected resource or more and the redirect that answers it, the exchange of its code,
-//! a refresh that names one resource or another number of them, and the OAuth error answer that
-//! refuses one.
+//! a refresh that names one resource or another number of them, the OAuth error answer that
+//! refuses one, and a resource that no remote serves.
 
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
@@ -24,6 +24,9 @@ pub const REDIRECT: &str = "http://127.0.0.1/callback";
 /// The redirect URI of every authorization request and exchange: the registered one, on a port
 /// of its own.
 pub const CALLBACK: &str = "http://127.0.0.1:4567/callback";
+/// A protected resource that no remote serves: one on an origin under `.invalid`, which RFC 6761
+/// reserves so that it never resolves, and so is no remote's origin.
+pub const UNSERVED: &str = "https://elsewhere.invalid/documents";
 
 /// The protected resource metadata and the authorization server metadata of `remote`'s
 /// document.

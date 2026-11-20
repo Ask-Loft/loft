@@ -4,7 +4,9 @@
 //! - one authorization request for every resource, and a code exchanged for one of them by the
 //!   client it was issued to alone.
 //!
-//! The refreshes of such a sign-in have a suite of their own, `remote_contract_refreshes.rs`.
+//! The refreshes of such a sign-in have a suite of their own, `remote_contract_refreshes.rs`, and
+//! so does a code exchange or a refresh that names more than one resource,
+//! `remote_contract_token_requests.rs`.
 //!
 //! Each scenario runs against the simulator and, on demand, against the remote at
 //! `LOFT_REMOTE_CONTRACT_ADDRESS`: run a real half with
@@ -332,6 +334,16 @@ fn an_authorization_request_is_refused_for_a_resource_or_a_scope_the_remote_does
         (
             vec![own.as_str(), notes.as_str()],
             "documents",
+            "invalid_target",
+        ),
+        (
+            vec![own.as_str(), own.as_str()],
+            "documents",
+            "invalid_target",
+        ),
+        (
+            vec![own.as_str(), notes.as_str(), notes.as_str()],
+            "documents notes",
             "invalid_target",
         ),
     ] {
