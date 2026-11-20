@@ -18,7 +18,7 @@ fn the_environment_names_the_address_and_the_token_for_one_run() {
     let run = connected(1, 1, RemoteScenario::accepting);
     name_remote(
         &run.scratch,
-        Some("https://elsewhere.example/documents/one"),
+        Some("https://elsewhere.example/loft/t/acme/api/v2/documents/one/remote"),
         true,
     );
     // A sign-in kept for the address, about to expire, is neither used nor refreshed.
@@ -53,7 +53,7 @@ fn without_a_sign_in_the_publish_is_refused_naming_the_address_and_login() {
     // The file holds a sign-in, but for another address.
     keep(
         &run.scratch,
-        &json!({ "https://other.example/documents/one": granted(&run.remote, 3600) }),
+        &json!({ "https://other.example/loft/t/acme/api/v2/documents/one/remote": granted(&run.remote, 3600) }),
     );
     run.change();
     let output = run.publish();

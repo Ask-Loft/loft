@@ -4,8 +4,9 @@
 //! signs in to it as a person would, scripts what it holds and how it answers, and reads the
 //! requests it received.
 //!
-//! The document lies at `<origin>/documents/<key>`, the address the binary is given. The
-//! authorization server's issuer is `<origin>/auth`, and both metadata documents lie under
+//! The document lies at `<origin>/loft/t/plant/api/v2/documents/<key>/remote`, the address the
+//! binary is given, in the form a Loft server gives each document under the simulator's own
+//! tenant slug, `plant`. The authorization server's issuer is `<origin>/auth`, and both metadata documents lie under
 //! `<origin>/.well-known/`, beside the metadata of each companion resource a scenario lists.
 //! What a scenario places on another origin lies on a second port of the loopback interface, and
 //! there alone. A publish is published with the Format's own publisher, made as the document's
@@ -37,9 +38,16 @@ pub use scenario::{Consent, Metadata, RemoteScenario};
 /// The bearer token every scenario admits, as `LOFT_REMOTE_TOKEN` gives it to the binary.
 pub const TOKEN: &str = "simulator-token";
 
-/// The path of the protected resource every document lies under, which the resource metadata
-/// names and is served beside.
-const RESOURCE: &str = "/documents";
+/// The path of the protected resource every document lies under, the documents of the
+/// simulator's tenant, which the resource metadata names and is served beside.
+pub const RESOURCE: &str = "/loft/t/plant/api/v2/documents";
+
+/// The path of the address of the document of `key`, in the form a Loft server gives each
+/// document: its key under the documents of the tenant, then `/remote`.
+#[must_use]
+pub fn document_path(key: &str) -> String {
+    format!("{RESOURCE}/{key}/remote")
+}
 
 /// A published state as the remote holds it: its lock record and the text of each file under
 /// `spec/`, by its path from the top of the tree.
@@ -73,7 +81,7 @@ struct State {
 
 impl State {
     fn address_path(&self) -> String {
-        format!("/documents/{}", self.scenario.key)
+        document_path(&self.scenario.key)
     }
 }
 
@@ -133,10 +141,10 @@ impl Remote {
     /// The document's address, which names one origin and path.
     #[must_use]
     pub fn address(&self) -> String {
-        format!("{}/documents/{}", self.origin, self.key)
+        format!("{}{}", self.origin, document_path(&self.key))
     }
 
-    /// The document's protected resource, as `<origin>/documents`.
+    /// The document's protected resource, as `<origin>` followed by [`RESOURCE`].
     #[must_use]
     pub fn resource(&self) -> String {
         lock(&self.state).resource()

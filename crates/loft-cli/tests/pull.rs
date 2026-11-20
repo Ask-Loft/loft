@@ -9,7 +9,7 @@ use std::process::Output;
 use loftspec::codec::{Files, SpecPath};
 use loftspec::publish::Lock;
 use software_plant::BrowserScenario;
-use software_plant::remote::{RemoteScenario, StoredState};
+use software_plant::remote::{RemoteScenario, StoredState, document_path};
 
 use crate::common::connected::{Connected, connected, serve, written_lock};
 use crate::common::remote::{History, history, publish_at, spec, stored, wire};
@@ -70,14 +70,11 @@ pub fn calls(run: &Connected) -> Vec<String> {
     run.remote
         .requests()
         .into_iter()
-        .filter(|request| request.path.starts_with("/documents/"))
-        .map(|request| {
+        .filter_map(|request| {
             request
                 .path
-                .rsplit_once(&run.history.key)
-                .unwrap()
-                .1
-                .to_owned()
+                .strip_prefix(&document_path(&run.history.key))
+                .map(str::to_owned)
         })
         .collect()
 }

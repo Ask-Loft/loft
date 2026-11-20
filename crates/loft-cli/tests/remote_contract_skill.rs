@@ -4,7 +4,7 @@
 
 use serde_json::json;
 use software_plant::remote::wire::sha256_hex;
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{RESOURCE, Remote, RemoteScenario};
 
 use crate::common::calls::{Answer, agent, call};
 use crate::remote_contract::assert_problem;
@@ -55,7 +55,7 @@ fn the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token()
     let package = manifest["package"].as_str().unwrap();
     assert!(package.starts_with('/'), "{package}");
     // The address holds a path; the manifest is on its origin all the same.
-    assert!(remote.address().contains("/documents/"));
+    assert!(remote.address().contains(RESOURCE));
     let under_address = call(
         "GET",
         &format!("{}/.well-known/loft-skill.json", remote.address()),

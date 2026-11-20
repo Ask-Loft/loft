@@ -150,6 +150,50 @@ fn a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_iss
     );
 }
 
+/// Whether `address` has the form a Loft server gives each document:
+/// `<origin>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`.
+fn in_the_form_a_loft_server_gives(address: &str) -> bool {
+    let path = address
+        .split_once("://")
+        .and_then(|(_, rest)| rest.split_once('/'))
+        .map_or("", |(_, path)| path);
+    let segments: Vec<&str> = path.split('/').collect();
+    matches!(
+        segments.as_slice(),
+        ["loft", "t", slug, "api", "v2", "documents", key, "remote"]
+            if !slug.is_empty() && !key.is_empty()
+    )
+}
+
+#[test]
+fn the_simulator_serves_its_document_at_the_address_a_loft_server_gives_a_document() {
+    let (remote, history) = holding(1);
+    assert_eq!(
+        remote.address(),
+        format!(
+            "{}/loft/t/plant/api/v2/documents/{}/remote",
+            remote.origin(),
+            history.key
+        )
+    );
+    assert!(in_the_form_a_loft_server_gives(&remote.address()));
+    assert!(!in_the_form_a_loft_server_gives(remote.origin()));
+    assert_eq!(get(&remote, "/head").status, 200);
+    let elsewhere = format!("{}/documents/{}/head", remote.origin(), history.key);
+    assert_problem(
+        &call("GET", &elsewhere, Some(TOKEN), None),
+        404,
+        "not_found",
+    );
+}
+
+#[test]
+#[ignore = "reaches the remote at LOFT_REMOTE_CONTRACT_ADDRESS"]
+fn a_real_remote_s_address_has_the_form_a_loft_server_gives_a_document() {
+    let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
+    assert!(in_the_form_a_loft_server_gives(&address), "{address}");
+}
+
 #[test]
 fn every_call_but_create_for_a_document_the_simulator_does_not_hold_is_not_found() {
     let key = "01a18e30-0000-7000-8000-000000000002";

@@ -338,7 +338,7 @@ fn with_origin(value: &Value, origin: &str) -> Value {
 mod tests {
     use std::panic::catch_unwind;
 
-    use super::{Companion, RemoteScenario};
+    use super::{Companion, RESOURCE, RemoteScenario};
 
     #[test]
     fn a_scenario_lists_a_companion_resource_only_with_a_kind_and_a_metadata_address_of_its_own() {
@@ -349,8 +349,10 @@ mod tests {
             Companion::new("notes", &["any"]).at("/any"),
             Companion::new("any", &["any"]).at("/notes"),
             Companion::new("any", &["any"]).at("/notes/"),
-            Companion::new("documents", &["documents"]),
-            Companion::new("documents", &["documents"]).elsewhere(),
+            Companion::new("documents", &["documents"]).at(RESOURCE),
+            Companion::new("documents", &["documents"])
+                .at(RESOURCE)
+                .elsewhere(),
         ] {
             let listing = catch_unwind(|| listed().accompanied_by(refused.clone()));
             assert!(listing.is_err(), "{refused:?}");

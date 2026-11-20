@@ -6,7 +6,7 @@ use std::fs;
 use serde_json::json;
 use software_plant::BrowserScenario;
 use software_plant::http::{Answer, Request, Responder, Response, Server};
-use software_plant::remote::{RemoteScenario, TOKEN};
+use software_plant::remote::{RemoteScenario, TOKEN, document_path};
 
 use crate::common::connected::{Connected, connected};
 use crate::common::remote::{publish_at, spec, stored, wire, with_criterion};
@@ -139,7 +139,7 @@ impl Responder for Garbled {
 fn a_head_that_does_not_read_is_refused_naming_the_remote_s_address() {
     let run = connected(1, 1, RemoteScenario::accepting);
     let garbled = Server::start(Garbled);
-    let address = format!("{}/documents/{}", garbled.url(), run.history.key);
+    let address = format!("{}{}", garbled.url(), document_path(&run.history.key));
     let env = [
         ("LOFT_REMOTE_ENDPOINT", address.as_str()),
         ("LOFT_REMOTE_TOKEN", TOKEN),

@@ -3,7 +3,7 @@
 
 use loftspec::codec;
 use serde_json::{Value, json};
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{Remote, RemoteScenario, document_path};
 use software_plant::{BrowserScenario, GitScenario};
 
 use crate::common::remote::{History, history};
@@ -82,8 +82,8 @@ fn set_creates_the_document_and_imports_every_published_state_before_naming_the_
     assert_eq!(
         document_calls(&remote),
         [
-            format!("POST /documents/{key}/create"),
-            format!("POST /documents/{key}/import"),
+            format!("POST {}/create", document_path(key)),
+            format!("POST {}/import", document_path(key)),
         ]
     );
     assert_eq!(remote.name().as_deref(), Some(PRODUCT_NAME));
@@ -152,7 +152,7 @@ fn a_document_never_published_is_created_and_nothing_is_imported() {
     );
     assert_eq!(
         document_calls(&remote),
-        [format!("POST /documents/{key}/create")]
+        [format!("POST {}/create", document_path(&key))]
     );
     assert_eq!(remote.states().len(), 0);
     let scratch = Scratch::with_reading_list();
@@ -182,7 +182,7 @@ fn a_remote_that_holds_the_lock_s_head_already_is_connected_without_an_import() 
     assert_eq!(result["head"], head_of(&history));
     assert_eq!(
         document_calls(&remote),
-        [format!("POST /documents/{}/create", history.key)]
+        [format!("POST {}/create", document_path(&history.key))]
     );
 }
 
@@ -318,7 +318,11 @@ fn set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_req
     let history = history(1);
     let (scratch, git) = published(&history);
     let remote = Remote::start(RemoteScenario::accepting(&history.key));
-    name_remote(&scratch, Some("https://old.example/documents/one"), true);
+    name_remote(
+        &scratch,
+        Some("https://old.example/loft/t/acme/api/v2/documents/one/remote"),
+        true,
+    );
     let mut expected = codec::read(&tree(&scratch.0)).unwrap();
     expected.remote = Some(remote.address());
     keep(
@@ -385,7 +389,7 @@ fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
         &[
             "remote",
             "set",
-            "http://remote.example/documents/one",
+            "http://remote.example/loft/t/acme/api/v2/documents/one/remote",
             "--format",
             "json",
         ],
@@ -398,7 +402,7 @@ fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
         .unwrap()
         .to_owned();
     assert!(
-        message.contains("http://remote.example/documents/one"),
+        message.contains("http://remote.example/loft/t/acme/api/v2/documents/one/remote"),
         "{message}"
     );
     assert_eq!(browser.visits(), Vec::<String>::new());

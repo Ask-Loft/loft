@@ -5,7 +5,7 @@
 use std::fs;
 
 use serde_json::{Value, json};
-use software_plant::remote::RemoteScenario;
+use software_plant::remote::{RemoteScenario, document_path};
 use software_plant::{BrowserScenario, GitScenario};
 
 use crate::common::connected::{ADDED, Connected, connected, paths, serve};
@@ -32,8 +32,8 @@ fn a_connected_publish_sends_its_delta_and_writes_the_labels_and_lock_the_remote
     assert_eq!(
         run.calls(),
         [
-            format!("GET /documents/{key}/head"),
-            format!("POST /documents/{key}/publish")
+            format!("GET {}/head", document_path(key)),
+            format!("POST {}/publish", document_path(key))
         ]
     );
     let sent = run.sent();
@@ -118,7 +118,7 @@ fn a_tree_at_the_head_its_lock_names_sends_nothing_and_says_so() {
     assert_eq!(document(&output)["outcome"], "unchanged");
     assert_eq!(
         run.calls(),
-        [format!("GET /documents/{}/head", run.history.key)]
+        [format!("GET {}/head", document_path(&run.history.key))]
     );
     assert_eq!(tree(&run.scratch.0), before);
     let (mut command, _) =
@@ -170,7 +170,7 @@ fn without_the_lock_in_history_the_base_is_fetched_from_the_remote() {
     let key = &run.history.key;
     assert!(
         run.calls()
-            .contains(&format!("GET /documents/{key}/states/2")),
+            .contains(&format!("GET {}/states/2", document_path(key))),
         "{:?}",
         run.calls()
     );

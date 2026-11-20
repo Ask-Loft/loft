@@ -47,7 +47,7 @@ pub fn granted(remote: &Remote, seconds: u64) -> Value {
     let grant = remote.grant();
     json!({
         "tokenEndpoint": format!("{}/auth/token", remote.origin()),
-        "resource": format!("{}/documents", remote.origin()),
+        "resource": remote.resource(),
         "clientId": grant.client_id,
         "accessToken": grant.access_token,
         "expiresAt": PublishedAt::from_unix_seconds(real_now() + seconds).unwrap().to_string(),
