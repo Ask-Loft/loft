@@ -12603,6 +12603,18 @@ links:
       - file: "crates/loftspec/tests/fmt_foreign.rs"
         name: "no_file_changes_when_a_foreign_reference_matches_nothing_or_more_than_one_node"
         body: 11f127093340e0a9f2dbb880326b9c1730525fb30be0ce165afe0c350b655fa2
+  - node: 01a1f981-4db1-765f-a897-2264b4c99796
+    reviewed: 0526d7b8ed1568ac10e6a9c0210e2c40aeb9e4e5ad5bbf56c1825bcc08f8ffab
+    tests:
+      - file: "crates/loftspec/tests/render_foreign.rs"
+        name: "a_foreign_node_with_a_label_renders_as_its_handle_and_label_then_its_name"
+        body: 2de43803ed88d7e68933d7999b39bf821286b971bd618edd0954e718b5d07ef7
+  - node: 01a1f981-4db1-765f-a897-2265b587d22e
+    reviewed: aa0addb5dcf64d78627849ff15025d3b406206ccc2bab4fb387000643278e071
+    tests:
+      - file: "crates/loftspec/tests/render_foreign.rs"
+        name: "a_foreign_node_without_a_label_renders_as_its_handle_then_its_name"
+        body: 99b05f06baefc5accf40fa6f552d211827ed8e5ea74d074cc1396c88c1154912
   - node: 01a1d600-053b-77ad-8132-b98169820900
     reviewed: 1eec5b8a9c4f69a36e631d989dad171ef286f3412d790558be031843502542ce
     tests:

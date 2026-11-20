@@ -113,6 +113,7 @@ mod publish_rewrite;
 mod publish_settle;
 mod query;
 mod render;
+mod render_foreign;
 mod render_interfaces;
 mod render_openspec;
 mod render_openspec_findings;

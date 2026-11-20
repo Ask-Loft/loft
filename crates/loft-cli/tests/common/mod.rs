@@ -5,6 +5,7 @@
 
 pub mod calls;
 pub mod connected;
+pub mod copies;
 #[cfg(unix)]
 pub mod npm;
 pub mod oauth;
