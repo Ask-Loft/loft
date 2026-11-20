@@ -1,0 +1,121 @@
+key: 01a1f981-4db1-765f-a897-2248537f6019
+slug: references-into-another-document
+name: "References into another document"
+body: |
+  How a node of a connected document names a node of another one: as a record of the other document's handle and the node's key, resolved against the copies under that handle. Only an Interface and what it holds can be named, since a copy holds nothing else, so a reference never reaches the other document's internals.
+
+  A Component `provides` or `requires` a foreign Interface; any element may `mentions` a foreign Interface or a node beneath it; and a decision may name one as an `affected` subject. A foreign node is never a decision's `outcome`, never realized and never scoped to: those say what a document is made of, and each document says that only of itself. A reference renders as the handle and the label, joined by a colon.
+realizes:
+  - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
+  - b90f38f9-766c-467f-a29c-d6ae3b796e52
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+  - dfa057a6-404f-44a0-a9ab-932900198ca4
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 01a1f981-4db1-765f-a897-2249f229789e
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "read a reference written as a record of `document` and `key` as a reference to the node of that key in the copies under that handle."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-224a0d31922d
+        name: "A reference to a foreign node is a record whose fields are, in order, `document` and `key`, and both are required."
+      - key: 01a1f981-4db1-765f-a897-224b08e422a1
+        name: "`document` holds a handle of the manifest's `documents`."
+      - key: 01a1f981-4db1-765f-a897-224c03b3fbf3
+        name: "A foreign reference may stand in `provides`, `requires`, `mentions` and a subject's `node`."
+      - key: 01a1f981-4db1-765f-a897-224d0755a34b
+        name: "In a sorted field, foreign references follow the keys of the document's own elements, sorted by handle and then by key."
+  - key: 01a1f981-4db1-765f-a897-224e38ebfcb0
+    statement:
+      form: unwanted
+      if: "a foreign reference stands in a field other than `provides`, `requires`, `mentions` and a subject's `node`"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-224ffdb5ae5d
+        name: "A foreign reference in `realizes` or `scopedTo` is an error."
+      - key: 01a1f981-4db1-765f-a897-22509b4a5ee9
+        name: "A foreign reference in a decision's `successor`, a driver's `subject` or a consequence's `subject` is an error."
+      - key: 01a1f981-4db1-765f-a897-2251c8936826
+        name: "The error names the field."
+  - key: 01a1f981-4db1-765f-a897-2252d66c256a
+    statement:
+      form: unwanted
+      if: "a foreign reference names a handle that `documents` does not list, or a key that no copy under its handle holds"
+      system: "the validator"
+      shall: "report an error naming the reference's element, the handle and the key."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2253059612c2
+        name: "A key that the other document holds outside every copy under the handle is an error, whatever that document holds."
+      - key: 01a1f981-4db1-765f-a897-2254ffef248e
+        name: "A key that a copy under another handle holds is an error."
+      - key: 01a1f981-4db1-765f-a897-2255947ffee7
+        name: "A reference whose copy holds its key raises no such error."
+  - key: 01a1f981-4db1-765f-a897-225613ddae2b
+    statement:
+      form: unwanted
+      if: "a decision names a foreign node as a subject with the role `outcome`"
+      system: "the validator"
+      shall: "report an error naming the decision and the node."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2257ec695dc1
+        name: "A foreign subject with the role `affected` raises no such error."
+      - key: 01a1f981-4db1-765f-a897-22589d8e8295
+        name: "The error says that a decision's outcome is a node of its own document."
+  - key: 01a1f981-4db1-765f-a897-22595b7fc085
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "hash an edge to a foreign node with the content hash that the node has in its copy."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-225a4370a999
+        name: "An edge to a foreign node enters the edges root as an edge between the document's own nodes does, with the foreign node's content hash as its target's hash."
+      - key: 01a1f981-4db1-765f-a897-225b38dfefe0
+        name: "A decision view names a foreign subject by its content hash in its copy."
+      - key: 01a1f981-4db1-765f-a897-225c15199c0f
+        name: "Moving a pin to a state in which a referenced node is unchanged leaves the content root unchanged."
+      - key: 01a1f981-4db1-765f-a897-225dca24efbe
+        name: "Moving a pin to a state in which a referenced node changed changes the content root."
+      - key: 01a1f981-4db1-765f-a897-225e116e8f16
+        name: "Renaming a handle leaves the content root unchanged."
+  - key: 01a1f981-4db1-765f-a897-225f861e7dc6
+    statement:
+      form: state_driven
+      while: "formatting"
+      system: "the formatter"
+      shall: "replace a foreign reference written by label or by name with the key of the node of the copy that the label or the name identifies."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2260094b5a15
+        name: "A record of `document` and `label` takes the key that the copies under that handle bind to the label."
+      - key: 01a1f981-4db1-765f-a897-2261cb4cbbdc
+        name: "A record of `document` and `name` takes the key of the node of the copies under that handle that has that name."
+      - key: 01a1f981-4db1-765f-a897-2262513e5186
+        name: "A label or a name that matches nothing under the handle is an error naming the file, line and column."
+      - key: 01a1f982-148c-77d7-b027-64c0c3a90bcd
+        name: "A label or a name that matches more than one node under the handle is an error naming each matching node's key."
+      - key: 01a1f981-dd10-776a-aaa3-31a62956511a
+        name: "No file is changed when a foreign reference written by label or by name matches nothing or more than one node."
+  - key: 01a1f981-4db1-765f-a897-2263af855448
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "render a foreign reference as its handle and its node's label, with the node's name."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2264b4c99796
+        name: "A foreign node with a label renders as `<handle>:<label>` followed by its name."
+      - key: 01a1f981-4db1-765f-a897-2265b587d22e
+        name: "A foreign node without a label renders as its handle followed by its name."
+  - key: 01a1f981-4db1-765f-a897-22664c4a0231
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "accept a citation of a foreign label in prose that a `mentions` edge to that node matches."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2267f3cbe165
+        name: "A citation `<handle>:<label>` in prose with a `mentions` edge to the node the copies under that handle bind to the label yields no `V2-003` finding."
+      - key: 01a1f981-4db1-765f-a897-226810e84dba
+        name: "A citation `<handle>:<label>` in prose without such an edge yields one `V2-003` finding naming the citation."
+      - key: 01a1f981-4db1-765f-a897-2269c250e65e
+        name: "A citation `<handle>:<label>` is never matched against the document's own labels."

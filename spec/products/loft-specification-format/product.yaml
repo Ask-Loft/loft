@@ -136,6 +136,7 @@ featureGroups:
       - 01a1383a-4a94-72cc-9c61-11074c67c6d6
       - 01a1383a-4a94-72cc-9c61-11318846c14a
       - 01a145e8-28eb-78f4-aed0-150e241ef329
+      - 01a1f981-4db1-765f-a897-21dc4743c8c0
   - key: 01a156a5-b76c-74b1-a3b2-6d532509a47b
     slug: comparison-and-review
     name: "Comparison and review"
@@ -145,6 +146,17 @@ featureGroups:
     features:
       - 01a156a5-b76b-7233-8659-69ea71d1e598
       - 01a156a8-d773-72ae-a006-09cc9d538bb3
+  - key: 01a1f981-4db1-765f-a897-226a9e8223f1
+    slug: interfaces
+    name: "Interfaces"
+    body: "Promises a document makes at a boundary, and how another connected document relies on them. An Interface is a node of its own, so that what one document offers another is written once, at the boundary, and the Components that keep the promise stay the owner's to change. Within one document, Interfaces and their `provides` and `requires` edges are ordinary nodes and edges; between two connected documents, they are the only things that cross, through a copy of each foreign Interface that the requiring document commits."
+    tags:
+      - portable
+    features:
+      - 01a1f981-4db1-765f-a897-21e84df7d944
+      - 01a1f981-4db1-765f-a897-221902d7685c
+      - 01a1f981-4db1-765f-a897-222ab6b1357c
+      - 01a1f981-4db1-765f-a897-2248537f6019
 constraints:
   - key: 01a1d600-053b-77ad-8132-b98169820900
     name: "The Loft Specification Format's specification, code, tests and documentation in this repository shall be written in American English."

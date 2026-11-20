@@ -37,7 +37,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The hasher"
-      shall: "compute the content root from the Product roots in document order, the Component roots sorted, the edges root, the registry roots and the decisions root."
+      shall: "compute the content root from the Product roots in document order, the Component roots sorted, the edges root, the registry roots, the decisions root and, where the document holds one, the Interface roots sorted."
     criteria:
       - key: d56b9623-7212-49bf-9d24-5692ab3a9ac6
         name: "The same document with fresh keys has the same content root."

@@ -1,0 +1,66 @@
+key: 01a1f981-4db1-765f-a897-221902d7685c
+slug: other-documents
+name: "Other documents"
+body: "The other connected documents whose Interfaces a connected document links to, each listed in its manifest under a handle: a short name of the document's own choosing, by which its references and its copies name the other document. The handle is local: renaming it changes no root, since every root names the other document by its document key. The entry records the other document's remote, so that every clone reaches the same remote without being told its address, as the manifest's own `remote` does for the document itself."
+realizes:
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 01a1f981-4db1-765f-a897-221a64c83735
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each other document that a connected document links to as an entry of the manifest's `documents`."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-221b15e7ee8f
+        name: "`documents` is a list of entries sorted by handle in byte order."
+      - key: 01a1f981-4db1-765f-a897-221c70d197e8
+        name: "An entry's fields are, in order, `handle`, `key` and `remote`, and all three are required."
+      - key: 01a1f981-4db1-765f-a897-221d2c0e68fb
+        name: "`key` is the other document's document key, and `remote` is the address of that document's remote."
+      - key: 01a1f981-4db1-765f-a897-221e0d126587
+        name: "A handle is a slug."
+      - key: 01a1f981-4db1-765f-a897-221fb5de45c7
+        name: "A manifest without `documents` lists no other document."
+  - key: 01a1f981-4db1-765f-a897-2220e9d76bb3
+    statement:
+      form: unwanted
+      if: "a manifest holds `documents` without `connected: true`"
+      system: "the reader"
+      shall: "report an error naming the file, line and column."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-22211e1987d8
+        name: "The error says that only a connected document links to other documents."
+      - key: 01a1f981-4db1-765f-a897-2222e3d50894
+        name: "A connected document's `documents` raises no such error."
+  - key: 01a1f981-4db1-765f-a897-2223acb6c220
+    statement:
+      form: unwanted
+      if: "two entries of `documents` carry one handle or one key"
+      system: "the reader"
+      shall: "report an error naming the file, line and column of the later entry."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2224547af311
+        name: "Two entries with one handle are an error naming the handle."
+      - key: 01a1f981-4db1-765f-a897-222520acce45
+        name: "Two entries with one key are an error naming the key."
+  - key: 01a1f981-dd10-776a-aaa3-31a504d0ecc3
+    statement:
+      form: unwanted
+      if: "an entry of `documents` carries the document's own key"
+      system: "the reader"
+      shall: "report an error naming the file, line and column of the entry."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2226da69d6d3
+        name: "The error names the key and says that a document does not link to itself."
+  - key: 01a1f981-4db1-765f-a897-222749120e01
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "leave the manifest's `documents` out of every root."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-22288b36e140
+        name: "Changing an entry's `remote` leaves every root unchanged."
+      - key: 01a1f981-4db1-765f-a897-222964d64693
+        name: "Renaming a handle, with every reference and copy that names it, leaves every root unchanged."

@@ -12,14 +12,14 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Requirements, criteria, Components, Constraints, Quality Attributes, Sections and decisions, with a diff of every changed node beneath it."
+      shall: "draw a `spec-change` view as a diagram of the changed Products, Feature Groups, Features, Requirements, criteria, Components, Interfaces, Constraints, Quality Attributes, Sections and decisions, with a diff of every changed node beneath it."
     criteria:
       - key: 01a1646f-546d-7042-befd-eac1d09f5f92
         name: "The diagram shows each changed node with the Requirement, the Feature, the Feature Group and the Product above it."
       - key: 01a16475-7fbc-7732-a78c-bc4f592eb112
-        name: "The diagram draws the `realizes` and decision subject edges between the nodes it shows."
+        name: "The diagram draws the `realizes`, `provides`, `requires` and decision subject edges between the nodes it shows."
       - key: 01a1ea8e-b11b-737e-8311-c97711e8cd8c
-        name: "A node that gained or lost a `realizes`, `scopedTo` or `mentions` entry is drawn as changed."
+        name: "A node that gained or lost a `realizes`, `scopedTo`, `provides`, `requires` or `mentions` entry is drawn as changed."
       - key: 01a1646f-546d-7042-befd-eac271279597
         name: "Each added, changed or removed Requirement is drawn as a box inside its Feature's panel that holds its statement."
       - key: 01a16475-7fbc-7732-a78c-bc50ee43201f
@@ -71,7 +71,7 @@ requirements:
       shall: "draw a `spec-change` view's diagram with its own flowchart renderer, as nested panels and cards in Loft Web's marks, at its own size: a compact map in its block, and full cards once expanded."
     criteria:
       - key: 01a1a814-5ac4-7523-9962-5acb7c0667ce
-        name: "Each Product, Feature Group and Feature the diagram shows is a panel framed by a hairline that holds what belongs to it, headed by its kind's colored square, its label and its name."
+        name: "Each Product, Feature Group, Feature and Interface the diagram shows is a panel framed by a hairline that holds what belongs to it, headed by its kind's colored square, its label and its name."
       - key: 01a1a814-5ac4-7523-9962-5acc70ed77b9
         name: "A Requirement's box and the boxes of its criteria stand in one row, the criteria stacked one beneath another to its right, each joined to it by a plain line without an arrowhead."
       - key: 01a1a814-5ac4-7523-9962-5acd501df9ef
@@ -89,7 +89,7 @@ requirements:
       - key: 01a1a814-5ac4-7523-9962-5ad00cc80371
         name: "A box or panel drawn only for context lies on the sidebar's ground, in muted ink, with no bar and no word."
       - key: 01a1a814-5ac4-7523-9962-5ad1ea6ba4e7
-        name: "A `realizes` or decision subject edge is dashed and ends in an arrowhead, its kind named in a pill beside it."
+        name: "A `realizes`, `provides`, `requires` or decision subject edge is dashed and ends in an arrowhead, its kind named in a pill beside it."
       - key: 01a1a814-5ac4-7523-9962-5ad2905ffb74
         name: "A legend above the diagram keys each change the diagram holds by its bar, with the number of boxes and panels of each."
       - key: 01a1a814-5ac4-7523-9962-5ad3b612d689

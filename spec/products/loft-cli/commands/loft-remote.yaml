@@ -167,3 +167,16 @@ requirements:
         name: "The document holds no token."
       - key: 01a156c0-0b7a-76b6-9a6a-68493a5b9580
         name: "A refusal has the outcome `error` and is listed among the document's errors."
+  - key: 01a1f981-4db0-72b8-8a39-a6eb8fc587e1
+    statement:
+      form: unwanted
+      if: "`loft remote remove` is run while the manifest's `documents` lists another document"
+      system: "`loft remote`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6ec70281b72
+        name: "The error names each handle that `documents` lists and says that `loft interface remove` removes its copies."
+      - key: 01a1f981-4db1-765f-a897-21daafdda02e
+        name: "Nothing is written."
+      - key: 01a1f981-4db1-765f-a897-21dbcce6dbb0
+        name: "The sign-in for the manifest's address is kept."

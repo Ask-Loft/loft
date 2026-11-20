@@ -72,7 +72,7 @@ requirements:
       shall: "write each Component record with the Component fields in the Format's order."
     criteria:
       - key: 8ec0e58b-a8c9-49ef-b308-8a3c272d42d6
-        name: "A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `boundary`, `scopedTo`, `mentions`, `ext`, `components`, `constraints`, `qualityAttributes` and `sections`."
+        name: "A Component record's fields are, in order, `key`, `name`, `body`, `tags`, `boundary`, `scopedTo`, `provides`, `requires`, `mentions`, `ext`, `components`, `constraints`, `qualityAttributes` and `sections`."
       - key: 703326e4-5939-4d27-a9f2-760234c35deb
         name: "A Component record requires `key` and `name`."
       - key: 0e4a5ccf-6223-4c83-ad2c-1d930ae21b5b
@@ -194,7 +194,7 @@ requirements:
       shall: "write the manifest with the manifest fields in the Format's order."
     criteria:
       - key: 5da704a2-97eb-429e-bd69-04d1613a7167
-        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `connected`, `remote`, `products` and `derivedFrom`."
+        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `connected`, `remote`, `documents`, `products` and `derivedFrom`."
       - key: 4783e5ae-9990-4606-a8d1-fe92b68d5792
         name: "The manifest requires `format`, `algorithm` and `documentKey`."
       - key: 01a156ac-0a95-726f-ab84-01aeeecf16d8
@@ -214,7 +214,7 @@ requirements:
       shall: "write `spec/labels.yaml` as a mapping of `counters` and `bindings`."
     criteria:
       - key: c5ed56ff-4332-4905-a67e-a3fcfe3c2a0b
-        name: "`counters` is required and maps each of the nine label prefixes to its next value, in the order `P`, `FG`, `F`, `RQ`, `AC`, `CMP`, `CON`, `QA`, `ADR`."
+        name: "`counters` is required and maps each of the nine label prefixes to its next value, in the order `P`, `FG`, `F`, `RQ`, `AC`, `CMP`, `CON`, `QA`, `ADR`, followed by `IF` once a publish has allocated an Interface label."
       - key: 480910d9-f626-4e77-927c-72008061a372
         name: "A binding's fields are, in order, `key`, `label`, `departed`, `aliases`, `withdrawn`, `publishedState` and `publishedHistory`."
       - key: 01a12dec-ba4c-7741-b3ca-9e8f125b4997
@@ -276,7 +276,7 @@ requirements:
       shall: "write a reference to an element as the element's key."
     criteria:
       - key: 8df4b0b3-9592-46af-b1fc-a673e946ab98
-        name: "A reference to a node is written as the node's key."
+        name: "A reference to a node of the document is written as the node's key."
       - key: 242c02e8-c5ad-4e79-82b3-1729ee8fe480
         name: "A reference to a decision, an option or a driver is written as its key."
   - key: 53272cda-553d-478e-a1b9-4d2b134b7801

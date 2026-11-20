@@ -18,15 +18,17 @@ requirements:
       - key: 9c8872c8-fd77-43c0-a11f-cde2ce0c51f4
         name: "A `feature` is accepted only under a `feature_group`."
       - key: 2c23ff10-9676-426e-81ae-f19b052e9171
-        name: "A `requirement` is accepted only under a `feature`."
+        name: "A `requirement` is accepted only under a `feature` or an `interface`."
       - key: 4aed1fa5-ca97-4413-a50f-c52a876de020
         name: "A `criterion` is accepted only under a `requirement`."
       - key: c52d2893-6b6b-4cba-b710-8fd28a420204
         name: "A `component` is accepted at the root or under a `component`."
+      - key: 01a1f981-4db1-765f-a897-226b9b3a6c4b
+        name: "An `interface` is accepted only at the root."
       - key: 748d5f95-2d7e-49ad-a10c-640ef8348b75
-        name: "A `constraint` is accepted only under a `component`, a `feature_group` or a `product`."
+        name: "A `constraint` is accepted only under a `component`, a `feature_group`, a `product` or an `interface`."
       - key: e15dc002-88bb-4dd2-8532-042fa21b2842
-        name: "A `quality_attribute` is accepted only under a `component`, a `feature_group` or a `feature`."
+        name: "A `quality_attribute` is accepted only under a `component`, a `feature_group`, a `feature` or an `interface`."
       - key: f3e0cf5f-9e01-4286-aff0-30be5b0fd863
         name: "A `section` is accepted wherever a body is accepted."
       - key: ab6e9c6c-316d-4adb-972b-b502e34f7936

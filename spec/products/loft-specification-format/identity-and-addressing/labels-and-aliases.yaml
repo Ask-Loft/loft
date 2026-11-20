@@ -30,7 +30,7 @@ requirements:
       - key: 870afd07-a139-4313-a79e-fb9f2528f4f4
         name: "Labels are allocated to unlabeled nodes in document order."
       - key: 51137dfc-0ecc-4678-873f-68bdd9e1ec9e
-        name: "The kind prefixes are `P` for a Product, `FG` for a Feature Group, `F` for a Feature, `RQ` for a Requirement, `AC` for a criterion, `CMP` for a Component, `CON` for a Constraint, `QA` for a Quality Attribute and `ADR` for a decision."
+        name: "The kind prefixes are `P` for a Product, `FG` for a Feature Group, `F` for a Feature, `RQ` for a Requirement, `AC` for a criterion, `CMP` for a Component, `CON` for a Constraint, `QA` for a Quality Attribute, `IF` for an Interface and `ADR` for a decision."
       - key: 4cecef66-9447-4199-93eb-08b4b715f439
         name: "Root Components are visited in the order of their file names when labels are allocated."
       - key: 01a12ff0-f5e5-7095-8fa8-24f82dc553e0

@@ -79,3 +79,17 @@ requirements:
         name: "The workflow tells the agent to run `loft pull` when a connected publish is refused because the remote has moved on, and to settle each conflict record the pull writes before publishing again."
       - key: 01a1a922-762b-74c0-854c-edd6104ec8da
         name: "The workflow tells the agent to ask the user to run `loft remote login` when a sign-in to the remote has lapsed, since the sign-in opens the user's browser."
+  - key: 01a1f981-4db0-72b8-8a39-a6a98ce33f5e
+    statement:
+      form: ubiquitous
+      system: "The skill"
+      shall: "teach how a connected document links to another connected document's Interface and keeps its copy current."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6aa0954c689
+        name: "The workflow tells the agent to run `loft interface add` only for an Interface and a remote the user names, and never to invent an address."
+      - key: 01a1f981-4db0-72b8-8a39-a6ab76129540
+        name: "The workflow tells the agent to commit `spec/` after `loft interface add`, `update` or `remove`, with the copies and the manifest together."
+      - key: 01a1f981-4db0-72b8-8a39-a6ac0498e251
+        name: "The workflow tells the agent to read the changes that `loft interface update` reports, to settle each dangling reference it names, and to review each trace link it turns stale."
+      - key: 01a1f981-4db0-72b8-8a39-a6ad9fd786d2
+        name: "The workflow tells the agent never to edit a copy under `spec/documents/`."

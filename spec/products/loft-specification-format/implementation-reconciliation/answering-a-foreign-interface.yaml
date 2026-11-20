@@ -1,0 +1,41 @@
+key: 01a1f981-4db1-765f-a897-21dc4743c8c0
+slug: answering-a-foreign-interface
+name: "Answering a foreign Interface"
+body: "A document whose Component provides an Interface that another document owns has made that Interface's promise its own: each criterion of the copy is an obligation of the providing document, answered by its own tests in its own trace file. The trace then shows whether the provider conforms, and a pin moved to a state in which a criterion changed turns its link stale until the test is read against the criterion as it now reads."
+realizes:
+  - 01a1383a-4a92-778a-b49d-e3efdabc7f04
+requirements:
+  - key: 01a1f981-4db1-765f-a897-21dded5eb6a9
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "expect a link for every criterion beneath a copied Interface that a Component of the document provides."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21de18a7b5c4
+        name: "Each criterion beneath a copied Interface that a Component of the document provides is in scope."
+      - key: 01a1f981-4db1-765f-a897-21df36b5d893
+        name: "A criterion beneath a copied Interface that no Component of the document provides is not in scope."
+      - key: 01a1f981-4db1-765f-a897-21e0380fcc60
+        name: "Such a criterion that no link names yields one `TR-001` finding naming it by its handle and its label."
+  - key: 01a1f981-4db1-765f-a897-21e11de68a61
+    statement:
+      form: ubiquitous
+      system: "The reconciler"
+      shall: "judge a link to a foreign criterion against the criterion's content hash in its copy."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21e26e6b513f
+        name: "A link reviewed before its pin moved to a state in which its criterion changed yields one `TR-003` finding."
+      - key: 01a1f981-4db1-765f-a897-21e3f6684ab7
+        name: "A link reviewed before its pin moved to a state in which its criterion is unchanged yields no `TR-003` finding."
+      - key: 01a1f981-4db1-765f-a897-21e407c55194
+        name: "`loft reconcile --accept <handle>:<label>` accepts the link to that foreign criterion."
+  - key: 01a1f981-4db1-765f-a897-21e58b2b8414
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write a link to a foreign criterion with the criterion's key in `node`."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21e653a5529f
+        name: "Links to foreign criteria follow the links to the document's own nodes, in the byte order of their handles and then in the document order of their copies."
+      - key: 01a1f981-4db1-765f-a897-21e7301706b9
+        name: "A link that names a key no copy holds and no element of the document carries is ordered among the links whose nodes are not in the tree."

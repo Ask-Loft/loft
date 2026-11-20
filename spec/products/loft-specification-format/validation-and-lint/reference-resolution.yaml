@@ -1,7 +1,7 @@
 key: dc2a9890-ee94-4ec8-ac63-0503d459342e
 slug: reference-resolution
 name: "Reference resolution"
-body: "How edge endpoints and bindings resolve to elements of the document, which kinds each of the four edge types joins, and the refusal of a tag listed twice on one node."
+body: "How edge endpoints and bindings resolve to elements of the document, which kinds each of the edge types joins, and the refusal of a tag listed twice on one node."
 realizes:
   - b90f38f9-766c-467f-a29c-d6ae3b796e52
 requirements:
@@ -9,7 +9,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The validator"
-      shall: "require every edge endpoint that is not a former label to resolve to an element of the document."
+      shall: "require every edge endpoint that is neither a former label nor a reference into another document to resolve to an element of the document."
     criteria:
       - key: 9f1c7243-1439-4cd9-857b-e9bdb39ed7c6
         name: "An edge whose source key no node or decision carries is an error naming the edge and the key."

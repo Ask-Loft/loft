@@ -66,7 +66,7 @@ requirements:
       shall: "report each kind of content that the projection leaves out as a finding with the code `OR-005`."
     criteria:
       - key: 01a1402e-d25e-7540-9283-1836bb3313f1
-        name: "The kinds left out are Components, Constraints, Quality Attributes, Decisions, edges and tags."
+        name: "The kinds left out are Components, Interfaces with everything beneath them, Constraints, Quality Attributes, Decisions, edges and tags."
       - key: 01a1402e-d25e-7540-9283-18377a58d7f6
         name: "Each finding names its kind and the number of that kind the document holds."
       - key: 01a1402e-d25e-7540-9283-183811d31502

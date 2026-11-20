@@ -1,0 +1,90 @@
+key: 01a1f981-4db0-72b8-8a39-a69464c9a062
+slug: a-requirer-pins-each-foreign-interface-with-a-committed-copy
+title: "A requirer pins each foreign Interface with a committed copy"
+context: "The content root hashes an edge by the content hashes of its two endpoints and never by keys, so an edge to another document's Interface needs that Interface's content at hand. A connected document's remote serves every published state by its publish sequence, with labels that never change once published, and each other document has a remote of its own, on whatever server holds it. The pin also decides whether `loft check` needs a network, and how a change to the promise reaches the document that relies on it."
+state:
+  kind: accepted
+  selectedOption: 01a1f981-4db0-72b8-8a39-a69898ae4288
+  outcome: "A connected document lists each other document it links to in its manifest's `documents`, under a handle, with that document's key and its remote's address, and commits a copy of each foreign Interface it links to under `spec/documents/<handle>/`, as published at one publish sequence, with that sequence, the state root, the Interface's hash and the labels of its nodes. Only `loft interface` writes a copy, from the other document's remote, reached with the person's sign-in for its address. The pins enter the state root, and the copied nodes' content enters the edges root through the edges that name them. An owner's change to an Interface reaches each requirer when the requirer moves its pin; `loft publish` confirms every copy against its remote before it publishes."
+drivers:
+  - key: 01a1f981-4db0-72b8-8a39-a6953173a229
+    kind: local
+    label: "Offline checks"
+    statement: "Checking, formatting, rendering and hashing a document need no network."
+  - key: 01a1f981-4db0-72b8-8a39-a6964614ca8d
+    kind: local
+    label: "Reviewable change"
+    statement: "A change to a promise shows in the requiring document's own diff."
+  - key: 01a1f981-4db0-72b8-8a39-a697f28cab73
+    kind: local
+    label: "No new remote call"
+    statement: "Linking to another document needs no call that a remote does not already answer."
+options:
+  - key: 01a1f981-4db0-72b8-8a39-a69898ae4288
+    title: "A committed copy"
+    description: "The requirer commits a read-only copy of each foreign Interface at one publish sequence."
+  - key: 01a1f981-4db0-72b8-8a39-a6996f626382
+    title: "A hash pin"
+    description: "The requirer records only the publish sequence and the Interface's hash, and fetches the Interface when it needs it."
+  - key: 01a1f981-4db0-72b8-8a39-a69a8281e244
+    title: "The other document's head"
+    description: "References resolve against the other document's current head."
+assessments:
+  - option: 01a1f981-4db0-72b8-8a39-a69898ae4288
+    driver: 01a1f981-4db0-72b8-8a39-a6953173a229
+    rating: supports
+    rationale: "every foreign node is in the tree"
+  - option: 01a1f981-4db0-72b8-8a39-a69898ae4288
+    driver: 01a1f981-4db0-72b8-8a39-a6964614ca8d
+    rating: supports
+    rationale: "moving a pin rewrites the copy in the diff"
+  - option: 01a1f981-4db0-72b8-8a39-a69898ae4288
+    driver: 01a1f981-4db0-72b8-8a39-a697f28cab73
+    rating: supports
+    rationale: "a copy is taken from a published state the remote already serves"
+  - option: 01a1f981-4db0-72b8-8a39-a6996f626382
+    driver: 01a1f981-4db0-72b8-8a39-a6953173a229
+    rating: conflicts
+    rationale: "checking a reference into the Interface needs the remote or a cache"
+  - option: 01a1f981-4db0-72b8-8a39-a6996f626382
+    driver: 01a1f981-4db0-72b8-8a39-a6964614ca8d
+    rating: conflicts
+    rationale: "the diff of a moved pin is two hashes"
+  - option: 01a1f981-4db0-72b8-8a39-a6996f626382
+    driver: 01a1f981-4db0-72b8-8a39-a697f28cab73
+    rating: supports
+    rationale: "the Interface is taken from a published state"
+  - option: 01a1f981-4db0-72b8-8a39-a69a8281e244
+    driver: 01a1f981-4db0-72b8-8a39-a6953173a229
+    rating: conflicts
+    rationale: "every check needs the network"
+  - option: 01a1f981-4db0-72b8-8a39-a69a8281e244
+    driver: 01a1f981-4db0-72b8-8a39-a6964614ca8d
+    rating: conflicts
+    rationale: "the promise changes under the requirer with no change of its own"
+  - option: 01a1f981-4db0-72b8-8a39-a69a8281e244
+    driver: 01a1f981-4db0-72b8-8a39-a697f28cab73
+    rating: supports
+    rationale: "the head is a call the remote answers"
+consequences:
+  - key: 01a1f981-4db0-72b8-8a39-a69b15efbb31
+    kind: obligation
+    statement: "The text form gains the manifest's `documents` and the copy files under `spec/documents/`, and the state view gains a pins digest for a tree that holds a copy."
+  - key: 01a1f981-4db0-72b8-8a39-a69c2c27aad8
+    kind: obligation
+    statement: "`loft` gains `loft interface` to add, update, check and remove copies, and `loft publish` confirms each copy before a connected publish."
+  - key: 01a1f981-4db0-72b8-8a39-a69d35593ffb
+    kind: benefit
+    statement: "The promise a document relies on is reviewed in that document's own repository."
+  - key: 01a1f981-4db0-72b8-8a39-a69ef2e7d82a
+    kind: cost
+    statement: "A requirer's tree carries a copy of each foreign Interface it links to."
+subjects:
+  - role: affected
+    node: 61d7c512-16c1-44b2-a625-62d581fffd97
+  - role: outcome
+    node: 01a1f981-4db0-72b8-8a39-a6afa5103fc1
+  - role: outcome
+    node: 01a1f981-4db1-765f-a897-221902d7685c
+  - role: outcome
+    node: 01a1f981-4db1-765f-a897-222ab6b1357c
