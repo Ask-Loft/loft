@@ -1,7 +1,8 @@
 //! The Markdown projection (F-24): a header naming the state root, the Capability Model with
 //! Products, Feature Groups, Features and Requirements as headings of levels 3 to 6 and criteria,
-//! Constraints and Quality Attributes as bold paragraphs, then the Component Model, the decisions,
-//! the tag registry, the constraint categories and the `realizes` edges, each in its own section.
+//! Constraints and Quality Attributes as bold paragraphs, then the Component Model, the
+//! Interfaces where the document has one, the decisions, the tag registry, the constraint
+//! categories and the `realizes` edges, each in its own section.
 
 use std::collections::BTreeMap;
 use std::fmt::Write;
@@ -38,6 +39,7 @@ pub(super) fn render(document: &Document, state: &str, labels: &Labels) -> Strin
     };
     renderer.capabilities();
     renderer.components();
+    renderer.interfaces();
     decisions::render(renderer.out, document, labels, &nodes);
     renderer.registries();
     renderer.realizations();
@@ -117,6 +119,7 @@ impl Renderer<'_> {
         if let Some(boundary) = component.boundary {
             let _ = writeln!(self.out, "Boundary: `{}`\n", boundary.as_str());
         }
+        self.links(component);
         self.body_tags_and_sections(node, level);
         for child in node
             .children()
@@ -127,6 +130,38 @@ impl Renderer<'_> {
         }
         for child in &component.components {
             self.component(child, (level + 1).min(6));
+        }
+    }
+
+    /// A Component's `provides` and `requires` edges, one line each, naming the Interface by its
+    /// label and name.
+    fn links(&mut self, component: &Component) {
+        for edge in &self.document.edges {
+            let (word, interface) = match *edge {
+                Edge::Provides {
+                    component: from,
+                    interface,
+                } if Some(from) == component.id => ("Provides", interface),
+                Edge::Requires {
+                    component: from,
+                    interface,
+                } if Some(from) == component.id => ("Requires", interface),
+                _ => continue,
+            };
+            let interface = self.link_label(interface.into());
+            let _ = writeln!(self.out, "{word}: {interface}\n");
+        }
+    }
+
+    /// The Interfaces, each rendered with what it holds as a Feature is; no section for a
+    /// document without an Interface.
+    fn interfaces(&mut self) {
+        if self.document.interfaces.is_empty() {
+            return;
+        }
+        self.out.push_str("## Interfaces\n\n");
+        for interface in &self.document.interfaces {
+            self.capability(Node::Interface(interface), 3);
         }
     }
 
