@@ -19,9 +19,10 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   drags by the main button only. Such a drag used to stay in hand, so the edge followed a pointer
   that merely passed over it.
 - The Yard page draws a bare `http://`, `https://` or `mailto:` address in a block's Markdown as
-  a link, as GitHub does, where it used to show it as text. An address in code or in a link the
-  Markdown writes out stays as it is, a mark that ends a sentence stays out of the link, and a
-  node's name still shows an address as text.
+  a link, as GitHub does, where it used to show it as text. An `_`, `*` or `~` within an address
+  stays part of it rather than making emphasis, and a mark or quote that ends a sentence, or a
+  closing bracket the address does not open, stays out of the link. An address in code or in a
+  link the Markdown writes out stays as it is, and a node's name still shows an address as text.
 
 ## 2.4.1 (2026-11-22)
 
