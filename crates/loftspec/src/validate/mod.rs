@@ -72,6 +72,12 @@ pub enum ValidationError {
     /// An accepted, superseded or retired decision without an `outcome` subject (AC-740).
     #[error("decision {0} has no `subject` edge of role `outcome`")]
     NoOutcomeSubject(DecisionId),
+    /// A decision whose `outcome` subject is a node of a copy of another document's Interface.
+    #[error(
+        "decision {decision} names {node} of another document as its outcome: a decision's \
+         outcome is a node of its own document"
+    )]
+    ForeignOutcome { decision: DecisionId, node: NodeId },
     /// A merge conflict that is not yet resolved (RQ-126), with its identifier.
     #[error("{owner} holds the unresolved merge conflict {id} over `{field}`")]
     Conflict {
@@ -106,6 +112,7 @@ impl ValidationError {
             | Self::MissingAssessment { decision, .. }
             | Self::NoConsequence(decision)
             | Self::NoOutcomeSubject(decision) => vec![decision.key()],
+            Self::ForeignOutcome { decision, node } => vec![decision.key(), node.key()],
             Self::Conflict { owner, .. } => owner.key().into_iter().collect(),
         }
     }

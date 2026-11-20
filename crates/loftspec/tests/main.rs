@@ -58,6 +58,7 @@ mod fmt;
 mod fmt_deleted;
 mod fmt_keys;
 mod fmt_names;
+mod foreign_references;
 mod golden;
 mod hash_live;
 mod held_documents;

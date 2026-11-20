@@ -558,6 +558,17 @@ A Requirement's name is its statement as one sentence. A name that matches nothi
 one element, is an error at the reference, and nothing is formatted. To read a key, run
 `loft find`.
 
+A connected document's `provides`, `requires`, `mentions` and a subject's `node` may also name a
+node of another document, one that a copy under `spec/documents/<handle>/` holds, as a record:
+
+| Foreign reference field | |
+|---|---|
+| `document` | required: the handle of the other document in the manifest's `documents` |
+| `key` | required: the node's key in the other document |
+
+Such a reference stands after the keys of the document's own elements. No other field takes one,
+and a decision's outcome is always a node of its own document.
+
 ## Lint configuration
 
 `spec/lint.yaml` holds `rules` and `suppressions`. A rule entry names its `rule` and sets

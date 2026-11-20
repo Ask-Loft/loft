@@ -9,8 +9,8 @@ use loftspec::ids::DocumentId;
 use loftspec::publish::allocate;
 
 use super::full::other_document;
-use super::interfaces::{INTERFACE, with_interface};
-use super::{key, slug, small_document};
+use super::interfaces::{INTERFACE, interface, with_interface};
+use super::{criterion, key, requirement, slug, small_document};
 
 /// The other document's key number.
 pub const OWNER: u32 = 0x300;
@@ -56,5 +56,35 @@ pub fn requiring() -> Document {
     document.remote = Some("https://remote.example/documents/one".to_owned());
     document.documents.push(other_document(HANDLE, OWNER));
     document.copies.push(copy_at(&owner(), HANDLE, 3));
+    document
+}
+
+/// The second other document, listed under "catalog": its Interface "Shelf lookup" keyed
+/// `0x2c0`, with a Requirement and its criterion, every node labeled.
+pub fn second_owner() -> Document {
+    let mut document = small_document();
+    document.id = DocumentId::new(key(OWNER + 1));
+    let promise = requirement(
+        key(SHELF + 1),
+        "The lookup shall answer a shelf by its name.",
+        vec![criterion(key(SHELF + 2), "The answer names the shelf.")],
+    );
+    document.interfaces = vec![interface(key(SHELF), "Shelf lookup", vec![promise])];
+    allocate(&mut document);
+    document
+}
+
+/// The key number of [`second_owner`]'s Interface.
+pub const SHELF: u32 = 0x2c0;
+
+/// [`requiring`] listing [`second_owner`] as well, under "catalog", with a copy of its Interface.
+pub fn requiring_two() -> Document {
+    let mut document = requiring();
+    document
+        .documents
+        .push(other_document("catalog", OWNER + 1));
+    let files = codec::write(&second_owner());
+    let copy = copy_of(&slug("catalog"), &files, key(SHELF), 7, state_root(7)).unwrap();
+    document.copies.push(copy);
     document
 }

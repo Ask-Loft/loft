@@ -3,8 +3,8 @@
 
 use super::files::{Content, Tree};
 use super::record::{Rec, Val};
-use super::schema::Order;
 use super::schema::field;
+use super::schema::{Kind, Order};
 
 /// Sorts every list the canonical layout orders, throughout the tree.
 pub(crate) fn canonicalize(tree: &mut Tree) {
@@ -36,14 +36,29 @@ fn sort_text(value: &Val) -> &str {
     }
 }
 
+/// Where an entry of a sorted list goes: a reference into another document after every key of
+/// the document's own, by its handle and then its key.
+fn target_order(value: &Val) -> (bool, &str, &str) {
+    match value {
+        Val::Record(record) if record.kind == Kind::ForeignRef => (
+            true,
+            record.text(field::DOCUMENT).unwrap_or_default(),
+            record.text(field::KEY).unwrap_or_default(),
+        ),
+        _ => (false, sort_text(value), ""),
+    }
+}
+
 /// A subject's role, then its node.
-fn subject_order(subject: &Val) -> (&str, &str) {
+fn subject_order(subject: &Val) -> (&str, (bool, &str, &str)) {
     match subject {
         Val::Record(record) => (
             record.text(field::ROLE).unwrap_or_default(),
-            record.get(field::NODE).map_or("", sort_text),
+            record
+                .get(field::NODE)
+                .map_or((false, "", ""), target_order),
         ),
-        _ => ("", ""),
+        _ => ("", (false, "", "")),
     }
 }
 
@@ -59,7 +74,7 @@ pub(super) fn sort(record: &mut Rec) {
         match field.order {
             Order::Authored => {}
             Order::ByKey | Order::ByText => {
-                items.sort_by(|left, right| sort_text(left).cmp(sort_text(right)));
+                items.sort_by(|left, right| target_order(left).cmp(&target_order(right)));
             }
             Order::ByRoleThenTarget => {
                 items.sort_by(|left, right| subject_order(left).cmp(&subject_order(right)));

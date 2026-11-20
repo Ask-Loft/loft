@@ -9,6 +9,7 @@ use std::collections::BTreeMap;
 use crate::canonical::Digest;
 use crate::codec::{Role, SpecPath};
 use crate::identity::{Key, Label};
+use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
 use crate::slug::Slug;
 use crate::tree::Interface;
@@ -47,15 +48,63 @@ impl Copy {
         }
     }
 
+    /// Every node of the copy, the Interface first, in document order.
+    #[must_use]
+    pub fn ids(&self) -> Vec<NodeId> {
+        let mut ids = Vec::new();
+        Node::Interface(&self.interface).walk(&mut |node| ids.extend(node.id()));
+        ids
+    }
+
     /// The key of every node of the copy, the Interface's first, in document order.
     #[must_use]
     pub fn keys(&self) -> Vec<Key> {
-        let mut keys = Vec::new();
-        Node::Interface(&self.interface).walk(&mut |node| {
-            if let Some(id) = node.id() {
-                keys.push(id.key());
+        self.ids().into_iter().map(NodeId::key).collect()
+    }
+}
+
+/// The nodes of a document's copies, by key: where a reference into another document points.
+#[derive(Debug, Clone, Default)]
+pub struct Foreign<'a> {
+    nodes: BTreeMap<Key, (&'a Copy, NodeId)>,
+}
+
+impl<'a> Foreign<'a> {
+    /// The nodes of `copies`; a key that two copies carry is the first's, which the reader
+    /// refuses.
+    #[must_use]
+    pub fn of(copies: &'a [Copy]) -> Self {
+        let mut nodes = BTreeMap::new();
+        for copy in copies {
+            for id in copy.ids() {
+                nodes.entry(id.key()).or_insert((copy, id));
             }
-        });
-        keys
+        }
+        Self { nodes }
+    }
+
+    /// The node of a copy that `key` names.
+    #[must_use]
+    pub fn node(&self, key: Key) -> Option<NodeId> {
+        self.nodes.get(&key).map(|(_, id)| *id)
+    }
+
+    /// The copy that holds the node `key` names.
+    #[must_use]
+    pub fn copy(&self, key: Key) -> Option<&'a Copy> {
+        self.nodes.get(&key).map(|(copy, _)| *copy)
+    }
+
+    /// Whether `element` is a node of a copy, of the same kind.
+    #[must_use]
+    pub fn holds(&self, element: ElementId) -> bool {
+        matches!(element, ElementId::Node(node) if self.node(node.key()) == Some(node))
+    }
+
+    /// The label the other document gave the node `key` names.
+    #[must_use]
+    pub fn label(&self, key: Key) -> Option<Label> {
+        self.copy(key)
+            .and_then(|copy| copy.labels.get(&key).copied())
     }
 }

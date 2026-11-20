@@ -6,8 +6,9 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::copy::Foreign;
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
-use crate::document::{Document, EdgeTarget};
+use crate::document::{Document, EdgeKind, EdgeTarget};
 use crate::identity::Key;
 use crate::ids::{DecisionId, ElementId, NodeId, OptionId};
 use crate::node::Node;
@@ -228,17 +229,24 @@ fn registry_keys(document: &Document) -> impl Iterator<Item = Key> + '_ {
 }
 
 /// Every edge endpoint, binding and decision reference that names nothing the document holds.
+/// A target of a `provides`, `requires`, `mentions` or `subject` edge may also be a node of a
+/// copy of another document's Interface.
 fn references(document: &Document, index: &Index) -> Vec<IntegrityError> {
     let mut errors = Vec::new();
+    let foreign = Foreign::of(&document.copies);
     for edge in &document.edges {
-        let target = match edge.target() {
-            EdgeTarget::Element(element) => Some(element),
-            EdgeTarget::Former(_) => None,
-        };
-        for element in std::iter::once(edge.source()).chain(target) {
-            if !index.holds(element) {
-                errors.push(IntegrityError::UnknownEdgeEndpoint(element));
-            }
+        let crossing = matches!(
+            edge.kind(),
+            EdgeKind::Provides | EdgeKind::Requires | EdgeKind::Mentions | EdgeKind::Subject
+        );
+        if !index.holds(edge.source()) {
+            errors.push(IntegrityError::UnknownEdgeEndpoint(edge.source()));
+        }
+        if let EdgeTarget::Element(target) = edge.target()
+            && !index.holds(target)
+            && (!crossing || !foreign.holds(target))
+        {
+            errors.push(IntegrityError::UnknownEdgeEndpoint(target));
         }
     }
     for binding in document.bindings.live() {

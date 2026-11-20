@@ -140,7 +140,13 @@ fn item_value(value: &ConflictValue, item: Item) -> Option<Val> {
     match (item, value) {
         (Item::Scalar(_) | Item::NodeRef, ConflictValue::Scalar(text)) => Some(Val::scalar(text)),
         (Item::Record(kind), ConflictValue::Record(fields)) => record_value(kind, fields),
-        (Item::NodeRef, ConflictValue::Record(fields)) => record_value(Kind::FormerLabel, fields),
+        (
+            Item::NodeRef | Item::Scalar(super::schema::Scalar::Ref(_)),
+            ConflictValue::Record(fields),
+        ) => {
+            let kind = super::record::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
+            record_value(kind, fields)
+        }
         (Item::Ext, ConflictValue::Ext(ext)) => Some(Val::Ext {
             value: ext.clone(),
             position: crate::yaml::Position::new(1, 1),

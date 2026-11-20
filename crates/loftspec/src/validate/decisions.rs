@@ -4,6 +4,7 @@
 use std::collections::BTreeMap;
 
 use super::ValidationError;
+use crate::copy::Foreign;
 use crate::decision::{Decision, DriverPayload, NodeRef, StateKind};
 use crate::document::{Document, Edge, SubjectRole};
 use crate::identity::Label;
@@ -14,6 +15,23 @@ pub(super) fn check(document: &Document, errors: &mut Vec<ValidationError>) {
     for decision in &document.decisions {
         former_labels(document, &subjects, decision, errors);
         completeness(document, decision, errors);
+    }
+    foreign_outcomes(document, errors);
+}
+
+/// A decision's `outcome` subject is a node of its own document, never one of a copy.
+fn foreign_outcomes(document: &Document, errors: &mut Vec<ValidationError>) {
+    let foreign = Foreign::of(&document.copies);
+    for edge in &document.edges {
+        if let Edge::Subject {
+            decision,
+            subject: NodeRef::Held(node),
+            role: SubjectRole::Outcome,
+        } = *edge
+            && foreign.holds(node.into())
+        {
+            errors.push(ValidationError::ForeignOutcome { decision, node });
+        }
     }
 }
 

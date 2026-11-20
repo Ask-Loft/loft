@@ -124,6 +124,8 @@ const COPY_FIELDS: &[Field] = &[
 
 const COPY_LABEL_FIELDS: &[Field] = &[req(field::KEY, S::Key), req(field::LABEL, S::Label)];
 
+const FOREIGN_REF_FIELDS: &[Field] = &[req(field::DOCUMENT, S::Slug), req(field::KEY, S::Key)];
+
 const DERIVED_FROM_FIELDS: &[Field] = &[
     req(field::AUTHORED_STATE_ID, S::Key),
     req(field::CONTENT_ADDRESS, S::Digest),
@@ -428,5 +430,6 @@ pub(super) const fn fields(kind: Kind) -> &'static [Field] {
         Kind::OtherDocument => OTHER_DOCUMENT_FIELDS,
         Kind::Copy => COPY_FIELDS,
         Kind::CopyLabel => COPY_LABEL_FIELDS,
+        Kind::ForeignRef => FOREIGN_REF_FIELDS,
     }
 }

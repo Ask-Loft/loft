@@ -19,6 +19,7 @@ mod records;
 mod resolve;
 mod resolve_conflicts;
 mod resolve_decisions;
+mod resolve_foreign;
 mod resolve_nodes;
 pub mod schema;
 mod settle_field;

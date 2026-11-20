@@ -27,6 +27,7 @@ pub const DEFINITION: &str = "definition";
 pub const DEPARTED: &str = "departed";
 pub const DERIVED_FROM: &str = "derivedFrom";
 pub const DESCRIPTION: &str = "description";
+pub const DOCUMENT: &str = "document";
 pub const DOCUMENTS: &str = "documents";
 pub const DOCUMENT_KEY: &str = "documentKey";
 pub const DRIVER: &str = "driver";
@@ -107,3 +108,7 @@ pub const WHEN: &str = "when";
 pub const WHERE: &str = "where";
 pub const WHILE: &str = "while";
 pub const WITHDRAWN: &str = "withdrawn";
+
+/// The fields that may hold a reference into another document: a Component's `provides` and
+/// `requires`, any record's `mentions` and a subject's `node`.
+pub const CROSSING: [&str; 4] = [PROVIDES, REQUIRES, MENTIONS, NODE];

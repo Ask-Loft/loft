@@ -41,6 +41,7 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
         tree,
         index: index(tree),
         files,
+        foreign: BTreeMap::new(),
         path: manifest_path,
         document: Document::empty(DocumentId::new(key(manifest, field::DOCUMENT_KEY))),
         errors: Vec::new(),
@@ -48,15 +49,16 @@ pub fn resolve(tree: &Tree) -> Result<Document, Vec<ReadError>> {
     if let Err(error) = resolver.manifest(manifest) {
         resolver.errors.push(error);
     }
+    let (copies, unread) = super::copies::copies(tree);
+    resolver.errors.extend(unread);
+    resolver.foreign = super::copies::foreign(&copies);
+    resolver.document.copies = copies;
     resolver.registries();
     resolver.products(manifest);
     resolver.roots();
     resolver.interfaces();
     resolver.decisions();
     resolver.labels();
-    let (copies, unread) = super::copies::copies(tree);
-    resolver.errors.extend(unread);
-    resolver.document.copies = copies;
     let crossed = super::copies::crossing(tree, &resolver.document);
     resolver.errors.extend(crossed);
     resolver.document.conflicts = super::resolve_conflicts::collect(tree);
@@ -73,6 +75,8 @@ pub(super) struct Resolver<'t> {
     pub(super) index: BTreeMap<Key, ElementId>,
     /// The Product and Feature files, by the key their record carries.
     pub(super) files: BTreeMap<Key, (&'t SpecPath, &'t Rec)>,
+    /// The node of each copy, by its handle and key.
+    pub(super) foreign: BTreeMap<(String, Key), NodeId>,
     /// The file being resolved, for errors.
     pub(super) path: SpecPath,
     pub(super) document: Document,
@@ -151,6 +155,7 @@ impl Resolver<'static> {
             tree: &NO_TREE,
             index: BTreeMap::new(),
             files: BTreeMap::new(),
+            foreign: BTreeMap::new(),
             path: path.clone(),
             document: Document::empty(DocumentId::new(Key::mint())),
             errors: Vec::new(),
@@ -163,8 +168,12 @@ impl<'t> Resolver<'t> {
         ReadError::at(&self.path, position, Problem::Model(problem))
     }
 
-    /// The element a key field names.
+    /// The element a key field names, or the node of a copy a reference into another document
+    /// names.
     pub(super) fn element(&self, value: &Val) -> Result<ElementId, ReadError> {
+        if let Val::Record(foreign) = value {
+            return self.foreign_node(foreign).map(ElementId::Node);
+        }
         let text = value.text().unwrap_or_default();
         Key::parse(text)
             .ok()
@@ -198,7 +207,7 @@ impl<'t> Resolver<'t> {
     /// A node reference: a held node's key, or a former label (AC-809).
     pub(super) fn node_ref(&self, value: &Val) -> Result<NodeRef, ReadError> {
         match value {
-            Val::Record(former) => {
+            Val::Record(former) if former.kind == Kind::FormerLabel => {
                 let label = Label::parse(former.text(field::FORMER_LABEL).unwrap_or_default())
                     .map_err(|error| self.fail(Some(former.position), error.to_string()))?;
                 Ok(NodeRef::Former(label))

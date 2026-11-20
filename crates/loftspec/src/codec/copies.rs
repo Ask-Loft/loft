@@ -16,7 +16,7 @@ use crate::copy::Copy;
 use crate::document::Document;
 use crate::hash::ContentHash;
 use crate::identity::{Key, Label};
-use crate::ids::InterfaceId;
+use crate::ids::{InterfaceId, NodeId};
 use crate::node::Node;
 use crate::slug::Slug;
 use crate::yaml;
@@ -187,6 +187,20 @@ pub(super) fn copies(tree: &Tree) -> (Vec<Copy>, Vec<ReadError>) {
         }
     }
     (copies, errors)
+}
+
+/// The node of each copy, by the copy's handle and the node's key.
+pub(super) fn foreign(copies: &[Copy]) -> BTreeMap<(String, Key), NodeId> {
+    let mut nodes = BTreeMap::new();
+    for copy in copies {
+        let handle = copy.handle.as_str();
+        Node::Interface(&copy.interface).walk(&mut |node| {
+            if let Some(id) = node.id() {
+                nodes.insert((handle.to_owned(), id.key()), id);
+            }
+        });
+    }
+    nodes
 }
 
 /// Each copy under a handle the manifest's `documents` does not list, and each key that a copy

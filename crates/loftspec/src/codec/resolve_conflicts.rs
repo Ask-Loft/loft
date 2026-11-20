@@ -182,7 +182,13 @@ fn side_val(side: &ConflictValue, shape: SideShape) -> Val {
 fn item_val(value: &ConflictValue, item: Item) -> Val {
     match (item, value) {
         (Item::Record(kind), ConflictValue::Record(fields)) => record_val(kind, fields),
-        (Item::NodeRef, ConflictValue::Record(fields)) => record_val(Kind::FormerLabel, fields),
+        (
+            Item::NodeRef | Item::Scalar(super::schema::Scalar::Ref(_)),
+            ConflictValue::Record(fields),
+        ) => {
+            let kind = super::record::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
+            record_val(kind, fields)
+        }
         _ => scalar_val(value),
     }
 }

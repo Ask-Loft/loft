@@ -46,6 +46,8 @@ pub enum Kind {
     Copy,
     /// A label of a node of a copy, as the other document bound it.
     CopyLabel,
+    /// A reference to a node of another document: its handle and the node's key.
+    ForeignRef,
 }
 
 /// What a scalar field holds, which fixes how it is checked and written.
@@ -178,7 +180,7 @@ use crate::kind::NodeKind;
 
 impl Kind {
     /// Every kind of record.
-    pub const ALL: [Self; 35] = [
+    pub const ALL: [Self; 36] = [
         Self::Manifest,
         Self::DerivedFrom,
         Self::Labels,
@@ -214,6 +216,7 @@ impl Kind {
         Self::OtherDocument,
         Self::Copy,
         Self::CopyLabel,
+        Self::ForeignRef,
     ];
 
     /// The kind's fields in the Format's order.

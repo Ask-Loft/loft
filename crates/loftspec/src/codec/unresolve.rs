@@ -9,13 +9,15 @@ use super::files::{Content, Role, Tree};
 use super::node_files::{Under, node_files};
 use super::record::{Rec, Val};
 use super::schema::Kind;
-use super::unresolve_parts::{decision_fields, node_ref, statement, target};
+use super::unresolve_parts::{decision_fields, foreign_ref, node_ref, statement, target};
 use super::unresolve_singles::{category_record, labels, manifest, tag_record, term_record};
+use crate::copy::Copy;
 use crate::decision::Decision;
 use crate::document::{Document, Edge};
 use crate::identity::Key;
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
+use crate::slug::Slug;
 use crate::tree::{
     Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
     QualityAttribute, Requirement, Section,
@@ -50,7 +52,7 @@ pub fn unresolve(document: &Document) -> Tree {
 
 /// The files of a document's nodes and decisions alone, without their conflicts.
 pub(crate) fn unresolve_elements(document: &Document) -> Tree {
-    let edges = Edges::of(&document.edges);
+    let edges = Edges::of(&document.edges).across(&document.copies);
     let mut tree = Tree::default();
     let mut file = |role: Role, node: Node<'_>| {
         let record = match (&role, node) {
@@ -121,6 +123,8 @@ pub(super) struct Edges {
     requires: BTreeMap<NodeId, Vec<Key>>,
     mentions: BTreeMap<ElementId, Vec<Key>>,
     subjects: BTreeMap<ElementId, Vec<Rec>>,
+    /// The handle of the copy that holds each node of another document an edge names.
+    foreign: BTreeMap<Key, Slug>,
     /// Whether a record is built without the nodes it holds, for its own record view.
     own: bool,
 }
@@ -134,6 +138,7 @@ impl Edges {
             requires: BTreeMap::new(),
             mentions: BTreeMap::new(),
             subjects: BTreeMap::new(),
+            foreign: BTreeMap::new(),
             own: false,
         };
         for edge in all {
@@ -172,6 +177,34 @@ impl Edges {
             }
         }
         edges
+    }
+
+    /// These edges, writing each target that a node of one of `copies` is as a reference into
+    /// another document.
+    pub(super) fn across(mut self, copies: &[Copy]) -> Self {
+        for copy in copies {
+            let handle = &copy.handle;
+            self.foreign
+                .extend(copy.keys().into_iter().map(|key| (key, handle.clone())));
+        }
+        for subject in self.subjects.values_mut().flatten() {
+            let named = subject.get(field::NODE).and_then(Val::text);
+            let key = named.and_then(|text| Key::parse(text).ok());
+            if let Some(handle) = key.and_then(|key| self.foreign.get(&key)) {
+                let reference = foreign_ref(handle, key.expect("a parsed key"));
+                subject.set(field::NODE, reference);
+            }
+        }
+        self
+    }
+
+    /// The targets of one edge field: a key, or a reference into another document.
+    fn refs(&self, targets: Vec<Key>) -> Val {
+        let each = targets.into_iter().map(|key| match self.foreign.get(&key) {
+            Some(handle) => foreign_ref(handle, key),
+            None => Val::scalar(&key),
+        });
+        Val::List(each.collect())
     }
 
     /// Key, then the fields every node record shares, as each kind orders them.
@@ -222,7 +255,7 @@ impl Edges {
             .and_then(|id| self.mentions.get(&id))
             .cloned()
             .unwrap_or_default();
-        record.set(field::MENTIONS, keys(targets));
+        record.set(field::MENTIONS, self.refs(targets));
     }
 
     pub(super) fn section(&self, section: &Section) -> Rec {
@@ -363,8 +396,8 @@ impl Edges {
             id.and_then(|id| map.get(&id)).cloned().unwrap_or_default()
         };
         record.set(field::SCOPED_TO, keys(targets(&self.scoped)));
-        record.set(field::PROVIDES, keys(targets(&self.provides)));
-        record.set(field::REQUIRES, keys(targets(&self.requires)));
+        record.set(field::PROVIDES, self.refs(targets(&self.provides)));
+        record.set(field::REQUIRES, self.refs(targets(&self.requires)));
         record.set(
             "components",
             self.nested(
