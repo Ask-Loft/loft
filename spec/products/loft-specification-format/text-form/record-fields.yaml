@@ -194,7 +194,7 @@ requirements:
       shall: "write the manifest with the manifest fields in the Format's order."
     criteria:
       - key: 5da704a2-97eb-429e-bd69-04d1613a7167
-        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `connected`, `remote`, `documents`, `products` and `derivedFrom`."
+        name: "The manifest's fields are, in order, `format`, `algorithm`, `documentKey`, `publishBranch`, `connected`, `remote`, `products` and `derivedFrom`."
       - key: 4783e5ae-9990-4606-a8d1-fe92b68d5792
         name: "The manifest requires `format`, `algorithm` and `documentKey`."
       - key: 01a156ac-0a95-726f-ab84-01aeeecf16d8
