@@ -438,6 +438,8 @@ requirements:
         name: "An address that is already the text of a link the Markdown writes out is not drawn as a second link within it."
       - key: 01a1f804-56bc-77a4-94e6-748eebcde366
         name: "A period, a comma, a colon, a semicolon, an exclamation mark, a question mark, an asterisk, an underscore, a tilde, a single quote or a double quote that ends an address is drawn after the link, not in it."
+      - key: 01a1f89d-6ae4-70f1-a41e-0cf431548485
+        name: "An entity, such as `&amp;`, that ends an address is drawn after the link, not in it."
       - key: 01a1f804-56bc-77a4-94e6-748fb9de9b7d
         name: "A closing parenthesis that ends an address is part of the link only where the address opens a parenthesis before it."
       - key: 01a1f89a-bc20-773d-b058-4592653a19af
