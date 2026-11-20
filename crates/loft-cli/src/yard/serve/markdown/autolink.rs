@@ -1,49 +1,174 @@
 //! Bare addresses made links, as GitHub's extended autolink makes them. `pulldown-cmark` reads
 //! `CommonMark` alone and has no such extension, and linking the parsed text is too late: by then
-//! an `__` or `*` within an address has become emphasis. So, as GitHub does, each address is read
-//! from the raw source of a first parse, stood in for by one character, and the Markdown is
-//! parsed again.
+//! an `__` or `*` within an address has become emphasis. GitHub reads an address from the raw
+//! text as it parses; with no hook into `pulldown-cmark`'s parse, each address is read from the
+//! raw source of a first parse instead, stood in for by one character, and the Markdown is parsed
+//! again.
 
-use std::collections::VecDeque;
-use std::mem;
+use std::borrow::Cow;
+use std::mem::{self, Discriminant};
 use std::ops::Range;
 
 use pulldown_cmark::{CowStr, Event, LinkType, Tag, TagEnd};
 
-const SCHEMES: [&str; 3] = ["https://", "http://", "mailto:"];
+use super::{SCHEMES, parser};
 
-// A private use character: no Markdown is expected to hold one, and the parser reads it as it
-// reads a letter, so the emphasis around an address parses as it did around the address.
-const FIRST_STAND_IN: u32 = 0xF_0000;
+// Supplementary private use area B: the icon fonts a terminal draws from use the other private use
+// areas, so no Markdown is expected to hold one. The parser reads it as a letter, as it reads the
+// letter an address begins with.
+const FIRST_STAND_IN: u32 = 0x10_0000;
 
+// The area's last two code points are noncharacters.
 const STAND_INS: usize = 0xFFFE;
 
-pub fn stood_in<'a>(
+/// The events of `markdown` with its bare addresses made links, or `None` where it has none to
+/// make.
+pub fn linked(markdown: &str) -> Option<Vec<Event<'static>>> {
+    let autolinks = Autolinks::new(markdown)?;
+    let all: Vec<usize> = (0..autolinks.found.len()).collect();
+    autolinks
+        .linked(&all)
+        .or_else(|| autolinks.linked(&autolinks.keepable(&all)))
+}
+
+struct Autolinks<'a> {
     markdown: &'a str,
-    events: impl Iterator<Item = (Event<'a>, Range<usize>)>,
-) -> Option<(String, Vec<&'a str>)> {
-    // A Markdown that holds a stand-in already is left unlinked rather than misread.
-    if !markdown.contains(':') || markdown.chars().any(|each| stand_in(each).is_some()) {
-        return None;
+    found: Vec<Found<'a>>,
+    shape: Vec<Shape>,
+}
+
+impl<'a> Autolinks<'a> {
+    fn new(markdown: &'a str) -> Option<Self> {
+        // Most Markdown holds no address, and the first parse is spent only on what does.
+        next_scheme(markdown, 0, markdown.len())?;
+        let events: Vec<_> = parser(markdown).into_offset_iter().collect();
+        // A stand-in the Markdown holds already, written out or as an entity, could take an
+        // address's place where the second parse reads the address into something else, such as
+        // a link's definition.
+        if holds_a_stand_in(markdown)
+            || events
+                .iter()
+                .any(|(event, _)| matches!(event, Event::Text(text) if holds_a_stand_in(text)))
+        {
+            return None;
+        }
+        let mut found = addresses(markdown, &events);
+        found.truncate(STAND_INS);
+        if found.is_empty() {
+            return None;
+        }
+        Some(Autolinks {
+            markdown,
+            found,
+            shape: events
+                .iter()
+                .filter_map(|(event, _)| shape(event))
+                .collect(),
+        })
     }
-    let mut found = addresses(markdown, events);
-    found.truncate(STAND_INS);
-    if found.is_empty() {
-        return None;
+
+    // A stand-in can complete what an address's characters had broken, such as a link whose
+    // destination held `(`, or an HTML tag whose attribute held `=`. The second parse is used only
+    // where it keeps the first one's shape, with one stand-in for each address, each in text
+    // outside a link.
+    fn linked(&self, kept: &[usize]) -> Option<Vec<Event<'static>>> {
+        let mut source = String::with_capacity(self.markdown.len());
+        let mut from = 0;
+        for &index in kept {
+            let range = &self.found[index].range;
+            source.push_str(&self.markdown[from..range.start]);
+            source.push(char::from_u32(FIRST_STAND_IN + u32::try_from(index).ok()?)?);
+            from = range.end;
+        }
+        source.push_str(&self.markdown[from..]);
+        let events: Vec<_> = parser(&source).collect();
+        if events
+            .iter()
+            .filter_map(shape)
+            .ne(self.shape.iter().copied())
+            || stand_ins_outside_links(&events)? != kept.len()
+        {
+            return None;
+        }
+        let mut linked = Vec::with_capacity(events.len() + 2 * kept.len());
+        for event in events {
+            match event {
+                Event::Text(text) if holds_a_stand_in(&text) => self.split(&text, &mut linked),
+                other => linked.push(other.into_static()),
+            }
+        }
+        Some(linked)
     }
-    let mut source = String::with_capacity(markdown.len());
-    let mut from = 0;
-    for (index, address) in found.iter().enumerate() {
-        source.push_str(&markdown[from..address.start]);
-        source.extend(char::from_u32(FIRST_STAND_IN + u32::try_from(index).ok()?));
-        from = address.end;
+
+    // The addresses of `failing`, which together change the parse, that can be kept: halves are
+    // tried in turn, so that one address that changes the parse costs a few parses rather than
+    // one for each address, and leaves the others linked.
+    fn keepable(&self, failing: &[usize]) -> Vec<usize> {
+        if failing.len() < 2 {
+            return Vec::new();
+        }
+        let (left, right) = failing.split_at(failing.len() / 2);
+        [left, right]
+            .into_iter()
+            .flat_map(|half| {
+                if self.linked(half).is_some() {
+                    half.to_vec()
+                } else {
+                    self.keepable(half)
+                }
+            })
+            .collect()
     }
-    source.push_str(&markdown[from..]);
-    let addresses = found
-        .into_iter()
-        .map(|address| &markdown[address])
-        .collect();
-    Some((source, addresses))
+
+    fn split(&self, text: &str, linked: &mut Vec<Event<'static>>) {
+        let mut plain = 0;
+        for (at, character) in text.char_indices() {
+            let Some(index) = stand_in(character) else {
+                continue;
+            };
+            if plain < at {
+                linked.push(Event::Text(text[plain..at].to_owned().into()));
+            }
+            let address = &self.found[index].address;
+            linked.push(Event::Start(Tag::Link {
+                link_type: LinkType::Autolink,
+                dest_url: address.to_string().into(),
+                title: CowStr::Borrowed(""),
+                id: CowStr::Borrowed(""),
+            }));
+            linked.push(Event::Text(address.to_string().into()));
+            linked.push(Event::End(TagEnd::Link));
+            plain = at + character.len_utf8();
+        }
+        if plain < text.len() {
+            linked.push(Event::Text(text[plain..].to_owned().into()));
+        }
+    }
+}
+
+// How many stand-ins lie in text outside a link or an image, or `None` where one lies within one.
+fn stand_ins_outside_links(events: &[Event<'_>]) -> Option<usize> {
+    let mut nested = 0usize;
+    let mut outside = 0;
+    for event in events {
+        match event {
+            Event::Start(Tag::Link { .. } | Tag::Image { .. }) => nested += 1,
+            Event::End(TagEnd::Link | TagEnd::Image) => nested -= 1,
+            Event::Text(text) if nested > 0 && holds_a_stand_in(text) => return None,
+            Event::Text(text) => {
+                outside += text
+                    .chars()
+                    .filter(|&each| stand_in(each).is_some())
+                    .count();
+            }
+            _ => {}
+        }
+    }
+    Some(outside)
+}
+
+fn holds_a_stand_in(text: &str) -> bool {
+    text.chars().any(|each| stand_in(each).is_some())
 }
 
 fn stand_in(character: char) -> Option<usize> {
@@ -51,109 +176,80 @@ fn stand_in(character: char) -> Option<usize> {
     (index < STAND_INS).then_some(index)
 }
 
-pub struct Links<'s, 'r, I: Iterator<Item = Event<'s>>> {
-    events: I,
-    addresses: &'r [&'r str],
-    pending: VecDeque<Event<'s>>,
-    nested: usize,
+// What two parses of one Markdown share where a stand-in changed nothing but its address: how
+// their elements close, and every event but text and line breaks. An emphasis may close
+// elsewhere, as an address takes in the marks within it, and a hard break becomes a soft one
+// where an address takes in its backslash, as on GitHub.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Shape {
+    End(TagEnd),
+    Event(Discriminant<Event<'static>>),
 }
 
-impl<'s, 'r, I: Iterator<Item = Event<'s>>> Links<'s, 'r, I> {
-    pub const fn new(events: I, addresses: &'r [&'r str]) -> Self {
-        Self {
-            events,
-            addresses,
-            pending: VecDeque::new(),
-            nested: 0,
-        }
-    }
-
-    fn split(&self, text: &str) -> VecDeque<Event<'s>> {
-        let mut events = VecDeque::new();
-        let mut plain = String::new();
-        for character in text.chars() {
-            let Some(address) = stand_in(character).and_then(|index| self.addresses.get(index))
-            else {
-                plain.push(character);
-                continue;
-            };
-            // The parse may put an address in a link's text; a link within a link is no link.
-            if self.nested > 0 {
-                plain.push_str(address);
-                continue;
-            }
-            if !plain.is_empty() {
-                events.push_back(Event::Text(mem::take(&mut plain).into()));
-            }
-            events.push_back(Event::Start(Tag::Link {
-                link_type: LinkType::Autolink,
-                dest_url: (*address).to_owned().into(),
-                title: CowStr::Borrowed(""),
-                id: CowStr::Borrowed(""),
-            }));
-            events.push_back(Event::Text((*address).to_owned().into()));
-            events.push_back(Event::End(TagEnd::Link));
-        }
-        if !plain.is_empty() {
-            events.push_back(Event::Text(plain.into()));
-        }
-        events
+fn shape(event: &Event<'_>) -> Option<Shape> {
+    match event {
+        Event::Text(_)
+        | Event::SoftBreak
+        | Event::HardBreak
+        | Event::Start(_)
+        | Event::End(TagEnd::Emphasis | TagEnd::Strong | TagEnd::Strikethrough) => None,
+        Event::End(end) => Some(Shape::End(*end)),
+        other => Some(Shape::Event(mem::discriminant(
+            &other.clone().into_static(),
+        ))),
     }
 }
 
-impl<'s, I: Iterator<Item = Event<'s>>> Iterator for Links<'s, '_, I> {
-    type Item = Event<'s>;
-
-    fn next(&mut self) -> Option<Event<'s>> {
-        if let Some(event) = self.pending.pop_front() {
-            return Some(event);
-        }
-        let event = self.events.next()?;
-        match &event {
-            Event::Start(Tag::Link { .. } | Tag::Image { .. }) => self.nested += 1,
-            Event::End(TagEnd::Link | TagEnd::Image) => {
-                self.nested = self.nested.saturating_sub(1);
-            }
-            Event::Text(text) if text.chars().any(|each| stand_in(each).is_some()) => {
-                self.pending = self.split(text);
-                return self.pending.pop_front();
-            }
-            _ => {}
-        }
-        Some(event)
-    }
+struct Found<'a> {
+    range: Range<usize>,
+    address: Cow<'a, str>,
 }
 
-fn addresses<'a>(
-    markdown: &'a str,
-    events: impl Iterator<Item = (Event<'a>, Range<usize>)>,
-) -> Vec<Range<usize>> {
-    let events: Vec<_> = events.collect();
+#[derive(Clone, Copy)]
+struct Open {
+    end: usize,
+    guarded: bool,
+    in_cell: bool,
+}
+
+fn addresses<'a>(markdown: &'a str, events: &[(Event<'_>, Range<usize>)]) -> Vec<Found<'a>> {
     let mut stops: Vec<usize> = events
         .iter()
         .filter(|(event, _)| stops_an_address(event))
         .map(|(_, range)| range.start)
         .collect();
     stops.sort_unstable();
-    let lower = markdown.to_ascii_lowercase();
     let mut scan = Scan {
         markdown,
-        lower: &lower,
         stops: &stops,
         found: Vec::new(),
     };
-    let mut open: Vec<(usize, bool)> = Vec::new();
+    let mut open: Vec<Open> = Vec::new();
     for (event, range) in events {
         match event {
-            Event::Start(tag) => open.push((range.end, guards(&tag))),
+            // An address takes in the emphasis marks within it, as on GitHub, so an emphasis
+            // neither ends an address nor is closed by one.
+            Event::Start(Tag::Emphasis | Tag::Strong | Tag::Strikethrough)
+            | Event::End(TagEnd::Emphasis | TagEnd::Strong | TagEnd::Strikethrough) => {}
+            Event::Start(tag) => {
+                let outer = open.last().copied();
+                open.push(Open {
+                    end: range.end,
+                    guarded: guards(tag) || outer.is_some_and(|outer| outer.guarded),
+                    in_cell: matches!(tag, Tag::TableCell)
+                        || outer.is_some_and(|outer| outer.in_cell),
+                });
+            }
             Event::End(_) => {
                 open.pop();
             }
-            Event::Text(_) if !open.iter().any(|&(_, guarded)| guarded) => {
-                // An address ends within its element, such as a table cell or the emphasis it
-                // begins in, so that standing in for it leaves the parse's structure as it was.
-                let cap = open.last().map_or(markdown.len(), |&(end, _)| end);
-                scan.text(range, cap);
+            Event::Text(_) if !open.last().is_some_and(|open| open.guarded) => {
+                // An address ends within its element, such as a table cell, so that standing in
+                // for it leaves the parse's structure as it was.
+                let (cap, in_cell) = open
+                    .last()
+                    .map_or((markdown.len(), false), |open| (open.end, open.in_cell));
+                scan.text(range.clone(), cap, in_cell);
             }
             _ => {}
         }
@@ -169,47 +265,40 @@ const fn guards(tag: &Tag<'_>) -> bool {
 }
 
 const fn stops_an_address(event: &Event<'_>) -> bool {
-    matches!(
-        event,
-        Event::Code(_)
-            | Event::InlineHtml(_)
-            | Event::Html(_)
-            | Event::FootnoteReference(_)
-            | Event::Start(
-                Tag::Link { .. } | Tag::Image { .. } | Tag::CodeBlock(_) | Tag::HtmlBlock
-            )
-    )
+    match event {
+        Event::Code(_) | Event::InlineHtml(_) | Event::Html(_) | Event::FootnoteReference(_) => {
+            true
+        }
+        Event::Start(tag) => guards(tag),
+        _ => false,
+    }
 }
 
-struct Scan<'s> {
-    markdown: &'s str,
-    // ASCII lowercase keeps every byte where it was, so a place in it is a place in `markdown`.
-    lower: &'s str,
+struct Scan<'a, 's> {
+    markdown: &'a str,
     stops: &'s [usize],
-    found: Vec<Range<usize>>,
+    found: Vec<Found<'a>>,
 }
 
-impl Scan<'_> {
-    fn text(&mut self, range: Range<usize>, cap: usize) {
+impl Scan<'_, '_> {
+    fn text(&mut self, range: Range<usize>, cap: usize, in_cell: bool) {
         let mut from = range
             .start
-            .max(self.found.last().map_or(0, |address| address.end));
-        while let Some((start, scheme)) = next_scheme(&self.lower[..range.end], from) {
-            let preceded = self.markdown[..start]
-                .chars()
-                .next_back()
-                .is_some_and(|before| before.is_ascii_alphanumeric());
-            let rest = &self.markdown[start..cap.min(self.next_stop(start))];
-            let length = rest.find(ends_an_address).unwrap_or(rest.len());
-            let end = start + trimmed(&rest[..length]);
-            if !preceded && end > start + scheme {
-                self.found.push(start..end);
-                from = end;
+            .max(self.found.last().map_or(0, |each| each.range.end));
+        while let Some((start, scheme)) = next_scheme(self.markdown, from, range.end) {
+            from = start + scheme.len();
+            let limit = cap.min(self.next_stop(start));
+            let end = if scheme == "mailto:" {
+                mailto_end(self.markdown, start, limit)
             } else {
-                from = start + scheme;
-            }
-            if from >= range.end {
-                return;
+                url_end(self.markdown, start, scheme, limit)
+            };
+            if let Some(end) = end {
+                self.found.push(Found {
+                    range: start..end,
+                    address: cell_unescaped(&self.markdown[start..end], in_cell),
+                });
+                from = end;
             }
         }
     }
@@ -220,20 +309,128 @@ impl Scan<'_> {
     }
 }
 
-fn ends_an_address(next: char) -> bool {
-    next.is_whitespace() || next == '<'
+// A table's cells are split at `|` before they are parsed, as GitHub splits them.
+fn cell_unescaped(address: &str, in_cell: bool) -> Cow<'_, str> {
+    if in_cell && address.contains("\\|") {
+        Cow::Owned(address.replace("\\|", "|"))
+    } else {
+        Cow::Borrowed(address)
+    }
 }
 
-fn next_scheme(lower: &str, from: usize) -> Option<(usize, usize)> {
-    SCHEMES
+// `cmark-gfm`'s `url_match`, so that an address is linked where GitHub links it.
+fn url_end(markdown: &str, start: usize, scheme: &str, limit: usize) -> Option<usize> {
+    // GitHub reads back over the letters before `:` for the scheme, so a letter before it makes
+    // another scheme.
+    if preceded_by(markdown, start, u8::is_ascii_alphabetic) {
+        return None;
+    }
+    let host = &markdown[start + scheme.len()..limit];
+    // Non-ASCII punctuation begins a host here: the standard library has no class for it.
+    let begins = host
+        .chars()
+        .next()
+        .is_some_and(|first| !first.is_whitespace() && !first.is_ascii_punctuation());
+    if !begins || underscored(host.as_bytes()) {
+        return None;
+    }
+    let rest = &markdown[start..limit];
+    let length = rest.find(ends_an_address).unwrap_or(rest.len());
+    let end = start + trimmed(&rest[..length]);
+    (end > start + scheme.len()).then_some(end)
+}
+
+// `cmark-gfm`'s `check_domain`, which takes host names apart from domain names, where an
+// underscore is allowed, and lets a long one through rather than read it again and again.
+fn underscored(host: &[u8]) -> bool {
+    let (mut dots, mut before_last, mut last) = (0, 0, 0);
+    let mut index = 1;
+    while index + 1 < host.len() {
+        if host[index] == b'\\' && index + 2 < host.len() {
+            index += 1;
+        }
+        match host[index] {
+            b'_' => last += 1,
+            b'.' => {
+                before_last = last;
+                last = 0;
+                dots += 1;
+            }
+            b'-' => {}
+            byte if byte.is_ascii()
+                && !byte.is_ascii_punctuation()
+                && !matches!(byte, b'\t' | b'\n' | 0x0C | b'\r' | b' ') => {}
+            _ => break,
+        }
+        index += 1;
+    }
+    (before_last > 0 || last > 0) && dots <= 10
+}
+
+// GitHub links `mailto:` only with the email address it finds after it, in its postprocess of
+// text: the scheme in lowercase after no letter or digit, and a domain with a dot that ends in a
+// letter.
+fn mailto_end(markdown: &str, start: usize, limit: usize) -> Option<usize> {
+    if !markdown[start..].starts_with("mailto:")
+        || preceded_by(markdown, start, u8::is_ascii_alphanumeric)
+    {
+        return None;
+    }
+    let after = start + "mailto:".len();
+    let bytes = &markdown.as_bytes()[after..limit];
+    let at = bytes
         .iter()
-        .filter_map(|scheme| {
-            lower
-                .get(from..)?
-                .find(scheme)
-                .map(|at| (from + at, scheme.len()))
+        .position(|byte| !byte.is_ascii_alphanumeric() && !b".+-_".contains(byte))?;
+    let domain = bytes[at..].strip_prefix(b"@")?;
+    let (mut length, mut dots) = (0, 0);
+    while let Some(&byte) = domain.get(length) {
+        let dot = byte == b'.'
+            && domain
+                .get(length + 1)
+                .is_some_and(u8::is_ascii_alphanumeric);
+        if byte == b'@' {
+            return None;
+        }
+        if !(dot || byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_') {
+            break;
+        }
+        dots += usize::from(dot);
+        length += 1;
+    }
+    let ends_in_a_letter = length > 0 && domain[length - 1].is_ascii_alphabetic();
+    (dots > 0 && ends_in_a_letter).then_some(after + at + 1 + length)
+}
+
+fn preceded_by(markdown: &str, start: usize, class: fn(&u8) -> bool) -> bool {
+    start
+        .checked_sub(1)
+        .is_some_and(|before| class(&markdown.as_bytes()[before]))
+}
+
+// `cmark-gfm`'s `cmark_isspace`, which takes no other whitespace.
+fn ends_an_address(next: char) -> bool {
+    matches!(next, ' ' | '\t' | '\n' | '\r' | '<')
+}
+
+// Found from each `:` rather than by searching for each scheme in turn, so that a line of many
+// addresses is read once.
+fn next_scheme(markdown: &str, from: usize, end: usize) -> Option<(usize, &'static str)> {
+    let bytes = markdown.as_bytes();
+    markdown
+        .get(from..end)?
+        .match_indices(':')
+        .find_map(|(at, _)| {
+            let colon = from + at;
+            SCHEMES.iter().find_map(|scheme| {
+                let (name, after) = scheme.split_once(':')?;
+                let start = colon
+                    .checked_sub(name.len())
+                    .filter(|&start| start >= from)?;
+                let named = bytes[start..colon].eq_ignore_ascii_case(name.as_bytes());
+                (named && bytes[colon + 1..].starts_with(after.as_bytes()))
+                    .then_some((start, *scheme))
+            })
         })
-        .min_by_key(|&(at, _)| at)
 }
 
 // `cmark-gfm`'s `autolink_delim`, so that an address ends where it ends on GitHub. Cutting an
@@ -269,203 +466,6 @@ fn entity_start(bytes: &[u8]) -> Option<usize> {
     let amp = bytes.len().checked_sub(letters + 2)?;
     (letters > 0 && bytes[amp] == b'&').then_some(amp)
 }
+
 #[cfg(test)]
-mod tests {
-    use super::super::{render_document, to_html};
-
-    fn link(address: &str) -> String {
-        format!("<a href=\"{address}\">{address}</a>")
-    }
-
-    fn paragraph(before: &str, address: &str, after: &str) -> String {
-        format!("<p>{before}{}{after}</p>\n", link(address))
-    }
-
-    #[test]
-    fn a_bare_https_address_in_a_note_is_drawn_as_a_link_to_it() {
-        assert_eq!(
-            to_html("See https://example.com/plan for it."),
-            paragraph("See ", "https://example.com/plan", " for it.")
-        );
-    }
-
-    #[test]
-    fn an_underscore_an_asterisk_or_a_tilde_within_an_address_stays_in_its_link() {
-        for address in [
-            "https://github.com/o/r/tree/main/src/__tests__/a.ts",
-            "https://example.com/a*b*c",
-            "https://example.com/a~b~c",
-            "https://example.com/a**b**c",
-        ] {
-            assert_eq!(
-                to_html(&format!("See {address} now")),
-                paragraph("See ", address, " now")
-            );
-        }
-    }
-
-    #[test]
-    fn emphasis_around_an_address_parses_as_it_did_without_the_link() {
-        assert_eq!(
-            to_html("**see https://example.com/a**b"),
-            format!(
-                "<p><strong>see {}</strong>b</p>\n",
-                link("https://example.com/a")
-            )
-        );
-    }
-
-    #[test]
-    fn a_bare_http_address_and_a_bare_mailto_address_are_each_drawn_as_a_link() {
-        assert_eq!(
-            to_html("Read http://example.com/a?b=1#c first"),
-            paragraph("Read ", "http://example.com/a?b=1#c", " first")
-        );
-        assert_eq!(
-            to_html("Write to mailto:someone@example.com today"),
-            paragraph("Write to ", "mailto:someone@example.com", " today")
-        );
-    }
-
-    #[test]
-    fn a_bare_address_in_every_markdown_field_is_drawn_as_a_link() {
-        let mut document = serde_json::json!({"stages": [{
-            "version": {"body": {"title": "Model", "goal": "Per https://example.com/goal"}},
-            "blocks": [
-                {"version": {"body": {"title": "Ship", "consequence": "See https://example.com/consequence"}}},
-                {"version": {"body": {"title": "Fix", "detail": "See https://example.com/detail", "state": "done"}}},
-                {"version": {"body": {"prompt": "Which?", "context": "See https://example.com/context",
-                    "options": [{"label": "Top", "detail": "See https://example.com/option"}]}}},
-                {"kind": "loft", "version": {"body": {"view": "trace", "note": "See https://example.com/note"}}},
-                {"version": {"body": {"title": "Ship it?", "markdown": "See https://example.com/approval"}}},
-                {"version": {"body": {"title": "The plan", "markdown": "See https://example.com/plan"}}}
-            ]
-        }]});
-        render_document(&mut document);
-        let stage = &document["stages"][0];
-        let body = |index: usize| &stage["blocks"][index]["version"]["body"];
-        let fields = [
-            (&stage["version"]["body"]["goalHtml"], "goal"),
-            (&body(0)["consequenceHtml"], "consequence"),
-            (&body(1)["detailHtml"], "detail"),
-            (&body(2)["contextHtml"], "context"),
-            (&body(2)["options"][0]["detailHtml"], "option"),
-            (&body(3)["noteHtml"], "note"),
-            (&body(4)["html"], "approval"),
-            (&body(5)["html"], "plan"),
-        ];
-        for (html, field) in fields {
-            let html = html.as_str().unwrap_or_default();
-            let expected = link(&format!("https://example.com/{field}"));
-            assert!(html.contains(&expected), "{field}: {html}");
-        }
-    }
-
-    #[test]
-    fn an_address_within_a_code_span_is_drawn_as_text() {
-        let html = to_html("Run `curl https://example.com/api` now");
-        assert!(!html.contains("<a"), "{html}");
-        assert!(
-            html.contains("<code>curl https://example.com/api</code>"),
-            "{html}"
-        );
-        let html = to_html("Run https://example.com/a`code` now");
-        assert!(html.contains(&link("https://example.com/a")), "{html}");
-        assert!(html.contains("<code>code</code>"), "{html}");
-    }
-
-    #[test]
-    fn an_address_within_a_fenced_code_block_is_drawn_as_text() {
-        let html = to_html("```\ncurl https://example.com/api\n```\n");
-        assert!(!html.contains("<a"), "{html}");
-        assert!(html.contains("curl https://example.com/api"), "{html}");
-    }
-
-    #[test]
-    fn an_address_that_a_written_link_holds_is_not_linked_again() {
-        for markdown in [
-            "[https://example.com/a](https://example.com/a)",
-            "<https://example.com/b>",
-            "[see https://example.com/c](https://example.com/d)",
-            "![https://example.com/e](https://example.com/e.png)",
-        ] {
-            let html = to_html(markdown);
-            assert_eq!(html.matches("<a ").count(), 1, "{html}");
-        }
-    }
-
-    #[test]
-    fn punctuation_that_ends_an_address_is_drawn_after_the_link() {
-        for mark in ['.', ',', ':', ';', '!', '?', '*', '_', '~', '\''] {
-            assert_eq!(
-                to_html(&format!("Go to https://example.com/x{mark}")),
-                paragraph("Go to ", "https://example.com/x", &mark.to_string()),
-                "{mark}"
-            );
-        }
-        assert_eq!(
-            to_html("Set it to \"https://example.com\"."),
-            paragraph("Set it to \"", "https://example.com", "\".")
-        );
-        assert_eq!(
-            to_html("See https://docs.python.org/3/x.html#object.__init__ there"),
-            paragraph(
-                "See ",
-                "https://docs.python.org/3/x.html#object.__init",
-                "__ there"
-            )
-        );
-        assert_eq!(
-            to_html("https://example.com/a.b"),
-            paragraph("", "https://example.com/a.b", "")
-        );
-    }
-
-    #[test]
-    fn an_entity_that_ends_an_address_is_drawn_after_the_link() {
-        assert_eq!(
-            to_html("See https://example.com/a&amp; now"),
-            paragraph("See ", "https://example.com/a", "&amp; now")
-        );
-    }
-
-    #[test]
-    fn a_closing_parenthesis_ends_the_link_unless_the_address_opens_one() {
-        assert_eq!(
-            to_html("(see https://example.com/x)"),
-            paragraph("(see ", "https://example.com/x", ")")
-        );
-        let wiki = "https://en.wikipedia.org/wiki/Foo_(bar)";
-        assert_eq!(to_html(wiki), paragraph("", wiki, ""));
-        assert_eq!(to_html(&format!("({wiki}).")), paragraph("(", wiki, ")."));
-    }
-
-    #[test]
-    fn a_closing_square_bracket_ends_the_link_unless_the_address_opens_one() {
-        assert_eq!(
-            to_html("[see https://example.com/x]"),
-            paragraph("[see ", "https://example.com/x", "]")
-        );
-        assert_eq!(
-            to_html("https://example.com/a[1]"),
-            "<p><a href=\"https://example.com/a%5B1%5D\">https://example.com/a[1]</a></p>\n"
-        );
-    }
-
-    #[test]
-    fn no_link_is_drawn_to_an_address_of_any_other_scheme() {
-        let html = to_html("javascript:alert(1) and ftp://example.com/f and data:text/html,x");
-        assert!(!html.contains("<a"), "{html}");
-        assert!(html.contains("javascript:alert(1)"), "{html}");
-        let html = to_html("javascript:https://example.com/x");
-        assert!(!html.contains("href=\"javascript"), "{html}");
-    }
-
-    #[test]
-    fn a_scheme_with_nothing_after_it_stays_text() {
-        assert_eq!(
-            to_html("Begin with https:// or mailto: here"),
-            "<p>Begin with https:// or mailto: here</p>\n"
-        );
-    }
-}
+mod tests;
