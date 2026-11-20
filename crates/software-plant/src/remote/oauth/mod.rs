@@ -23,7 +23,9 @@ use super::State;
 use super::wire::{pairs, value};
 
 pub(super) use authorize::authorize;
-pub(super) use metadata::{document_metadata, resource_metadata, server_metadata};
+pub(super) use metadata::{
+    document_metadata, metadata_naming_elsewhere, resource_metadata, server_metadata,
+};
 pub(super) use register::register;
 pub(super) use token::{refreshing, token};
 

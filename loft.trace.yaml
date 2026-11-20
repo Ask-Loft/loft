@@ -20712,6 +20712,9 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_failures.rs"
         name: "a_second_port_serves_what_a_scenario_places_on_another_origin_and_records_its_own_requests"
         body: 38e2f6fde993812e24378107c716134650aafb0193fbfffbb31f67204b8646fa
+      - file: "crates/loft-cli/tests/remote_contract_origins.rs"
+        name: "a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_second_port"
+        body: 0e25446881be3af53e30e3d7e2d3ab5ed13118acb292d7ae820e6d42adbbdea8
   - node: 01a18e1f-8dac-71f7-847a-7244ef7a794f
     reviewed: 4312e5ffc9b143d98e475c0efaa0e3b66e8cfae42c0e730785c1d8d7bda1fb0f
     tests:
@@ -21294,6 +21297,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_failures.rs"
         name: "the_simulators_own_origin_does_not_serve_metadata_that_a_scenario_places_on_another_origin"
         body: c0eea28da937ad601fb2c36abad773aec55c7ba4f079581b3174183d91f2ba6f
+  - node: 01a1f900-b500-7724-8ce2-2be4d43fe5f2
+    reviewed: 54881a52ab4d4d534d051cbaa1ad3a684096f69023b76f20470368fb2d27dbe7
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_origins.rs"
+        name: "a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_second_port"
+        body: 0e25446881be3af53e30e3d7e2d3ab5ed13118acb292d7ae820e6d42adbbdea8
   - node: 01a1f09b-189b-76b3-863f-c7b0f61ec005
     reviewed: f20ec52f895a601445b0b8e36eafe0614e62131d4b63b68128d270802e94932f
     tests:

@@ -6,10 +6,21 @@
 use serde_json::{Value, json};
 
 use crate::http::Response;
-use crate::remote::{Metadata, RESOURCE, State};
+use crate::remote::{Metadata, RESOURCE, State, WELL_KNOWN};
 
 pub(crate) fn resource_metadata(state: &State) -> Response {
     Response::json(200, &document_metadata(state, &state.origin))
+}
+
+/// The document's protected resource metadata as a scenario that names its protected resource on
+/// another origin serves it at `path` on the simulator's origin: naming as `resource` the
+/// metadata's address with the well-known path taken out, as RFC 9728 derives a resource from it,
+/// which lies on the second port's origin.
+pub(crate) fn metadata_naming_elsewhere(state: &State, path: &str) -> Response {
+    let mut metadata = document_metadata(state, &state.origin);
+    let address = format!("{}{path}", state.origin);
+    metadata["resource"] = json!(address.replacen(WELL_KNOWN, "", 1));
+    Response::json(200, &metadata)
 }
 
 /// The protected resource metadata of the document's protected resource, as `origin` serves it.
