@@ -130,7 +130,13 @@ fn value_of(value: &Val, shape: Shape, keys: &mut Vec<Key>) {
 const fn resolved(item: Item) -> bool {
     matches!(
         item.target(),
-        Some(Target::Node | Target::Component | Target::Product | Target::NodeOrDecision)
+        Some(
+            Target::Node
+                | Target::Component
+                | Target::Interface
+                | Target::Product
+                | Target::NodeOrDecision
+        )
     )
 }
 

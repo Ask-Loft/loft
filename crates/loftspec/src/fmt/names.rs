@@ -90,6 +90,7 @@ fn look(target: Target) -> Look {
         Target::Component => {
             Look::Among(|kind| matches!(kind.node_kind(), Some(NodeKind::Component)))
         }
+        Target::Interface => Look::Among(|kind| kind == Kind::Interface),
         Target::Product => Look::Among(|kind| kind == Kind::Product),
         Target::Decision => Look::Among(|kind| kind == Kind::Decision),
         Target::NodeOrDecision => Look::Among(|kind| is_node(kind) || kind == Kind::Decision),
@@ -103,6 +104,7 @@ fn look(target: Target) -> Look {
 const fn describe(target: Target) -> &'static str {
     match target {
         Target::Component => "Component",
+        Target::Interface => "Interface",
         Target::Product => "Product",
         Target::Decision => "decision",
         Target::NodeOrDecision => "node or decision",

@@ -11,7 +11,7 @@ use crate::bindings::BindingError;
 use crate::conflict::{ConflictId, ConflictOwner, FieldPath};
 use crate::document::Document;
 use crate::identity::{Key, Label};
-use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, NodeId, OptionId};
+use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, InterfaceId, NodeId, OptionId};
 use crate::index::{Index, IndexErrors, IntegrityError, SupersessionCycle};
 use crate::names::TagName;
 
@@ -46,6 +46,12 @@ pub enum ValidationError {
     PrivateUnderExternal {
         component: ComponentId,
         ancestor: ComponentId,
+    },
+    /// A Component that both provides and requires one Interface.
+    #[error("{component} both provides and requires {interface}")]
+    ProvidesAndRequires {
+        component: ComponentId,
+        interface: InterfaceId,
     },
     /// A resolved decision with fewer than two options (AC-734).
     #[error("decision {0} is resolved with fewer than two options")]
@@ -90,6 +96,10 @@ impl ValidationError {
                 component,
                 ancestor,
             } => vec![component.key(), ancestor.key()],
+            Self::ProvidesAndRequires {
+                component,
+                interface,
+            } => vec![component.key(), interface.key()],
             Self::FormerLabelInLiveDecision { decision, .. }
             | Self::TooFewOptions(decision)
             | Self::NoDriver(decision)

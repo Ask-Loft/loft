@@ -197,6 +197,26 @@ impl Resolver<'_> {
                 product,
             });
         }
+        let interface = |node| match node {
+            NodeId::Interface(interface) => Some(interface),
+            _ => None,
+        };
+        for target in record.list(field::PROVIDES) {
+            let interface = self.node(target, interface)?;
+            let component = id;
+            self.document.edges.push(Edge::Provides {
+                component,
+                interface,
+            });
+        }
+        for target in record.list(field::REQUIRES) {
+            let interface = self.node(target, interface)?;
+            let component = id;
+            self.document.edges.push(Edge::Requires {
+                component,
+                interface,
+            });
+        }
         Ok(Component {
             id: Some(id),
             name: text(record, field::NAME),

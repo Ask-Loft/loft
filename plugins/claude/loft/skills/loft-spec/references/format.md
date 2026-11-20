@@ -232,13 +232,17 @@ A statement may instead be `text:` alone, a whole sentence; lint asks for the sl
 | `body`, `tags` | optional |
 | `boundary` | optional: `private` or `external` |
 | `scopedTo` | optional: Product keys |
+| `provides` | optional: the keys of the Interfaces whose promise it keeps |
+| `requires` | optional: the keys of the Interfaces whose promise it relies on |
 | `mentions` | optional |
 | `ext` | optional |
 | `components` | optional: nested Components |
 | `constraints`, `qualityAttributes`, `sections` | optional |
 
 A root Component without `boundary` is `private`; a nested one takes its parent's boundary. An
-`external` Component is a system outside the product that it depends on.
+`external` Component is a system outside the product that it depends on. A Component `provides`
+an Interface whose promise it keeps, and `requires` one whose promise it relies on; never both
+for one Interface.
 
 | Constraint field | |
 |---|---|
@@ -489,6 +493,8 @@ The decision above is written in one pass: its options, drivers and subjects are
 |---|---|---|
 | `realizes` | a Feature | the Components that implement it |
 | `scopedTo` | a Component | the Products it serves |
+| `provides` | a Component | the Interfaces whose promise it keeps |
+| `requires` | a Component | the Interfaces whose promise it relies on |
 | `subjects` | a decision | the nodes it affects or that state its outcome |
 | `mentions` | any node or decision | any node or decision its prose refers to |
 
@@ -500,6 +506,7 @@ with the key of the one element of the kind the field takes that has that name:
 |---|---|
 | `realizes` | a Component, by its name |
 | `scopedTo` | a Product, by its name |
+| `provides`, `requires` | an Interface, by its name |
 | `mentions` | a node or a decision, by its name or title |
 | a subject's `node`, a driver's or a consequence's `subject` | a node, by its name |
 | `successor` | a decision, by its title |

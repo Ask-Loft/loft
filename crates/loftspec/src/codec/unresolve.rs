@@ -109,6 +109,8 @@ pub(super) fn records(items: impl IntoIterator<Item = Rec>) -> Val {
 pub(super) struct Edges {
     realizes: BTreeMap<NodeId, Vec<Key>>,
     scoped: BTreeMap<NodeId, Vec<Key>>,
+    provides: BTreeMap<NodeId, Vec<Key>>,
+    requires: BTreeMap<NodeId, Vec<Key>>,
     mentions: BTreeMap<ElementId, Vec<Key>>,
     subjects: BTreeMap<ElementId, Vec<Rec>>,
     /// Whether a record is built without the nodes it holds, for its own record view.
@@ -120,6 +122,8 @@ impl Edges {
         let mut edges = Self {
             realizes: BTreeMap::new(),
             scoped: BTreeMap::new(),
+            provides: BTreeMap::new(),
+            requires: BTreeMap::new(),
             mentions: BTreeMap::new(),
             subjects: BTreeMap::new(),
             own: false,
@@ -139,6 +143,20 @@ impl Edges {
                         .entry(component.into())
                         .or_default()
                         .push(product.key());
+                }
+                Edge::Provides {
+                    component,
+                    interface,
+                } => {
+                    let list = edges.provides.entry(component.into()).or_default();
+                    list.push(interface.key());
+                }
+                Edge::Requires {
+                    component,
+                    interface,
+                } => {
+                    let list = edges.requires.entry(component.into()).or_default();
+                    list.push(interface.key());
                 }
                 Edge::Mentions { source, target } => {
                     edges.mentions.entry(source).or_default().push(target.key());
@@ -352,6 +370,11 @@ impl Edges {
             .cloned()
             .unwrap_or_default();
         record.set(field::SCOPED_TO, keys(scoped));
+        let targets = |map: &BTreeMap<NodeId, Vec<Key>>| {
+            id.and_then(|id| map.get(&id)).cloned().unwrap_or_default()
+        };
+        record.set(field::PROVIDES, keys(targets(&self.provides)));
+        record.set(field::REQUIRES, keys(targets(&self.requires)));
         record.set(
             "components",
             self.nested(

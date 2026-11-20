@@ -12,7 +12,7 @@ use crate::decision::{Decision, NodeRef};
 use crate::identity::Label;
 use crate::ids::{
     AuthoredStateId, CategoryId, ComponentId, DecisionId, DocumentId, ElementId, FeatureId,
-    ProductId, TagId, TermId,
+    InterfaceId, ProductId, TagId, TermId,
 };
 use crate::names::{CategoryName, TagName};
 use crate::tree::{Interface, Product, RootComponent};
@@ -24,6 +24,8 @@ pub enum EdgeKind {
     ScopedTo,
     Mentions,
     Subject,
+    Provides,
+    Requires,
 }
 
 impl EdgeKind {
@@ -34,6 +36,8 @@ impl EdgeKind {
             Self::ScopedTo => "scoped_to",
             Self::Mentions => "mentions",
             Self::Subject => "subject",
+            Self::Provides => "provides",
+            Self::Requires => "requires",
         }
     }
 }
@@ -75,6 +79,16 @@ pub enum Edge {
         subject: NodeRef,
         role: SubjectRole,
     },
+    /// A Component keeps the promise an Interface makes.
+    Provides {
+        component: ComponentId,
+        interface: InterfaceId,
+    },
+    /// A Component relies on the promise an Interface makes.
+    Requires {
+        component: ComponentId,
+        interface: InterfaceId,
+    },
 }
 
 /// The far end of an edge: an element, or the former label a `subject` edge may name.
@@ -92,6 +106,8 @@ impl Edge {
             Self::ScopedTo { .. } => EdgeKind::ScopedTo,
             Self::Mentions { .. } => EdgeKind::Mentions,
             Self::Subject { .. } => EdgeKind::Subject,
+            Self::Provides { .. } => EdgeKind::Provides,
+            Self::Requires { .. } => EdgeKind::Requires,
         }
     }
 
@@ -99,7 +115,9 @@ impl Edge {
     pub fn source(self) -> ElementId {
         match self {
             Self::Realizes { feature, .. } => feature.into(),
-            Self::ScopedTo { component, .. } => component.into(),
+            Self::ScopedTo { component, .. }
+            | Self::Provides { component, .. }
+            | Self::Requires { component, .. } => component.into(),
             Self::Mentions { source, .. } => source,
             Self::Subject { decision, .. } => decision.into(),
         }
@@ -111,6 +129,9 @@ impl Edge {
         match self {
             Self::Realizes { component, .. } => element(component.into()),
             Self::ScopedTo { product, .. } => element(product.into()),
+            Self::Provides { interface, .. } | Self::Requires { interface, .. } => {
+                element(interface.into())
+            }
             Self::Mentions { target, .. } => element(target),
             Self::Subject {
                 subject: NodeRef::Held(node),

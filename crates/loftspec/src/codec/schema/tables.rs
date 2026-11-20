@@ -328,13 +328,15 @@ const FORMER_LABEL_FIELDS: &[Field] = &[req(field::FORMER_LABEL, S::Label)];
 
 const BY_NAME_FIELDS: &[Field] = &[req(field::NAME, S::Text)];
 
-const COMPONENT: [Field; 12] = [
+const COMPONENT: [Field; 14] = [
     KEY,
     NAME,
     BODY,
     TAGS,
     opt(field::BOUNDARY, S::Enum(Boundary::NAMES)),
     edges(field::SCOPED_TO, Target::Product),
+    edges(field::PROVIDES, Target::Interface),
+    edges(field::REQUIRES, Target::Interface),
     MENTIONS,
     EXT,
     records(field::COMPONENTS, K::Component),
@@ -358,8 +360,8 @@ const INTERFACE_FIELDS: &[Field] = &[
 ];
 
 /// A root Component: `slug` after `key`, then a Component's fields (AC-757).
-const ROOT_COMPONENT: [Field; 13] = {
-    let mut fields = [KEY; 13];
+const ROOT_COMPONENT: [Field; 15] = {
+    let mut fields = [KEY; 15];
     fields[1] = SLUG;
     let mut index = 1;
     while index < COMPONENT.len() {

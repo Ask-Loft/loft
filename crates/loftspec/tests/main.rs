@@ -64,6 +64,7 @@ mod held_documents;
 mod identity;
 mod index;
 mod interfaces_codec;
+mod interfaces_edges;
 mod label_allocation;
 mod lint;
 mod lint_config;

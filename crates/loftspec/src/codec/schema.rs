@@ -76,6 +76,7 @@ pub enum Target {
     /// Any node.
     Node,
     Component,
+    Interface,
     Product,
     Decision,
     /// Any node, or a decision.
