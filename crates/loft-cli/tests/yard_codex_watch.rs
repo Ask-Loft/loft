@@ -1,12 +1,13 @@
 //! Worker lifecycle and recovery against the actual local Yard page server.
 
 use std::fs;
+use std::net::{SocketAddr, TcpStream};
 use std::time::Duration;
 
 use serde_json::{Value, json};
 use yardlog_store::lock;
 
-use crate::served::{Served, within};
+use crate::served::{LOOPBACK, Served, free_port, machine_address, within};
 use crate::yard::Yard;
 use crate::yard_codex::{Worker, event, hook, watch};
 
@@ -82,6 +83,27 @@ fn a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server() {
         .unwrap()
         .is_some()));
     assert!(!lock::is_held(&yard.scratch.home().join(".yard/server.lock")).unwrap());
+}
+
+#[test]
+fn a_page_server_a_codex_worker_starts_listens_on_the_loopback_interface_alone() {
+    let yard = Yard::new();
+    let port = free_port();
+    let input = event(&yard, "UserPromptSubmit");
+    hook(&yard, &input);
+    let mut running = worker(&yard, &input, port);
+    let named = yard.scratch.home().join(".yard/server.json");
+    assert!(within(Duration::from_secs(10), || named.exists()
+        && TcpStream::connect((LOOPBACK, port)).is_ok()));
+    let machine = SocketAddr::new(machine_address(), port);
+    assert!(TcpStream::connect_timeout(&machine, Duration::from_secs(5)).is_err());
+    assert_eq!(yard.home_file("server.json")["listen"], json!([]));
+    hook(&yard, &event(&yard, "SessionEnd"));
+    assert!(within(Duration::from_secs(3), || running
+        .0
+        .try_wait()
+        .unwrap()
+        .is_some()));
 }
 
 #[test]

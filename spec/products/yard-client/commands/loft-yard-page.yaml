@@ -31,10 +31,10 @@ requirements:
       form: unwanted
       if: "no page server runs"
       system: "`loft yard page`"
-      shall: "say that none does, name `loft yard serve`, and exit 1."
+      shall: "say that none does, name `loft yard serve --join`, and exit 1."
     criteria:
       - key: 01a1d123-dd40-7261-9ea6-0936f8c5acc8
-        name: "The words give no address and name `loft yard serve`."
+        name: "The words give no address and name `loft yard serve --join`, which starts a page server on the addresses the last one listened on."
       - key: 01a1d123-dd40-7261-9ea6-09375f70aceb
         name: "The command exits 1 with the outcome `unavailable`, and its result gives `page` with `available` false."
   - key: 01a1d144-b628-7658-b662-a69dbc462864

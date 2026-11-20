@@ -76,7 +76,10 @@ fn words(branch: &str, url: Option<&str>, running: Option<u16>) -> Vec<String> {
              page has no address for it."
         )],
         (None, None) => {
-            vec!["No page server serves the Yard page; `loft yard serve` starts one.".to_owned()]
+            vec![
+                "No page server serves the Yard page; `loft yard serve --join` starts one."
+                    .to_owned(),
+            ]
         }
     }
 }

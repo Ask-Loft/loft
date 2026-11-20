@@ -1,10 +1,12 @@
-//! Who the page server answers. Every request names the page server's own address as its
-//! `Host`, so that a web page under another name that resolves to this machine reaches nothing.
-//! A request that changes something, Yard Log, the trees served or a session's events, comes
-//! either from the page the page server served, whose `Origin` is its own, or from the mod,
-//! which sends no `Origin` and carries the control token instead.
+//! Who the page server answers. Every request names as its `Host` `localhost` or the address of
+//! the machine it reached, so that a web page under another name that resolves to this machine
+//! reaches nothing. A request that changes something, Yard Log, the trees served or a session's
+//! events, comes either from the page the page server served, whose `Origin` is its own at the
+//! address the request reached, or from the mod, which sends no `Origin` and carries the control
+//! token instead.
 
 use super::http::{Request, Response};
+use super::listener::Reached;
 
 /// What a request does.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -15,16 +17,15 @@ pub enum Access {
     Change,
 }
 
-/// The page server's own addresses, as a `Host` names them, at `port`.
-fn hosts(port: u16) -> [String; 2] {
-    [format!("127.0.0.1:{port}"), format!("localhost:{port}")]
-}
-
 /// Whether `request` may be answered, or the refusal that answers it instead.
-pub fn admit(request: &Request, access: Access, port: u16, token: &str) -> Result<(), Response> {
-    let own = hosts(port);
+pub fn admit(
+    request: &Request,
+    access: Access,
+    reached: Reached,
+    token: &str,
+) -> Result<(), Response> {
     let host = request.header("host").unwrap_or_default();
-    if !own.iter().any(|own| own.eq_ignore_ascii_case(host)) {
+    if !reached.is_named_by(host) {
         return Err(Response::refused(
             403,
             "host",
@@ -35,9 +36,10 @@ pub fn admit(request: &Request, access: Access, port: u16, token: &str) -> Resul
         return Ok(());
     }
     if let Some(origin) = request.header("origin") {
-        let from_page = own
-            .iter()
-            .any(|own| origin.eq_ignore_ascii_case(&format!("http://{own}")));
+        let from_page = origin
+            .get(.."http://".len())
+            .is_some_and(|scheme| scheme.eq_ignore_ascii_case("http://"))
+            && reached.is_named_by(&origin["http://".len()..]);
         return if from_page {
             Ok(())
         } else {

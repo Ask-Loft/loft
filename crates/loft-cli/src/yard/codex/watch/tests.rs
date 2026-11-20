@@ -3,8 +3,15 @@
 use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::json;
 
-use super::{drive, flush};
+use super::{drive, flush, serve_args};
 use crate::yard::codex::state::{Files, State};
+
+#[test]
+fn a_page_server_the_codex_worker_starts_joins_one_of_its_version_and_names_no_address() {
+    let args = serve_args("s1", "/work");
+    assert!(args.iter().any(|arg| arg == "--join"), "{args:?}");
+    assert!(!args.iter().any(|arg| arg == "--listen"), "{args:?}");
+}
 
 #[test]
 fn the_codex_worker_beats_every_five_seconds_and_ends_after_twenty_four_hours() {

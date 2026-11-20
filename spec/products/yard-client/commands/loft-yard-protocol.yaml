@@ -19,9 +19,11 @@ requirements:
       - key: 01a177f9-8295-7328-aa9b-0fa2869127b8
         name: "Protocol 2 and every later protocol serve host-aware callers and adapter descriptors."
       - key: 01a1c338-7d63-7408-bf96-f0973952951f
-        name: "The report gives protocol 3, under which an adapter descriptor may declare `consults` and a tool call may carry the classes of what it consults."
+        name: "Protocol 3 and every later protocol let an adapter descriptor declare `consults` and a tool call carry the classes of what it consults."
+      - key: 01a1f074-174c-750c-b689-edae6ba14580
+        name: "The report gives protocol 4, under which `loft yard serve` takes `--listen` and `--join`."
       - key: 01a177f9-f61a-77e3-89ef-0d0bfe35cd61
-        name: "The Claude adapter accepts protocols 1, 2 and 3."
+        name: "The Claude adapter accepts protocols 1, 2, 3 and 4."
       - key: 01a1646f-546d-7042-befd-ea43c0bb2e34
         name: "The report gives `loft`'s own version."
       - key: 01a1646f-546d-7042-befd-ea440b264795

@@ -453,7 +453,7 @@ test('an address whose tree the page server does not serve names the tree and ho
   assert.match(drawn.querySelector('h2').textContent, /does not serve this tree/);
   assert.equal(drawn.querySelector('code.tree').textContent, tree);
   assert.match(drawn.textContent, /No session has registered it with the page server/);
-  assert.equal(drawn.querySelector('code.command').textContent, `loft yard serve --tree ${tree}`);
+  assert.equal(drawn.querySelector('code.command').textContent, `loft yard serve --join --tree ${tree}`);
   assert.doesNotMatch(drawn.textContent, /cannot be read|does not read/);
   const broken = failedLog(409, { errors: [{ kind: 'unreadable', message: 'A stage file is not YAML.', sites: [] }] }, tree);
   assert.match(broken.querySelector('h2').textContent, /does not read/);

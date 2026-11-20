@@ -137,22 +137,29 @@ fn drive(
 #[cfg(test)]
 mod tests;
 
+/// The worker starts the page server only to recover one, so it joins whatever page server of
+/// its version runs by then, as one a Claude Code session started on the addresses it names.
+fn serve_args(session: &str, dir: &str) -> [String; 8] {
+    [
+        "serve",
+        "--host",
+        "codex",
+        "--session",
+        session,
+        "--tree",
+        dir,
+        "--join",
+    ]
+    .map(str::to_owned)
+}
+
 fn start_server(hook: &Hook, port: u16, child: &mut ServerChild) -> Result<()> {
     if let Some(running) = &mut child.0
         && running.try_wait().map_err(|e| e.to_string())?.is_none()
     {
         return Ok(());
     }
-    let args = [
-        "serve",
-        "--host",
-        "codex",
-        "--session",
-        hook.session(),
-        "--tree",
-        hook.dir(),
-    ]
-    .map(str::to_owned);
+    let args = serve_args(hook.session(), hook.dir());
     child.0 = Some(
         commands::command(hook.dir(), &args, port)?
             .stdin(Stdio::null())

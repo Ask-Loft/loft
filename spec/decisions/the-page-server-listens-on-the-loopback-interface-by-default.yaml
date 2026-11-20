@@ -1,0 +1,93 @@
+key: 01a1eeea-3b9f-72c9-8a32-a5a7ca21f98a
+slug: the-page-server-listens-on-the-loopback-interface-by-default
+title: "The page server listens on the loopback interface by default, and on the addresses the person names as well"
+context: "The person opens the page from other devices as well, such as a phone in their tailnet. A machine's local addresses change with the network it joins, a VPN's address exists only while the VPN is up, and the Claude Code mod starts the page server where the person does not see it. `Host` and `Origin` keep another web page in the person's browser away, but a program on the network sets both itself: on an address the page server listens on, it can answer an open question or approve a plan, which the agent takes as the person's word, register any directory of the machine and read its Yard Log, and record a session's events."
+state:
+  kind: accepted
+  selectedOption: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+  outcome: "`loft yard serve` listens on `127.0.0.1` alone unless `--listen` names addresses, and then on each of them as well, `0.0.0.0` naming every address of the machine, trying again an address that is missing until it appears. The Claude Code plugin's `yardListen` setting supplies `--listen`; Codex gives the plugin no setting. `~/.yard/server.json` names the addresses, and a `loft yard serve` of the same version that would listen on other addresses replaces the running page server, so a changed setting takes effect when the next session starts; every other `loft yard serve` that the mod or the Codex worker runs is given `--join`, which joins a running page server of its version whatever its addresses, so that a page server is replaced for its addresses only when a session starts or the person runs `loft yard serve`. A `loft yard serve --join` that starts a page server listens on the addresses of the last page server that served, as `~/.yard/server.json` records them, so that recovery never opens the page wider than the last session start or `loft yard serve` left it. An IPv6 address that names every address, such as `::` or `::ffff:0.0.0.0`, is refused, since an IPv6 socket on Windows takes no IPv4 connection; `0.0.0.0` names every address. A request from another machine needs no key: the page server checks `Host` and `Origin` against the address the request reached."
+drivers:
+  - key: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    kind: local
+    label: "Open with nothing set"
+    statement: "The page opens from another device on the machine's networks with nothing set, however the machine's addresses change."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    kind: local
+    label: "Closed unless the person opens it"
+    statement: "With nothing set, nothing beyond the machine reaches the page server, and an upgrade opens no network; the person chooses each network the page opens on."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    kind: local
+    label: "Small change"
+    statement: "Reaching the page from another device changes the page server, the plugin and the page as little as it can."
+options:
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    title: "Every address by default"
+    description: "`0.0.0.0` unless the person names addresses, the loopback interface always, and no key for a request from the network."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    title: "Loopback by default"
+    description: "`127.0.0.1` unless the person names addresses to listen on as well, `0.0.0.0` among them, and no key for a request from the network."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    title: "Every address, with a key"
+    description: "`0.0.0.0` unless the person names addresses, and every request from the network carries an access key that `loft yard page` prints in the page's address."
+assessments:
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    rating: supports
+    rationale: "every address the machine has or gains is served"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    rating: conflicts
+    rationale: "with nothing set, anyone on the same network answers for the person, approves a plan the agent builds and reads every worktree's Yard Log, and an upgrade opens this on every machine"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ab95b61f4c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    rating: supports
+    rationale: "one setting and one flag, and the checks follow the address reached"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    rating: conflicts
+    rationale: "another device reaches nothing until the person names an address, such as the machine's tailnet address"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    rating: supports
+    rationale: "every network is closed until named, as before the change"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ac56d6215c
+    driver: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    rating: supports
+    rationale: "the same setting and flag"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a8b1cc531b
+    rating: neutral
+    rationale: "each device opens the page once at the address with the key"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    driver: 01a1eeea-3b9f-72c9-8a32-a5a93294e333
+    rating: supports
+    rationale: "a request without the key is refused on every network"
+  - option: 01a1eeea-3b9f-72c9-8a32-a5ad4444ca4f
+    driver: 01a1eeea-3b9f-72c9-8a32-a5aab775b4b8
+    rating: conflicts
+    rationale: "a key, a cookie, a new address from `loft yard page` and its schema"
+consequences:
+  - key: 01a1eeea-3b9f-72c9-8a32-a5ae6d9a5018
+    kind: risk
+    statement: "On an address the person names, anyone who reaches it can answer for the person and approve a plan that the agent then builds, register any directory of the machine and read its Yard Log, and record a session's events; a tailnet address keeps that within the person's tailnet, and `0.0.0.0` opens it on every network, a coffee shop's among them."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5afe5ebae08
+    kind: benefit
+    statement: "With nothing set, only programs on the machine reach the page server, as before the change, and an upgrade opens no network."
+  - key: 01a1f46d-ccea-700a-992d-12c8a680d2a2
+    kind: risk
+    statement: "The addresses of a page server started with `--listen` are those every later recovery listens on, across restarts of the machine and changes of network, until a session starts or the person runs `loft yard serve` with other addresses; a person who uses Codex alone narrows them by running `loft yard serve` once without `--listen`."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5b090c161b3
+    kind: cost
+    statement: "The page opens on a phone only once the person names an address in `yardListen`, such as the machine's tailnet address; in Codex, which gives the plugin no setting, the page server listens on the loopback interface alone unless the last page server to serve was started with `--listen`."
+  - key: 01a1eeea-3b9f-72c9-8a32-a5b11d9febc7
+    kind: obligation
+    statement: "Each session of the Claude Code mod runs `loft yard serve` once when it starts, even where a page server answers, so that a page server listening on other addresses than the setting names is replaced; where two projects name different addresses, the page server is replaced each time a session starts in the other one, and never between."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ac8bfc2fae
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ad0ec2fdf4
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb82421bcb23

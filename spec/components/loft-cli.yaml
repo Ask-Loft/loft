@@ -48,7 +48,7 @@ components:
         verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
     name: "Page server"
-    body: "The HTTP server that `loft yard serve` runs on the loopback interface, one on the machine: it serves the page for every tree registered with it, takes the person's answers and decisions and the mod's events, and tells open pages of each change."
+    body: "The HTTP server that `loft yard serve` runs, one on the machine, on the loopback interface and on the addresses the person names: it serves the page for every tree registered with it, takes the person's answers and decisions and the mod's events, and tells open pages of each change."
     components:
       - key: 01a16469-559e-73c4-85f2-71a94f0aa021
         name: "Yard page"
@@ -62,10 +62,10 @@ components:
             verificationFate: proved
     constraints:
       - key: 01a16469-559e-73c4-85f2-71ac8bfc2fae
-        name: "The page server shall listen only on the loopback interface."
+        name: "The page server shall listen on the loopback interface, whatever other addresses it listens on."
         verificationFate: proved
       - key: 01a16469-559e-73c4-85f2-71ad0ec2fdf4
-        name: "The page server shall accept no connection it did not receive on the loopback interface, and open none."
+        name: "The page server shall open no network connection."
         verificationFate: proved
 constraints:
   - key: 58f9679b-7e68-44c5-a566-39c56384ffdd

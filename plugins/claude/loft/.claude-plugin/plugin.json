@@ -27,8 +27,14 @@
     "yardPort": {
       "type": "number",
       "title": "Yard page port",
-      "description": "The port on 127.0.0.1 that the Yard page server listens on, shared by every session on the machine.",
+      "description": "The port that the Yard page server listens on, shared by every session on the machine.",
       "default": 7411
+    },
+    "yardListen": {
+      "type": "string",
+      "title": "Yard page addresses",
+      "description": "The IP addresses of this machine that the Yard page server listens on beside 127.0.0.1, separated by commas, such as your tailnet address to open the page on your phone, or 0.0.0.0 for every network. Anyone who reaches an address named here can read the page and answer for you. Empty, the page opens on this machine alone. A new value takes effect when the next session starts.",
+      "default": ""
     }
   }
 }

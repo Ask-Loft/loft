@@ -25,6 +25,26 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
+- The Yard page can open from another device, such as a phone in your tailnet, where you can
+  answer as on the machine. Name the addresses the page server listens on beside `127.0.0.1`
+  with `loft yard serve --listen`, once for each, `0.0.0.0` for every network, or with the
+  Claude Code plugin's new `yardListen` setting; by default it still listens on `127.0.0.1`
+  alone. Anyone who reaches a named address can read the page and answer for you, which the
+  agent takes as your word, so leave a public network unnamed. An address the machine does not
+  have yet is taken once it appears, and `Host` and `Origin` are checked against the address a
+  request reached. A `loft yard serve` that would listen on other addresses than the running
+  page server of its version replaces it, and each Claude Code session runs one when it starts,
+  within its first 30 seconds, so a changed `yardListen` takes effect with the next session; every
+  other `loft yard serve` that the plugin or the Codex watch runs is given `--join` and joins the
+  running page server, or, where none runs or in place of an older one, starts one where the last
+  page server listened, so a recovery never opens the page wider than the last session start or
+  `loft yard serve` left it; a start that does not come to serve leaves those addresses as they
+  were. The page and `loft yard page` suggest `loft yard serve --join`. `--listen ::` and
+  `::ffff:0.0.0.0` are refused, since on Windows `::` would leave `127.0.0.1` unreached; `0.0.0.0`
+  names every address.
+  The yard protocol is now 4, and the plugin passes `--listen` and `--join` only to a `loft` that
+  speaks it; a Claude Code plugin from before it leaves Yard Client off with this `loft`, so
+  update the plugin with `loft`.
 - Yard Log's session files no longer change the working tree between an agent's commands. The
   page server keeps each session's token totals, activity and consultation counts in git's own
   directory for the worktree, under `yard/<branch>.sessions/`, and each write of Yard Log, a close

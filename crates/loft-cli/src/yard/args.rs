@@ -65,8 +65,9 @@ pub enum YardAction {
     /// Give the address of the branch's Yard Log on the Yard page, with a line on what the page
     /// shows, or say that no page server serves it.
     Page(PageArgs),
-    /// Run the page server on the loopback interface, unless one of this `loft`'s version or a
-    /// newer one already serves the port; record the session as heard and its tree as served.
+    /// Run the page server on the loopback interface and the addresses `--listen` names, unless one
+    /// of a newer `loft`, or of this version on those addresses or, with `--join`, on any, already
+    /// serves the port; record the session as heard and its tree as served.
     Serve(ServeArgs),
 }
 
@@ -99,16 +100,25 @@ pub struct ServeArgs {
     /// The port to serve the page on.
     #[arg(long, value_name = "PORT", default_value_t = DEFAULT_PORT)]
     pub port: u16,
+    /// An IP address of the machine to serve the page on as well as the loopback interface,
+    /// `0.0.0.0` for every address; given once for each address.
+    #[arg(long, value_name = "ADDRESS", value_parser = super::serve::parse_address)]
+    pub listen: Vec<super::serve::Address>,
     /// The session whose mod runs the command, recorded as heard.
     #[arg(long, value_name = "ID")]
     pub session: Option<String>,
     /// A directory of a worktree whose Yard Logs the page server is to serve.
     #[arg(long, value_name = "DIR")]
     pub tree: Option<PathBuf>,
-    /// Replace the running page server whatever its version, as one built anew from the same
-    /// version would not otherwise.
+    /// Replace the running page server whatever its version and addresses, as one built anew
+    /// from the same version on the same addresses would not otherwise.
     #[arg(long)]
     pub replace: bool,
+    /// Join a running page server of this version whatever addresses it listens on, rather than
+    /// replace one that listens on other addresses than this command would; where this command
+    /// starts a page server, it listens on the addresses the last one served on, not on `--listen`.
+    #[arg(long, conflicts_with = "replace")]
+    pub join: bool,
     #[command(flatten)]
     pub output: Output,
 }

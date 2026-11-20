@@ -1,11 +1,15 @@
 // The Claude adapter's normalized identity and coverage. Protocol one receives its original
 // arguments and events; protocol two also receives this explicit report of native integration;
-// protocol three also hears that the adapter classifies what each tool call consults.
+// protocol three also hears that the adapter classifies what each tool call consults; protocol
+// four's `loft yard serve` takes `--listen` and `--join`.
 
 export const HOST = 'claude-code'
 
 /** The yard protocol from which the page server hears what each tool call consults. */
 export const CONSULTS = 3
+
+/** The yard protocol from which `loft yard serve` takes `--listen` and `--join`, which an earlier one refuses. */
+export const LISTENS = 4
 
 export function descriptor(version: string, protocol: number) {
   return {

@@ -768,7 +768,7 @@ test('an address whose tree the page server does not serve says so, and an agent
   const alert = page.locator('#log [role="alert"]');
   await expect(alert.locator('h2')).toHaveText('The page server does not serve this tree');
   await expect(alert.locator('code.tree')).toHaveText(setup.unserved.cwd);
-  await expect(alert.locator('code.command')).toHaveText(`loft yard serve --tree ${setup.unserved.cwd}`);
+  await expect(alert.locator('code.command')).toHaveText(`loft yard serve --join --tree ${setup.unserved.cwd}`);
   await expect(alert).not.toContainText('cannot be read');
   const loaded = await page.evaluate(() => performance.timeOrigin);
   writeUnserved([{ id: 'lamp', kind: 'stage', title: 'Fit the lamp', status: 'active' }]);
