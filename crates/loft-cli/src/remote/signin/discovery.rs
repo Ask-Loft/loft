@@ -71,7 +71,13 @@ pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteEr
         .ok_or_else(|| {
             failed("the protected resource metadata names no authorization server".to_owned())
         })?;
-    let server = fetch(&server_metadata(issuer), timeout).map_err(failed)?;
+    let server_url = server_metadata(issuer).ok_or_else(|| {
+        failed(format!(
+            "the protected resource metadata names an authorization server that is not an \
+             address, {issuer}"
+        ))
+    })?;
+    let server = fetch(&server_url, timeout).map_err(failed)?;
     if server["issuer"] != issuer {
         return Err(failed(format!(
             "the authorization server's metadata names another issuer than {issuer}"
@@ -112,15 +118,17 @@ pub fn discover(address: &str, timeout: Duration) -> Result<Discovered, RemoteEr
     })
 }
 
-/// Where the metadata of the authorization server `issuer` lies: its origin, then the
-/// well-known path, then the issuer's own path.
-fn server_metadata(issuer: &str) -> String {
-    let authority = issuer.find("://").map_or(0, |at| at + 3);
-    let end = issuer[authority..]
-        .find('/')
-        .map_or(issuer.len(), |at| authority + at);
-    let path = issuer[end..].trim_end_matches('/');
-    format!("{}{SERVER_METADATA}{path}", &issuer[..end])
+/// Where the metadata of the authorization server `issuer` lies, or none where the issuer is not
+/// an absolute address: its origin, then the well-known path, then the issuer's own path without
+/// its terminating `/` (RFC 8414, section 3.1). An issuer has no query or fragment (RFC 8414,
+/// section 2), so the address carries none, and metadata found for an issuer that has one names
+/// another issuer.
+fn server_metadata(issuer: &str) -> Option<String> {
+    let (origin, path) = network::origin_and_path(issuer)?;
+    Some(format!(
+        "{origin}{SERVER_METADATA}{}",
+        path.trim_end_matches('/')
+    ))
 }
 
 /// The protected resource metadata at `url`, which the challenge of the remote at `address`
@@ -183,18 +191,38 @@ mod tests {
 
     #[test]
     fn the_server_metadata_lies_at_the_issuer_s_origin_before_its_path() {
-        assert_eq!(
-            server_metadata("https://a.example/auth"),
-            "https://a.example/.well-known/oauth-authorization-server/auth"
-        );
-        assert_eq!(
-            server_metadata("https://a.example"),
-            "https://a.example/.well-known/oauth-authorization-server"
-        );
-        assert_eq!(
-            server_metadata("http://127.0.0.1:3000/"),
-            "http://127.0.0.1:3000/.well-known/oauth-authorization-server"
-        );
+        let well_known = "/.well-known/oauth-authorization-server";
+        for (issuer, origin, path) in [
+            ("https://a.example/auth", "https://a.example", "/auth"),
+            ("https://a.example", "https://a.example", ""),
+            ("http://127.0.0.1:3000/", "http://127.0.0.1:3000", ""),
+            (
+                "https://a.example:8443/auth",
+                "https://a.example:8443",
+                "/auth",
+            ),
+            // The path's terminating slash is left out.
+            (
+                "https://a.example/tenants/one/",
+                "https://a.example",
+                "/tenants/one",
+            ),
+            // An issuer has no query (RFC 8414, section 2), and the address carries none: the
+            // metadata found there names another issuer, which is refused.
+            ("https://a.example?tenant=one", "https://a.example", ""),
+            (
+                "https://a.example/auth?tenant=one",
+                "https://a.example",
+                "/auth",
+            ),
+        ] {
+            assert_eq!(
+                server_metadata(issuer),
+                Some(format!("{origin}{well_known}{path}")),
+                "{issuer}"
+            );
+        }
+        assert_eq!(server_metadata("as.example/auth"), None);
     }
 
     #[test]

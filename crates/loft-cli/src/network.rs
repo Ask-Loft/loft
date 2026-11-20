@@ -2,9 +2,11 @@
 //! work a command leaves for the network after the command's own work is done, all of it within
 //! one time limit, and never writes to standard error: a service that refuses, fails or stays
 //! silent changes nothing a person sees. It also makes the calls to a connected document's
-//! remote that a command exists to make, each under the time limit its caller gives, and tells
-//! whether two addresses lie on one origin, as the parser its requests use reads them.
+//! remote that a command exists to make, each under the time limit its caller gives, and reads
+//! an address's origin, and whether two addresses lie on one, as the parser its requests use
+//! reads them.
 
+use std::fmt;
 use std::net::IpAddr;
 use std::sync::mpsc;
 use std::thread;
@@ -185,6 +187,47 @@ pub fn allowed(url: &str) -> Option<Uri> {
     }
 }
 
+/// The origin of an absolute address, as RFC 6454 compares origins: its scheme and its host in
+/// lower case, and its port where the address names one other than the scheme's default.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Origin {
+    scheme: String,
+    host: String,
+    port: Option<u16>,
+}
+
+impl fmt::Display for Origin {
+    /// The origin written as an address: `<scheme>://<host>`, then `:<port>` where it has one.
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{}://{}", self.scheme, self.host)?;
+        match self.port {
+            Some(port) => write!(formatter, ":{port}"),
+            None => Ok(()),
+        }
+    }
+}
+
+/// `url` as the parser the request uses reads it, if it is an absolute address with a host: its
+/// origin, and its path, `/` where it names none, without the query that may follow. A fragment
+/// is never read. The one reader of an origin in `loft`, so that the origin read is the origin
+/// contacted.
+#[must_use]
+pub fn origin_and_path(url: &str) -> Option<(Origin, String)> {
+    let uri: Uri = url.parse().ok()?;
+    let scheme = uri.scheme_str()?.to_ascii_lowercase();
+    let default = match scheme.as_str() {
+        "https" => Some(443),
+        "http" => Some(80),
+        _ => None,
+    };
+    let origin = Origin {
+        host: uri.host()?.to_ascii_lowercase(),
+        port: uri.port_u16().filter(|port| Some(*port) != default),
+        scheme,
+    };
+    Some((origin, uri.path().to_owned()))
+}
+
 /// Whether `one` and `other` lie on one origin, as RFC 6454 compares origins: the same scheme,
 /// the same host without regard to case, and the same port, the scheme's default where an
 /// address names none. Both are read by the parser the request uses, so the origin compared is
@@ -195,23 +238,17 @@ pub fn same_origin(one: &str, other: &str) -> bool {
     matches!((origin(one), origin(other)), (Some(one), Some(other)) if one == other)
 }
 
-/// The origin of `url` as its scheme, its host in lower case and its port, or none for an
-/// address that is not an absolute `https` or `http` one.
-fn origin(url: &str) -> Option<(String, String, u16)> {
-    let uri: Uri = url.parse().ok()?;
-    let scheme = uri.scheme_str()?;
-    let default = match scheme {
-        "https" => 443,
-        "http" => 80,
-        _ => return None,
-    };
-    let host = uri.host()?.to_ascii_lowercase();
-    Some((scheme.to_owned(), host, uri.port_u16().unwrap_or(default)))
+/// The origin of `url`, as [`origin_and_path`] reads it, or none for an address that is not an
+/// absolute `https` or `http` one.
+fn origin(url: &str) -> Option<Origin> {
+    origin_and_path(url)
+        .map(|(origin, _)| origin)
+        .filter(|origin| matches!(origin.scheme.as_str(), "https" | "http"))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{allowed, origin, same_origin};
+    use super::{allowed, origin, origin_and_path, same_origin};
 
     #[test]
     fn https_is_allowed_anywhere_and_http_only_on_the_loopback_interface() {
@@ -283,6 +320,41 @@ mod tests {
             assert!(!same_origin(one, other), "{one} {other}");
         }
         assert!(!same_origin("not an address", "not an address"));
+    }
+
+    #[test]
+    fn an_address_is_read_as_its_origin_written_whole_and_its_path() {
+        for (url, written, path) in [
+            (
+                "HTTPS://Remote.Example:443/Documents/one?a=b#c",
+                "https://remote.example",
+                "/Documents/one",
+            ),
+            (
+                "https://someone@remote.example:8443",
+                "https://remote.example:8443",
+                "/",
+            ),
+            ("http://[::1]:80/a/", "http://[::1]", "/a/"),
+            // An address of another scheme is read too, so that a caller can name its origin.
+            ("ftp://Files.Example/a", "ftp://files.example", "/a"),
+        ] {
+            let (origin, read) = origin_and_path(url).unwrap_or_else(|| panic!("{url}"));
+            assert_eq!(
+                (origin.to_string().as_str(), read.as_str()),
+                (written, path)
+            );
+        }
+        for url in [
+            "remote.example/a",
+            "/documents",
+            "https://",
+            "not an address",
+        ] {
+            assert!(origin_and_path(url).is_none(), "{url}");
+        }
+        // Only an `https` or `http` address lies on an origin that is compared.
+        assert!(origin("ftp://files.example/a").is_none());
     }
 
     #[test]

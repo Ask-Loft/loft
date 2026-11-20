@@ -57,8 +57,9 @@ pub fn run(root: &Path, origin: &str, hosts: Hosts, as_json: bool) -> Finished {
     }
 }
 
-/// `text` as an origin: a scheme and an authority, with no path but `/`, no query and no
-/// fragment, without its trailing `/`.
+/// `text` as an origin, as [`network::origin_and_path`] reads it: a scheme and a host, with no
+/// path but `/`, no query and no fragment, written without a trailing `/`. An origin of another
+/// scheme than `https` or `http` is one, which [`install`] refuses to reach.
 ///
 /// # Errors
 ///
@@ -66,15 +67,12 @@ pub fn run(root: &Path, origin: &str, hosts: Hosts, as_json: bool) -> Finished {
 pub fn origin_of(text: &str) -> Result<String, String> {
     let not_an_origin =
         || format!("`--server {text}`: a server is named by its origin, a scheme and a host alone");
-    let (scheme, rest) = text.split_once("://").ok_or_else(not_an_origin)?;
-    let (authority, path) = rest.split_at(rest.find('/').unwrap_or(rest.len()));
-    if scheme.is_empty() || authority.is_empty() || !matches!(path, "" | "/") {
-        return Err(not_an_origin());
+    // The parser leaves a fragment out, and reads a query apart from the path, so the text is
+    // looked at for both.
+    match network::origin_and_path(text) {
+        Some((origin, path)) if path == "/" && !text.contains(['?', '#']) => Ok(origin.to_string()),
+        _ => Err(not_an_origin()),
     }
-    if text.contains(['?', '#']) {
-        return Err(not_an_origin());
-    }
-    Ok(format!("{scheme}://{authority}"))
 }
 
 /// Reads the manifest at `origin`, fetches and checks the package, and writes it into the skill
@@ -279,14 +277,16 @@ mod tests {
 
     #[test]
     fn an_origin_is_a_scheme_and_a_host_alone() {
-        assert_eq!(
-            origin_of("https://example.org/").as_deref(),
-            Ok("https://example.org")
-        );
-        assert_eq!(
-            origin_of("http://127.0.0.1:8080").as_deref(),
-            Ok("http://127.0.0.1:8080")
-        );
+        for (given, origin) in [
+            ("https://example.org/", "https://example.org"),
+            ("http://127.0.0.1:8080", "http://127.0.0.1:8080"),
+            // Read as a request's parser reads it.
+            ("HTTPS://Example.ORG:443", "https://example.org"),
+            // An origin of another scheme is one; the install refuses to reach it.
+            ("ftp://example.org", "ftp://example.org"),
+        ] {
+            assert_eq!(origin_of(given).as_deref(), Ok(origin), "{given}");
+        }
         for refused in [
             "https://example.org/skills",
             "https://example.org/?q=1",

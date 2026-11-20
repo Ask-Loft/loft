@@ -6,10 +6,10 @@
 
 use serde_json::json;
 use software_plant::remote::{Metadata, Remote, RemoteScenario};
-use ureq::http::Uri;
 
 use crate::common::calls::call;
 use crate::common::oauth::{KEY, challenge_at, parameter};
+use crate::common::resources::origin_of;
 use crate::remote_contract::assert_problem;
 
 /// Where protected resource metadata lies on its resource's origin, before the resource's path
@@ -45,10 +45,7 @@ fn a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_s
     );
     // As a request's parser reads the resource, the simulator's origin is its user information,
     // and its host and port are those of the second port.
-    let uri: Uri = resource.parse().unwrap();
-    let host = uri.host().unwrap();
-    let origin = format!("http://{host}:{}", uri.port_u16().unwrap());
-    assert_eq!(origin, elsewhere, "{resource}");
+    assert_eq!(origin_of(&resource), elsewhere, "{resource}");
     // The second port, asked nothing so far, records what it is asked.
     assert!(remote.requests_elsewhere().is_empty());
     let probe = call("GET", &format!("{elsewhere}/documents"), None, None);

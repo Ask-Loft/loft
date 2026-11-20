@@ -19694,7 +19694,7 @@ links:
         body: f73f8e9897a6c1eea5fc180b31c3cae0b58c6403645a1ecd6e5726a4627cd288
       - file: "crates/loft-cli/src/remote/signin/discovery.rs"
         name: "the_server_metadata_lies_at_the_issuer_s_origin_before_its_path"
-        body: 6151364ff8f729844a1a60d708a8df447ebaab53a8af0be4b096031ee20a9f83
+        body: 6ffdeff191e844a1530a2e1a644cc8db7e0f38891ebb7db2514e6ef0765681ae
   - node: 01a18e1f-8daa-7674-9603-5adc786b0bc4
     reviewed: 908d45c3d5ab97076e4d85b51609f4b5fb9b9ddc8664db941e9e535769592179
     tests:
@@ -20774,7 +20774,7 @@ links:
         body: 38e2f6fde993812e24378107c716134650aafb0193fbfffbb31f67204b8646fa
       - file: "crates/loft-cli/tests/remote_contract_origins.rs"
         name: "a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_second_port"
-        body: 0e25446881be3af53e30e3d7e2d3ab5ed13118acb292d7ae820e6d42adbbdea8
+        body: 1d3eca884b0539e46cc321dd955829a2a9b65d485565455444c9d19fb05a3a41
   - node: 01a18e1f-8dac-71f7-847a-7244ef7a794f
     reviewed: 4312e5ffc9b143d98e475c0efaa0e3b66e8cfae42c0e730785c1d8d7bda1fb0f
     tests:
@@ -21362,7 +21362,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/remote_contract_origins.rs"
         name: "a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_second_port"
-        body: 0e25446881be3af53e30e3d7e2d3ab5ed13118acb292d7ae820e6d42adbbdea8
+        body: 1d3eca884b0539e46cc321dd955829a2a9b65d485565455444c9d19fb05a3a41
   - node: 01a1f09b-189b-76b3-863f-c7b0f61ec005
     reviewed: f20ec52f895a601445b0b8e36eafe0614e62131d4b63b68128d270802e94932f
     tests:
