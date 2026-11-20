@@ -2,7 +2,9 @@
 //! scenario asks the simulator, and on demand a real remote, the same question. The real half
 //! is ignored by default; run it against a remote that holds a document with
 //! `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CONTRACT_TOKEN` set:
-//! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/remote_contract/)'`.
+//! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/^remote_contract::/)'`. The
+//! remote's other contract files hold real halves of their own: those that spend no sign-in may
+//! run together, and each one that spends a sign-in runs alone, as its file says.
 
 use std::time::Duration;
 
@@ -45,8 +47,8 @@ pub fn mark(state: &StoredState) -> Value {
 
 /// Requires `answer` to be a problem document of `code` at `status`.
 pub fn assert_problem(answer: &Answer, status: u16, code: &str) {
-    assert_eq!(answer.status, status, "{:?}", answer.body);
-    assert_eq!(answer.body["code"], code, "{:?}", answer.body);
+    assert_eq!(answer.status, status, "{answer:?}");
+    assert_eq!(answer.body["code"], code, "{answer:?}");
     assert_eq!(answer.body["status"], status);
     assert_eq!(
         answer.header("content-type"),

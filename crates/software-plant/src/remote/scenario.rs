@@ -4,7 +4,9 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use super::StoredState;
+use serde_json::Value;
+
+use super::{Companion, StoredState};
 
 /// How the person answers an authorization request.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -40,6 +42,10 @@ pub enum Metadata {
     /// Authorization server metadata whose `authorization_endpoint` is `http` off the loopback
     /// interface.
     Unencrypted,
+    /// Protected resource metadata that the challenge names on another origin, which a second
+    /// port of the loopback interface stands for, naming the protected resource there. The
+    /// simulator's own origin answers `not_found` where it would otherwise lie.
+    OnAnotherOrigin,
 }
 
 /// The skill package a scenario serves: its manifest's `name` and `version`, and its bytes.
@@ -90,7 +96,7 @@ pub struct RemoteScenario {
     pub(super) state_limit: Option<usize>,
     pub(super) consent: Consent,
     pub(super) expires_in: u64,
-    /// How long a rotated refresh token is answered again.
+    /// How long a rotated refresh token is answered again for the resource its rotation named.
     pub(super) grace: Duration,
     pub(super) lapsed: bool,
     pub(super) scope: String,
@@ -98,7 +104,8 @@ pub struct RemoteScenario {
     pub(super) metadata: Metadata,
     /// The OAuth error every registration is refused with.
     pub(super) refused_registration: Option<String>,
-    /// The OAuth error every code exchange is refused with.
+    /// The OAuth error every code exchange that names a single resource, one the scenario serves,
+    /// is refused with.
     pub(super) refused_exchange: Option<String>,
     /// Whether the next refresh's answer is lost after the token rotates.
     pub(super) losing_refresh: bool,
@@ -110,6 +117,10 @@ pub struct RemoteScenario {
     pub(super) misstating: Vec<Misstating>,
     /// The skill package the scenario serves, if any.
     pub(super) skill: Option<Skill>,
+    /// The companion resources that the document's protected resource metadata lists, in order.
+    pub(super) companions: Vec<Companion>,
+    /// The member that lists the companion resources, as the scenario scripts it.
+    pub(super) listing: Option<Value>,
 }
 
 impl RemoteScenario {
@@ -139,6 +150,8 @@ impl RemoteScenario {
             invalid_publish: None,
             misstating: Vec::new(),
             skill: None,
+            companions: Vec::new(),
+            listing: None,
         }
     }
 
@@ -247,21 +260,23 @@ impl RemoteScenario {
         self
     }
 
-    /// Answers a rotated refresh token presented again for `grace` after its rotation, in
-    /// place of 120 seconds.
+    /// Answers a rotated refresh token presented again for the resource its rotation named
+    /// within `grace` of its rotation, in place of 120 seconds.
     #[must_use]
     pub fn grace(mut self, grace: Duration) -> Self {
         self.grace = grace;
         self
     }
 
-    /// Refuses a rotated refresh token presented again, and revokes its sign-in.
+    /// Answers no rotated refresh token again: one that its client presents again for a resource
+    /// the scenario serves is refused `invalid_grant`, and revokes its sign-in.
     #[must_use]
     pub fn without_grace(self) -> Self {
         self.grace(Duration::ZERO)
     }
 
-    /// Refuses every refresh, as a sign-in that has lapsed.
+    /// Refuses `invalid_grant` every refresh that names a single resource, one the scenario
+    /// serves, as a sign-in that has lapsed.
     #[must_use]
     pub fn lapsing(mut self) -> Self {
         self.lapsed = true;
@@ -289,7 +304,8 @@ impl RemoteScenario {
         self
     }
 
-    /// Refuses every code exchange with the OAuth error `error`.
+    /// Refuses with the OAuth error `error` every code exchange that names a single resource, one
+    /// the scenario serves.
     #[must_use]
     pub fn refusing_exchange(mut self, error: &str) -> Self {
         self.refused_exchange = Some(error.to_owned());

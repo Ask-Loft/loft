@@ -1,9 +1,11 @@
 //! The remote's authorization server, as OAuth 2.0 shapes it: the protected resource metadata
 //! (RFC 9728), the authorization server metadata (RFC 8414), dynamic registration of public
 //! clients (RFC 7591), the authorization code grant with PKCE (RFC 7636) on a loopback redirect
-//! whose port may differ from the registered one (RFC 8252), the resource named by RFC 8707, and
-//! refresh tokens that rotate on every use, with a grace window for one presented again and the
-//! whole sign-in revoked otherwise. Its clock runs from the machine's, moved on by the test.
+//! whose port may differ from the registered one (RFC 8252), one sign-in over each protected
+//! resource its authorization request names (RFC 8707) with an access token for one resource
+//! alone, and refresh tokens that rotate on every use, with a grace window for one presented again
+//! for the resource its rotation named and the whole sign-in revoked otherwise. Its clock runs
+//! from the machine's, moved on by the test.
 //!
 //! What the server holds and issues lies here; each endpoint lies in a module of its own.
 
@@ -12,7 +14,7 @@ mod metadata;
 mod register;
 mod token;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
@@ -21,7 +23,7 @@ use super::State;
 use super::wire::{pairs, value};
 
 pub(super) use authorize::authorize;
-pub(super) use metadata::{resource_metadata, server_metadata};
+pub(super) use metadata::{document_metadata, resource_metadata, server_metadata};
 pub(super) use register::register;
 pub(super) use token::{refreshing, token};
 
@@ -29,17 +31,22 @@ pub(super) use token::{refreshing, token};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Grant {
     pub client_id: String,
+    /// The access token issued for the first resource the sign-in holds.
     pub access_token: String,
     pub refresh_token: String,
     pub expires_in: u64,
+    /// The access token issued for each resource the sign-in holds, by the resource.
+    pub access: BTreeMap<String, String>,
 }
 
-/// An authorization code, until it is exchanged.
+/// An authorization code, until it is exchanged: the resources and the scopes its authorization
+/// request named.
 struct Code {
     client_id: String,
     redirect_uri: String,
     challenge: String,
-    resource: String,
+    resources: Vec<String>,
+    scopes: Vec<String>,
     used: bool,
 }
 
@@ -50,18 +57,43 @@ struct Refresh {
     rotated: Option<Rotation>,
 }
 
-/// A refresh token's rotation: the answer it got, which issued its successor, and when.
+/// A refresh token's rotation: the resource it named, the answer it got, which issued its
+/// successor, and when.
 struct Rotation {
+    resource: String,
     answer: Value,
     at: Instant,
 }
 
-/// One sign-in: its access tokens, each with the moment it expires, and whether it was
-/// revoked.
-#[derive(Default)]
+/// One sign-in: the resources it holds, the scopes it was granted, its access tokens, and whether
+/// it was revoked.
 struct Family {
-    access: Vec<(String, Instant)>,
+    resources: Vec<String>,
+    scopes: Vec<String>,
+    access: Vec<Access>,
     revoked: bool,
+}
+
+impl Family {
+    /// Whether the sign-in holds `resource`.
+    fn holds(&self, resource: &str) -> bool {
+        self.resources.iter().any(|held| held == resource)
+    }
+}
+
+/// An access token: the protected resource it was issued for alone, and the moment it expires.
+struct Access {
+    token: String,
+    resource: String,
+    expires: Instant,
+}
+
+/// An access token to issue: the protected resource it is for, the scopes that resource accepts,
+/// and how many seconds it lasts.
+struct Issued<'a> {
+    resource: &'a str,
+    accepted: &'a [String],
+    expires_in: u64,
 }
 
 /// What the authorization server holds.
@@ -88,31 +120,53 @@ impl Auth {
         format!("{kind}-{}", self.issued)
     }
 
-    /// Whether `token` is an access token, not yet expired, issued by a sign-in that was not
-    /// revoked.
-    pub(super) fn admits(&self, token: &str) -> bool {
+    /// Whether `token` is an access token issued for `resource`, not yet expired, by a sign-in
+    /// that was not revoked.
+    pub(super) fn admits_at(&self, resource: &str, token: &str) -> bool {
         self.families.iter().any(|family| {
             !family.revoked
-                && family
-                    .access
-                    .iter()
-                    .any(|(issued, expires)| issued == token && self.now() < *expires)
+                && family.access.iter().any(|access| {
+                    access.token == token
+                        && access.resource == resource
+                        && self.now() < access.expires
+                })
         })
     }
 
-    /// Begins a sign-in, and gives its family.
-    fn sign_in(&mut self) -> usize {
-        self.families.push(Family::default());
+    /// Begins a sign-in that holds `resources`, granted `scopes`, and gives its family.
+    fn sign_in(&mut self, resources: Vec<String>, scopes: Vec<String>) -> usize {
+        self.families.push(Family {
+            resources,
+            scopes,
+            access: Vec::new(),
+            revoked: false,
+        });
         self.families.len() - 1
     }
 
-    /// Issues an access token and a refresh token in the sign-in `family`, as the answer of the
-    /// token endpoint.
-    fn issue(&mut self, family: usize, client_id: &str, expires_in: u64, scope: &str) -> Value {
+    /// Issues an access token in the sign-in `family` for `token.resource` alone, and gives it with
+    /// its scope: the sign-in's scopes, in their order, that the resource accepts, separated by
+    /// spaces.
+    fn access(&mut self, family: usize, token: &Issued) -> (String, String) {
         let access = self.next("access");
+        let expires = self.now() + Duration::from_secs(token.expires_in);
+        let family = &mut self.families[family];
+        family.access.push(Access {
+            token: access.clone(),
+            resource: token.resource.to_owned(),
+            expires,
+        });
+        let scopes = family.scopes.iter();
+        let narrowed: Vec<&str> = scopes
+            .filter(|scope| token.accepted.contains(scope))
+            .map(String::as_str)
+            .collect();
+        (access, narrowed.join(" "))
+    }
+
+    /// Issues a refresh token of the sign-in `family` to `client_id`.
+    fn refresh_token(&mut self, family: usize, client_id: &str) -> String {
         let refresh = self.next("refresh");
-        let expires = self.now() + Duration::from_secs(expires_in);
-        self.families[family].access.push((access.clone(), expires));
         self.refresh.insert(
             refresh.clone(),
             Refresh {
@@ -121,52 +175,79 @@ impl Auth {
                 rotated: None,
             },
         );
+        refresh
+    }
+
+    /// Issues an access token for `token.resource` and a refresh token in the sign-in `family`,
+    /// as the answer of the token endpoint.
+    fn issue(&mut self, family: usize, client_id: &str, token: &Issued) -> Value {
+        let (access, scope) = self.access(family, token);
+        let refresh = self.refresh_token(family, client_id);
         json!({
             "access_token": access,
             "token_type": "Bearer",
-            "expires_in": expires_in,
+            "expires_in": token.expires_in,
             "refresh_token": refresh,
             "scope": scope,
+            "resource": token.resource,
         })
     }
 
-    /// Whether a refresh token rotated as `rotation` is answered again: within `grace` of its
-    /// rotation, and before its successor has itself been presented.
-    fn repeats(&self, rotation: &Rotation, grace: Duration) -> bool {
+    /// Whether a refresh token rotated as `rotation`, presented again for `resource`, is answered
+    /// again: for the resource its rotation named, within `grace` of its rotation, and before its
+    /// successor has itself rotated.
+    fn repeats(&self, rotation: &Rotation, resource: &str, grace: Duration) -> bool {
         let successor_rotated = rotation.answer["refresh_token"]
             .as_str()
             .and_then(|successor| self.refresh.get(successor))
             .is_some_and(|successor| successor.rotated.is_some());
-        self.now() < rotation.at + grace && !successor_rotated
+        rotation.resource == resource && self.now() < rotation.at + grace && !successor_rotated
     }
 
-    /// A registered client and a new sign-in for it, without a browser.
-    pub(super) fn grant(&mut self, expires_in: u64) -> super::Grant {
+    /// A registered client and a new sign-in for it, without a browser, over `resources`, one or
+    /// more, each named once, as its caller ensures, each with the scopes it accepts: an access
+    /// token for each resource alone, and one refresh token. The sign-in is granted every scope
+    /// that one of its resources accepts.
+    pub(super) fn grant(&mut self, expires_in: u64, resources: &[(String, Vec<String>)]) -> Grant {
         let client_id = self.next("client");
         self.clients.insert(client_id.clone(), Vec::new());
-        let family = self.sign_in();
-        let answer = self.issue(family, &client_id, expires_in, "");
-        super::Grant {
+        let mut scopes: Vec<String> = Vec::new();
+        for scope in resources.iter().flat_map(|(_, accepted)| accepted) {
+            if !scopes.contains(scope) {
+                scopes.push(scope.clone());
+            }
+        }
+        let held = resources.iter().map(|(resource, _)| resource.clone());
+        let family = self.sign_in(held.collect(), scopes);
+        let mut access = BTreeMap::new();
+        let mut first = None;
+        for (resource, accepted) in resources {
+            let token = Issued {
+                resource,
+                accepted,
+                expires_in,
+            };
+            let (issued, _) = self.access(family, &token);
+            first.get_or_insert_with(|| issued.clone());
+            access.insert(resource.clone(), issued);
+        }
+        let refresh_token = self.refresh_token(family, &client_id);
+        Grant {
             client_id,
-            access_token: answer["access_token"]
-                .as_str()
-                .unwrap_or_default()
-                .to_owned(),
-            refresh_token: answer["refresh_token"]
-                .as_str()
-                .unwrap_or_default()
-                .to_owned(),
+            access_token: first.unwrap_or_default(),
+            refresh_token,
             expires_in,
+            access,
         }
     }
 }
 
 impl State {
-    fn issuer(&self) -> String {
+    pub(super) fn issuer(&self) -> String {
         format!("{}/auth", self.origin)
     }
 
-    fn resource(&self) -> String {
+    pub(super) fn resource(&self) -> String {
         format!("{}{}", self.origin, super::RESOURCE)
     }
 }
@@ -182,5 +263,11 @@ impl Form {
     /// The value of the field `name`, or nothing.
     fn field(&self, name: &str) -> String {
         value(&self.0, name).unwrap_or_default().to_owned()
+    }
+
+    /// Every value of the field `name`, in the order given.
+    fn fields(&self, name: &str) -> Vec<String> {
+        let named = self.0.iter().filter(|(field, _)| field == name);
+        named.map(|(_, value)| value.clone()).collect()
     }
 }
