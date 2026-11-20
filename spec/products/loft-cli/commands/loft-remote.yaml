@@ -88,6 +88,8 @@ requirements:
         name: "A manifest that holds neither `remote` nor `connected` is left as it was."
       - key: 01a18e1f-8daa-7674-9603-5ad028d5e220
         name: "The sign-in that `loft/remotes.json` holds for the manifest's address is removed."
+      - key: 01a1f942-7c5b-7292-be5d-c80780945e5a
+        name: "A sign-in kept under the manifest's address for a protected resource on another origin is removed too."
       - key: 01a156c0-0b7a-76b6-9a6a-682e4f4634b9
         name: "Every entry for another address is kept."
       - key: 01a156c0-0b7a-76b6-9a6a-682f83ff48dd

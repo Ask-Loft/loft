@@ -18967,7 +18967,7 @@ links:
         name: "without_a_sign_in_the_publish_is_refused_naming_the_address_and_login"
         body: 24c7066ff222ea0bad357a534776dd60bf2e14db2ac23687a6bee4d45b47bbd4
   - node: 01a1f4f1-4309-7056-a238-4b394d224dd7
-    reviewed: 3246a0da3e43418bfad06fa601e8d49cd597ef8fd9c64d97f57858b71b2df12c
+    reviewed: 2e517cd98be1018996733e03ea823c01cba2319bc8976aad423e61b14dfa1463
     tests:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "publish_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_that_resource"

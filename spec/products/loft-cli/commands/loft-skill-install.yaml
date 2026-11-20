@@ -186,6 +186,19 @@ requirements:
         name: "The error names the origin."
       - key: 01a156af-5307-7725-b0b7-f7c3e1c0bab7
         name: "No connection is opened."
+  - key: 01a1f942-7c5b-7292-be5d-c8080a07ca93
+    statement:
+      form: unwanted
+      if: "`<origin>` does not read as an address with a scheme and a host"
+      system: "`loft skill install`"
+      shall: "refuse as a usage error and exit 2."
+    criteria:
+      - key: 01a1f942-7c5b-7292-be5d-c80930d1d8c6
+        name: "A text whose scheme is empty or does not begin with a letter, whose host is empty, or that holds a character RFC 3986 does not allow in an address, such as a space, is refused."
+      - key: 01a1f942-7c5b-7292-be5d-c80a4276b960
+        name: "The error names the origin."
+      - key: 01a1f942-7c5b-7292-be5d-c80b73261c44
+        name: "No connection is opened."
   - key: 01a156af-5307-7725-b0b7-f7c4510ac446
     statement:
       form: unwanted
