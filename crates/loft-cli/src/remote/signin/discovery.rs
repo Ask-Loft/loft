@@ -222,7 +222,9 @@ mod tests {
                 "{issuer}"
             );
         }
-        assert_eq!(server_metadata("as.example/auth"), None);
+        for issuer in ["as.example/auth", "://as.example/auth", "https://:443/auth"] {
+            assert_eq!(server_metadata(issuer), None, "{issuer}");
+        }
     }
 
     #[test]

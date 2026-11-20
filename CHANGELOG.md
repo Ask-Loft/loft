@@ -43,6 +43,13 @@ everything 2.4.1 will hold.
   another origin, counts as no sign-in: it is neither refreshed nor sent, and `loft remote set`
   signs in anew. `loft publish` and `loft pull` refuse with an error of its own, which names the
   address and that resource and says that `loft remote login` signs in again.
+- `loft skill install --server <origin>` reads the origin as `loft` reads every address, with the
+  parser its requests use. A text that does not read as an address with a scheme and a host, such
+  as one holding a space or a host outside ASCII, or one whose scheme is empty or does not begin
+  with a letter, is now a usage error that exits 2 and opens no connection, as a path, a query or
+  a fragment already was; the install used to refuse some of them with exit 1. The origin is
+  written with its scheme and host in lower case, without user information or the scheme's
+  default port.
 - The Yard page can open from another device, such as a phone in your tailnet, where you can
   answer as on the machine. Name the addresses the page server listens on beside `127.0.0.1`
   with `loft yard serve --listen`, once for each, `0.0.0.0` for every network, or with the

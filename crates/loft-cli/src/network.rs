@@ -210,18 +210,26 @@ impl fmt::Display for Origin {
 /// `url` as the parser the request uses reads it, if it is an absolute address with a host: its
 /// origin, and its path, `/` where it names none, without the query that may follow. A fragment
 /// is never read. The one reader of an origin in `loft`, so that the origin read is the origin
-/// contacted.
+/// contacted. The parser also reads a scheme that is empty or does not begin with a letter, which
+/// RFC 3986, section 3.1, does not allow, and a host that is empty, which names no host: such a
+/// text is read as none.
 #[must_use]
 pub fn origin_and_path(url: &str) -> Option<(Origin, String)> {
     let uri: Uri = url.parse().ok()?;
-    let scheme = uri.scheme_str()?.to_ascii_lowercase();
+    let scheme = uri
+        .scheme_str()
+        .filter(|scheme| scheme.starts_with(|first: char| first.is_ascii_alphabetic()))?
+        .to_ascii_lowercase();
     let default = match scheme.as_str() {
         "https" => Some(443),
         "http" => Some(80),
         _ => None,
     };
     let origin = Origin {
-        host: uri.host()?.to_ascii_lowercase(),
+        host: uri
+            .host()
+            .filter(|host| !host.is_empty())?
+            .to_ascii_lowercase(),
         port: uri.port_u16().filter(|port| Some(*port) != default),
         scheme,
     };
@@ -350,6 +358,11 @@ mod tests {
             "/documents",
             "https://",
             "not an address",
+            "https://exa mple.org",
+            // A scheme begins with a letter (RFC 3986, section 3.1), and a host is not empty.
+            "://remote.example/a",
+            "1https://remote.example/a",
+            "https://:443/a",
         ] {
             assert!(origin_and_path(url).is_none(), "{url}");
         }

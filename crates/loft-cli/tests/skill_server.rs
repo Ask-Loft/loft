@@ -317,6 +317,31 @@ fn an_origin_with_a_path_a_query_or_a_fragment_is_a_usage_error_naming_it_and_op
     assert!(remote.requests().is_empty(), "no connection is opened");
 }
 
+#[test]
+fn a_text_that_does_not_read_as_an_address_is_a_usage_error_naming_it_and_opening_nothing() {
+    let remote = serving("review", review());
+    let origin = remote.origin();
+    let authority = origin.trim_start_matches("http://");
+    let port = &authority[authority.rfind(':').unwrap()..];
+    for given in [
+        // A scheme that is empty or does not begin with a letter.
+        format!("://{authority}"),
+        format!("1http://{authority}"),
+        // An empty host.
+        format!("http://{port}"),
+        // A character that an address does not hold.
+        format!("{origin} "),
+        "https://bücher.example".to_owned(),
+    ] {
+        let scratch = Scratch::empty();
+        let output = install(&scratch, &given, &[]);
+        assert_eq!(output.status.code(), Some(2), "{given}: {output:?}");
+        assert!(stderr(&output).contains(&given), "{}", stderr(&output));
+        assert_nothing_written(&scratch);
+    }
+    assert!(remote.requests().is_empty(), "no connection is opened");
+}
+
 /// A server whose manifest is not JSON.
 struct Garbled;
 

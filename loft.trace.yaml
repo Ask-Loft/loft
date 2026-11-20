@@ -13908,6 +13908,27 @@ links:
       - file: "crates/loft-cli/tests/skill_server.rs"
         name: "an_origin_with_a_path_a_query_or_a_fragment_is_a_usage_error_naming_it_and_opening_nothing"
         body: 75b5f85aac7bd852bcfe206d77b808da917f274c9404c21e92550ac413a2a77a
+  - node: 01a1f942-7c5b-7292-be5d-c80930d1d8c6
+    reviewed: c92296753f9cd4992edfe3a87404b0d6f8d6bd455b5d386471b5c8bcf190a78c
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_text_that_does_not_read_as_an_address_is_a_usage_error_naming_it_and_opening_nothing"
+        body: 059fe0dfef3d91d2ca2dfe14ac68bd98d1255b3bf4b563b8326acf29456a1493
+      - file: "crates/loft-cli/src/skill/server.rs"
+        name: "an_origin_is_a_scheme_and_a_host_alone"
+        body: f6df8b6651cfec29713c0bec286e96a08fc1864ffdea05664c251c3c22cee73b
+  - node: 01a1f942-7c5b-7292-be5d-c80a4276b960
+    reviewed: 5c6a8ed7b4a942a128a8df8f07d2efe7de5235c38cade25483fdffe8309050f0
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_text_that_does_not_read_as_an_address_is_a_usage_error_naming_it_and_opening_nothing"
+        body: 059fe0dfef3d91d2ca2dfe14ac68bd98d1255b3bf4b563b8326acf29456a1493
+  - node: 01a1f942-7c5b-7292-be5d-c80b73261c44
+    reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
+    tests:
+      - file: "crates/loft-cli/tests/skill_server.rs"
+        name: "a_text_that_does_not_read_as_an_address_is_a_usage_error_naming_it_and_opening_nothing"
+        body: 059fe0dfef3d91d2ca2dfe14ac68bd98d1255b3bf4b563b8326acf29456a1493
   - node: 01a156af-5307-7725-b0b7-f7c581e6b6fa
     reviewed: 5c6a8ed7b4a942a128a8df8f07d2efe7de5235c38cade25483fdffe8309050f0
     tests:
@@ -19694,7 +19715,7 @@ links:
         body: f73f8e9897a6c1eea5fc180b31c3cae0b58c6403645a1ecd6e5726a4627cd288
       - file: "crates/loft-cli/src/remote/signin/discovery.rs"
         name: "the_server_metadata_lies_at_the_issuer_s_origin_before_its_path"
-        body: 6ffdeff191e844a1530a2e1a644cc8db7e0f38891ebb7db2514e6ef0765681ae
+        body: fd466b78541ed6c7ce4af298a5f8ce649caad6c829f2db41ce3ee7064125aea4
   - node: 01a18e1f-8daa-7674-9603-5adc786b0bc4
     reviewed: 908d45c3d5ab97076e4d85b51609f4b5fb9b9ddc8664db941e9e535769592179
     tests:
@@ -19776,6 +19797,9 @@ links:
       - file: "crates/loft-cli/src/network.rs"
         name: "an_address_with_user_information_lies_on_the_origin_of_its_host_and_port"
         body: 08bd8d465c645f8645aa6bd229092bd08e999c84e239d2c50eb323248aad557b
+      - file: "crates/loft-cli/src/network.rs"
+        name: "an_address_is_read_as_its_origin_written_whole_and_its_path"
+        body: 3d67322173bf3100a16c0642c8f68c9e05753bec26f4e6d4cc9723d25a3be681
   - node: 01a1f4f1-4309-7056-a238-4b3ebed07992
     reviewed: bcf29c55208618cb4fae2d340a21dc7d2d55c9a9f9459ccb196728d2d8f308fe
     tests:

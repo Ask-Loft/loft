@@ -292,6 +292,12 @@ mod tests {
             "https://example.org/?q=1",
             "https://example.org#top",
             "example.org",
+            // Texts that do not read as an address with a scheme and a host.
+            "://example.org",
+            "1https://example.org",
+            "https://:443",
+            "https://exa mple.org",
+            "https://bücher.example",
         ] {
             assert!(origin_of(refused).is_err(), "{refused}");
         }
