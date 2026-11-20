@@ -391,6 +391,31 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb47a12567f2
         name: "No element that a block's text names is created in the page."
+  - key: 01a1f804-56bc-77a4-94e6-7487be7d4205
+    statement:
+      form: optional
+      where: "a block's Markdown holds a bare address that begins with `http://`, `https://` or `mailto:`"
+      system: "the page"
+      shall: "draw the address as a link to it, as it draws a link the Markdown writes out."
+    criteria:
+      - key: 01a1f804-56bc-77a4-94e6-74881760b7f4
+        name: "A bare `https://` address in a note's Markdown is drawn as a link to that address."
+      - key: 01a1f804-56bc-77a4-94e6-7489ef413b64
+        name: "A bare `http://` address and a bare `mailto:` address are each drawn as a link to that address."
+      - key: 01a1f804-56bc-77a4-94e6-748a1481c64b
+        name: "A bare address in a stage's goal, a question's context, an option's detail, a decision's consequence and a task's detail is drawn as a link, as in a note."
+      - key: 01a1f804-56bc-77a4-94e6-748bc1fff885
+        name: "An address within a code span is drawn as text."
+      - key: 01a1f804-56bc-77a4-94e6-748c732b5a29
+        name: "An address within a fenced code block is drawn as text."
+      - key: 01a1f804-56bc-77a4-94e6-748d568ac06c
+        name: "An address that is already the text of a link the Markdown writes out is not drawn as a second link within it."
+      - key: 01a1f804-56bc-77a4-94e6-748eebcde366
+        name: "A period, a comma, a colon, a semicolon, an exclamation mark or a question mark that ends an address is drawn after the link, not in it."
+      - key: 01a1f804-56bc-77a4-94e6-748fb9de9b7d
+        name: "A closing parenthesis that ends an address is part of the link only where the address opens a parenthesis before it."
+      - key: 01a1f804-56bc-77a4-94e6-749076569e91
+        name: "Text that begins with any other scheme, such as `javascript:`, is drawn as text."
   - key: 01a16838-8fdb-7127-a23e-c5588e3201c7
     statement:
       form: optional
