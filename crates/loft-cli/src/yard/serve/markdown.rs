@@ -3,16 +3,13 @@
 //! a link keeps only an address of the web, of mail or within the page, and an image is shown
 //! as a link to it, so that no element a block names is made in the page and nothing is loaded
 //! from elsewhere. A fenced code block marked `mermaid` stays a code block of that language,
-//! which the page draws as a diagram. A bare address of the web or of mail in a block's Markdown
-//! is made a link. The names of the nodes a `loft` view reports are rendered the same way, each
-//! on one line, but leave a bare address as text.
+//! which the page draws as a diagram. The names of the nodes a `loft` view reports are rendered
+//! the same way, each on one line.
 
 mod autolink;
 
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, TextMergeStream, html};
+use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html};
 use serde_json::Value;
-
-use autolink::Autolink;
 
 /// The Markdown fields of a stage's or a block's body, each with the field its HTML is given in:
 /// a note's, an approval's and a plan's Markdown, a question's context, a stage's goal, a
@@ -26,7 +23,6 @@ const FIELDS: [(&str, &str); 6] = [
     ("note", "noteHtml"),
 ];
 
-/// The parser of `markdown`, with the extensions the page draws.
 fn parser(markdown: &str) -> Parser<'_> {
     let options = Options::ENABLE_TABLES
         | Options::ENABLE_STRIKETHROUGH
@@ -35,16 +31,21 @@ fn parser(markdown: &str) -> Parser<'_> {
     Parser::new_ext(markdown, options)
 }
 
-/// `markdown` as HTML, each bare address in it a link.
+/// `markdown` as HTML.
 pub fn to_html(markdown: &str) -> String {
     let mut out = String::new();
-    let events = Autolink::new(TextMergeStream::new(parser(markdown)));
-    html::push_html(&mut out, Safe::new(events));
+    match autolink::stood_in(markdown, parser(markdown).into_offset_iter()) {
+        Some((source, addresses)) => {
+            let events = autolink::Links::new(parser(&source), &addresses);
+            html::push_html(&mut out, Safe::new(events));
+        }
+        None => html::push_html(&mut out, Safe::new(parser(markdown))),
+    }
     out
 }
 
 /// `markdown` as HTML for one line, such as a node's name: the inside of the one paragraph it
-/// makes, or none where it makes anything else. A bare address in it stays text.
+/// makes, or none where it makes anything else.
 pub fn to_inline_html(markdown: &str) -> Option<String> {
     let mut html = String::new();
     html::push_html(&mut html, Safe::new(parser(markdown)));
@@ -270,6 +271,14 @@ mod tests {
         let html = to_inline_html("A <b>bold</b> name").unwrap_or_default();
         assert!(!html.contains("<b>"), "{html}");
         assert!(html.contains("&lt;b&gt;bold&lt;/b&gt;"), "{html}");
+    }
+
+    #[test]
+    fn a_bare_address_in_a_name_stays_text() {
+        assert_eq!(
+            to_inline_html("See https://example.com/x").as_deref(),
+            Some("See https://example.com/x")
+        );
     }
 
     #[test]

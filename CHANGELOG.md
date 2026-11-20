@@ -98,9 +98,10 @@ everything 2.4.1 will hold.
   1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
   part of Yard Log's history of the work.
 - The Yard page draws a bare `http://`, `https://` or `mailto:` address in a block's Markdown as
-  a link, as GitHub does, where it used to show it as text. An address in code or in a link the
-  Markdown writes out stays as it is, a mark that ends a sentence stays out of the link, and a
-  node's name still shows an address as text.
+  a link, as GitHub does, where it used to show it as text. An `_`, `*` or `~` within an address
+  stays part of it rather than making emphasis, and a mark or quote that ends a sentence, or a
+  closing bracket the address does not open, stays out of the link. An address in code or in a
+  link the Markdown writes out stays as it is, and a node's name still shows an address as text.
 
 ## 2.4.0 (2026-11-17)
 
