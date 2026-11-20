@@ -52,7 +52,8 @@ pub enum Metadata {
     /// `resource` is its own address with the well-known path taken out, as RFC 9728 derives it:
     /// the simulator's origin is that address's user information, and the second port's host and
     /// port its host and port, so that it lies on the second port's origin. The second port
-    /// answers `not_found` to every request; the metadata's usual address still serves it
+    /// serves only the metadata of a companion resource its scenario places there, and answers
+    /// `not_found` to every other request; the metadata's usual address still serves it
     /// faithfully.
     ResourceOnAnotherOrigin,
 }

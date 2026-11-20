@@ -19,6 +19,10 @@ use super::calls::{Answer, TOKENS, agent, call, read, redacted};
 use super::resources::origin_path_and_query;
 
 /// The code verifier of every authorization request, whose challenge the request sends.
+/// Where protected resource metadata lies on its resource's origin, before the resource's path
+/// (RFC 9728).
+pub const RESOURCE_METADATA: &str = "/.well-known/oauth-protected-resource";
+
 pub const VERIFIER: &str = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
 /// The document key of each remote that the suites of the authorization server start.
 pub const KEY: &str = "01a18e30-0000-7000-8000-000000000010";
@@ -44,7 +48,7 @@ pub fn metadata(remote: &Remote) -> (Value, Value) {
 pub fn discover(address: &str) -> (Value, Value) {
     let (challenge, resource, server) = fetch(address);
     let metadata = metadata_named(&challenge);
-    let named = metadata.replacen("/.well-known/oauth-protected-resource", "", 1);
+    let named = metadata.replacen(RESOURCE_METADATA, "", 1);
     let rule = format!("RFC 9728 3.3: the metadata at {metadata} names its resource: {resource}");
     assert_eq!(resource["resource"], named.as_str(), "{rule}");
     (resource, server)
@@ -121,7 +125,7 @@ pub fn companion_metadata(identifier: &str) -> Answer {
 fn resource_metadata_at(identifier: &str) -> String {
     let (origin, path, query) = origin_path_and_query(identifier);
     let path = path.trim_end_matches('/');
-    format!("{origin}/.well-known/oauth-protected-resource{path}{query}")
+    format!("{origin}{RESOURCE_METADATA}{path}{query}")
 }
 
 /// The id of a public client registered with `server`. A registration answered without one fails
@@ -344,6 +348,18 @@ fn send_refresh_for(
     ];
     fields.extend(resources.iter().map(|resource| ("resource", *resource)));
     send_form(endpoint(server, "token_endpoint"), &fields)
+}
+
+/// The path on `remote`'s origin of the protected resource metadata that its challenge names, and
+/// the resource that metadata names on another origin, its address with the well-known path taken
+/// out, as a scenario that names its protected resource on another origin serves them.
+pub fn named_elsewhere(remote: &Remote) -> (String, String) {
+    let named = parameter(&challenge_at(&remote.address()), "resource_metadata").unwrap();
+    let path = named
+        .strip_prefix(remote.origin())
+        .filter(|path| path.starts_with(&format!("{RESOURCE_METADATA}@")))
+        .unwrap_or_else(|| panic!("metadata on the address's origin naming another: {named}"));
+    (path.to_owned(), named.replacen(RESOURCE_METADATA, "", 1))
 }
 
 #[cfg(test)]

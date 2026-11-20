@@ -357,7 +357,7 @@ fn route(state: &mut State, request: &Request) -> Response {
     if let Some(answer) = state.companion_metadata(request) {
         return answer;
     }
-    let resource_metadata = format!("{WELL_KNOWN}{RESOURCE}");
+    let resource_metadata = companion::well_known(RESOURCE);
     // A scenario that places the document's protected resource metadata on another origin
     // serves it there alone; one that names its protected resource there serves it here at the
     // address its challenge names, besides its usual one.

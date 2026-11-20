@@ -15,12 +15,11 @@ use software_plant::BrowserScenario;
 use software_plant::remote::{Metadata, Remote, RemoteScenario, misstated_root};
 
 use crate::common::calls::call;
-use crate::common::oauth::parameter;
+use crate::common::oauth::{named_elsewhere, parameter};
 use crate::common::remote::history;
 use crate::common::signed_in::{self, granted, keep, name_remote};
 use crate::common::tree;
 use crate::remote_connect::{assert_nothing_written, head_of, published, set};
-use crate::remote_sign_in_refusals::named_elsewhere;
 use crate::served::within;
 
 #[test]

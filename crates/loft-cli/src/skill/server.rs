@@ -57,9 +57,9 @@ pub fn run(root: &Path, origin: &str, hosts: Hosts, as_json: bool) -> Finished {
     }
 }
 
-/// `text` as an origin, as [`network::origin_and_path`] reads it: a scheme and a host, with no
-/// path but `/`, no query and no fragment, written without a trailing `/`. An origin of another
-/// scheme than `https` or `http` is one, which [`install`] refuses to reach.
+/// `text` as an origin, as [`network::origin_alone`] reads it: a scheme and a host, with no path
+/// but `/`, no query and no fragment, written without a trailing `/`. An origin of another scheme
+/// than `https` or `http` is one, which [`install`] refuses to reach.
 ///
 /// # Errors
 ///
@@ -67,12 +67,9 @@ pub fn run(root: &Path, origin: &str, hosts: Hosts, as_json: bool) -> Finished {
 pub fn origin_of(text: &str) -> Result<String, String> {
     let not_an_origin =
         || format!("`--server {text}`: a server is named by its origin, a scheme and a host alone");
-    // The parser leaves a fragment out, and reads a query apart from the path, so the text is
-    // looked at for both.
-    match network::origin_and_path(text) {
-        Some((origin, path)) if path == "/" && !text.contains(['?', '#']) => Ok(origin.to_string()),
-        _ => Err(not_an_origin()),
-    }
+    network::origin_alone(text)
+        .map(|origin| origin.to_string())
+        .ok_or_else(not_an_origin)
 }
 
 /// Reads the manifest at `origin`, fetches and checks the package, and writes it into the skill

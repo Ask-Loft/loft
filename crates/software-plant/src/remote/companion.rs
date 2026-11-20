@@ -328,7 +328,7 @@ pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
 /// Where RFC 9728 places the protected resource metadata of the resource at `path`, a path that
 /// may end in a query: `/.well-known/oauth-protected-resource`, then the path without a
 /// terminating `/`, then the query.
-fn well_known(path: &str) -> String {
+pub(super) fn well_known(path: &str) -> String {
     let (path, query) = path.find('?').map_or((path, ""), |at| path.split_at(at));
     format!("{WELL_KNOWN}{}{query}", path.trim_end_matches('/'))
 }

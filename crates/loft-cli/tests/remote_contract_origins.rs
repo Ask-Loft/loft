@@ -8,32 +8,27 @@ use serde_json::json;
 use software_plant::remote::{Metadata, Remote, RemoteScenario};
 
 use crate::common::calls::call;
-use crate::common::oauth::{KEY, challenge_at, parameter};
+use crate::common::oauth::{KEY, RESOURCE_METADATA, named_elsewhere};
 use crate::common::resources::origin_of;
 use crate::remote_contract::assert_problem;
-
-/// Where protected resource metadata lies on its resource's origin, before the resource's path
-/// (RFC 9728).
-const WELL_KNOWN: &str = "/.well-known/oauth-protected-resource";
 
 #[test]
 fn a_scenario_naming_its_resource_on_another_origin_serves_metadata_naming_the_second_port() {
     let remote =
         Remote::start(RemoteScenario::accepting(KEY).metadata(Metadata::ResourceOnAnotherOrigin));
-    let challenge = challenge_at(&remote.address());
-    let named = parameter(&challenge, "resource_metadata").unwrap();
     // The challenge names the metadata on the simulator's origin, at
     // `/.well-known/oauth-protected-resource@<host>:<port>` followed by the resource's path.
-    let authority = named
-        .strip_prefix(&format!("{}{WELL_KNOWN}@", remote.origin()))
+    let (path, resource) = named_elsewhere(&remote);
+    let authority = path
+        .strip_prefix(&format!("{RESOURCE_METADATA}@"))
         .and_then(|rest| rest.strip_suffix("/documents"))
-        .unwrap_or_else(|| panic!("{challenge}"));
+        .unwrap_or_else(|| panic!("{path}"));
     let elsewhere = format!("http://{authority}");
     let loopback = elsewhere.starts_with("http://127.0.0.1:");
-    assert!(loopback && elsewhere != remote.origin(), "{challenge}");
+    assert!(loopback && elsewhere != remote.origin(), "{path}");
+    let named = format!("{}{path}", remote.origin());
     let answer = call("GET", &named, None, None);
     assert_eq!(answer.status, 200, "{answer:?}");
-    let resource = named.replacen(WELL_KNOWN, "", 1);
     assert_eq!(
         answer.body,
         json!({

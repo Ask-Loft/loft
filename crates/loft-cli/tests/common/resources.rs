@@ -75,7 +75,13 @@ pub fn origin_path_and_query(url: &str) -> (String, String, String) {
     let uri: Uri = url
         .parse()
         .unwrap_or_else(|error| panic!("an absolute URL: {url}: {error}"));
-    let (Some(scheme), Some(host)) = (uri.scheme_str(), uri.host()) else {
+    // As `loft` reads an address: a scheme begins with a letter (RFC 3986, section 3.1), and a
+    // host is not empty.
+    let scheme = uri
+        .scheme_str()
+        .filter(|scheme| scheme.starts_with(|first: char| first.is_ascii_alphabetic()));
+    let host = uri.host().filter(|host| !host.is_empty());
+    let (Some(scheme), Some(host)) = (scheme, host) else {
         panic!("an absolute URL with a host: {url}");
     };
     let scheme = scheme.to_ascii_lowercase();

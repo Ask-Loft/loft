@@ -215,6 +215,23 @@ impl fmt::Display for Origin {
 /// text is read as none.
 #[must_use]
 pub fn origin_and_path(url: &str) -> Option<(Origin, String)> {
+    read(url).map(|(origin, uri)| (origin, uri.path().to_owned()))
+}
+
+/// `url` as an origin alone, as [`origin_and_path`] reads it: an absolute address with a host,
+/// whose path is `/` or none, with no query and no fragment. The parser leaves a fragment out, so
+/// the text is looked at for one.
+#[must_use]
+pub fn origin_alone(url: &str) -> Option<Origin> {
+    if url.contains('#') {
+        return None;
+    }
+    let (origin, uri) = read(url)?;
+    (uri.path() == "/" && uri.query().is_none()).then_some(origin)
+}
+
+/// `url` as [`origin_and_path`] reads it: its origin and the parsed address.
+fn read(url: &str) -> Option<(Origin, Uri)> {
     let uri: Uri = url.parse().ok()?;
     let scheme = uri
         .scheme_str()
@@ -233,7 +250,7 @@ pub fn origin_and_path(url: &str) -> Option<(Origin, String)> {
         port: uri.port_u16().filter(|port| Some(*port) != default),
         scheme,
     };
-    Some((origin, uri.path().to_owned()))
+    Some((origin, uri))
 }
 
 /// Whether `one` and `other` lie on one origin, as RFC 6454 compares origins: the same scheme,

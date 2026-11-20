@@ -9,26 +9,10 @@ use software_plant::remote::wire::{pairs, value};
 use software_plant::remote::{Metadata, Remote, RemoteScenario};
 
 use crate::common::calls::call;
-use crate::common::oauth::{challenge_at, parameter};
+use crate::common::oauth::{named_elsewhere, parameter};
 use crate::common::signed_in::{name_remote, run, sign_ins_file};
 use crate::common::{Scratch, tree};
 use crate::schema;
-
-/// Where protected resource metadata lies on its resource's origin, before the resource's path
-/// (RFC 9728).
-const WELL_KNOWN: &str = "/.well-known/oauth-protected-resource";
-
-/// The path on `remote`'s origin of the protected resource metadata that its challenge names, and
-/// the resource that metadata names on another origin, its address with the well-known path taken
-/// out, as a scenario that names its protected resource on another origin serves them.
-pub fn named_elsewhere(remote: &Remote) -> (String, String) {
-    let named = parameter(&challenge_at(&remote.address()), "resource_metadata").unwrap();
-    let path = named
-        .strip_prefix(remote.origin())
-        .filter(|path| path.starts_with(&format!("{WELL_KNOWN}@")))
-        .unwrap_or_else(|| panic!("metadata on the address's origin naming another: {named}"));
-    (path.to_owned(), named.replacen(WELL_KNOWN, "", 1))
-}
 
 /// Runs `loft remote login` for a Reading List connected to a simulator of `scenario`, and gives
 /// the simulator, the scratch directory, the output and the addresses the browser was given.
