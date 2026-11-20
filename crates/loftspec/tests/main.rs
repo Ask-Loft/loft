@@ -71,6 +71,7 @@ mod lint;
 mod lint_config;
 mod lint_craft;
 mod lint_history;
+mod lint_interfaces;
 mod lint_language;
 mod lint_live;
 mod lint_markdown;

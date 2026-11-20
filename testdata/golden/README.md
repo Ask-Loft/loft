@@ -158,7 +158,9 @@ vector gives the conflict view's canonical JSON and its digest under `loftspec/c
 The linter's default configuration, written as a `spec/lint.yaml` that states every default: each
 rule's `enabled` and `severity`, the lexicons of `LQ-001`..`LQ-005` as `replace` lists, the
 `LQ-005` conjunction threshold, and the `LQ-008` minimum token count and similarity threshold.
-A tree without `spec/lint.yaml` is linted as if it held this file. `rules` and `suppressions` are
+A tree without `spec/lint.yaml` is linted as if it held this file. The Interface rules `V2-012`
+and `V2-013` joined it with Interfaces, a deliberate change of the defaults: a tree that holds no
+Interface raises neither. `rules` and `suppressions` are
 lists of records: a rule's record names it in `rule`; a suppression names `rule`, `key` and a
 non-blank `reason`.
 

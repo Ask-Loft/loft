@@ -34,6 +34,7 @@ raises its rule, and no other rule at warning.
 - Rules of the text form
 - Rules of the writing craft
 - Rules of decision history
+- Rules of Interfaces
 - Rules of the term report
 
 ## Errors
@@ -542,6 +543,35 @@ an edited decision, it is judged against that record.
 |---|---|---|---|
 | `V2-010` | warning | A decision published as accepted, rejected, superseded or retired whose meaning has changed since: its title, context, drivers, options, assessments, consequences or what its state records | Undo the edit, and record the new choice as a new decision that supersedes it, as `writing-rules.md` says |
 | `V2-011` | warning | A decision whose state moved in a way its published state does not allow: only a proposed decision may be accepted or rejected, and only an accepted one superseded or retired; or a resolved decision deleted from the tree | Restore the decision as it was published; end an accepted one by superseding or retiring it, and record any other change as a new decision |
+
+## Rules of Interfaces
+
+An Interface is a promise that a Component provides and others require, as `format.md` says.
+These rules report a promise that says nothing, and one that nothing in the document keeps or
+relies on.
+
+| Rule | Default | Reports | Usual fix |
+|---|---|---|---|
+| `V2-012` | warning | An Interface that holds no Requirement, and so promises nothing | Write the Requirements that a Component providing it meets |
+| `V2-013` | info | An Interface that no Component of the document provides or requires | Add `provides` to the Component that keeps the promise, or `requires` to one that relies on it |
+
+```yaml rule=V2-012 path=spec/interfaces/note-export.yaml
+name: "Note export"
+body: "What a reader of exported notes may rely on."
+```
+
+```yaml rule=V2-013 path=spec/interfaces/note-export.yaml
+name: "Note export"
+body: "What a reader of exported notes may rely on."
+requirements:
+  - statement:
+      form: event_driven
+      when: "a reader asks for the notes"
+      system: "the note export"
+      shall: "list every kept note."
+    criteria:
+      - name: "Each kept note is listed once."
+```
 
 ## Rules of the term report
 
