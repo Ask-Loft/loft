@@ -97,6 +97,8 @@ requirements:
         name: "A label or a name that matches more than one node under the handle is an error naming each matching node's key."
       - key: 01a1f981-dd10-776a-aaa3-31a62956511a
         name: "No file is changed when a foreign reference written by label or by name matches nothing or more than one node."
+      - key: 01a1faa6-c6f4-711d-814e-8f52aefceeb7
+        name: "A record of `document` that carries both `label` and `name` is an error naming the file, line and column."
   - key: 01a1f981-4db1-765f-a897-2263af855448
     statement:
       form: ubiquitous
