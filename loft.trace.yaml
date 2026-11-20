@@ -9610,11 +9610,17 @@ links:
     reviewed: 5e3772fe035f1b0aee6771a8d8c748590535f053094b0834d16a795929c0a10d
     tests:
       - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_counter_only_one_side_holds_is_kept_whichever_side_holds_it"
+        body: d95460b3f3da3f389c9a26067dbdda6942198bc63084faf32703fad6a9b673a0
+      - file: "crates/loftspec/tests/merge_labels.rs"
         name: "each_counter_takes_the_higher_value_without_a_conflict"
         body: aaadbec844bb42189a48c43124519eaf2ee1685347b496591e474a00bc6ff428
   - node: 01a130de-5737-776f-9c39-b9bef3fb25b1
     reviewed: f94502b6df3bb2aa31e6e9ac0afaf77a3de53c65198a292420b56fdca5006122
     tests:
+      - file: "crates/loftspec/tests/merge_labels.rs"
+        name: "a_counter_only_one_side_holds_is_kept_whichever_side_holds_it"
+        body: d95460b3f3da3f389c9a26067dbdda6942198bc63084faf32703fad6a9b673a0
       - file: "crates/loftspec/tests/merge_labels.rs"
         name: "each_counter_takes_the_higher_value_without_a_conflict"
         body: aaadbec844bb42189a48c43124519eaf2ee1685347b496591e474a00bc6ff428
