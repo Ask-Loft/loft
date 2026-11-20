@@ -381,3 +381,31 @@ fn the_trace_file_and_each_of_its_fields_are_described() {
         "{format_mark}"
     );
 }
+
+#[test]
+fn a_reference_into_another_document_its_listing_and_its_copies_are_described() {
+    let markdown = format();
+    let edges = section(&markdown, "Edges");
+    let foreign = table(edges, "Foreign reference field");
+    let rows = rows_by_span(&foreign);
+    assert_eq!(
+        rows.keys().copied().collect::<Vec<_>>(),
+        ["document", "key"]
+    );
+    let holders = (edges.split("\n\n"))
+        .find(|paragraph| paragraph.contains("node of another document"))
+        .expect("the paragraph that names the fields a foreign reference may stand in");
+    let named = spans(holders);
+    for holder in field::CROSSING {
+        assert!(named.contains(&holder), "`{holder}` in {holders}");
+    }
+    let manifest = section(&markdown, "The manifest and the labels");
+    assert!(spans(manifest).contains(&field::DOCUMENTS), "{manifest}");
+    let files = section(&markdown, "The files of `spec/`");
+    assert!(
+        spans(files).contains(&"spec/documents/<handle>/<interface>.yaml"),
+        "{files}"
+    );
+    let copies = section(&markdown, "Copies of other documents' Interfaces");
+    assert!(copies.contains("`loft interface`"), "{copies}");
+}
