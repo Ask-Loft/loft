@@ -69,8 +69,6 @@ requirements:
         name: "Each Feature carries the keys of the Components it realizes, in the order of their keys."
       - key: 01a203de-bf6a-75a3-85bf-fd368db19f03
         name: "Each Component carries the keys of the Products it is scoped to, in the order of their keys."
-      - key: 01a203de-a777-77f7-bb30-2585faed29fb
-        name: "Where a base is given, a node whose own content or whose `realizes`, `scopedTo` or `mentions` entries differ from the base's carries the change `changed`."
   - key: 01a154b0-f757-7647-acce-6be96e745ff9
     statement:
       form: ubiquitous
@@ -115,6 +113,8 @@ requirements:
         name: "An assertion whose own content or `mentions` entries differ from the base's is `changed`."
       - key: 01a154b0-f757-7647-acce-6bf980680196
         name: "An assertion whose own content and `mentions` entries are the base's and whose parent is not is `moved`."
+      - key: 01a203de-a777-77f7-bb30-2585faed29fb
+        name: "A node given beside the assertions carries the change `changed` where its own content or its `realizes`, `scopedTo` or `mentions` entries differ from the base's."
       - key: 01a154b0-f757-7647-acce-6bfa7e8f4371
         name: "An assertion only the base holds is `removed`, and lands in the unit of its scope at the base."
       - key: 01a154b0-f757-7647-acce-6bfba506e16e
