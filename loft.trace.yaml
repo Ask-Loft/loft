@@ -11830,7 +11830,7 @@ links:
         name: "an_assertion_that_moved_and_changed_its_mentions_is_changed"
         body: be73833da6b0cc692af4fbcca5e4eb97ebfa8b5ae2a32bc5335ea99ada7f7d68
   - node: 01a203de-a777-77f7-bb30-2585faed29fb
-    reviewed: 8788f247bbc8ab878ac2160426ed905dd4223b3e643868004830af731d7ab0e9
+    reviewed: c1373c2b7b3a476d2105f27a1bcab76fb4c8e06e64ddca9866aef14dc56213f5
     tests:
       - file: "crates/loftspec/tests/review_edges.rs"
         name: "a_scope_whose_realizes_alone_differ_is_changed"
