@@ -17,6 +17,10 @@ const PLAIN: &str = "\"A removed book no longer lists.\"";
 const EDITED: &str = "\"A removed book no longer shows.\"";
 /// The criterion AC-5 of the Feature "Remove a book", whose name `EDITED` changes.
 const GONE: &str = "00000000-0000-4000-8000-000000000031";
+/// The Feature "Remove a book", which holds `GONE`.
+const REMOVE_A_BOOK: &str = "00000000-0000-4000-8000-00000000001f";
+/// The Feature "Add a book", whose key comes before `REMOVE_A_BOOK`'s.
+const ADD_A_BOOK: &str = "00000000-0000-4000-8000-00000000001e";
 
 fn review(scratch: &Scratch, args: &[&str], git: Option<&GitScenario>) -> Output {
     let mut all = vec!["review"];
@@ -40,6 +44,17 @@ fn units(document: &Value) -> &Vec<Value> {
     document["units"].as_array().unwrap()
 }
 
+/// The criterion `GONE`, among the Requirements of the first unit.
+fn gone(document: &Value) -> &Value {
+    units(document)[0]["requirements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|each| each["criteria"].as_array().unwrap())
+        .find(|criterion| criterion["key"] == GONE)
+        .unwrap()
+}
+
 /// The key of each unit's scope.
 fn scopes(document: &Value) -> Vec<String> {
     units(document)
@@ -50,9 +65,15 @@ fn scopes(document: &Value) -> Vec<String> {
 
 /// The Reading List, its base the tree as it is, then one criterion renamed.
 fn edited() -> (Scratch, GitScenario) {
+    edited_to(EDITED)
+}
+
+/// The Reading List, its base the tree as it is, then the name of the criterion `GONE` replaced
+/// by `text`.
+fn edited_to(text: &str) -> (Scratch, GitScenario) {
     let scratch = Scratch::with_reading_list();
     let git = based_on_now(&scratch);
-    scratch.edit(FEATURE, PLAIN, EDITED);
+    scratch.edit(FEATURE, PLAIN, text);
     (scratch, git)
 }
 
@@ -96,20 +117,39 @@ fn without_a_base_every_assertion_is_reviewed_with_no_change() {
 fn each_node_carries_its_key_label_kind_site_name_and_view() {
     let scratch = Scratch::with_reading_list();
     let document = packet(&scratch, &["--node", "remove-a-book"], None);
-    let criterion = units(&document)[0]["requirements"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .flat_map(|each| each["criteria"].as_array().unwrap())
-        .find(|criterion| criterion["key"] == GONE)
-        .unwrap()
-        .clone();
+    let criterion = gone(&document);
     assert_eq!(criterion["label"], "AC-5");
     assert_eq!(criterion["kind"], "criterion");
     assert_eq!(criterion["path"], format!("spec/{FEATURE}"));
     assert!(criterion["line"].as_u64().unwrap() > 1 && criterion["column"].as_u64().unwrap() > 1);
     assert_eq!(criterion["name"], "A removed book no longer lists.");
     assert!(criterion["view"].is_array());
+    assert_eq!(criterion["mentions"], serde_json::json!([]));
+}
+
+#[test]
+fn a_feature_carries_its_realizes_and_a_component_its_scoped_to() {
+    let scratch = Scratch::with_reading_list();
+    let document = packet(&scratch, &["--node", "remove-a-book"], None);
+    let unit = &units(&document)[0];
+    let mut components: Vec<&str> = unit["realizes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|realized| realized["component"]["node"]["key"].as_str().unwrap())
+        .collect();
+    components.sort_unstable();
+    assert_ne!(components, Vec::<&str>::new());
+    assert_eq!(
+        unit["scope"]["node"]["realizes"],
+        serde_json::json!(components)
+    );
+    let component = &unit["realizes"][0]["component"]["node"];
+    assert!(component["scopedTo"].is_array(), "{component}");
+    assert!(component.get("realizes").is_none());
+    assert!(unit["scope"]["node"].get("scopedTo").is_none());
+    assert!(gone(&document).get("realizes").is_none());
+    assert!(gone(&document).get("scopedTo").is_none());
 }
 
 #[test]
@@ -128,6 +168,25 @@ fn against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node() {
     let base = &document["provenance"]["base"];
     assert_eq!(base["revision"], "develop");
     assert_eq!(base["commit"], COMMIT);
+}
+
+#[test]
+fn against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed() {
+    let mentions = format!(
+        "{PLAIN}\n        mentions:\n          - {REMOVE_A_BOOK}\n          - {ADD_A_BOOK}"
+    );
+    let (scratch, git) = edited_to(&mentions);
+    let document = packet(&scratch, &["--base", "develop"], Some(&git));
+    assert_eq!(units(&document).len(), 1);
+    let assertions = units(&document)[0]["assertions"].as_array().unwrap();
+    assert_eq!(assertions.len(), 1, "{assertions:?}");
+    assert_eq!(assertions[0]["key"], GONE);
+    assert_eq!(assertions[0]["change"], "changed");
+    assert_eq!(assertions[0]["before"]["mentions"], serde_json::json!([]));
+    assert_eq!(
+        gone(&document)["mentions"],
+        serde_json::json!([ADD_A_BOOK, REMOVE_A_BOOK])
+    );
 }
 
 #[test]
