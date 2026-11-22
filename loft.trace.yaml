@@ -30451,13 +30451,13 @@ links:
         name: "an_underscore_an_asterisk_or_a_tilde_within_an_address_stays_in_its_link"
         body: 9618db4c0e53e3f2d0a9fdcf9e22b25006ec16875532214fc96760246ee4302c
   - node: 01a1f804-56bc-77a4-94e6-7489ef413b64
-    reviewed: df72ed9f642436560d68607f785f6a11f4688299412309357de5ea54a78347d1
+    reviewed: 47ef20baf41bf48aea70d96df5853f47bdb8f2256715ad57bd18dd82b8ed0a4f
     tests:
       - file: "crates/loft-cli/src/yard/serve/markdown/autolink/tests.rs"
         name: "a_bare_http_address_and_a_bare_mailto_address_are_each_drawn_as_a_link"
         body: 74270d31a5b2c68c9291de3b9a9bcfb9604eeaae50ca2d6a267ae60ec6512d07
   - node: 01a1f804-56bc-77a4-94e6-748a1481c64b
-    reviewed: c71977de0d401e1964bd8f43c7e1fe29314275097fd225f5f219355052a90194
+    reviewed: 213f6cc443db0dc40e944a1bd9944ff922d562b6c2330213e9ca9de836fde9f4
     tests:
       - file: "crates/loft-cli/src/yard/serve/markdown.rs"
         name: "a_bare_address_in_every_markdown_field_is_drawn_as_a_link"
@@ -30487,7 +30487,7 @@ links:
         name: "punctuation_that_ends_an_address_is_drawn_after_the_link"
         body: 720e7992838a3d99b2beda563ea824efbc9493928e6e9902e8e8f7cdf35e32b3
   - node: 01a1f89d-6ae4-70f1-a41e-0cf431548485
-    reviewed: b055c3a87f754dbf0d18599a3b4bce13d2eed6b5531fc3e8af44d6a579de4899
+    reviewed: cafb67a4710f967da65b55cf994dbc652e9f8eeba3a633408cf219c3f4d2bf43
     tests:
       - file: "crates/loft-cli/src/yard/serve/markdown/autolink/tests.rs"
         name: "an_entity_that_ends_an_address_is_drawn_after_the_link"
@@ -30498,12 +30498,6 @@ links:
       - file: "crates/loft-cli/src/yard/serve/markdown/autolink/tests.rs"
         name: "a_closing_parenthesis_ends_the_link_unless_the_address_opens_one"
         body: 1e321daef7c2312cabc80036533e4beccf9ae2531c56730203e7dc67fbd9a14c
-  - node: 01a1f89a-bc20-773d-b058-4592653a19af
-    reviewed: bfc7a24a298d00648d6146b220a8076ff57f08719336c64995a6abfc5b2b9235
-    tests:
-      - file: "crates/loft-cli/src/yard/serve/markdown/autolink/tests.rs"
-        name: "a_closing_square_bracket_ends_the_link_unless_the_address_opens_one"
-        body: bc6b3082f9bdb44da78b35e198a3e3575e41f803d01596f1a60bf53c9798eac2
   - node: 01a1f804-56bc-77a4-94e6-749076569e91
     reviewed: 7918ab486c0cd42b210017384c730b0343ccc821490e26a92d3c49e095b93543
     tests:

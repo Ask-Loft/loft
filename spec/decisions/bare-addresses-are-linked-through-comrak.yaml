@@ -1,0 +1,99 @@
+key: 01a203d2-f2c4-75fe-9412-755fe8138de2
+slug: bare-addresses-are-linked-through-comrak
+title: "Bare addresses are linked through comrak"
+context: "Agents write bare addresses in a block's Markdown, and the page drew them as text where GitHub draws the same Markdown with links. pulldown-cmark, which the page rendered with, has no autolink extension and no hook into its inline parse, and an address linked after the parse has already lost an `_`, `*` or `~` within it to emphasis. GitHub renders with cmark-gfm, whose autolink extension decides where an address begins and ends."
+state:
+  kind: accepted
+  selectedOption: 01a203d2-f2c4-75fe-9412-7564158bdf6c
+  outcome: "The page renders a block's Markdown and a node's name with comrak, with its autolink extension on for a block's Markdown alone. A walk over comrak's tree draws an image as a link, and draws as their text a link whose address is neither `http`, `https`, `mailto` nor a place within the page, a `www.` address and a bare email address; comrak shows any HTML as text. `loftspec` and `yardlog` keep pulldown-cmark."
+drivers:
+  - key: 01a203d2-f2c4-75fe-9412-756052af8887
+    kind: local
+    label: "As on GitHub"
+    statement: "A bare address is drawn as a link where GitHub draws it as one, and as text where GitHub draws it as text."
+  - key: 01a203d2-f2c4-75fe-9412-7561633e0968
+    kind: local
+    label: "Little parsing of its own"
+    statement: "The page keeps little Markdown parsing code of its own to review and test."
+  - key: 01a203d2-f2c4-75fe-9412-75628a68ba49
+    kind: local
+    label: "Safe links"
+    statement: "Every link the page draws goes to an `http`, `https` or `mailto` address or to a place within the page, and no HTML of the Markdown becomes an element."
+  - key: 01a203d2-f2c4-75fe-9412-75631a659859
+    kind: local
+    label: "Few dependencies"
+    statement: "The page server adds few crates to the workspace."
+options:
+  - key: 01a203d2-f2c4-75fe-9412-7564158bdf6c
+    title: "comrak"
+    description: "Render with comrak, a port of cmark-gfm, with its autolink extension on, and walk its tree to keep every link safe."
+  - key: 01a203d2-f2c4-75fe-9412-7565d69123e1
+    title: "pulldown-cmark with a second parse"
+    description: "Keep pulldown-cmark, find each address in the source as cmark-gfm does, stand a private-use character in for it, parse again and turn each stand-in into a link."
+  - key: 01a203d2-f2c4-75fe-9412-7566501e7eb4
+    title: "pulldown-cmark, linked after the parse"
+    description: "Keep pulldown-cmark and link each address found in the parsed text."
+assessments:
+  - option: 01a203d2-f2c4-75fe-9412-7564158bdf6c
+    driver: 01a203d2-f2c4-75fe-9412-756052af8887
+    rating: supports
+    rationale: "cmark-gfm's own autolink rules, ported"
+  - option: 01a203d2-f2c4-75fe-9412-7564158bdf6c
+    driver: 01a203d2-f2c4-75fe-9412-7561633e0968
+    rating: supports
+    rationale: "a walk over the tree of some tens of lines"
+  - option: 01a203d2-f2c4-75fe-9412-7564158bdf6c
+    driver: 01a203d2-f2c4-75fe-9412-75628a68ba49
+    rating: supports
+    rationale: "the walk unwraps a link to any other address, and comrak escapes HTML"
+  - option: 01a203d2-f2c4-75fe-9412-7564158bdf6c
+    driver: 01a203d2-f2c4-75fe-9412-75631a659859
+    rating: conflicts
+    rationale: "comrak and 16 crates new to the workspace"
+  - option: 01a203d2-f2c4-75fe-9412-7565d69123e1
+    driver: 01a203d2-f2c4-75fe-9412-756052af8887
+    rating: neutral
+    rationale: "cmark-gfm's rules restated, but an address whose stand-in changes the parse stays text"
+  - option: 01a203d2-f2c4-75fe-9412-7565d69123e1
+    driver: 01a203d2-f2c4-75fe-9412-7561633e0968
+    rating: conflicts
+    rationale: "some 470 lines of two parses, stand-ins and a fallback by halves"
+  - option: 01a203d2-f2c4-75fe-9412-7565d69123e1
+    driver: 01a203d2-f2c4-75fe-9412-75628a68ba49
+    rating: supports
+    rationale: "every link still passes the page's filter"
+  - option: 01a203d2-f2c4-75fe-9412-7565d69123e1
+    driver: 01a203d2-f2c4-75fe-9412-75631a659859
+    rating: supports
+    rationale: "no new crate"
+  - option: 01a203d2-f2c4-75fe-9412-7566501e7eb4
+    driver: 01a203d2-f2c4-75fe-9412-756052af8887
+    rating: conflicts
+    rationale: "an `_`, `*` or `~` within an address has already become emphasis"
+  - option: 01a203d2-f2c4-75fe-9412-7566501e7eb4
+    driver: 01a203d2-f2c4-75fe-9412-7561633e0968
+    rating: supports
+    rationale: "an adapter over the parsed events"
+  - option: 01a203d2-f2c4-75fe-9412-7566501e7eb4
+    driver: 01a203d2-f2c4-75fe-9412-75628a68ba49
+    rating: supports
+    rationale: "every link still passes the page's filter"
+  - option: 01a203d2-f2c4-75fe-9412-7566501e7eb4
+    driver: 01a203d2-f2c4-75fe-9412-75631a659859
+    rating: supports
+    rationale: "no new crate"
+consequences:
+  - key: 01a203d2-f2c4-75fe-9412-756762be3812
+    kind: benefit
+    statement: "A bare address is linked as GitHub links it, with no autolink parser of the page's own."
+  - key: 01a203d2-f2c4-75fe-9412-75688278dd8d
+    kind: cost
+    statement: "The workspace holds two Markdown parsers, and the page draws tables, task lists and footnotes as comrak draws them."
+  - key: 01a203d2-f2c4-75fe-9412-75690c084453
+    kind: obligation
+    statement: "A new version of comrak is taken only once the criteria of bare addresses still pass on it."
+subjects:
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eb213cfb9073
+  - role: outcome
+    node: 01a1f804-56bc-77a4-94e6-7487be7d4205
