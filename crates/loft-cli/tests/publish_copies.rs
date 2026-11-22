@@ -10,7 +10,7 @@ use software_plant::remote::{Remote, RemoteScenario};
 use software_plant::{BrowserScenario, Clock, InstalledBrowser};
 
 use crate::common::connected::{Connected, connected, paths};
-use crate::common::others::{COPY, list, shelves, shelves_remote};
+use crate::common::others::{COPY, list, shelves, shelves_remote, shelves_scenario};
 use crate::common::signed_in::{self, document, granted, keep, sign_ins};
 use crate::common::{EPOCH, stderr, tree};
 
@@ -146,11 +146,7 @@ fn a_publish_without_a_sign_in_to_a_copys_remote_is_refused_before_anything_is_s
 #[test]
 fn a_publish_whose_sign_in_to_a_copys_remote_has_lapsed_is_refused_before_anything_is_sent() {
     let history = shelves();
-    let other = Remote::start(
-        RemoteScenario::accepting(&history.key)
-            .holding("Shelves", history.states.clone())
-            .lapsing(),
-    );
+    let other = Remote::start(shelves_scenario(&history).lapsing());
     let (run, other) = holding_a_copy_at(other);
     let kept = json!({
         run.remote.address(): granted(&run.remote, 3600),

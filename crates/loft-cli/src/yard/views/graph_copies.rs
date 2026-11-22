@@ -14,10 +14,11 @@ use serde_json::{Value, json};
 
 use super::words;
 
-/// Each copy of `document`, by its handle and its Interface's key.
-fn by_pin(document: &Document) -> BTreeMap<(String, Key), &Copy> {
+/// Each copy of `document`, by its Interface's key, which the diagram and the diff mark it by,
+/// whatever handle the document lists the other document under.
+fn by_interface(document: &Document) -> BTreeMap<Key, &Copy> {
     (document.copies.iter())
-        .map(|copy| ((copy.handle.to_string(), copy.key()), copy))
+        .map(|copy| (copy.key(), copy))
         .collect()
 }
 
@@ -36,18 +37,18 @@ pub(super) struct Copies<'a> {
 
 impl<'a> Copies<'a> {
     pub fn of(base: &'a Document, document: &'a Document) -> Self {
-        let (then, now) = (by_pin(base), by_pin(document));
+        let (then, now) = (by_interface(base), by_interface(document));
         let added = (now.iter())
-            .filter(|(pin, _)| !then.contains_key(*pin))
+            .filter(|(key, _)| !then.contains_key(*key))
             .map(|(_, copy)| *copy)
             .collect();
         let removed = (then.iter())
-            .filter(|(pin, _)| !now.contains_key(*pin))
+            .filter(|(key, _)| !now.contains_key(*key))
             .map(|(_, copy)| *copy)
             .collect();
         let moved = (now.iter())
-            .filter_map(|(pin, after)| {
-                let before = *then.get(pin)?;
+            .filter_map(|(key, after)| {
+                let before = *then.get(key)?;
                 (before.bytes != after.bytes).then_some(Moved { before, after })
             })
             .collect();
@@ -80,8 +81,9 @@ impl<'a> Copies<'a> {
         marks
     }
 
-    /// The publish sequence of each added, removed and moved copy's pin before and after, by its
-    /// Interface's key, for its entry in the diff.
+    /// The publish sequence of each added and removed copy's pin, and of each moved copy's pin
+    /// before and after where the move changed it, by its Interface's key, for its entry in the
+    /// diff.
     pub fn pins(&self) -> BTreeMap<Key, Value> {
         let pin = |before: Option<&Copy>, after: Option<&Copy>| {
             json!({
@@ -91,12 +93,14 @@ impl<'a> Copies<'a> {
         };
         let added = (self.added.iter()).map(|copy| (copy.key(), pin(None, Some(copy))));
         let removed = (self.removed.iter()).map(|copy| (copy.key(), pin(Some(copy), None)));
-        let moved = (self.moved.iter()).map(|moved| {
-            (
-                moved.after.key(),
-                pin(Some(moved.before), Some(moved.after)),
-            )
-        });
+        let moved = (self.moved.iter())
+            .filter(|moved| moved.before.publish_sequence != moved.after.publish_sequence)
+            .map(|moved| {
+                (
+                    moved.after.key(),
+                    pin(Some(moved.before), Some(moved.after)),
+                )
+            });
         added.chain(removed).chain(moved).collect()
     }
 }
@@ -136,8 +140,9 @@ pub(super) fn other_documents(base: &Document, document: &Document) -> Vec<Value
 /// The Interfaces that a Component of `document` gained in its `provides` or `requires` against
 /// `base`, of the document or of a copy.
 pub(super) fn gained_interfaces(base: &Document, document: &Document) -> BTreeSet<Key> {
-    (document.edges.iter())
-        .filter(|edge| !base.edges.contains(edge))
+    let had: Vec<&Edge> = promises(base).collect();
+    promises(document)
+        .filter(|edge| !had.contains(edge))
         .filter_map(|edge| match *edge {
             Edge::Provides { interface, .. } | Edge::Requires { interface, .. } => {
                 Some(interface.key())
@@ -145,4 +150,10 @@ pub(super) fn gained_interfaces(base: &Document, document: &Document) -> BTreeSe
             _ => None,
         })
         .collect()
+}
+
+/// The `provides` and `requires` edges of `document`, few beside its other edges.
+fn promises(document: &Document) -> impl Iterator<Item = &Edge> {
+    (document.edges.iter())
+        .filter(|edge| matches!(edge, Edge::Provides { .. } | Edge::Requires { .. }))
 }

@@ -220,3 +220,47 @@ fn the_diff_lists_an_entry_of_documents_readdressed_with_its_addresses_before_an
     assert_eq!(listed["words"]["before"], OTHER_REMOTE, "{listed}");
     assert_eq!(listed["words"]["after"], moved, "{listed}");
 }
+
+/// The keys of the diff's entries.
+fn listed(graph: &Value) -> Vec<String> {
+    (graph["diff"].as_array().unwrap().iter())
+        .map(|entry| entry["key"].as_str().unwrap().to_owned())
+        .collect()
+}
+
+#[test]
+fn a_copy_that_moved_to_another_handle_at_the_same_pin_is_neither_added_nor_removed() {
+    let mut yard = Yard::with_spec();
+    copy_lookup(&yard.scratch);
+    yard.rebased();
+    let documents = yard.scratch.file("documents");
+    fs::rename(documents.join(HANDLE), documents.join("stock")).unwrap();
+    let handle = format!("handle: {HANDLE}\n");
+    yard.scratch
+        .edit("loftspec.yaml", &handle, "handle: stock\n");
+    let graph = diagram(&yard);
+    let keys = listed(&graph);
+    assert!(!keys.contains(&LOOKUP.to_owned()), "{keys:?}");
+    assert_eq!(
+        entry(&graph, &format!("document:{HANDLE}"))["change"],
+        "removed"
+    );
+    assert_eq!(entry(&graph, "document:stock")["change"], "added");
+}
+
+#[test]
+fn a_copy_whose_bytes_changed_at_the_same_pin_is_changed_with_no_pin_in_the_diff() {
+    let mut yard = Yard::with_spec();
+    copy_lookup(&yard.scratch);
+    pin_at(&yard, 1);
+    yard.rebased();
+    let text = fs::read_to_string(yard.scratch.file(COPY)).unwrap();
+    let root = (text.lines())
+        .find_map(|line| line.strip_prefix("stateRoot: "))
+        .unwrap();
+    yard.scratch.edit(COPY, root, &"cd".repeat(32));
+    let graph = diagram(&yard);
+    let lookup = entry(&graph, LOOKUP);
+    assert_eq!(lookup["change"], "changed", "{lookup}");
+    assert!(lookup.get("pin").is_none(), "{lookup}");
+}

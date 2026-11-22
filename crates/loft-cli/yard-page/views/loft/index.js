@@ -52,11 +52,13 @@ export function chip(word, tone) {
 
 /**
  * A label in monospace, apart from the name beside it, after a square in the color of its node's
- * kind, which its prefix names, as Loft Web marks a node.
+ * kind, which its prefix names, as Loft Web marks a node. A node of another document's Interface
+ * is labeled after the handle of its copy, `shelves:IF-1`, whose prefix follows the colon.
  * @param {string} label
  */
 export function tag(label) {
-  return h('span', { class: ['label', `label--${label.split('-')[0].toLowerCase()}`] }, label);
+  const prefix = label.slice(label.indexOf(':') + 1).split('-')[0];
+  return h('span', { class: ['label', `label--${prefix.toLowerCase()}`] }, label);
 }
 
 /**

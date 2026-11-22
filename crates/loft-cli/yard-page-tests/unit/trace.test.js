@@ -162,6 +162,13 @@ test('each kind of node has a square of its own color before its label', () => {
   assert.equal(colors.size, Object.keys(kinds).length, 'each kind has a color of its own');
 });
 
+test('a label of another document’s node takes the color of its kind, after the handle of its copy', () => {
+  for (const [label, prefix] of [['shelves:IF-1', 'if'], ['shelf-store:AC-2', 'ac']]) {
+    const tag = drawn(named({ label, name: 'A node' })).querySelector('.label');
+    assert.deepEqual([...tag.classList], ['label', `label--${prefix}`]);
+  }
+});
+
 test('a criterion’s state comes from its own tests and rules, though the report’s lists left them out', () => {
   const none = new Map();
   const test = { file: 'tests/share.rs', name: 'an_edit_is_refused', locations: [{ firstLine: 12 }] };

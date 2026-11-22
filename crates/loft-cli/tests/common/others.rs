@@ -141,9 +141,12 @@ pub fn rekeyed() -> History {
 
 /// A remote of the other document that holds `history`.
 pub fn shelves_remote(history: &History) -> Remote {
-    Remote::start(
-        RemoteScenario::accepting(&history.key).holding("Shelves", history.states.clone()),
-    )
+    Remote::start(shelves_scenario(history))
+}
+
+/// The scenario of [`shelves_remote`], for a test that changes how it answers.
+pub fn shelves_scenario(history: &History) -> RemoteScenario {
+    RemoteScenario::accepting(&history.key).holding("Shelves", history.states.clone())
 }
 
 /// Marks the tree of `scratch` connected to [`OWN_REMOTE`] and, where `listed`, lists the other

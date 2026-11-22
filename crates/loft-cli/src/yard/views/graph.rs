@@ -4,9 +4,8 @@
 //! `requires` and subject edges between them, with the copies of other documents' Interfaces that
 //! the change touches. A decision whose subjects changed is changed, and draws its subject edges
 //! as its own document holds them, so that a subject it lost has no edge. Beside the diagram, the
-//! diff
-//! gives the words of every added, changed and removed node and decision, before and after, and
-//! the subjects each decision gained and lost.
+//! diff gives the words of every added, changed and removed node and decision, before and after,
+//! and the subjects each decision gained and lost.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -49,9 +48,7 @@ impl Within<'_> {
     fn label(self, node: loftspec::ids::NodeId) -> Option<String> {
         match self {
             Self::Own(bindings) => bindings.label_of(node).map(|label| label.to_string()),
-            Self::Copy(copy) => {
-                (copy.labels.get(&node.key())).map(|label| format!("{}:{label}", copy.handle))
-            }
+            Self::Copy(copy) => Some(copy.name_of(node.key())),
         }
     }
 
@@ -135,8 +132,7 @@ pub fn report(base: &Document, document: &Document) -> Value {
     let lists = [&changes.added, &changes.changed, &changes.removed];
     let mut marked = marks(lists.map(Vec::as_slice));
     let pinned = Copies::of(base, document);
-    let pin_marks = pinned.marks();
-    marked.extend(pin_marks.clone());
+    marked.extend(pinned.marks());
     let decided = decision_changes(base, document);
     let mut gained: BTreeSet<Key> = (decided.subjects.values())
         .flat_map(|change| &change.gained)
@@ -170,7 +166,7 @@ pub fn report(base: &Document, document: &Document) -> Value {
         "nodes": nodes(&shown, &marked, &now, &then),
         "decisions": boxes,
         "edges": edges,
-        "diff": (diff(&lists, &pin_marks, &pinned.pins(), &now, &then).into_iter())
+        "diff": (diff(&marked, &pinned.pins(), &now, &then).into_iter())
             .chain(listed)
             .chain(other_documents(base, document))
             .collect::<Vec<_>>(),
@@ -228,37 +224,34 @@ pub fn labels(document: &Document) -> Value {
     json!(counts)
 }
 
-/// Every node added, changed and removed, the document's own as `lists` gives them and the
-/// copies' as `copied` marks them, with its words before and after, in the documents' order: the
-/// added and changed in the tree's, then the removed in the base's. A copy's Interface carries
-/// its pin's publish sequence before and after, as `pins` gives it.
+/// Every node added, changed and removed, the document's own and the copies', as `marked` gives
+/// them, with its words before and after, in the documents' order: the added and changed in the
+/// tree's, then the removed in the base's. A copy's Interface carries its pin's publish sequence
+/// before and after, as `pins` gives it.
 fn diff(
-    lists: &[&Vec<loftspec::ids::NodeId>; 3],
-    copied: &BTreeMap<Key, &'static str>,
+    marked: &BTreeMap<Key, &'static str>,
     pins: &BTreeMap<Key, Value>,
     now: &Walked,
     then: &Walked,
 ) -> Vec<Value> {
-    let own = (lists.iter().enumerate())
-        .flat_map(|(index, ids)| ids.iter().map(move |id| (id.key(), index)));
-    let from_pins = (copied.iter())
-        .filter_map(|(key, change)| Some((*key, CHANGES.iter().position(|is| is == change)?)));
-    let changed: BTreeMap<Key, usize> = own.chain(from_pins).collect();
-    let removed = then.order.iter().filter(|key| changed.get(key) == Some(&2));
-    let present = now.order.iter().filter(|key| changed.contains_key(key));
+    let is = |key: &Key, change: &str| marked.get(key) == Some(&change);
+    let present = (now.order.iter()).filter(|key| marked.contains_key(key) && !is(key, "removed"));
+    let removed = (then.order.iter()).filter(|key| is(key, "removed"));
     present
         .chain(removed)
         .filter_map(|key| {
-            let index = changed[key];
-            let before = (index > 0).then(|| then.entries.get(key)).flatten();
-            let after = (index < 2).then(|| now.entries.get(key)).flatten();
+            let change = marked[key];
+            let before = (change != "added").then(|| then.entries.get(key)).flatten();
+            let after = (change != "removed")
+                .then(|| now.entries.get(key))
+                .flatten();
             let entry = after.or(before)?;
             let mut listed = json!({
                 "key": key.to_string(),
                 "kind": entry.kind.as_str(),
                 "label": entry.label,
                 "name": entry.name,
-                "change": CHANGES[index],
+                "change": change,
                 "words": words::pair(
                     before.map(|entry| entry.words.as_str()),
                     after.map(|entry| entry.words.as_str()),

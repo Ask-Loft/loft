@@ -14201,7 +14201,7 @@ links:
         body: 58fb3b1bc57f0998c11e4bb963bf0f3db16be64ab00c71658f9b362e187f3eb9
       - file: "crates/loft-cli/tests/publish_copies.rs"
         name: "a_publish_whose_sign_in_to_a_copys_remote_has_lapsed_is_refused_before_anything_is_sent"
-        body: f3aaaa8e2a97feaa02eabd55068331e8aad71c818f33e88e175923b5161e2270
+        body: bde5318b490c319f4f0279ea74224f126c1406268edd680bd60670eb9f6b9181
   - node: 01a1f981-4db0-72b8-8a39-a6e7b8094995
     reviewed: 853a3d9466ee7280c202f67a58b52350285817ea449efae72b09f2d0e3ff98fb
     tests:
@@ -33843,6 +33843,9 @@ links:
   - node: 01a2046e-409d-70db-9f5b-3d4595199a58
     reviewed: 95b12403a6adec46f7b2e4a6b766634a59412247ad81d063eaf3f8783d7f746e
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trace.test.js"
+        name: "a label of another document’s node takes the color of its kind, after the handle of its copy"
+        body: b98e8c292ed259734e049d0c5b39031911c847c5ad4238ae4b7a3195b412beca
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a panel of another document’s Interface is marked by the copy’s handle, and one of the document’s own is not"
         body: 7a49e934c8c01dcd9a4460bcecbb84219b89639f5c8016f3c753c426c42c47d1
@@ -33858,6 +33861,9 @@ links:
   - node: 01a2046e-409d-70db-9f5b-3d4605e7ddfb
     reviewed: 6cb986d0fb831faf645f3b1ac193461432f5e504a28e7d3738a3323b86616547
     tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_copy_that_moved_to_another_handle_at_the_same_pin_is_neither_added_nor_removed"
+        body: 978094bc93630deecbd95dc9c5a60a03ab1a9d5278684c222389ff03d29fe2fa
       - file: "crates/loft-cli/tests/yard_view_documents.rs"
         name: "a_copy_added_or_removed_draws_its_interface_added_or_removed"
         body: 57977ac65a31468842f382e8e0dad205f65324e57a52544a27cdd3ea5fa6fcaf
@@ -34134,6 +34140,9 @@ links:
   - node: 01a2046e-409d-70db-9f5b-3d48e88714d0
     reviewed: 0d29b35e229430f1a97ab8657619e8204067ab19db43674858590876bb3ec9a8
     tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_copy_whose_bytes_changed_at_the_same_pin_is_changed_with_no_pin_in_the_diff"
+        body: f9d6da48ac47ee744861dc8c9741465f43e443afcf3402cbecfd64a143774279
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a copy’s entry in the diff gives the publish sequence of its pin before and after"
         body: 3b9d0bbbd4e1d543ce9398296dacf5eb45e31635a6e56fa8b9e918d02ac85a26
@@ -34146,6 +34155,9 @@ links:
   - node: 01a2046e-409d-70db-9f5b-3d49257335de
     reviewed: f3e371511bcd4819978cc830be09bed2f02aba77138ccfb46129a76616ee214e
     tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_copy_that_moved_to_another_handle_at_the_same_pin_is_neither_added_nor_removed"
+        body: 978094bc93630deecbd95dc9c5a60a03ab1a9d5278684c222389ff03d29fe2fa
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "an entry of documents shows its handle and its address before and after"
         body: 43eb7ec1255d0cf9d73ac6a7bfb65f66e0da94f72d3b44d6618301ca12103dac
