@@ -160,6 +160,8 @@ impl<'a> Side<'a> {
             mentions: self.written.mentions(id),
             realizes: self.written.realizes(id),
             scoped_to: self.written.scoped_to(id),
+            provides: self.written.provides(id),
+            requires: self.written.requires(id),
             change: self.change(id),
             from_base: self.which == Which::Base,
         }

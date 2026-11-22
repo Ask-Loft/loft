@@ -208,7 +208,7 @@
       }
     },
     "node": {
-      "description": "A node: its key, label, kind and site, its name, its own content view, the keys of the elements it mentions in the order of their keys, for a Feature the keys of the Components it realizes and for a Component the keys of the Products it is scoped to, each in the order of their keys, and its change against the base, `null` where it has none or no base is given.",
+      "description": "A node: its key, label, kind and site, its name, its own content view, the keys of the elements it mentions in the order of their keys, for a Feature the keys of the Components it realizes and for a Component the keys of the Products it is scoped to and of the Interfaces it provides and requires, each in the order of their keys, and its change against the base, `null` where it has none or no base is given.",
       "oneOf": [
         {
           "type": "object",
@@ -300,6 +300,8 @@
             "view",
             "mentions",
             "scopedTo",
+            "provides",
+            "requires",
             "change"
           ],
           "properties": {
@@ -343,6 +345,18 @@
               }
             },
             "scopedTo": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "provides": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "requires": {
               "type": "array",
               "items": {
                 "type": "string"

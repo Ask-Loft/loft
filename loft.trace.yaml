@@ -11877,6 +11877,15 @@ links:
       - file: "crates/loft-cli/tests/review.rs"
         name: "a_feature_carries_its_realizes_and_a_component_its_scoped_to"
         body: 9bdf2343279404be7b2c418ca1cf8f9e02360bb991a75530d15af2cd127de172
+  - node: 01a2040b-aaf9-7053-8178-38b2ae00f181
+    reviewed: 375f092e2cff7023d48ba8cbe9f56a63f6f1af6fb1a0f389f81aab89a5f0f138
+    tests:
+      - file: "crates/loftspec/tests/review_interfaces.rs"
+        name: "each_component_carries_the_interfaces_it_provides_and_requires_in_key_order"
+        body: 15d85b60e246a8b0b3a3393bf74f66a10918862921006ff0cb881d525ffc438f
+      - file: "crates/loft-cli/tests/interfaces.rs"
+        name: "a_reviewed_component_carries_the_interfaces_it_provides_and_requires"
+        body: b60c5d0ae1fc73459191e22f83077e849884be0a6344424b10b8b4c1d45fe96a
   - node: 01a154b0-f757-7647-acce-6beae7b5291a
     reviewed: f466581561428f5834e11d077feb86a1313f598caa96c4fae6301ac05d4b5704
     tests:
@@ -11983,8 +11992,17 @@ links:
         name: "an_assertion_that_moved_and_changed_its_mentions_is_changed"
         body: be73833da6b0cc692af4fbcca5e4eb97ebfa8b5ae2a32bc5335ea99ada7f7d68
   - node: 01a203de-a777-77f7-bb30-2585faed29fb
-    reviewed: c1373c2b7b3a476d2105f27a1bcab76fb4c8e06e64ddca9866aef14dc56213f5
+    reviewed: e98018b5f6d23eb7516750fc9f414817a673d6ade50a8270c18e37cb961a3880
     tests:
+      - file: "crates/loftspec/tests/review_interfaces.rs"
+        name: "a_realized_component_whose_provides_alone_differ_is_changed"
+        body: 99a392863131a5a912e2fcb519e57b2c5c74d5ec433183f07cfdd48120935086
+      - file: "crates/loftspec/tests/review_interfaces.rs"
+        name: "a_realized_component_whose_requires_alone_differ_is_changed"
+        body: d5b1089479dd1426189cedbbb29ca330c2fe103b2201a84ffd342d6f872fd90a
+      - file: "crates/loftspec/tests/review_interfaces.rs"
+        name: "a_realized_component_whose_interfaces_are_the_base_s_is_unchanged"
+        body: cfd3f4f827035532cd11d0bf12caaf49169104f709ca9e73db71d73d9c5444c0
       - file: "crates/loftspec/tests/review_edges.rs"
         name: "a_scope_whose_realizes_alone_differ_is_changed"
         body: 2e4c1eb5871b3e804d3165c0636a4df82fbf3fba1b1ab12cdb1b843f2df43a49
