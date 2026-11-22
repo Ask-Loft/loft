@@ -11773,7 +11773,7 @@ links:
         name: "an_added_assertion_is_reviewed_with_nothing_before_it"
         body: 9fb8a1cf5fe0ae0a7f3aefb440bae024c89adbb69274a8a1a35fbf424a858746
   - node: 01a154b0-f757-7647-acce-6bf86ced5501
-    reviewed: 08d3b5e2ef788cdc0b915307ee3e3fd45151004aad16d74198c7fc0f65d1e4f9
+    reviewed: cb5d405cf02355045f46be687a9aba7523165398d8f2540cb40616e150b7525c
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "with_a_base_only_a_changed_assertion_is_reviewed_beside_the_base_s_node"
@@ -11781,8 +11781,11 @@ links:
       - file: "crates/loft-cli/tests/review.rs"
         name: "against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node"
         body: a7f355d09373dadfabfb13e9c57181412002499e684f2cb455bc389edb220981
+      - file: "crates/loftspec/tests/review.rs"
+        name: "an_assertion_whose_mentions_alone_differ_is_reviewed_as_changed"
+        body: ce27f1f1fe94fce43aaf6cd8fb939b4957200c68cea29ea7d3a633903bbd923b
   - node: 01a154b0-f757-7647-acce-6bf980680196
-    reviewed: 54ca177b323c19abd9f5b658574bab7d2e00965baa9111d4e73b696d042cf700
+    reviewed: 6095dc3df9f145476d2d4e3c0e21c2a1fe0b034bd40320e2131deabfa59c5c62
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node"
@@ -11793,6 +11796,9 @@ links:
       - file: "crates/loftspec/tests/diff.rs"
         name: "a_node_that_moved_and_changed_is_changed_and_not_moved"
         body: 38a5b0b61cffe52777aa08dc983ce0343d59cb9cfc6732cd1879188505da880c
+      - file: "crates/loftspec/tests/review.rs"
+        name: "an_assertion_that_moved_and_changed_its_mentions_is_changed"
+        body: 1f0fcd559de10b8cd09206c3ddb44802f298605e1a1984f8b7dce4ca2fdd364a
   - node: 01a154b0-f757-7647-acce-6bfa7e8f4371
     reviewed: 1d4add0061db44c4835c047deb506e5d92d1bf7cda2531829198b98ebc36d784
     tests:

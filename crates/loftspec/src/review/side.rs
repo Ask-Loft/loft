@@ -1,7 +1,8 @@
 //! The two sides a review reads: the tree, and the base it is compared with. Each side is read
-//! once: its index, its nodes by key with their own content views and their order, each node's
-//! change, the links of its decisions and the Components each Feature realizes; the holders a
-//! unit gives are made once each and then reused.
+//! once: its index, its nodes by key with their own content views, the edges each one's record
+//! writes and their order, each node's change, the links of its decisions and the Components each
+//! Feature realizes; the holders a unit gives are made once each and then reused. A node changed
+//! where its own content or the edges its record writes differ, as the diff tells it.
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -49,7 +50,7 @@ impl<'a> Side<'a> {
                 nodes.insert(id, node);
             }
         });
-        let keyed = Keyed::of(document);
+        let keyed = Keyed::compared(document);
         let ordinals = keyed
             .order
             .iter()

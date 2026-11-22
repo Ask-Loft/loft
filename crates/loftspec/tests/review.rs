@@ -326,6 +326,35 @@ fn a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node() {
 }
 
 #[test]
+fn an_assertion_whose_mentions_alone_differ_is_reviewed_as_changed() {
+    let mut document = small_document();
+    document
+        .edges
+        .retain(|edge| !matches!(edge, Edge::Mentions { source, .. } if source.key() == key(5)));
+    let packet = packed(&document, Some(&small_document()), None);
+    assert_eq!(outline(&packet), [(key(3), ns(&[5]))]);
+    let assertion = &unit(&packet, 3).assertions[0];
+    assert_eq!(assertion.change, Some(Change::Changed));
+    assert!(assertion.before.is_some());
+}
+
+#[test]
+fn an_assertion_that_moved_and_changed_its_mentions_is_changed() {
+    let mut document = small_document();
+    let product = &mut document.products[0];
+    let moved = product.feature_groups[0].constraints.remove(0);
+    product.constraints.push(moved);
+    document.edges.push(Edge::Mentions {
+        source: ConstraintId::new(key(9)).into(),
+        target: loftspec::ids::RequirementId::new(key(4)).into(),
+    });
+    let packet = packed(&document, Some(&small_document()), None);
+    assert_eq!(outline(&packet), [(key(1), ns(&[9]))]);
+    let assertion = &unit(&packet, 1).assertions[0];
+    assert_eq!(assertion.change, Some(Change::Changed));
+}
+
+#[test]
 fn a_removed_assertion_lands_in_the_unit_of_its_scope_at_the_base() {
     let mut document = small_document();
     document.products[0].feature_groups[0].features[0].requirements[0]

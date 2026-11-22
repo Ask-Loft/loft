@@ -90,7 +90,7 @@ impl Keyed {
     /// a Feature's `realizes`, a Component's `scopedTo` and any node's `mentions`. The content
     /// view leaves edges to the edges root, but the record writes these, so a change to them
     /// changes the node.
-    fn compared(document: &Document) -> Self {
+    pub(crate) fn compared(document: &Document) -> Self {
         let mut keyed = Self::of(document);
         keyed.written = (written(document).into_iter())
             .filter_map(|(from, edges)| match from {
