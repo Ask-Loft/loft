@@ -1,14 +1,16 @@
 //! What `loft interface` says when another document's remote refuses it: an address that may not
-//! be a document's remote, given by `--remote` or by the handle's entry of `documents`, and a
-//! sign-in the remote refuses. Each error gives what mends it in the words of `loft interface` and
-//! of the manifest, and names no `loft remote` command.
+//! be a document's remote, given by `--remote` or by the handle's entry of `documents`; a sign-in
+//! the remote refuses, which `add` and `update` make afresh; one that has lapsed or is kept for
+//! another origin; and a remote that holds no such document. Each error gives what mends it in
+//! the words of `loft interface` and of the manifest, and names no `loft remote` command.
 
 use serde_json::json;
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::BrowserScenario;
+use software_plant::remote::{Remote, RemoteScenario, document_address};
 
 use crate::common::copies::{HANDLE, OTHER};
 use crate::common::others::{list, listing, shelves, shelves_remote};
-use crate::common::signed_in::{granted, keep};
+use crate::common::signed_in::{self, granted, keep, sign_ins};
 use crate::common::{Scratch, stderr};
 use crate::interface_add::{conforming, interface, ready};
 
@@ -72,44 +74,111 @@ fn a_login_at_a_listed_address_that_is_no_document_s_remote_points_at_its_entry(
     assert!(!message.contains("loft remote"), "{message}");
 }
 
-/// A remote of the other document that refuses every request's sign-in.
-fn refusing(key: &str) -> Remote {
-    Remote::start(RemoteScenario::failing(key, 401, Some("unauthenticated")))
+/// Keeps a sign-in to `remote` whose access token the remote never granted, so that it refuses
+/// it, under `address`.
+fn keep_stale(scratch: &Scratch, remote: &Remote, address: &str) {
+    let mut stale = granted(remote, 3600);
+    stale["accessToken"] = json!("never-granted");
+    keep(scratch, &json!({ address: stale }));
 }
 
-/// Asserts that `message` says `loft interface login` signs in again and names no `loft remote`
-/// command.
-fn assert_login_again(message: &str) {
+/// Runs `loft interface` with `args` and a browser that consents, and gives the output and the
+/// number of addresses the browser was given.
+fn consenting(scratch: &Scratch, args: &[&str]) -> (std::process::Output, usize) {
+    let mut all = vec!["interface"];
+    all.extend(args);
+    let (output, browser) = signed_in::run(scratch, &all, BrowserScenario::Visiting, None);
+    (output, browser.visits().len())
+}
+
+#[test]
+fn an_add_whose_kept_sign_in_the_remote_refuses_signs_in_afresh_once_and_goes_on() {
+    for listed in [true, false] {
+        let history = shelves();
+        let remote = shelves_remote(&history);
+        let scratch = Scratch::with_reading_list();
+        listing(&scratch, &remote, listed);
+        keep_stale(&scratch, &remote, &remote.address());
+        let address = remote.address();
+        let mut args = vec!["add", "shelves:IF-1"];
+        if !listed {
+            args.extend(["--remote", &address]);
+        }
+        let (output, visits) = consenting(&scratch, &args);
+        assert_eq!(
+            output.status.code(),
+            Some(0),
+            "{listed}: {}",
+            stderr(&output)
+        );
+        assert_eq!(visits, 1, "{listed}: one sign-in");
+        let kept = &sign_ins(&scratch)[&address]["accessToken"];
+        assert_ne!(kept, "never-granted", "{listed}: the new sign-in is kept");
+    }
+}
+
+#[test]
+fn an_update_whose_kept_sign_in_the_remote_refuses_signs_in_afresh_once_and_goes_on() {
+    let (scratch, _history, remote) = ready(true);
+    let output = interface(&scratch, &["add", "shelves:IF-1"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    keep_stale(&scratch, &remote, &remote.address());
+    let (output, visits) = consenting(&scratch, &["update"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    assert_eq!(visits, 1);
+}
+
+#[test]
+fn a_status_whose_kept_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again() {
+    let (scratch, _history, remote) = ready(true);
+    let output = interface(&scratch, &["add", "shelves:IF-1"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    keep_stale(&scratch, &remote, &remote.address());
+    let message = refused(&scratch, &["status"]);
+    assert!(message.contains("answered 401"), "{message}");
     let login = format!("`loft interface login {HANDLE}` signs in again");
     assert!(message.contains(&login), "{message}");
-    assert!(message.contains("answered 401"), "{message}");
     assert!(!message.contains("loft remote"), "{message}");
 }
 
 #[test]
-fn an_add_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again() {
-    let history = shelves();
-    let remote = refusing(&history.key);
-    let scratch = Scratch::with_reading_list();
-    listing(&scratch, &remote, true);
-    assert_login_again(&refused(&scratch, &["add", "shelves:IF-1"]));
+fn a_status_whose_sign_in_is_kept_for_another_origin_says_where_the_address_lies() {
+    let (scratch, _history, remote) = ready(true);
+    let output = interface(&scratch, &["add", "shelves:IF-1"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let mut elsewhere = granted(&remote, 3600);
+    elsewhere["resource"] = json!("https://elsewhere.example/loft/t/plant/api/v2/documents");
+    keep(&scratch, &json!({ remote.address(): elsewhere }));
+    let message = refused(&scratch, &["status"]);
+    assert!(message.contains("another origin"), "{message}");
+    assert!(
+        message.contains(&format!("the entry of `documents` for {HANDLE}")),
+        "{message}"
+    );
+    let login = format!("`loft interface login {HANDLE}` signs in again once");
+    assert!(message.contains(&login), "{message}");
+    assert!(!message.contains("loft remote"), "{message}");
 }
 
 #[test]
-fn a_status_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again() {
-    let (scratch, history, remote) = ready(true);
-    let output = interface(&scratch, &["add", "shelves:IF-1"]);
-    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
-    let refusing = refusing(&history.key);
-    scratch.edit("loftspec.yaml", &remote.address(), &refusing.address());
-    keep(
-        &scratch,
-        &json!({ refusing.address(): granted(&refusing, 3600) }),
+fn an_add_of_an_unlisted_handle_whose_remote_holds_no_such_document_names_remote() {
+    let history = shelves();
+    let remote = shelves_remote(&history);
+    let scratch = Scratch::with_reading_list();
+    listing(&scratch, &remote, false);
+    let address = document_address(remote.origin(), UNHELD);
+    keep(&scratch, &json!({ &address: granted(&remote, 3600) }));
+    let message = refused(&scratch, &["add", "shelves:IF-1", "--remote", &address]);
+    assert!(message.contains("holds no such document"), "{message}");
+    assert!(
+        message.contains("the address `--remote` gives"),
+        "{message}"
     );
-    for command in ["status", "update"] {
-        assert_login_again(&refused(&scratch, &[command]));
-    }
+    assert!(!message.contains("`documents`"), "{message}");
 }
+
+/// The key of a document the other document's remote does not hold.
+const UNHELD: &str = "00000000-0000-4000-8000-000000000999";
 
 #[test]
 fn a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again() {

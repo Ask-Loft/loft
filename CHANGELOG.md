@@ -19,7 +19,9 @@ Unreleased below, and those of each 2.4 release still to come.
   section and lists each Component's `provides` and `requires`; `loft find`, `loft status`,
   `loft review` and a `spec-change` view on the Yard page take them as they take every other kind.
 - `loft review --format json` follows the schema `loft-review/3`, whose node kinds add
-  `interface` to those of `loft-review/2`, and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
+  `interface` to those of `loft-review/2` and whose Component carries `provides` and
+  `requires`, the keys of the Interfaces it provides and requires, a change to which alone marks
+  it `changed`; and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
   `V2-013`. The output is otherwise as it was.
 - A connected document can link to an Interface of another connected document. The manifest's
   `documents` lists the other document under a handle of the document's own choosing, with the
@@ -42,6 +44,12 @@ Unreleased below, and those of each 2.4 release still to come.
   lists another document, `loft reconcile` takes in the criteria of a copied Interface that a
   Component provides, named and accepted as `<handle>:<label>`, and `V2-003` checks a citation
   `<handle>:<label>` against the copies.
+- When another document's remote refuses `loft interface`, the error says what mends it in
+  `loft interface`'s own words, never a `loft remote` command: an address that may not be a
+  document's remote gives that document's address form and points at its entry of `documents`,
+  or at `--remote` before it is listed, and a refused, lapsed or misplaced sign-in names
+  `loft interface login <handle>`. `loft interface add` and `loft interface update` sign the
+  person in afresh, once, where the remote refuses the sign-in kept for its address.
 
 ## 2.4.1-alpha.3 (2026-11-20)
 

@@ -12,40 +12,47 @@ use loftspec::slug::Slug;
 use super::refused;
 use crate::remote::head::{self, Head};
 use crate::remote::states::{self, StateError};
-use crate::remote::{self, Client, RemoteError, SignIn};
+use crate::remote::{self, Client, Remedy, RemoteError, SignIn};
 use crate::stop::Stop;
 
-/// `error` from the remote of the other document listed under `handle`, in the words of
-/// `loft interface`: a sign-in to it is made by `loft interface login`, never `loft remote`.
-pub(super) fn reached(error: RemoteError, handle: &Slug) -> Stop {
-    let login = format!("`loft interface login {handle}`");
-    match error {
-        RemoteError::NoSignIn { address } => refused(format!(
-            "no sign-in to {address} for {handle}: {login} signs in"
-        )),
-        RemoteError::Lapsed { address, error } => refused(format!(
-            "the sign-in to {address} for {handle} has lapsed ({error}): {login} signs in again"
-        )),
-        RemoteError::SignInElsewhere { address, resource } => refused(format!(
-            "the sign-in kept under {address} for {handle} is for a protected resource on \
-             another origin, {resource}: {login} signs in again"
-        )),
-        RemoteError::Refused { address, refusal } => {
-            Stop::one("remote", format!("{address}: {}", refusal.said(&login)))
-        }
-        error => error.into(),
+/// The other document a command reaches: its handle, and whether `documents` lists it, as it
+/// does unless `loft interface add` lists it for the first time.
+#[derive(Debug, Clone, Copy)]
+pub(super) struct Other<'a> {
+    pub handle: &'a Slug,
+    pub listed: bool,
+}
+
+/// `error` from the remote of the document `other`, in the words of `loft interface`: a
+/// sign-in to it is made by `loft interface login`, never `loft remote`.
+pub(super) fn reached(error: RemoteError, other: Other<'_>) -> Stop {
+    let remedy = Remedy::Other {
+        handle: other.handle.as_str(),
+        listed: other.listed,
+    };
+    match (error.said(remedy), &error) {
+        (Some(said), RemoteError::Refused { .. }) => Stop::one("remote", said),
+        (Some(said), _) => refused(said),
+        (None, _) => error.into(),
     }
 }
 
-/// The publish sequence of the head of the remote `client` reaches.
-pub(super) fn head_sequence(client: &Client, handle: &Slug) -> Result<u64, Stop> {
+/// The publish sequence of the head of the remote `client` reaches, the remote of `other`.
+pub(super) fn head_sequence(client: &Client, other: Other<'_>) -> Result<u64, Stop> {
+    let handle = other.handle;
     let head = head::fetch(client, handle.as_str()).map_err(|error| match error {
-        RemoteError::NotHeld { .. } => refused(format!(
-            "{handle}: the remote at {} holds no such document; check the address `documents` \
-             lists under {handle}",
-            client.address()
-        )),
-        error => reached(error, handle),
+        RemoteError::NotHeld { .. } => {
+            let given = if other.listed {
+                format!("the address `documents` lists under {handle}")
+            } else {
+                "the address `--remote` gives".to_owned()
+            };
+            refused(format!(
+                "{handle}: the remote at {} holds no such document; check {given}",
+                client.address()
+            ))
+        }
+        error => reached(error, other),
     })?;
     match Head::read(&head) {
         Some(head) if head.sequence > 0 => Ok(head.sequence),
@@ -56,13 +63,17 @@ pub(super) fn head_sequence(client: &Client, handle: &Slug) -> Result<u64, Stop>
     }
 }
 
-/// The published state of `sequence` at the remote `client` reaches, the remote of the other
-/// document listed under `handle`, or none where it holds none.
-pub(super) fn state(client: &Client, handle: &Slug, sequence: u64) -> Result<Option<State>, Stop> {
+/// The published state of `sequence` at the remote `client` reaches, the remote of `other`, or
+/// none where it holds none.
+pub(super) fn state(
+    client: &Client,
+    other: Other<'_>,
+    sequence: u64,
+) -> Result<Option<State>, Stop> {
     match states::state(client, sequence) {
         Ok(taken) => Ok(Some(taken)),
         Err(StateError::Missing) => Ok(None),
-        Err(StateError::Remote(error)) => Err(reached(error, handle)),
+        Err(StateError::Remote(error)) => Err(reached(error, other)),
         Err(StateError::Disagrees(reason)) => Err(refused(reason)),
     }
 }
@@ -125,7 +136,7 @@ impl Remotes {
                 key: Some(&key),
             };
             let client = remote::other(&entry.remote, whose, self.sign_in)
-                .map_err(|error| reached(error, &entry.handle))?;
+                .map_err(|error| reached(error, listed(entry)))?;
             self.clients.insert(entry.handle.clone(), client);
         }
         Ok(&self.clients[&entry.handle])
@@ -136,7 +147,7 @@ impl Remotes {
         if let Some(head) = self.heads.get(&entry.handle) {
             return Ok(*head);
         }
-        let head = head_sequence(self.client(entry)?, &entry.handle)?;
+        let head = head_sequence(self.client(entry)?, listed(entry))?;
         self.heads.insert(entry.handle.clone(), head);
         Ok(head)
     }
@@ -151,7 +162,7 @@ impl Remotes {
     pub fn state(&mut self, entry: &OtherDocument, sequence: u64) -> Result<Option<&State>, Stop> {
         let key = (entry.handle.clone(), sequence);
         if !self.states.contains_key(&key) {
-            let taken = state(self.client(entry)?, &entry.handle, sequence)?;
+            let taken = state(self.client(entry)?, listed(entry), sequence)?;
             if let Some((_, lock)) = &taken
                 && lock.document_key != entry.key
             {
@@ -160,5 +171,13 @@ impl Remotes {
             self.states.insert(key.clone(), taken);
         }
         Ok(self.states[&key].as_ref())
+    }
+}
+
+/// The document `entry` lists, as a command reaches it.
+pub(super) fn listed(entry: &OtherDocument) -> Other<'_> {
+    Other {
+        handle: &entry.handle,
+        listed: true,
     }
 }

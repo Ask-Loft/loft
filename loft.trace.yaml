@@ -17362,8 +17362,14 @@ links:
         name: "login_keeps_a_sign_in_under_the_entrys_address_writes_no_tree_file_and_prints_no_token"
         body: 0c56f0088513df9f6bfc13a013cf5af32d6bfefc8f448655955a2622a510eb02
   - node: 01a1f981-4db0-72b8-8a39-a6e04cc92c07
-    reviewed: d7cec6cf5971e61f94e4ed38aed93dc44745fbd1c9a8fbeea377ce637940fe57
+    reviewed: 014f2e5fe4b8b40d3ceb891f5fc0294176ba4f69f22dd0b5aa1e43159bb5ce37
     tests:
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "an_add_whose_kept_sign_in_the_remote_refuses_signs_in_afresh_once_and_goes_on"
+        body: e7736d9398f3030871a87c72addf2f063c4c99c589164ab45f35e70af096b1a5
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "an_update_whose_kept_sign_in_the_remote_refuses_signs_in_afresh_once_and_goes_on"
+        body: 099725113226b99d261c3b97f12ed3bcf4bc945d9763a3f35dedf2b8830b6a99
       - file: "crates/loft-cli/tests/interface_update.rs"
         name: "without_a_kept_sign_in_an_update_signs_the_person_in_to_the_other_remote_first"
         body: 8976efd4f0561efe632041ee9340c14e665726affb9193c93e63801254b9747f
@@ -17404,6 +17410,9 @@ links:
     reviewed: d1be255c41a92483bc78743215962c247ae73063b850c5cb9f6f3c8abc907f68
     tests:
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "an_add_of_an_unlisted_handle_whose_remote_holds_no_such_document_names_remote"
+        body: 27888803ce2794d43f7c0ff7c2f4b9153001992fdb4c456767b475953dc0705e
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "an_add_at_an_address_that_is_no_document_s_remote_says_that_remote_takes_the_document_s"
         body: 61d967a9b1bf514df3ea65a2d0a313977e3ffb7871225cb5d704dfad2c98bd1d
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
@@ -17413,11 +17422,11 @@ links:
     reviewed: 639ae727cddc9442495dfbf39fe3c1fdd7b85e4283ed1e64e0a3fef4edaa4221
     tests:
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
-        name: "an_add_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
-        body: 900bbcaa40800974ebb357292e6734061d5b76ac3c25cc28fb18e4ff7bcf67e5
+        name: "a_status_whose_kept_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
+        body: 293c50a52a248fe2340cd2d56efa489373ee517b9b7e8a32f1a062a35bc6ae7f
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
-        name: "a_status_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
-        body: 2ff16bca0bac42ebe36394ffbc751476ca43e3a20121840c44cc64b0113803ef
+        name: "a_status_whose_sign_in_is_kept_for_another_origin_says_where_the_address_lies"
+        body: d98339e66b906dd1e4eed87f759197770a48afeb7f3f18d403f845bad93a961f
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again"
         body: fe68272d069aee4e550e3ea125d82dd2add473a74bcf29e689416f8af224d640
@@ -17425,11 +17434,14 @@ links:
     reviewed: 068663e8ce7917ec4c6543ec29ae87c65a352e3e8dabb8ff1fd86e5ed622550b
     tests:
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
-        name: "an_add_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
-        body: 900bbcaa40800974ebb357292e6734061d5b76ac3c25cc28fb18e4ff7bcf67e5
+        name: "a_status_whose_kept_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
+        body: 293c50a52a248fe2340cd2d56efa489373ee517b9b7e8a32f1a062a35bc6ae7f
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
-        name: "a_status_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
-        body: 2ff16bca0bac42ebe36394ffbc751476ca43e3a20121840c44cc64b0113803ef
+        name: "a_status_whose_sign_in_is_kept_for_another_origin_says_where_the_address_lies"
+        body: d98339e66b906dd1e4eed87f759197770a48afeb7f3f18d403f845bad93a961f
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "an_add_of_an_unlisted_handle_whose_remote_holds_no_such_document_names_remote"
+        body: 27888803ce2794d43f7c0ff7c2f4b9153001992fdb4c456767b475953dc0705e
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again"
         body: fe68272d069aee4e550e3ea125d82dd2add473a74bcf29e689416f8af224d640

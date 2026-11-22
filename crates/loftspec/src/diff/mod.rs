@@ -121,7 +121,8 @@ impl Keyed {
 }
 
 /// The kind and target of each edge an element's record writes, by the element: a Feature's
-/// `realizes`, a Component's `scopedTo` and any node's or decision's `mentions`. A decision's
+/// `realizes`, a Component's `scopedTo`, `provides` and `requires`, and any node's or decision's
+/// `mentions`. A decision's
 /// subjects are left out, since they are compared apart, each former label read as its node.
 pub(crate) fn written(document: &Document) -> BTreeMap<ElementId, BTreeSet<(EdgeKind, Key)>> {
     let mut written: BTreeMap<ElementId, BTreeSet<(EdgeKind, Key)>> = BTreeMap::new();
