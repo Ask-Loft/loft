@@ -201,7 +201,7 @@ fn mentioned(document: &Document) -> BTreeMap<NodeId, Vec<ElementId>> {
     }
     for targets in mentioned.values_mut() {
         targets.sort_unstable_by_key(|target| target.key());
-        targets.dedup();
+        targets.dedup_by_key(|target| target.key());
     }
     mentioned
 }

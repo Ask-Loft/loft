@@ -19,6 +19,8 @@ const EDITED: &str = "\"A removed book no longer shows.\"";
 const GONE: &str = "00000000-0000-4000-8000-000000000031";
 /// The Feature "Remove a book", which holds `GONE`.
 const REMOVE_A_BOOK: &str = "00000000-0000-4000-8000-00000000001f";
+/// The Feature "Add a book", whose key comes before `REMOVE_A_BOOK`'s.
+const ADD_A_BOOK: &str = "00000000-0000-4000-8000-00000000001e";
 
 fn review(scratch: &Scratch, args: &[&str], git: Option<&GitScenario>) -> Output {
     let mut all = vec!["review"];
@@ -145,7 +147,9 @@ fn against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node() {
 
 #[test]
 fn against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed() {
-    let mentions = format!("{PLAIN}\n        mentions:\n          - {REMOVE_A_BOOK}");
+    let mentions = format!(
+        "{PLAIN}\n        mentions:\n          - {REMOVE_A_BOOK}\n          - {ADD_A_BOOK}"
+    );
     let (scratch, git) = edited_to(&mentions);
     let document = packet(&scratch, &["--base", "develop"], Some(&git));
     assert_eq!(units(&document).len(), 1);
@@ -156,7 +160,7 @@ fn against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed() {
     assert_eq!(assertions[0]["before"]["mentions"], serde_json::json!([]));
     assert_eq!(
         gone(&document)["mentions"],
-        serde_json::json!([REMOVE_A_BOOK])
+        serde_json::json!([ADD_A_BOOK, REMOVE_A_BOOK])
     );
 }
 
