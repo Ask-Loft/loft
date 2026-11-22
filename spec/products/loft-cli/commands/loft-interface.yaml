@@ -119,6 +119,8 @@ requirements:
         name: "A copy whose Interface the head holds unchanged is reported as current."
       - key: 01a1f981-4db0-72b8-8a39-a6d20d58de83
         name: "A copy whose Interface the head holds changed is reported as behind, and the command still exits 0."
+      - key: 01a2046e-4099-7577-98eb-77df3b0c9ad9
+        name: "Only the sign-in kept for each address is used: where none is kept, or the one kept has lapsed, the command exits 1, opens no browser, and the error says that `loft interface login <handle>` signs in."
       - key: 01a1f981-4db0-72b8-8a39-a6d3acadc49b
         name: "No file is written."
   - key: 01a1f981-4db0-72b8-8a39-a6d427e8996c

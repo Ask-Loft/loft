@@ -263,6 +263,8 @@ requirements:
         name: "Each copy is compared with the Interface, the labels and the state root that the other document's remote serves at the copy's publish sequence."
       - key: 01a1f981-4db0-72b8-8a39-a6e65044ec03
         name: "The other document's remote is reached at the address its entry of `documents` names, with the person's sign-in to that address."
+      - key: 01a2046e-4099-7577-98eb-77e07e777acd
+        name: "Where no sign-in to that address is kept, or the one kept has lapsed, the publish is refused before anything is sent, no browser is opened, and the error says that `loft interface login <handle>` signs in."
       - key: 01a1f981-4db0-72b8-8a39-a6e7b8094995
         name: "A copy that differs is refused, and the error names the copy's file and the first difference."
       - key: 01a1f981-4db0-72b8-8a39-a6e82724e226

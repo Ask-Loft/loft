@@ -54,6 +54,21 @@ requirements:
         name: "The view names the base revision it compares with, and the commit it was recorded at."
       - key: 01a1646f-546d-7042-befd-eac7b48cb905
         name: "A view of no change says that the specification has not changed since the base revision."
+  - key: 01a2046e-7c51-7263-ba8e-a7c8656c2277
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw in a `spec-change` view's diagram each Interface that the change touches: one that a Component drawn gained, of the document or of another document, and each copy of another document's Interface that the branch added, removed or moved."
+    body: "A connected document relies on other documents' promises through the copies it pins. A change to a pin, or a Component that came to provide or require a promise, changes what the document relies on, and the diagram shows that promise beside the Component that relies on it."
+    criteria:
+      - key: 01a2046e-409d-70db-9f5b-3d44cdb547ce
+        name: "Each Interface that a Component drawn gained in its `provides` or `requires`, of the document or of a copy of another document's, is drawn, so that the edge ends at its box."
+      - key: 01a2046e-409d-70db-9f5b-3d4595199a58
+        name: "An Interface of a copy of another document, and each node beneath it, is drawn as the copy holds it, its label given with the copy's handle, such as `shelves:IF-1`, and its panel marked as another document's by that handle."
+      - key: 01a2046e-409d-70db-9f5b-3d4605e7ddfb
+        name: "A copy that the branch added or removed is drawn as its Interface's panel, added or removed."
+      - key: 01a2046e-409d-70db-9f5b-3d47ccef9a3a
+        name: "A copy whose pin the branch moved is drawn as its Interface's panel, changed, with each node of its promise that the move added, changed or removed, as `loft interface update` reports them."
   - key: 01a1ea8e-e8d0-7200-b3b3-7f33a09ec515
     statement:
       form: ubiquitous
@@ -124,6 +139,10 @@ requirements:
         name: "A changed node whose words did not change says that only its other fields changed."
       - key: 01a1e982-1425-7775-9b23-a81bae5df3e0
         name: "A decision's entry lists each subject added to it or removed from it by its label or its kind, its name, its role and its change."
+      - key: 01a2046e-409d-70db-9f5b-3d48e88714d0
+        name: "The diff lists each copy that the branch added, removed or whose pin it moved by its handle, its label and its name, with the publish sequence of its pin before and after, and each node of its promise that the move added, changed or removed."
+      - key: 01a2046e-409d-70db-9f5b-3d49257335de
+        name: "The diff lists each entry of `documents` that the branch added, removed or whose address it changed, by its handle, with its address before and after."
       - key: 01a16475-7fbc-7732-a78c-bc51485eea5d
         name: "The diff starts folded."
   - key: 01a1695a-dd72-7090-817b-abf280f1f0dd
