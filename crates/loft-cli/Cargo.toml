@@ -23,6 +23,9 @@ path = "src/main.rs"
 
 [dependencies]
 clap.workspace = true
+# The page server renders the Markdown of Yard Log's blocks to HTML, so the page never renders
+# Markdown itself, and links a bare address as GitHub does, whose renderer comrak ports.
+comrak.workspace = true
 flate2.workspace = true
 getrandom.workspace = true
 hmac.workspace = true
@@ -30,10 +33,6 @@ httparse.workspace = true
 loft-ports.workspace = true
 loftspec.workspace = true
 loftspec-store.workspace = true
-# The page server renders the Markdown of Yard Log's blocks to HTML, so the page never renders
-# Markdown itself. The parser is the same pinned one the linter reads text with; the feature adds
-# only the HTML writer.
-pulldown-cmark = { workspace = true, features = ["html"] }
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true

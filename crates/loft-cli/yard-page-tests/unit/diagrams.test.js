@@ -9,7 +9,7 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, test } from 'node:test';
 
 import { draw, drawAll, theme } from '../../yard-page/lib/diagrams.js';
-import { h } from '../../yard-page/lib/dom.js';
+import { h, inline } from '../../yard-page/lib/dom.js';
 import * as modal from '../../yard-page/lib/modal.js';
 import { loftView } from '../../yard-page/views/loft/index.js';
 
@@ -137,6 +137,15 @@ test('expanding a diagram opens it in a modal over the page, named by its block,
   assert.equal(drawnText(opened.querySelector('.zoom-stage')), 'sequenceDiagram\n  A->>B: hi');
   assert.ok(!opened.querySelector('.diagram-expand'));
   assert.ok(document.activeElement === opened.querySelector('.zoom-stage'), 'the stage has the focus');
+});
+
+test('an expanded diagram is named by the words its block’s title shows, without what a screen reader alone hears', async () => {
+  const note = noteWith(inline('Flow per <a href="https://example.com/rfc">RFC</a>'), 'sequenceDiagram\n  A->>B: hi', 'linked-title');
+  drawAll(note);
+  await settled();
+  note.querySelector('.diagram-expand').click();
+  await settled();
+  assert.equal(dialog().querySelector('.modal-head h2').textContent, 'Flow per RFC');
 });
 
 test('the expanded spec-change diagram is the one the page drew, as full cards, with the Feature Group the person opened', async () => {

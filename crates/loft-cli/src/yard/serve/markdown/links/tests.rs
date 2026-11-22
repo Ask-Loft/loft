@@ -40,97 +40,15 @@ fn an_underscore_an_asterisk_or_a_tilde_within_an_address_stays_in_its_link() {
 }
 
 #[test]
-fn an_address_runs_past_the_end_of_an_emphasis_it_begins_in_as_on_github() {
-    assert_eq!(
-        to_html("**see https://example.com/a**b"),
-        paragraph("**see ", "https://example.com/a**b", "")
-    );
-}
-
-#[test]
-fn an_address_whose_stand_in_would_change_the_parse_is_drawn_as_text() {
-    for markdown in [
-        "Use <img src=https://example.com/a?b=c width=1> here",
-        "[a](https://example.com/a( )",
-        "```https://example.com/a`b\nmore\n",
-        "a | https://example.com/b|c\n-|-\n",
-    ] {
-        let html = to_html(markdown);
-        assert!(!html.contains("<a "), "{markdown}: {html}");
-        assert!(html.contains("https://example.com/"), "{markdown}: {html}");
-        assert!(!html.contains('\u{10_0000}'), "{markdown}: {html}");
-    }
-}
-
-#[test]
-fn an_address_whose_stand_in_would_change_the_parse_leaves_the_others_linked() {
-    let html = to_html(
-        "See https://example.com/a now.\n\na | https://example.com/b|c\n-|-\n\nAnd https://example.com/d now.",
-    );
-    assert!(html.contains(&link("https://example.com/a")), "{html}");
-    assert!(html.contains(&link("https://example.com/d")), "{html}");
-    assert!(html.contains("a | https://example.com/b|c"), "{html}");
-    assert_eq!(html.matches("<a ").count(), 2, "{html}");
-}
-
-#[test]
-fn a_markdown_that_holds_a_stand_in_is_drawn_without_links() {
-    for markdown in [
-        "\u{10_0000} https://example.com/a",
-        "See https://example.com/a and &#x100000;",
-        "[foo]: https://example.com/a(b\nbar \u{10_0000}",
-        "[foo]: https://example.com/a(b\nbar &#x100000;",
-    ] {
-        let html = to_html(markdown);
-        assert!(!html.contains("<a "), "{markdown}: {html}");
-        assert!(html.contains("https://example.com/a"), "{markdown}: {html}");
-    }
-}
-
-#[test]
-fn an_escaped_pipe_in_a_table_cell_is_part_of_the_address() {
-    let html = to_html("| h |\n|---|\n| https://example.com/a\\|b |");
-    assert!(
-        html.contains("<a href=\"https://example.com/a%7Cb\">https://example.com/a|b</a>"),
-        "{html}"
-    );
-}
-
-#[test]
-fn an_address_before_a_line_break_is_drawn_as_a_link() {
-    assert_eq!(
-        to_html("line https://example.com/a\\\nnext https://example.com/b  \nthird"),
-        format!(
-            "<p>line {}\nnext {}<br />\nthird</p>\n",
-            "<a href=\"https://example.com/a%5C\">https://example.com/a\\</a>",
-            link("https://example.com/b")
-        )
-    );
-}
-
-#[test]
-fn a_scheme_that_a_letter_precedes_begins_no_address() {
-    assert_eq!(
-        to_html("xhttps://example.com and 9https://example.com"),
-        paragraph("xhttps://example.com and 9", "https://example.com", "")
-    );
-}
-
-#[test]
-fn an_address_ends_at_a_space_a_tab_or_a_line_end_alone() {
-    let html = to_html("See https://example.com/a\u{a0}b\u{2003}c\td now");
-    assert!(
-        html.contains(">https://example.com/a\u{a0}b\u{2003}c</a>\td now"),
-        "{html}"
-    );
-}
-
-#[test]
-fn a_bare_http_address_and_a_bare_mailto_address_are_each_drawn_as_a_link() {
+fn a_bare_http_address_is_drawn_as_a_link() {
     assert_eq!(
         to_html("Read http://example.com/a?b=1#c first"),
         paragraph("Read ", "http://example.com/a?b=1#c", " first")
     );
+}
+
+#[test]
+fn a_bare_mailto_address_is_drawn_as_a_link() {
     assert_eq!(
         to_html("Write to mailto:someone@example.com today"),
         paragraph("Write to ", "mailto:someone@example.com", " today")
@@ -145,9 +63,6 @@ fn an_address_within_a_code_span_is_drawn_as_text() {
         html.contains("<code>curl https://example.com/api</code>"),
         "{html}"
     );
-    let html = to_html("Run https://example.com/a`code` now");
-    assert!(html.contains(&link("https://example.com/a")), "{html}");
-    assert!(html.contains("<code>code</code>"), "{html}");
 }
 
 #[test]
@@ -181,7 +96,7 @@ fn punctuation_that_ends_an_address_is_drawn_after_the_link() {
     }
     assert_eq!(
         to_html("Set it to \"https://example.com\"."),
-        paragraph("Set it to \"", "https://example.com", "\".")
+        paragraph("Set it to &quot;", "https://example.com", "&quot;.")
     );
     assert_eq!(
         to_html("See https://docs.python.org/3/x.html#object.__init__ there"),
@@ -217,10 +132,13 @@ fn a_closing_parenthesis_ends_the_link_unless_the_address_opens_one() {
 }
 
 #[test]
-fn a_closing_square_bracket_ends_the_link_unless_the_address_opens_one() {
+fn an_address_after_a_square_bracket_that_opens_no_link_is_drawn_as_text() {
+    for markdown in ["[see https://example.com/x]", "[see https://example.com/x"] {
+        assert_eq!(to_html(markdown), format!("<p>{markdown}</p>\n"));
+    }
     assert_eq!(
-        to_html("[see https://example.com/x]"),
-        paragraph("[see ", "https://example.com/x", "]")
+        to_html("[a] https://example.com/x"),
+        paragraph("[a] ", "https://example.com/x", "")
     );
     assert_eq!(
         to_html("https://example.com/a[1]"),
@@ -238,10 +156,26 @@ fn no_link_is_drawn_to_an_address_of_any_other_scheme() {
 }
 
 #[test]
-fn a_scheme_with_nothing_after_it_stays_text() {
+fn an_address_that_begins_with_www_is_drawn_as_text() {
     assert_eq!(
-        to_html("Begin with https:// or mailto: here"),
-        "<p>Begin with https:// or mailto: here</p>\n"
+        to_html("See www.example.com/a now"),
+        "<p>See www.example.com/a now</p>\n"
+    );
+    assert_eq!(
+        to_html("[www.example.com](http://www.example.com)"),
+        "<p><a href=\"http://www.example.com\">www.example.com</a></p>\n"
+    );
+}
+
+#[test]
+fn an_email_address_that_no_mailto_begins_is_drawn_as_text() {
+    assert_eq!(
+        to_html("Write to someone@example.com today"),
+        "<p>Write to someone@example.com today</p>\n"
+    );
+    assert_eq!(
+        to_html("<someone@example.com>"),
+        "<p><a href=\"mailto:someone@example.com\">someone@example.com</a></p>\n"
     );
 }
 
@@ -275,8 +209,6 @@ fn a_mailto_that_no_email_address_follows_is_drawn_as_text() {
         "mailto:a@b",
         "mailto:a@b.c1",
         "mailto:a b@c.com",
-        "MAILTO:a@b.com",
-        "9mailto:a@b.com",
     ] {
         let html = to_html(markdown);
         assert!(!html.contains("<a "), "{markdown}: {html}");
@@ -292,5 +224,55 @@ fn the_link_of_a_mailto_address_ends_where_its_email_address_ends() {
     assert_eq!(
         to_html("Write mailto:a@b.com."),
         paragraph("Write ", "mailto:a@b.com", ".")
+    );
+}
+
+#[test]
+fn a_link_written_to_an_address_that_begins_with_two_slashes_is_drawn_as_its_text() {
+    for markdown in ["[docs](//example.com/x)", "[docs]( //example.com/x )"] {
+        assert_eq!(to_html(markdown), "<p>docs</p>\n", "{markdown}");
+    }
+}
+
+#[test]
+fn a_link_written_to_a_file_s_address_is_drawn_as_its_text() {
+    for markdown in [
+        "[plan](docs/plan.md)",
+        "[plan](/docs/plan.md)",
+        "[plan](./plan.md?x#y)",
+    ] {
+        assert_eq!(to_html(markdown), "<p>plan</p>\n", "{markdown}");
+    }
+}
+
+#[test]
+fn a_link_written_to_a_place_within_the_page_is_drawn_as_a_link_to_it() {
+    assert_eq!(
+        to_html("[notes](#notes)"),
+        "<p><a href=\"#notes\">notes</a></p>\n"
+    );
+}
+
+#[test]
+fn an_image_whose_address_is_a_javascript_one_is_drawn_as_its_description() {
+    assert_eq!(
+        to_html("![a shelf](javascript:alert(1))"),
+        "<p>a shelf</p>\n"
+    );
+}
+
+#[test]
+fn an_image_within_a_link_is_drawn_as_its_description_within_that_link() {
+    assert_eq!(
+        to_html("[![a badge](https://example.com/b.png)](https://example.com/c)"),
+        "<p><a href=\"https://example.com/c\">a badge</a></p>\n"
+    );
+}
+
+#[test]
+fn a_link_within_an_image_s_description_is_drawn_as_its_text_within_the_image_s_link() {
+    assert_eq!(
+        to_html("![see [docs](https://example.com/a)](https://example.com/b.png)"),
+        "<p><a href=\"https://example.com/b.png\">see docs</a></p>\n"
     );
 }

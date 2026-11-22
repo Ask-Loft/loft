@@ -145,6 +145,95 @@ test('on a wide window the pane holds its stage within 900 pixels, and a note’
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+test('following a link to a web address in a note opens it in a new tab and leaves the Yard page as it was', async ({ page }) => {
+  write([{ id: 'linked-note', kind: 'note', stage: 'shape', title: 'A linked note', markdown: 'See https://example.com/plan for it.' }]);
+  // The address is answered here, so that the test reaches no network.
+  await page.context().route('https://example.com/**', (route) => route.fulfill({ contentType: 'text/plain', body: 'plan' }));
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="linked-note"]').click();
+  const link = page.locator('#block-linked-note .prose a');
+  await expect(link).toHaveAttribute('href', 'https://example.com/plan');
+  const before = page.url();
+  const [opened] = await Promise.all([page.waitForEvent('popup'), link.click()]);
+  await opened.waitForLoadState();
+  expect(opened.url()).toBe('https://example.com/plan');
+  expect(page.url()).toBe(before);
+  await expect(page.locator('#block-linked-note')).toBeVisible();
+  await opened.close();
+});
+
+test('following a footnote’s reference in a note brings its footnote into view and keeps the Yard Log shown', async ({ page }) => {
+  write([{ id: 'footnoted-note', kind: 'note', stage: 'shape', title: 'A footnoted note', markdown: 'A claim.[^1]\n\n[^1]: Its source.' }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="footnoted-note"]').click();
+  const before = page.url();
+  await page.locator('#block-footnoted-note a[href="#fn-1"]').click();
+  await expect(page.locator('#block-footnoted-note li#fn-1')).toBeInViewport();
+  expect(page.url()).toBe(before);
+  await expect(page.locator('#block-footnoted-note')).toBeVisible();
+});
+
+test('a column of a table that the Markdown aligns to the right or to the center is drawn so aligned', async ({ page }) => {
+  write([{ id: 'aligned-note', kind: 'note', stage: 'shape', title: 'An aligned table', markdown: '| Name | Kind | Tokens |\n|---|:-:|---:|\n| a | b | 1200 |' }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="aligned-note"]').click();
+  const cells = page.locator('#block-aligned-note .prose td');
+  await expect(cells).toHaveCount(3);
+  await expect(cells.nth(0)).toHaveCSS('text-align', 'left');
+  await expect(cells.nth(1)).toHaveCSS('text-align', 'center');
+  await expect(cells.nth(2)).toHaveCSS('text-align', 'right');
+});
+
+test('text copied from a block holds the words of a link that opens in a new tab and none of what a screen reader hears of it', async ({ page }) => {
+  write([{ id: 'copied-note', kind: 'note', stage: 'shape', title: 'A copied note', markdown: 'See https://example.com/plan for it.' }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="copied-note"]').click();
+  const paragraph = page.locator('#block-copied-note .prose > p');
+  await expect(paragraph.locator('a')).toHaveAttribute('aria-describedby', 'new-tab-note');
+  const copied = await paragraph.evaluate((p) => {
+    getSelection()?.selectAllChildren(p);
+    return getSelection()?.toString();
+  });
+  expect(copied).toBe('See https://example.com/plan for it.');
+});
+
+test('a wide table with a link in its last column scrolls within its block and leaves the pane unscrolled sideways', async ({ page }) => {
+  const cells = Array.from({ length: 11 }, () => 'one long cell of words');
+  write([{ id: 'wide-table-note', kind: 'note', stage: 'shape', title: 'A wide table', markdown: `| ${'x | '.repeat(12)}\n|${'---|'.repeat(12)}\n| ${cells.join(' | ')} | https://example.com/x |` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="wide-table-note"]').click();
+  await expect(page.locator('#block-wide-table-note .table-wrap a')).toBeVisible();
+  const [wrap, pane] = await page.evaluate(() => [document.querySelector('#block-wide-table-note .table-wrap'), document.querySelector('.stage-pane')].map((at) => [at?.scrollWidth ?? 0, at?.clientWidth ?? 0]));
+  expect(wrap[0]).toBeGreaterThan(wrap[1]);
+  expect(pane[0]).toBe(pane[1]);
+});
+
+test('following a link in a note to the address of a block of a Yard Log shows that block', async ({ page }) => {
+  write([{ id: 'route-note', kind: 'note', stage: 'shape', title: 'A route', markdown: `See [the wide note](${new URL(address('wide-note')).hash}).` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="route-note"]').click();
+  await page.locator('#block-route-note .prose a').click();
+  await expect(page).toHaveURL(/block=wide-note/);
+  await expect(page.locator('#block-wide-note')).toBeInViewport();
+});
+
+test('opening a footnote’s reference in a new tab opens the Yard page on the Yard Log it shows', async ({ page }) => {
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="footnoted-note"]').click();
+  const shownLog = new URL(page.url()).hash;
+  const [opened] = await Promise.all([page.context().waitForEvent('page'), page.locator('#block-footnoted-note sup a').click({ button: 'middle' })]);
+  await opened.waitForLoadState();
+  expect(new URL(opened.url()).hash).toBe(shownLog);
+  await opened.close();
+});
+
 test('a decision’s consequence reads as a paragraph at the width of its block, not in a narrow column', async ({ page }) => {
   write([
     { id: 'wide-q', kind: 'question', stage: 'shape', prompt: 'Which way?', header: 'Way', options: [{ label: 'Left', recommended: true }, { label: 'Right' }] },

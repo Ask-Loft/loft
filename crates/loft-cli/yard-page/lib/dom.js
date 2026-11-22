@@ -1,6 +1,8 @@
 // Building the page's elements. Every text a block holds goes in as text, never as markup; the
 // only markup the page inserts is the HTML `loft` rendered from Markdown, through `html()`.
 
+import { parse } from './route.js';
+
 /**
  * @typedef {string | number | Node | null | undefined | false} Leaf
  * @typedef {Leaf | Leaf[] | Leaf[][] | Leaf[][][]} Child
@@ -107,7 +109,7 @@ function swatch(root) {
 /**
  * A container holding HTML that `loft` rendered from a block's Markdown, with raw HTML already
  * turned to text and unsafe links undone, each table in a wrapper that scrolls sideways where the
- * table is wider than the block, and each color in a code span drawn on that color.
+ * table is wider than the block, and its links and colors dressed as `dress()` dresses them.
  * @param {string} rendered
  * @param {string} [className]
  * @returns {HTMLElement}
@@ -116,13 +118,13 @@ export function html(rendered, className = 'prose') {
   const element = document.createElement('div');
   element.className = className;
   element.innerHTML = rendered ?? '';
+  dress(element);
   for (const table of element.querySelectorAll('table')) {
     const wrap = document.createElement('div');
     wrap.className = 'table-wrap';
     table.replaceWith(wrap);
     wrap.append(table);
   }
-  swatch(element);
   return element;
 }
 
@@ -140,16 +142,88 @@ export function markdown(rendered, text, className) {
 }
 
 /**
- * One line of HTML that `loft` rendered from Markdown, such as a node's name, each color in a
- * code span drawn on that color.
+ * One line of HTML that `loft` rendered from Markdown, such as a node's name, its links and
+ * colors dressed as `dress()` dresses them.
  * @param {string} rendered
  */
 export function inline(rendered) {
   const element = document.createElement('span');
   element.className = 'inline';
   element.innerHTML = rendered;
-  swatch(element);
+  dress(element);
   return element;
+}
+
+/**
+ * Dresses HTML that `loft` rendered from Markdown, in a block and in a name alike, so the two
+ * cannot drift apart: a web link opens a new tab, a link within the page keeps the Yard Log
+ * shown, and a color in a code span is drawn on that color.
+ * @param {Element} element
+ */
+function dress(element) {
+  newTabs(element);
+  stayOnPage(element);
+  swatch(element);
+}
+
+/**
+ * Opens each link of rendered Markdown to a web address in a new tab, so that following one
+ * leaves the Yard page as it was, and gives the page it opens no hold on this one. A `mailto:`
+ * link and a link within the page stay as they are.
+ * @param {Element} element
+ */
+function newTabs(element) {
+  for (const link of element.querySelectorAll('a[href]')) {
+    // The address as written: a link within the page would resolve to this page's own `http:`.
+    if (/^https?:\/\//i.test(link.getAttribute('href') ?? '')) {
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+      // Read out as the link's description, so no one is moved off the page unwarned, while its
+      // words and the page's look stay as they were.
+      link.setAttribute('aria-describedby', 'new-tab-note');
+    }
+  }
+}
+
+/**
+ * Keeps the Yard Log shown when a link of rendered Markdown to a place within the page, such as
+ * a footnote's, is followed. The page's address holds its route, so the link brings its place
+ * into view and moves the focus there instead of changing the address, and before it is opened
+ * elsewhere, in a new tab or from the browser's menu, it takes the address of the Yard Log shown.
+ * Each block numbers its footnotes from 1, so the place is looked for within the link's own block
+ * alone. A link to the address of a Yard Log is a route, which the browser follows as written.
+ * @param {Element} element
+ */
+function stayOnPage(element) {
+  for (const link of element.querySelectorAll('a[href^="#"]')) {
+    const href = link.getAttribute('href') ?? '';
+    if (parse(href)) continue;
+    const place = placeOf(element, href.slice(1));
+    // A pointer is down before any menu opens, and the focus is in before the keyboard's menu key.
+    const shown = () => link.setAttribute('href', location.hash || '#');
+    for (const type of ['pointerdown', 'focus']) link.addEventListener(type, shown);
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (!place) return;
+      // Focusable, so the keyboard and a screen reader go on from the place, as they would after
+      // a jump the browser made.
+      if (place.tabIndex < 0) place.setAttribute('tabindex', '-1');
+      place.scrollIntoView({ block: 'center' });
+      place.focus({ preventScroll: true });
+    });
+  }
+}
+
+/**
+ * The element of `element` that `name`, an address within the page without its `#`, names. The
+ * id is matched as written, not decoded: `loft` writes an id and the address that names it alike,
+ * encoding a letter outside ASCII in both.
+ * @param {Element} element
+ * @param {string} name
+ * @returns {HTMLElement | undefined}
+ */
+function placeOf(element, name) {
+  return /** @type {HTMLElement[]} */ ([...element.querySelectorAll('[id]')]).find((node) => node.id === name);
 }
 
 /**

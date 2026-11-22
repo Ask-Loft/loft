@@ -1,18 +1,15 @@
 //! The Markdown of Yard Log's blocks as the page shows it: rendered to HTML here, by `loft`, so
-//! that the page never renders Markdown itself. Any HTML the Markdown holds is shown as text,
-//! a link keeps only an address of the web, of mail or within the page, and an image is shown
-//! as a link to it, so that no element a block names is made in the page and nothing is loaded
-//! from elsewhere. A fenced code block marked `mermaid` stays a code block of that language,
+//! that the page never renders Markdown itself. comrak renders it, a port of cmark-gfm, so that a
+//! bare address in a block's Markdown is linked where GitHub links it. Any HTML the Markdown holds
+//! is shown as text, so that no element a block names is made in the page, and `links` decides
+//! which links stay. A fenced code block marked `mermaid` stays a code block of that language,
 //! which the page draws as a diagram. The names of the nodes a `loft` view reports are rendered
-//! the same way, each on one line.
+//! the same way, each on one line, with no bare address linked.
 
-mod autolink;
+mod links;
 
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html};
+use comrak::{Arena, Options};
 use serde_json::Value;
-
-// One list for the links a page keeps and the bare addresses it links, so that the two agree.
-const SCHEMES: [&str; 3] = ["https://", "http://", "mailto:"];
 
 /// The Markdown fields of a stage's or a block's body, each with the field its HTML is given in:
 /// a note's, an approval's and a plan's Markdown, a question's context, a stage's goal, a
@@ -26,32 +23,37 @@ const FIELDS: [(&str, &str); 6] = [
     ("note", "noteHtml"),
 ];
 
-fn parser(markdown: &str) -> Parser<'_> {
-    let options = Options::ENABLE_TABLES
-        | Options::ENABLE_STRIKETHROUGH
-        | Options::ENABLE_TASKLISTS
-        | Options::ENABLE_FOOTNOTES;
-    Parser::new_ext(markdown, options)
+fn options(autolink: bool) -> Options<'static> {
+    let mut options = Options::default();
+    options.extension.autolink = autolink;
+    options.extension.table = true;
+    options.extension.strikethrough = true;
+    options.extension.tasklist = true;
+    options.extension.footnotes = true;
+    // Shown as text rather than dropped, so a reader sees what the Markdown holds.
+    options.render.escape = true;
+    options
 }
 
-fn safe_html<'a>(events: impl Iterator<Item = Event<'a>>) -> String {
-    let mut out = String::new();
-    html::push_html(&mut out, Safe::new(events));
-    out
+fn render(markdown: &str, autolink: bool) -> String {
+    let options = options(autolink);
+    let arena = Arena::new();
+    let root = comrak::parse_document(&arena, markdown, &options);
+    links::keep_safe(root);
+    let mut html = String::new();
+    comrak::format_html(root, &options, &mut html).expect("writing to a String never fails");
+    html
 }
 
 /// `markdown` as HTML.
 pub fn to_html(markdown: &str) -> String {
-    match autolink::linked(markdown) {
-        Some(events) => safe_html(events.into_iter()),
-        None => safe_html(parser(markdown)),
-    }
+    render(markdown, true)
 }
 
 /// `markdown` as HTML for one line, such as a node's name: the inside of the one paragraph it
 /// makes, or none where it makes anything else.
 pub fn to_inline_html(markdown: &str) -> Option<String> {
-    let html = safe_html(parser(markdown));
+    let html = render(markdown, false);
     let inner = html.strip_prefix("<p>")?.strip_suffix("</p>\n")?;
     (!inner.contains("</p>")).then(|| inner.to_owned())
 }
@@ -139,83 +141,6 @@ fn render_names(value: &mut Value) {
         }
         Value::Array(items) => items.iter_mut().for_each(render_names),
         _ => {}
-    }
-}
-
-/// Whether a link may keep `address`: one of the web or of mail, one within the page, or one
-/// relative to it, never a script's or another scheme's.
-fn is_safe(address: &str) -> bool {
-    let lower = address.trim().to_ascii_lowercase();
-    if SCHEMES.iter().any(|scheme| lower.starts_with(scheme)) {
-        return true;
-    }
-    // An address with no scheme: nothing before the first `/`, `?` or `#` holds a `:`.
-    let head = lower.split(['/', '?', '#']).next().unwrap_or_default();
-    !head.contains(':')
-}
-
-/// The events of a parser with raw HTML turned to text, unsafe links undone and images turned
-/// to links.
-struct Safe<'a, I: Iterator<Item = Event<'a>>> {
-    events: I,
-    /// For each link open, whether it was kept.
-    links: Vec<bool>,
-}
-
-impl<'a, I: Iterator<Item = Event<'a>>> Safe<'a, I> {
-    const fn new(events: I) -> Self {
-        Self {
-            events,
-            links: Vec::new(),
-        }
-    }
-
-    /// The event `event` becomes, or none where it is dropped: a link or an image whose address
-    /// is not kept is dropped with its end, its text staying.
-    fn turn(&mut self, event: Event<'a>) -> Option<Event<'a>> {
-        match event {
-            Event::Html(text) | Event::InlineHtml(text) => Some(Event::Text(text)),
-            Event::Start(
-                Tag::Link {
-                    link_type,
-                    dest_url,
-                    title,
-                    id,
-                }
-                | Tag::Image {
-                    link_type,
-                    dest_url,
-                    title,
-                    id,
-                },
-            ) => {
-                let kept = is_safe(&dest_url);
-                self.links.push(kept);
-                kept.then_some(Event::Start(Tag::Link {
-                    link_type,
-                    dest_url,
-                    title,
-                    id,
-                }))
-            }
-            Event::End(TagEnd::Link | TagEnd::Image) => {
-                (self.links.pop() == Some(true)).then_some(Event::End(TagEnd::Link))
-            }
-            other => Some(other),
-        }
-    }
-}
-
-impl<'a, I: Iterator<Item = Event<'a>>> Iterator for Safe<'a, I> {
-    type Item = Event<'a>;
-
-    fn next(&mut self) -> Option<Event<'a>> {
-        while let Some(event) = self.events.next() {
-            if let Some(turned) = self.turn(event) {
-                return Some(turned);
-            }
-        }
-        None
     }
 }
 
