@@ -4,7 +4,6 @@
 //! supersedes them; `testdata/`; vendored files; and the released entries of `CHANGELOG.md`.
 
 use crate::common::{listed, workspace};
-use crate::markdown::section;
 use loftspec::codec::{self, Files, SpecPath};
 use loftspec::ids::ElementId;
 use software_plant::real_git::real_git;
@@ -246,18 +245,17 @@ impl Guard {
         }
     }
 
-    /// The part of `text` the guard reads, as the byte it starts at and its end: all of it, none
-    /// of a decision published as resolved, and of the changelog only what is unreleased.
-    fn guarded(&self, file: &str, text: &str) -> (usize, usize) {
+    /// The parts of `text` the guard reads, each as the byte it starts at and its end: all of
+    /// it, none of a decision published as resolved, and of the changelog only what is
+    /// unreleased.
+    fn guarded(&self, file: &str, text: &str) -> Vec<(usize, usize)> {
         if self.published.contains(file) {
-            return (0, 0);
+            return Vec::new();
         }
         if file == "CHANGELOG.md" {
-            let unreleased = section(text, "Unreleased");
-            let start = unreleased.as_ptr().addr() - text.as_ptr().addr();
-            return (start, start + unreleased.len());
+            return unreleased(text);
         }
-        (0, text.len())
+        vec![(0, text.len())]
     }
 
     /// The American spelling of `word` when it is British, worked out once for each word.
@@ -270,20 +268,45 @@ impl Guard {
 
     /// Each British form in `text` of `file`, as `file:line: found → American`.
     fn findings(&mut self, file: &str, text: &str) -> Vec<String> {
-        let (start, end) = self.guarded(file, text);
-        let first = text[..start].lines().count();
         let mut found = Vec::new();
-        for (number, line) in text[start..end].lines().enumerate() {
-            if ALLOWED.contains(&(file, line.trim())) {
-                continue;
-            }
-            for word in words(line) {
-                let us = self.american(word);
-                found.extend(us.map(|us| format!("{file}:{}: {word} → {us}", first + number + 1)));
+        for (start, end) in self.guarded(file, text) {
+            let first = text[..start].lines().count();
+            for (number, line) in text[start..end].lines().enumerate() {
+                found.extend(self.line_findings(file, line, first + number + 1));
             }
         }
         found
     }
+
+    /// Each British form in `line`, line `at` of `file`, unless the line is allowed.
+    fn line_findings(&mut self, file: &str, line: &str, at: usize) -> Vec<String> {
+        if ALLOWED.contains(&(file, line.trim())) {
+            return Vec::new();
+        }
+        let mut found = Vec::new();
+        for word in words(line) {
+            let us = self.american(word);
+            found.extend(us.map(|us| format!("{file}:{at}: {word} → {us}")));
+        }
+        found
+    }
+}
+
+/// Where each section of the changelog `text` whose heading begins `Unreleased` lies, as the
+/// byte it starts at and its end: `develop`'s `Unreleased`, and a minor line's
+/// `Unreleased in X.Y.0`.
+fn unreleased(text: &str) -> Vec<(usize, usize)> {
+    let mut found = Vec::new();
+    let mut from = 0;
+    while let Some(at) = text[from..].find("\n## Unreleased") {
+        let start = from + at + 1;
+        let end = text[start + 3..]
+            .find("\n## ")
+            .map_or(text.len(), |end| start + 3 + end);
+        found.push((start, end));
+        from = end;
+    }
+    found
 }
 
 /// Every file of the `spec/` tree at `dir`, by its path under `spec/` after `prefix`, read as
@@ -410,6 +433,18 @@ fn the_repositorys_published_decisions_are_those_bound_with_a_published_history(
         guard.published.len() > 10,
         "{} published",
         guard.published.len()
+    );
+}
+
+#[test]
+fn the_unreleased_entries_of_a_minor_line_are_read_beside_those_of_develop() {
+    let text = "# Changelog\n\n## Unreleased in 2.1.0\n\n- A colour.\n\n## 2.0.1-alpha.1 (2026-01-02)\n\nA colour.\n\n## Unreleased\n\n- A favour.\n\n## 2.0.0 (2026-01-01)\n\nA colour.\n";
+    assert_eq!(
+        Guard::default().findings("CHANGELOG.md", text),
+        [
+            "CHANGELOG.md:5: colour → color",
+            "CHANGELOG.md:13: favour → favor"
+        ]
     );
 }
 
