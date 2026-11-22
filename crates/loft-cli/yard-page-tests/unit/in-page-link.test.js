@@ -139,3 +139,9 @@ test('a click on a footnote\u2019s reference that asks for another tab is left t
   assert.equal(reference.getAttribute('href'), ROUTE);
   assert.deepEqual(brought, []);
 });
+
+test('a heading drawn from Markdown holds no empty link of its own for the keyboard to stop on', () => {
+  const block = html('<h2 id="user-content-notes">Notes<a href="#notes" aria-label="Link to heading \'Notes\'" class="anchor"></a></h2>');
+  assert.equal(block.querySelectorAll('a').length, 0);
+  assert.equal(block.querySelector('h2')?.textContent, 'Notes');
+});

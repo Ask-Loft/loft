@@ -157,10 +157,12 @@ export function inline(rendered) {
 /**
  * Dresses HTML that `loft` rendered from Markdown, in a block and in a name alike, so the two
  * cannot drift apart: a web link opens a new tab, a link within the page keeps the Yard Log
- * shown, and a color in a code span is drawn on that color.
+ * shown, and a color in a code span is drawn on that color. The empty anchor comrak writes in
+ * each heading goes: unseen, it would only be a stop of the keyboard that names its heading again.
  * @param {Element} element
  */
 function dress(element) {
+  for (const anchor of element.querySelectorAll('a.anchor:empty')) anchor.remove();
   newTabs(element);
   stayOnPage(element);
   swatch(element);
@@ -168,8 +170,9 @@ function dress(element) {
 
 /**
  * Opens each link of rendered Markdown to a web address in a new tab, so that following one
- * leaves the Yard page as it was, and gives the page it opens no hold on this one. A `mailto:`
- * link and a link within the page stay as they are.
+ * leaves the Yard page as it was, and gives the page it opens no hold on this one. A link to this
+ * page at a Yard Log becomes that Yard Log's route, which the page shows in its own tab; a
+ * `mailto:` link and a link within the page stay as they are.
  * @param {Element} element
  */
 function newTabs(element) {
@@ -178,7 +181,6 @@ function newTabs(element) {
     const href = link.getAttribute('href') ?? '';
     if (/^https?:\/\//i.test(href)) {
       const url = new URL(href);
-      // This page at a Yard Log is a route of it, which it shows in the tab it is in.
       if (url.origin === location.origin && url.pathname === location.pathname && parse(url.hash)) {
         link.setAttribute('href', url.hash);
         continue;
@@ -210,9 +212,9 @@ function stayOnPage(element) {
     const shown = () => link.setAttribute('href', location.hash || '#');
     for (const type of ['pointerdown', 'focus']) link.addEventListener(type, shown);
     link.addEventListener('click', (event) => {
-      // A click that asks for another tab or window goes to the Yard Log shown, as `shown` set it.
-      const { button = 0, metaKey, ctrlKey, shiftKey, altKey } = /** @type {MouseEvent} */ (event);
-      if (button !== 0 || metaKey || ctrlKey || shiftKey || altKey) return;
+      // A click that asks for another tab or window is the browser's, to the address `shown` set.
+      const click = /** @type {MouseEvent} */ (event);
+      if (click.button || click.metaKey || click.ctrlKey || click.shiftKey || click.altKey) return;
       event.preventDefault();
       if (!place) return;
       // Focusable, so the keyboard and a screen reader go on from the place, as they would after
@@ -234,7 +236,9 @@ function stayOnPage(element) {
  * @returns {HTMLElement | undefined}
  */
 function placeOf(element, name) {
-  return /** @type {HTMLElement[]} */ ([...element.querySelectorAll('[id]')]).find((node) => node.id === name || node.id === `user-content-${name}`);
+  // The prefix `header_id_prefix` gives in `markdown.rs`.
+  const heading = `user-content-${name}`;
+  return /** @type {HTMLElement[]} */ ([...element.querySelectorAll('[id]')]).find((node) => node.id === name || node.id === heading);
 }
 
 /**

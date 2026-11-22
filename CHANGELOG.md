@@ -29,11 +29,11 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   following it leaves the Yard page as it was; a screen reader hears that it does, and text copied
   from the block does not hold those words. A link written to a file, or to an address that begins
   with `//`, is drawn as its text, and an image or a link within a link as its text.
-- Following a footnote on the Yard page, or another link to a place within it, brings that place
-  into view and moves the focus to it, where it used to replace the Yard Log shown; opened in a new
-  tab, it shows that same Yard Log.
-- A link to the address of a Yard Log, its full address on this page included, opens that Yard
-  Log in the same tab, and a link to a heading of a block brings that heading into view.
+- Following a footnote on the Yard page, a link to a heading of its block, or another link to a
+  place within the page, brings that place into view and moves the focus to it, where it used to
+  replace the Yard Log shown; opened in a new tab, it shows that same Yard Log.
+- A link to the address of a Yard Log, written as its route or as the page's full address, opens
+  that Yard Log in the same tab.
 - A table column that a block's Markdown aligns to the right or to the center stays so aligned.
 
 ## 2.4.1 (2026-11-22)

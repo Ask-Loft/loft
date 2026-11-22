@@ -7,8 +7,8 @@
 
 use comrak::nodes::{Node, NodeValue};
 
-/// Turns each image under `root` that the page keeps into a link to it, and each link or image it
-/// does not keep into its text.
+/// Turns each image under `root` that the page keeps into a link to it, each link or image it
+/// does not keep into its text, and puts each footnote's reference within a link right after it.
 pub fn keep_safe(root: Node<'_>) {
     // Collected first: undoing a link moves its text, which would cut a walk of the tree short.
     let links: Vec<(Node<'_>, String)> = root
@@ -40,11 +40,7 @@ fn move_footnotes_out_of_links(root: Node<'_>) {
         .collect();
     // From the last, so that two references within one link keep their order after it.
     for footnote in footnotes.into_iter().rev() {
-        let link = footnote
-            .ancestors()
-            .skip(1)
-            .find(|above| matches!(above.data().value, NodeValue::Link(_)));
-        if let Some(link) = link {
+        if let Some(link) = link_above(footnote) {
             link.insert_after(footnote);
         }
     }
@@ -54,9 +50,14 @@ fn move_footnotes_out_of_links(root: Node<'_>) {
 /// link within another, which a browser splits in two. The walk reaches a node after those above
 /// it, so an image above it is a link by then, and one undone is no longer above it.
 fn is_within_a_link(node: Node<'_>) -> bool {
+    link_above(node).is_some()
+}
+
+/// The nearest link that holds `node`, if one does.
+fn link_above(node: Node<'_>) -> Option<Node<'_>> {
     node.ancestors()
         .skip(1)
-        .any(|above| matches!(above.data().value, NodeValue::Link(_)))
+        .find(|above| matches!(above.data().value, NodeValue::Link(_)))
 }
 
 /// Whether `node`, a link to `url`, is one the autolink extension made of a `www.` address or a
