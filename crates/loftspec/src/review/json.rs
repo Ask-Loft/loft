@@ -6,6 +6,8 @@ use serde_json::{Value, json};
 
 use super::{Assertion, Change, Fact, Holder, Linked, Packet, Unit, WithCriteria};
 use crate::codec::Sites;
+use crate::identity::Key;
+use crate::kind::NodeKind;
 use crate::query::element_fields;
 
 pub(super) struct Render<'a> {
@@ -83,8 +85,21 @@ impl Render<'_> {
         let kind = fact.kind().as_str();
         let mut fields = element_fields(key, fact.label, kind, sites.get(key), &fact.name);
         fields.insert("view".to_owned(), fact.view.clone());
-        let mentions = fact.mentions.iter().map(|target| target.key().to_string());
-        fields.insert("mentions".to_owned(), json!(mentions.collect::<Vec<_>>()));
+        fields.insert(
+            "mentions".to_owned(),
+            keys(fact.mentions.iter().map(|id| id.key())),
+        );
+        match fact.kind() {
+            NodeKind::Feature => {
+                let realizes = keys(fact.realizes.iter().map(|id| id.key()));
+                fields.insert("realizes".to_owned(), realizes);
+            }
+            NodeKind::Component => {
+                let scoped_to = keys(fact.scoped_to.iter().map(|id| id.key()));
+                fields.insert("scopedTo".to_owned(), scoped_to);
+            }
+            _ => {}
+        }
         fields.insert("change".to_owned(), json!(fact.change.map(Change::as_str)));
         Value::Object(fields)
     }
@@ -97,6 +112,11 @@ impl Render<'_> {
             "before": assertion.before.as_ref().map(|before| self.fact(before)),
         })
     }
+}
+
+/// The keys `ids` gives, as a JSON list.
+fn keys(ids: impl Iterator<Item = Key>) -> Value {
+    Value::Array(ids.map(|key| Value::String(key.to_string())).collect())
 }
 
 fn decision(linked: &Linked) -> Value {

@@ -19,11 +19,11 @@ fn keys(facts: impl IntoIterator<Item = NodeId>) -> Vec<Key> {
     facts.into_iter().map(NodeId::key).collect()
 }
 
-fn ns(numbers: &[u32]) -> Vec<Key> {
+pub(crate) fn ns(numbers: &[u32]) -> Vec<Key> {
     numbers.iter().map(|n| key(*n)).collect()
 }
 
-fn packed(document: &Document, base: Option<&Document>, node: Option<NodeId>) -> Packet {
+pub(crate) fn packed(document: &Document, base: Option<&Document>, node: Option<NodeId>) -> Packet {
     pack(document, base, node).unwrap()
 }
 
@@ -39,7 +39,7 @@ fn outline(packet: &Packet) -> Vec<(Key, Vec<Key>)> {
         .collect()
 }
 
-fn unit(packet: &Packet, scope: u32) -> &Unit {
+pub(crate) fn unit(packet: &Packet, scope: u32) -> &Unit {
     packet
         .units
         .iter()
@@ -47,7 +47,7 @@ fn unit(packet: &Packet, scope: u32) -> &Unit {
         .unwrap()
 }
 
-fn criterion_mut(document: &mut Document) -> &mut loftspec::tree::Criterion {
+pub(crate) fn criterion_mut(document: &mut Document) -> &mut loftspec::tree::Criterion {
     &mut document.products[0].feature_groups[0].features[0].requirements[0].criteria[0]
 }
 

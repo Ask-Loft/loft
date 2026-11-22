@@ -11706,6 +11706,33 @@ links:
       - file: "crates/loft-cli/tests/review.rs"
         name: "against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed"
         body: 4f29df80d4af5d46e910be7c0b8013347baf581aacf9491dbda718517420a656
+  - node: 01a203de-a777-77f7-bb30-25849c5b8a8b
+    reviewed: 0b7b2eb85c791845ce9dff847d959b0a4d57f676dd0f09ccfc9254e48269cc42
+    tests:
+      - file: "crates/loftspec/tests/review_edges.rs"
+        name: "each_feature_carries_the_components_it_realizes_in_key_order"
+        body: 0568dc113e8606539eed68ac05054b5239e1a215a519d27a1268a30d70f1d3e5
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_feature_carries_its_realizes_and_a_component_its_scoped_to"
+        body: 9bdf2343279404be7b2c418ca1cf8f9e02360bb991a75530d15af2cd127de172
+  - node: 01a203de-bf6a-75a3-85bf-fd368db19f03
+    reviewed: d6a420cc2ef60973efedc46c542c08eca24a6f7c0b1f3367dd821ca0a6663c8c
+    tests:
+      - file: "crates/loftspec/tests/review_edges.rs"
+        name: "each_component_carries_the_products_it_is_scoped_to"
+        body: a50348d4ba6cf293c0eef1fbdf3d6aa7fddbb98201437080cd43aae6a96cb008
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "a_feature_carries_its_realizes_and_a_component_its_scoped_to"
+        body: 9bdf2343279404be7b2c418ca1cf8f9e02360bb991a75530d15af2cd127de172
+  - node: 01a203de-a777-77f7-bb30-2585faed29fb
+    reviewed: 8788f247bbc8ab878ac2160426ed905dd4223b3e643868004830af731d7ab0e9
+    tests:
+      - file: "crates/loftspec/tests/review_edges.rs"
+        name: "a_scope_whose_realizes_alone_differ_is_changed"
+        body: 2e4c1eb5871b3e804d3165c0636a4df82fbf3fba1b1ab12cdb1b843f2df43a49
+      - file: "crates/loftspec/tests/review_edges.rs"
+        name: "a_realized_component_whose_scoped_to_alone_differs_is_changed"
+        body: f346d58da481dd9225bc9838e1635769be4725bbe57294a2e5294cdd3ec4a244
   - node: 01a154b0-f757-7647-acce-6beae7b5291a
     reviewed: f466581561428f5834e11d077feb86a1313f598caa96c4fae6301ac05d4b5704
     tests:

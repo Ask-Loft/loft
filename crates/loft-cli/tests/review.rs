@@ -128,6 +128,31 @@ fn each_node_carries_its_key_label_kind_site_name_and_view() {
 }
 
 #[test]
+fn a_feature_carries_its_realizes_and_a_component_its_scoped_to() {
+    let scratch = Scratch::with_reading_list();
+    let document = packet(&scratch, &["--node", "remove-a-book"], None);
+    let unit = &units(&document)[0];
+    let mut components: Vec<&str> = unit["realizes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|realized| realized["component"]["node"]["key"].as_str().unwrap())
+        .collect();
+    components.sort_unstable();
+    assert_ne!(components, Vec::<&str>::new());
+    assert_eq!(
+        unit["scope"]["node"]["realizes"],
+        serde_json::json!(components)
+    );
+    let component = &unit["realizes"][0]["component"]["node"];
+    assert!(component["scopedTo"].is_array(), "{component}");
+    assert!(component.get("realizes").is_none());
+    assert!(unit["scope"]["node"].get("scopedTo").is_none());
+    assert!(gone(&document).get("realizes").is_none());
+    assert!(gone(&document).get("scopedTo").is_none());
+}
+
+#[test]
 fn against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node() {
     let (scratch, git) = edited();
     let document = packet(&scratch, &["--base", "develop"], Some(&git));

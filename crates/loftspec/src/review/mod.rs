@@ -10,13 +10,14 @@ mod json;
 mod links;
 mod pages;
 mod side;
+mod written;
 
 use serde_json::Value;
 
 use crate::decision::StateKind;
 use crate::document::{Document, TermEntry};
 use crate::identity::Label;
-use crate::ids::{DecisionId, ElementId, NodeId};
+use crate::ids::{ComponentId, DecisionId, ElementId, NodeId, ProductId};
 use crate::kind::NodeKind;
 
 pub use self::pages::{Page, PagedUnit, Refused, Version, page};
@@ -46,6 +47,7 @@ impl Change {
 
 /// A node as the packet gives it, from the tree or, where only the base holds it, the base.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Fact {
     pub id: NodeId,
     pub label: Option<Label>,
@@ -54,6 +56,10 @@ pub struct Fact {
     pub view: Value,
     /// The elements the node mentions, in the order of their keys.
     pub mentions: Vec<ElementId>,
+    /// For a Feature, the Components it realizes, in the order of their keys.
+    pub realizes: Vec<ComponentId>,
+    /// For a Component, the Products it is scoped to, in the order of their keys.
+    pub scoped_to: Vec<ProductId>,
     pub change: Option<Change>,
     /// Whether the fact is read from the base, which alone holds the node.
     pub from_base: bool,
