@@ -78,27 +78,21 @@ pub(crate) struct Keyed {
 }
 
 impl Keyed {
-    pub fn of(document: &Document) -> Self {
-        Self {
-            views: own_views(document),
-            order: Self::order_of(document),
-            written: BTreeMap::new(),
-        }
-    }
-
     /// A document's keyed nodes as they are compared, with the edges each one's record writes:
     /// a Feature's `realizes`, a Component's `scopedTo` and any node's `mentions`. The content
     /// view leaves edges to the edges root, but the record writes these, so a change to them
     /// changes the node.
     pub(crate) fn compared(document: &Document) -> Self {
-        let mut keyed = Self::of(document);
-        keyed.written = (written(document).into_iter())
-            .filter_map(|(from, edges)| match from {
-                ElementId::Node(node) => Some((node, edges)),
-                ElementId::Decision(_) => None,
-            })
-            .collect();
-        keyed
+        Self {
+            views: own_views(document),
+            order: Self::order_of(document),
+            written: (written(document).into_iter())
+                .filter_map(|(from, edges)| match from {
+                    ElementId::Node(node) => Some((node, edges)),
+                    ElementId::Decision(_) => None,
+                })
+                .collect(),
+        }
     }
 
     /// A document's keyed nodes in order, parents before children.

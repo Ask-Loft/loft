@@ -7,9 +7,12 @@ use crate::common::{component, criterion, key, small_document, term};
 use loftspec::decision::DecisionState;
 use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
-use loftspec::ids::{ComponentId, ConstraintId, CriterionId, DecisionId, FeatureId, NodeId};
+use loftspec::ids::{
+    ComponentId, ConstraintId, CriterionId, DecisionId, ElementId, FeatureId, NodeId,
+    QualityAttributeId, RequirementId,
+};
 use loftspec::kind::NodeKind;
-use loftspec::review::{Change, Packet, Unit, Via, pack};
+use loftspec::review::{Change, Fact, Packet, Unit, Via, pack};
 use loftspec::tree::{Constraint, Details};
 
 fn keys(facts: impl IntoIterator<Item = NodeId>) -> Vec<Key> {
@@ -312,12 +315,18 @@ fn an_added_assertion_is_reviewed_with_nothing_before_it() {
     assert!(assertion.before.is_none());
 }
 
-#[test]
-fn a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node() {
+/// The small document with CON-2 (9) moved from FG-1 to P-1.
+fn with_the_constraint_moved() -> Document {
     let mut document = small_document();
     let product = &mut document.products[0];
     let moved = product.feature_groups[0].constraints.remove(0);
     product.constraints.push(moved);
+    document
+}
+
+#[test]
+fn a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node() {
+    let document = with_the_constraint_moved();
     let packet = packed(&document, Some(&small_document()), None);
     assert_eq!(outline(&packet), [(key(1), ns(&[9]))]);
     let assertion = &unit(&packet, 1).assertions[0];
@@ -342,22 +351,22 @@ fn an_assertion_whose_mentions_alone_differ_is_reviewed_as_changed() {
 }
 
 /// The keys of the elements `fact` mentions, as the packet lists them.
-fn mentioned(fact: &loftspec::review::Fact) -> Vec<Key> {
+fn mentioned(fact: &Fact) -> Vec<Key> {
     fact.mentions.iter().map(|element| element.key()).collect()
 }
 
 #[test]
 fn each_node_carries_the_keys_it_mentions_in_key_order() {
     let mut document = small_document();
-    let source = || -> loftspec::ids::ElementId { CriterionId::new(key(5)).into() };
-    document.edges.push(Edge::Mentions {
-        source: source(),
-        target: DecisionId::new(key(20)).into(),
-    });
-    document.edges.push(Edge::Mentions {
-        source: source(),
-        target: loftspec::ids::QualityAttributeId::new(key(10)).into(),
-    });
+    let source: ElementId = CriterionId::new(key(5)).into();
+    let targets: [ElementId; 3] = [
+        DecisionId::new(key(20)).into(),
+        QualityAttributeId::new(key(10)).into(),
+        DecisionId::new(key(20)).into(),
+    ];
+    for target in targets {
+        document.edges.push(Edge::Mentions { source, target });
+    }
     let packet = packed(&document, None, None);
     let feature = unit(&packet, 3);
     assert_eq!(
@@ -369,13 +378,10 @@ fn each_node_carries_the_keys_it_mentions_in_key_order() {
 
 #[test]
 fn an_assertion_that_moved_and_changed_its_mentions_is_changed() {
-    let mut document = small_document();
-    let product = &mut document.products[0];
-    let moved = product.feature_groups[0].constraints.remove(0);
-    product.constraints.push(moved);
+    let mut document = with_the_constraint_moved();
     document.edges.push(Edge::Mentions {
         source: ConstraintId::new(key(9)).into(),
-        target: loftspec::ids::RequirementId::new(key(4)).into(),
+        target: RequirementId::new(key(4)).into(),
     });
     let packet = packed(&document, Some(&small_document()), None);
     assert_eq!(outline(&packet), [(key(1), ns(&[9]))]);

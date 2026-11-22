@@ -11639,7 +11639,7 @@ links:
         body: a508c559f1d76b6508da3fecfbb4f844adcda98728a4364674b4d81ab38134b9
       - file: "crates/loftspec/tests/review.rs"
         name: "a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node"
-        body: 2564c5d9c344a7ead3dd6aaeb38530195119d7864f6607c4e83b536383801396
+        body: b5f0871f0543fce1a6d989c2f91160575ed4adccfd781503441bebfd64ad4dda
   - node: 01a154b0-f757-7647-acce-6be02cd564a0
     reviewed: 47716950996c6629836007d5ee904a02f9119914e313f26e71059528859a0aa6
     tests:
@@ -11693,7 +11693,7 @@ links:
         body: 3c3983cbb4f46c7a4de63babff7dec82968c71f0fa6bc84673e8b16498ae981a
       - file: "crates/loft-cli/tests/review.rs"
         name: "each_node_carries_its_key_label_kind_site_name_and_view"
-        body: 842ae400e3af2ca02bf360c1ad84d7ecd8c3671353075297f5f58c630a8305e2
+        body: ffe89ebb0a0daff163989618c9ec149d3b6c2692a0a64496f1b36641fdedc53c
       - file: "crates/loftspec/tests/review_pages.rs"
         name: "each_node_carries_its_key_label_kind_site_name_and_view"
         body: ba0149810a782e3990724ea91d1d40db3769425a33bd3ac2a83cfbac4565b28b
@@ -11702,10 +11702,10 @@ links:
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "each_node_carries_the_keys_it_mentions_in_key_order"
-        body: 2a6316c11298f0e9918ea45954b0f67ec904075415dedb07a6fd0f005fb8d215
+        body: 00ebe8891aee61e7b650454bf38a89c48fc00a7acc2f9dafcddf074c56bea760
       - file: "crates/loft-cli/tests/review.rs"
         name: "against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed"
-        body: 34def8e6b986d37267fae07bf7998d414fb4756deebc504de231760ff1baaddb
+        body: 5bbc6df566f5dfe248351531ab2e130ab6d2b112e324f823c0938707667380e5
   - node: 01a154b0-f757-7647-acce-6beae7b5291a
     reviewed: f466581561428f5834e11d077feb86a1313f598caa96c4fae6301ac05d4b5704
     tests:
@@ -11795,13 +11795,13 @@ links:
         body: 265b17ce405fd5fe06ab5f49a33ee170709246764a47236306f88837f5b33c5e
       - file: "crates/loft-cli/tests/review.rs"
         name: "against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed"
-        body: 34def8e6b986d37267fae07bf7998d414fb4756deebc504de231760ff1baaddb
+        body: 5bbc6df566f5dfe248351531ab2e130ab6d2b112e324f823c0938707667380e5
   - node: 01a154b0-f757-7647-acce-6bf980680196
     reviewed: 6095dc3df9f145476d2d4e3c0e21c2a1fe0b034bd40320e2131deabfa59c5c62
     tests:
       - file: "crates/loftspec/tests/review.rs"
         name: "a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node"
-        body: 2564c5d9c344a7ead3dd6aaeb38530195119d7864f6607c4e83b536383801396
+        body: b5f0871f0543fce1a6d989c2f91160575ed4adccfd781503441bebfd64ad4dda
       - file: "crates/loftspec/tests/diff.rs"
         name: "a_node_whose_content_is_the_base_s_and_whose_parent_is_not_is_moved"
         body: a78ff12bc5b422eded099b5c72b486d460923e2d1c8792e3ae52bb21541fa537
@@ -11810,7 +11810,7 @@ links:
         body: 38a5b0b61cffe52777aa08dc983ce0343d59cb9cfc6732cd1879188505da880c
       - file: "crates/loftspec/tests/review.rs"
         name: "an_assertion_that_moved_and_changed_its_mentions_is_changed"
-        body: 1f0fcd559de10b8cd09206c3ddb44802f298605e1a1984f8b7dce4ca2fdd364a
+        body: be73833da6b0cc692af4fbcca5e4eb97ebfa8b5ae2a32bc5335ea99ada7f7d68
   - node: 01a154b0-f757-7647-acce-6bfa7e8f4371
     reviewed: 1d4add0061db44c4835c047deb506e5d92d1bf7cda2531829198b98ebc36d784
     tests:
@@ -11828,7 +11828,7 @@ links:
         body: c656fc7cb815a6b71b0234ab2e83ce226f2932dfee2f4682ad3fd302bcf5ee08
       - file: "crates/loftspec/tests/review.rs"
         name: "a_moved_assertion_is_reviewed_in_its_new_scope_beside_the_base_s_node"
-        body: 2564c5d9c344a7ead3dd6aaeb38530195119d7864f6607c4e83b536383801396
+        body: b5f0871f0543fce1a6d989c2f91160575ed4adccfd781503441bebfd64ad4dda
       - file: "crates/loftspec/tests/review.rs"
         name: "a_removed_assertion_lands_in_the_unit_of_its_scope_at_the_base"
         body: b8e95ccb0e6c609cc4d36fd7c70ea930a35dc42e47021e3d5e1a310c938a3d4c

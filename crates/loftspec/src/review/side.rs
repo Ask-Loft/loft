@@ -186,7 +186,8 @@ impl<'a> Side<'a> {
     }
 }
 
-/// The elements each node of `document` mentions, in the order of their keys.
+/// The elements each node of `document` mentions, in the order of their keys, each once, as the
+/// diff counts them.
 fn mentioned(document: &Document) -> BTreeMap<NodeId, Vec<ElementId>> {
     let mut mentioned: BTreeMap<NodeId, Vec<ElementId>> = BTreeMap::new();
     for edge in &document.edges {
@@ -199,7 +200,8 @@ fn mentioned(document: &Document) -> BTreeMap<NodeId, Vec<ElementId>> {
         }
     }
     for targets in mentioned.values_mut() {
-        targets.sort_by_key(|target| target.key());
+        targets.sort_unstable_by_key(|target| target.key());
+        targets.dedup();
     }
     mentioned
 }
