@@ -3,23 +3,28 @@
 //! anything is sent to the document's own remote.
 
 use std::fs;
+use std::process::Output;
 
 use serde_json::json;
-use software_plant::BrowserScenario;
 use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::{BrowserScenario, Clock, InstalledBrowser};
 
 use crate::common::connected::{Connected, connected, paths};
-use crate::common::others::{COPY, list, shelves, shelves_remote};
+use crate::common::others::{COPY, list, shelves, shelves_remote, shelves_scenario};
 use crate::common::signed_in::{self, document, granted, keep, sign_ins};
-use crate::common::{stderr, tree};
+use crate::common::{EPOCH, stderr, tree};
 
 /// A published, connected tree with a criterion to publish and a copy of the other document's
 /// "Shelf lookup", with a sign-in to each remote.
 fn holding_a_copy() -> (Connected, Remote) {
+    holding_a_copy_at(shelves_remote(&shelves()))
+}
+
+/// [`holding_a_copy`], the other document served by `other`.
+fn holding_a_copy_at(other: Remote) -> (Connected, Remote) {
     let run = connected(2, 2, RemoteScenario::accepting);
     // The change goes to the first file that holds criteria, which the copy would be once added.
     run.change();
-    let other = shelves_remote(&shelves());
     list(&run.scratch, &other.address());
     keep(
         &run.scratch,
@@ -91,6 +96,40 @@ fn a_copy_that_differs_is_refused_naming_its_file_and_nothing_is_sent_or_written
     assert_eq!(run.lock(), lock);
 }
 
+/// Publishes `run` in front of a browser that would visit any address it is given.
+fn publish_watched(run: &Connected) -> (Output, InstalledBrowser) {
+    let clock = Clock::fixed(EPOCH).passing();
+    let (mut command, browser) = signed_in::command_at(
+        &run.scratch,
+        BrowserScenario::Visiting,
+        Some(&run.git),
+        &clock,
+    );
+    let output = command
+        .args(["publish", "--format", "json"])
+        .output()
+        .unwrap();
+    (output, browser)
+}
+
+/// Asserts that `output` is refused before anything is sent to the document's own remote, that
+/// its error names the sign-in to the copy's remote, and that no browser was opened.
+fn refused_for_sign_in(run: &Connected, output: &Output, browser: &InstalledBrowser) -> String {
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = Connected::message(output);
+    assert!(
+        message.contains("loft interface login shelves"),
+        "{message}"
+    );
+    assert!(run.calls().is_empty(), "{:?}", run.calls());
+    assert_eq!(
+        browser.visits(),
+        Vec::<String>::new(),
+        "no browser is opened"
+    );
+    message
+}
+
 #[test]
 fn a_publish_without_a_sign_in_to_a_copys_remote_is_refused_before_anything_is_sent() {
     let (run, other) = holding_a_copy();
@@ -99,13 +138,23 @@ fn a_publish_without_a_sign_in_to_a_copys_remote_is_refused_before_anything_is_s
         &json!({ run.remote.address(): granted(&run.remote, 3600) }),
     );
     let asked = other.requests().len();
-    let output = run.publish();
-    assert_eq!(output.status.code(), Some(1), "{output:?}");
-    let message = Connected::message(&output);
-    assert!(
-        message.contains("loft interface login shelves"),
-        "{message}"
-    );
-    assert!(run.calls().is_empty(), "{:?}", run.calls());
+    let (output, browser) = publish_watched(&run);
+    refused_for_sign_in(&run, &output, &browser);
     assert_eq!(other.requests().len(), asked);
+}
+
+#[test]
+fn a_publish_whose_sign_in_to_a_copys_remote_has_lapsed_is_refused_before_anything_is_sent() {
+    let history = shelves();
+    let other = Remote::start(shelves_scenario(&history).lapsing());
+    let (run, other) = holding_a_copy_at(other);
+    let kept = json!({
+        run.remote.address(): granted(&run.remote, 3600),
+        other.address(): granted(&other, 60),
+    });
+    keep(&run.scratch, &kept);
+    let (output, browser) = publish_watched(&run);
+    let message = refused_for_sign_in(&run, &output, &browser);
+    assert!(message.contains("lapsed"), "{message}");
+    assert_eq!(sign_ins(&run.scratch), kept, "nothing is written");
 }

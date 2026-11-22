@@ -195,6 +195,14 @@ export function labelOf(node) {
 }
 
 /**
+ * The words that mark a panel of another document's Interface by the handle of its copy.
+ * @param {string} handle
+ */
+export function fromWords(handle) {
+  return `from ${handle}`;
+}
+
+/**
  * The head of a box: its label, or what stands for it, and the word of its change.
  * @param {any} node
  */
@@ -249,11 +257,13 @@ function cardOf(node, id, measure) {
  */
 function panelOf(node, id, depth, measure, room) {
   const { label, word } = headOf(node);
-  const head = 12 + measure([label], 'spec-label').width + 8 + measure([node.name ?? ''], 'spec-panel-name').width + (word ? 16 + measure([word], 'spec-word').width : 0);
+  const document = node.document ?? null;
+  const from = document ? 8 + measure([fromWords(document)], 'spec-document').width : 0;
+  const head = 12 + measure([label], 'spec-label').width + 8 + measure([node.name ?? ''], 'spec-panel-name').width + from + (word ? 16 + measure([word], 'spec-word').width : 0);
   return {
     id,
     group: true,
-    panel: { key: node.key, kind: node.kind, label, name: node.name ?? '', word, change: node.change ?? null, depth, chosen: Boolean(node.change), head: room.head, pad: room.pad },
+    panel: { key: node.key, kind: node.kind, label, name: node.name ?? '', document, word, change: node.change ?? null, depth, chosen: Boolean(node.change), head: room.head, pad: room.pad },
     layoutOptions: {
       'elk.padding': `[top=${room.head},left=${room.pad},bottom=${room.pad},right=${room.pad}]`,
       'elk.nodeSize.constraints': 'MINIMUM_SIZE',

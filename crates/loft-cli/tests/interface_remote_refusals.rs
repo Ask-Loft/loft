@@ -192,7 +192,18 @@ fn a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_aga
     let output = interface(&scratch, &["add", "shelves:IF-1"]);
     assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
     keep(&scratch, &json!({ remote.address(): granted(&remote, 60) }));
-    let message = refused(&scratch, &["status"]);
+    let args = ["interface", "status", "--format", "json"];
+    let (output, browser) = signed_in::run(&scratch, &args, BrowserScenario::Visiting, None);
+    assert_eq!(output.status.code(), Some(1), "{}", stderr(&output));
+    let message = conforming(&output)["errors"][0]["message"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    assert_eq!(
+        browser.visits(),
+        Vec::<String>::new(),
+        "no browser is opened"
+    );
     assert!(message.contains("has lapsed"), "{message}");
     let login = format!("`loft interface login {HANDLE}` signs in again");
     assert!(message.contains(&login), "{message}");

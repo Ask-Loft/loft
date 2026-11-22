@@ -149,7 +149,8 @@ export function specChangeView(report, body, context = {}) {
  * decision's lists beneath them each subject it gained or lost, marked added or removed, with its
  * role.
  * @param {{ key?: string, change: string, kind: string, label?: string | null, name?: string,
- *   words?: { before?: string, after?: string }, subjects?: Subject[] }} entry
+ *   words?: { before?: string, after?: string }, subjects?: Subject[],
+ *   pin?: { before: number | null, after: number | null } }} entry
  */
 export function diffItem(entry) {
   const { before, after } = entry.words ?? {};
@@ -167,7 +168,8 @@ export function diffItem(entry) {
       runs.map(({ text, mark }) => (mark === 'added' ? h('ins', {}, text) : mark === 'removed' ? h('del', {}, text) : text)),
     ),
   );
-  if (before !== undefined && before === after) item.append(h('p', { class: 'diff-same' }, 'Only its other fields changed.'));
+  if (entry.pin) item.append(h('p', { class: 'diff-pin' }, pinned(entry.pin)));
+  else if (before !== undefined && before === after) item.append(h('p', { class: 'diff-same' }, 'Only its other fields changed.'));
   item.append(...(entry.subjects ?? []).map(subjectLine));
   return item;
 }
@@ -186,4 +188,14 @@ function subjectLine(subject) {
   const label = labelOf(subject);
   const shown = subject.name ? named({ ...subject, label }) : tag(label);
   return h('p', { class: 'diff-subject' }, `Subject ${subject.change}: `, h(subject.change === 'added' ? 'ins' : 'del', {}, shown), ` as ${subject.role}`);
+}
+
+/**
+ * The publish sequence of a copy's pin before and after, in words.
+ * @param {{ before: number | null, after: number | null }} pin
+ */
+function pinned({ before, after }) {
+  if (before !== null && after !== null) return `Pinned at publish sequence ${before} → ${after}`;
+  if (after !== null) return `Pinned at publish sequence ${after}`;
+  return `Was pinned at publish sequence ${before}`;
 }

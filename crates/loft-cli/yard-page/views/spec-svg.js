@@ -7,7 +7,7 @@
 
 import { svg } from '../lib/dom.js';
 import { PAD } from '../model/flowchart.js';
-import { CARD, CHIP, KIND_NAMES } from '../model/spec-graph.js';
+import { CARD, CHIP, KIND_NAMES, fromWords } from '../model/spec-graph.js';
 
 /**
  * The attributes that let a node be chosen and name it to a reader.
@@ -28,8 +28,9 @@ function choosable(what, name) {
  * @param {number} right
  * @param {number} y the head's middle
  * @param {string} [name] a panel's name, after its label
+ * @param {string | null} [document] the handle of the copy that holds a panel's Interface
  */
-function head(what, left, right, y, name) {
+function head(what, left, right, y, name, document) {
   return [
     svg('rect', { class: `spec-kind spec-kind--${what.kind}`, x: left, y: y - 3, width: 6, height: 6 }),
     svg(
@@ -37,6 +38,7 @@ function head(what, left, right, y, name) {
       { x: left + 12, y, 'dominant-baseline': 'central' },
       svg('tspan', { class: 'spec-label' }, what.label),
       name ? svg('tspan', { class: 'spec-panel-name', dx: 8 }, name) : null,
+      document ? svg('tspan', { class: 'spec-document', dx: 8 }, fromWords(document)) : null,
     ),
     what.word ? svg('text', { class: 'spec-word', x: right, y, 'text-anchor': 'end', 'dominant-baseline': 'central' }, what.word) : null,
   ];
@@ -104,10 +106,10 @@ export function panelSvg(group) {
     {
       class: `spec-panel spec-panel--${panel.change ?? 'context'} spec-panel--${panel.depth % 2 ? 'odd' : 'even'}`,
       'data-panel': group.id,
-      ...choosable(panel, panel.name),
+      ...choosable(panel, panel.document ? `${panel.name}, ${fromWords(panel.document)}` : panel.name),
     },
     svg('rect', { class: 'spec-panel-frame', x, y, width, height }),
     panel.change ? svg('rect', { class: 'spec-bar', x, y, width: CARD.bar, height }) : null,
-    head(panel, x + CARD.bar + panel.pad, x + width - panel.pad, y + panel.head / 2, panel.name),
+    head(panel, x + CARD.bar + panel.pad, x + width - panel.pad, y + panel.head / 2, panel.name, panel.document),
   );
 }

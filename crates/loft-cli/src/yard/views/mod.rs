@@ -8,6 +8,8 @@
 mod counts;
 mod decision;
 mod graph;
+mod graph_copies;
+mod graph_edges;
 mod trace;
 mod words;
 

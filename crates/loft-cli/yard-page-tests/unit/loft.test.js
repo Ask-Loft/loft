@@ -824,3 +824,43 @@ test('a finding’s node without a label yet shows a muted mark that says it get
   assert.deepEqual([...line.querySelectorAll('.site')].map((site) => [site.textContent, site.getAttribute('title')]), [['one.yaml:3', 'spec/one.yaml:3'], ['two.yaml:9', 'spec/sub/two.yaml:9']]);
   assert.match(css, /\.no-label \{ color: var\(--muted\);/);
 });
+
+test('a panel of another document’s Interface is marked by the copy’s handle, and one of the document’s own is not', async () => {
+  const copied = { key: 'i', kind: 'interface', label: 'shelves:IF-1', name: 'Shelf lookup', parent: null, change: 'changed', document: 'shelves' };
+  const promise = { key: 'ic', kind: 'criterion', label: 'shelves:AC-8', name: 'The returned book has the title asked for.', parent: 'i', change: 'changed', document: 'shelves' };
+  const own = { key: 'o', kind: 'interface', label: 'IF-1', name: 'Shelf stock', parent: null, change: 'added' };
+  const layout = await laid({ nodes: [copied, promise, own] });
+  assert.equal(at(layout, 'i').panel.document, 'shelves');
+  const svg = flowchartSvg(layout, 'p1');
+  const [first, second] = [...svg.querySelectorAll('.spec-panel')];
+  assert.equal(first.querySelector('.spec-label')?.textContent, 'shelves:IF-1');
+  assert.equal(first.querySelector('.spec-document')?.textContent, 'from shelves');
+  assert.match(first.getAttribute('aria-label') ?? '', /from shelves/);
+  assert.equal(second.querySelector('.spec-document'), null);
+  const room = 12 + measure(['shelves:IF-1']).width + 8 + measure(['Shelf lookup']).width + 8 + measure(['from shelves']).width;
+  assert.ok(at(layout, 'i').width >= room, 'the panel is as wide as its head, the handle included');
+  assert.match(css, /\.flow \.spec-document \{[^}]*fill: var\(--kind-interface\);/);
+});
+
+test('a copy’s entry in the diff gives the publish sequence of its pin before and after', () => {
+  const lookup = { kind: 'interface', label: 'shelves:IF-1', name: 'Shelf lookup', document: 'shelves', words: { before: 'Shelf lookup', after: 'Shelf lookup' } };
+  const view = diffView([
+    { ...lookup, key: 'a', change: 'changed', pin: { before: 1, after: 2 } },
+    { ...lookup, key: 'b', change: 'added', pin: { before: null, after: 2 }, words: { after: 'Shelf lookup' } },
+    { ...lookup, key: 'c', change: 'removed', pin: { before: 1, after: null }, words: { before: 'Shelf lookup' } },
+  ]);
+  const pins = [...view.querySelectorAll('.diff .diff-pin')].map((line) => line.textContent);
+  assert.deepEqual(pins, ['Pinned at publish sequence 1 → 2', 'Pinned at publish sequence 2', 'Was pinned at publish sequence 1']);
+  assert.match(view.querySelector('.diff li').textContent, /shelves:IF-1/);
+  assert.equal(view.querySelectorAll('.diff-same').length, 0, 'a moved pin is its change, not only other fields');
+});
+
+test('an entry of documents shows its handle and its address before and after', () => {
+  const view = diffView([
+    { key: 'document:shelves', kind: 'document', label: null, name: 'shelves', change: 'changed', words: { before: 'https://old.example/remote', after: 'https://new.example/remote' } },
+  ]);
+  const item = view.querySelector('.diff li');
+  assert.match(item.textContent, /^changed\s+other document\s+shelves/);
+  assert.equal(item.querySelector('.diff-words del')?.textContent, 'https://old.example/remote');
+  assert.equal(item.querySelector('.diff-words ins')?.textContent, 'https://new.example/remote');
+});
