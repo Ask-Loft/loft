@@ -166,7 +166,7 @@ requirements:
       shall: "reach it at the address of its entry of `documents`, or of `--remote`, with the person's sign-in to that address."
     criteria:
       - key: 01a1f981-4db0-72b8-8a39-a6e04cc92c07
-        name: "Where `loft/remotes.json` holds no sign-in for the address, `loft interface add` and `loft interface update` sign the person in to it first."
+        name: "Where `loft/remotes.json` holds no sign-in for the address, or the remote refuses the one it holds, `loft interface add` and `loft interface update` sign the person in to it, once, and go on."
       - key: 01a1f981-4db0-72b8-8a39-a6e1b6d6cb59
         name: "`LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` change no call to another document's remote."
       - key: 01a1f981-4db0-72b8-8a39-a6e264c76548
