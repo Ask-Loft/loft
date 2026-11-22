@@ -335,7 +335,36 @@ fn an_assertion_whose_mentions_alone_differ_is_reviewed_as_changed() {
     assert_eq!(outline(&packet), [(key(3), ns(&[5]))]);
     let assertion = &unit(&packet, 3).assertions[0];
     assert_eq!(assertion.change, Some(Change::Changed));
-    assert!(assertion.before.is_some());
+    let before = assertion.before.as_ref().unwrap();
+    assert_eq!(mentioned(before), ns(&[4]));
+    let now = &unit(&packet, 3).requirements[0].criteria[0];
+    assert_eq!(mentioned(now), ns(&[]));
+}
+
+/// The keys of the elements `fact` mentions, as the packet lists them.
+fn mentioned(fact: &loftspec::review::Fact) -> Vec<Key> {
+    fact.mentions.iter().map(|element| element.key()).collect()
+}
+
+#[test]
+fn each_node_carries_the_keys_it_mentions_in_key_order() {
+    let mut document = small_document();
+    let source = || -> loftspec::ids::ElementId { CriterionId::new(key(5)).into() };
+    document.edges.push(Edge::Mentions {
+        source: source(),
+        target: DecisionId::new(key(20)).into(),
+    });
+    document.edges.push(Edge::Mentions {
+        source: source(),
+        target: loftspec::ids::QualityAttributeId::new(key(10)).into(),
+    });
+    let packet = packed(&document, None, None);
+    let feature = unit(&packet, 3);
+    assert_eq!(
+        mentioned(&feature.requirements[0].criteria[0]),
+        ns(&[4, 10, 20])
+    );
+    assert_eq!(mentioned(&feature.requirements[0].requirement), ns(&[]));
 }
 
 #[test]

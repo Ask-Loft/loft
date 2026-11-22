@@ -83,6 +83,8 @@ impl Render<'_> {
         let kind = fact.kind().as_str();
         let mut fields = element_fields(key, fact.label, kind, sites.get(key), &fact.name);
         fields.insert("view".to_owned(), fact.view.clone());
+        let mentions = fact.mentions.iter().map(|target| target.key().to_string());
+        fields.insert("mentions".to_owned(), json!(mentions.collect::<Vec<_>>()));
         fields.insert("change".to_owned(), json!(fact.change.map(Change::as_str)));
         Value::Object(fields)
     }

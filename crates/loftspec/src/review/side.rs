@@ -11,7 +11,7 @@ use serde_json::Value;
 
 use crate::diff::{Keyed, changes};
 use crate::document::{Document, Edge};
-use crate::ids::NodeId;
+use crate::ids::{ElementId, NodeId};
 use crate::index::Index;
 use crate::kind::NodeKind;
 use crate::node::Node;
@@ -39,6 +39,8 @@ pub(super) struct Side<'a> {
     pub links: DecisionLinks,
     /// The Components each Feature realizes, in the order of the edges.
     realized: BTreeMap<NodeId, Vec<NodeId>>,
+    /// The elements each node mentions, in the order of their keys.
+    mentioned: BTreeMap<NodeId, Vec<ElementId>>,
     holders: RefCell<BTreeMap<NodeId, Holder>>,
 }
 
@@ -76,6 +78,7 @@ impl<'a> Side<'a> {
             changes: BTreeMap::new(),
             links: links::decision_links(document),
             realized,
+            mentioned: mentioned(document),
             holders: RefCell::new(BTreeMap::new()),
         }
     }
@@ -153,6 +156,7 @@ impl<'a> Side<'a> {
             label: self.document.bindings.label_of(id),
             name: node.name().into_owned(),
             view: self.keyed.views.get(&id).cloned().unwrap_or(Value::Null),
+            mentions: self.mentioned.get(&id).cloned().unwrap_or_default(),
             change: self.change(id),
             from_base: self.which == Which::Base,
         }
@@ -180,6 +184,24 @@ impl<'a> Side<'a> {
         self.holders.borrow_mut().insert(id, holder.clone());
         holder
     }
+}
+
+/// The elements each node of `document` mentions, in the order of their keys.
+fn mentioned(document: &Document) -> BTreeMap<NodeId, Vec<ElementId>> {
+    let mut mentioned: BTreeMap<NodeId, Vec<ElementId>> = BTreeMap::new();
+    for edge in &document.edges {
+        if let Edge::Mentions {
+            source: ElementId::Node(node),
+            target,
+        } = edge
+        {
+            mentioned.entry(*node).or_default().push(*target);
+        }
+    }
+    for targets in mentioned.values_mut() {
+        targets.sort_by_key(|target| target.key());
+    }
+    mentioned
 }
 
 /// The tree and the base of a review, with the phrases of the tree's terms.

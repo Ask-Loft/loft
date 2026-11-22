@@ -110,6 +110,7 @@ fn each_node_carries_its_key_label_kind_site_name_and_view() {
     assert!(criterion["line"].as_u64().unwrap() > 1 && criterion["column"].as_u64().unwrap() > 1);
     assert_eq!(criterion["name"], "A removed book no longer lists.");
     assert!(criterion["view"].is_array());
+    assert_eq!(criterion["mentions"], serde_json::json!([]));
 }
 
 #[test]
@@ -128,6 +129,31 @@ fn against_a_base_a_changed_assertion_is_reviewed_beside_the_base_s_node() {
     let base = &document["provenance"]["base"];
     assert_eq!(base["revision"], "develop");
     assert_eq!(base["commit"], COMMIT);
+}
+
+#[test]
+fn against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed() {
+    let scratch = Scratch::with_reading_list();
+    let git = based_on_now(&scratch);
+    let text = fs::read_to_string(scratch.file(FEATURE)).unwrap();
+    let feature = text.lines().next().unwrap().strip_prefix("key: ").unwrap();
+    let mentions = format!("{PLAIN}\n        mentions:\n          - {feature}");
+    scratch.edit(FEATURE, PLAIN, &mentions);
+    let document = packet(&scratch, &["--base", "develop"], Some(&git));
+    assert_eq!(units(&document).len(), 1);
+    let assertions = units(&document)[0]["assertions"].as_array().unwrap();
+    assert_eq!(assertions.len(), 1, "{assertions:?}");
+    assert_eq!(assertions[0]["key"], GONE);
+    assert_eq!(assertions[0]["change"], "changed");
+    assert_eq!(assertions[0]["before"]["mentions"], serde_json::json!([]));
+    let criterion = units(&document)[0]["requirements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|each| each["criteria"].as_array().unwrap())
+        .find(|criterion| criterion["key"] == GONE)
+        .unwrap();
+    assert_eq!(criterion["mentions"], serde_json::json!([feature]));
 }
 
 #[test]

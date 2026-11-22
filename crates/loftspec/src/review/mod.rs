@@ -16,7 +16,7 @@ use serde_json::Value;
 use crate::decision::StateKind;
 use crate::document::{Document, TermEntry};
 use crate::identity::Label;
-use crate::ids::{DecisionId, NodeId};
+use crate::ids::{DecisionId, ElementId, NodeId};
 use crate::kind::NodeKind;
 
 pub use self::pages::{Page, PagedUnit, Refused, Version, page};
@@ -52,6 +52,8 @@ pub struct Fact {
     pub name: String,
     /// The node's own content view, its children's hashes left out.
     pub view: Value,
+    /// The elements the node mentions, in the order of their keys.
+    pub mentions: Vec<ElementId>,
     pub change: Option<Change>,
     /// Whether the fact is read from the base, which alone holds the node.
     pub from_base: bool,

@@ -38,6 +38,12 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
+- `loft review --base` reviews an assertion whose `mentions` entries alone changed as `changed`,
+  as `loft status --base` already lists it; it used to leave such an assertion out, and to call
+  one that moved and changed its `mentions` `moved`. Each node of the packet now carries
+  `mentions`, the keys of the nodes and decisions it mentions in the order of their keys, so a
+  changed assertion shows what it mentions beside what it mentioned at the base. The output
+  follows the schema `loft-review/2`, and `loftspec::review::Fact` gains the field `mentions`.
 - `loft remote set` and `loft remote login` refuse a remote whose challenge names its protected
   resource metadata, or whose metadata names its protected resource, on another origin than the
   remote's address. The refusal comes before anything is asked of that origin, before a client is

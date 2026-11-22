@@ -11693,10 +11693,19 @@ links:
         body: 3c3983cbb4f46c7a4de63babff7dec82968c71f0fa6bc84673e8b16498ae981a
       - file: "crates/loft-cli/tests/review.rs"
         name: "each_node_carries_its_key_label_kind_site_name_and_view"
-        body: de0f141496d727d7766b8ebda45a8117b1ed5353f9e16ef7c3f796cabf611d08
+        body: 842ae400e3af2ca02bf360c1ad84d7ecd8c3671353075297f5f58c630a8305e2
       - file: "crates/loftspec/tests/review_pages.rs"
         name: "each_node_carries_its_key_label_kind_site_name_and_view"
         body: ba0149810a782e3990724ea91d1d40db3769425a33bd3ac2a83cfbac4565b28b
+  - node: 01a203ce-5c93-76fc-92c8-89837a6e8547
+    reviewed: 50de3dc8da45dc8ee48298cd246d4bd339e44b3845c39bbef458b525963f4b8a
+    tests:
+      - file: "crates/loftspec/tests/review.rs"
+        name: "each_node_carries_the_keys_it_mentions_in_key_order"
+        body: 2a6316c11298f0e9918ea45954b0f67ec904075415dedb07a6fd0f005fb8d215
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed"
+        body: 34def8e6b986d37267fae07bf7998d414fb4756deebc504de231760ff1baaddb
   - node: 01a154b0-f757-7647-acce-6beae7b5291a
     reviewed: f466581561428f5834e11d077feb86a1313f598caa96c4fae6301ac05d4b5704
     tests:
@@ -11783,7 +11792,10 @@ links:
         body: a7f355d09373dadfabfb13e9c57181412002499e684f2cb455bc389edb220981
       - file: "crates/loftspec/tests/review.rs"
         name: "an_assertion_whose_mentions_alone_differ_is_reviewed_as_changed"
-        body: ce27f1f1fe94fce43aaf6cd8fb939b4957200c68cea29ea7d3a633903bbd923b
+        body: 265b17ce405fd5fe06ab5f49a33ee170709246764a47236306f88837f5b33c5e
+      - file: "crates/loft-cli/tests/review.rs"
+        name: "against_a_base_an_assertion_whose_mentions_alone_changed_is_reviewed"
+        body: 34def8e6b986d37267fae07bf7998d414fb4756deebc504de231760ff1baaddb
   - node: 01a154b0-f757-7647-acce-6bf980680196
     reviewed: 6095dc3df9f145476d2d4e3c0e21c2a1fe0b034bd40320e2131deabfa59c5c62
     tests:
