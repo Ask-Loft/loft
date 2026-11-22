@@ -31,11 +31,12 @@ pub(super) fn run(
     connected(&document)?;
     let listed = (document.documents.iter()).find(|entry| entry.handle == handle);
     let address = address(&handle, listed, remote)?;
-    let client = remote::other(
-        &address,
-        listed.map(|entry| entry.key.to_string()).as_deref(),
-        SignIn::First { browser },
-    )?;
+    let key = listed.map(|entry| entry.key.to_string());
+    let whose = remote::Whose::Other {
+        handle: handle.as_str(),
+        key: key.as_deref(),
+    };
+    let client = remote::other(&address, whose, SignIn::First { browser })?;
     let sequence = match at {
         Some(at) => at.get(),
         None => head_sequence(&client, &handle)?,

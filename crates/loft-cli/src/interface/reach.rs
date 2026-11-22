@@ -98,7 +98,11 @@ impl Remotes {
     fn client(&mut self, entry: &OtherDocument) -> Result<&Client, Stop> {
         if !self.clients.contains_key(&entry.handle) {
             let key = entry.key.to_string();
-            let client = match remote::other(&entry.remote, Some(&key), self.sign_in) {
+            let whose = remote::Whose::Other {
+                handle: entry.handle.as_str(),
+                key: Some(&key),
+            };
+            let client = match remote::other(&entry.remote, whose, self.sign_in) {
                 Ok(client) => client,
                 Err(
                     RemoteError::NoSignIn { .. }

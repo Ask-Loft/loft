@@ -16,7 +16,12 @@ pub(super) fn run(root: &Path, handle: &str, browser: bool) -> Result<Report, St
         .ok()
         .and_then(|handle| (document.documents.iter()).find(|entry| entry.handle == handle))
         .ok_or_else(|| refused(format!("`documents` does not list {handle}")))?;
-    remote::login(&entry.remote, &entry.key.to_string(), browser)?;
+    let key = entry.key.to_string();
+    let whose = remote::Whose::Other {
+        handle,
+        key: Some(&key),
+    };
+    remote::login(&entry.remote, whose, browser)?;
     let address = &entry.remote;
     Ok(Report {
         outcome: "signed in",

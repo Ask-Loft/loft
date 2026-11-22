@@ -12,6 +12,7 @@ pub mod history;
 pub mod signin;
 pub mod signins;
 pub mod states;
+mod whose;
 mod wire;
 
 use std::fmt;
@@ -23,6 +24,7 @@ use crate::environment;
 use crate::network;
 
 pub use client::{Client, Refusal};
+pub use whose::Whose;
 pub use wire::sha256_hex;
 
 /// The variable that names the remote's address for one run, in place of the manifest's.
@@ -235,7 +237,7 @@ pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError>
     Ok(Client::new(&address, Some(token), timeout, wait))
 }
 
-/// The access token of the person's sign-in to `address`, the address of the document of `key`:
+/// The access token of the person's sign-in to `address`, the remote of `whose`:
 /// the one `loft/remotes.json` holds, refreshed where it needs to be; or else, where it holds none,
 /// one only for a protected resource on another origin, or one whose refresh is refused, a new
 /// sign-in kept there in its place, opened in the person's browser where `browser` allows.
@@ -245,7 +247,7 @@ pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError>
 /// `loft/remotes.json` cannot be read or written, or the sign-in cannot be made.
 pub fn signed_in(
     address: &str,
-    key: &str,
+    whose: Whose<'_>,
     browser: bool,
     timeout: Duration,
 ) -> Result<String, RemoteError> {
@@ -256,7 +258,7 @@ pub fn signed_in(
             | RemoteError::SignInElsewhere { .. }
             | RemoteError::Lapsed { .. },
         ) => {
-            let sign_in = signin::sign_in(address, key, browser, timeout)?;
+            let sign_in = signin::sign_in(address, whose, browser, timeout)?;
             let token = sign_in.access_token.clone();
             signins::save(address, &sign_in)?;
             Ok(token)
@@ -265,22 +267,18 @@ pub fn signed_in(
     }
 }
 
-/// A new sign-in to `address`, the address of the document of `key`, kept in `loft/remotes.json`,
-/// opened in the person's browser where `browser` allows.
+/// A new sign-in to `address`, the remote of `whose`, kept in `loft/remotes.json`, opened in the
+/// person's browser where `browser` allows.
 ///
 /// # Errors
 ///
 /// The address may not be contacted, `LOFT_REMOTE_TIMEOUT` is not a whole number of seconds,
 /// the sign-in cannot be made, or `loft/remotes.json` cannot be written.
-pub fn login(address: &str, key: &str, browser: bool) -> Result<(), RemoteError> {
+pub fn login(address: &str, whose: Whose<'_>, browser: bool) -> Result<(), RemoteError> {
     checked(address)?;
-    let sign_in = signin::sign_in(address, key, browser, timeout()?)?;
+    let sign_in = signin::sign_in(address, whose, browser, timeout()?)?;
     signins::save(address, &sign_in)
 }
-
-/// What stands for a document's key not yet known, in the form of the address a Loft server
-/// gives it.
-const UNKNOWN_KEY: &str = "<documentKey>";
 
 /// How a command that reaches another document's remote holds the person's sign-in to it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -292,23 +290,20 @@ pub enum SignIn {
     Kept,
 }
 
-/// The client of another document's remote at `address`, the address of the document of `key`
-/// where it is known, with the person's sign-in to that
-/// address as `sign_in` holds it. Neither `LOFT_REMOTE_ENDPOINT` nor `LOFT_REMOTE_TOKEN` is
+/// The client of another document's remote at `address`, the remote of `whose`, with the
+/// person's sign-in to that address as `sign_in` holds it. Neither `LOFT_REMOTE_ENDPOINT` nor `LOFT_REMOTE_TOKEN` is
 /// read: they name the document's own remote alone.
 ///
 /// # Errors
 ///
 /// A timeout variable is not a whole number of seconds, the address may not be contacted, no
 /// sign-in can be made, or, for [`SignIn::Kept`], none is kept or its refresh is refused.
-pub fn other(address: &str, key: Option<&str>, sign_in: SignIn) -> Result<Client, RemoteError> {
+pub fn other(address: &str, whose: Whose<'_>, sign_in: SignIn) -> Result<Client, RemoteError> {
     let timeout = timeout()?;
     let wait = seconds(WAIT_ENV)?;
     checked(address)?;
     let token = match sign_in {
-        SignIn::First { browser } => {
-            signed_in(address, key.unwrap_or(UNKNOWN_KEY), browser, timeout)?
-        }
+        SignIn::First { browser } => signed_in(address, whose, browser, timeout)?,
         SignIn::Kept => signins::live(address, timeout)?.access_token,
     };
     Ok(Client::new(address, Some(token), timeout, wait))
