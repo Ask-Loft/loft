@@ -17409,9 +17409,30 @@ links:
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "a_login_at_a_listed_address_that_is_no_document_s_remote_points_at_its_entry"
         body: b85a3a036c4e72e357cab1d389f4a92b2e5f5ab488abb8ce82c092ea1a63a944
+  - node: 01a2040b-aaf8-7478-8d83-f1d4043f2dca
+    reviewed: 639ae727cddc9442495dfbf39fe3c1fdd7b85e4283ed1e64e0a3fef4edaa4221
+    tests:
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "an_add_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
+        body: 900bbcaa40800974ebb357292e6734061d5b76ac3c25cc28fb18e4ff7bcf67e5
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "a_status_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
+        body: 2ff16bca0bac42ebe36394ffbc751476ca43e3a20121840c44cc64b0113803ef
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again"
+        body: fe68272d069aee4e550e3ea125d82dd2add473a74bcf29e689416f8af224d640
   - node: 01a2040b-aaf8-7478-8d83-f1d567bd1078
     reviewed: 068663e8ce7917ec4c6543ec29ae87c65a352e3e8dabb8ff1fd86e5ed622550b
     tests:
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "an_add_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
+        body: 900bbcaa40800974ebb357292e6734061d5b76ac3c25cc28fb18e4ff7bcf67e5
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "a_status_whose_sign_in_the_remote_refuses_says_that_interface_login_signs_in_again"
+        body: 2ff16bca0bac42ebe36394ffbc751476ca43e3a20121840c44cc64b0113803ef
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again"
+        body: fe68272d069aee4e550e3ea125d82dd2add473a74bcf29e689416f8af224d640
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "an_add_at_an_address_that_is_no_document_s_remote_says_that_remote_takes_the_document_s"
         body: 61d967a9b1bf514df3ea65a2d0a313977e3ffb7871225cb5d704dfad2c98bd1d

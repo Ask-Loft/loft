@@ -15,6 +15,28 @@ use crate::remote::states::{self, StateError};
 use crate::remote::{self, Client, RemoteError, SignIn};
 use crate::stop::Stop;
 
+/// `error` from the remote of the other document listed under `handle`, in the words of
+/// `loft interface`: a sign-in to it is made by `loft interface login`, never `loft remote`.
+pub(super) fn reached(error: RemoteError, handle: &Slug) -> Stop {
+    let login = format!("`loft interface login {handle}`");
+    match error {
+        RemoteError::NoSignIn { address } => refused(format!(
+            "no sign-in to {address} for {handle}: {login} signs in"
+        )),
+        RemoteError::Lapsed { address, error } => refused(format!(
+            "the sign-in to {address} for {handle} has lapsed ({error}): {login} signs in again"
+        )),
+        RemoteError::SignInElsewhere { address, resource } => refused(format!(
+            "the sign-in kept under {address} for {handle} is for a protected resource on \
+             another origin, {resource}: {login} signs in again"
+        )),
+        RemoteError::Refused { address, refusal } => {
+            Stop::one("remote", format!("{address}: {}", refusal.said(&login)))
+        }
+        error => error.into(),
+    }
+}
+
 /// The publish sequence of the head of the remote `client` reaches.
 pub(super) fn head_sequence(client: &Client, handle: &Slug) -> Result<u64, Stop> {
     let head = head::fetch(client, handle.as_str()).map_err(|error| match error {
@@ -23,7 +45,7 @@ pub(super) fn head_sequence(client: &Client, handle: &Slug) -> Result<u64, Stop>
              lists under {handle}",
             client.address()
         )),
-        error => error.into(),
+        error => reached(error, handle),
     })?;
     match Head::read(&head) {
         Some(head) if head.sequence > 0 => Ok(head.sequence),
@@ -34,13 +56,13 @@ pub(super) fn head_sequence(client: &Client, handle: &Slug) -> Result<u64, Stop>
     }
 }
 
-/// The published state of `sequence` at the remote `client` reaches, or none where it holds
-/// none.
-pub(super) fn state(client: &Client, sequence: u64) -> Result<Option<State>, Stop> {
+/// The published state of `sequence` at the remote `client` reaches, the remote of the other
+/// document listed under `handle`, or none where it holds none.
+pub(super) fn state(client: &Client, handle: &Slug, sequence: u64) -> Result<Option<State>, Stop> {
     match states::state(client, sequence) {
         Ok(taken) => Ok(Some(taken)),
         Err(StateError::Missing) => Ok(None),
-        Err(StateError::Remote(error)) => Err(error.into()),
+        Err(StateError::Remote(error)) => Err(reached(error, handle)),
         Err(StateError::Disagrees(reason)) => Err(refused(reason)),
     }
 }
@@ -102,20 +124,8 @@ impl Remotes {
                 handle: entry.handle.as_str(),
                 key: Some(&key),
             };
-            let client = match remote::other(&entry.remote, whose, self.sign_in) {
-                Ok(client) => client,
-                Err(
-                    RemoteError::NoSignIn { .. }
-                    | RemoteError::SignInElsewhere { .. }
-                    | RemoteError::Lapsed { .. },
-                ) => {
-                    return Err(refused(format!(
-                        "no live sign-in to {} for {}: `loft interface login {}` signs in",
-                        entry.remote, entry.handle, entry.handle
-                    )));
-                }
-                Err(error) => return Err(error.into()),
-            };
+            let client = remote::other(&entry.remote, whose, self.sign_in)
+                .map_err(|error| reached(error, &entry.handle))?;
             self.clients.insert(entry.handle.clone(), client);
         }
         Ok(&self.clients[&entry.handle])
@@ -141,7 +151,7 @@ impl Remotes {
     pub fn state(&mut self, entry: &OtherDocument, sequence: u64) -> Result<Option<&State>, Stop> {
         let key = (entry.handle.clone(), sequence);
         if !self.states.contains_key(&key) {
-            let taken = state(self.client(entry)?, sequence)?;
+            let taken = state(self.client(entry)?, &entry.handle, sequence)?;
             if let Some((_, lock)) = &taken
                 && lock.document_key != entry.key
             {

@@ -83,24 +83,41 @@ impl Refusal {
     }
 }
 
-impl fmt::Display for Refusal {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "the remote answered {}", self.status)?;
+impl Refusal {
+    /// The refusal in words, where a refused sign-in says that `login`, a command, signs in
+    /// again.
+    #[must_use]
+    pub fn said(&self, login: &str) -> String {
+        let mut said = String::new();
+        self.write(&mut said, login)
+            .expect("a String takes every write");
+        said
+    }
+
+    fn write(&self, out: &mut impl fmt::Write, login: &str) -> fmt::Result {
+        write!(out, "the remote answered {}", self.status)?;
         if let Some(code) = self.code() {
-            write!(formatter, " with the code `{code}`")?;
+            write!(out, " with the code `{code}`")?;
         }
         if let Some(detail) = self.detail() {
-            write!(formatter, ": {detail}")?;
+            write!(out, ": {detail}")?;
         }
         if self.known() == Some("unauthenticated") {
-            formatter.write_str(
-                "; the remote refused the sign-in: `loft remote login` signs in again",
+            write!(
+                out,
+                "; the remote refused the sign-in: {login} signs in again"
             )?;
         }
         if self.later() {
-            formatter.write_str("; try again later")?;
+            out.write_str("; try again later")?;
         }
         Ok(())
+    }
+}
+
+impl fmt::Display for Refusal {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.write(formatter, "`loft remote login`")
     }
 }
 
