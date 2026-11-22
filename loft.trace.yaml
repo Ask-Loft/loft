@@ -14189,10 +14189,19 @@ links:
     tests:
       - file: "crates/loft-cli/tests/publish_copies.rs"
         name: "a_publish_without_a_sign_in_to_a_copys_remote_is_refused_before_anything_is_sent"
-        body: e877dc668252282fc6f6f92af7eec23a5282cdbcef87921aa1dacfd137e3c096
+        body: 58fb3b1bc57f0998c11e4bb963bf0f3db16be64ab00c71658f9b362e187f3eb9
       - file: "crates/loft-cli/tests/publish_copies.rs"
         name: "a_publish_whose_copies_match_is_sent_as_any_publish_is"
         body: bcd34e2adb9f08c7f59438b8a7ad1fb6df794583e8df73e688134dae743e83ff
+  - node: 01a2046e-4099-7577-98eb-77e07e777acd
+    reviewed: 2e69b1c416b7b9f6b2486337f282fb973fb2cdf5f11be352b7cf8b50e21e8c5d
+    tests:
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_publish_without_a_sign_in_to_a_copys_remote_is_refused_before_anything_is_sent"
+        body: 58fb3b1bc57f0998c11e4bb963bf0f3db16be64ab00c71658f9b362e187f3eb9
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_publish_whose_sign_in_to_a_copys_remote_has_lapsed_is_refused_before_anything_is_sent"
+        body: f3aaaa8e2a97feaa02eabd55068331e8aad71c818f33e88e175923b5161e2270
   - node: 01a1f981-4db0-72b8-8a39-a6e7b8094995
     reviewed: 853a3d9466ee7280c202f67a58b52350285817ea449efae72b09f2d0e3ff98fb
     tests:
@@ -17292,6 +17301,15 @@ links:
       - file: "crates/loft-cli/tests/interface_status.rs"
         name: "a_copy_whose_interface_the_head_changed_is_behind_and_the_command_exits_0"
         body: 10f240c6192658133a6c033b169cae9bd3cfc28b83d9e0159187f1c679240612
+  - node: 01a2046e-4099-7577-98eb-77df3b0c9ad9
+    reviewed: 48d84411c8c5af7bc9222bcaacc4dfb1069fe04f434a29e68f03f4298f9d46a2
+    tests:
+      - file: "crates/loft-cli/tests/interface_status.rs"
+        name: "status_without_a_kept_sign_in_says_that_login_makes_one_and_opens_no_browser"
+        body: 18c453ab89de7eff4d91103c513baf5d3b4b1ea725340825e77481f9f55dc5ce
+      - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
+        name: "a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again"
+        body: 3673c3c200c22a2a07025b9cf5b72eb763486dba7d86b2074c2b528a1df2a6c7
   - node: 01a1f981-4db0-72b8-8a39-a6d3acadc49b
     reviewed: 5fcdd4d9ffdc8504f0fb6295ac82278a2b938f17a61dd492ad32dc355a19cc94
     tests:
@@ -17429,7 +17447,7 @@ links:
         body: d98339e66b906dd1e4eed87f759197770a48afeb7f3f18d403f845bad93a961f
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again"
-        body: fe68272d069aee4e550e3ea125d82dd2add473a74bcf29e689416f8af224d640
+        body: 3673c3c200c22a2a07025b9cf5b72eb763486dba7d86b2074c2b528a1df2a6c7
   - node: 01a2040b-aaf8-7478-8d83-f1d567bd1078
     reviewed: 068663e8ce7917ec4c6543ec29ae87c65a352e3e8dabb8ff1fd86e5ed622550b
     tests:
@@ -17444,7 +17462,7 @@ links:
         body: 27888803ce2794d43f7c0ff7c2f4b9153001992fdb4c456767b475953dc0705e
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "a_status_whose_kept_sign_in_has_lapsed_says_that_interface_login_signs_in_again"
-        body: fe68272d069aee4e550e3ea125d82dd2add473a74bcf29e689416f8af224d640
+        body: 3673c3c200c22a2a07025b9cf5b72eb763486dba7d86b2074c2b528a1df2a6c7
       - file: "crates/loft-cli/tests/interface_remote_refusals.rs"
         name: "an_add_at_an_address_that_is_no_document_s_remote_says_that_remote_takes_the_document_s"
         body: 61d967a9b1bf514df3ea65a2d0a313977e3ffb7871225cb5d704dfad2c98bd1d
