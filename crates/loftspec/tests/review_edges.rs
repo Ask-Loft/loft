@@ -1,11 +1,11 @@
 //! The edges each node of the review packet writes (The review packet), over the small document
 //! of `review`: F-1 (3) realizes CMP-1 (6), which is scoped to P-1 (1).
 
-use crate::common::{component, key};
+use crate::common::{component, key, product};
 use crate::review::{criterion_mut, ns, packed, unit};
 use loftspec::document::{Document, Edge};
 use loftspec::identity::Key;
-use loftspec::ids::{ComponentId, FeatureId};
+use loftspec::ids::{ComponentId, FeatureId, ProductId};
 use loftspec::review::{Change, Fact};
 
 use crate::common::small_document;
@@ -44,10 +44,21 @@ fn each_feature_carries_the_components_it_realizes_in_key_order() {
 }
 
 #[test]
-fn each_component_carries_the_products_it_is_scoped_to() {
-    let packet = packed(&small_document(), None, None);
+fn each_component_carries_the_products_it_is_scoped_to_in_key_order_each_once() {
+    let mut document = small_document();
+    document.products.push(product(key(30), "Second product"));
+    for product in [1, 30] {
+        document.edges.insert(
+            0,
+            Edge::ScopedTo {
+                component: ComponentId::new(key(6)),
+                product: ProductId::new(key(product)),
+            },
+        );
+    }
+    let packet = packed(&document, None, None);
     let feature = unit(&packet, 3);
-    assert_eq!(scoped(&feature.realizes[0].component.node), ns(&[1]));
+    assert_eq!(scoped(&feature.realizes[0].component.node), ns(&[1, 30]));
     assert_eq!(scoped(&feature.scope.node), ns(&[]));
 }
 

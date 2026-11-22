@@ -11719,20 +11719,11 @@ links:
     reviewed: d6a420cc2ef60973efedc46c542c08eca24a6f7c0b1f3367dd821ca0a6663c8c
     tests:
       - file: "crates/loftspec/tests/review_edges.rs"
-        name: "each_component_carries_the_products_it_is_scoped_to"
-        body: a50348d4ba6cf293c0eef1fbdf3d6aa7fddbb98201437080cd43aae6a96cb008
+        name: "each_component_carries_the_products_it_is_scoped_to_in_key_order_each_once"
+        body: 86fe1ec424b3417c31b881a495901b59835ab1fe66bea156329dd3585138e972
       - file: "crates/loft-cli/tests/review.rs"
         name: "a_feature_carries_its_realizes_and_a_component_its_scoped_to"
         body: 9bdf2343279404be7b2c418ca1cf8f9e02360bb991a75530d15af2cd127de172
-  - node: 01a203de-a777-77f7-bb30-2585faed29fb
-    reviewed: 8788f247bbc8ab878ac2160426ed905dd4223b3e643868004830af731d7ab0e9
-    tests:
-      - file: "crates/loftspec/tests/review_edges.rs"
-        name: "a_scope_whose_realizes_alone_differ_is_changed"
-        body: 2e4c1eb5871b3e804d3165c0636a4df82fbf3fba1b1ab12cdb1b843f2df43a49
-      - file: "crates/loftspec/tests/review_edges.rs"
-        name: "a_realized_component_whose_scoped_to_alone_differs_is_changed"
-        body: f346d58da481dd9225bc9838e1635769be4725bbe57294a2e5294cdd3ec4a244
   - node: 01a154b0-f757-7647-acce-6beae7b5291a
     reviewed: f466581561428f5834e11d077feb86a1313f598caa96c4fae6301ac05d4b5704
     tests:
@@ -11838,6 +11829,15 @@ links:
       - file: "crates/loftspec/tests/review.rs"
         name: "an_assertion_that_moved_and_changed_its_mentions_is_changed"
         body: be73833da6b0cc692af4fbcca5e4eb97ebfa8b5ae2a32bc5335ea99ada7f7d68
+  - node: 01a203de-a777-77f7-bb30-2585faed29fb
+    reviewed: 8788f247bbc8ab878ac2160426ed905dd4223b3e643868004830af731d7ab0e9
+    tests:
+      - file: "crates/loftspec/tests/review_edges.rs"
+        name: "a_scope_whose_realizes_alone_differ_is_changed"
+        body: 2e4c1eb5871b3e804d3165c0636a4df82fbf3fba1b1ab12cdb1b843f2df43a49
+      - file: "crates/loftspec/tests/review_edges.rs"
+        name: "a_realized_component_whose_scoped_to_alone_differs_is_changed"
+        body: f346d58da481dd9225bc9838e1635769be4725bbe57294a2e5294cdd3ec4a244
   - node: 01a154b0-f757-7647-acce-6bfa7e8f4371
     reviewed: 1d4add0061db44c4835c047deb506e5d92d1bf7cda2531829198b98ebc36d784
     tests:
