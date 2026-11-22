@@ -3,7 +3,8 @@
 //! a changelog, and a bare `origin` whose `main` and `develop` the scratch repository has pushed.
 //! The check passes only when the tag is a release `vX.Y.Z` or a prerelease `vX.Y.Z-alpha.N`,
 //! `-beta.N` or `-rc.N`, names the version every published crate carries, its commit is on
-//! `main` (or, for a prerelease, on `develop`), and `CHANGELOG.md` dates that version.
+//! `main` (or, for a prerelease, on `develop` or on the line `develop-X.Y` of its major and minor
+//! numbers), and `CHANGELOG.md` dates that version.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -206,13 +207,75 @@ fn a_prerelease_tag_on_develop_may_be_released() {
 }
 
 #[test]
-fn a_prerelease_tag_on_neither_develop_nor_main_is_refused() {
+fn a_prerelease_tag_on_none_of_develop_main_and_its_line_is_refused() {
     let (_scratch, repo) = repository();
     version_on(&repo, "1.2.4-beta.2", "side", true);
-    assert_refused(&repo, "v1.2.4-beta.2", "is on neither develop nor main");
+    assert_refused(
+        &repo,
+        "v1.2.4-beta.2",
+        "is on none of develop, develop-1.2 and main",
+    );
     // Nor is one whose commit `origin` does not hold at all.
     version_on(&repo, "1.2.4-rc.1", "unpushed", false);
-    assert_refused(&repo, "v1.2.4-rc.1", "is on neither develop nor main");
+    assert_refused(
+        &repo,
+        "v1.2.4-rc.1",
+        "is on none of develop, develop-1.2 and main",
+    );
+}
+
+/// The npm channel the check reports for `tag`, which it must find may be released.
+fn channel(scratch: &Scratch, repo: &Path, tag: &str) -> String {
+    let outputs = scratch.0.join("outputs");
+    fs::write(&outputs, "").unwrap();
+    let output = release_check_reporting(repo, tag, Some(&outputs));
+    assert_eq!(output.status.code(), Some(0), "{tag}: {}", stderr(&output));
+    assert_eq!(
+        stdout(&output),
+        format!("release-check: {tag} may be released\n")
+    );
+    fs::read_to_string(&outputs).unwrap()
+}
+
+#[test]
+fn a_prerelease_tag_on_the_line_of_its_minor_version_may_be_released_under_next() {
+    let (scratch, repo) = repository();
+    version_on(&repo, "1.3.0-alpha.1", "develop-1.3", true);
+    assert_eq!(channel(&scratch, &repo, "v1.3.0-alpha.1"), "channel=next\n");
+}
+
+#[test]
+fn a_prerelease_on_develop_as_well_as_on_its_line_keeps_its_identifier_s_channel() {
+    let (scratch, repo) = repository();
+    version_on(&repo, "1.3.0-rc.1", "develop", true);
+    git(
+        &repo,
+        &[
+            "push",
+            "--quiet",
+            "--force",
+            "origin",
+            "develop:develop-1.3",
+        ],
+    );
+    assert_eq!(channel(&scratch, &repo, "v1.3.0-rc.1"), "channel=rc\n");
+}
+
+#[test]
+fn a_prerelease_tag_only_on_a_line_of_other_numbers_is_refused() {
+    let (_scratch, repo) = repository();
+    version_on(&repo, "1.3.0-alpha.1", "develop-1.2", true);
+    assert_refused(
+        &repo,
+        "v1.3.0-alpha.1",
+        "is on none of develop, develop-1.3 and main",
+    );
+    version_on(&repo, "2.3.0-alpha.1", "develop-1.3", true);
+    assert_refused(
+        &repo,
+        "v2.3.0-alpha.1",
+        "is on none of develop, develop-2.3 and main",
+    );
 }
 
 #[test]

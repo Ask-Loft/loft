@@ -1,11 +1,13 @@
 #!/bin/sh
 # Checks that a tag may be released: it is a release `vX.Y.Z` or a prerelease
 # `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N` of the version every published crate carries, its
-# commit is on main (or, for a prerelease, on develop), and CHANGELOG.md dates that version.
-# The commit is the tag's once the tag exists, and `HEAD` before it does. Where GitHub's runner
-# names its outputs file in GITHUB_OUTPUT, the check writes there the npm dist-tag to publish
-# under, `channel`: `latest` for a release, or the prerelease's identifier. Run by the release
-# workflow before anything is published; run it by hand before tagging.
+# commit is on main (or, for a prerelease, on develop or on the line develop-X.Y of its major and
+# minor numbers), and CHANGELOG.md dates that version. The commit is the tag's once the tag
+# exists, and `HEAD` before it does. Where GitHub's runner names its outputs file in
+# GITHUB_OUTPUT, the check writes there the npm dist-tag to publish under, `channel`: `latest` for
+# a release, the prerelease's identifier for a prerelease on develop or main, and `next` for one
+# on its line alone. Run by the release workflow before anything is published; run it by hand
+# before tagging.
 #   scripts/release-check.sh v2.0.1
 set -eu
 tag=$1
@@ -20,6 +22,7 @@ if echo "$tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
   branches="main"
 elif echo "$tag" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|rc)\.[0-9]+$'; then
   channel=$(echo "$tag" | sed -E 's/^[^-]*-([a-z]+)\..*$/\1/')
+  line=develop-$(echo "$tag" | sed -E 's/^v([0-9]+\.[0-9]+)\..*$/\1/')
   branches="develop main"
 else
   fail "the tag $tag names neither a release vX.Y.Z nor a prerelease vX.Y.Z-alpha.N, vX.Y.Z-beta.N or vX.Y.Z-rc.N"
@@ -36,10 +39,15 @@ for branch in $branches; do
     on=$branch
   fi
 done
+if [ -z "$on" ] && [ "$channel" != latest ] &&
+  git merge-base --is-ancestor "$commit" "origin/$line" 2>/dev/null; then
+  on=$line
+  channel=next
+fi
 if [ -z "$on" ]; then
   short=$(git rev-parse --short "$commit")
   [ "$channel" = latest ] && fail "the commit of $tag, $short, is not on main"
-  fail "the commit of $tag, $short, is on neither develop nor main"
+  fail "the commit of $tag, $short, is on none of develop, $line and main"
 fi
 grep -Eq "^## $versions \([0-9]{4}-[0-9]{2}-[0-9]{2}\)$" CHANGELOG.md ||
   fail "CHANGELOG.md has no dated entry \"## $versions (YYYY-MM-DD)\""

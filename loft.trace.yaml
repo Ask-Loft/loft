@@ -18253,11 +18253,23 @@ links:
         name: "a_prerelease_tag_on_develop_may_be_released"
         body: 35b50192b781480de7dddd7e11a94612420a92308ea88ce56bc8d3220ac34279
   - node: 01a183e8-7f64-7529-8822-369faf07c801
-    reviewed: 7531f07300a55b02e2f8db9a4f0eeb877d126b4fdaae779cce8500b0e05318e2
+    reviewed: 0ef8d877df7cdd3fb97779f0bf062983c5a551067e56fe89d7b5d34dfe19813e
     tests:
       - file: "crates/loft-cli/tests/release_check.rs"
-        name: "a_prerelease_tag_on_neither_develop_nor_main_is_refused"
-        body: a95f44b4208a79f90de7a63b5f657fe9d9d850d39f59d84d0d96da294d516c05
+        name: "a_prerelease_tag_on_none_of_develop_main_and_its_line_is_refused"
+        body: dba9549fbdd2b6ce0228cfd4f95cfbac4c08b67a3f02b1af26c414c3fe032cf5
+  - node: 01a203f5-dc5a-76a8-bead-d49ef672f6ae
+    reviewed: 5195e467a3d07926097858c2840f3c51062b06f8b527294b6cd021f70e60a5ef
+    tests:
+      - file: "crates/loft-cli/tests/release_check.rs"
+        name: "a_prerelease_tag_on_the_line_of_its_minor_version_may_be_released_under_next"
+        body: 089affc548135ffb28fba0af65148339548c211e1bf323504567668868efdf98
+  - node: 01a203f5-dc5a-76a8-bead-d49f6bff8ef8
+    reviewed: 9b59be2c164df1dd1acad2acc2f2dea3b2a29c9cc5f77ee8584103fbd294bc7b
+    tests:
+      - file: "crates/loft-cli/tests/release_check.rs"
+        name: "a_prerelease_tag_only_on_a_line_of_other_numbers_is_refused"
+        body: f85f685ef93cc1c70630865b66c254b685458a161a05ac5fca2e55e7bc13e41e
   - node: 01a183e8-7f64-7529-8822-36a09db88ebb
     reviewed: f56dab8159eacb9720ea59413e47c811371bef5ef3b26575089b59b72155d348
     tests:
@@ -18289,14 +18301,26 @@ links:
     reviewed: d62dec7d40b86fd176fa6ab0a5226b270caa8651039c24c16973b37c725182df
     unverified: "Checked by hand: the trusted-publishing identities are configured on crates.io and npm, which no test can reach."
   - node: 01a183e8-7f64-7529-8822-36a40bf19ad0
-    reviewed: 51c48736b1dc2a51d9fa71767653530f3428e719c8bb227decea9b44f40e0728
+    reviewed: 7aa2427e0a24e3c2858273de0532afa680ee4a0de219a872e95d35b53d6864b5
     tests:
+      - file: "crates/loft-cli/tests/release_check.rs"
+        name: "a_prerelease_on_develop_as_well_as_on_its_line_keeps_its_identifier_s_channel"
+        body: 21cbbb2218f338faf11aabeb2fe22ba9e2fea1ded1e7079fb6abe22438d942a1
       - file: "crates/loft-cli/tests/release_workflow.rs"
         name: "each_npm_package_is_published_under_the_channel_the_release_check_names"
         body: 3b62a63f712acc3912dad17980aebd812d863c5f16df99a1eb0658749645c6ea
       - file: "crates/loft-cli/tests/release_check.rs"
         name: "the_check_reports_the_npm_channel_of_a_release_and_of_each_prerelease"
         body: 28cd5971aebf1e4ff7a31fc1525583af370a8ade416eee4d6e747fbf7cd5484f
+  - node: 01a203f5-dc5a-76a8-bead-d4a00cab6ee2
+    reviewed: be349b094fa8d7dd02731aba3562c23a43be3236d77d2908be789abe9a3035e0
+    tests:
+      - file: "crates/loft-cli/tests/release_workflow.rs"
+        name: "each_npm_package_is_published_under_the_channel_the_release_check_names"
+        body: 3b62a63f712acc3912dad17980aebd812d863c5f16df99a1eb0658749645c6ea
+      - file: "crates/loft-cli/tests/release_check.rs"
+        name: "a_prerelease_tag_on_the_line_of_its_minor_version_may_be_released_under_next"
+        body: 089affc548135ffb28fba0af65148339548c211e1bf323504567668868efdf98
   - node: 01a183e8-7f64-7529-8822-36a5bbafc01b
     reviewed: cc656f15ff92146a383ad7e6eaff599e532fdbf14acd4c2e5b6f6f89182f0c29
     tests:

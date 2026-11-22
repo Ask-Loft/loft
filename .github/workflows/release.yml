@@ -1,11 +1,12 @@
 name: Release
 
 # A tag `vX.Y.Z` pushed on main releases that version, and a tag `vX.Y.Z-alpha.N`, `-beta.N` or
-# `-rc.N` pushed on develop or main releases that prerelease: the checks run, `loft` is built for
+# `-rc.N` pushed on develop, on main or on the line develop-X.Y of its major and minor numbers
+# releases that prerelease: the checks run, `loft` is built for
 # each platform and the npm packages are assembled; then, once the maintainer approves the
 # `release` environment, the crates go to crates.io, the npm packages to npm, and the tag gets a
 # GitHub release with the binaries. A prerelease goes to npm under the dist-tag of its
-# identifier, and its GitHub release is marked a prerelease, so that only those who ask for it
+# identifier, or `next` from its line alone, and its GitHub release is marked a prerelease, so that only those who ask for it
 # get it. Both registries trust this workflow directly (Trusted Publishing), so no registry
 # token is stored in the repository.
 
@@ -31,8 +32,9 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest@0.9.146
-      # The tag names the crates' version, as a release on main or a prerelease on develop or
-      # main, and the changelog dates it; the check names the npm channel to publish under.
+      # The tag names the crates' version, as a release on main or a prerelease on develop, main
+      # or its line develop-X.Y, and the changelog dates it; the check names the npm channel to
+      # publish under.
       - run: scripts/release-check.sh "$GITHUB_REF_NAME"
         id: release
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq python3 zsh
