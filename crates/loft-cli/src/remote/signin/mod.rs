@@ -1,12 +1,16 @@
 //! Signing in to a remote through OAuth 2.0: the authorization server is learned from the
 //! remote's challenge (RFC 9728, RFC 8414), `loft` registers itself as a public native client
 //! (RFC 7591), and the authorization code grant with PKCE (RFC 7636) runs on a redirect to a
-//! loopback port of its own (RFC 8252), naming the remote's protected resource (RFC 8707). A
-//! refresh rotates the refresh token, and the caller keeps the successor before it uses it.
+//! loopback port of its own (RFC 8252), naming the remote's protected resource and each companion
+//! resource kept (RFC 8707), so that the person consents once. The code is exchanged for the
+//! remote's protected resource alone. A refresh rotates the refresh token, and the caller keeps
+//! the successor before it uses it.
 
+mod companions;
 mod discovery;
 mod listener;
 
+use std::process::Child;
 use std::time::Duration;
 
 use serde_json::{Value, json};
@@ -14,7 +18,7 @@ use sha2::{Digest as _, Sha256};
 
 use self::discovery::Discovered;
 use self::listener::{Callback, Listener, Waited};
-use super::signins::{SignIn, expires_at};
+use super::signins::{Covered, SignIn, expires_at};
 use super::wire::{base64url, query};
 use super::{RemoteError, Whose, browser};
 use crate::network;
@@ -49,51 +53,11 @@ pub fn sign_in(
     let client_id = register(&discovered, timeout).map_err(failed)?;
     let verifier = random(32).map_err(failed)?;
     let state = random(16).map_err(failed)?;
-    let challenge = base64url(&Sha256::digest(verifier.as_bytes()));
     let redirect_uri = listener.redirect_uri();
-    let separator = if discovered.authorization_endpoint.contains('?') {
-        '&'
-    } else {
-        '?'
-    };
-    let url = format!(
-        "{}{separator}{}",
-        discovered.authorization_endpoint,
-        query(&[
-            ("response_type", "code"),
-            ("client_id", &client_id),
-            ("redirect_uri", &redirect_uri),
-            ("scope", &discovered.scope),
-            ("resource", &discovered.resource),
-            ("state", &state),
-            ("code_challenge", &challenge),
-            ("code_challenge_method", "S256"),
-        ])
-    );
+    let url = authorization_url(&discovered, &client_id, &redirect_uri, &state, &verifier);
     errln!("To sign in to {address}, open this address in a browser:\n\n  {url}\n");
-    let browser = if open_browser {
-        let started = browser::open(&url);
-        if started.is_none() {
-            errln!("No browser could be opened: open the address above.");
-        }
-        started
-    } else {
-        None
-    };
-    let code = match listener.wait(&state, CALLBACK_LIMIT, browser) {
-        Ok(Callback::Code(code)) => code,
-        Ok(Callback::Error(error)) => {
-            return Err(failed(format!(
-                "the authorization server answered `{error}`"
-            )));
-        }
-        Err(Waited::TimedOut) => {
-            return Err(failed(
-                "the browser did not return within 5 minutes".to_owned(),
-            ));
-        }
-        Err(Waited::Failed(error)) => return Err(failed(error.to_string())),
-    };
+    let browser = opened(&url, open_browser);
+    let code = code(listener.wait(&state, CALLBACK_LIMIT, browser)).map_err(failed)?;
     let answer = token(
         &discovered.token_endpoint,
         &[
@@ -107,16 +71,93 @@ pub fn sign_in(
         timeout,
     )
     .map_err(|error| failed(error.to_string()))?;
-    let (access_token, expires_at, refresh_token) =
+    let issued =
         issued(&answer, None).ok_or_else(|| failed("the token answer does not read".to_owned()))?;
-    Ok(SignIn {
+    Ok(kept(discovered, client_id, issued))
+}
+
+/// The address of the authorization request: the remote's protected resource in the first
+/// `resource`, then each companion resource kept in a `resource` of its own, and the scope asked
+/// of them all, with PKCE.
+fn authorization_url(
+    discovered: &Discovered,
+    client_id: &str,
+    redirect_uri: &str,
+    state: &str,
+    verifier: &str,
+) -> String {
+    let challenge = base64url(&Sha256::digest(verifier.as_bytes()));
+    let mut pairs = vec![
+        ("response_type", "code"),
+        ("client_id", client_id),
+        ("redirect_uri", redirect_uri),
+        ("scope", discovered.scope.as_str()),
+        ("resource", discovered.resource.as_str()),
+    ];
+    let companions = discovered.companions.iter();
+    pairs.extend(companions.map(|companion| ("resource", companion.resource.as_str())));
+    pairs.extend([
+        ("state", state),
+        ("code_challenge", challenge.as_str()),
+        ("code_challenge_method", "S256"),
+    ]);
+    let separator = if discovered.authorization_endpoint.contains('?') {
+        '&'
+    } else {
+        '?'
+    };
+    format!(
+        "{}{separator}{}",
+        discovered.authorization_endpoint,
+        query(&pairs)
+    )
+}
+
+/// The browser opened at `url`, unless `open_browser` is false; none, with a word on standard
+/// error, where none can be opened.
+fn opened(url: &str, open_browser: bool) -> Option<Child> {
+    if !open_browser {
+        return None;
+    }
+    let started = browser::open(url);
+    if started.is_none() {
+        errln!("No browser could be opened: open the address above.");
+    }
+    started
+}
+
+/// The authorization code that the wait for the browser gave, or why it gave none.
+fn code(waited: Result<Callback, Waited>) -> Result<String, String> {
+    match waited {
+        Ok(Callback::Code(code)) => Ok(code),
+        Ok(Callback::Error(error)) => Err(format!("the authorization server answered `{error}`")),
+        Err(Waited::TimedOut) => Err("the browser did not return within 5 minutes".to_owned()),
+        Err(Waited::Failed(error)) => Err(error.to_string()),
+    }
+}
+
+/// The sign-in to keep from what `discovered` learned, the client `client_id` and what the
+/// exchange `issued`: for a sign-in over companion resources, with the issuer and each companion
+/// resource, which holds no access token until a refresh issues one; for one over the remote's
+/// protected resource alone, with neither.
+fn kept(discovered: Discovered, client_id: String, issued: Issued) -> SignIn {
+    let over_companions = !discovered.companions.is_empty();
+    let resources = discovered.companions.into_iter().map(|companion| Covered {
+        resource: companion.resource,
+        kind: companion.kind,
+        access_token: None,
+        expires_at: None,
+    });
+    SignIn {
         token_endpoint: discovered.token_endpoint,
         resource: discovered.resource,
         client_id,
-        access_token,
-        expires_at,
-        refresh_token,
-    })
+        access_token: issued.access_token,
+        expires_at: issued.expires_at,
+        refresh_token: issued.refresh_token,
+        issuer: over_companions.then_some(discovered.issuer),
+        resources: resources.collect(),
+    }
 }
 
 /// The sign-in `held` refreshed at its token endpoint.
@@ -145,15 +186,14 @@ pub fn refresh(address: &str, held: &SignIn, timeout: Duration) -> Result<SignIn
             reason,
         },
     })?;
-    let (access_token, expires_at, refresh_token) = issued(&answer, Some(&held.refresh_token))
-        .ok_or_else(|| RemoteError::Lapsed {
-            address: address.to_owned(),
-            error: "the token answer does not read".to_owned(),
-        })?;
+    let issued = issued(&answer, Some(&held.refresh_token)).ok_or_else(|| RemoteError::Lapsed {
+        address: address.to_owned(),
+        error: "the token answer does not read".to_owned(),
+    })?;
     Ok(SignIn {
-        access_token,
-        expires_at,
-        refresh_token,
+        access_token: issued.access_token,
+        expires_at: issued.expires_at,
+        refresh_token: issued.refresh_token,
         ..held.clone()
     })
 }
@@ -231,9 +271,16 @@ fn token(endpoint: &str, form: &[(&str, &str)], timeout: Duration) -> Result<Val
     }
 }
 
-/// The access token, its expiry and the refresh token of a token answer, keeping `previous` as
-/// the refresh token where the answer names none.
-fn issued(answer: &Value, previous: Option<&str>) -> Option<(String, String, String)> {
+/// What a token answer issues: the access token, when it expires, in UTC, and the refresh token.
+struct Issued {
+    access_token: String,
+    expires_at: String,
+    refresh_token: String,
+}
+
+/// What a token answer issues, keeping `previous` as the refresh token where the answer names
+/// none.
+fn issued(answer: &Value, previous: Option<&str>) -> Option<Issued> {
     if !answer["token_type"]
         .as_str()?
         .eq_ignore_ascii_case("bearer")
@@ -241,11 +288,11 @@ fn issued(answer: &Value, previous: Option<&str>) -> Option<(String, String, Str
         return None;
     }
     let refresh = answer["refresh_token"].as_str().or(previous)?;
-    Some((
-        answer["access_token"].as_str()?.to_owned(),
-        expires_at(answer["expires_in"].as_u64()?),
-        refresh.to_owned(),
-    ))
+    Some(Issued {
+        access_token: answer["access_token"].as_str()?.to_owned(),
+        expires_at: expires_at(answer["expires_in"].as_u64()?),
+        refresh_token: refresh.to_owned(),
+    })
 }
 
 #[cfg(test)]

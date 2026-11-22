@@ -12,7 +12,9 @@ use crate::network;
 use crate::remote::RemoteError;
 
 /// A sign-in to one remote: the token endpoint and resource it refreshes with, the client it was
-/// issued to, its tokens, and when its access token expires, in UTC.
+/// issued to, its tokens, and when its access token expires, in UTC; for a sign-in over companion
+/// resources, also the issuer of the authorization server and each companion resource. A sign-in
+/// over the remote's protected resource alone is kept with neither, as an earlier `loft` keeps it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignIn {
@@ -22,6 +24,23 @@ pub struct SignIn {
     pub access_token: String,
     pub expires_at: String,
     pub refresh_token: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub issuer: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub resources: Vec<Covered>,
+}
+
+/// A companion resource that a sign-in asked for: its identifier, its kind, and the access token
+/// last issued for it, with when it expires, once a refresh has issued one.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Covered {
+    pub resource: String,
+    pub kind: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub access_token: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub expires_at: Option<String>,
 }
 
 impl SignIn {

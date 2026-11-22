@@ -28,6 +28,8 @@ fn a_sign_in_is_kept_in_the_file_the_caller_names_with_its_lock_beside_it() {
         access_token: "access-1".to_owned(),
         expires_at: expires_at(3600),
         refresh_token: "refresh-1".to_owned(),
+        issuer: None,
+        resources: Vec::new(),
     };
     save(&file, address, &sign_in).unwrap();
     assert!(

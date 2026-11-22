@@ -20,7 +20,7 @@ use yardlog_store::lock::{self, Locked};
 use super::RemoteError;
 use crate::settings;
 
-pub use kept::SignIn;
+pub use kept::{Covered, SignIn};
 
 /// The file's name in the configuration directory.
 const FILE: &str = "remotes.json";
