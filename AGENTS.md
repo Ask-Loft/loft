@@ -412,6 +412,31 @@ the release `X.Y.Z`. It too happens only with the maintainer's approval:
    `rc`), so `npm install @ask-loft/loft@alpha` installs it and `latest` stays the last release;
    the GitHub release is marked a prerelease; crates.io serves it only to those who name it.
 
+### A minor line beside `develop`
+
+When the next minor version, `X.Y`, needs to be tried for longer while `develop` goes on
+releasing the version before it, it lives on its own line, the branch `develop-X.Y`, cut from
+`develop` (git refuses `develop/X.Y` beside `develop`). Feature branches for `X.Y` are cut from
+the line and merge into it.
+
+- After each release or prerelease of `develop`, merge `develop` into the line, so the line holds
+  everything `develop` has released. A command's schema that `develop` moved to a new version
+  meanwhile and the line changed too takes the next version on the line, since `develop`'s is
+  released first.
+- The line's changelog entries sit in their own section, `## Unreleased in X.Y.0`, at the top of
+  `CHANGELOG.md`, never under `develop`'s `## Unreleased`, so a release merged forward leaves them
+  where they are.
+- A prerelease of the line follows the steps of a prerelease from `develop` on the line instead:
+  step 0 on the line (`gh workflow run build.yml --ref develop-X.Y`), the version
+  `X.Y.0-alpha.N` set and its dated entry added above `## Unreleased in X.Y.0`, then
+  `scripts/release-check.sh vX.Y.0-alpha.N` and the tag on the line. The release check accepts a
+  prerelease on the line of its own major and minor numbers, and npm publishes it under the
+  dist-tag `next`, so `npm install @ask-loft/loft@next` installs it while `alpha`, `beta` and
+  `rc` stay with `develop`'s prereleases.
+- Once `X.Y` is ready, and `develop`'s last release before it is out, merge the line into
+  `develop`, fold `## Unreleased in X.Y.0` into `## Unreleased`, and delete the line; `X.Y.0` is
+  then released from `develop` and `main` as any release is.
+
 ### Release setup
 
 Set up once, and kept as it is:
