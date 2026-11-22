@@ -466,7 +466,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The page"
-      shall: "open each link to an `http://` or `https://` address that it draws from Markdown, in a block or in a node's name, in a new tab."
+      shall: "open each link to an `http://` or `https://` address that it draws from Markdown, in a block or in a node's name, in a new tab, other than one to the address of a Yard Log on this page."
     criteria:
       - key: 01a20409-6c6c-74c7-a5f4-356aa374f8b8
         name: "Following a link to an `https://` address in a note opens that address in a new tab and leaves the Yard page as it was."
@@ -478,6 +478,8 @@ requirements:
         name: "A `mailto:` link drawn from Markdown opens no new tab."
       - key: 01a20411-ca50-7135-a74a-ae7cdc6a2564
         name: "A link drawn from Markdown to an address within the page opens no new tab."
+      - key: 01a20491-456b-7011-9545-1959e81d84c6
+        name: "A link drawn from Markdown to the address of a Yard Log on this page, such as `http://127.0.0.1:7411/#tree=…&branch=…`, opens no new tab and shows that Yard Log."
       - key: 01a2041e-7661-702d-9ee1-6b80abef3765
         name: "A screen reader announces that a link drawn from Markdown to a web address opens in a new tab."
       - key: 01a2044d-68b3-72a5-af48-16dbaebe8f0f
@@ -508,6 +510,8 @@ requirements:
         name: "An image whose address is a `javascript:` one is drawn as its description."
       - key: 01a2041e-7661-702d-9ee1-6b87add2cd4c
         name: "An image within a link is drawn as its description, within that link."
+      - key: 01a20491-456b-7011-9545-195aedcf1494
+        name: "A footnote's reference within a written link is drawn right after that link."
       - key: 01a2044d-68b3-72a5-af48-16dcdf93ed51
         name: "A link within an image's description is drawn as its text, within the link the image is drawn as."
   - key: 01a2041e-7661-702d-9ee1-6b88675d81a7
@@ -521,6 +525,8 @@ requirements:
         name: "Following a footnote's reference in a note brings the note's footnote into view."
       - key: 01a2041e-7661-702d-9ee1-6b8ac1f4a7cf
         name: "Following a footnote's back link brings its reference into view."
+      - key: 01a20491-456b-7011-9545-195b39215549
+        name: "Following a link in a note to a heading of the same note, such as `[notes](#notes)` beside `## Notes`, brings the heading into view."
       - key: 01a2044d-68b3-72a5-af48-16ddb9a98d6c
         name: "Following the reference of a footnote whose name holds a letter outside ASCII, such as `[^café]`, brings that footnote into view."
       - key: 01a2044d-68b3-72a5-af48-16de0d0bd26f
