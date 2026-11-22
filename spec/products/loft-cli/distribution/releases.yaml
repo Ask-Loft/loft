@@ -1,7 +1,7 @@
 key: 01a136db-1a3c-76b9-8641-d0a122869236
 slug: releases
 name: "Releases"
-body: "A release is cut by the maintainer: a version tag starts the release workflow, which checks the tag, waits for the maintainer's approval, and then publishes the crates, the npm packages and the binaries. A release `vX.Y.Z` comes from `main`, whose specification it publishes. A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, comes from `develop`, so that people can try what `develop` holds before the release: its specification is not yet published, and the registries and GitHub offer it only to those who ask for it."
+body: "A release is cut by the maintainer: a version tag starts the release workflow, which checks the tag, waits for the maintainer's approval, and then publishes the crates, the npm packages and the binaries. A release `vX.Y.Z` comes from `main`, whose specification it publishes. A prerelease, `vX.Y.Z-alpha.N`, `-beta.N` or `-rc.N`, comes from `develop`, so that people can try what `develop` holds before the release: its specification is not yet published, and the registries and GitHub offer it only to those who ask for it. While `develop` still carries the releases of one minor version, a prerelease of the next may come from that version's line, the branch `develop-X.Y` named by its major and minor numbers, under a dist-tag of its own."
 realizes:
   - 01a136db-1a3c-76b9-8641-d09fc8730b8a
 requirements:
@@ -34,13 +34,17 @@ requirements:
       form: optional
       where: "the tag names a prerelease, `vX.Y.Z-alpha.N`, `vX.Y.Z-beta.N` or `vX.Y.Z-rc.N`"
       system: "the release workflow"
-      shall: "release it only from a commit on `develop` or `main`, without checking that its specification is published."
-    body: "The specification of `develop` holds candidates that only a release on `main` publishes, so a prerelease leaves `loft verify` and `loft publish` to the release that follows it."
+      shall: "release it only from a commit on `develop`, on `main` or on the line `develop-X.Y` of the tag's major and minor numbers, without checking that its specification is published."
+    body: "The specification of `develop` holds candidates that only a release on `main` publishes, so a prerelease leaves `loft verify` and `loft publish` to the release that follows it. A line `develop-X.Y` carries the minor version `X.Y` while `develop` still releases the one before it, and is merged into `develop` once that version is ready."
     criteria:
       - key: 01a183e8-7f64-7529-8822-369ef44f59a2
         name: "A prerelease tag on a commit of `develop` may be released."
       - key: 01a183e8-7f64-7529-8822-369faf07c801
-        name: "A prerelease tag on a commit of neither `develop` nor `main` is refused."
+        name: "A prerelease tag on a commit of none of `develop`, `main` and the line `develop-X.Y` of the tag's major and minor numbers is refused."
+      - key: 01a203f5-dc5a-76a8-bead-d49ef672f6ae
+        name: "A prerelease tag on a commit of the line `develop-X.Y` of the tag's major and minor numbers may be released."
+      - key: 01a203f5-dc5a-76a8-bead-d49f6bff8ef8
+        name: "A prerelease tag on a commit only of a line of other major and minor numbers is refused."
       - key: 01a183e8-7f64-7529-8822-36a09db88ebb
         name: "`loft verify` is not run for a prerelease."
   - key: 01a183e8-7f64-7529-8822-36a1aed8792b
@@ -86,7 +90,9 @@ requirements:
       shall: "offer it only to those who ask for it."
     criteria:
       - key: 01a183e8-7f64-7529-8822-36a40bf19ad0
-        name: "Each npm package is published under the dist-tag of the prerelease's identifier, `alpha`, `beta` or `rc`, and `latest` is left as it was."
+        name: "Each npm package of a prerelease on `develop` or `main` is published under the dist-tag of the prerelease's identifier, `alpha`, `beta` or `rc`, and `latest` is left as it was."
+      - key: 01a203f5-dc5a-76a8-bead-d4a00cab6ee2
+        name: "Each npm package of a prerelease only on a line `develop-X.Y` is published under the dist-tag `next`, and `latest` and the identifiers' dist-tags are left as they were."
       - key: 01a183e8-7f64-7529-8822-36a5bbafc01b
         name: "The GitHub release is marked a prerelease, so it is not the repository's latest release."
   - key: 01a13804-d7aa-7131-91ff-bee4ed990cd9
