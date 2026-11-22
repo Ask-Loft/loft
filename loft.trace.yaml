@@ -33825,6 +33825,9 @@ links:
   - node: 01a2046e-409d-70db-9f5b-3d4595199a58
     reviewed: 95b12403a6adec46f7b2e4a6b766634a59412247ad81d063eaf3f8783d7f746e
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a panel of another document’s Interface is marked by the copy’s handle, and one of the document’s own is not"
+        body: 7a49e934c8c01dcd9a4460bcecbb84219b89639f5c8016f3c753c426c42c47d1
       - file: "crates/loft-cli/tests/yard_view_documents.rs"
         name: "a_component_that_gained_a_copied_interface_draws_it_labeled_with_its_handle"
         body: ab6c9cec3be93ced5264d87b25e5b50906f9f9f7567b5ef86779bb13a1a8d52d
@@ -34113,6 +34116,9 @@ links:
   - node: 01a2046e-409d-70db-9f5b-3d48e88714d0
     reviewed: 0d29b35e229430f1a97ab8657619e8204067ab19db43674858590876bb3ec9a8
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "a copy’s entry in the diff gives the publish sequence of its pin before and after"
+        body: 3b9d0bbbd4e1d543ce9398296dacf5eb45e31635a6e56fa8b9e918d02ac85a26
       - file: "crates/loft-cli/tests/yard_view_documents.rs"
         name: "the_diff_lists_a_moved_pin_with_its_publish_sequences_and_each_node_its_promise_changed"
         body: 410d17024e32c0abeab7c74d4175f43b91b06787c3822d95ea897bc84b4fb18d
@@ -34122,6 +34128,9 @@ links:
   - node: 01a2046e-409d-70db-9f5b-3d49257335de
     reviewed: f3e371511bcd4819978cc830be09bed2f02aba77138ccfb46129a76616ee214e
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
+        name: "an entry of documents shows its handle and its address before and after"
+        body: 43eb7ec1255d0cf9d73ac6a7bfb65f66e0da94f72d3b44d6618301ca12103dac
       - file: "crates/loft-cli/tests/yard_view_documents.rs"
         name: "the_diff_lists_an_entry_of_documents_added_with_its_address"
         body: 97993e9b288fa2d1eb79aef658d84bc4fdcb612d0243ea90213b9ef7e3afebe7

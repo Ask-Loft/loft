@@ -84,7 +84,8 @@ export const CHANGE_TONES = { added: 'new', changed: 'changed', removed: 'remove
  * @param {{ change: string, kind: string, label?: string | null, name?: string }} node
  */
 export function changeItem(node) {
-  return h('li', {}, chip(node.change, CHANGE_TONES[node.change]), ' ', h('span', { class: 'kind' }, node.kind), ' ', named(node));
+  const kind = node.kind === 'document' ? 'other document' : node.kind;
+  return h('li', {}, chip(node.change, CHANGE_TONES[node.change]), ' ', h('span', { class: 'kind' }, kind), ' ', named(node));
 }
 
 

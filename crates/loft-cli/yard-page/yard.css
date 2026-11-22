@@ -907,6 +907,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .flow .spec-label { font-family: var(--mono); font-size: 11.5px; fill: var(--body); }
 .flow .spec-word { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; fill: var(--muted); }
 .flow .spec-panel-name { font-size: 13px; font-weight: 600; fill: var(--ink); }
+.flow .spec-document { font-family: var(--mono); font-size: 11.5px; fill: var(--kind-interface); }
 .flow .spec-extra { font-size: 12px; fill: var(--muted); }
 .flow .spec-chip-name { font-size: 12.5px; fill: var(--ink); }
 .spec-card--context .spec-chip-name { fill: var(--muted); }
@@ -957,7 +958,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .diff .diff-words { margin: 4px 0 0; padding: 6px 10px; background: var(--surface-2); border-left: 3px solid var(--line); white-space: pre-wrap; overflow-wrap: anywhere; }
 .diff ins { text-decoration: underline; text-decoration-thickness: 2px; background: var(--done-soft); color: var(--ink); }
 .diff del { text-decoration: line-through; text-decoration-thickness: 2px; background: var(--danger-soft); color: var(--ink); }
-.diff .diff-same, .diff .diff-subject { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.diff .diff-same, .diff .diff-subject, .diff .diff-pin { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 .diff .diff-subject { overflow-wrap: anywhere; }
 
 /* The Gantt chart. */
