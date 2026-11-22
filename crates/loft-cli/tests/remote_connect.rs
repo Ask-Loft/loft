@@ -3,7 +3,7 @@
 
 use loftspec::codec;
 use serde_json::{Value, json};
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{Remote, RemoteScenario, document_path};
 use software_plant::{BrowserScenario, GitScenario};
 
 use crate::common::remote::{History, history};
@@ -82,8 +82,8 @@ fn set_creates_the_document_and_imports_every_published_state_before_naming_the_
     assert_eq!(
         document_calls(&remote),
         [
-            format!("POST /documents/{key}/create"),
-            format!("POST /documents/{key}/import"),
+            format!("POST {}/create", document_path(key)),
+            format!("POST {}/import", document_path(key)),
         ]
     );
     assert_eq!(remote.name().as_deref(), Some(PRODUCT_NAME));
@@ -152,7 +152,7 @@ fn a_document_never_published_is_created_and_nothing_is_imported() {
     );
     assert_eq!(
         document_calls(&remote),
-        [format!("POST /documents/{key}/create")]
+        [format!("POST {}/create", document_path(&key))]
     );
     assert_eq!(remote.states().len(), 0);
     let scratch = Scratch::with_reading_list();
@@ -182,7 +182,7 @@ fn a_remote_that_holds_the_lock_s_head_already_is_connected_without_an_import() 
     assert_eq!(result["head"], head_of(&history));
     assert_eq!(
         document_calls(&remote),
-        [format!("POST /documents/{}/create", history.key)]
+        [format!("POST {}/create", document_path(&history.key))]
     );
 }
 
@@ -318,7 +318,13 @@ fn set_for_a_connected_document_names_the_address_and_sends_only_a_sign_in_s_req
     let history = history(1);
     let (scratch, git) = published(&history);
     let remote = Remote::start(RemoteScenario::accepting(&history.key));
-    name_remote(&scratch, Some("https://old.example/documents/one"), true);
+    name_remote(
+        &scratch,
+        Some(&crate::common::signed_in::example_address(
+            "https://old.example",
+        )),
+        true,
+    );
     let mut expected = codec::read(&tree(&scratch.0)).unwrap();
     expected.remote = Some(remote.address());
     keep(
@@ -372,6 +378,34 @@ fn a_kept_sign_in_that_expires_soon_is_refreshed_and_one_that_lapsed_is_made_ane
 }
 
 #[test]
+fn set_with_a_sign_in_kept_for_a_resource_on_another_origin_signs_in_anew() {
+    let scratch = Scratch::with_reading_list();
+    let remote = Remote::start(RemoteScenario::accepting(&codec_key(&scratch)));
+    // The simulator admits its token, so a connect that used it would need no browser.
+    let mut kept = granted(&remote, 3600);
+    kept["resource"] = json!("http://127.0.0.1:9/documents");
+    keep(&scratch, &json!({ remote.address(): kept }));
+    let (output, browser) = run(
+        &scratch,
+        &["remote", "set", &remote.address()],
+        BrowserScenario::Visiting,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(browser.visits().len(), 1, "the person signs in anew");
+    assert_eq!(remote.refreshes(), 0);
+    let fresh = &sign_ins(&scratch)[remote.address()];
+    assert_eq!(fresh["resource"], remote.resource());
+    let bearer = format!("Bearer {}", fresh["accessToken"].as_str().unwrap());
+    let create = format!("POST {}/create", document_path(&codec_key(&scratch)));
+    assert_eq!(document_calls(&remote), [create]);
+    for request in remote.requests() {
+        let sent = request.header("authorization");
+        assert!(sent.is_none_or(|sent| sent == bearer), "{sent:?}");
+    }
+}
+
+#[test]
 fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
     let scratch = Scratch::with_reading_list();
     let before = tree(&scratch.0);
@@ -380,15 +414,10 @@ fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
         &json!({ "https://other.example/doc": { "accessToken": "a" } }),
     );
     let file = std::fs::read(crate::common::signed_in::sign_ins_file(&scratch)).unwrap();
+    let address = crate::common::signed_in::example_address("http://remote.example");
     let (output, browser) = run(
         &scratch,
-        &[
-            "remote",
-            "set",
-            "http://remote.example/documents/one",
-            "--format",
-            "json",
-        ],
+        &["remote", "set", &address, "--format", "json"],
         BrowserScenario::Visiting,
         None,
     );
@@ -397,10 +426,7 @@ fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
         .as_str()
         .unwrap()
         .to_owned();
-    assert!(
-        message.contains("http://remote.example/documents/one"),
-        "{message}"
-    );
+    assert!(message.contains(&address), "{message}");
     assert_eq!(browser.visits(), Vec::<String>::new());
     assert_eq!(tree(&scratch.0), before);
     assert_eq!(

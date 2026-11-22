@@ -35,13 +35,19 @@ pub fn sign_ins(scratch: &Scratch) -> Value {
     scratch.setting("remotes.json")["remotes"].clone()
 }
 
+/// The sign-in that `file`, a `loft/remotes.json` read as JSON, keeps for `address`: the entry
+/// its `remotes` holds under the address, or `null`.
+pub fn kept_sign_in<'a>(file: &'a Value, address: &str) -> &'a Value {
+    &file["remotes"][address]
+}
+
 /// A sign-in to `remote` as `loft` keeps it, its access token expiring `seconds` from now by
 /// the system clock, as a token does, issued by the simulator so that the remote admits it.
 pub fn granted(remote: &Remote, seconds: u64) -> Value {
     let grant = remote.grant();
     json!({
         "tokenEndpoint": format!("{}/auth/token", remote.origin()),
-        "resource": format!("{}/documents", remote.origin()),
+        "resource": remote.resource(),
         "clientId": grant.client_id,
         "accessToken": grant.access_token,
         "expiresAt": PublishedAt::from_unix_seconds(real_now() + seconds).unwrap().to_string(),
@@ -90,6 +96,12 @@ pub fn run(
 ) -> (Output, InstalledBrowser) {
     let (mut command, installed) = command(scratch, browser, git);
     (command.args(args).output().unwrap(), installed)
+}
+
+/// An address in the form a Loft server gives a document, on the made-up `origin`, for a remote
+/// that no test serves.
+pub fn example_address(origin: &str) -> String {
+    format!("{origin}/loft/t/acme/api/v2/documents/one/remote")
 }
 
 /// The JSON document a run printed.
@@ -153,7 +165,7 @@ pub fn repository(scratch: &Scratch, history: &History, sequences: &[usize]) -> 
 }
 
 /// The time now by the system clock, in seconds since the Unix epoch.
-fn real_now() -> u64 {
+pub fn real_now() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()

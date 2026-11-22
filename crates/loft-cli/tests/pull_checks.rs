@@ -1,16 +1,17 @@
 //! `loft pull`: what it checks in what the remote gives before writing it, how it reports a pull
-//! with nothing to write, and a node the tree deleted that the head still holds.
+//! with nothing to write, a node the tree deleted that the head still holds, and a sign-in kept
+//! for a resource on another origin.
 
 use std::fs;
 
 use serde_json::json;
 use software_plant::BrowserScenario;
 use software_plant::http::{Answer, Request, Responder, Response, Server};
-use software_plant::remote::{RemoteScenario, TOKEN};
+use software_plant::remote::{RemoteScenario, TOKEN, document_address};
 
 use crate::common::connected::{Connected, connected};
 use crate::common::remote::{publish_at, spec, stored, wire, with_criterion};
-use crate::common::signed_in::{self, document};
+use crate::common::signed_in::{self, document, granted, keep, sign_ins_file};
 use crate::common::tree;
 use crate::pull::{BODY, DECISION, PRODUCT, behind, pull, with_body};
 
@@ -106,6 +107,38 @@ fn a_pull_with_nothing_to_write_reports_unchanged_naming_what_it_pulled() {
 }
 
 #[test]
+fn pull_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_that_resource() {
+    let run = connected(1, 1, RemoteScenario::accepting);
+    let address = run.remote.address();
+    let resource = "http://127.0.0.1:9/documents";
+    let mut kept = granted(&run.remote, 3600);
+    kept["resource"] = json!(resource);
+    keep(&run.scratch, &json!({ address.as_str(): kept }));
+    let file = fs::read(sign_ins_file(&run.scratch)).unwrap();
+    let before = tree(&run.scratch.0);
+    let output = pull(&run.scratch, &[]);
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let error = &document(&output)["errors"][0];
+    // The kind of the error that a pull without a sign-in gives.
+    assert_eq!(error["kind"], "refused", "{error}");
+    let message = error["message"].as_str().unwrap_or_default();
+    for said in [
+        address.as_str(),
+        resource,
+        "another origin",
+        "LOFT_REMOTE_TOKEN",
+        "`loft remote set <address>` with an address on http://127.0.0.1:9 names the remote",
+        "`loft remote login` signs in again once the remote serves its protected resource on the address's origin",
+    ] {
+        assert!(message.contains(said), "{said}: {message}");
+    }
+    assert!(!message.contains("no sign-in"), "{message}");
+    assert!(run.remote.requests().is_empty(), "no connection is opened");
+    assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);
+    assert_eq!(tree(&run.scratch.0), before);
+}
+
+#[test]
 fn a_node_the_tree_deleted_that_the_head_still_holds_stays_deleted_its_binding_departed() {
     let (run, _) = behind();
     fs::remove_file(run.scratch.file(DECISION)).unwrap();
@@ -139,7 +172,7 @@ impl Responder for Garbled {
 fn a_head_that_does_not_read_is_refused_naming_the_remote_s_address() {
     let run = connected(1, 1, RemoteScenario::accepting);
     let garbled = Server::start(Garbled);
-    let address = format!("{}/documents/{}", garbled.url(), run.history.key);
+    let address = document_address(&garbled.url(), &run.history.key);
     let env = [
         ("LOFT_REMOTE_ENDPOINT", address.as_str()),
         ("LOFT_REMOTE_TOKEN", TOKEN),

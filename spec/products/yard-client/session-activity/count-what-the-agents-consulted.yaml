@@ -21,7 +21,7 @@ requirements:
       form: event_driven
       when: "the page server receives the start of a tool call that holds `reads` or `edits`, or that runs `loft`"
       system: "the page server"
-      shall: "add the call to the session's consultation counts in `.yard/<branch>/consultation/<session id>.yaml`."
+      shall: "add the call to the live copy of the session's consultation file, `.yard/<branch>/consultation/<session id>.yaml`."
     criteria:
       - key: 01a1c32b-8dbe-7792-8bde-87c9b9ea395a
         name: "The consultation file holds the session's id, its host, the format `yardconsult/1`, and when its first and last counted calls started."
@@ -46,7 +46,7 @@ requirements:
       - key: 01a1c32b-8dbe-7792-8bde-87d28a43d1f2
         name: "Writing the consultation file leaves Yard Log's revision as it was."
       - key: 01a1c32b-8dbe-7792-8bde-87d35c2b4428
-        name: "The consultation file is written to a temporary file and renamed into place, outside Yard Log's lock."
+        name: "The consultation file's live copy is written to a temporary file in git's directory for the worktree and renamed into place, outside Yard Log's lock."
       - key: 01a1c32b-8dbe-7792-8bde-87d41830028d
         name: "No call is counted once Yard Log is closed."
       - key: 01a1c32b-8dbe-7792-8bde-87d5eb07ec3b

@@ -25,7 +25,7 @@ use super::Server;
 use super::assets;
 use super::guard::{Access, admit};
 use super::http::{self, Request, Response};
-use super::listener::Connection;
+use super::listener::{Connection, Reached};
 use super::logs;
 use super::stream::stream;
 use super::trees;
@@ -36,6 +36,7 @@ use yardlog::identity::is_session_id;
 
 /// Answers the one request `connection` carries.
 pub fn handle(server: &Server, mut connection: Connection) {
+    let reached = connection.reached();
     let request = match http::read(&mut connection) {
         Ok(Some(request)) => request,
         Ok(None) => return,
@@ -48,7 +49,7 @@ pub fn handle(server: &Server, mut connection: Connection) {
         }
     };
     if request.method == "GET" && request.path == "/api/stream" {
-        match admit(&request, Access::Read, server.port, &server.token) {
+        match admit(&request, Access::Read, reached, &server.token) {
             Ok(()) => {
                 connection.wait_without_limit();
                 stream(server, connection);
@@ -63,19 +64,19 @@ pub fn handle(server: &Server, mut connection: Connection) {
     let response = if server.stopping.load(Ordering::SeqCst) {
         Response::refused(503, "stopping", "the page server is stopping")
     } else {
-        respond(server, &request)
+        respond(server, &request, reached)
     };
     let _ = http::write(&mut connection, &response);
     server.busy.fetch_sub(1, Ordering::SeqCst);
 }
 
-fn respond(server: &Server, request: &Request) -> Response {
+fn respond(server: &Server, request: &Request, reached: Reached) -> Response {
     let access = if request.method == "POST" {
         Access::Change
     } else {
         Access::Read
     };
-    if let Err(refused) = admit(request, access, server.port, &server.token) {
+    if let Err(refused) = admit(request, access, reached, &server.token) {
         return refused;
     }
     let home = &server.home;

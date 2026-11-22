@@ -84,9 +84,44 @@ fn remove_disconnects_the_document_and_forgets_its_sign_in_alone() {
 }
 
 #[test]
+fn remove_forgets_a_sign_in_kept_under_the_address_for_a_resource_on_another_origin() {
+    let remote = Remote::start(RemoteScenario::accepting("doc-remove-elsewhere"));
+    let scratch = Scratch::with_reading_list();
+    name_remote(&scratch, Some(&remote.address()), true);
+    let mut elsewhere = granted(&remote, 3600);
+    elsewhere["resource"] = json!("http://127.0.0.1:9/documents");
+    let other = json!({ "tokenEndpoint": "https://other.example/token", "resource": "r",
+        "clientId": "c", "accessToken": "a", "expiresAt": "2030-01-01T00:00:00Z",
+        "refreshToken": "f" });
+    keep(
+        &scratch,
+        &json!({ remote.address(): elsewhere, "https://other.example/doc": other }),
+    );
+    let (output, _) = run(
+        &scratch,
+        &["remote", "remove", "--format", "json"],
+        BrowserScenario::Absent,
+        None,
+    );
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(document(&output)["outcome"], "removed");
+    assert_eq!(
+        sign_ins(&scratch),
+        json!({ "https://other.example/doc": other })
+    );
+    assert!(remote.requests().is_empty(), "no connection is opened");
+}
+
+#[test]
 fn a_disconnect_says_to_commit_the_manifest() {
     let scratch = Scratch::with_reading_list();
-    name_remote(&scratch, Some("https://remote.example/documents/one"), true);
+    name_remote(
+        &scratch,
+        Some(&crate::common::signed_in::example_address(
+            "https://remote.example",
+        )),
+        true,
+    );
     let (output, _) = run(
         &scratch,
         &["remote", "remove"],

@@ -15,7 +15,13 @@ requirements:
       - key: 01a1646f-546e-76cb-8b4f-f211c919436f
         name: "The version is reported without the control token."
       - key: 01a1649f-62f0-7320-902c-7d90e88d4f61
-        name: "`~/.yard/server.json` gives the page server's port, its process id, its `loft` version and the `yardlog` formats it reads."
+        name: "`~/.yard/server.json` gives the page server's port, its process id, its `loft` version, the `yardlog` formats it reads and the addresses it listens on beside `127.0.0.1`, `0.0.0.0` alone where it listens on every address."
+      - key: 01a1f41d-c030-764d-a122-1ae315dcf549
+        name: "Once a page server takes the lock on `~/.yard/server.lock`, `~/.yard/server.json` names its process and its `loft` version, with the addresses of the last page server that served."
+      - key: 01a1f46e-0731-70de-9f4e-e8b47292a02b
+        name: "`~/.yard/server.json` gives the page server's port and its own addresses only once the page server serves the port."
+      - key: 01a1f46d-ccf4-743c-9d4e-97adc5688342
+        name: "A `loft yard serve` that takes the lock and does not come to serve, whether it fails or is ended, leaves `~/.yard/server.json` naming no port and the addresses of the last page server that served."
   - key: 01a1646f-546e-76cb-8b4f-f212dc8ad1c7
     statement:
       form: event_driven
@@ -25,6 +31,8 @@ requirements:
     criteria:
       - key: 01a16517-45f6-7370-99ab-21fa38d8b291
         name: "The request names the `loft` version of the `loft yard serve` that makes it."
+      - key: 01a1f2ba-ae5b-7356-b8f4-0454c2cca654
+        name: "The request names the process of the page server it asks to stop, as `~/.yard/server.json` gives it."
       - key: 01a1646f-546e-76cb-8b4f-f213414362f5
         name: "The older page server's process ends before the newer one serves the port."
       - key: 01a1646f-546e-76cb-8b4f-f214e9ee2507
@@ -34,7 +42,7 @@ requirements:
       - key: 01a1646f-546e-76cb-8b4f-f21529feeaa0
         name: "Every tree the older page server served is served by the newer one."
       - key: 01a1646f-546e-76cb-8b4f-f2164986fd80
-        name: "A page server of the same or a newer version is left serving, and `loft yard serve` exits 0 saying that one runs."
+        name: "A page server of a newer version, or of the same version on the addresses the `loft yard serve` would listen on, is left serving, and `loft yard serve` exits 0 saying that one runs."
   - key: 01a16517-45f6-7370-99ab-21fb6385919d
     statement:
       form: event_driven
@@ -48,6 +56,8 @@ requirements:
         name: "A request made by a `loft` of the same or an older version leaves the page server serving."
       - key: 01a182b6-3c58-7235-ad04-3933e99e6693
         name: "A request that `loft yard serve --replace` made stops the page server whatever version made it."
+      - key: 01a1f2ba-ae5b-7356-b8f4-04558d3e58c0
+        name: "A request that names another page server's process leaves the page server serving."
       - key: 01a16517-45f6-7370-99ab-21feeb0b2d3e
         name: "The page server that replaced it removes the request once it serves the port."
   - key: 01a16517-45f6-7370-99ab-21ff5e62cfd9

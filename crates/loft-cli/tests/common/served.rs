@@ -1,10 +1,11 @@
 //! A page server run by `loft yard serve` for a test, in front of the git simulator, and a small
-//! HTTP client that speaks to it over the loopback interface. The client lives in the tests, not
-//! in `loft`, which opens no connection of its own but through its network client.
+//! HTTP client that speaks to it over the loopback interface, or at another address of the
+//! machine. The client lives in the tests, not in `loft`, which opens no connection of its own but
+//! through its network client.
 
 use std::fs;
 use std::io::{BufRead, BufReader, Read, Write};
-use std::net::{TcpListener, TcpStream};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpListener, TcpStream, UdpSocket};
 use std::path::PathBuf;
 use std::process::Child;
 use std::sync::mpsc;
@@ -22,6 +23,23 @@ pub fn free_port() -> u16 {
         .local_addr()
         .unwrap()
         .port()
+}
+
+pub const LOOPBACK: IpAddr = IpAddr::V4(Ipv4Addr::LOCALHOST);
+
+/// A UDP socket's `connect` only picks the route, so no packet leaves the machine to learn the
+/// address it would use.
+pub fn machine_address() -> IpAddr {
+    let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
+    socket
+        .connect("192.0.2.1:9")
+        .expect("the machine has a route beside the loopback interface");
+    let address = socket.local_addr().unwrap().ip();
+    assert!(
+        !address.is_loopback() && !address.is_unspecified(),
+        "the machine has no address besides the loopback interface: {address}"
+    );
+    address
 }
 
 /// A running page server, stopped when the test drops it.
@@ -98,7 +116,25 @@ impl Served {
 
     /// Sends `request`, whose head is complete but for its end, and reads the whole response.
     pub fn send(&self, head: &str, body: &[u8]) -> Reply {
-        let mut stream = TcpStream::connect(("127.0.0.1", self.port)).unwrap();
+        self.send_at(LOOPBACK, head, body)
+    }
+
+    pub fn takes_at(&self, address: IpAddr) -> bool {
+        TcpStream::connect_timeout(&SocketAddr::new(address, self.port), Duration::from_secs(5))
+            .is_ok()
+    }
+
+    pub fn version_at(&self, address: IpAddr) -> Reply {
+        let host = SocketAddr::new(address, self.port);
+        self.send_at(
+            address,
+            &format!("GET /api/version HTTP/1.1\r\nhost: {host}\r\n"),
+            b"",
+        )
+    }
+
+    pub fn send_at(&self, address: IpAddr, head: &str, body: &[u8]) -> Reply {
+        let mut stream = TcpStream::connect((address, self.port)).unwrap();
         stream
             .set_read_timeout(Some(Duration::from_secs(30)))
             .unwrap();

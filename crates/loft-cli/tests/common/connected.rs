@@ -6,7 +6,7 @@ use std::process::{Command, Output};
 
 use serde_json::{Value, json};
 use software_plant::http::Request;
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{RESOURCE, Remote, RemoteScenario};
 use software_plant::{BrowserScenario, Clock, GitScenario};
 
 use super::remote::{History, history, with_criterion};
@@ -108,7 +108,7 @@ impl Connected {
         self.remote
             .requests()
             .into_iter()
-            .filter(|request| request.path.starts_with("/documents/"))
+            .filter(|request| request.path.starts_with(RESOURCE))
             .map(|request| format!("{} {}", request.method, request.path))
             .collect()
     }

@@ -85,7 +85,7 @@ fn where_no_page_server_serves_the_page_the_command_says_so_names_loft_yard_serv
         printed.contains("No page server serves the Yard page"),
         "{printed}"
     );
-    assert!(printed.contains("`loft yard serve`"), "{printed}");
+    assert!(printed.contains("`loft yard serve --join`"), "{printed}");
     assert!(!printed.contains("http"), "{printed}");
 }
 

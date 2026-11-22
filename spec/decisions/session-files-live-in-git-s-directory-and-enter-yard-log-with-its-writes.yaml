@@ -1,0 +1,71 @@
+key: 01a1eb56-fd98-755b-b6a2-690c6679e5ef
+slug: session-files-live-in-git-s-directory-and-enter-yard-log-with-its-writes
+title: "Session files live in git's directory and enter Yard Log with its writes"
+context: "Each session's tokens, activity and consultation files change with nearly every event of the session. The page server wrote them in Yard Log's folder in the working tree, through a temporary file beside each one, so the tree changed underneath the agent's own git commands: a commit caught a temporary file renamed away a moment later, and a branch switch refused over files modified since the last commit. Session events still stay on the machine and their totals still go in the repository; this decides where the totals are kept between commits and when they enter the tree."
+state:
+  kind: accepted
+  selectedOption: 01a1eb56-fd98-755b-b6a2-690f9a983a1e
+  outcome: "The page server keeps each session file's live copy in git's directory for the worktree, and each write of Yard Log, its close included, saves the live copies that differ into Yard Log's folder through the journal."
+drivers:
+  - key: 01a1eb56-fd98-755b-b6a2-690d6be949f6
+    kind: local
+    label: "Quiet tree"
+    statement: "Nothing of Yard's changes the working tree while an agent's git command runs in it."
+  - key: 01a1eb56-fd98-755b-b6a2-690e93e7f379
+    kind: local
+    label: "Current record"
+    statement: "A commit of `.yard/` carries the session files as of the last write of Yard Log."
+options:
+  - key: 01a1eb56-fd98-755b-b6a2-690f9a983a1e
+    title: "Git's directory, saved with each write"
+    description: "Live copies in git's directory for the worktree, beside Yard Log's lock and journal, saved into the folder by each write of Yard Log."
+  - key: 01a1eb56-fd98-755b-b6a2-6910b32b8b30
+    title: "Tree, staged outside"
+    description: "The page server keeps writing the folder on each event, staging its temporary file outside the tree."
+  - key: 01a1eb56-fd98-755b-b6a2-6911aab3df3c
+    title: "Git's directory, saved at a stage's end"
+    description: "Live copies in git's directory, saved into the folder only when a stage ends and when Yard Log closes."
+assessments:
+  - option: 01a1eb56-fd98-755b-b6a2-690f9a983a1e
+    driver: 01a1eb56-fd98-755b-b6a2-690d6be949f6
+    rating: supports
+    rationale: "the tree changes only when Yard Log is written"
+  - option: 01a1eb56-fd98-755b-b6a2-690f9a983a1e
+    driver: 01a1eb56-fd98-755b-b6a2-690e93e7f379
+    rating: supports
+    rationale: "every write brings the session files up to date"
+  - option: 01a1eb56-fd98-755b-b6a2-6910b32b8b30
+    driver: 01a1eb56-fd98-755b-b6a2-690d6be949f6
+    rating: conflicts
+    rationale: "the files still change on every event"
+  - option: 01a1eb56-fd98-755b-b6a2-6910b32b8b30
+    driver: 01a1eb56-fd98-755b-b6a2-690e93e7f379
+    rating: supports
+    rationale: "the folder is always current"
+  - option: 01a1eb56-fd98-755b-b6a2-6911aab3df3c
+    driver: 01a1eb56-fd98-755b-b6a2-690d6be949f6
+    rating: supports
+    rationale: "the tree changes only at a stage's end"
+  - option: 01a1eb56-fd98-755b-b6a2-6911aab3df3c
+    driver: 01a1eb56-fd98-755b-b6a2-690e93e7f379
+    rating: conflicts
+    rationale: "commits within a long stage carry stale files"
+consequences:
+  - key: 01a1eb56-fd98-755b-b6a2-691261b13254
+    kind: benefit
+    statement: "An agent commits, switches branches, pulls and stashes without first clearing Yard's files."
+  - key: 01a1eb56-fd98-755b-b6a2-69131ad164fb
+    kind: cost
+    statement: "Every reader of a session file reads its live copy before the folder's."
+  - key: 01a1eb56-fd98-755b-b6a2-69142ef6e014
+    kind: risk
+    statement: "Events heard after a branch's last write in one worktree stay in that worktree's git directory if the branch is next written in another."
+subjects:
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eae568dbeb5f
+  - role: affected
+    node: 01a1646f-546d-7042-befd-eaefec18d7c5
+  - role: affected
+    node: 01a1c32b-8dbe-7792-8bde-87c761980c06
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-ebc727a05b50

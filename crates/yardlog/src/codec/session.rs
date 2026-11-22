@@ -7,6 +7,8 @@
 use super::reader::{Fields, time};
 use super::{FileError, parse};
 use crate::act::Time;
+use crate::consult::Consultation;
+use crate::totals::TotalsFormat;
 
 /// The folder of a session's token totals.
 pub const TOKENS: &str = "tokens";
@@ -36,4 +38,31 @@ pub fn last_ended(name: &str, bytes: &[u8]) -> Result<Option<Time>, FileError> {
         .map(time)
         .transpose()
         .map_err(in_file)
+}
+
+/// Whether this `loft` writes over a session's file of `folder` that holds `bytes`: not where it
+/// is a totals file of a newer totals format or of one it does not know, nor a consultation file
+/// of a format other than its own, nor one whose root is no mapping, which names no format. A file
+/// that does not read is written over, since only its own session's events change it and the next
+/// of them writes it whole.
+#[must_use]
+pub fn writes_over(folder: &str, bytes: &[u8]) -> bool {
+    if folder != TOKENS && folder != CONSULTATION {
+        return true;
+    }
+    let Ok(node) = parse(folder, bytes) else {
+        return true;
+    };
+    let Ok(mut fields) = Fields::of(&node) else {
+        // A totals file that names no format is of the first totals format.
+        return folder == TOKENS;
+    };
+    let Ok(format) = fields.optional_text("format") else {
+        return false;
+    };
+    if folder == TOKENS {
+        TotalsFormat::named(format.as_deref()).is_some_and(TotalsFormat::is_known)
+    } else {
+        Consultation::is_format(format.as_deref())
+    }
 }

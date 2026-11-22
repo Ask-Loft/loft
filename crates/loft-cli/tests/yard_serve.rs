@@ -330,10 +330,11 @@ fn each_event_a_session_s_mod_posts_counts_as_hearing_the_session() {
 }
 
 #[test]
-fn server_json_gives_the_port_process_id_version_and_formats() {
+fn server_json_gives_the_port_process_id_version_formats_and_addresses() {
     let yard = Yard::new();
-    let served = Served::start(&yard, &[]);
+    let served = Served::start(&yard, &["--listen", "::1", "--listen", "127.0.0.1"]);
     let named = yard.home_file("server.json");
+    assert_eq!(named["listen"], json!(["::1"]));
     assert_eq!(named["port"], served.port);
     assert_eq!(named["pid"], served.child.id());
     assert_eq!(named["version"], VERSION);

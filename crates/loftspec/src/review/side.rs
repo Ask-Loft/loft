@@ -1,7 +1,8 @@
 //! The two sides a review reads: the tree, and the base it is compared with. Each side is read
-//! once: its index, its nodes by key with their own content views and their order, each node's
-//! change, the links of its decisions and the Components each Feature realizes; the holders a
-//! unit gives are made once each and then reused.
+//! once: its index, its nodes by key with their own content views, the edges each one's record
+//! writes and their order, each node's change, the links of its decisions and the Components each
+//! Feature realizes; the holders a unit gives are made once each and then reused. A node changed
+//! where its own content or the edges its record writes differ, as the diff tells it.
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -16,6 +17,7 @@ use crate::kind::NodeKind;
 use crate::node::Node;
 
 use super::links::{self, DecisionLinks, Phrases};
+use super::written::Written;
 use super::{Assertion, Change, Fact, Holder};
 
 /// Which side holds a node.
@@ -38,6 +40,8 @@ pub(super) struct Side<'a> {
     pub links: DecisionLinks,
     /// The Components each Feature realizes, in the order of the edges.
     realized: BTreeMap<NodeId, Vec<NodeId>>,
+    /// The edges each node's record writes, as the packet gives them.
+    written: Written,
     holders: RefCell<BTreeMap<NodeId, Holder>>,
 }
 
@@ -49,7 +53,7 @@ impl<'a> Side<'a> {
                 nodes.insert(id, node);
             }
         });
-        let keyed = Keyed::of(document);
+        let keyed = Keyed::compared(document);
         let ordinals = keyed
             .order
             .iter()
@@ -75,6 +79,7 @@ impl<'a> Side<'a> {
             changes: BTreeMap::new(),
             links: links::decision_links(document),
             realized,
+            written: Written::of(document),
             holders: RefCell::new(BTreeMap::new()),
         }
     }
@@ -152,6 +157,9 @@ impl<'a> Side<'a> {
             label: self.document.bindings.label_of(id),
             name: node.name().into_owned(),
             view: self.keyed.views.get(&id).cloned().unwrap_or(Value::Null),
+            mentions: self.written.mentions(id),
+            realizes: self.written.realizes(id),
+            scoped_to: self.written.scoped_to(id),
             change: self.change(id),
             from_base: self.which == Which::Base,
         }

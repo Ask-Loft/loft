@@ -6,7 +6,7 @@
 
 use serde_json::json;
 use software_plant::http::{Answer, Request, Responder, Response, Server};
-use software_plant::remote::{RemoteScenario, TOKEN};
+use software_plant::remote::{RemoteScenario, TOKEN, document_address, document_path};
 use software_plant::{BrowserScenario, Clock, Collector, ReleaseFeed};
 
 use crate::common::EPOCH;
@@ -20,7 +20,10 @@ fn loft_reaches_the_address_as_it_is_given_changing_no_part_of_it() {
     // A lowercase escape, which a normalizer would put in upper case.
     let (remote, _scratch, output, _) = login(RemoteScenario::accepting("Doc%2dOne"));
     assert_eq!(output.status.code(), Some(0), "{output:?}");
-    assert_eq!(remote.requests()[0].path, "/documents/Doc%2dOne/head");
+    assert_eq!(
+        remote.requests()[0].path,
+        format!("{}/head", document_path("Doc%2dOne"))
+    );
 }
 
 /// Redirects every request to the address it holds.
@@ -36,7 +39,7 @@ impl Responder for Redirecting {
 fn a_redirect_from_the_remote_is_not_followed() {
     let run = connected(1, 1, RemoteScenario::accepting);
     let redirecting = Server::start(Redirecting(format!("{}/head", run.remote.address())));
-    let address = format!("{}/documents/{}", redirecting.url(), run.history.key);
+    let address = document_address(&redirecting.url(), &run.history.key);
     run.change();
     let output = run.publish_by(|command| {
         command

@@ -119,7 +119,7 @@ pub fn command(scratch: &Scratch, fixture: Fixture) -> Command {
 }
 
 /// A closed loopback port, where no remote answers.
-const CLOSED: &str = "http://127.0.0.1:9/documents/reading-list";
+const CLOSED: &str = "http://127.0.0.1:9/loft/t/acme/api/v2/documents/reading-list/remote";
 
 /// The Reading List published twice, and the remote that holds both states: one for the whole
 /// test binary, since a pull only reads from it.

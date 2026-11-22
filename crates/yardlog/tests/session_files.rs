@@ -52,3 +52,28 @@ fn a_copy_that_does_not_read_is_named_with_its_line_and_column() {
     let (which, _) = take_session_file(NAME, b"- not\n- a mapping\n", ours.as_bytes()).unwrap_err();
     assert_eq!(which, "ours");
 }
+
+#[test]
+fn only_a_session_file_of_a_format_this_loft_writes_is_written_over() {
+    use yardlog::codec::session::writes_over;
+    assert!(
+        writes_over("tokens", b"session: s1\n"),
+        "no format is the first"
+    );
+    assert!(writes_over("tokens", b"format: yardtokens/2\n"));
+    assert!(!writes_over("tokens", b"format: yardtokens/99\n"));
+    assert!(!writes_over("tokens", b"format: another/1\n"));
+    assert!(writes_over("consultation", b"format: yardconsult/1\n"));
+    assert!(!writes_over("consultation", b"format: yardconsult/2\n"));
+    assert!(!writes_over("consultation", b"session: s1\n"));
+    assert!(
+        !writes_over("consultation", b"- a\n- list\n"),
+        "a consultation file that is no mapping names no format of its own"
+    );
+    assert!(writes_over("tokens", b"- a\n- list\n"));
+    assert!(writes_over("activity", b"format: anything/9\n"));
+    assert!(
+        writes_over("tokens", b"{ not: yaml"),
+        "a file that does not read"
+    );
+}

@@ -248,8 +248,9 @@ The command event, the update check and every request to a remote reach the netw
 through the network client (`crates/loft-cli/src/network.rs`), which accepts plain `http` only on
 the loopback interface, so `LOFT_TELEMETRY_ENDPOINT`, `LOFT_UPDATE_ENDPOINT` and a remote's
 address can point a run at a simulator and at nothing else unencrypted. The only sockets opened
-elsewhere are the listen-only loopback listeners of the Yard page server and of a sign-in's
-redirect, which `tests/network_client.rs` admits by name. The remote's contract suites run their
+elsewhere are the listen-only listeners of the Yard page server, on the loopback interface and on
+the addresses `--listen` names, and of a sign-in's loopback redirect, which
+`tests/network_client.rs` admits by name. The remote's contract suites run their
 real half on demand, against `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CONTRACT_TOKEN`, and spend the sign-in that `LOFT_REMOTE_CONTRACT_SIGN_IN`, a `loft/remotes.json`, keeps for that address. `.cargo/config.toml` starts every process Cargo runs with both off and
 both addresses at a closed loopback port; a test that exercises either switches it on through
 `tests/common/telemetry.rs` or `asking` in `tests/update_check.rs`. Run a gate's own `loft`
@@ -375,7 +376,8 @@ A release happens only with the maintainer's approval, and in this order:
    the launcher from them (`scripts/npm-smoke.sh`) and checks them with a dry run, then waits for
    the maintainer to approve: on the run's page, "Review deployments", tick `release`, "Approve and
    deploy". Once approved, the publish job runs the tarballs it downloaded once more,
-   `scripts/publish-crates.sh` publishes the crates to crates.io in dependency order,
+   `scripts/publish-crates.sh` publishes the crates to crates.io in dependency order, without
+   building them again (the check job's dry run built each from its package on the same commit),
    `scripts/publish-npm.sh` publishes the platform packages and then `@ask-loft/loft`, and the tag
    gets a GitHub release with the binaries, whose notes are the version's changelog entry. Both
    registries trust the workflow through Trusted Publishing; no registry token is stored anywhere.

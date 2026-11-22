@@ -1,7 +1,7 @@
 import { expect, test } from 'claude-code/testing'
 
 import { PLUGIN_VERSION } from '../hooks/adapter'
-import { flagOf, HOME, readDoc, SESSION, spawn, start, stage, TREE, world, yardRuns, type On } from './yard-world'
+import { deferred, flagOf, HOME, readDoc, SESSION, spawn, start, stage, TREE, world, yardRuns, type On } from './yard-world'
 
 test('a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start', async ($, on) => {
   const w = world(on)
@@ -16,16 +16,16 @@ test('a loft with no yard commands leaves Yard Client off, registers no tool and
   await start($)
   expect(w.state.tools).toEqual([])
   expect(w.state.toasts).toHaveLength(1)
-  expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–3, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
+  expect(w.state.toasts[0]).toMatch(new RegExp(`Yard Client is off: the loft plugin ${PLUGIN_VERSION.replaceAll('.', '\\.')} speaks the yard protocol 1–4, and \`loft\` runs loft .*, which has no yard commands\\. To use Yard Client, bring loft up to date, or set the loft plugin's loftCommand setting\\.`))
   const denied = await $.tool.call({ tool: 'mcp__loft__yard_read' })
   expect(denied.deny ?? denied.text).toMatch(/Yard Client is off/)
 })
 
 test('a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update', async ($, on) => {
-  const w = world(on, { protocol: 4 })
+  const w = world(on, { protocol: 5 })
   await start($)
   expect(w.state.tools).toEqual([])
-  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 4\. To use Yard Client, bring the loft plugin up to date/)
+  expect(w.state.toasts[0]).toMatch(/runs loft 2\.2\.1, which speaks the yard protocol 5\. To use Yard Client, bring the loft plugin up to date/)
 })
 
 test('a loftCommand that cannot be run leaves Yard Client off and names the setting', async ($, on) => {
@@ -181,6 +181,27 @@ test('where no page server answers, the mod runs loft yard serve for the session
   expect(serves().length).toBeGreaterThan(1)
 })
 
+test('the mod passes each address of the yardListen setting to the loft yard serve it starts', { options: { yardListen: '100.64.0.1, 192.168.1.5' } }, async ($, on) => {
+  const w = world(on, { serve: 'serving', protocol: 4 })
+  await start($)
+  await w.clock.advance(1)
+  const serve = w.state.runs.find(run => run.argv.includes('serve'))!
+  expect(serve.argv).toEqual(['loft', 'yard', 'serve', '--session', SESSION, '--tree', TREE, '--listen', '100.64.0.1', '--listen', '192.168.1.5', '--host', 'claude-code', '--port', '7411', '--format', 'json'])
+  await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  expect(w.state.runs.at(-1)!.argv).not.toContain('--listen')
+})
+
+test('the mod names once each entry of the yardListen setting that is not an IP address or is the unspecified IPv6 address, and passes the other addresses', { options: { yardListen: '100.64.0.1, machine.example.ts.net 999.1.1.1 ::' } }, async ($, on) => {
+  const w = world(on, { serve: 'running', protocol: 4 })
+  await start($)
+  await w.clock.advance(10000)
+  expect(w.state.toasts).toEqual([
+    "The loft plugin's yardListen setting names `machine.example.ts.net`, `999.1.1.1`, `::`, which the page server does not listen on: name IP addresses there, such as the machine's tailnet address, and `0.0.0.0`, not `::`, for every address.",
+  ])
+  const serve = w.state.runs.find(run => run.argv.includes('serve'))!
+  expect(serve.argv.filter((_, at) => serve.argv[at - 1] === '--listen')).toEqual(['100.64.0.1'])
+})
+
 test('where no page server answers the beat, the mod runs loft yard serve at every beat', async ($, on) => {
   const w = world(on, { serve: 'running' })
   await start($)
@@ -188,28 +209,96 @@ test('where no page server answers the beat, the mod runs loft yard serve at eve
   expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(3)
 })
 
-test('every five seconds the mod tells the page server the session is live, and while one answers it starts no loft yard serve', async ($, on) => {
+test('every five seconds the mod tells the page server the session is live, and after the first beat, while one answers, it starts no loft yard serve', async ($, on) => {
   const w = world(on)
   w.state.answersBeat = true
   await start($)
   await w.clock.advance(10000)
   expect(w.state.heard).toEqual([SESSION, SESSION, SESSION])
-  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(0)
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
   w.state.answersBeat = false
   await w.clock.advance(5000)
-  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(2)
+})
+
+test('at the first beat the mod runs loft yard serve even where a page server answers, so that one on other addresses is replaced', { options: { yardListen: '100.64.0.1' } }, async ($, on) => {
+  const w = world(on, { protocol: 4 })
+  w.state.answersBeat = true
+  await start($)
+  await w.clock.advance(1)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves).toHaveLength(1)
+  expect(flagOf(serves[0]!.argv, '--listen')).toBe('100.64.0.1')
+  expect(serves[0]!.argv).not.toContain('--join')
+})
+
+test("where the first beat's answer hangs past the next beat, the mod's first loft yard serve still joins no page server", { options: { yardListen: '100.64.0.1' } }, async ($, on) => {
+  const w = world(on, { serve: 'running', protocol: 4 })
+  const hanging = deferred<void>()
+  w.state.hearing = hanging.promise
+  await start($)
+  w.state.hearing = Promise.resolve()
+  await w.clock.advance(5000)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves.length).toBeGreaterThan(0)
+  expect(serves[0]!.argv).not.toContain('--join')
+  hanging.resolve()
+  await w.clock.settle()
+})
+
+test("a first loft yard serve the mod could not run within 30 seconds of the session's start joins the page server", { options: { yardListen: '100.64.0.1' } }, async ($, on) => {
+  const w = world(on, { serve: 'running', protocol: 4 })
+  const hanging = deferred<void>()
+  w.state.hearing = hanging.promise
+  await start($)
+  await w.clock.advance(30000)
+  w.state.hearing = Promise.resolve()
+  hanging.resolve()
+  await w.clock.advance(5000)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves.length).toBeGreaterThan(0)
+  for (const run of serves) expect(run.argv).toContain('--join')
+})
+
+test("after the session's first beat each loft yard serve the mod runs joins the page server that runs", async ($, on) => {
+  const w = world(on, { serve: 'running', protocol: 4 })
+  await start($)
+  await w.clock.advance(5000)
+  w.state.read = readDoc({ tree: '/work/other' })
+  await $.tool.call({ tool: 'mcp__loft__yard_read' })
+  await w.clock.settle()
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves.some(run => flagOf(run.argv, '--tree') === '/work/other')).toBe(true)
+  expect(serves.length).toBeGreaterThan(2)
+  expect(serves[0]!.argv).not.toContain('--join')
+  for (const later of serves.slice(1)) expect(later.argv).toContain('--join')
+})
+
+test('to a loft of an older protocol the mod passes neither --listen nor --join, and says once that yardListen waits for a newer loft', { options: { yardListen: '100.64.0.1' } }, async ($, on) => {
+  const w = world(on, { serve: 'running', protocol: 3 })
+  await start($)
+  await w.clock.advance(10000)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves.length).toBeGreaterThan(1)
+  for (const each of serves) {
+    expect(each.argv).not.toContain('--listen')
+    expect(each.argv).not.toContain('--join')
+  }
+  expect(w.state.toasts).toEqual([
+    "The loft plugin's yardListen setting waits for a newer loft: loft 2.2.1 speaks the yard protocol 3, so the page opens on this machine alone until loft is brought up to date.",
+  ])
 })
 
 const registers = (w: ReturnType<typeof world>) => w.state.posts.filter(post => post.url.endsWith('/api/register'))
 
-test("where another session's page server answers, the session's tree is registered with it once, and no loft yard serve runs", async ($, on) => {
+test("where another session's page server answers, the session's tree is registered with it once, and loft yard serve runs at the first beat alone", async ($, on) => {
   const w = world(on)
   w.state.answersBeat = true
   await start($)
   await w.clock.advance(10000)
   expect(registers(w).map(post => post.events)).toEqual([{ tree: TREE }])
   expect(registers(w)[0]!.url).toBe('http://127.0.0.1:7411/api/register')
-  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toEqual([])
+  expect(w.state.runs.filter(run => run.argv.includes('serve'))).toHaveLength(1)
 })
 
 test('a registration the page server refuses is tried again at the next beat', async ($, on) => {

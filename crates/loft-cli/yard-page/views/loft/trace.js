@@ -5,7 +5,7 @@
 import { h } from '../../lib/dom.js';
 import { count } from '../../lib/format.js';
 import * as kept from '../../lib/kept.js';
-import { chip, leftOut } from './index.js';
+import { chip } from './index.js';
 import { STATES, coverage, featureFold } from './trace-list.js';
 
 /**
@@ -65,7 +65,6 @@ export function traceView(report, _body, context = {}) {
       { class: ['fold', 'trace-list'] },
       h('summary', {}, `${count(criteria.length, 'criterion', 'criteria')} under ${count(features.length, 'Feature')}`),
       features.map((feature) => featureFold(feature, tests, kept.folds, key && `${key}/${feature.key}`)),
-      leftOut(report, 'features'),
       findingsList(findingsOf(criteria, reconcile), context.key ? `${context.key}/findings` : null),
     ),
   ];

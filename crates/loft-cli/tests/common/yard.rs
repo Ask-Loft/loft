@@ -14,6 +14,12 @@ use crate::base::based_on_now;
 use crate::common::{EPOCH, Scratch, workspace};
 use crate::schema;
 
+/// The directory of the live copies of the session files of `branch`'s Yard Log in the worktree
+/// whose top is `tree`, in its git directory, `.git`.
+pub fn live_at(tree: &std::path::Path, branch: &str) -> PathBuf {
+    yardlog_store::session::live_dir(&tree.join(".git/yard"), branch)
+}
+
 /// The commit HEAD names in a repository [`Yard::with_spec`] makes.
 pub const HEAD: &str = "feed0000feed0000feed0000feed0000feed0000";
 
@@ -48,15 +54,18 @@ impl Yard {
     /// the tree as it is now and whose HEAD is [`HEAD`], with the person named, at [`EPOCH`].
     pub fn with_spec() -> Self {
         let scratch = Scratch::with_reading_list();
-        let git = based_on_now(&scratch)
-            .base("HEAD", HEAD)
-            .with_config("user.name", "Ada Reader")
-            .with_config("user.email", "ada@example.com");
+        let git = spec_based_on_now(&scratch);
         Self {
             scratch,
             git,
             clock: Clock::fixed(EPOCH),
         }
+    }
+
+    /// Makes the tree as it now is the base [`Yard::with_spec`] compares with, so that a test
+    /// can change what the base already holds.
+    pub fn rebased(&mut self) {
+        self.git = spec_based_on_now(&self.scratch);
     }
 
     /// Runs `loft` itself, not `loft yard`, with `args`, printing JSON.
@@ -149,11 +158,26 @@ impl Yard {
         self.scratch.0.join(".yard").join(branch)
     }
 
+    /// The directory of the live copies of the session files of `branch`'s Yard Log, in the
+    /// worktree's git directory.
+    pub fn live(&self, branch: &str) -> PathBuf {
+        live_at(&self.scratch.0, branch)
+    }
+
     /// The file `name` of `~/.yard/`, as JSON.
     pub fn home_file(&self, name: &str) -> Value {
         let path = self.scratch.home().join(".yard").join(name);
         serde_json::from_str(&fs::read_to_string(path).unwrap()).unwrap()
     }
+}
+
+/// A repository on `feature` whose base for `develop` holds `scratch`'s tree as it now is, whose
+/// HEAD is [`HEAD`], with the person named.
+fn spec_based_on_now(scratch: &Scratch) -> GitScenario {
+    based_on_now(scratch)
+        .base("HEAD", HEAD)
+        .with_config("user.name", "Ada Reader")
+        .with_config("user.email", "ada@example.com")
 }
 
 /// The JSON document `output` holds, after asserting that the schema of `loft yard <command>`

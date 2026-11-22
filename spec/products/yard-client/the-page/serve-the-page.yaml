@@ -4,7 +4,9 @@ name: "Serve the page"
 body: |
   `loft yard serve` runs the page server: it serves the page's files, which `loft` holds within itself, answers the page's reads, takes the person's answers and decisions and the mod's events, and tells open pages of each change.
 
-  The page server is reached only from this machine, and a request that would change Yard Log, register a tree or record an event is taken only from the page it served, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead. A request that only reads, as the browser's own request for the page, needs neither.
+  By default the page server listens on the loopback interface alone, so that only programs on the machine reach it. A person who opens the page from another device, such as a phone in their tailnet, names the addresses it listens on as well, such as the machine's tailnet address, or `0.0.0.0` for every network the machine is on; in Claude Code that is the Loft plugin's `yardListen` setting. Anyone who reaches a named address can read the page and answer for the person, and a program on that network sets `Host` and `Origin` as it likes, so a public network, such as a coffee shop's, is better left unnamed. Codex gives the plugin no setting, so a page server that Codex starts listens where the last page server listened, on the loopback interface alone where none did. A `loft yard serve --join` that finds no page server running listens where the last page server listened, never on addresses of its own, so that a session started before the person narrowed the setting never opens the page wider again.
+
+  The page server always listens on the loopback interface, where the mod reaches it. A request that would change Yard Log, register a tree or record an event is taken only from a page that the page server served, at whichever of its addresses the page was opened, so that another web page open in the same browser cannot answer for the person. The mod's requests carry the control token kept in `~/.yard/token` instead. A request that only reads, as the browser's own request for the page, needs neither.
 tags:
   - yard-command
 realizes:
@@ -16,14 +18,83 @@ requirements:
     statement:
       form: ubiquitous
       system: "`loft yard serve`"
-      shall: "listen only on the loopback interface, at the port that `--port` names, 7411 by default."
+      shall: "listen on the loopback interface, and on each address that `--listen` names, at the port that `--port` names, 7411 by default."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb83315a9b4a
         name: "The page server serves its page at `http://127.0.0.1:<port>/`."
+      - key: 01a1eeea-3ba6-7330-8a73-2eb6cf9d9691
+        name: "Without `--listen`, a connection to an address of the machine other than `127.0.0.1` is not accepted."
+      - key: 01a1eeea-3ba6-7330-8a73-2eb722598f6f
+        name: "With `--listen 0.0.0.0`, the page opens from another machine at any address of this machine."
+      - key: 01a1eeea-3ba6-7330-8a73-2eb8f1f19fbb
+        name: "`--listen` may be given more than once, and the page server listens on each address it names."
+      - key: 01a1eeea-3ba6-7330-8a73-2eb932a7ea3c
+        name: "With `--listen`, the page server listens on `127.0.0.1` as well, even where `--listen` does not name it."
       - key: 01a1646f-546d-7042-befd-eb84ba1f667f
-        name: "A connection from another machine is not accepted."
+        name: "With `--listen`, a connection to an address of the machine that `--listen` does not name is not accepted."
       - key: 01a1646f-546d-7042-befd-eb851381cb9d
         name: "`loft yard serve` needs no git repository."
+  - key: 01a1f03b-b433-747a-bd8e-3d4171c44452
+    statement:
+      form: event_driven
+      when: "`loft yard serve` without `--join` finds a running page server of its own version that listens on addresses other than those it would listen on"
+      system: "`loft yard serve`"
+      shall: "replace that page server."
+    criteria:
+      - key: 01a1f03b-b433-747a-bd8e-3d435944acf4
+        name: "A `loft yard serve` without `--listen` replaces a page server started with `--listen 0.0.0.0`."
+      - key: 01a1f03b-b433-747a-bd8e-3d441b505aff
+        name: "A `loft yard serve` that names the running page server's addresses, in any order, exits 0 and starts none."
+      - key: 01a1f03b-b433-747a-bd8e-3d4536d42ec3
+        name: "A page server of a newer version is not replaced, whatever addresses it listens on."
+      - key: 01a1f069-3ebd-70c3-9e39-9698940f41a3
+        name: "With `--join`, a `loft yard serve` that finds a running page server of its own version exits 0 and starts none, whatever addresses that page server listens on."
+      - key: 01a1f2ba-ae5b-7356-b8f4-04521641f082
+        name: "Where another page server takes the lock while `loft yard serve` waits for the one it asked to stop, it asks that page server to stop as well, unless it is one to leave serving."
+      - key: 01a1f2ba-ae5b-7356-b8f4-0453897e157d
+        name: "`--join` and `--replace` given together are a usage error."
+      - key: 01a1f41d-c030-764d-a122-1addf8f15675
+        name: "A `loft yard serve` that finds the lock on `~/.yard/server.lock` held and `~/.yard/server.json` giving no port waits for a port, and then compares its addresses with those that record gives."
+  - key: 01a1f41d-c030-764d-a122-1adee0f09a97
+    statement:
+      form: event_driven
+      when: "`loft yard serve --join` starts a page server, where none runs or in place of one of an older version"
+      system: "`loft yard serve`"
+      shall: "listen on the loopback interface and on the addresses of the last page server that served, as `~/.yard/server.json` records them, in place of those that `--listen` names."
+    criteria:
+      - key: 01a1f41d-c030-764d-a122-1adf4c0b8ac3
+        name: "A `loft yard serve --join --listen 0.0.0.0`, after a page server that listened on the loopback interface alone has exited, listens on the loopback interface alone."
+      - key: 01a1f41d-c030-764d-a122-1ae0e3f6b3eb
+        name: "A `loft yard serve --join`, after a page server started with `--listen 0.0.0.0` has exited, listens on every address."
+      - key: 01a1f41d-c030-764d-a122-1ae168cbe365
+        name: "Where `~/.yard/server.json` records no addresses, or there is no `~/.yard/server.json`, a `loft yard serve --join` that finds no page server running listens on the loopback interface alone."
+      - key: 01a1f457-73e6-775d-a421-cefcaf691e13
+        name: "A `loft yard serve --join --listen 0.0.0.0` that replaces a page server of an older version listens on the addresses `~/.yard/server.json` last recorded, not on every address."
+  - key: 01a1eeea-3ba6-7330-8a73-2eba945eb028
+    statement:
+      form: unwanted
+      if: "an address that `--listen` names is not an address of the machine when the page server starts"
+      system: "the page server"
+      shall: "serve on its other addresses and try that address again until it listens there."
+    criteria:
+      - key: 01a1eeea-3ba6-7330-8a73-2ebbef46e951
+        name: "The page is served at `http://127.0.0.1:<port>/` while the address is missing."
+      - key: 01a1eeea-3ba6-7330-8a73-2ebc0ab7411f
+        name: "Once the address is an address of the machine, the page server listens on it within 5 seconds, without being started again."
+      - key: 01a1eeea-3ba6-7330-8a73-2ebdf0d4919c
+        name: "`loft yard serve` does not exit for a missing address."
+  - key: 01a1eeea-3ba6-7330-8a73-2ebe9edde96c
+    statement:
+      form: unwanted
+      if: "`--listen` names something other than an IP address, or an IPv6 address that names every address, in any of its forms, such as `::` or `::ffff:0.0.0.0`"
+      system: "`loft yard serve`"
+      shall: "exit 2 and name it."
+    body: "A socket on every IPv6 address takes no IPv4 connection on Windows, so `::` would leave `127.0.0.1` unreached, and `::ffff:0.0.0.0` names every IPv4 address a second way; `0.0.0.0` names every address."
+    criteria:
+      - key: 01a1f41d-c030-764d-a122-1ae25c45f654
+        name: "`::`, `::0`, `0:0:0:0:0:0:0:0` and `::ffff:0.0.0.0` are each refused, and the error names `0.0.0.0` as the address for every address."
+      - key: 01a1eeea-3ba6-7330-8a73-2ebf11eba3c7
+        name: "No page server is started."
   - key: 01a1646f-546d-7042-befd-eb860dc2fc11
     statement:
       form: ubiquitous
@@ -39,16 +110,20 @@ requirements:
   - key: 01a1646f-546d-7042-befd-eb89f50bd4b0
     statement:
       form: unwanted
-      if: "a request carries a `Host` other than the page server's own address"
+      if: "a request carries a `Host` other than `localhost` or the address of the machine that the request reached, at the page server's port"
       system: "the page server"
       shall: "refuse the request."
     criteria:
       - key: 01a1646f-546d-7042-befd-eb8afc96b474
         name: "No file is changed."
+      - key: 01a1eeea-3ba6-7330-8a73-2ec02a9114ce
+        name: "A request to `192.168.1.5:7411` whose `Host` is `192.168.1.5:7411` is answered."
+      - key: 01a1eeea-3ba6-7330-8a73-2ec1a6326269
+        name: "A request whose `Host` names the machine by a name other than `localhost`, as a tailnet's name for it, is refused."
   - key: 01a1646f-546d-7042-befd-eb8b5685370d
     statement:
       form: unwanted
-      if: "a request that would change Yard Log, register a tree or record an event carries an `Origin` other than the page server's own"
+      if: "a request that would change Yard Log, register a tree or record an event carries an `Origin` other than the page server's own at the address the request reached"
       system: "the page server"
       shall: "refuse the request."
     criteria:
@@ -56,6 +131,8 @@ requirements:
         name: "No file is changed."
       - key: 01a1646f-546d-7042-befd-eb8d29a09721
         name: "A request from the page the page server served is accepted."
+      - key: 01a1eeea-3ba6-7330-8a73-2ec293481a5e
+        name: "A request from the page opened from another machine, at the address that request reached, is accepted without the control token."
   - key: 01a1646f-546d-7042-befd-eb8e6120339d
     statement:
       form: unwanted

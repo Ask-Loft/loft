@@ -25,19 +25,23 @@ fn against(theirs: &str, ours: &str) -> Ordering {
     Version::parse(theirs).cmp(&Version::parse(ours))
 }
 
-/// Asks the running page server to stop, naming this `loft`'s version, and whether it is to
-/// stop whatever its own version, to be replaced.
-pub fn request_stop(home: &Home, replace: bool) -> Result<(), Failure> {
+/// Asks the running page server to stop, naming this `loft`'s version, whether it is to stop
+/// whatever its own version, to be replaced, and its process as `~/.yard/server.json` gives it,
+/// so that a page server that started since leaves the request.
+pub fn request_stop(home: &Home, replace: bool, target: Option<u64>) -> Result<(), Failure> {
     let mut request = json!({ "version": VERSION, "pid": std::process::id() });
     if replace {
         request["replace"] = json!(true);
+    }
+    if let Some(target) = target {
+        request["target"] = json!(target);
     }
     home.write(HomeFile::Stop, request.to_string().as_bytes())?;
     Ok(())
 }
 
 /// Whether `~/.yard/stop.json` holds a request that replaces this page server, or one made by a
-/// `loft` newer than this one.
+/// `loft` newer than this one, unless it names another page server's process.
 pub fn asked_to_stop(home: &Home) -> bool {
     let Ok(Some(bytes)) = home.read(HomeFile::Stop) else {
         return false;
@@ -45,8 +49,12 @@ pub fn asked_to_stop(home: &Home) -> bool {
     let Ok(request) = serde_json::from_slice::<Value>(&bytes) else {
         return false;
     };
-    request["replace"] == true
-        || request["version"].as_str().map(against_ours) == Some(Ordering::Greater)
+    let aimed = request["target"]
+        .as_u64()
+        .is_none_or(|target| target == u64::from(std::process::id()));
+    aimed
+        && (request["replace"] == true
+            || request["version"].as_str().map(against_ours) == Some(Ordering::Greater))
 }
 
 #[cfg(test)]

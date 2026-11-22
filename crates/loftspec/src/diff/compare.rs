@@ -212,9 +212,11 @@ impl Read {
             .flat_map(|(parent, ids)| ids.iter().map(|child| (*child, *parent)))
             .collect();
         Self {
+            // A record holds the edges it writes, so none is kept beside it.
             keyed: Keyed {
                 views: records.nodes,
                 order: Keyed::order_of(document),
+                written: BTreeMap::new(),
             },
             decisions: records.decisions,
             parents,

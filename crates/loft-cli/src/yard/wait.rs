@@ -2,7 +2,8 @@
 //! open, with the answers and outcomes of its blocks, or `pending` once its timeout passes. It
 //! holds the submission's lease for as long as it runs, so that one agent at a time waits on it;
 //! the main agent of another session takes up a submission whose session stopped by waiting on
-//! it. It reads Yard Log every 250 milliseconds and changes it only to record a take-up.
+//! it. It reads Yard Log every 250 milliseconds and changes it only to record a take-up. The
+//! Claude Yard hook watches a plan the same way, without the lease and taking nothing up.
 
 use std::path::Path;
 use std::time::Duration;
@@ -58,7 +59,26 @@ pub fn run(root: &Path, args: WaitArgs) -> Finished {
     })
 }
 
-pub(super) fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {
+/// Whether a wait holds its submission's lease.
+#[derive(Clone, Copy)]
+enum Lease {
+    /// An agent's wait: it holds the lease, and may take the submission up.
+    Take,
+    /// A watch beside the agent's own wait: it takes no lease and takes nothing up.
+    Leave,
+}
+
+/// Waits on the submission as `loft yard wait` does, without its lease: the Claude Yard hook
+/// watches a plan this way, so that the agent's own wait on it is never refused.
+pub(super) fn watch(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {
+    waiting(dir, args, Lease::Leave)
+}
+
+fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value), Failure> {
+    waiting(dir, args, Lease::Take)
+}
+
+fn waiting(dir: &Path, args: WaitArgs, lease: Lease) -> Result<(&'static str, Value), Failure> {
     let submission = Key::parse(&args.submission)
         .map(SubmissionKey::new)
         .map_err(|error| Failure::Usage(format!("--submission: {error}")))?;
@@ -88,10 +108,13 @@ pub(super) fn attempt(dir: &Path, args: WaitArgs) -> Result<(&'static str, Value
         home,
     };
     let taking_up = waiter.may_wait(&held)?;
-    let _lease = waiter.lease()?;
-    // Another wait may have taken the submission up while this one took the lease.
-    let taking_up = taking_up && waiter.may_wait(&branch.store.read()?)?;
-    let taken_up = taking_up && waiter.take_up(at)?;
+    let (_lease, taken_up) = match lease {
+        Lease::Take => {
+            let (held, taken_up) = waiter.hold(taking_up, at)?;
+            (Some(held), taken_up)
+        }
+        Lease::Leave => (None, false),
+    };
     let (outcome, mut fields) = waiter.until(clock, deadline, closed_by_merge)?;
     fields["takenUp"] = json!(taken_up);
     fields["waited"] = json!(clock.elapsed().saturating_sub(started).as_secs());
@@ -176,6 +199,16 @@ impl Waiter<'_> {
             Standing::TakeUp => Ok(true),
             Standing::Refused(error) => Err(self.refused(held, error)),
         }
+    }
+
+    /// Takes the submission's lease, then takes the submission up where `taking_up` and it still
+    /// is open to take up; gives the lease and whether it took the submission up.
+    fn hold(&self, taking_up: bool, at: yardlog::Time) -> Result<(Locked, bool), Failure> {
+        let lease = self.lease()?;
+        // Another wait may have taken the submission up while this one took the lease.
+        let taken_up =
+            taking_up && self.may_wait(&self.branch.store.read()?)? && self.take_up(at)?;
+        Ok((lease, taken_up))
     }
 
     /// The submission's lease, refused, naming who holds it, where another wait does. A lease

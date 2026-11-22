@@ -1,33 +1,32 @@
-//! The files a session writes alone in Yard Log's folder, its token totals and its activity:
-//! each written whole to a temporary file and renamed into place, outside Yard Log's lock, by a
-//! session id that cannot reach outside its folder; and the Yard Logs a worktree's `.yard/`
-//! holds.
+//! The files a session writes alone for a branch's Yard Log, its token totals, its activity and
+//! its consultation: each live copy written whole in git's directory for the worktree to a
+//! temporary file and renamed into place, outside Yard Log's lock, by a session id that cannot
+//! reach outside its folder, and saved into Yard Log's folder by each write of Yard Log; and the
+//! Yard Logs a worktree's `.yard/` holds.
 
 use std::fs;
 
 use serde_json::json;
 use yardlog::codec::session::FOLDERS;
+use yardlog_store::YardStoreError;
 use yardlog_store::session::{SessionFile, branches, is_session_id};
 
-use crate::common::{Tree, holding, write};
+use crate::common::{Tree, agent, at, holding, snapshot, write};
 
 #[test]
-fn a_session_s_file_is_written_whole_outside_yard_log_s_lock() {
+fn a_session_s_live_copy_is_written_whole_in_git_s_directory_outside_yard_log_s_lock() {
     let tree = Tree::new();
     let store = tree.store("feat/shelf");
     write(
         &store,
         &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
     );
+    let worktree = snapshot(&tree.top().join(".yard"));
     let ready = tree.scratch.0.join("held");
     let mut holder = holding(&store.lock_path(), &ready);
-    for file in [
-        SessionFile::Tokens,
-        SessionFile::Activity,
-        SessionFile::Consultation,
-    ] {
+    for file in SessionFile::ALL {
         store.write_session(file, "s1", b"session: s1\n").unwrap();
-        let path = store.session_path(file, "s1");
+        let path = store.live_session_path(file, "s1");
         assert_eq!(fs::read(&path).unwrap(), b"session: s1\n");
         let left: Vec<String> = fs::read_dir(path.parent().unwrap())
             .unwrap()
@@ -38,13 +37,340 @@ fn a_session_s_file_is_written_whole_outside_yard_log_s_lock() {
     holder.kill().unwrap();
     holder.wait().unwrap();
     assert_eq!(
+        snapshot(&tree.top().join(".yard")),
+        worktree,
+        "no file of the working tree changes"
+    );
+}
+
+#[test]
+fn a_session_s_live_copy_lies_under_git_s_directory_by_the_branch_s_escaped_name() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    let live = tree.git_dir().join("yard/feat%2Fshelf.sessions");
+    assert_eq!(store.live_dir(), live);
+    for (file, folder) in SessionFile::ALL.into_iter().zip(FOLDERS) {
+        assert_eq!(
+            store.live_session_path(file, "s1"),
+            live.join(folder).join("s1.yaml")
+        );
+    }
+    assert_eq!(
         store.session_path(SessionFile::Tokens, "s1"),
         store.folder().join("tokens/s1.yaml")
     );
-    assert_eq!(
-        store.session_path(SessionFile::Consultation, "s1"),
-        store.folder().join("consultation/s1.yaml")
+}
+
+#[test]
+fn a_read_of_a_session_s_file_takes_its_live_copy_before_the_folder_s() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    tree.scratch
+        .put("tree/.yard/feat/shelf/tokens/s1.yaml", "session: folder\n");
+    tree.scratch.put(
+        "tree/.yard/feat/shelf/tokens/s2.yaml",
+        "session: only-folder\n",
     );
+    store
+        .write_session(SessionFile::Tokens, "s1", b"session: live\n")
+        .unwrap();
+    store
+        .write_session(SessionFile::Tokens, "s3", b"session: only-live\n")
+        .unwrap();
+    assert_eq!(
+        store.session_file(SessionFile::Tokens, "s1").unwrap(),
+        b"session: live\n"
+    );
+    assert_eq!(
+        store.session_file(SessionFile::Tokens, "s2").unwrap(),
+        b"session: only-folder\n"
+    );
+    let all: Vec<(String, String)> = store
+        .session_files(SessionFile::Tokens)
+        .into_iter()
+        .map(|(key, bytes)| (key, String::from_utf8(bytes).unwrap()))
+        .collect();
+    assert_eq!(
+        all,
+        [
+            ("s1".to_owned(), "session: live\n".to_owned()),
+            ("s2".to_owned(), "session: only-folder\n".to_owned()),
+            ("s3".to_owned(), "session: only-live\n".to_owned()),
+        ]
+    );
+}
+
+#[test]
+fn each_write_of_yard_log_saves_the_live_copies_that_differ_into_its_folder() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    for file in SessionFile::ALL {
+        store.write_session(file, "s1", b"session: s1\n").unwrap();
+    }
+    let written = write(
+        &store,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    )
+    .written;
+    for folder in FOLDERS {
+        let path = format!(".yard/feat/shelf/{folder}/s1.yaml");
+        assert!(written.contains(&path), "{path} in {written:?}");
+        assert_eq!(fs::read(tree.top().join(&path)).unwrap(), b"session: s1\n");
+    }
+    let again = write(
+        &store,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "M" }]),
+    )
+    .written;
+    assert!(
+        again.iter().all(|path| !path.contains("/tokens/")),
+        "a live copy the folder already holds is not written again: {again:?}"
+    );
+}
+
+#[test]
+fn a_write_leaves_a_folder_s_session_file_that_no_live_copy_holds_as_it_is() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    tree.scratch.put(
+        "tree/.yard/feat/shelf/activity/merged.yaml",
+        "session: merged\n",
+    );
+    let written = write(
+        &store,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    )
+    .written;
+    assert!(written.iter().all(|path| !path.contains("/activity/")));
+    assert_eq!(
+        fs::read(tree.top().join(".yard/feat/shelf/activity/merged.yaml")).unwrap(),
+        b"session: merged\n"
+    );
+}
+
+#[test]
+fn a_live_copy_is_not_saved_over_a_folder_file_of_a_format_this_loft_does_not_write() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    let newer = "format: yardtokens/99\nsession: s1\n";
+    let other = "format: yardconsult/2\nsession: s1\n";
+    tree.scratch
+        .put("tree/.yard/feat/shelf/tokens/s1.yaml", newer);
+    tree.scratch
+        .put("tree/.yard/feat/shelf/consultation/s1.yaml", other);
+    tree.scratch.put(
+        "tree/.yard/feat/shelf/tokens/s2.yaml",
+        "format: yardtokens/1\nsession: s2\n",
+    );
+    for session in ["s1", "s2"] {
+        for file in [SessionFile::Tokens, SessionFile::Consultation] {
+            let text = format!("format: yardtokens/2\nsession: {session}\n");
+            store.write_session(file, session, text.as_bytes()).unwrap();
+        }
+    }
+    write(
+        &store,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    );
+    let folder = |path: &str| fs::read_to_string(store.folder().join(path)).unwrap();
+    assert_eq!(folder("tokens/s1.yaml"), newer);
+    assert_eq!(folder("consultation/s1.yaml"), other);
+    assert_eq!(
+        folder("tokens/s2.yaml"),
+        "format: yardtokens/2\nsession: s2\n",
+        "an older totals format is written over"
+    );
+}
+
+#[test]
+fn closing_yard_log_saves_the_live_copies_then_removes_them() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    store
+        .write_session(SessionFile::Activity, "s1", b"session: s1\n")
+        .unwrap();
+    store
+        .update(|log| {
+            let mut log = log.unwrap();
+            log.close(agent(), at(9)).unwrap();
+            Ok::<_, YardStoreError>((log, ()))
+        })
+        .unwrap();
+    assert_eq!(
+        fs::read(store.session_path(SessionFile::Activity, "s1")).unwrap(),
+        b"session: s1\n"
+    );
+    assert!(!store.live_dir().exists());
+}
+
+#[test]
+fn a_write_after_a_branch_is_renamed_saves_the_live_copies_kept_under_its_old_name() {
+    let tree = Tree::new();
+    let old = tree.store("feat/old");
+    write(&old, &json!([{ "id": "s", "kind": "stage", "title": "S" }]));
+    old.write_session(SessionFile::Tokens, "s1", b"session: s1\n")
+        .unwrap();
+    fs::rename(
+        tree.top().join(".yard/feat/old"),
+        tree.top().join(".yard/feat/new"),
+    )
+    .unwrap();
+    let new = tree.store("feat/new");
+    write(
+        &new,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    );
+    assert_eq!(
+        fs::read(new.session_path(SessionFile::Tokens, "s1")).unwrap(),
+        b"session: s1\n"
+    );
+    assert!(!old.live_dir().exists());
+    assert!(new.live_session_path(SessionFile::Tokens, "s1").is_file());
+}
+
+#[test]
+fn a_folder_copy_that_cannot_be_read_neither_blocks_a_write_nor_is_written_over() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    let unreadable = store.session_path(SessionFile::Activity, "s1");
+    fs::create_dir_all(&unreadable).unwrap();
+    store
+        .write_session(SessionFile::Activity, "s1", b"session: s1\n")
+        .unwrap();
+    write(
+        &store,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    );
+    assert!(unreadable.is_dir());
+}
+
+#[test]
+fn a_new_yard_log_on_a_reused_branch_name_takes_none_of_the_live_copies_left_before_it() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    store
+        .write_session(SessionFile::Tokens, "s1", b"session: s1\n")
+        .unwrap();
+    fs::remove_dir_all(store.folder()).unwrap();
+    write(
+        &store,
+        &json!([{ "id": "t", "kind": "stage", "title": "T" }]),
+    );
+    assert!(!store.session_path(SessionFile::Tokens, "s1").exists());
+    assert!(!store.live_dir().exists());
+}
+
+#[test]
+fn closing_yard_log_keeps_the_live_copies_where_one_could_not_be_saved() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    fs::create_dir_all(store.session_path(SessionFile::Activity, "s1")).unwrap();
+    store
+        .write_session(SessionFile::Activity, "s1", b"session: s1\n")
+        .unwrap();
+    store
+        .update(|log| {
+            let mut log = log.unwrap();
+            log.close(agent(), at(9)).unwrap();
+            Ok::<_, YardStoreError>((log, ()))
+        })
+        .unwrap();
+    assert_eq!(
+        fs::read(store.live_session_path(SessionFile::Activity, "s1")).unwrap(),
+        b"session: s1\n"
+    );
+}
+
+#[test]
+fn rewriting_a_session_s_file_rewrites_its_live_copy_and_the_folder_s() {
+    let tree = Tree::new();
+    let store = tree.store("feat/shelf");
+    write(
+        &store,
+        &json!([{ "id": "s", "kind": "stage", "title": "S" }]),
+    );
+    store
+        .write_session(SessionFile::Tokens, "s1", b"session: old\n")
+        .unwrap();
+    write(
+        &store,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    );
+    store
+        .rewrite_session(SessionFile::Tokens, "s1", b"session: new\n")
+        .unwrap();
+    for path in [
+        store.live_session_path(SessionFile::Tokens, "s1"),
+        store.session_path(SessionFile::Tokens, "s1"),
+    ] {
+        assert_eq!(
+            fs::read(&path).unwrap(),
+            b"session: new\n",
+            "{}",
+            path.display()
+        );
+    }
+}
+
+#[test]
+fn a_rename_leaves_a_live_copy_of_the_old_name_that_the_new_name_already_holds() {
+    let tree = Tree::new();
+    let old = tree.store("feat/old");
+    write(&old, &json!([{ "id": "s", "kind": "stage", "title": "S" }]));
+    for session in ["s1", "s2"] {
+        old.write_session(SessionFile::Tokens, session, b"session: old\n")
+            .unwrap();
+    }
+    fs::rename(
+        tree.top().join(".yard/feat/old"),
+        tree.top().join(".yard/feat/new"),
+    )
+    .unwrap();
+    let new = tree.store("feat/new");
+    new.write_session(SessionFile::Tokens, "s1", b"session: new\n")
+        .unwrap();
+    write(
+        &new,
+        &json!([{ "id": "n", "kind": "note", "stage": "s", "markdown": "N" }]),
+    );
+    assert_eq!(
+        fs::read(old.live_session_path(SessionFile::Tokens, "s1")).unwrap(),
+        b"session: old\n",
+        "the copy not moved is kept"
+    );
+    assert_eq!(
+        fs::read(new.live_session_path(SessionFile::Tokens, "s2")).unwrap(),
+        b"session: old\n"
+    );
+    assert!(!old.live_session_path(SessionFile::Tokens, "s2").exists());
 }
 
 #[test]

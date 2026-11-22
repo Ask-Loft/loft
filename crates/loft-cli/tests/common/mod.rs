@@ -3,10 +3,13 @@
 //! clock, and the git simulator for a command that reads the repository, with no `git` on the
 //! search path otherwise; or, for a contract suite, under real git.
 
+pub mod calls;
 pub mod connected;
 #[cfg(unix)]
 pub mod npm;
+pub mod oauth;
 pub mod remote;
+pub mod resources;
 pub mod signed_in;
 pub mod telemetry;
 
@@ -140,6 +143,13 @@ impl Scratch {
         let text = fs::read_to_string(self.file(path)).unwrap();
         assert!(text.contains(from), "{from:?} in {path}");
         fs::write(self.file(path), text.replacen(from, to, 1)).unwrap();
+    }
+
+    /// Writes `text` at the end of the file `path` of `spec/`.
+    pub fn append(&self, path: &str, text: &str) {
+        let mut whole = fs::read_to_string(self.file(path)).unwrap();
+        whole.push_str(text);
+        fs::write(self.file(path), whole).unwrap();
     }
 
     /// Runs `loft` at [`EPOCH`] with no `git` on its search path, as every command but a

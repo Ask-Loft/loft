@@ -88,6 +88,8 @@ requirements:
         name: "A manifest that holds neither `remote` nor `connected` is left as it was."
       - key: 01a18e1f-8daa-7674-9603-5ad028d5e220
         name: "The sign-in that `loft/remotes.json` holds for the manifest's address is removed."
+      - key: 01a1f942-7c5b-7292-be5d-c80780945e5a
+        name: "A sign-in kept under the manifest's address for a protected resource on another origin is removed too."
       - key: 01a156c0-0b7a-76b6-9a6a-682e4f4634b9
         name: "Every entry for another address is kept."
       - key: 01a156c0-0b7a-76b6-9a6a-682f83ff48dd
@@ -167,3 +169,18 @@ requirements:
         name: "The document holds no token."
       - key: 01a156c0-0b7a-76b6-9a6a-68493a5b9580
         name: "A refusal has the outcome `error` and is listed among the document's errors."
+  - key: 01a1f98b-b6a3-7425-bcd4-da9cb34e39f1
+    statement:
+      form: optional
+      where: "the working directory holds `spec/loftspec.yaml` with a `documentKey`"
+      system: "`loft remote set --help`"
+      shall: "give the form of the document's address with that `documentKey` in place of `<documentKey>`."
+    criteria:
+      - key: 01a1f98b-b6a3-7425-bcd4-da9d1e88145d
+        name: "The help of the address gives `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote` with the manifest's `documentKey` in place of `<documentKey>`."
+      - key: 01a1f98b-b6a3-7425-bcd4-da9e0c6491f5
+        name: "Without a manifest in the working directory, the help gives the form with `<documentKey>` and says that it is the `documentKey` of `spec/loftspec.yaml`."
+      - key: 01a1f98b-b6a3-7425-bcd4-da9feb137d20
+        name: "A manifest that does not read leaves the help as it is without a manifest."
+      - key: 01a1f98b-b6a3-7425-bcd4-daa00a8aac3b
+        name: "A command other than `loft remote` reads no manifest to build its help."

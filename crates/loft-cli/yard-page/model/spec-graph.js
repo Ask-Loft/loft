@@ -1,10 +1,12 @@
 // A `spec-change` view's diagram as the page lays it out: ELK's graph of nested panels and cards.
 // Each Product, Feature Group and Feature shown is a panel that holds what belongs to it; each
-// Requirement, criterion, Component, decision and folded Feature Group is a card, headed by its
-// label (or its kind's name) and its change, with its name or statement beneath, wrapped to the
-// width the page's face measures. A criterion stands beside its Requirement, joined to it by a
-// plain line; `realizes` and decision subject edges are dashed, and decisions and Components lie
-// in the last column, a decision's edges laid out from its subjects so that it lies beside them.
+// Requirement, criterion, Component, Constraint, Quality Attribute, Section, decision and folded
+// Feature Group is a card, headed by its label (or its kind's label prefix, or the word Section
+// for a Section, which has no label) and its change, with its name or statement beneath, wrapped
+// to the width the page's face measures. A card beneath another card, as a criterion beneath its
+// Requirement or a Section beneath a Component, stands beside it, joined to it by a plain line;
+// `realizes` and decision subject edges are dashed, and decisions and Components lie in the last
+// column, a decision's edges laid out from its subjects so that it lies beside them.
 // Nothing here reaches the page or the network.
 
 import { PAD } from './flowchart.js';
@@ -25,10 +27,11 @@ export const KIND_NAMES = {
   component: 'Component',
   constraint: 'Constraint',
   quality_attribute: 'Quality Attribute',
+  section: 'Section',
   decision: 'Decision',
 };
 
-/** Each kind's label prefix, for a box whose node has no label yet. */
+/** Each kind's label prefix, for a box whose node has no label yet; a Section has none. */
 export const KIND_PREFIXES = {
   product: 'P',
   feature_group: 'FG',
@@ -179,12 +182,22 @@ function chipOf(node, id, measure) {
 }
 
 /**
- * The head of a box: its label, or its kind's name, and the word of its change.
+ * What a box or a subject is headed by: its label, or its kind's label prefix where it has no
+ * label yet, or its kind's name where its kind has no labels, as a Section has none.
+ * @param {{ kind?: string, label?: string | null }} node
+ */
+export function labelOf(node) {
+  const kind = /** @type {keyof typeof KIND_PREFIXES & keyof typeof KIND_NAMES} */ (node.kind);
+  return node.label || KIND_PREFIXES[kind] || KIND_NAMES[kind] || String(node.kind ?? '');
+}
+
+/**
+ * The head of a box: its label, or what stands for it, and the word of its change.
  * @param {any} node
  */
 export function headOf(node) {
   return {
-    label: node.label || KIND_PREFIXES[/** @type {keyof typeof KIND_PREFIXES} */ (node.kind)] || String(node.kind ?? ''),
+    label: labelOf(node),
     word: CHANGE_WORDS[/** @type {keyof typeof CHANGE_WORDS} */ (node.change)] ?? null,
   };
 }
@@ -341,7 +354,8 @@ export function specGraph(graph, open, measure, compact = false) {
     });
   }
   // ELK lets no edge lead on from a node of the last column, so a box that leads on, as a
-  // Component to the Components beneath it, is left to lie where its edges place it.
+  // Component to the Components, Constraints and Quality Attributes beneath it, is left to lie
+  // where its edges place it.
   const leading = new Set(root.edges.map((edge) => edge.sources[0]));
   for (const made of elkNodes.values()) {
     if (leading.has(made.id) && made.layoutOptions?.['elk.layered.layering.layerConstraint']) {

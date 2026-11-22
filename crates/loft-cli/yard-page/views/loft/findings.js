@@ -8,7 +8,7 @@
 import { h, svg } from '../../lib/dom.js';
 import * as kept from '../../lib/kept.js';
 import { base, count, place } from '../../lib/format.js';
-import { chip, leftOut, nameOf, tag } from './index.js';
+import { chip, nameOf, tag } from './index.js';
 
 const SEVERITIES = ['error', 'warning', 'info', 'hint'];
 
@@ -64,7 +64,6 @@ export function findingsView(report, body, context = {}) {
       : null,
     h('p', { class: 'finding-split' }, split(findings)),
     byRule(findings).map((group) => ruleGroup(group, report, reasons, context.key)),
-    leftOut(report, 'check.findings'),
     resolvedList(resolved, path),
   ];
 }

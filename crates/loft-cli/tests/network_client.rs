@@ -1,7 +1,7 @@
 //! The network client is the only part of `loft` that opens a network connection: no other
 //! source file of the command line names the HTTP library or a socket, but the page server's
-//! listener and a sign-in's, which listen on the loopback interface alone, take only connections
-//! received there and open none. The client goes through the proxy the environment names.
+//! listener and a sign-in's, which take connections and open none. The client goes through the
+//! proxy the environment names.
 
 use std::fs;
 use std::path::Path;
@@ -58,33 +58,12 @@ fn listener() -> String {
 }
 
 #[test]
-fn the_page_server_listens_only_on_the_loopback_interface_and_opens_no_connection() {
+fn the_page_server_opens_no_network_connection() {
     let text = listener();
-    assert!(
-        text.contains("TcpListener::bind(SocketAddrV4::new(Ipv4Addr::LOCALHOST, port))"),
-        "the listener binds 127.0.0.1 and nothing else"
-    );
     assert_eq!(text.matches("::bind(").count(), 1, "one socket is bound");
-    for name in [
-        "::connect",
-        ".connect(",
-        "UdpSocket",
-        "ureq",
-        "UNSPECIFIED",
-        "0.0.0.0",
-        "Ipv6Addr",
-    ] {
+    for name in ["::connect", ".connect(", "UdpSocket", "ureq"] {
         assert!(!text.contains(name), "the listener names {name}");
     }
-}
-
-#[test]
-fn the_page_server_takes_only_connections_received_on_the_loopback_interface() {
-    let text = listener();
-    assert!(
-        text.contains(".is_ok_and(|peer| peer.ip().is_loopback())"),
-        "each connection's peer is checked"
-    );
 }
 
 /// A stand-in proxy: a server that records each request and answers every one with an error.

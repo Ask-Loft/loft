@@ -1,11 +1,11 @@
 // A `publish` view: the publish sequence and time the lock pins, the start of its state root,
-// whether the tree matches it, each node added, changed or removed since the publish, and the
-// labeled nodes and decisions counted by kind.
+// whether the tree matches it, each node and decision added, changed or removed since the publish,
+// and the labeled nodes and decisions counted by kind.
 
 import { h } from '../../lib/dom.js';
 import { when } from '../../lib/format.js';
 import * as kept from '../../lib/kept.js';
-import { changeItem, chip, leftOut } from './index.js';
+import { changeItem, chip } from './index.js';
 
 const KIND_NAMES = {
   product: 'Products',
@@ -54,9 +54,8 @@ export function publishView(report, body, context) {
       ? kept.details(
           { path: context.key ? `${context.key}/changes` : null, open: false },
           { class: 'fold' },
-          h('summary', {}, `${changes.length} nodes added, changed or removed since the publish`),
+          h('summary', {}, `${changes.length} nodes and decisions added, changed or removed since the publish`),
           h('ul', { class: 'changes' }, changes.map(changeItem)),
-          ['added', 'changed', 'removed'].map((change) => leftOut(report, `status.base.${change}`)),
         )
       : null,
     labels.length

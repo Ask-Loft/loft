@@ -41,5 +41,9 @@ test('with Yard Client off, the dialog is drawn as Claude Code draws it', async 
   world(on, { protocol: 'none' })
   drawing(on)
   await start($)
-  expect(await $.ui.render(ASKING)).toEqual({ type: 'engine', ref: 0 })
+  // The test kit may hand Claude Code's drawing back under a handle of its own numbering.
+  const drawn = await $.ui.render(ASKING)
+  expect(drawn).toMatchObject({ type: 'engine' })
+  expect(Object.keys(drawn as object).sort()).toEqual(['ref', 'type'])
+  expect(textsOf(drawn)).toEqual([])
 })

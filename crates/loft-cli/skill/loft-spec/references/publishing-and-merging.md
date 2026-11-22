@@ -32,13 +32,27 @@ restate or override them here.
 A document connected to a Loft server publishes through it: the server holds its published
 states in order and gives its labels, so a whole team publishes one document.
 
-- Run `loft remote set <address>` only when the user asks to connect the document, with the
-  address the user gives. Never invent or guess an address. The command signs the user in,
-  creates the document on the server and imports every state the repository has published.
+- Run `loft remote set <address>` only when the user asks to connect the document. The command
+  signs the user in, creates the document on the server and imports every state the repository
+  has published.
+- The address is the document's own address on the server, never the server's address or
+  another endpoint of it. A Loft server gives each document the address
+  `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`. Take
+  `<documentKey>` from `documentKey` in `spec/loftspec.yaml`.
+- Ask the user for the server's host and the tenant slug where they have not given them, and
+  never guess either. Where the user gives a whole document address, use it as it is.
+- When `loft remote set` says the address may not be a document's remote, check the address
+  against the form with the user rather than try another address.
 - After `loft remote set` or `loft remote remove`, commit `spec/loftspec.yaml`, which names the
   remote and marks the document `connected: true`, or no longer does.
 - When a command reports that the sign-in to the remote has lapsed or been refused, ask the user
   to run `loft remote login`: the sign-in opens the user's browser, so it is theirs to complete.
+- When a command reports that the sign-in kept for the address is for a protected resource on
+  another origin, ask the user to run `loft remote login` first: it signs in again where the
+  remote now serves its resource on the address's origin. Where that login is refused for the
+  same reason, the manifest names the remote by another name than its own: ask the user to run
+  `loft remote set` with the remote's address on the origin the error names, which signs them in
+  through their browser, then commit `spec/loftspec.yaml`.
 
 ## Publish
 

@@ -160,6 +160,18 @@ export function planPath(tree: string | undefined, path: string | undefined): st
   return relative && !relative.split('/').includes('..') ? relative : undefined
 }
 
+// Claude Code opens the person's rejection of a tool call with these words, with or without
+// feedback; a host or a tool error that ends the call words it otherwise.
+const REJECTED = /^The user doesn't want to proceed with this tool use\b/
+
+// Claude Code opens a tool call the person stopped by interrupting the turn with these words.
+const CANCELED = /^The user doesn't want to take this action right now\b/
+
+/** Whether Claude Code gives the agent `text` for a tool call the person stopped by interrupting the turn. */
+export function isCanceled(text: string): boolean {
+  return CANCELED.test(text.trim())
+}
+
 // Claude Code gives the agent a rejection's feedback after these words.
 const SAID = /the user said:\s*/i
 
@@ -168,6 +180,16 @@ export function feedbackIn(text: string): string | undefined {
   const said = SAID.exec(text)
   const rest = said ? text.slice(said.index + said[0].length).trim() : ''
   return rest === '' ? undefined : rest
+}
+
+/**
+ * The person's rejection of a tool call as Claude Code gives it to the agent, with the feedback
+ * they typed as its reason; none for any other denial, such as a host's or a tool error's.
+ */
+export function rejectionIn(text: string): { reason?: string } | undefined {
+  if (!REJECTED.test(text.trim())) return undefined
+  const reason = feedbackIn(text)
+  return reason ? { reason } : {}
 }
 
 /** A task's block id: from the task's id and who made it ([`whoOf`]), so that each update finds it. */

@@ -4,9 +4,10 @@
 
 use serde_json::json;
 use software_plant::remote::wire::sha256_hex;
-use software_plant::remote::{Remote, RemoteScenario};
+use software_plant::remote::{RESOURCE, Remote, RemoteScenario};
 
-use crate::remote_contract::{Answer, assert_problem, call};
+use crate::common::calls::{Answer, agent, call};
+use crate::remote_contract::assert_problem;
 
 const KEY: &str = "01a18e30-0000-7000-8000-000000000020";
 
@@ -14,9 +15,9 @@ const KEY: &str = "01a18e30-0000-7000-8000-000000000020";
 const PACKAGE: &[u8] = b"\x1f\x8b a package";
 
 /// The package at `path` on the origin, fetched without a token: its status, its
-/// `Content-Type` and its bytes, which the contract suite's `call` would read as JSON.
+/// `Content-Type` and its bytes, which the contract suites' `call` would read as JSON.
 fn fetch(remote: &Remote, path: &str) -> (u16, Option<String>, Vec<u8>) {
-    let mut response = crate::remote_contract::agent()
+    let mut response = agent()
         .get(format!("{}{path}", remote.origin()))
         .call()
         .unwrap();
@@ -54,7 +55,7 @@ fn the_skill_manifest_lies_on_the_origin_and_names_the_package_without_a_token()
     let package = manifest["package"].as_str().unwrap();
     assert!(package.starts_with('/'), "{package}");
     // The address holds a path; the manifest is on its origin all the same.
-    assert!(remote.address().contains("/documents/"));
+    assert!(remote.address().contains(RESOURCE));
     let under_address = call(
         "GET",
         &format!("{}/.well-known/loft-skill.json", remote.address()),

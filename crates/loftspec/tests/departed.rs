@@ -50,6 +50,17 @@ fn a_departed_label_resolves_to_no_element() {
 }
 
 #[test]
+fn a_departed_label_names_its_element_as_a_former_label_and_a_live_one_does_not() {
+    let document = full_document();
+    assert_eq!(
+        document.bindings.former(label("ADR-5")),
+        Some(DecisionId::new(key(90)).into())
+    );
+    assert_eq!(document.bindings.former(label("RQ-2")), None);
+    assert_eq!(document.bindings.former(label("RQ-999")), None);
+}
+
+#[test]
 fn a_departed_binding_reads_back_with_its_labels_and_its_record() {
     let document = codec::read(&codec::write(&full_document())).unwrap();
     let binding = document

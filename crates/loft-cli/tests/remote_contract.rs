@@ -2,78 +2,18 @@
 //! scenario asks the simulator, and on demand a real remote, the same question. The real half
 //! is ignored by default; run it against a remote that holds a document with
 //! `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CONTRACT_TOKEN` set:
-//! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/remote_contract/)'`.
+//! `cargo nextest run -p loft-cli --run-ignored only -E 'test(/^remote_contract::/)'`. The
+//! remote's other contract files hold real halves of their own: those that spend no sign-in may
+//! run together, and each one that spends a sign-in runs alone, as its file says.
 
-use std::collections::BTreeMap;
 use std::time::Duration;
 
 use serde_json::{Value, json};
 use software_plant::remote::problem::CODES;
 use software_plant::remote::{Remote, RemoteScenario, StoredState, TOKEN};
 
+use crate::common::calls::{Answer, agent, call};
 use crate::common::remote::{History, history};
-
-/// An answer: its status, its headers by lower-case name, and its body as JSON or `null`.
-pub struct Answer {
-    pub status: u16,
-    pub headers: BTreeMap<String, String>,
-    pub body: Value,
-}
-
-impl Answer {
-    pub fn header(&self, name: &str) -> Option<&str> {
-        self.headers.get(name).map(String::as_str)
-    }
-}
-
-/// A client that follows no redirect and reads every status as an answer.
-pub fn agent() -> ureq::Agent {
-    ureq::Agent::config_builder()
-        .http_status_as_error(false)
-        .max_redirects(0)
-        .timeout_global(Some(Duration::from_secs(10)))
-        .build()
-        .into()
-}
-
-/// `method url`, with a bearer `token` and a JSON `body` where given.
-pub fn call(method: &str, url: &str, token: Option<&str>, body: Option<&Value>) -> Answer {
-    let request = ureq::http::Request::builder().method(method).uri(url);
-    let request = match token {
-        Some(token) => request.header("Authorization", format!("Bearer {token}")),
-        None => request,
-    };
-    let response = match body {
-        Some(body) => agent().run(
-            request
-                .header("Content-Type", "application/json")
-                .body(body.to_string())
-                .unwrap(),
-        ),
-        None => agent().run(request.body(()).unwrap()),
-    };
-    read(response.expect("the remote answers"))
-}
-
-/// `response` read as an answer.
-pub fn read(mut response: ureq::http::Response<ureq::Body>) -> Answer {
-    let headers = response
-        .headers()
-        .iter()
-        .map(|(name, value)| {
-            (
-                name.as_str().to_owned(),
-                value.to_str().unwrap_or_default().to_owned(),
-            )
-        })
-        .collect();
-    let bytes = response.body_mut().read_to_vec().unwrap_or_default();
-    Answer {
-        status: response.status().as_u16(),
-        headers,
-        body: serde_json::from_slice(&bytes).unwrap_or(Value::Null),
-    }
-}
 
 pub fn get(remote: &Remote, path: &str) -> Answer {
     call(
@@ -107,8 +47,8 @@ pub fn mark(state: &StoredState) -> Value {
 
 /// Requires `answer` to be a problem document of `code` at `status`.
 pub fn assert_problem(answer: &Answer, status: u16, code: &str) {
-    assert_eq!(answer.status, status, "{:?}", answer.body);
-    assert_eq!(answer.body["code"], code, "{:?}", answer.body);
+    assert_eq!(answer.status, status, "{answer:?}");
+    assert_eq!(answer.body["code"], code, "{answer:?}");
     assert_eq!(answer.body["status"], status);
     assert_eq!(
         answer.header("content-type"),
@@ -207,6 +147,26 @@ fn a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_iss
         &post(&remote, "/head", &json!({})),
         405,
         "method_not_allowed",
+    );
+}
+
+#[test]
+fn the_simulator_serves_its_document_at_the_address_a_loft_server_gives_a_document() {
+    let (remote, history) = holding(1);
+    assert_eq!(
+        remote.address(),
+        format!(
+            "{}/loft/t/plant/api/v2/documents/{}/remote",
+            remote.origin(),
+            history.key
+        )
+    );
+    assert_eq!(get(&remote, "/head").status, 200);
+    let elsewhere = format!("{}/documents/{}/head", remote.origin(), history.key);
+    assert_problem(
+        &call("GET", &elsewhere, Some(TOKEN), None),
+        404,
+        "not_found",
     );
 }
 

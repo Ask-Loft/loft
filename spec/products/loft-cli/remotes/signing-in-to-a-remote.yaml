@@ -44,8 +44,46 @@ requirements:
         name: "Authorization server metadata without `registration_endpoint`, or whose `code_challenge_methods_supported` leaves out `S256`, is refused."
       - key: 01a18e1f-8daa-7674-9603-5ae2c1ed7a4a
         name: "The error names the address of the document that was refused."
+      - key: 01a1f967-f816-765c-9e69-fb957ac55be9
+        name: "Where the unauthenticated request was refused, the error names that request as `GET <address>/head` and the status the remote gave."
       - key: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
         name: "Nothing is written."
+  - key: 01a1f4f1-4309-7056-a238-4b3a5ee7086f
+    statement:
+      form: unwanted
+      if: "the remote's challenge names its protected resource metadata, or that metadata names its protected resource, on another origin than the remote's address"
+      system: "Loft"
+      shall: "refuse to sign in and exit 1."
+    criteria:
+      - key: 01a1f4f1-4309-7056-a238-4b3b10f42aed
+        name: "A challenge whose `resource_metadata` lies on another origin than the remote's address is refused before that metadata is requested."
+      - key: 01a1f4f1-4309-7056-a238-4b3cf07410b6
+        name: "Protected resource metadata whose `resource` lies on another origin than the remote's address is refused."
+      - key: 01a1f4f1-4309-7056-a238-4b3d468d9de9
+        name: "Two `https` or `http` addresses lie on one origin when they have the same scheme, the same host without regard to case, and the same port, where a port left out is the scheme's default."
+      - key: 01a1f4f1-4309-7056-a238-4b3ebed07992
+        name: "No client is registered."
+      - key: 01a1f4f1-4309-7056-a238-4b3f0a67aaca
+        name: "No browser is opened."
+      - key: 01a1f4f1-4309-7056-a238-4b40f2a6accb
+        name: "The error names the remote's address and the address on another origin that it refused."
+      - key: 01a1f4f1-4309-7056-a238-4b412fa960ee
+        name: "Nothing is written."
+  - key: 01a1f967-f816-765c-9e69-fb9618c00f11
+    statement:
+      form: unwanted
+      if: "the unauthenticated request of a sign-in is answered with a status below `500` other than `401`, `408` and `429`"
+      system: "Loft"
+      shall: "say that the address may not be a document's remote, and give the form of a document's address on a Loft server."
+    criteria:
+      - key: 01a1f967-f816-765c-9e69-fb977010945c
+        name: "The error says that the address may not be a document's remote."
+      - key: 01a1f967-f816-765c-9e69-fb9858ebd01e
+        name: "The error gives the form `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote` with the manifest's `documentKey` in place of `<documentKey>`."
+      - key: 01a1f97c-52bb-707f-9285-bc934b680c8f
+        name: "The error says that `loft remote set` with the document's address replaces the `remote` that `spec/loftspec.yaml` names."
+      - key: 01a1f967-f816-765c-9e69-fb9a9ccbbaaa
+        name: "An answer of `401`, `408`, `429`, or `500` or above, is refused without that form."
   - key: 01a18e1f-8daa-7674-9603-5ae454b39feb
     statement:
       form: event_driven

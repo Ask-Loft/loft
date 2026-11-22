@@ -21,14 +21,39 @@ A document connected to a Loft server publishes through it. The server holds the
 published states in order and gives its labels, so a team publishes one document from any clone
 and any branch, and never meets the label collisions described below.
 
-`loft remote set <address>`, with the address your Loft server gives for the document, signs you
-in, creates the document on the server and imports every state the repository has already
-published, so every label keeps its node. It then names the server in `spec/loftspec.yaml`, as
-`remote` beside `connected: true`. Commit that file, and every clone shares the connection. The
-sign-in is standard OAuth in your browser (`--no-browser` prints the address to open instead).
+`loft remote set <address>` connects the document to its remote: the document's own address on
+your Loft server, not the server's address. A Loft server gives each document the address
+
+```
+https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote
+```
+
+where `<host>` is your Loft server, `<tenant-slug>` is your workspace's slug on it, and
+`<documentKey>` is the `documentKey` in `spec/loftspec.yaml`. `loft` uses the address whole and
+adds each call's path under it, as in `<address>/head`. Run beside `spec/`, `loft remote set --help`
+gives the form with your `documentKey` filled in. An address whose first call gets no sign-in
+challenge back is refused, naming the request and its status. Where the answer is one a wrong
+address gives, such as 404, the error also gives the form with your `documentKey`; a rate limit,
+a timeout or a server error does not cast doubt on the address.
+
+The command signs you in, creates the document on the server and imports every state the
+repository has already published, so every label keeps its node. It then names the remote in
+`spec/loftspec.yaml`, as `remote` beside `connected: true`. Commit that file, and every clone
+shares the connection. The sign-in is standard OAuth in your browser (`--no-browser` prints the
+address to open instead).
 It is yours alone: `loft` keeps it by address in `loft/remotes.json` in your configuration
 directory, readable only by you, and refreshes it before it expires. Run `loft remote login` in
 a fresh clone, or once a sign-in has lapsed.
+
+The address must lie on the origin, the scheme, host and port, on which the server serves its
+sign-in metadata and its documents. `loft` refuses to sign in where the server names another
+origin, so that an address committed to a manifest cannot lead you to sign in to one server and
+hand its token to another. A server reached through another name than its own is refused for
+the same reason: a port forward to `127.0.0.1`, `localhost` for `127.0.0.1`, a name with a
+trailing dot, or a CNAME. The refusal names the origin the server expects; run
+`loft remote set` with the document's address on that origin, which signs you in to it, and
+commit `spec/loftspec.yaml`. A sign-in an earlier `loft` kept for such an address is not used,
+and `loft publish` and `loft pull` say so and name the origin it was for.
 
 `loft publish` of a connected document runs on any branch over a committed `spec/`. It sends the
 change since the state its lock names, and writes the labels and the lock the server returns;

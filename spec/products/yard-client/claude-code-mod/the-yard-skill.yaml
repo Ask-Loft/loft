@@ -142,6 +142,8 @@ requirements:
         name: "The skill says to present the build as a plan with `ExitPlanMode`, worked out from the specification the person approved."
       - key: 01a1646f-546c-7521-9643-bc946d49d602
         name: "The skill says that the build begins only once the person approves that plan, and that a rejected plan is revised in plan mode."
+      - key: 01a1eb26-527d-769d-91c8-de45c246546f
+        name: "The skill says that where the host ends `ExitPlanMode` before the person decided the plan, the agent waits with `yard_wait` on the submission its result names."
   - key: 01a16a1a-78f9-750e-8105-fbc943c07728
     statement:
       form: optional
@@ -189,7 +191,7 @@ requirements:
       - key: 01a1646f-546c-7521-9643-bc9e7078f833
         name: "The skill says that answers given since the last commit are committed with the next."
       - key: 01a1646f-546c-7521-9643-bc9f66547934
-        name: "The skill says that the token totals and the activity that Yard Client keeps for each session are committed with the work."
+        name: "The skill says that the token totals, the activity and the consultation counts that Yard Client keeps for each session enter `.yard/` with each write of Yard Log, and are committed with the work as of the last write."
       - key: 01a1646f-546c-7521-9643-bca03b27536e
         name: "The skill says to commit nothing of `.yard/` where `yard_read` reports that git ignores it."
   - key: 01a1646f-546c-7521-9643-bca1ca361934

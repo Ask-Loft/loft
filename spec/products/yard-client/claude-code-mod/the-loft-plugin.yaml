@@ -18,6 +18,8 @@ requirements:
         name: "The manifest declares the setting `baseBranch`, `develop` by default."
       - key: 01a1646f-546c-7521-9643-bc6d03d57093
         name: "The manifest declares the setting `yardPort`, 7411 by default."
+      - key: 01a1eeea-3ba5-7122-8e30-23eff22cdb05
+        name: "The manifest declares the setting `yardListen`, empty by default."
   - key: 01a1646f-546c-7521-9643-bc6e24d81e93
     statement:
       form: ubiquitous

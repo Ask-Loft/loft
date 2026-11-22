@@ -33,10 +33,20 @@ impl TotalsFormat {
     /// that is not `yardtokens/<n>`.
     #[must_use]
     pub fn of(file: &Value) -> Option<Self> {
-        let Some(named) = file.get("format") else {
+        match file.get("format") {
+            None => Self::named(None),
+            Some(named) => Self::named(Some(named.as_str()?)),
+        }
+    }
+
+    /// The totals format a totals file whose `format` is `name` is of: `yardtokens/1` where it
+    /// names none; none where it names one that is not `yardtokens/<n>`.
+    #[must_use]
+    pub fn named(name: Option<&str>) -> Option<Self> {
+        let Some(name) = name else {
             return Some(Self(1));
         };
-        let digits = named.as_str()?.strip_prefix("yardtokens/")?;
+        let digits = name.strip_prefix("yardtokens/")?;
         let canonical = !digits.is_empty()
             && digits.bytes().all(|byte| byte.is_ascii_digit())
             && !digits.starts_with('0');

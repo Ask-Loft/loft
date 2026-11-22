@@ -169,6 +169,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     postStatus: 200,
     /** What the page server's answer to a post waits on. */
     answering: Promise.resolve() as Promise<unknown>,
+    /** What the page server's answer to a beat waits on. */
+    hearing: Promise.resolve() as Promise<unknown>,
     /** What each `loft yard read` waits on before it answers. */
     reading: Promise.resolve() as Promise<unknown>,
     /** How many `loft yard wait` runs were killed before they printed. */
@@ -263,6 +265,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
       return { deny: `connection refused: ${e.url}` }
     }
     if (e.url.endsWith('/api/heard')) {
+      await state.hearing
       const beat = JSON.parse(String(e.init?.body ?? '{}')) as Doc
       state.heard.push(String(beat.session))
       state.heardAt.push(e.url)

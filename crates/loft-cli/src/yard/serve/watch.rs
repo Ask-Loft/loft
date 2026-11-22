@@ -1,7 +1,8 @@
 //! What the page server looks at to learn of a change, in two tiers, so that what a look costs
 //! grows with the trees it serves and their current branches' Yard Logs, not with every Yard Log
 //! those trees hold. A quick look takes each tree's HEAD file, and the folder and the files of the
-//! Yard Log of the branch the tree is on, where agents write. A sweep, less often, finds the Yard
+//! Yard Log of the branch the tree is on, where agents write, with the live copies of its session
+//! files in the worktree's git directory. A sweep, less often, finds the Yard
 //! Logs each tree holds and takes one stamp of the root file of every other one: each write to a
 //! Yard Log rewrites its root, since the root holds the revision.
 
@@ -17,7 +18,8 @@ use yardlog::codec::session::FOLDERS;
 use yardlog_store::YARD;
 use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
-use yardlog_store::session::branches;
+use yardlog_store::place::GIT_DIR_NAME;
+use yardlog_store::session::{branches, live_dir};
 
 use super::live::{Area, Digests};
 use super::trees;
@@ -29,12 +31,14 @@ pub(super) type FileStamp = (u64, Option<Duration>);
 /// The stamp of a file, where there is one.
 type Stamp = Option<FileStamp>;
 
-/// What the page server knows of a tree's HEAD: where its file lies, asked of git once; the
-/// stamp it last saw on it; and the branch it named then, asked of git only when the stamp moves,
-/// so that a look runs no git command while the tree stays on its branch.
+/// What the page server knows of a tree's HEAD: where its file lies, and where Yard Log's
+/// directory in the worktree's git directory lies, each asked of git once; the stamp it last saw
+/// on HEAD; and the branch it named then, asked of git only when the stamp moves, so that a look
+/// runs no git command while the tree stays on its branch.
 #[derive(Default)]
 struct Head {
     path: Option<PathBuf>,
+    git_yard: Option<PathBuf>,
     stamp: Stamp,
     branch: Option<String>,
     asked: bool,
@@ -62,7 +66,8 @@ impl Watch {
             head.stamp.hash(&mut listed);
             if let Some(branch) = head.branch.clone() {
                 let shown = tree.display().to_string();
-                quick(tree, &shown, &branch, &mut digests);
+                let git_yard = head.git_yard.clone();
+                quick(tree, git_yard.as_deref(), (&shown, &branch), &mut digests);
                 current.insert((shown, branch));
             }
         }
@@ -82,6 +87,7 @@ impl Watch {
         let git = YardGit::default();
         if head.path.is_none() && !head.asked {
             head.path = git.git_path(tree, "HEAD").ok();
+            head.git_yard = git.git_path(tree, GIT_DIR_NAME).ok();
         }
         let stamp = head.path.as_deref().and_then(stamp_at);
         if !head.asked || stamp != head.stamp {
@@ -93,14 +99,23 @@ impl Watch {
     }
 }
 
-/// The digests of the Yard Log of `branch`, the branch the tree is on: of its own files, and
-/// apart, of its sessions' files. A folder not there yet has a digest too, which its first file
-/// changes.
-pub fn quick(tree: &Path, shown: &str, branch: &str, digests: &mut Digests) {
+/// The digests of the Yard Log of `branch`, the branch the tree is on, shown as `shown`: of its
+/// own files, and apart, of its sessions' files, in its folder and their live copies under
+/// `git_yard`. A folder not there yet has a digest too, which its first file changes.
+pub fn quick(
+    tree: &Path,
+    git_yard: Option<&Path>,
+    (shown, branch): (&str, &str),
+    digests: &mut Digests,
+) {
     let folder = tree.join(YARD).join(branch);
+    let live = git_yard.map(|git_yard| live_dir(git_yard, branch));
     let mut sessions = DefaultHasher::new();
     for session_folder in FOLDERS {
         files(&folder.join(session_folder), &mut sessions);
+        if let Some(live) = &live {
+            files(&live.join(session_folder), &mut sessions);
+        }
     }
     let mut log = DefaultHasher::new();
     files(&folder, &mut log);
@@ -219,13 +234,36 @@ mod tests {
 
     fn quick_of(tree: &Tree) -> Digests {
         let mut digests = Digests::new();
-        quick(&tree.0, &tree.shown(), "feat/shelf", &mut digests);
+        let git_yard = tree.0.join(".git/yard");
+        quick(
+            &tree.0,
+            Some(&git_yard),
+            (&tree.shown(), "feat/shelf"),
+            &mut digests,
+        );
         digests
     }
 
     fn swept_of(tree: &Tree) -> Digests {
         let current = BTreeSet::from([(tree.shown(), "feat/shelf".to_owned())]);
         swept(std::slice::from_ref(&tree.0), &current)
+    }
+
+    #[test]
+    fn a_quick_look_sees_a_session_file_s_live_copy_change_in_git_s_directory() {
+        let tree = Tree::new("live");
+        let live = tree.0.join(".git/yard/feat%2Fshelf.sessions/tokens");
+        fs::create_dir_all(&live).unwrap();
+        let before = quick_of(&tree);
+        fs::write(live.join("s1.yaml"), "session: s1\n").unwrap();
+        let after = quick_of(&tree);
+        let sessions = Area::Sessions {
+            tree: tree.shown(),
+            branch: "feat/shelf".to_owned(),
+        };
+        assert_ne!(after[&sessions], before[&sessions]);
+        let log = tree.area("feat/shelf");
+        assert_eq!(after[&log], before[&log], "the log's own digest stays");
     }
 
     #[test]

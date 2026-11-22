@@ -1,0 +1,116 @@
+key: 01a1f4f1-4303-70b9-a1c6-7441ee60f812
+slug: a-remote-s-resource-and-its-metadata-lie-on-the-origin-of-its-address
+title: "A remote's protected resource, and the metadata its challenge names, lie on the origin of its address"
+context: "A sign-in learns the remote's protected resource, and the authorization server that issues tokens for it, from the challenge with which the remote's address answers a request without a token: its `resource_metadata` names the protected resource metadata, whose `resource` names the protected resource. The address is what the person chose, in the manifest that every clone shares or as the argument of `loft remote set`; the challenge and the metadata are whatever the server at that address sends. Followed to another origin, they can name another remote's genuine metadata or resource: the person then consents at that remote's authorization server, and `loft` sends the access token issued for that remote's resource to the address that asked for it, which can present it there itself (RFC 9728, sections 7.3 and 7.4). A sign-in that `loft` keeps is refreshed and sent under the address it was made for, so one made that way goes on serving that address. RFC 9728, section 3.3, has a client use such metadata only when its `resource` is identical to the URL the client requested, which no remote meets while that request is `<address>/head`."
+state:
+  kind: accepted
+  selectedOption: 01a1f4f1-4303-70b9-a1c6-74464238a45f
+  outcome: "`loft remote set` and `loft remote login` refuse a challenge whose `resource_metadata` lies on another origin than the remote's address before they request that metadata, register a client or open a browser, and refuse protected resource metadata whose `resource` lies on another origin; a sign-in kept under an address counts only where its `resource` lies on that address's origin. Two `https` or `http` addresses lie on one origin when scheme, host and port agree, as RFC 6454 compares them."
+drivers:
+  - key: 01a1f4f1-4303-70b9-a1c6-7442ded59067
+    kind: local
+    label: "No token for a resource on another origin"
+    statement: "`loft` never sends an address an access token that it asked for, or kept, for a protected resource on another origin."
+  - key: 01a1f4f1-4303-70b9-a1c6-7443e58b8f04
+    kind: local
+    label: "No metadata requested before its origin is compared"
+    statement: "A sign-in requests protected resource metadata only after comparing the metadata's origin with the origin of the remote's address."
+  - key: 01a1f4f1-4303-70b9-a1c6-74448f101206
+    kind: local
+    label: "A remote on one origin signs in"
+    statement: "A remote whose documents, protected resource and protected resource metadata lie on one origin is signed in to as before."
+options:
+  - key: 01a1f4f1-4303-70b9-a1c6-744563a7ccb2
+    title: "Wherever the challenge points"
+    description: "The sign-in follows the challenge's `resource_metadata` to any address it may contact, `https` or `http` on the loopback interface, and takes the `resource` that metadata names."
+  - key: 01a1f4f1-4303-70b9-a1c6-74464238a45f
+    title: "On the origin of the address"
+    description: "The challenge's `resource_metadata`, and the `resource` that metadata names, lie on the origin of the remote's address: the same scheme, host and port."
+  - key: 01a1f4f1-4303-70b9-a1c6-744788d8b38c
+    title: "The requested URL as the resource"
+    description: "The metadata's `resource` is identical to the URL that the sign-in requested, as RFC 9728, section 3.3, words it."
+  - key: 01a1f4f1-4303-70b9-a1c6-7448b467ddaa
+    title: "A resource the address lies under"
+    description: "The metadata's `resource` lies on the address's origin and the address's path begins with the resource's path, as an Internet-Draft that would update RFC 9728 proposes."
+assessments:
+  - option: 01a1f4f1-4303-70b9-a1c6-744563a7ccb2
+    driver: 01a1f4f1-4303-70b9-a1c6-7442ded59067
+    rating: conflicts
+    rationale: "an address can name another remote's metadata and receive the token issued for it"
+  - option: 01a1f4f1-4303-70b9-a1c6-744563a7ccb2
+    driver: 01a1f4f1-4303-70b9-a1c6-7443e58b8f04
+    rating: conflicts
+    rationale: "the metadata is fetched from wherever the challenge points"
+  - option: 01a1f4f1-4303-70b9-a1c6-744563a7ccb2
+    driver: 01a1f4f1-4303-70b9-a1c6-74448f101206
+    rating: supports
+    rationale: "no challenge or metadata is refused for its origin"
+  - option: 01a1f4f1-4303-70b9-a1c6-74464238a45f
+    driver: 01a1f4f1-4303-70b9-a1c6-7442ded59067
+    rating: supports
+    rationale: "the resource that a token is asked for, or kept for, lies on the address's origin"
+  - option: 01a1f4f1-4303-70b9-a1c6-74464238a45f
+    driver: 01a1f4f1-4303-70b9-a1c6-7443e58b8f04
+    rating: supports
+    rationale: "the metadata's origin is compared before it is fetched"
+  - option: 01a1f4f1-4303-70b9-a1c6-74464238a45f
+    driver: 01a1f4f1-4303-70b9-a1c6-74448f101206
+    rating: supports
+    rationale: "such a remote's challenge names metadata, and its metadata a resource, on its own origin"
+  - option: 01a1f4f1-4303-70b9-a1c6-744788d8b38c
+    driver: 01a1f4f1-4303-70b9-a1c6-7442ded59067
+    rating: supports
+    rationale: "the resource is the very URL requested"
+  - option: 01a1f4f1-4303-70b9-a1c6-744788d8b38c
+    driver: 01a1f4f1-4303-70b9-a1c6-7443e58b8f04
+    rating: conflicts
+    rationale: "the metadata is fetched before its `resource` is compared"
+  - option: 01a1f4f1-4303-70b9-a1c6-744788d8b38c
+    driver: 01a1f4f1-4303-70b9-a1c6-74448f101206
+    rating: conflicts
+    rationale: "no remote names `<address>/head` as its protected resource"
+  - option: 01a1f4f1-4303-70b9-a1c6-7448b467ddaa
+    driver: 01a1f4f1-4303-70b9-a1c6-7442ded59067
+    rating: supports
+    rationale: "the resource lies on the address's origin, above the address"
+  - option: 01a1f4f1-4303-70b9-a1c6-7448b467ddaa
+    driver: 01a1f4f1-4303-70b9-a1c6-7443e58b8f04
+    rating: conflicts
+    rationale: "the metadata is fetched before its `resource` is compared"
+  - option: 01a1f4f1-4303-70b9-a1c6-7448b467ddaa
+    driver: 01a1f4f1-4303-70b9-a1c6-74448f101206
+    rating: conflicts
+    rationale: "a remote whose documents' addresses do not lie under its protected resource is refused"
+consequences:
+  - key: 01a1f4f1-4303-70b9-a1c6-7449d0763133
+    kind: benefit
+    statement: "A sign-in that `loft` makes for an address asks for, keeps and sends a token only for a protected resource on that address's origin."
+  - key: 01a1f4f1-4303-70b9-a1c6-744ae802aaa1
+    kind: benefit
+    statement: "A sign-in that an earlier `loft` kept under an address for a protected resource on another origin is neither refreshed nor sent."
+  - key: 01a1f4f1-4303-70b9-a1c6-744bae279f6b
+    kind: benefit
+    statement: "A refused sign-in asks nothing of the origin it refuses, and shows the person no consent."
+  - key: 01a1f4f1-4303-70b9-a1c6-744c9d65c9c4
+    kind: cost
+    statement: "A remote that serves its protected resource metadata, or names its protected resource, on another origin than its documents' addresses is refused until it serves both on their origin. So is a remote reached through another name than the origin on which it serves both, such as a port forward to `127.0.0.1`, `localhost` for `127.0.0.1`, a name with a trailing dot or a CNAME, until the document names it by an address on that origin, with `loft remote set`, and each person signs in to that address."
+  - key: 01a1f4f1-4303-70b9-a1c6-744d94ff518c
+    kind: risk
+    statement: "Remotes that share one origin are not told apart: one of them can still name the metadata of another."
+  - key: 01a1f4f1-4303-70b9-a1c6-744e145648dc
+    kind: risk
+    statement: "Metadata on the address's origin may name another remote's authorization server, at which the sign-in then registers and shows its consent: `loft` relies on that server refusing a resource it does not serve (RFC 8707, section 2) to keep it from issuing a token that the address could present to that remote. The authorization request's address, which `loft` prints before it opens a browser, names that server's host, so that the person sees where they are asked to consent."
+subjects:
+  - role: affected
+    node: 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - role: affected
+    node: 01a156aa-d531-70a7-88e0-0bebdc0a9327
+  - role: affected
+    node: 01a18e1f-8daa-7674-9603-5ad621016b05
+  - role: outcome
+    node: 01a1f4f1-4309-7056-a238-4b394d224dd7
+  - role: outcome
+    node: 01a1f4f1-4309-7056-a238-4b3b10f42aed
+mentions:
+  - 01a156c0-e478-7517-a896-162069fcc2ac
+  - 01a18e1f-8da6-74da-a22a-315837cd91cd

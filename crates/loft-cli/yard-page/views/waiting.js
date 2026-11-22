@@ -1,7 +1,8 @@
 // What waits on the person in the branch's Yard Log shown: every open submission, oldest first,
-// together in a panel along the bottom of the page. It opens by itself for a submission the person has not seen in
-// this visit, stays closed once they close it until another is sent, opens again at their asking
-// and closes by itself once nothing in it waits.
+// together in a panel along the bottom of the page. It opens by itself when the person opens a
+// Yard Log where something waits, and for a submission they have not seen in this visit; it stays
+// closed once they close it until another is sent or they open the Yard Log again, opens again at
+// their asking and closes by itself once nothing in it waits.
 
 import { drawAll } from '../lib/diagrams.js';
 import { count } from '../lib/format.js';
@@ -20,6 +21,13 @@ const NAME = 'waiting';
 
 /** The submissions shown in this visit, for each Yard Log by its key. @type {Map<string, Set<string>>} */
 const seen = new Map();
+/**
+ * The key of the Yard Log the panel last followed, or null after none: another key is the person
+ * opening a Yard Log. It is the log's own key, not the address, since the page draws the Yard Log
+ * it leaves once more while the next one loads.
+ * @type {string | null}
+ */
+let followed = null;
 /** What the panel shows now, and what it was last drawn from. */
 const current = { /** @type {Waiting[]} */ items: [], /** @type {Where | null} */ where: null, drawn: '' };
 
@@ -70,13 +78,16 @@ function drawDiagrams() {
 
 /**
  * Brings the panel in line with `log`, the branch's Yard Log just drawn, or with none: it opens
- * for a submission not seen in this visit, is drawn again where what waits changed, and closes
- * once nothing waits.
+ * where the person opened another Yard Log and for a submission not seen in this visit, is drawn
+ * again where what waits changed, and closes once nothing waits.
  * @param {any} log
  * @param {Where} where
  */
 export function waitingModal(log, where) {
   const items = waitingIn(log);
+  const key = log ? log.yardLog?.key ?? `${where.tree}\n${where.branch}` : null;
+  const opened = key !== followed;
+  followed = key;
   current.items = items;
   current.where = where;
   if (!items.length) {
@@ -84,12 +95,11 @@ export function waitingModal(log, where) {
     modal.close(NAME);
     return;
   }
-  const key = log.yardLog?.key ?? `${where.tree}\n${where.branch}`;
   const known = seen.get(key) ?? new Set();
   seen.set(key, known);
   const fresh = items.some((item) => !known.has(item.submission.key));
   for (const item of items) known.add(item.submission.key);
-  if (fresh) {
+  if (opened || fresh) {
     openWaiting();
   } else if (modal.isOpen(NAME) && signature(items) !== current.drawn) {
     redraw();

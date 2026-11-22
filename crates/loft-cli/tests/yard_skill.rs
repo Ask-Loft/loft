@@ -321,6 +321,14 @@ fn the_yard_skill_tells_the_agent_to_plan_the_build_in_plan_mode_once_the_spec_c
 }
 
 #[test]
+fn the_yard_skill_tells_the_agent_to_wait_on_a_plan_the_host_ended_before_the_person_decided_it() {
+    says(&[
+        "Where the host ends `ExitPlanMode` before the person decided the plan",
+        "wait with `yard_wait` on the submission its result names",
+    ]);
+}
+
+#[test]
 fn the_yard_skill_tells_the_agent_to_plan_again_only_the_steps_a_later_requirement_change_touches()
 {
     says(&[
@@ -355,7 +363,8 @@ fn the_yard_skill_tells_the_agent_to_commit_the_yard_folder_with_the_work_unless
     says(&[
         "Commit `.yard/` in each commit of the work",
         "Answers the person gave since the last commit are committed with the next",
-        "its token totals under `.yard/<branch>/tokens/` and its activity under `.yard/<branch>/activity/`",
+        "its token totals under `.yard/<branch>/tokens/`, its activity under `.yard/<branch>/activity/` and its consultation counts under `.yard/<branch>/consultation/`",
+        "brings them into `.yard/` with each write of Yard Log, so a commit carries them as of your last write",
         "Where `yard_read` reports that git ignores `.yard/`",
         "commit nothing of `.yard/`",
     ]);

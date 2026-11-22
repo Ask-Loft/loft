@@ -5,6 +5,170 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+## 2.4.1 (2026-11-22)
+
+- `loft review --base` reviews an assertion whose `mentions` entries alone changed as `changed`,
+  as `loft status --base` already lists it; it used to leave such an assertion out, and to call
+  one that moved and changed its `mentions` `moved`. Each node of the packet now carries
+  `mentions`, the keys of the nodes and decisions it mentions in the order of their keys, so a
+  changed assertion shows what it mentions beside what it mentioned at the base. A Feature also
+  carries `realizes`, the keys of the Components it realizes, and a Component `scopedTo`, the keys
+  of the Products it is scoped to, each in the order of their keys; and every node of the packet,
+  the scope and the nodes beside it included, is `changed` where its own content or any of these
+  entries differ from the base's, as `loft status --base` counts it. The output follows the
+  schema `loft-review/2`. `loftspec::review::Fact` gains the fields `mentions`, `realizes` and
+  `scoped_to`, and is now `#[non_exhaustive]`: code outside `loftspec` reads a `Fact` but no
+  longer builds one, and later fields will not break it.
+- `loft remote set` and `loft remote login` refuse a remote whose challenge names its protected
+  resource metadata, or whose metadata names its protected resource, on another origin than the
+  remote's address. The refusal comes before anything is asked of that origin, before a client is
+  registered and before a browser opens, and the error names both addresses. A sign-in used to
+  follow the challenge to any `https` address, and to accept metadata whose path named a resource
+  on another host or port, so an address committed to a manifest could lead you to consent at
+  another remote's authorization server and then receive the access token issued for that remote.
+  Two addresses lie on one origin when they have the same scheme, host and port, the host compared
+  without regard to case and a missing port read as the scheme's default. This also refuses a
+  remote that you reach through another name than the origin on which it serves its metadata and
+  resource, such as a port forward to `127.0.0.1`, `localhost` for `127.0.0.1`, a name with a
+  trailing dot or a CNAME, and a sign-in kept for such a remote counts as none. Name the remote by
+  an address on the origin that the refusal names, with `loft remote set`, which signs you in to
+  that address; once the manifest names it, everyone else signs in with `loft remote login`.
+- A sign-in that an earlier `loft` kept under a remote's address, for a protected resource on
+  another origin, counts as no sign-in: it is neither refreshed nor sent, and `loft remote set`
+  signs in anew. `loft publish` and `loft pull` refuse with an error of its own, which names the
+  address and that resource. It says that `loft remote set` with an address on that resource's
+  origin names the remote by it and signs you in to it, and that `loft remote login` signs in
+  again once the remote serves its resource on the address's origin. A kept sign-in whose
+  resource does not read as an `https` or `http` address counts as none too, with the error for
+  no sign-in.
+- `loft skill install --server <origin>` reads the origin as `loft` reads every address, with the
+  parser its requests use. A text that does not read as an address with a scheme and a host, such
+  as one holding a space or a host outside ASCII, or one whose scheme is empty or does not begin
+  with a letter, is now a usage error that exits 2 and opens no connection, as a path, a query or
+  a fragment already was; the install used to refuse some of them with exit 1. The origin is
+  written with its scheme and host in lower case, without user information or the scheme's
+  default port.
+- `loft remote set` explains an address that is not a document's remote. A Loft server gives each
+  document the address `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`,
+  where `<documentKey>` is the `documentKey` in `spec/loftspec.yaml`, and `loft` adds each call's
+  path under it. When the first, unauthenticated call gets no sign-in challenge back, the error
+  now names the request it made, `GET <address>/head`, and the status. For an answer a wrong
+  address gives, such as 404, it also says the address may not be a document's remote, gives that
+  form with the manifest's `documentKey` filled in, and says that `loft remote set` replaces the
+  manifest's `remote`; a rate limit, a timeout or a server error does not. Before, a server's own
+  address answered 404 and the error said only that no `Bearer` challenge came. `--help` gives the
+  form, with the manifest's `documentKey` when run beside `spec/`, the docs and the agent skill
+  state it, and the skill asks for the host and tenant slug rather than guess them.
+- The Yard page can open from another device, such as a phone in your tailnet, where you can
+  answer as on the machine. Name the addresses the page server listens on beside `127.0.0.1`
+  with `loft yard serve --listen`, once for each, `0.0.0.0` for every network, or with the
+  Claude Code plugin's new `yardListen` setting; by default it still listens on `127.0.0.1`
+  alone. Anyone who reaches a named address can read the page and answer for you, which the
+  agent takes as your word, so leave a public network unnamed. An address the machine does not
+  have yet is taken once it appears, and `Host` and `Origin` are checked against the address a
+  request reached. A `loft yard serve` that would listen on other addresses than the running
+  page server of its version replaces it, and each Claude Code session runs one when it starts,
+  within its first 30 seconds, so a changed `yardListen` takes effect with the next session; every
+  other `loft yard serve` that the plugin or the Codex watch runs is given `--join` and joins the
+  running page server, or, where none runs or in place of an older one, starts one where the last
+  page server listened, so a recovery never opens the page wider than the last session start or
+  `loft yard serve` left it; a start that does not come to serve leaves those addresses as they
+  were. The page and `loft yard page` suggest `loft yard serve --join`. `--listen ::` and
+  `::ffff:0.0.0.0` are refused, since on Windows `::` would leave `127.0.0.1` unreached; `0.0.0.0`
+  names every address.
+  The yard protocol is now 4, and the plugin passes `--listen` and `--join` only to a `loft` that
+  speaks it; a Claude Code plugin from before it leaves Yard Client off with this `loft`, so
+  update the plugin with `loft`.
+- The Yard page opens its panel of what waits whenever the person opens a branch's Yard Log where
+  something still waits, including one they saw earlier in the visit. Moving to another worktree's
+  Yard Log and back used to leave the panel closed, with no form to answer or reject in, though
+  the page's head still counted what waited.
+- Yard Log's session files no longer change the working tree between an agent's commands. The
+  page server keeps each session's token totals, activity and consultation counts in git's own
+  directory for the worktree, under `yard/<branch>.sessions/`, and each write of Yard Log, a close
+  included, saves the copies that changed into `.yard/<branch>/` through its journal. An agent can
+  commit, switch branches, pull or stash without first clearing Yard's files, and no temporary
+  file of Yard's lands in the tree. The page and every reader take the copy in git's directory
+  first, so the page still follows a session as it works.
+- A plan that a host which answers `ExitPlanMode` itself ends, such as T3 Code, stays open on the
+  Yard page, and the agent is told to wait on it with `yard_wait`. Such a plan used to be recorded
+  as rejected by the person, though nobody had seen it. Only Claude Code's own rejection counts as
+  the person's, and a call an interrupt stopped is withdrawn.
+- The agent's `yard_wait` on a plan such a host ended is no longer refused. In 2.4.1-alpha.1 the
+  plugin's PermissionRequest hook, which still runs beside the host, held the plan's lease until
+  the person decided, so their decision on the page never reached the agent. The hook now watches
+  the plan without the lease, and the note telling the agent to wait comes before the host's own
+  words.
+- The release workflow publishes the crates without building them a second time after the
+  maintainer's approval: the check job's dry run has already built each crate from its package on
+  the tag's commit.
+- A `spec-change` view on the Yard page draws a changed Constraint or Quality Attribute as a box
+  of its own, inside the panel of the Product, Feature Group or Feature that holds it, or beside
+  the Component that holds it. A change to one used to mark the box of the node that holds it as
+  changed, although that node had not changed, and showed it only in the diff. A report recorded
+  before keeps its drawing.
+- A `spec-change` view draws a changed Section as a box of its own, headed `Section`, inside the
+  panel of the Product, Feature Group or Feature that holds it, or beside the box of any other
+  node that holds it. A change to a Section used to mark the box above it as changed, and
+  choosing that box found no entry in the diff.
+- A `spec-change` view shows a decision whose only change is a subject added or removed: the
+  decision is drawn as changed, each subject it gained is drawn so that its edge has an end, a
+  subject it lost has no edge, and its entry in the diff lists the subjects added and removed with
+  their roles. Such a decision used to be missing from the view altogether.
+- A `spec-change` view no longer draws a retired or superseded decision as changed only because
+  `loft fmt` now names a node the branch removed by its former label, in a subject, a driver or a
+  consequence. `loftspec` compares decisions in `diff::decision_changes`, which reads each former
+  label as the node it names, and `Bindings::former` finds the node a departed label named.
+- `loft status --base` lists the decisions added, changed and removed, after the nodes of each
+  list, with the kind `decision` and the title as the name. It lists as changed a node whose
+  `realizes`, `scopedTo` or `mentions` entries changed, and a decision whose `mentions` entries
+  changed. Such a change used to be missing, and so was every decision. Its JSON is now
+  `loft-status/3`. `loftspec`'s `content_changes`, `node_changes` and `decision_changes` count
+  those entries too.
+- A `spec-change` view draws a node whose `realizes`, `scopedTo` or `mentions` entries changed,
+  and a decision whose `mentions` entries changed, as changed, and no longer draws a `realizes`
+  edge the branch removed between two nodes the tree still holds.
+- A `spec-change` view draws a node the branch removed beneath its parent where the tree now
+  holds that parent, so that a node that moved is drawn once, in its new place. A box could name
+  as its parent a box that was not drawn, which left the moved node outside its Feature's panel
+  and that Feature's old panel drawn empty.
+- A `loft` block records the whole report its view gives, however long. A list of more than
+  1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
+  part of Yard Log's history of the work.
+
+## 2.4.1-alpha.3 (2026-11-20)
+
+The third prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.3`. It lets you try the Yard page from
+another device, such as a phone in your tailnet, with `loft yard serve --listen` or the Claude
+Code plugin's `yardListen` setting; update the plugin with `loft`, since the yard protocol is now
+4. It also lets you try connecting a document to a Loft server at the address the server gives
+it, `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, with an error
+that names the refused request and shows that form, and a sign-in that refuses a remote whose
+metadata or resource lies on another origin. The Yard page now opens its panel of what waits
+when you return to a Yard Log where something waits. Everything 2.4.1-alpha.2 let you try is
+here too, and the entries under Unreleased below list everything 2.4.1 will hold.
+
+## 2.4.1-alpha.2 (2026-11-18)
+
+The second prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.2`. It lets you try a plan that a host
+such as T3 Code ends, now decided on the Yard page and answered to the agent: in 2.4.1-alpha.1
+the plugin's own hook held the plan, so the agent's `yard_wait` on it was refused and the
+person's decision never reached it. Everything 2.4.1-alpha.1 let you try is here too, and the
+entries under Unreleased below list everything 2.4.1 will hold.
+
+## 2.4.1-alpha.1 (2026-11-17)
+
+The first prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.1`. It lets you try Yard Log that no
+longer changes the working tree under an agent's git commands: each session's token totals,
+activity and consultation counts are kept in git's own directory and enter `.yard/` only with a
+write of Yard Log. It also lets you try a plan that a host such as T3 Code ends staying open on
+the Yard page instead of being recorded as rejected, and the `spec-change` view's drawing of
+Constraints, Quality Attributes, Sections and decisions. The entries under Unreleased below list
+everything 2.4.1 will hold.
+
 ## 2.4.0 (2026-11-17)
 
 - The specification, the code, the skill and the plugins are written in American English, and a

@@ -270,8 +270,11 @@ the scope.
 
 Commit `.yard/` in each commit of the work, beside the code it describes. Answers the person gave
 since the last commit are committed with the next, and so is what Yard keeps for each session by
-itself: its token totals under `.yard/<branch>/tokens/` and its activity under
-`.yard/<branch>/activity/`.
+itself: its token totals under `.yard/<branch>/tokens/`, its activity under
+`.yard/<branch>/activity/` and its consultation counts under `.yard/<branch>/consultation/`. Yard
+keeps these up to date outside the working tree and brings them into `.yard/` with each write of
+Yard Log, so a commit carries them as of your last write, and nothing of Yard's changes the tree
+between your own commands.
 
 Where a read reports that git ignores `.yard/`, the repository keeps Yard Log on the machine
 alone: commit nothing of `.yard/`, and never add it to a commit by force.
@@ -361,6 +364,10 @@ A plan you present with `ExitPlanMode` reaches Yard Log as a `plan` block and ma
 rejected on the page or in the terminal. Approved on the page, it ends plan mode and you go on in
 auto mode. Rejected on the page, `ExitPlanMode` is denied with the person's reason: revise the plan
 in plan mode and present it again.
+
+Where the host ends `ExitPlanMode` before the person decided the plan, as a host that shows no
+plan dialog does, nobody has rejected it: wait with `yard_wait` on the submission its result names,
+and act on the person's decision as on one given in the terminal.
 
 Where the person changes a requirement once the plan is approved, commit the change to `spec/` and
 record its `spec-change` view before you write any code that meets it. Then call `EnterPlanMode`
