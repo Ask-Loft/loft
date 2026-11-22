@@ -1,7 +1,7 @@
 key: 01a18e1f-8daa-7674-9603-5ad621016b05
 slug: signing-in-to-a-remote
 name: "Signing in to a remote"
-body: "How `loft remote set` and `loft remote login` sign the person in to a connected document's remote, and how every connected command keeps that sign-in alive. The remote admits a request by an access token that its authorization server issues through OAuth 2.0: `loft` learns where that server is from the remote's challenge (RFC 9728 and RFC 8414), registers itself as a public native client (RFC 7591), and runs the authorization code grant with PKCE (RFC 7636) on a redirect to a loopback port of its own (RFC 8252), naming the remote as the resource (RFC 8707). The sign-in is personal: it is kept under the remote's address in `loft/remotes.json`, private to the user, and never in the repository. Its refresh token rotates on every use and a refresh token used again after its successor was issued may end the whole sign-in, so each successor is saved before the access token it came with is used, one process at a time. Only `loft remote set` and `loft remote login` open a browser or wait for one, so that a publish or a pull never waits on a person."
+body: "How `loft remote set` and `loft remote login` sign the person in to a connected document's remote, and how every connected command keeps that sign-in alive. The remote admits a request by an access token that its authorization server issues through OAuth 2.0: `loft` learns where that server is from the remote's challenge (RFC 9728 and RFC 8414), registers itself as a public native client (RFC 7591), and runs the authorization code grant with PKCE (RFC 7636) on a redirect to a loopback port of its own (RFC 8252), naming the remote as the resource (RFC 8707). The remote's origin may also serve companion resources: other protected resources under the same authorization server, which the remote's protected resource metadata lists in `companion_resources`, each by its identifier and a kind that the remote chooses. A companion resource's own protected resource metadata vouches for it when it names it, names the remote's authorization server and lists a scope. One sign-in asks for the remote's protected resource and each companion resource it keeps in one authorization request, so that the person consents once, and holds an access token for each resource alone: the remote's first from the code exchange, and every later one from a refresh that names its resource with the sign-in's one refresh token. The sign-in is personal: it is kept under the remote's address in `loft/remotes.json`, private to the user, and never in the repository. Its refresh token rotates on every use, and a refresh token used again after its successor was issued, or for another resource than the one its rotation named, may end the whole sign-in, so each successor is saved before the access token it came with is used, one process at a time, and, for a sign-in over companion resources, the resource of a refresh whose answer is lost or does not read is recorded and refreshed again first. Only `loft remote set`, `loft remote login`, `loft interface add`, `loft interface update` and `loft interface login` open a browser or wait for one, so that a publish or a pull never waits on a person."
 realizes:
   - 01a13a90-3554-7631-bb13-097e6805bffe
 mentions:
@@ -28,7 +28,9 @@ requirements:
       - key: 01a18e1f-8daa-7674-9603-5adb32b2b46e
         name: "The authorization server's metadata is read from the issuer's origin, at `/.well-known/oauth-authorization-server` followed by the issuer's path."
       - key: 01a18e1f-8daa-7674-9603-5adc786b0bc4
-        name: "The scope asked for is the challenge's `scope`, or else the protected resource metadata's `scopes_supported` joined by spaces."
+        name: "The remote's scope is the challenge's `scope`, or else the protected resource metadata's `scopes_supported` joined by spaces, and it is the scope asked for where no companion resource is kept."
+      - key: 01a202c3-d203-70c5-9d96-1092d67e290a
+        name: "Where companion resources are kept, the scope asked for is the remote's scope followed by each scope that a kept companion resource lists in `scopes_supported`, each scope once, separated by single spaces."
       - key: 01a18e1f-8daa-7674-9603-5add73e735e4
         name: "Each address that the metadata names is held to the address rules of reaching a remote."
   - key: 01a18e1f-8daa-7674-9603-5ade1633ad81
@@ -88,6 +90,97 @@ requirements:
         name: "For the document's own remote, the error says that `loft remote set` with the document's address replaces the `remote` that `spec/loftspec.yaml` names."
       - key: 01a1f967-f816-765c-9e69-fb9a9ccbbaaa
         name: "An answer of `401`, `408`, `429`, or `500` or above, is refused without that form."
+  - key: 01a202c3-d203-70c5-9d96-10934a97174d
+    statement:
+      form: event_driven
+      when: "a sign-in reads protected resource metadata that lists companion resources in `companion_resources`"
+      system: "Loft"
+      shall: "keep each listed companion resource that lies on the origin of the remote's address and whose own protected resource metadata vouches for it."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-1094c318c48b
+        name: "Companion resources are read from the `companion_resources` of the protected resource metadata that the remote's challenge names, and from no other document."
+      - key: 01a202c3-d203-70c5-9d96-10957607d3a4
+        name: "A companion resource's protected resource metadata is read at its origin, then `/.well-known/oauth-protected-resource`, then its path without a terminating `/`, then its query."
+      - key: 01a202c3-d203-70c5-9d96-109629a9cd3d
+        name: "A companion resource is kept when its metadata is a JSON object answered with the status 200, whose `resource` is the listed `resource`, whose `authorization_servers` holds the issuer that the remote's metadata names, and whose `scopes_supported` lists one or more values, each a scope token of RFC 6749."
+      - key: 01a202c3-d203-70c5-9d96-1097cf72a29a
+        name: "The companion resources kept keep the order in which `companion_resources` lists them."
+      - key: 01a202c3-d203-70c5-9d96-10981279a2bb
+        name: "A `companion_resources` in a companion resource's own metadata is not read."
+      - key: 01a202c3-d203-70c5-9d96-1099b9a76863
+        name: "A remote whose protected resource metadata holds no `companion_resources`, or an empty list in it, is signed in to for its protected resource alone, as before."
+  - key: 01a202c3-d203-70c5-9d96-109acbf92ff6
+    statement:
+      form: unwanted
+      if: "a companion resource that the remote's protected resource metadata lists lies on another origin than the remote's address"
+      system: "Loft"
+      shall: "leave it out of the sign-in without requesting it or its protected resource metadata."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-109b642fcfec
+        name: "Neither the companion resource nor its protected resource metadata is requested."
+      - key: 01a202c3-d203-70c5-9d96-109c89a8c4a2
+        name: "The authorization request does not name the companion resource."
+      - key: 01a202c3-d203-70c5-9d96-109d4f1dfeeb
+        name: "A warning on standard error names the remote's address and the companion resource, and says that it does not lie on the origin of the address."
+      - key: 01a202c3-d203-70c5-9d96-109e1dbfee1f
+        name: "The sign-in goes on with the remote's protected resource and each companion resource kept."
+  - key: 01a202c3-d203-70c5-9d96-109f13fd9434
+    statement:
+      form: unwanted
+      if: "an entry of `companion_resources` is malformed, names the remote's protected resource, or repeats the `resource` or the `kind` of an entry before it"
+      system: "Loft"
+      shall: "leave the entry out of the sign-in, say so on standard error and go on signing in."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-10a0134ed5a9
+        name: "An entry that is not an object of a string `resource` and a non-empty string `kind` is left out."
+      - key: 01a202c3-d203-70c5-9d96-10a16a0deed6
+        name: "An entry whose `resource` holds user information or a fragment is left out."
+      - key: 01a202c3-d203-70c5-9d96-10a210f35ffd
+        name: "An entry whose `resource` is the remote's protected resource is left out."
+      - key: 01a202c3-d203-70c5-9d96-10a3a2de9f04
+        name: "An entry whose `resource` or `kind` an entry before it holds is left out."
+      - key: 01a202c3-d203-70c5-9d96-10a4b4f3afec
+        name: "A warning on standard error says why each entry was left out, and names the entry by its `resource` and `kind` where it holds both."
+      - key: 01a202c3-d203-70c5-9d96-10a548adcba9
+        name: "No request is sent for an entry left out."
+  - key: 01a202c3-d203-70c5-9d96-10a645a8bfd3
+    statement:
+      form: unwanted
+      if: "the `companion_resources` of the remote's protected resource metadata is not a list, or lists more than 16 entries"
+      system: "Loft"
+      shall: "read no entry of it where it is not a list and only its first 16 entries where it lists more, say so on standard error and go on signing in."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-10a71c121cea
+        name: "A `companion_resources` that is not a list is read as listing no companion resource."
+      - key: 01a202c3-d203-70c5-9d96-10a89126e293
+        name: "A warning on standard error names the remote's address and says that `companion_resources` is not a list."
+      - key: 01a202c3-d203-70c5-9d96-10a98e52219d
+        name: "Entries after the first 16 are left out, and no request is sent for them."
+      - key: 01a202c3-d203-70c5-9d96-10aabf953323
+        name: "One warning on standard error names the remote's address and says that the entries after the first 16 are left out."
+      - key: 01a202c3-d203-70c5-9d96-10ab86c74ad2
+        name: "The sign-in goes on with the remote's protected resource and each companion resource kept from the entries read."
+  - key: 01a202c3-d203-70c5-9d96-10ac576db8f2
+    statement:
+      form: unwanted
+      if: "the protected resource metadata of a listed companion resource does not vouch for it"
+      system: "Loft"
+      shall: "leave the companion resource out of the sign-in, say so on standard error and go on signing in."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-10adb306091e
+        name: "A companion resource whose metadata does not answer with the status 200 and a JSON object is left out."
+      - key: 01a202c3-d203-70c5-9d96-10ae7c907c93
+        name: "A companion resource whose metadata names another `resource`, or none, is left out."
+      - key: 01a202c3-d203-70c5-9d96-10af6d7610a0
+        name: "A companion resource whose metadata's `authorization_servers` leaves out the issuer that the remote's metadata names is left out."
+      - key: 01a202c3-d203-70c5-9d96-10b07765752e
+        name: "A companion resource whose metadata lists no scope in `scopes_supported`, or lists a value there that is not a scope token of RFC 6749, is left out."
+      - key: 01a202c3-d203-70c5-9d96-10b16f5943ab
+        name: "The warning names the remote's address and the companion resource, and says why its metadata does not vouch for it."
+      - key: 01a202c3-d203-70c5-9d96-10b2813ae525
+        name: "The authorization request names no companion resource left out and asks for no scope that only its metadata lists."
+      - key: 01a202c3-d203-70c5-9d96-10b3419e1e0f
+        name: "A sign-in that leaves out every listed companion resource is signed in to for the remote's protected resource alone, as before."
   - key: 01a18e1f-8daa-7674-9603-5ae454b39feb
     statement:
       form: event_driven
@@ -117,7 +210,9 @@ requirements:
       - key: 01a18e1f-8daa-7674-9603-5aec2bf515d2
         name: "The redirect URI is `http://127.0.0.1:<port>/callback`, on the port Loft listens on."
       - key: 01a18e1f-8daa-7674-9603-5aeda5fdb831
-        name: "The authorization request names `response_type` `code`, the `client_id`, the `redirect_uri`, the `scope`, the `resource`, a `state` and a `code_challenge` with `code_challenge_method` `S256`."
+        name: "The authorization request names `response_type` `code`, the `client_id`, the `redirect_uri`, the `scope`, a `resource` for each protected resource it asks for, a `state` and a `code_challenge` with `code_challenge_method` `S256`."
+      - key: 01a202c3-d203-70c5-9d96-10b4e499e44c
+        name: "The authorization request names the remote's protected resource in its first `resource`, then each companion resource kept in a `resource` of its own, in the order that `companion_resources` lists them."
       - key: 01a18e1f-8daa-7674-9603-5aee0cc4bed2
         name: "The code verifier is 43 or more unreserved characters drawn from the system's source of random numbers, and the code challenge is the unpadded base64url SHA-256 digest of it."
       - key: 01a18e1f-8daa-7674-9603-5aef03e5d7eb
@@ -164,6 +259,12 @@ requirements:
         name: "An answer of `token_type` `Bearer` with an `access_token`, an `expires_in` and a `refresh_token` is a sign-in."
       - key: 01a18e1f-8daa-7674-9603-5affb3db95a4
         name: "The sign-in kept holds the token endpoint, the resource, the client, the access token, the refresh token and the time its access token expires, in UTC."
+      - key: 01a202c3-d203-70c5-9d96-10b5a47a2e23
+        name: "The exchange names the remote's protected resource alone, whatever companion resources the authorization request named."
+      - key: 01a202c3-d203-70c5-9d96-10b6e744a052
+        name: "A sign-in that asked for companion resources is kept with the issuer of the authorization server and each companion resource it asked for, with its kind."
+      - key: 01a202c3-d203-70c5-9d96-10b704780c93
+        name: "A sign-in that asked for the remote's protected resource alone is kept with `tokenEndpoint`, `resource`, `clientId`, `accessToken`, `expiresAt` and `refreshToken` and no other member."
       - key: 01a18e1f-8daa-7674-9603-5b0098bd58c2
         name: "A sign-in that the file already holds for the address is replaced."
       - key: 01a18e1f-8daa-7674-9603-5b0182f48baa
@@ -179,24 +280,82 @@ requirements:
   - key: 01a18e1f-8daa-7674-9603-5b05e1af871f
     statement:
       form: event_driven
-      when: "a connected command is about to call the remote with a sign-in whose access token expires within 5 minutes"
+      when: "a connected command is about to call a protected resource with a sign-in that holds no access token for that resource expiring later than 5 minutes ahead"
       system: "Loft"
-      shall: "refresh the sign-in and keep its successor before it calls the remote."
+      shall: "refresh the sign-in for that resource and keep what the refresh issues before it calls the resource."
     criteria:
       - key: 01a18e1f-8daa-7674-9603-5b068e59310a
         name: "The refresh is a form-encoded `POST` to the sign-in's token endpoint of `grant_type` `refresh_token`, the `refresh_token`, the `client_id` and the `resource`."
       - key: 01a18e1f-8daa-7674-9603-5b07dc3da22f
-        name: "The refreshed access token, refresh token and expiry replace the sign-in's in `loft/remotes.json` before the refreshed access token is sent."
+        name: "The refreshed access token and its expiry replace those kept for the resource that the refresh names, and the refreshed refresh token replaces the sign-in's, in `loft/remotes.json` before the refreshed access token is sent."
       - key: 01a18e1f-8daa-7674-9603-5b08ca689ee4
-        name: "A sign-in whose access token expires later than 5 minutes ahead is not refreshed."
+        name: "A sign-in whose access token for the resource called expires later than 5 minutes ahead, and that records no refresh, is not refreshed."
       - key: 01a18e1f-8daa-7674-9603-5b09d3876706
-        name: "Two processes that refresh one sign-in at once refresh it once: the second waits for the first, reads the file again and uses the successor that the first kept."
+        name: "Two processes that refresh one sign-in for one resource at once refresh it once: the second waits for the first, reads the file again and uses the successor that the first kept."
       - key: 01a18e1f-8daa-7674-9603-5b0adb8b111a
-        name: "A refresh whose answer is lost leaves the file as it was, so that the next run presents the same refresh token again."
+        name: "A refresh whose answer is lost leaves the sign-in's tokens as they were, so that the next run presents the same refresh token again."
+      - key: 01a202c3-d203-70c5-9d96-10b8ce03b5cf
+        name: "A refresh names one `resource`, the protected resource whose access token it refreshes."
+      - key: 01a202c3-d203-70c5-9d96-10b9d1f0cf05
+        name: "A refresh for one resource keeps the access token kept for each other resource of the sign-in."
+      - key: 01a202c3-d203-70c5-9d96-10ba27dd429b
+        name: "A sign-in that holds no access token for a companion resource yet is refreshed for that resource before the resource is called."
+      - key: 01a202c3-d203-70c5-9d96-10bb56a84cd0
+        name: "Two refreshes of one sign-in for two resources at once run one after the other, the second presenting the refresh token that the first kept."
+      - key: 01a202c3-d203-70c5-9d96-10bc783ebb7e
+        name: "A refresh keeps each member of the sign-in that it does not replace."
+  - key: 01a202c3-d203-70c5-9d96-10bdf525793b
+    statement:
+      form: event_driven
+      when: "Loft is about to send a refresh of a sign-in that holds `resources`"
+      system: "Loft"
+      shall: "record the protected resource that the refresh names in the sign-in until the refresh's answer is kept or, for a refresh other than a repeat, until the authorization server refuses it."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-10be61ac78ba
+        name: "The record is the sign-in's `refreshing`, a string that names the protected resource that the refresh names."
+      - key: 01a202c3-d203-70c5-9d96-10bfd662103a
+        name: "The record is written under the lock beside `loft/remotes.json`, before the refresh is sent."
+      - key: 01a202c3-d203-70c5-9d96-10c0119c91c4
+        name: "A refresh's answer is kept, and its record removed, in one write of the file."
+      - key: 01a202c3-d203-70c5-9d96-10c1643a709a
+        name: "A refresh whose answer is lost, or that cannot reach the token endpoint, leaves the record and the sign-in's tokens as they were."
+      - key: 01a202c3-d203-70c5-9d96-10c20a378353
+        name: "A refresh whose answer arrives but does not read leaves the record and the sign-in's tokens as they were."
+      - key: 01a202c3-d203-70c5-9d96-10c350b2bcb3
+        name: "A refresh other than a repeat that the authorization server refuses removes its record and leaves the sign-in otherwise as it was."
+      - key: 01a202c3-d203-70c5-9d96-10c4aa6b27c6
+        name: "A sign-in that holds no `resources` is refreshed without a record."
+  - key: 01a202c3-d203-70c5-9d96-10c5e99dac6c
+    statement:
+      form: state_driven
+      while: "a sign-in records a refresh"
+      system: "Loft"
+      shall: "repeat that refresh, with the refresh token that the sign-in keeps, before any other refresh of the sign-in."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-10c6131a156f
+        name: "The repeat names the protected resource that the record names and presents the refresh token that the sign-in keeps."
+      - key: 01a202c3-d203-70c5-9d96-10c7f80b2e14
+        name: "The next command that calls a protected resource of the sign-in repeats the recorded refresh first, whether or not the access token it sends expires within 5 minutes."
+      - key: 01a202c3-d203-70c5-9d96-10c846a51870
+        name: "A repeat that the authorization server answers is kept as any refresh is, and its record removed."
+      - key: 01a202c3-d203-70c5-9d96-10c9bfcb2264
+        name: "A refresh for another resource is sent only once the repeat's answer is kept."
+      - key: 01a202c3-d203-70c5-9d96-10ca0b19212c
+        name: "A repeat that the authorization server refuses leaves `loft/remotes.json` as it was."
+      - key: 01a202c3-d203-70c5-9d96-10cb59793291
+        name: "No other refresh is sent after a repeat that the authorization server refuses."
+      - key: 01a202c3-d203-70c5-9d96-10cc5b8bece5
+        name: "A connected command whose repeat the authorization server refuses with `invalid_target` ends with exit 1 and an error that names the recorded resource and `loft remote login`, or `loft interface login <handle>` for another document's remote, whether or not the access token it needs expires within 5 minutes."
+      - key: 01a202c3-d203-70c5-9d96-10cd707b6034
+        name: "A repeat whose answer is lost, or that cannot reach the token endpoint, leaves the record in place."
+      - key: 01a202c3-d203-70c5-9d96-10ce2d7837ef
+        name: "A command whose access token expires later than 5 minutes ahead goes on with it where the repeat's answer is lost or the repeat cannot reach the token endpoint."
+      - key: 01a202c3-d203-70c5-9d96-10cf6de1e18a
+        name: "A sign-in whose `refreshing` is not a string sends no refresh, and a connected command ends saying that the sign-in has lapsed."
   - key: 01a18e1f-8daa-7674-9603-5b0b328c0ca1
     statement:
       form: unwanted
-      if: "the authorization server refuses a refresh for a command other than `loft pull`"
+      if: "the authorization server refuses with an error other than `invalid_target` a refresh for a command other than `loft pull`"
       system: "Loft"
       shall: "refuse the command, say that the sign-in to the remote has lapsed, and exit 1."
     criteria:
@@ -207,7 +366,41 @@ requirements:
       - key: 01a18e1f-8daa-7674-9603-5b0e6dc7199e
         name: "No browser is opened and no port is listened on."
       - key: 01a18e1f-8daa-7674-9603-5b0fa7082030
-        name: "Nothing is written."
+        name: "The sign-in kept for the address is left as it was."
+  - key: 01a202c3-d203-70c5-9d96-10d0ff205435
+    statement:
+      form: unwanted
+      if: "the authorization server refuses with `invalid_target` a refresh that a connected command makes for the protected resource that the sign-in was made for"
+      system: "Loft"
+      shall: "refuse the command, say that the sign-in was made for a former resource of the remote, and exit 1."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-10d147e2a4e2
+        name: "The error names the remote's address and the protected resource that the sign-in was made for."
+      - key: 01a202c3-d203-70c5-9d96-10d247c1ba72
+        name: "The error says that `loft remote login` signs in again to the document's own remote, or `loft interface login <handle>` to another document's remote."
+      - key: 01a202c3-d203-70c5-9d96-10d32de52c25
+        name: "The sign-in kept for the address is left as it was."
+      - key: 01a202c3-d203-70c5-9d96-10d4db4c492a
+        name: "No browser is opened and no port is listened on."
+  - key: 01a202c3-d203-70c5-9d96-10d56a7f2aa4
+    statement:
+      form: unwanted
+      if: "the sign-in kept for a remote's address does not cover a companion resource that a connected command is to call"
+      system: "Loft"
+      shall: "refuse to call it, say that the sign-in does not cover it, and keep the sign-in for its other resources."
+    criteria:
+      - key: 01a202c3-d203-70c5-9d96-10d6f08d8670
+        name: "A companion resource that the sign-in's `resources` does not list on the origin of the address is not covered, and no request is sent for it."
+      - key: 01a202c3-d203-70c5-9d96-10d702b1ab03
+        name: "A companion resource whose refresh the authorization server refuses with `invalid_target` is not covered."
+      - key: 01a202c3-d203-70c5-9d96-10d8359bea9e
+        name: "The error names the remote's address and the companion resource."
+      - key: 01a202c3-d203-70c5-9d96-10d9ac298e6e
+        name: "The error says that `loft remote login` signs in again to reach it at the document's own remote, or `loft interface login <handle>` at another document's remote."
+      - key: 01a202c3-d203-70c5-9d96-10da4f8b904f
+        name: "The sign-in kept for the address is left as it was."
+      - key: 01a202c3-d203-70c5-9d96-10db04dc46c7
+        name: "After a refused refresh that was not a repeat, the remote's protected resource and each other companion resource are reached with the sign-in as before."
   - key: 01a18e1f-8daa-7674-9603-5b10c1965e85
     statement:
       form: ubiquitous
