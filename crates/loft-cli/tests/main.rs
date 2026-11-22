@@ -189,6 +189,7 @@ mod yard_upgrade;
 mod yard_upgrade_events;
 mod yard_upgrade_totals;
 mod yard_view_constraints;
+mod yard_view_documents;
 mod yard_view_placement;
 mod yard_view_reports;
 mod yard_view_sections;

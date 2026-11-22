@@ -33813,6 +33813,39 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/loft.test.js"
         name: "a spec change view of no change says that the specification has not changed since the base revision"
         body: 4518e36f431f870d396db1c24a82dfaf912feb3100420bbf33ee4d44b808e141
+  - node: 01a2046e-409d-70db-9f5b-3d44cdb547ce
+    reviewed: 8ef03196bb3e0cd7116911b723dcf7257a5b17a6cf4bb2a98241818f91bd1383
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_component_that_gained_a_copied_interface_draws_it_labeled_with_its_handle"
+        body: ab6c9cec3be93ced5264d87b25e5b50906f9f9f7567b5ef86779bb13a1a8d52d
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_component_that_gained_its_own_interface_draws_it_so_that_the_edge_ends_at_its_box"
+        body: d3465f697871017c259ca921c4420cff6e9babcfa048189f8a5a38f78ec390dd
+  - node: 01a2046e-409d-70db-9f5b-3d4595199a58
+    reviewed: 95b12403a6adec46f7b2e4a6b766634a59412247ad81d063eaf3f8783d7f746e
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_component_that_gained_a_copied_interface_draws_it_labeled_with_its_handle"
+        body: ab6c9cec3be93ced5264d87b25e5b50906f9f9f7567b5ef86779bb13a1a8d52d
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_copy_added_or_removed_draws_its_interface_added_or_removed"
+        body: 57977ac65a31468842f382e8e0dad205f65324e57a52544a27cdd3ea5fa6fcaf
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_moved_pin_draws_its_interface_changed_with_each_node_its_promise_changed"
+        body: 00f79fc869bda5663fd9735f9cf537d938f6ae41e1c98af6084c805ec406ff54
+  - node: 01a2046e-409d-70db-9f5b-3d4605e7ddfb
+    reviewed: 6cb986d0fb831faf645f3b1ac193461432f5e504a28e7d3738a3323b86616547
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_copy_added_or_removed_draws_its_interface_added_or_removed"
+        body: 57977ac65a31468842f382e8e0dad205f65324e57a52544a27cdd3ea5fa6fcaf
+  - node: 01a2046e-409d-70db-9f5b-3d47ccef9a3a
+    reviewed: 2e98499ec32d1684acf4e95a3cdd963205f3206bd52a423104556bbab78c3689
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "a_moved_pin_draws_its_interface_changed_with_each_node_its_promise_changed"
+        body: 00f79fc869bda5663fd9735f9cf537d938f6ae41e1c98af6084c805ec406ff54
   - node: 01a1ea8e-b11b-737e-8311-c976f10d85c2
     reviewed: 2f926c287a85644d9241a68898f90419bee2e516e22a768486ff832c13593259
     tests:

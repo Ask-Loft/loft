@@ -1,23 +1,28 @@
 //! What a `spec-change` view's diagram draws (the See a spec change Feature): every changed node
 //! as a box of its own, whatever its kind, the changed decisions, each node a decision gained as a
 //! subject, each box above any of them drawn for context, and the `realizes`, `provides`,
-//! `requires` and subject edges between them. A decision whose subjects changed is changed, and draws its subject edges as its
-//! own document holds them, so that a subject it lost has no edge. Beside the diagram, the diff
+//! `requires` and subject edges between them, with the copies of other documents' Interfaces that
+//! the change touches. A decision whose subjects changed is changed, and draws its subject edges
+//! as its own document holds them, so that a subject it lost has no edge. Beside the diagram, the
+//! diff
 //! gives the words of every added, changed and removed node and decision, before and after, and
 //! the subjects each decision gained and lost.
 
 use std::collections::{BTreeMap, BTreeSet};
 
 use loftspec::bindings::Bindings;
+use loftspec::copy::Copy as Pinned;
 use loftspec::decision::NodeRef;
 use loftspec::diff::{DecisionChanges, Subject, SubjectChange, content_changes, decision_changes};
-use loftspec::document::{Document, Edge, EdgeKind, EdgeTarget};
+use loftspec::document::Document;
 use loftspec::identity::Key;
 use loftspec::ids::ElementId;
 use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 use serde_json::{Value, json};
 
+use super::graph_copies::{Copies, gained_interfaces};
+use super::graph_edges::edges;
 use super::words;
 
 /// One keyed node of a document: what a box or a tree line shows of it, and the node above it.
@@ -28,27 +33,63 @@ struct Entry {
     label: Option<String>,
     parent: Option<Key>,
     words: String,
+    /// The handle of the copy that holds the node, where another document's Interface holds it.
+    document: Option<String>,
+}
+
+/// Where a walked node lies: in the document's own tree, labeled by its bindings, or in a copy of
+/// another document's Interface, labeled as the copy labels it, with its handle.
+#[derive(Clone, Copy)]
+enum Within<'a> {
+    Own(&'a Bindings),
+    Copy(&'a Pinned),
+}
+
+impl Within<'_> {
+    fn label(self, node: loftspec::ids::NodeId) -> Option<String> {
+        match self {
+            Self::Own(bindings) => bindings.label_of(node).map(|label| label.to_string()),
+            Self::Copy(copy) => {
+                (copy.labels.get(&node.key())).map(|label| format!("{}:{label}", copy.handle))
+            }
+        }
+    }
+
+    fn document(self) -> Option<String> {
+        match self {
+            Self::Own(_) => None,
+            Self::Copy(copy) => Some(copy.handle.to_string()),
+        }
+    }
 }
 
 /// Each keyed node of a document, by its key, in the document's order.
-struct Walked {
+pub(super) struct Walked {
     entries: BTreeMap<Key, Entry>,
     order: Vec<Key>,
 }
 
 impl Walked {
+    /// Whether the document holds the node of `key`.
+    pub fn holds(&self, key: &Key) -> bool {
+        self.entries.contains_key(key)
+    }
+
     fn of(document: &Document) -> Self {
         let mut walked = Self {
             entries: BTreeMap::new(),
             order: Vec::new(),
         };
         for root in document.root_nodes() {
-            walked.visit(document, root, None);
+            walked.visit(Within::Own(&document.bindings), root, None);
+        }
+        for copy in &document.copies {
+            walked.visit(Within::Copy(copy), Node::Interface(&copy.interface), None);
         }
         walked
     }
 
-    fn visit(&mut self, document: &Document, node: Node<'_>, parent: Option<Key>) {
+    fn visit(&mut self, within: Within<'_>, node: Node<'_>, parent: Option<Key>) {
         let key = node.id().map(loftspec::ids::NodeId::key);
         if let (Some(key), Some(id)) = (key, node.id()) {
             self.entries.insert(
@@ -56,18 +97,16 @@ impl Walked {
                 Entry {
                     kind: node.kind(),
                     name: node.name().into_owned(),
-                    label: document
-                        .bindings
-                        .label_of(id)
-                        .map(|label| label.to_string()),
+                    label: within.label(id),
                     parent,
                     words: words::of_node(node),
+                    document: within.document(),
                 },
             );
             self.order.push(key);
         }
         for child in node.children() {
-            self.visit(document, child, key.or(parent));
+            self.visit(within, child, key.or(parent));
         }
     }
 }
@@ -94,15 +133,17 @@ pub fn report(base: &Document, document: &Document) -> Value {
     let then = Walked::of(base);
     let changes = content_changes(base, document);
     let lists = [&changes.added, &changes.changed, &changes.removed];
-    let marked = marks(lists.map(Vec::as_slice));
+    let mut marked = marks(lists.map(Vec::as_slice));
+    marked.extend(Copies::of(base, document).marks());
     let decided = decision_changes(base, document);
-    let gained: BTreeSet<Key> = (decided.subjects.values())
+    let mut gained: BTreeSet<Key> = (decided.subjects.values())
         .flat_map(|change| &change.gained)
         .filter_map(|(subject, _)| match subject {
             NodeRef::Held(node) => Some(node.key()),
             NodeRef::Former(_) => None,
         })
         .collect();
+    gained.extend(gained_interfaces(base, document));
     let shown = shown(&marked, &gained, &now, &then);
     let documents = Documents {
         base,
@@ -255,33 +296,37 @@ fn nodes(
     let nodes = shown.iter().filter_map(|key| {
         let change = marked.get(key).copied();
         let entry = entry(key, now, then)?;
-        Some(json!({
+        let mut node = json!({
             "key": key.to_string(),
             "kind": entry.kind.as_str(),
             "label": entry.label,
             "name": entry.name,
             "parent": entry.parent.map(|parent| parent.to_string()),
             "change": change,
-        }))
+        });
+        if let Some(handle) = &entry.document {
+            node["document"] = json!(handle);
+        }
+        Some(node)
     });
     Value::Array(nodes.collect())
 }
 
 /// A decision the diagram draws: its key, whether only the base holds it, its entry, and the
 /// subjects it gained and lost, which only its entry in the diff lists.
-struct Decided {
-    key: Key,
-    removed: bool,
+pub(super) struct Decided {
+    pub key: Key,
+    pub removed: bool,
     entry: Value,
     subjects: Option<Value>,
 }
 
 /// The two documents compared and their keyed nodes.
-struct Documents<'a> {
-    base: &'a Document,
-    document: &'a Document,
-    now: &'a Walked,
-    then: &'a Walked,
+pub(super) struct Documents<'a> {
+    pub base: &'a Document,
+    pub document: &'a Document,
+    pub now: &'a Walked,
+    pub then: &'a Walked,
 }
 
 /// Each decision `changes` holds, with its words before and after and the subjects it gained and
@@ -369,100 +414,4 @@ fn subject(
         NodeRef::Former(label) => value["label"] = json!(label.to_string()),
     }
     value
-}
-
-/// The `realizes`, `provides` and `requires` edges between boxes drawn, as the tree holds them,
-/// and as the base did where the branch removed one of their ends; and the subject edges from each decision drawn
-/// to the box of each node it names, where that box is drawn: an added or changed decision's as
-/// the tree holds them, and a removed decision's as the base did.
-fn edges(shown: &[Key], decided: &[Decided], documents: &Documents<'_>) -> Value {
-    let Documents {
-        base,
-        document,
-        now,
-        ..
-    } = *documents;
-    let drawn: BTreeSet<Key> = shown.iter().copied().collect();
-    let held = |removed: bool| -> BTreeSet<Key> {
-        decided
-            .iter()
-            .filter(|decision| decision.removed == removed)
-            .map(|decision| decision.key)
-            .collect()
-    };
-    let (in_tree, in_base) = (held(false), held(true));
-    // A base edge between two nodes the tree holds is the tree's to draw, or not.
-    let both_held = |edge: &&Edge| {
-        linked(edge)
-            .is_some_and(|(from, to, _)| [from, to].iter().all(|key| now.entries.contains_key(key)))
-    };
-    let tree = (document.edges.iter())
-        .filter_map(|edge| drawn_edge(edge, &drawn, &in_tree, &document.bindings));
-    let gone = (base.edges.iter())
-        .filter(|edge| !both_held(edge))
-        .filter_map(|edge| drawn_edge(edge, &drawn, &in_base, &base.bindings));
-    let found: BTreeSet<Drawn> = tree.chain(gone).collect();
-    let edges = found.into_iter().map(|(from, to, kind, role)| {
-        let mut edge = json!({ "from": from, "to": to, "kind": kind });
-        if let Some(role) = role {
-            edge["role"] = json!(role);
-        }
-        edge
-    });
-    Value::Array(edges.collect())
-}
-
-/// An edge as the diagram draws it: from, to, its kind and a subject edge's role.
-type Drawn = (String, String, &'static str, Option<&'static str>);
-
-/// The ends and kind of a `realizes`, `provides` or `requires` edge, which joins two nodes.
-fn linked(edge: &Edge) -> Option<(Key, Key, &'static str)> {
-    let kind = edge.kind();
-    if !matches!(
-        kind,
-        EdgeKind::Realizes | EdgeKind::Provides | EdgeKind::Requires
-    ) {
-        return None;
-    }
-    let EdgeTarget::Element(target) = edge.target() else {
-        return None;
-    };
-    Some((edge.source().key(), target.key(), kind.as_str()))
-}
-
-/// `edge` as the diagram draws it, where both its ends are drawn: a `realizes`, `provides` or
-/// `requires` edge between two boxes, or a subject edge from a decision drawn to the box of the
-/// node it names.
-fn drawn_edge(
-    edge: &Edge,
-    drawn: &BTreeSet<Key>,
-    named: &BTreeSet<Key>,
-    bindings: &Bindings,
-) -> Option<Drawn> {
-    if let Some((from, to, kind)) = linked(edge) {
-        return (drawn.contains(&from) && drawn.contains(&to))
-            .then(|| (from.to_string(), to.to_string(), kind, None));
-    }
-    match *edge {
-        Edge::Subject {
-            decision,
-            subject,
-            role,
-        } if named.contains(&decision.key()) => {
-            // A node named by its former label is the node the label's binding gives.
-            let NodeRef::Held(node) = bindings.node(subject) else {
-                return None;
-            };
-            let (from, to) = (decision.key(), node.key());
-            drawn.contains(&to).then(|| {
-                (
-                    from.to_string(),
-                    to.to_string(),
-                    "subject",
-                    Some(role.as_str()),
-                )
-            })
-        }
-        _ => None,
-    }
 }
