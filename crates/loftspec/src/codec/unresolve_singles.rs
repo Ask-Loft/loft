@@ -5,8 +5,9 @@ use super::record::{Rec, Val};
 use super::schema::{Kind, field};
 use super::unresolve::{keys, records};
 use crate::bindings::Binding;
-use crate::document::{CategoryEntry, Document, TagEntry, TermEntry};
+use crate::document::{CategoryEntry, Document, OtherDocument, TagEntry, TermEntry};
 use crate::identity::{Key, LabelPrefix};
+use std::num::NonZeroU64;
 
 pub(super) fn manifest(document: &Document) -> Rec {
     let mut record = Rec::new(Kind::Manifest);
@@ -21,6 +22,14 @@ pub(super) fn manifest(document: &Document) -> Rec {
         if let Some(remote) = &document.remote {
             record.set_text(field::REMOTE, remote.as_str());
         }
+    }
+    let mut others: Vec<_> = document.documents.iter().collect();
+    others.sort_by(|a, b| a.handle.as_str().cmp(b.handle.as_str()));
+    if !others.is_empty() {
+        record.set(
+            field::DOCUMENTS,
+            records(others.into_iter().map(other_document)),
+        );
     }
     let products = document.products.iter().filter_map(|product| product.id);
     record.set(
@@ -40,10 +49,23 @@ pub(super) fn manifest(document: &Document) -> Rec {
     record
 }
 
+fn other_document(other: &OtherDocument) -> Rec {
+    let mut record = Rec::new(Kind::OtherDocument);
+    record.set_text(field::HANDLE, other.handle.as_str());
+    record.set_text(field::KEY, other.key.key().to_string());
+    record.set_text(field::REMOTE, other.remote.as_str());
+    record
+}
+
 pub(super) fn labels(document: &Document) -> Rec {
     let mut counters = Rec::new(Kind::Counters);
     for prefix in LabelPrefix::ALL {
-        counters.set_text(prefix.as_str(), document.counters.next(prefix).to_string());
+        let next = document.counters.next(prefix);
+        // An optional counter is written once a publish has moved it on.
+        if prefix.counter_optional() && next == NonZeroU64::MIN {
+            continue;
+        }
+        counters.set_text(prefix.as_str(), next.to_string());
     }
     let bindings = document.bindings.iter().map(binding_record);
     let mut record = Rec::new(Kind::Labels);

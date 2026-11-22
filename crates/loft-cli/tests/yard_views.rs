@@ -8,6 +8,8 @@ use std::fs;
 
 use serde_json::{Value, json};
 
+use crate::common::copies::{HANDLE, copy_lookup};
+use crate::interfaces::{LOOKUP, SHELF_STORE, add_lookup};
 use crate::snapshot::snapshot;
 use crate::yard::{EPOCH_TEXT, HEAD, Yard, block, document};
 
@@ -288,4 +290,70 @@ fn a_view_is_computed_over_the_specification_below_the_top_of_the_worktree() {
         block(&read, "v1")["version"]["body"]["report"]["decision"]["key"],
         found["matches"][0]["key"]
     );
+}
+
+#[test]
+fn a_spec_change_view_draws_an_added_interface_and_the_provides_and_requires_edges_to_it() {
+    let yard = Yard::with_spec();
+    add_lookup(&yard.scratch);
+    let link_service = "00000000-0000-4000-8000-000000000041";
+    yard.scratch.edit(
+        "components/link-service.yaml",
+        "boundary: external\n",
+        &format!("boundary: external\nrequires:\n  - {LOOKUP}\n"),
+    );
+    let graph = &recorded(&yard, "spec-change", "")["report"]["graph"];
+    let node = |key: &str| {
+        graph["nodes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|node| node["key"] == key)
+            .unwrap_or_else(|| panic!("no {key} in {graph}"))
+            .clone()
+    };
+    assert_eq!(
+        [node(LOOKUP)["kind"].clone(), node(LOOKUP)["change"].clone()],
+        [json!("interface"), json!("added")]
+    );
+    for component in [SHELF_STORE, link_service] {
+        assert_eq!(node(component)["change"], "changed", "{component}");
+    }
+    let edges: Vec<&Value> = graph["edges"].as_array().unwrap().iter().collect();
+    assert!(
+        edges.contains(&&json!({ "from": SHELF_STORE, "to": LOOKUP, "kind": "provides" })),
+        "{edges:?}"
+    );
+    assert!(
+        edges.contains(&&json!({ "from": link_service, "to": LOOKUP, "kind": "requires" })),
+        "{edges:?}"
+    );
+}
+
+#[test]
+fn a_spec_change_view_leaves_out_an_edge_to_a_node_of_another_documents_copy() {
+    let yard = Yard::with_spec();
+    copy_lookup(&yard.scratch);
+    yard.scratch.edit(
+        "components/shelf-store.yaml",
+        "scopedTo:\n",
+        &format!("requires:\n  - document: {HANDLE}\n    key: {LOOKUP}\nscopedTo:\n"),
+    );
+    let report = recorded(&yard, "spec-change", "");
+    let graph = &report["report"]["graph"];
+    let keys: Vec<&Value> = graph["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|node| &node["key"])
+        .collect();
+    assert!(!keys.contains(&&json!(LOOKUP)), "{graph}");
+    let changed = graph["nodes"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|node| node["key"] == SHELF_STORE);
+    assert_eq!(changed.unwrap()["change"], "changed", "{graph}");
+    let edges = graph["edges"].as_array().unwrap();
+    assert!(edges.iter().all(|edge| edge["to"] != LOOKUP), "{edges:?}");
 }

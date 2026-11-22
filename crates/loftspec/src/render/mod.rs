@@ -51,17 +51,26 @@ pub fn render_tree(document: &Document, lint: Option<&str>) -> Result<Projection
 }
 
 /// How the projections name an element: its live label, or its key where it has none (AC-433).
+/// A node of a copy of another document's Interface is named by the copy's handle and the label
+/// its own document gave it, `<handle>:<label>`, or by the handle alone where it has none.
 pub(crate) struct Labels(BTreeMap<ElementId, String>);
 
 impl Labels {
     fn of(document: &Document) -> Self {
-        Self(
-            document
-                .bindings
-                .iter()
-                .map(|binding| (binding.element, binding.label.to_string()))
-                .collect(),
-        )
+        let mut labels: BTreeMap<ElementId, String> = (document.bindings.iter())
+            .map(|binding| (binding.element, binding.label.to_string()))
+            .collect();
+        for copy in &document.copies {
+            for id in copy.ids() {
+                let label = copy.labels.get(&id.key());
+                let named = label.map_or_else(
+                    || copy.handle.to_string(),
+                    |label| format!("{}:{label}", copy.handle),
+                );
+                labels.insert(ElementId::Node(id), named);
+            }
+        }
+        Self(labels)
     }
 
     /// The element's live label, if it has one.

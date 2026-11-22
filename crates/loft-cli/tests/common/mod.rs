@@ -5,9 +5,11 @@
 
 pub mod calls;
 pub mod connected;
+pub mod copies;
 #[cfg(unix)]
 pub mod npm;
 pub mod oauth;
+pub mod others;
 pub mod remote;
 pub mod resources;
 pub mod signed_in;
@@ -137,6 +139,12 @@ impl Scratch {
 
     pub fn file(&self, path: &str) -> PathBuf {
         self.0.join("spec").join(path)
+    }
+
+    /// Keeps every journaled save from starting: the journal lives under `.loft/`, which a file
+    /// of that name keeps from being created.
+    pub fn block_journal(&self) {
+        fs::write(self.0.join(".loft"), "not a directory\n").unwrap();
     }
 
     pub fn edit(&self, path: &str, from: &str, to: &str) {

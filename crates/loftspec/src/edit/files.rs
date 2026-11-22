@@ -55,6 +55,9 @@ pub(super) fn check_files(
         let node = Node::Component(&root.component);
         files(node, Some(&root.slug), &Under::Root, &mut held);
     }
+    for interface in &document.interfaces {
+        files(Node::Interface(interface), None, &Under::Root, &mut held);
+    }
     let mut occupied: BTreeMap<SpecPath, Option<NodeId>> = held
         .into_iter()
         .filter(|(path, _)| !leaving.contains(path))

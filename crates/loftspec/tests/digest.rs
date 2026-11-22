@@ -22,6 +22,7 @@ fn the_domain_strings_are_closed() {
             "loftspec/conflict/1",
             "loftspec/decision-history/1",
             "loftspec/own-record/1",
+            "loftspec/pins/1",
         ]
     );
 }

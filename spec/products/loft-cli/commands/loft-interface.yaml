@@ -1,0 +1,175 @@
+key: 01a1f981-4db0-72b8-8a39-a6afa5103fc1
+slug: loft-interface
+name: "`loft interface`"
+body: |
+  Pins, moves, checks and removes the copies of other documents' Interfaces that a connected document links to. An Interface is named on the command line as its handle and its label, such as `format:IF-3`, or its handle and its key. `loft interface add` takes a copy of an Interface at the other document's head, or at the publish sequence `--at` gives, and lists the other document in the manifest the first time, from the address `--remote` gives. `loft interface update` moves pins to the head and reports how each promise changed. `loft interface status` compares each copy with what its remote serves. `loft interface remove` deletes a copy that nothing references. `loft interface login` signs the person in to another document's remote.
+
+  Each other document is reached at the address its entry of `documents` names, with the person's sign-in to that address in `loft/remotes.json`, through the calls the document's own remote already answers: its head and its published states. `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` name the document's own remote, so they never redirect a call to another document's remote.
+tags:
+  - reads-tree
+  - writes-tree
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bcd4525c-3adf-45dd-beed-527d654d517c
+mentions:
+  - 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - 01a156aa-d531-70a7-88e0-0bebdc0a9327
+  - 01a18e1f-8daa-7674-9603-5ad621016b05
+  - 01a1f981-4db1-765f-a897-221902d7685c
+  - 01a1f981-4db1-765f-a897-222ab6b1357c
+requirements:
+  - key: 01a1f981-4db0-72b8-8a39-a6b0a1fe76cd
+    statement:
+      form: event_driven
+      when: "a person runs `loft interface add <handle>:<interface>`"
+      system: "`loft interface`"
+      shall: "write a copy of that Interface as the other document published it at its remote's head."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6b1f62859f7
+        name: "`<interface>` is the Interface's label or its key in the other document."
+      - key: 01a1f981-4db0-72b8-8a39-a6b2dab01971
+        name: "The copy is taken from the published state at the remote's head, or at the publish sequence that `--at <sequence>` names."
+      - key: 01a1f981-4db0-72b8-8a39-a6b3d8e0c722
+        name: "The copy is written to `spec/documents/<handle>/<slug>.yaml` with the publish sequence, the state root, the Interface hash and the labels of that state."
+      - key: 01a1f981-4db0-72b8-8a39-a6b460cbbeac
+        name: "Where `--remote <address>` is given for a handle that `documents` does not list, an entry with that handle, the other document's key and the address is added to `documents`."
+      - key: 01a1f981-4db0-72b8-8a39-a6b54a4ff25d
+        name: "The other document's key is read from the lock of the state the copy is taken from."
+      - key: 01a1f981-4db0-72b8-8a39-a6b61d6f174e
+        name: "The copy and the manifest are written in one journaled save."
+      - key: 01a1f981-4db0-72b8-8a39-a6b73ea9c6a4
+        name: "The output names the Interface by its handle and label, and the publish sequence of its copy."
+      - key: 01a1f981-4db0-72b8-8a39-a6b8a4239e51
+        name: "After an add, the output says `Commit spec/: it now holds a copy of <handle>:<label>.`"
+  - key: 01a1f981-4db0-72b8-8a39-a6b9a79d367d
+    statement:
+      form: unwanted
+      if: "`loft interface add` is run in a document that is not connected, for a handle that `documents` does not list without `--remote`, with a `--remote` that differs from the handle's listed address, for an Interface the document already holds a copy of, or for an Interface the published state does not hold"
+      system: "`loft interface`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6ba4aa37073
+        name: "The error for a document that is not connected says that `loft remote set <address>` connects it."
+      - key: 01a1f981-4db0-72b8-8a39-a6bb9bb60ee2
+        name: "The error for an unlisted handle says that `--remote <address>` lists the other document."
+      - key: 01a1f981-4db0-72b8-8a39-a6bc7b631e04
+        name: "The error for an Interface already copied says that `loft interface update` moves its pin."
+      - key: 01a1f981-4db0-72b8-8a39-a6bdade39b27
+        name: "The error for an Interface the state does not hold names the handle, the Interface and the publish sequence."
+      - key: 01a1f981-4db0-72b8-8a39-a6beeab736c7
+        name: "A remote whose state names the document's own key is refused, and the error names the key."
+      - key: 01a1f981-4db0-72b8-8a39-a6bf86256e14
+        name: "Nothing is written."
+  - key: 01a1f981-4db0-72b8-8a39-a6c066733a9b
+    statement:
+      form: event_driven
+      when: "a person runs `loft interface update`"
+      system: "`loft interface`"
+      shall: "move the pin of each copy it names to its remote's head and report how each promise changed."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6c134b6edea
+        name: "Without an argument, every copy is updated, and a handle updates every copy under it, and `<handle>:<interface>` updates that copy alone."
+      - key: 01a1f981-4db0-72b8-8a39-a6c23a0824f1
+        name: "`--at <sequence>` moves the one named copy to that publish sequence instead of the head."
+      - key: 01a1f981-4db0-72b8-8a39-a6c382710ee8
+        name: "Each copy whose pin moves is rewritten from the state it moves to, and every copy is written in one journaled save."
+      - key: 01a1f981-4db0-72b8-8a39-a6c4a430128d
+        name: "The output lists, for each copy, each node of the Interface that the move added, changed or removed, by its label and name."
+      - key: 01a1f981-4db0-72b8-8a39-a6c5f824ead2
+        name: "A copy already at the head is left as it was and reported as current."
+  - key: 01a1f981-4db0-72b8-8a39-a6c6610025c8
+    statement:
+      form: unwanted
+      if: "an update leaves a reference of the document naming a node that its copy no longer holds"
+      system: "`loft interface`"
+      shall: "write the updated copies, name each such reference and exit 1."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6c71b84b0bd
+        name: "The outcome is `dangling`."
+      - key: 01a1f981-4db0-72b8-8a39-a6c80a6f9483
+        name: "Each such reference is named by its element, its field and the foreign label it last named."
+      - key: 01a1f981-4db0-72b8-8a39-a6c9b71cab7c
+        name: "The copies are written as they are when no reference is left dangling."
+  - key: 01a1f981-4db0-72b8-8a39-a6ca2bfa9f68
+    statement:
+      form: unwanted
+      if: "the head no longer holds an Interface that the document holds a copy of"
+      system: "`loft interface`"
+      shall: "leave that copy at its pin, report the Interface as withdrawn and exit 1."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6cbd6d2002c
+        name: "The output names the Interface and the publish sequence of the head."
+      - key: 01a1f981-4db0-72b8-8a39-a6cc9b09f53d
+        name: "Every other copy named is updated as usual."
+  - key: 01a1f981-4db0-72b8-8a39-a6cdb7fd1380
+    statement:
+      form: event_driven
+      when: "a person runs `loft interface status`"
+      system: "`loft interface`"
+      shall: "compare each copy with the state its pin names and with its remote's head."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6cef047d79f
+        name: "Each copy is reported by its handle and label with its publish sequence and the head's."
+      - key: 01a1f981-4db0-72b8-8a39-a6cfb5acf54a
+        name: "A copy equal to the Interface, the labels and the state root that the remote serves at its publish sequence is reported as confirmed."
+      - key: 01a1f981-4db0-72b8-8a39-a6d00c813aa4
+        name: "A copy that differs from that state is reported as a mismatch naming the first difference, and the command exits 1 with the outcome `mismatch`."
+      - key: 01a1f981-4db0-72b8-8a39-a6d1ff443f93
+        name: "A copy whose Interface the head holds unchanged is reported as current."
+      - key: 01a1f981-4db0-72b8-8a39-a6d20d58de83
+        name: "A copy whose Interface the head holds changed is reported as behind, and the command still exits 0."
+      - key: 01a1f981-4db0-72b8-8a39-a6d3acadc49b
+        name: "No file is written."
+  - key: 01a1f981-4db0-72b8-8a39-a6d427e8996c
+    statement:
+      form: event_driven
+      when: "a person runs `loft interface remove <handle>:<interface>`"
+      system: "`loft interface`"
+      shall: "delete that copy, and the handle's entry of `documents` once no copy under it is left."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6d54a0d0014
+        name: "The copy and the manifest are written in one journaled save."
+      - key: 01a1f981-4db0-72b8-8a39-a6d62de20e1d
+        name: "An entry of `documents` that still has a copy under its handle is kept."
+      - key: 01a1f981-4db0-72b8-8a39-a6d705f0bcd3
+        name: "No network connection is opened."
+  - key: 01a1f981-4db0-72b8-8a39-a6d8bbe7748f
+    statement:
+      form: unwanted
+      if: "a reference of the document names a node of the copy that `loft interface remove` would delete"
+      system: "`loft interface`"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6d986448f5d
+        name: "The error names each such reference by its element and field."
+      - key: 01a1f981-4db0-72b8-8a39-a6da894387a8
+        name: "Nothing is written."
+  - key: 01a1f981-4db0-72b8-8a39-a6db6b54c15c
+    statement:
+      form: event_driven
+      when: "a person runs `loft interface login <handle>`"
+      system: "`loft interface`"
+      shall: "sign the person in to the remote that the handle's entry of `documents` names."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6dc316d9a55
+        name: "The person is signed in as the Feature \"Signing in to a remote\" states, and the sign-in is kept under the entry's address."
+      - key: 01a1f981-4db0-72b8-8a39-a6ddd2ddbfdb
+        name: "No file of the tree is written."
+      - key: 01a1f981-4db0-72b8-8a39-a6de7821d2cd
+        name: "No output holds a token."
+  - key: 01a1f981-4db0-72b8-8a39-a6dfb099dd2c
+    statement:
+      form: state_driven
+      while: "`loft interface` reaches another document's remote"
+      system: "`loft interface`"
+      shall: "reach it at the address of its entry of `documents`, or of `--remote`, with the person's sign-in to that address."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6e04cc92c07
+        name: "Where `loft/remotes.json` holds no sign-in for the address, `loft interface add` and `loft interface update` sign the person in to it first."
+      - key: 01a1f981-4db0-72b8-8a39-a6e1b6d6cb59
+        name: "`LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` change no call to another document's remote."
+      - key: 01a1f981-4db0-72b8-8a39-a6e264c76548
+        name: "The calls made are the head and the published states that the document's own remote answers."
+      - key: 01a1f981-4db0-72b8-8a39-a6e327973022
+        name: "Each shared rule of reaching a remote holds for another document's remote as it holds for the document's own."

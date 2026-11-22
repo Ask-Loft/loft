@@ -17,6 +17,7 @@ const KIND_NAMES = {
   constraint: 'constraints',
   quality_attribute: 'quality attributes',
   section: 'Sections',
+  interface: 'Interfaces',
   decision: 'decisions',
 };
 

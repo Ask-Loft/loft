@@ -123,7 +123,7 @@ fn stamp(
     for (link, found) in trace.links.iter_mut().zip(&reconciled.found) {
         let accepted = keys.contains(&link.node);
         if accepted {
-            link.reviewed = Some(hashes.nodes[&places[&link.node].id]);
+            link.reviewed = Some(super::hash_of(hashes, places[&link.node].id));
         }
         let Evidence::Tests(tests) = &mut link.evidence else {
             continue;

@@ -14,8 +14,8 @@ use crate::ids::NodeId;
 use crate::names::TagName;
 use crate::node::Node;
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, RootComponent, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
+    QualityAttribute, Requirement, RootComponent, Section,
 };
 
 /// Called once per node, children first, with the node's ID, content view and content hash.
@@ -87,6 +87,7 @@ impl<'a> Fields<'a> {
             // A statement enters as its rendered sentence (AC-598).
             Node::Requirement(node) => Self::plain(node.statement.render(), &node.details),
             Node::Criterion(node) => Self::plain(&node.name, &node.details),
+            Node::Interface(node) => Self::plain(&node.name, &node.details),
             Node::Component(node) => Self {
                 boundary: node.boundary,
                 ..Self::plain(&node.name, &node.details)
@@ -165,7 +166,8 @@ content_hash!(
     Component,
     Constraint,
     QualityAttribute,
-    Section
+    Section,
+    Interface
 );
 
 fn view<'a>(node: Node<'a>, children: &'a [Digest]) -> NodeView<'a> {

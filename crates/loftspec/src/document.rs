@@ -3,6 +3,7 @@
 //! a v1 source.
 
 use crate::conflict::Conflict;
+use crate::copy::Copy;
 use crate::wire::wire_names;
 use serde::Deserialize;
 
@@ -12,10 +13,11 @@ use crate::decision::{Decision, NodeRef};
 use crate::identity::Label;
 use crate::ids::{
     AuthoredStateId, CategoryId, ComponentId, DecisionId, DocumentId, ElementId, FeatureId,
-    ProductId, TagId, TermId,
+    InterfaceId, ProductId, TagId, TermId,
 };
 use crate::names::{CategoryName, TagName};
-use crate::tree::{Product, RootComponent};
+use crate::slug::Slug;
+use crate::tree::{Interface, Product, RootComponent};
 
 /// The type of an edge (F-13, F-14).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -24,6 +26,8 @@ pub enum EdgeKind {
     ScopedTo,
     Mentions,
     Subject,
+    Provides,
+    Requires,
 }
 
 impl EdgeKind {
@@ -34,7 +38,31 @@ impl EdgeKind {
             Self::ScopedTo => "scoped_to",
             Self::Mentions => "mentions",
             Self::Subject => "subject",
+            Self::Provides => "provides",
+            Self::Requires => "requires",
         }
+    }
+
+    /// The field of its source's record that writes an edge of this kind.
+    #[must_use]
+    pub const fn field(self) -> &'static str {
+        match self {
+            Self::Realizes => "realizes",
+            Self::ScopedTo => "scopedTo",
+            Self::Mentions => "mentions",
+            Self::Subject => "subjects",
+            Self::Provides => "provides",
+            Self::Requires => "requires",
+        }
+    }
+
+    /// Whether an edge of this kind may name a node of a copy of another document's Interface.
+    #[must_use]
+    pub const fn crosses(self) -> bool {
+        matches!(
+            self,
+            Self::Provides | Self::Requires | Self::Mentions | Self::Subject
+        )
     }
 }
 
@@ -75,6 +103,16 @@ pub enum Edge {
         subject: NodeRef,
         role: SubjectRole,
     },
+    /// A Component keeps the promise an Interface makes.
+    Provides {
+        component: ComponentId,
+        interface: InterfaceId,
+    },
+    /// A Component relies on the promise an Interface makes.
+    Requires {
+        component: ComponentId,
+        interface: InterfaceId,
+    },
 }
 
 /// The far end of an edge: an element, or the former label a `subject` edge may name.
@@ -92,6 +130,8 @@ impl Edge {
             Self::ScopedTo { .. } => EdgeKind::ScopedTo,
             Self::Mentions { .. } => EdgeKind::Mentions,
             Self::Subject { .. } => EdgeKind::Subject,
+            Self::Provides { .. } => EdgeKind::Provides,
+            Self::Requires { .. } => EdgeKind::Requires,
         }
     }
 
@@ -99,7 +139,9 @@ impl Edge {
     pub fn source(self) -> ElementId {
         match self {
             Self::Realizes { feature, .. } => feature.into(),
-            Self::ScopedTo { component, .. } => component.into(),
+            Self::ScopedTo { component, .. }
+            | Self::Provides { component, .. }
+            | Self::Requires { component, .. } => component.into(),
             Self::Mentions { source, .. } => source,
             Self::Subject { decision, .. } => decision.into(),
         }
@@ -111,6 +153,9 @@ impl Edge {
         match self {
             Self::Realizes { component, .. } => element(component.into()),
             Self::ScopedTo { product, .. } => element(product.into()),
+            Self::Provides { interface, .. } | Self::Requires { interface, .. } => {
+                element(interface.into())
+            }
             Self::Mentions { target, .. } => element(target),
             Self::Subject {
                 subject: NodeRef::Held(node),
@@ -168,6 +213,17 @@ pub struct DerivedFrom {
     pub publish_sequence: u64,
 }
 
+/// Another connected document whose Interfaces a connected document links to: an entry of the
+/// manifest's `documents`, under a handle of the document's own choosing. None of it enters a
+/// root, since every root names the other document by its key, and never by its handle.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OtherDocument {
+    pub handle: Slug,
+    pub key: DocumentId,
+    /// The address of the other document's remote.
+    pub remote: String,
+}
+
 /// A whole document. Products are in the manifest's order (AC-241); root Components, edges,
 /// registry entries and decisions are in no meaningful order. The publish branch is named only
 /// when it is not `main` (AC-276). A connected document publishes through its remote; the mark
@@ -177,6 +233,8 @@ pub struct Document {
     pub id: DocumentId,
     pub products: Vec<Product>,
     pub components: Vec<RootComponent>,
+    /// The Interfaces, each written to its own file; in no meaningful order.
+    pub interfaces: Vec<Interface>,
     pub edges: Vec<Edge>,
     pub tags: Vec<TagEntry>,
     pub categories: Vec<CategoryEntry>,
@@ -191,6 +249,12 @@ pub struct Document {
     /// The address of a connected document's remote, which the manifest names as `remote` and
     /// which enters no root.
     pub remote: Option<String>,
+    /// The other documents a connected document links to, in no meaningful order; the writer
+    /// sorts them by handle.
+    pub documents: Vec<OtherDocument>,
+    /// The copies of other documents' Interfaces, in no meaningful order. Their nodes are no
+    /// nodes of the document: no walk of it visits them.
+    pub copies: Vec<Copy>,
     /// The merge conflicts the tree holds, which the validator reports until removed (RQ-126).
     pub conflicts: Vec<Conflict>,
 }
@@ -203,6 +267,7 @@ impl Document {
             id,
             products: Vec::new(),
             components: Vec::new(),
+            interfaces: Vec::new(),
             edges: Vec::new(),
             tags: Vec::new(),
             categories: Vec::new(),
@@ -214,6 +279,8 @@ impl Document {
             publish_branch: None,
             connected: false,
             remote: None,
+            documents: Vec::new(),
+            copies: Vec::new(),
             conflicts: Vec::new(),
         }
     }

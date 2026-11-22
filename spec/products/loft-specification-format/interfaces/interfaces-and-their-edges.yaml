@@ -1,0 +1,152 @@
+key: 01a1f981-4db1-765f-a897-21e84df7d944
+slug: interfaces-and-their-edges
+name: "Interfaces and their edges"
+body: |
+  An Interface is a promise made at a boundary: what any Component that provides it answers, and what any Component that requires it may rely on. It is a root node of its document, beside the Components, written in its own file, and holds Requirements of its own with their criteria, and may hold Constraints, Quality Attributes and Sections. Its label takes the prefix `IF`.
+
+  A Component links to an Interface with `provides`, when it keeps the promise, or with `requires`, when it relies on it. Either side's document may own the Interface: a library's document owns the API it provides, and a client's document may own the contract it requires of any server. Any document may hold Interfaces; a link to an Interface of another document is the subject of the Features on other documents and references into them.
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+  - b90f38f9-766c-467f-a29c-d6ae3b796e52
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 01a1f981-4db1-765f-a897-21e97777cfb7
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each Interface with everything beneath it to `spec/interfaces/<slug>.yaml`."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21ea8c99ef70
+        name: "An Interface file holds exactly one Interface."
+      - key: 01a1f981-4db1-765f-a897-21eb0bf3fba7
+        name: "An Interface file holds every Requirement, criterion, Constraint, Quality Attribute and Section beneath its Interface."
+      - key: 01a1f981-4db1-765f-a897-21ec6c8088b5
+        name: "An Interface record's fields are, in order, `key`, `slug`, `name`, `body`, `tags`, `mentions`, `ext`, `requirements`, `constraints`, `qualityAttributes` and `sections`."
+      - key: 01a1f981-4db1-765f-a897-21ed63a77c69
+        name: "An Interface record requires `key`, `slug` and `name`."
+      - key: 01a1f981-4db1-765f-a897-21ee6c26fcb2
+        name: "A document that holds no Interface is written without `spec/interfaces/`."
+  - key: 01a1f981-4db1-765f-a897-21efa9725623
+    statement:
+      form: ubiquitous
+      system: "The reader"
+      shall: "order the Interfaces by file name."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21f01899621d
+        name: "Interfaces are ordered by the byte order of their file names."
+      - key: 01a1f981-4db1-765f-a897-21f1c2fc4c79
+        name: "Interfaces follow the root Components in document order."
+  - key: 01a1f981-4db1-765f-a897-21f2f402c8c6
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "accept an Interface only at the root of its document."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21f385b68504
+        name: "An `interface` under any other node is an error naming the Interface's key and the parent's kind."
+      - key: 01a1f981-4db1-765f-a897-21f412f78dbb
+        name: "A Product, a Feature Group, a Feature or a Component under an `interface` is an error naming the child's key and both kinds."
+  - key: 01a1f981-4db1-765f-a897-21f502669d83
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each `provides` and `requires` edge in the record of the Component it starts from."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21f675a0aeb4
+        name: "A Component record's `provides` field holds its `provides` edges."
+      - key: 01a1f981-4db1-765f-a897-21f7f578e23e
+        name: "A Component record's `requires` field holds its `requires` edges."
+      - key: 01a1f981-4db1-765f-a897-21f87ebbf22a
+        name: "The targets in a `provides` or `requires` field are sorted by key."
+      - key: 01a1f981-4db1-765f-a897-21f964017881
+        name: "A nested Component may carry `provides` and `requires`."
+  - key: 01a1f981-4db1-765f-a897-21fa5af21e5a
+    statement:
+      form: ubiquitous
+      system: "The validator"
+      shall: "require a `provides` or `requires` edge to join a Component to an Interface."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-21fb1731766b
+        name: "A `provides` edge whose target is not an `interface` is an error naming the edge."
+      - key: 01a1f981-4db1-765f-a897-21fc82039ab0
+        name: "A `requires` edge whose target is not an `interface` is an error naming the edge."
+      - key: 01a1f981-4db1-765f-a897-21fd9c266349
+        name: "A `provides` or `requires` edge that carries a role is an error naming the edge."
+      - key: 01a1f981-4db1-765f-a897-21fefe91f106
+        name: "A Component that both provides and requires one Interface is an error naming the Component and the Interface."
+      - key: 01a1f981-4db1-765f-a897-21ff39e916bd
+        name: "A `provides` or `requires` edge whose target key no element of the document carries is an error naming the edge and the key."
+  - key: 01a1f981-4db1-765f-a897-2200d6d1ab1a
+    statement:
+      form: state_driven
+      while: "formatting"
+      system: "the formatter"
+      shall: "replace a `provides` or `requires` target written by name with the key of the Interface that has that name."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-22010c9ca833
+        name: "A `provides` target written as a record whose one field is `name` takes the key of the Interface with that name."
+      - key: 01a1f981-4db1-765f-a897-22025423266c
+        name: "A `requires` target written as a record whose one field is `name` takes the key of the Interface with that name."
+      - key: 01a1f981-4db1-765f-a897-2203f7f506c6
+        name: "A name that only an element of another kind carries matches nothing."
+  - key: 01a1f981-4db1-765f-a897-22044fbe5397
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "hash `provides` and `requires` edges into the edges root as it hashes every other edge."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2205cece0871
+        name: "A `provides` edge enters the edges root with the type `provides` and the role `null`."
+      - key: 01a1f981-4db1-765f-a897-22069f38d685
+        name: "A `requires` edge enters the edges root with the type `requires` and the role `null`."
+      - key: 01a1f981-4db1-765f-a897-220731804259
+        name: "Adding a `provides` or `requires` edge changes the edges root."
+  - key: 01a1f981-4db1-765f-a897-22085a16f0bf
+    statement:
+      form: ubiquitous
+      system: "The hasher"
+      shall: "hash an Interface as a node of the kind `interface`."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2209cbd93d04
+        name: "An Interface's content view holds the kind `interface`, its name, its body, its tag names and `null` for every typed attribute, then its child content hashes."
+      - key: 01a1f981-4db1-765f-a897-220a49e66bc3
+        name: "An Interface's Requirements precede its Constraints, its Constraints its Quality Attributes, and its Quality Attributes its Sections, in its list of child content hashes."
+      - key: 01a1f981-4db1-765f-a897-220bec1686b4
+        name: "The content view of a document with an Interface holds the Interface roots, sorted by content hash, after every other member."
+      - key: 01a1f981-4db1-765f-a897-220cbafd87a0
+        name: "A document without an Interface has the content root it had before Interfaces existed."
+      - key: 01a1f981-4db1-765f-a897-220d5df2bfc6
+        name: "Reordering the Interface files leaves the content root unchanged."
+  - key: 01a1f981-4db1-765f-a897-220ebbbdc931
+    statement:
+      form: event_driven
+      when: "a publish allocates labels"
+      system: "the publisher"
+      shall: "give each Interface without a label a label of the prefix `IF`."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-220fa3135553
+        name: "An Interface's label is `IF`, a hyphen and the next value of the `IF` counter."
+      - key: 01a1f981-4db1-765f-a897-221057f9b2f3
+        name: "Interfaces are visited after the root Components and before the decisions when labels are allocated."
+      - key: 01a1f981-4db1-765f-a897-22118bea4987
+        name: "The Requirements, criteria, Constraints and Quality Attributes beneath an Interface take labels of their own kinds' prefixes."
+      - key: 01a1f981-4db1-765f-a897-22124764da87
+        name: "`counters` in `spec/labels.yaml` holds `IF` after `ADR` once a publish has allocated an Interface label, and omits it before."
+      - key: 01a1f981-4db1-765f-a897-221320cd58ec
+        name: "A `counters` mapping without `IF` reads the next `IF` value as 1."
+  - key: 01a1f981-4db1-765f-a897-2214be2a0b58
+    statement:
+      form: ubiquitous
+      system: "The renderer"
+      shall: "render each Interface with its Requirements, and each `provides` and `requires` edge, in the Markdown projection."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-221502b09527
+        name: "Interfaces render in their own section after the Components."
+      - key: 01a1f981-4db1-765f-a897-2216589d1c19
+        name: "An Interface's Requirements and criteria render beneath it as a Feature's do."
+      - key: 01a1f981-4db1-765f-a897-2217ed3be8c2
+        name: "Each Component's `provides` and `requires` targets render as lines naming each Interface by its label and name."
+      - key: 01a1f981-4db1-765f-a897-2218fe00857a
+        name: "A document without an Interface renders the Markdown it rendered before Interfaces existed."

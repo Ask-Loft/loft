@@ -151,6 +151,7 @@ fn each_kind_of_content_left_out_is_counted_once_and_an_absent_kind_raises_nothi
         kinds,
         [
             "Components",
+            "Interfaces",
             "Constraints",
             "Quality Attributes",
             "Decisions",
@@ -160,10 +161,14 @@ fn each_kind_of_content_left_out_is_counted_once_and_an_absent_kind_raises_nothi
     );
     let document = full_document();
     assert_eq!(
-        details[3],
+        details[1],
+        format!("{} Interfaces", document.interfaces.len())
+    );
+    assert_eq!(
+        details[4],
         format!("{} Decisions", document.decisions.len())
     );
-    assert_eq!(details[4], format!("{} edges", document.edges.len()));
+    assert_eq!(details[5], format!("{} edges", document.edges.len()));
     let bare = converted(&one(&format!("{PURPOSE}## Requirements\n"))).document;
     assert_eq!(of(&bare, Rule::LeftOut), []);
 }

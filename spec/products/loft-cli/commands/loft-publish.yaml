@@ -252,3 +252,22 @@ requirements:
         name: "No label is allocated."
       - key: 01a156ac-9752-749b-be81-df09527d973e
         name: "Nothing is written."
+  - key: 01a1f981-4db0-72b8-8a39-a6e4f7b0495f
+    statement:
+      form: event_driven
+      when: "`loft publish` publishes a connected document that holds a copy of another document's Interface"
+      system: "`loft publish`"
+      shall: "confirm each copy against the published state its pin names, at the other document's remote, before it sends the publish."
+    criteria:
+      - key: 01a1f981-4db0-72b8-8a39-a6e5771ac948
+        name: "Each copy is compared with the Interface, the labels and the state root that the other document's remote serves at the copy's publish sequence."
+      - key: 01a1f981-4db0-72b8-8a39-a6e65044ec03
+        name: "The other document's remote is reached at the address its entry of `documents` names, with the person's sign-in to that address."
+      - key: 01a1f981-4db0-72b8-8a39-a6e7b8094995
+        name: "A copy that differs is refused, and the error names the copy's file and the first difference."
+      - key: 01a1f981-4db0-72b8-8a39-a6e82724e226
+        name: "Nothing is sent to the document's own remote when a copy is refused."
+      - key: 01a1f981-4db0-72b8-8a39-a6e9335161cc
+        name: "Nothing is written when a copy is refused."
+      - key: 01a1f981-4db0-72b8-8a39-a6eaea9836e8
+        name: "A publish whose copies all match is sent as one that holds no copy is sent."

@@ -5,6 +5,8 @@ use super::schema::Kind;
 use super::schema::field;
 use crate::attributes::{QualityBand, QualityTarget};
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
+use crate::identity::Key;
+use crate::slug::Slug;
 use crate::statement::Statement;
 
 /// A statement as `text`, or as `form` with its slots in template order (AC-751, AC-752).
@@ -97,6 +99,14 @@ pub(super) fn decision_fields(decision: &Decision) -> Rec {
     });
     record.set(field::CONSEQUENCES, Val::List(consequences.collect()));
     record
+}
+
+/// A reference to the node `key` names in the copies under `handle`.
+pub(super) fn foreign_ref(handle: &Slug, key: Key) -> Val {
+    let mut record = Rec::new(Kind::ForeignRef);
+    record.set_text(field::DOCUMENT, handle.as_str());
+    record.set_text(field::KEY, key.to_string());
+    Val::Record(record)
 }
 
 /// A node reference: a held node's key, or `{formerLabel: <label>}` (AC-809).

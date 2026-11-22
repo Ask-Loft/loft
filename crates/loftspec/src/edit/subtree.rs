@@ -8,7 +8,7 @@ use crate::ids::{ElementId, NodeId};
 use crate::kind::NodeKind;
 use crate::node::Node;
 use crate::tree::{
-    Component, Constraint, Criterion, Feature, FeatureGroup, Product, QualityAttribute,
+    Component, Constraint, Criterion, Feature, FeatureGroup, Interface, Product, QualityAttribute,
     Requirement, RootComponent, Section,
 };
 
@@ -26,6 +26,7 @@ pub enum OwnedNode {
     Constraint(Constraint),
     QualityAttribute(QualityAttribute),
     Section(Section),
+    Interface(Interface),
 }
 
 impl OwnedNode {
@@ -43,6 +44,7 @@ impl OwnedNode {
             Self::Constraint(node) => Node::Constraint(node),
             Self::QualityAttribute(node) => Node::QualityAttribute(node),
             Self::Section(node) => Node::Section(node),
+            Self::Interface(node) => Node::Interface(node),
         }
     }
 }
@@ -67,7 +69,8 @@ owned_from!(
     Component,
     Constraint,
     QualityAttribute,
-    Section
+    Section,
+    Interface
 );
 
 /// A node with every node beneath it, and the edges whose source is one of them, held outside

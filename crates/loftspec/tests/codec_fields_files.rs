@@ -28,6 +28,7 @@ fn the_manifests_fields_are_written_in_the_published_order() {
         "publishBranch",
         "connected",
         "remote",
+        "documents",
         "products",
         "derivedFrom",
     ];

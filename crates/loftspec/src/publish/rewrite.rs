@@ -117,7 +117,7 @@ impl Withdrawals<'_> {
         let mut found = Vec::new();
         for span in label_spans(text).into_iter().rev() {
             let mentioned = |key| element.mentions.contains(&key);
-            let citation = if span.qualified {
+            let citation = if span.qualified || span.handle.is_some() {
                 Citation::NotWithdrawn
             } else {
                 self.bindings.citation(span.label, mentioned)

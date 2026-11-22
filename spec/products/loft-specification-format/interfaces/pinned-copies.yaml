@@ -1,0 +1,95 @@
+key: 01a1f981-4db1-765f-a897-222ab6b1357c
+slug: pinned-copies
+name: "Pinned copies"
+body: |
+  A connected document that links to an Interface of another document commits a copy of that Interface, as the other document published it at one publish sequence. The copy is the pin: the references into the other document resolve against it, the hasher reads the foreign nodes' content from it, and an agent reads the promise from it, all without a network. Moving the pin rewrites the copy, so the diff of a pull request shows exactly how the promise changed.
+
+  A copy belongs to the other document. Nothing in the requiring document labels, lints or formats its nodes, and an edit to it is refused: only `loft interface` writes it, from what the other document's remote serves.
+realizes:
+  - 163cc9da-ec4c-40e3-9926-d16ed9d0d1e4
+  - 19c140c9-52c5-44e1-a4c6-9c6a7bdd2b2d
+  - bc3f5237-54b0-405a-9078-978e4c8c0419
+  - e0fbfc12-d0c6-4e30-b08e-e99dc0b3d5ea
+  - e1ab75a5-f206-4760-970f-bee0653c4f2a
+requirements:
+  - key: 01a1f981-4db1-765f-a897-222b2d2cbb74
+    statement:
+      form: ubiquitous
+      system: "The writer"
+      shall: "write each copy of another document's Interface to `spec/documents/<handle>/<slug>.yaml`, where `<slug>` is the Interface's slug in its own document."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-222c224b9a83
+        name: "A copy's fields are, in order, `publishSequence`, `stateRoot`, `interfaceHash`, `labels` and `interface`, and all are required."
+      - key: 01a1f981-4db1-765f-a897-222de179603e
+        name: "`publishSequence` and `stateRoot` name the other document's published state that the copy was taken from."
+      - key: 01a1f981-4db1-765f-a897-222e2db26933
+        name: "`interfaceHash` is the Interface's content hash in that state."
+      - key: 01a1f981-4db1-765f-a897-222f92ae0f29
+        name: "`labels` lists the label of the Interface and of each node beneath it that has one, each as its `key` and `label`, sorted by key."
+      - key: 01a1f981-4db1-765f-a897-2230ed56a6df
+        name: "`interface` holds the Interface record, with everything beneath it, as the other document's state holds it."
+      - key: 01a1f981-4db1-765f-a897-22317c846bd6
+        name: "A copy file holds exactly one Interface."
+      - key: 01a1f981-4db1-765f-a897-223229b32252
+        name: "Every directory under `spec/documents/` is named by a handle of the manifest's `documents`."
+  - key: 01a1f981-4db1-765f-a897-2233fba23f7c
+    statement:
+      form: ubiquitous
+      system: "loftspec"
+      shall: "keep the nodes of a copy apart from the document's own nodes."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2234657fd6e1
+        name: "A copy's nodes enter neither the content root nor the binding root as nodes."
+      - key: 01a1f981-4db1-765f-a897-2235b5cecd6b
+        name: "A publish allocates no label to a node of a copy and writes no binding for one."
+      - key: 01a1f981-4db1-765f-a897-22369c8cfa08
+        name: "The linter reports no finding on a node of a copy."
+      - key: 01a1f981-4db1-765f-a897-223787e8296d
+        name: "The formatter leaves every copy file as it is."
+      - key: 01a1f981-4db1-765f-a897-2238cc43dce3
+        name: "A key carried both by a node of a copy and by an element of the document is an error naming both files."
+      - key: 01a1f981-4db1-765f-a897-2239973cfe6b
+        name: "A key carried by nodes of two copies is an error naming both files."
+  - key: 01a1f981-4db1-765f-a897-223a2321f3b4
+    statement:
+      form: unwanted
+      if: "the Interface of a copy does not hash to its `interfaceHash`"
+      system: "the reader"
+      shall: "report an error naming the file."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-223bb6674365
+        name: "An edit to any node of a copy is an error naming the copy's file."
+      - key: 01a1f981-4db1-765f-a897-223c0e64b716
+        name: "The error says that only `loft interface` writes a copy."
+      - key: 01a1f981-4db1-765f-a897-223d752bc4b8
+        name: "A copy as `loft interface` wrote it raises no such error."
+  - key: 01a1f981-4db1-765f-a897-223e23f0ae80
+    statement:
+      form: unwanted
+      if: "a tree holds a copy under a handle that the manifest's `documents` does not list"
+      system: "the reader"
+      shall: "report an error naming the copy's directory."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-223f944d96c2
+        name: "A copy in a tree whose manifest does not mark the document connected is an error."
+      - key: 01a1f981-4db1-765f-a897-224005473615
+        name: "The error names the handle."
+  - key: 01a1f981-4db1-765f-a897-224178c0726e
+    statement:
+      form: optional
+      where: "a tree holds a copy"
+      system: "the hasher"
+      shall: "cover the pin of each copy in the state view."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2242aa337670
+        name: "The state view of a tree that holds a copy ends with the object `{\"pins\": <digest>}`, after the lint configuration digest where there is one."
+      - key: 01a1f981-4db1-765f-a897-2243075e8910
+        name: "The pins digest is taken under the domain string `loftspec/pins/1` over the list of pins, each as its other document's key, its Interface's key, its publish sequence, its state root and its Interface hash."
+      - key: 01a1f981-4db1-765f-a897-2244c1e52d7b
+        name: "The pins are sorted by document key and then by Interface key, in byte order."
+      - key: 01a1f981-4db1-765f-a897-2245c2d18635
+        name: "A tree without a copy has the state root it had before copies existed."
+      - key: 01a1f981-4db1-765f-a897-2246ca3533c2
+        name: "Moving a pin to another publish sequence changes the state root."
+      - key: 01a1f981-4db1-765f-a897-22470c83bfee
+        name: "Renaming a handle leaves the state root unchanged."

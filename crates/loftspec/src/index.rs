@@ -6,6 +6,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::copy::Foreign;
 use crate::decision::{Decision, DecisionState, DriverPayload, NodeRef};
 use crate::document::{Document, EdgeTarget};
 use crate::identity::Key;
@@ -210,6 +211,15 @@ pub(crate) fn carried_keys(document: &Document) -> BTreeSet<Key> {
     keys
 }
 
+impl Document {
+    /// Every key an element, a decision element or a registry entry of the document carries;
+    /// the nodes of its copies carry none of them.
+    #[must_use]
+    pub fn carried_keys(&self) -> BTreeSet<Key> {
+        carried_keys(self)
+    }
+}
+
 /// The keys a decision carries: its own, then its drivers', options' and consequences'.
 fn decision_keys(decision: &Decision) -> impl Iterator<Item = Key> + '_ {
     let drivers = decision.drivers.iter().map(|driver| driver.id.key());
@@ -228,17 +238,21 @@ fn registry_keys(document: &Document) -> impl Iterator<Item = Key> + '_ {
 }
 
 /// Every edge endpoint, binding and decision reference that names nothing the document holds.
+/// A target of a `provides`, `requires`, `mentions` or `subject` edge may also be a node of a
+/// copy of another document's Interface.
 fn references(document: &Document, index: &Index) -> Vec<IntegrityError> {
     let mut errors = Vec::new();
+    let foreign = Foreign::of(&document.copies);
     for edge in &document.edges {
-        let target = match edge.target() {
-            EdgeTarget::Element(element) => Some(element),
-            EdgeTarget::Former(_) => None,
-        };
-        for element in std::iter::once(edge.source()).chain(target) {
-            if !index.holds(element) {
-                errors.push(IntegrityError::UnknownEdgeEndpoint(element));
-            }
+        let crossing = edge.kind().crosses();
+        if !index.holds(edge.source()) {
+            errors.push(IntegrityError::UnknownEdgeEndpoint(edge.source()));
+        }
+        if let EdgeTarget::Element(target) = edge.target()
+            && !index.holds(target)
+            && (!crossing || !foreign.holds(target))
+        {
+            errors.push(IntegrityError::UnknownEdgeEndpoint(target));
         }
     }
     for binding in document.bindings.live() {

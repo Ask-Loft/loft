@@ -10,6 +10,7 @@ use std::path::Path;
 use loftspec::canonical::Digest;
 use loftspec::check::hashed;
 use loftspec::codec::{self, Site, Sites, site_fields};
+use loftspec::copy::{Foreign, labeled};
 use loftspec::document::Document;
 use loftspec::hash::DocumentHashes;
 use loftspec::identity::{Key, Label};
@@ -151,6 +152,7 @@ impl<'a> Read<'a> {
         Report {
             document: self.document,
             sites: self.sites,
+            foreign: Foreign::of(&self.document.copies),
         }
     }
 }
@@ -241,11 +243,17 @@ fn accept_named(
     }
 }
 
-/// The key a name gives: the name itself when it is a key, which the reconciler then checks, or
-/// the node its label names.
+/// The key a name gives: the name itself when it is a key, which the reconciler then checks, the
+/// node its label names, or, for `<handle>:<label>`, the node the copies under that handle bind
+/// to the label.
 fn resolve(document: &Document, name: &str) -> Result<Key, &'static str> {
     if let Ok(key) = Key::parse(name) {
         return Ok(key);
+    }
+    if let Some((handle, label)) = name.split_once(':') {
+        let label = Label::parse(label).map_err(|_| "it is neither a key nor a label")?;
+        return labeled(&document.copies, handle, label)
+            .ok_or("no copy under the handle binds this label");
     }
     let label = Label::parse(name).map_err(|_| "it is neither a key nor a label")?;
     document
@@ -285,12 +293,18 @@ impl fmt::Display for Place<'_> {
 struct Report<'a> {
     document: &'a Document,
     sites: &'a Sites,
+    /// The nodes of the document's copies, by key.
+    foreign: Foreign<'a>,
 }
 
 impl Report<'_> {
+    /// A node's label, or a node of a copy's as `<handle>:<label>`.
     fn label(&self, key: Key) -> Option<String> {
-        let label = self.document.bindings.label_of_key(key)?;
-        Some(label.to_string())
+        if let Some(label) = self.document.bindings.label_of_key(key) {
+            return Some(label.to_string());
+        }
+        let label = self.foreign.label(key)?;
+        Some(format!("{}:{label}", self.foreign.copy(key)?.handle))
     }
 
     /// A node by its label, or its key while it has none.

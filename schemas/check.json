@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-check-2.json",
+  "$id": "loft-check-3.json",
   "title": "The result of `loft check --format json`, version 2",
   "oneOf": [
     {
@@ -14,7 +14,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-check/2"
+          "const": "loft-check/3"
         },
         "outcome": {
           "type": "string",
@@ -57,7 +57,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-check/2"
+          "const": "loft-check/3"
         },
         "outcome": {
           "const": "error"
@@ -217,7 +217,9 @@
             "V2-008",
             "V2-009",
             "V2-010",
-            "V2-011"
+            "V2-011",
+            "V2-012",
+            "V2-013"
           ]
         },
         "severity": {

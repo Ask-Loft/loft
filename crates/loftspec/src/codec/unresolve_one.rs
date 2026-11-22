@@ -41,7 +41,8 @@ pub(super) fn written_record(document: &Document, kind: RecordKind, key: Key) ->
 /// The edges the element keyed `key` writes, building its record without the nodes it holds.
 fn edges_of(document: &Document, key: Key) -> Edges {
     let written = document.edges.iter();
-    Edges::of(written.filter(|edge| edge.source().key() == key)).own()
+    let edges = Edges::of(written.filter(|edge| edge.source().key() == key));
+    edges.across(&document.copies).own()
 }
 
 fn node_record(document: &Document, kind: NodeKind, key: Key) -> Option<Rec> {
@@ -66,6 +67,7 @@ fn node_record(document: &Document, kind: NodeKind, key: Key) -> Option<Rec> {
         Node::Constraint(constraint) => edges.constraint(constraint),
         Node::QualityAttribute(quality) => edges.quality(quality),
         Node::Section(section) => edges.section(section),
+        Node::Interface(interface) => edges.interface(interface),
     })
 }
 

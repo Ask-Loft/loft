@@ -133,7 +133,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The merge driver"
-      shall: "merge each binding, assessment and decision subject as one value."
+      shall: "merge each binding, assessment, decision subject and entry of `documents` as one value."
     criteria:
       - key: 01a13070-322f-7493-9495-40746cf3ac48
         name: "A binding is matched by its key."
@@ -151,6 +151,10 @@ requirements:
         name: "An assessment that one side deleted and the other changed keeps its base value."
       - key: 01a13a1b-2f3d-70d6-88b6-56e858b4b211
         name: "A decision subject that each side replaces with a different subject is removed, and each side's replacement is kept."
+      - key: 01a1faa4-2438-74b3-ac1b-e89c8e7b6f88
+        name: "An entry of `documents` is matched by its handle."
+      - key: 01a1faa4-2438-74b3-ac1b-e89d4488e8b3
+        name: "When both sides change an entry of `documents` to different values, the manifest gains a conflict record for `documents`, and the entry keeps its base value."
   - key: 01a13070-322f-7493-9495-4077bb5be258
     statement:
       form: event_driven

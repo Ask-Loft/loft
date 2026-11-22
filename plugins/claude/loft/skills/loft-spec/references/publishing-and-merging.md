@@ -1,15 +1,17 @@
 # Publishing and merging
 
 Use this workflow for starting and updating a branch, connecting a document to a Loft server,
-`loft publish`, `loft pull`, `loft verify`, merging `spec/` in git, and two publishes that meet.
-It owns a branch's base, the publish branch, the lock, the document's remote and the merge
-driver. The edit cycle belongs to `the-loop.md`; what an error means to `lint-findings.md`. Never
-restate or override them here.
+linking it to another document's Interface with `loft interface`, `loft publish`, `loft pull`,
+`loft verify`, merging `spec/` in git, and two publishes that meet. It owns a branch's base, the
+publish branch, the lock, the document's remote, its copies of other documents' Interfaces and
+the merge driver. The edit cycle belongs to `the-loop.md`; what an error means to
+`lint-findings.md`. Never restate or override them here.
 
 ## Contents
 
 - Start a branch and bring it up to date
 - Connect to a Loft server
+- Link to another document's Interface
 - Publish
 - Pull from the remote
 - Verify in CI
@@ -53,6 +55,31 @@ states in order and gives its labels, so a whole team publishes one document.
   same reason, the manifest names the remote by another name than its own: ask the user to run
   `loft remote set` with the remote's address on the origin the error names, which signs them in
   through their browser, then commit `spec/loftspec.yaml`.
+
+## Link to another document's Interface
+
+A connected document links to an Interface that another connected document publishes through a
+copy of it under `spec/documents/<handle>/`, pinned at one of that document's publishes. The
+manifest's `documents` lists the other document under the handle, with the address of its
+remote, and only `loft interface` writes either.
+
+- Run `loft interface add <handle>:<label>` only for an Interface the user names. The first time
+  a handle is used, pass `--remote <address>` with the address the user gives. Never invent or
+  guess an address.
+- Never edit a copy under `spec/documents/`: an edited copy no longer reads. To move its pin, run
+  `loft interface update`; to drop it, `loft interface remove`, which refuses while a reference
+  names one of its nodes.
+- After `loft interface add`, `update` or `remove`, commit `spec/`: the copies and the manifest
+  together.
+- `loft interface update` reports each node of each promise that the move added, changed or
+  removed. Read the report with the user. Where it names a dangling reference, change or remove
+  that reference with the user and run the loop before committing. Then run `loft reconcile`,
+  review each trace link the move turned stale against its criterion as it now reads, and accept
+  it only once the test still proves it.
+- `loft interface status` compares each copy with its remote and writes nothing; a connected
+  `loft publish` refuses a copy that is not the one its remote published.
+- When the sign-in to another document's remote has lapsed, ask the user to run
+  `loft interface login <handle>`: the sign-in opens the user's browser.
 
 ## Publish
 

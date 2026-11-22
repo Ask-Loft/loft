@@ -1,6 +1,6 @@
 //! The files of a tree that hold no record of another file and that no record leaves: the
-//! manifest, `spec/labels.yaml`, the registries and `spec/lint.yaml`, each merged as the merge
-//! driver merges it.
+//! manifest, `spec/labels.yaml`, the registries, `spec/lint.yaml` and each copy, each merged as
+//! the merge driver merges it.
 
 use std::collections::BTreeMap;
 
@@ -27,8 +27,8 @@ pub(super) fn merge(trees: &Trees) -> Result<Singles, TreeMergeError> {
         files: BTreeMap::new(),
         disputed: Vec::new(),
     };
-    for name in [MANIFEST, LABELS, TAGS, CATEGORIES, TERMS, LINT] {
-        let path = SpecPath::new(name);
+    let named = [MANIFEST, LABELS, TAGS, CATEGORIES, TERMS, LINT].map(SpecPath::new);
+    for path in named.into_iter().chain(trees.copies()) {
         let role = Role::of(&path).expect("a single file of the Format");
         let versions = trees.file(&path);
         let refused = |error| TreeMergeError::File {
@@ -55,7 +55,7 @@ fn merged(
     [base, ours, theirs]: [Option<&Content>; 3],
 ) -> Result<Merged, super::super::MergeError> {
     let whole = |kept: Option<&Content>| kept.map(|content| (content.clone(), Vec::new()));
-    if *role == Role::Lint {
+    if role.is_bytes() {
         return Ok(whole(one_value(&base, ours, theirs)?));
     }
     match (ours, theirs) {

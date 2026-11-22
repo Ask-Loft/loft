@@ -55,12 +55,14 @@ fn in_document_order(tree: &Tree) -> Vec<&SpecPath> {
             Role::Manifest => 0,
             Role::Product { .. } | Role::Feature { .. } => 1,
             Role::Component { .. } => 2,
-            Role::Decision { .. } => 3,
-            Role::Tags => 4,
-            Role::Categories => 5,
-            Role::Terms => 6,
-            Role::Labels => 7,
-            Role::Lint => 8,
+            Role::Interface { .. } => 3,
+            Role::Decision { .. } => 4,
+            Role::Tags => 5,
+            Role::Categories => 6,
+            Role::Terms => 7,
+            Role::Labels => 8,
+            Role::Lint => 9,
+            Role::Copy { .. } => 10,
         };
         (rank, filed.get(*path).copied().unwrap_or(usize::MAX), *path)
     });
@@ -180,7 +182,14 @@ fn side_val(side: &ConflictValue, shape: SideShape) -> Val {
 fn item_val(value: &ConflictValue, item: Item) -> Val {
     match (item, value) {
         (Item::Record(kind), ConflictValue::Record(fields)) => record_val(kind, fields),
-        (Item::NodeRef, ConflictValue::Record(fields)) => record_val(Kind::FormerLabel, fields),
+        (
+            Item::NodeRef | Item::Scalar(super::schema::Scalar::Ref(_)),
+            ConflictValue::Record(fields),
+        ) => {
+            let kind =
+                super::record_foreign::reference_kind(fields.iter().map(|(name, _)| name.as_str()));
+            record_val(kind, fields)
+        }
         _ => scalar_val(value),
     }
 }

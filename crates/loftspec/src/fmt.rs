@@ -5,6 +5,7 @@
 //! writes nothing itself; writing belongs to a store (CMP-4).
 
 mod deleted;
+mod foreign;
 mod names;
 
 use std::collections::{BTreeMap, BTreeSet};

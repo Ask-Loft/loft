@@ -10,7 +10,7 @@ use crate::attributes::{
     Boundary, ConservationKind, QaKind, QualityTarget, TechnicalBinding, VerificationFate,
 };
 use crate::ids::{
-    ComponentId, ConstraintId, CriterionId, FeatureGroupId, FeatureId, ProductId,
+    ComponentId, ConstraintId, CriterionId, FeatureGroupId, FeatureId, InterfaceId, ProductId,
     QualityAttributeId, RequirementId, SectionId,
 };
 use std::ops::{Deref, DerefMut};
@@ -137,6 +137,20 @@ impl DerefMut for RootComponent {
     fn deref_mut(&mut self) -> &mut Component {
         &mut self.component
     }
+}
+
+/// A promise made at a boundary: what any Component that provides it answers, and what any
+/// Component that requires it may rely on. Always a root node, written to its own file under its
+/// slug, and holding Requirements, Constraints and Quality Attributes of its own.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Interface {
+    pub id: Option<InterfaceId>,
+    pub slug: Slug,
+    pub name: String,
+    pub details: Details,
+    pub requirements: Vec<Requirement>,
+    pub constraints: Vec<Constraint>,
+    pub quality_attributes: Vec<QualityAttribute>,
 }
 
 /// Headed prose inside a node: a name, a body and ordered child Sections (AC-155, AC-156).

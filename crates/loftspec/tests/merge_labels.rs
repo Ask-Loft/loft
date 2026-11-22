@@ -315,3 +315,19 @@ fn a_binding_one_side_relabeled_takes_that_sides_label_aliases_and_withdrawn_lab
         assert_eq!(merged.conflicts, 0);
     }
 }
+
+#[test]
+fn a_counter_only_one_side_holds_is_kept_whichever_side_holds_it() {
+    let base = labels_file();
+    assert!(!base.contains("  IF: "), "{base}");
+    let adr = (base.lines())
+        .find(|line| line.starts_with("  ADR: "))
+        .unwrap()
+        .to_owned();
+    let interfaces = base.replacen(&format!("{adr}\n"), &format!("{adr}\n  IF: 3\n"), 1);
+    for (ours, theirs) in [(&base, &interfaces), (&interfaces, &base)] {
+        let (text, merged) = merge(&base, ours, theirs);
+        assert!(text.contains(&format!("{adr}\n  IF: 3\n")), "{text}");
+        assert_eq!(merged.conflicts, 0);
+    }
+}

@@ -1,0 +1,83 @@
+key: 01a1f981-4db0-72b8-8a39-a69f90664d67
+slug: only-an-interface-crosses-from-one-document-to-another
+title: "Only an Interface crosses from one document to another"
+context: "Once Interfaces exist, a reference from one connected document into another still has to be bounded: which fields may hold one, and which nodes of the other document it may name. A stand-in `external` Component already carries the local edges to the system another document describes, and a Requirement often rests on one criterion of a promise rather than the whole of it."
+state:
+  kind: accepted
+  selectedOption: 01a1f981-4db0-72b8-8a39-a6a3ab9aa6fd
+  outcome: "A reference into another document names a node of a copy of one of its Interfaces, as a record of the other document's handle and the node's key. A Component `provides` or `requires` a foreign Interface; any element may `mentions` a foreign Interface or a node beneath it; a decision may name one as an `affected` subject. A foreign node is never realized, scoped to, or a decision's `outcome`. An `external` stand-in Component stays as the local face of the other system and carries its `provides` or `requires` link."
+drivers:
+  - key: 01a1f981-4db0-72b8-8a39-a6a019b1b223
+    kind: local
+    label: "Owner's freedom"
+    statement: "Nothing outside a promise can be named from another document."
+  - key: 01a1f981-4db0-72b8-8a39-a6a15470ed1c
+    kind: local
+    label: "Precise citations"
+    statement: "A Requirement can cite the exact criterion of a promise it rests on."
+  - key: 01a1f981-4db0-72b8-8a39-a6a25125b522
+    kind: local
+    label: "Ownership stays local"
+    statement: "Only a document says what it is made of and what its decisions bring about."
+options:
+  - key: 01a1f981-4db0-72b8-8a39-a6a3ab9aa6fd
+    title: "An Interface and what it holds"
+    description: "`provides`, `requires`, `mentions` and `affected` subjects may name a foreign Interface or a node beneath it."
+  - key: 01a1f981-4db0-72b8-8a39-a6a4644482ed
+    title: "Only `provides` and `requires`"
+    description: "Only a Component's link to a foreign Interface crosses, and finer citations stay in prose."
+  - key: 01a1f981-4db0-72b8-8a39-a6a5b6412d21
+    title: "Any node of the other document"
+    description: "Every edge may name any node of the other document."
+assessments:
+  - option: 01a1f981-4db0-72b8-8a39-a6a3ab9aa6fd
+    driver: 01a1f981-4db0-72b8-8a39-a6a019b1b223
+    rating: supports
+    rationale: "a copy holds nothing but an Interface's subtree"
+  - option: 01a1f981-4db0-72b8-8a39-a6a3ab9aa6fd
+    driver: 01a1f981-4db0-72b8-8a39-a6a15470ed1c
+    rating: supports
+    rationale: "a `mentions` edge may name one criterion of the promise"
+  - option: 01a1f981-4db0-72b8-8a39-a6a3ab9aa6fd
+    driver: 01a1f981-4db0-72b8-8a39-a6a25125b522
+    rating: supports
+    rationale: "`realizes`, `scopedTo` and `outcome` subjects stay within a document"
+  - option: 01a1f981-4db0-72b8-8a39-a6a4644482ed
+    driver: 01a1f981-4db0-72b8-8a39-a6a019b1b223
+    rating: supports
+    rationale: "only Interfaces are named"
+  - option: 01a1f981-4db0-72b8-8a39-a6a4644482ed
+    driver: 01a1f981-4db0-72b8-8a39-a6a15470ed1c
+    rating: conflicts
+    rationale: "a criterion of the promise can be cited only in prose"
+  - option: 01a1f981-4db0-72b8-8a39-a6a4644482ed
+    driver: 01a1f981-4db0-72b8-8a39-a6a25125b522
+    rating: supports
+    rationale: "no structural edge crosses"
+  - option: 01a1f981-4db0-72b8-8a39-a6a5b6412d21
+    driver: 01a1f981-4db0-72b8-8a39-a6a019b1b223
+    rating: conflicts
+    rationale: "any internal node can be named and so frozen"
+  - option: 01a1f981-4db0-72b8-8a39-a6a5b6412d21
+    driver: 01a1f981-4db0-72b8-8a39-a6a15470ed1c
+    rating: supports
+    rationale: "any node can be cited"
+  - option: 01a1f981-4db0-72b8-8a39-a6a5b6412d21
+    driver: 01a1f981-4db0-72b8-8a39-a6a25125b522
+    rating: conflicts
+    rationale: "a Feature could realize another document's Component"
+consequences:
+  - key: 01a1f981-4db0-72b8-8a39-a6a65ef278f7
+    kind: obligation
+    statement: "The reader, the validator, the formatter, the hasher, the renderer and the linter each handle a reference written as a handle and a key, in the fields that may hold one and in no other."
+  - key: 01a1f981-4db0-72b8-8a39-a6a7456924d6
+    kind: benefit
+    statement: "Each dependency on another document is visible on one stand-in Component, and every other edge stays inside the document."
+  - key: 01a1f981-4db0-72b8-8a39-a6a847a29a93
+    kind: risk
+    statement: "A Requirement that cites a criterion of a promise breaks when that criterion leaves the promise, which `loft interface update` reports as a dangling reference."
+subjects:
+  - role: affected
+    node: dc2a9890-ee94-4ec8-ac63-0503d459342e
+  - role: outcome
+    node: 01a1f981-4db1-765f-a897-2248537f6019

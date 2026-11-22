@@ -21,7 +21,7 @@ use crate::stop::{self, Stop};
 use crate::{base, version};
 
 /// The schema `--format json` writes to, by name and version.
-const SCHEMA: &str = "loft-review/1";
+const SCHEMA: &str = "loft-review/2";
 
 /// What `loft review` was asked for.
 pub struct Options<'a> {

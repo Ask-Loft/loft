@@ -13,7 +13,7 @@ use super::same::{same, same_record};
 use super::three_way;
 use crate::codec::schema::field;
 use crate::codec::{Rec, Val};
-use crate::identity::Label;
+use crate::identity::{Label, LabelPrefix};
 
 /// One side's binding: the part a publish gives with the label, and the whole binding.
 struct Binding<'a> {
@@ -122,17 +122,20 @@ fn with_records(sides: &[Side<'_>; 3], merged: &Merged<'_>, disputed: &BTreeSet<
     merged.iter().map(|(key, label)| with(key, label)).collect()
 }
 
-/// Each counter at the higher of the values the two sides give it.
+/// Each counter either side holds at the higher of the values the two sides give it, a counter a
+/// side does not hold read as 1, in the order the writer puts the counters.
 fn counters(ours: &Rec, theirs: &Rec) -> Rec {
-    let mut counters = ours
-        .record(field::COUNTERS)
-        .cloned()
-        .expect("a checked counters");
-    let theirs = theirs.record(field::COUNTERS);
-    let value = |text: Option<&str>| text.and_then(|text| text.parse::<u64>().ok()).unwrap_or(1);
-    for (name, value_of_ours) in &mut counters.fields {
-        let higher = value(value_of_ours.text()).max(value(theirs.and_then(|t| t.text(name))));
-        *value_of_ours = Val::scalar(&higher);
+    let sides = [ours, theirs].map(|side| side.record(field::COUNTERS));
+    let mut counters = sides[0].cloned().expect("a checked counters");
+    counters.fields.clear();
+    for prefix in LabelPrefix::ALL {
+        let name = prefix.as_str();
+        let held = (sides.iter())
+            .filter_map(|side| side.and_then(|counters| counters.text(name)))
+            .map(|text| text.parse::<u64>().unwrap_or(1));
+        if let Some(higher) = held.max() {
+            counters.set(name, Val::scalar(&higher));
+        }
     }
     counters
 }

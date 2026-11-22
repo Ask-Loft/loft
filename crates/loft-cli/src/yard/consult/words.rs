@@ -23,6 +23,7 @@ const LOFT_SUBCOMMANDS: &[&str] = &[
     "skill",
     "record-install",
     "remote",
+    "interface",
     "telemetry",
     "update-check",
     "yard",

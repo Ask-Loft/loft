@@ -223,6 +223,11 @@ pub enum Problem {
     NameUnresolved { name: String, wanted: &'static str },
     #[error("\"{name}\" names more than one element: {}", keys.join(", "))]
     NameAmbiguous { name: String, keys: Vec<String> },
+    #[error(
+        "a reference into another document stands only in `provides`, `requires`, `mentions` \
+         and a subject's `node`, not in `{0}`"
+    )]
+    NotCrossing(&'static str),
 }
 
 impl Problem {
@@ -253,6 +258,7 @@ impl Problem {
             Self::ByName => "by-name",
             Self::NameUnresolved { .. } => "name-unresolved",
             Self::NameAmbiguous { .. } => "name-ambiguous",
+            Self::NotCrossing(_) => "not-crossing",
         }
     }
 }
@@ -297,6 +303,7 @@ mod tests {
             Problem::ByName => 18,
             Problem::NameUnresolved { .. } => 19,
             Problem::NameAmbiguous { .. } => 20,
+            Problem::NotCrossing(_) => 21,
         }
     }
 
@@ -341,6 +348,7 @@ mod tests {
                 name: text,
                 keys: vec![key(n).to_string()],
             },
+            Problem::NotCrossing("realizes"),
         ]
     }
 

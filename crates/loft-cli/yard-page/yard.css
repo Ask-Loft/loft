@@ -91,6 +91,7 @@
   --kind-constraint: #a86b12;
   --kind-quality: #0f8b8d;
   --kind-component: #aab2ba;
+  --kind-interface: #c2477f;
   /* The bars of change in a spec-change diagram: steps that pass the dataviz validator on this
      surface, told apart by a word as well. */
   --change-added: #199e70;
@@ -160,6 +161,7 @@
     --kind-constraint: #e0a84a;
     --kind-quality: #4fc3c5;
     --kind-component: #4a5561;
+    --kind-interface: #e283b0;
     --change-added: #199e70;
     --change-changed: #3987e5;
     --change-removed: #e66767;
@@ -210,6 +212,7 @@ code.color { box-shadow: inset 0 0 0 1px var(--line); font-variant-numeric: tabu
 .label--con { --kind: var(--kind-constraint); }
 .label--qa { --kind: var(--kind-quality); }
 .label--cmp { --kind: var(--kind-component); }
+.label--if { --kind: var(--kind-interface); }
 .label--adr { --kind: var(--rail); }
 .label--new { padding: 0 6px; border: 1px dashed var(--new); color: var(--new); }
 .label--new::before { content: none; }
@@ -900,6 +903,7 @@ svg[id^="diagram-"] .label { display: revert; gap: normal; color: inherit; font-
 .spec-kind--constraint { fill: var(--kind-constraint); }
 .spec-kind--quality_attribute { fill: var(--kind-quality); }
 .spec-kind--component { fill: var(--kind-component); }
+.spec-kind--interface { fill: var(--kind-interface); }
 .flow .spec-label { font-family: var(--mono); font-size: 11.5px; fill: var(--body); }
 .flow .spec-word { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; fill: var(--muted); }
 .flow .spec-panel-name { font-size: 13px; font-weight: 600; fill: var(--ink); }

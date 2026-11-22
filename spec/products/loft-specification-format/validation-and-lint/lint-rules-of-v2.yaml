@@ -1,7 +1,7 @@
 key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
 slug: lint-rules-of-v2
 name: "Lint rules of v2"
-body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset. `V2-010` and `V2-011` concern decision history: an edit to the meaning of a decision that was published resolved, and a change of state that its published state does not allow, deleting a resolved decision among them. Both judge from the state the last publish recorded in `spec/labels.yaml`, which is part of the tree, so they read no history of a repository; a decision is changed by a new decision that supersedes it, never by an edit."
+body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset. `V2-010` and `V2-011` concern decision history: an edit to the meaning of a decision that was published resolved, and a change of state that its published state does not allow, deleting a resolved decision among them. Both judge from the state the last publish recorded in `spec/labels.yaml`, which is part of the tree, so they read no history of a repository; a decision is changed by a new decision that supersedes it, never by an edit. `V2-012` and `V2-013` concern Interfaces: one that promises nothing, and one that no Component of its document provides or requires."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -231,3 +231,29 @@ requirements:
         name: "A `V2-010` or `V2-011` finding refuses no publish."
       - key: 01a156a4-1732-7428-aee4-d3c4630c6d89
         name: "The validator reports no error for a decision that `V2-010` or `V2-011` reports."
+  - key: 01a1f981-4db1-765f-a897-226c22873597
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-012` an Interface that holds no Requirement."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-226d8743d1c6
+        name: "An Interface without a Requirement yields one `V2-012` finding naming the Interface."
+      - key: 01a1f981-4db1-765f-a897-226ef9ea0d57
+        name: "An Interface that holds a Requirement yields no `V2-012` finding."
+      - key: 01a1f981-4db1-765f-a897-226f6f49b6e5
+        name: "The default severity of `V2-012` is warning."
+  - key: 01a1f981-4db1-765f-a897-2270a7aea5f6
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-013` an Interface of the document that no Component of the document provides or requires."
+    criteria:
+      - key: 01a1f981-4db1-765f-a897-2271191d4164
+        name: "An Interface that no `provides` or `requires` edge of the document targets yields one `V2-013` finding naming the Interface."
+      - key: 01a1f981-4db1-765f-a897-22729be47a08
+        name: "An Interface that one Component of the document provides or requires yields no `V2-013` finding."
+      - key: 01a1f981-4db1-765f-a897-22738f9c43ac
+        name: "A copy of another document's Interface yields no `V2-013` finding."
+      - key: 01a1f981-4db1-765f-a897-2274b5c47615
+        name: "The default severity of `V2-013` is info."

@@ -2,6 +2,7 @@
 //! describes the same document in prose.
 
 pub mod comparing;
+pub mod copies;
 pub mod decisions;
 pub mod doc_edits;
 pub mod edit_tree;
@@ -11,6 +12,7 @@ pub mod edits;
 pub mod fields;
 pub mod full;
 pub mod generated;
+pub mod interfaces;
 pub mod lint;
 pub mod merge;
 pub mod merge_cases;

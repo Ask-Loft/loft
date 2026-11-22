@@ -1,0 +1,51 @@
+key: 01a1f981-4db0-72b8-8a39-a68d945868af
+slug: a-provider-answers-a-foreign-interface-through-its-own-trace
+title: "A provider answers a foreign Interface through its own trace"
+context: "An Interface that one document owns may be provided by a Component of another, as a client's document owns the contract that any server it reaches answers. The provider's tests are in its own repository, linked to criteria in its own trace file, and a provided Interface's criteria are in that repository too, as a copy."
+state:
+  kind: accepted
+  selectedOption: 01a1f981-4db0-72b8-8a39-a69060653c7f
+  outcome: "Each criterion beneath a copied Interface that a Component of the document provides is in the reconciler's scope for that document: its trace file links tests to it by its key, an unlinked one is reported as `TR-001`, and a link reviewed before its pin moved to a state in which the criterion changed is reported as `TR-003`."
+drivers:
+  - key: 01a1f981-4db0-72b8-8a39-a68edd2b2689
+    kind: local
+    label: "Checked conformance"
+    statement: "A claim to provide a promise is held to that promise's criteria."
+  - key: 01a1f981-4db0-72b8-8a39-a68f824405d7
+    kind: local
+    label: "One promise for every provider"
+    statement: "Every provider of an Interface answers the same criteria."
+options:
+  - key: 01a1f981-4db0-72b8-8a39-a69060653c7f
+    title: "Criteria in the provider's trace"
+    description: "The provider's trace file links its tests to the criteria of each foreign Interface it provides."
+  - key: 01a1f981-4db0-72b8-8a39-a6919e54396b
+    title: "No obligation"
+    description: "Providing an Interface is a claim, and conformance is left to the provider's own suites."
+assessments:
+  - option: 01a1f981-4db0-72b8-8a39-a69060653c7f
+    driver: 01a1f981-4db0-72b8-8a39-a68edd2b2689
+    rating: supports
+    rationale: "an unanswered criterion is a finding"
+  - option: 01a1f981-4db0-72b8-8a39-a69060653c7f
+    driver: 01a1f981-4db0-72b8-8a39-a68f824405d7
+    rating: supports
+    rationale: "each provider's scope is the same copied criteria"
+  - option: 01a1f981-4db0-72b8-8a39-a6919e54396b
+    driver: 01a1f981-4db0-72b8-8a39-a68edd2b2689
+    rating: conflicts
+    rationale: "nothing checks the claim"
+  - option: 01a1f981-4db0-72b8-8a39-a6919e54396b
+    driver: 01a1f981-4db0-72b8-8a39-a68f824405d7
+    rating: unknown
+    rationale: "each provider chooses what it tests"
+consequences:
+  - key: 01a1f981-4db0-72b8-8a39-a692c45232c6
+    kind: obligation
+    statement: "The reconciler takes the criteria of a provided foreign Interface into its scope, and the trace file holds links to their keys."
+  - key: 01a1f981-4db0-72b8-8a39-a69305eea864
+    kind: benefit
+    statement: "A server that provides a client's contract shows, in its own trace, which of the contract's criteria its tests answer."
+subjects:
+  - role: outcome
+    node: 01a1f981-4db1-765f-a897-21dc4743c8c0

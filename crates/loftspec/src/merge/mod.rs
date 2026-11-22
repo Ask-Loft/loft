@@ -64,7 +64,8 @@ pub enum MergeError {
     /// Each input that does not read as a file of the Format, or that carries a key twice, with
     /// where (RQ-151).
     Unreadable(Vec<(Input, ReadError)>),
-    /// Both sides changed `spec/lint.yaml` to different contents, which no record can hold.
+    /// Both sides changed a file merged as one value, `spec/lint.yaml` or a copy of another
+    /// document's Interface, to different contents, which no record can hold.
     BothChanged,
     /// The merged file does not read back, or would carry a key twice (RQ-4); the merge writes
     /// nothing rather than a file the reader refuses.
@@ -115,7 +116,7 @@ fn read_inputs(
 ) -> Result<(Option<Content>, Content, Content), MergeError> {
     let mut errors = Vec::new();
     let mut read = |input: Input, bytes: &[u8]| {
-        if input == Input::Base && bytes.is_empty() && *role != Role::Lint {
+        if input == Input::Base && bytes.is_empty() && !role.is_bytes() {
             return None;
         }
         let read = read_file(path, bytes, Mode::Strict);
@@ -162,13 +163,13 @@ pub(super) fn merge_content(
             let merged = tree::merge(base, ours, theirs).map_err(MergeError::Unplaced)?;
             Ok((merged, Vec::new()))
         }
-        (base, Content::Lint(ours), Content::Lint(theirs)) => {
+        (base, Content::Bytes(ours), Content::Bytes(theirs)) => {
             let base = match base {
-                Some(Content::Lint(base)) => base.as_slice(),
+                Some(Content::Bytes(base)) => base.as_slice(),
                 _ => &[],
             };
             let kept = one_value(&base, ours.as_slice(), theirs.as_slice())?;
-            Ok((Content::Lint(kept.to_vec()), Vec::new()))
+            Ok((Content::Bytes(kept.to_vec()), Vec::new()))
         }
         _ => Err(MergeError::NotAFormatFile),
     }

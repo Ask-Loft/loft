@@ -390,11 +390,9 @@ fn a_publish_writes_only_the_lock_and_the_bindings_and_no_projection() {
 
 #[test]
 fn a_publish_whose_journal_cannot_be_written_changes_no_file() {
-    // The journal lives under `.loft/`, which a file of that name keeps from being created.
-    let output = fails_writing_nothing(
-        |scratch| fs::write(scratch.0.join(".loft"), "not a directory\n").unwrap(),
-        |scratch| on_main(scratch, &["publish"]),
-    );
+    let output = fails_writing_nothing(Scratch::block_journal, |scratch| {
+        on_main(scratch, &["publish"])
+    });
     assert!(stderr(&output).contains(".loft"), "{}", stderr(&output));
 }
 

@@ -1,19 +1,20 @@
 //! The Markdown projection (F-24): a header naming the state root, the Capability Model with
 //! Products, Feature Groups, Features and Requirements as headings of levels 3 to 6 and criteria,
-//! Constraints and Quality Attributes as bold paragraphs, then the Component Model, the decisions,
-//! the tag registry, the constraint categories and the `realizes` edges, each in its own section.
+//! Constraints and Quality Attributes as bold paragraphs, then the Component Model, the
+//! Interfaces where the document has one, the decisions, the tag registry, the constraint
+//! categories and the `realizes` edges, each in its own section.
 
 use std::collections::BTreeMap;
 use std::fmt::Write;
 
 use super::{Labels, decisions};
 use crate::attributes::{QualityBand, QualityTarget, TechnicalBinding, VerificationFate};
-use crate::document::{Document, Edge};
+use crate::document::{Document, Edge, EdgeKind, EdgeTarget};
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
 use crate::tree::{Component, Section};
 
-pub(super) fn render(document: &Document, state: &str, labels: &Labels) -> String {
+pub(super) fn render<'a>(document: &'a Document, state: &str, labels: &Labels) -> String {
     let title = document
         .products
         .first()
@@ -25,11 +26,15 @@ pub(super) fn render(document: &Document, state: &str, labels: &Labels) -> Strin
         state
     );
     let mut nodes = BTreeMap::new();
-    document.walk(&mut |node| {
+    let mut held = |node: Node<'a>| {
         if let Some(id) = node.id() {
             nodes.insert(id, node);
         }
-    });
+    };
+    document.walk(&mut held);
+    for copy in &document.copies {
+        Node::Interface(&copy.interface).walk(&mut held);
+    }
     let mut renderer = Renderer {
         out: &mut out,
         document,
@@ -38,6 +43,7 @@ pub(super) fn render(document: &Document, state: &str, labels: &Labels) -> Strin
     };
     renderer.capabilities();
     renderer.components();
+    renderer.interfaces();
     decisions::render(renderer.out, document, labels, &nodes);
     renderer.registries();
     renderer.realizations();
@@ -117,6 +123,7 @@ impl Renderer<'_> {
         if let Some(boundary) = component.boundary {
             let _ = writeln!(self.out, "Boundary: `{}`\n", boundary.as_str());
         }
+        self.links(component);
         self.body_tags_and_sections(node, level);
         for child in node
             .children()
@@ -127,6 +134,39 @@ impl Renderer<'_> {
         }
         for child in &component.components {
             self.component(child, (level + 1).min(6));
+        }
+    }
+
+    /// A Component's `provides` and `requires` edges, one line each, naming the Interface by its
+    /// label and name.
+    fn links(&mut self, component: &Component) {
+        let Some(id) = component.id else {
+            return;
+        };
+        for edge in &self.document.edges {
+            let word = match edge.kind() {
+                EdgeKind::Provides => "Provides",
+                EdgeKind::Requires => "Requires",
+                _ => continue,
+            };
+            if let (true, EdgeTarget::Element(ElementId::Node(interface))) =
+                (edge.source() == id.into(), edge.target())
+            {
+                let interface = self.link_label(interface);
+                let _ = writeln!(self.out, "{word}: {interface}\n");
+            }
+        }
+    }
+
+    /// The Interfaces, each rendered with what it holds as a Feature is; no section for a
+    /// document without an Interface.
+    fn interfaces(&mut self) {
+        if self.document.interfaces.is_empty() {
+            return;
+        }
+        self.out.push_str("## Interfaces\n\n");
+        for interface in &self.document.interfaces {
+            self.capability(Node::Interface(interface), 3);
         }
     }
 

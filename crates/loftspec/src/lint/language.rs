@@ -402,5 +402,6 @@ const fn taggable(kind: NodeKind) -> bool {
             | NodeKind::Feature
             | NodeKind::Requirement
             | NodeKind::Component
+            | NodeKind::Interface
     )
 }

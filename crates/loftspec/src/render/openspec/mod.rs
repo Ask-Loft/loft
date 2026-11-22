@@ -217,6 +217,7 @@ fn left_out(document: &Document) -> Vec<Finding> {
     });
     [
         ("Components", components),
+        ("Interfaces", document.interfaces.len()),
         ("Constraints", constraints),
         ("Quality Attributes", qualities),
         ("Decisions", document.decisions.len()),

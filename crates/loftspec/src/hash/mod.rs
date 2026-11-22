@@ -3,6 +3,7 @@
 //! hasher takes an indexed document, so every reference it follows resolves.
 
 mod decisions;
+mod pins;
 mod state;
 mod tree;
 
@@ -45,6 +46,8 @@ pub struct Roots {
     pub bindings: Digest,
     /// The extensions root; none for a document in which no node carries `ext`.
     pub extensions: Option<Digest>,
+    /// The pins digest; none for a tree without a copy of another document's Interface.
+    pub pins: Option<Digest>,
     pub state: Digest,
 }
 
@@ -59,6 +62,11 @@ pub struct DocumentHashes {
     pub products: Vec<Digest>,
     /// The root Component roots, sorted.
     pub components: Vec<Digest>,
+    /// The Interface roots, sorted; empty for a document without an Interface.
+    pub interfaces: Vec<Digest>,
+    /// The content hash of every node of every copy of another document's Interface, as its own
+    /// document hashes it; no root holds them.
+    pub foreign: BTreeMap<NodeId, Digest>,
     pub roots: Roots,
 }
 
@@ -78,6 +86,7 @@ struct Trees {
     nodes: BTreeMap<NodeId, Digest>,
     products: Vec<Digest>,
     components: Vec<Digest>,
+    interfaces: Vec<Digest>,
 }
 
 impl Trees {
@@ -110,10 +119,17 @@ fn hash_trees(document: &Document, mut views: Option<&mut BTreeMap<NodeId, Value
         .map(|root| tree::hash_with((&root.component).into(), &mut visit))
         .collect();
     components.sort_unstable();
+    let mut interfaces: Vec<Digest> = document
+        .interfaces
+        .iter()
+        .map(|interface| tree::hash_with(interface.into(), &mut visit))
+        .collect();
+    interfaces.sort_unstable();
     Trees {
         nodes,
         products,
         components,
+        interfaces,
     }
 }
 
@@ -221,7 +237,9 @@ fn root<T: Serialize>(
 fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes {
     let document = indexed.document();
     let trees = hash_trees(document, views.as_deref_mut().map(|views| &mut views.nodes));
-    let index = trees.index();
+    let foreign = pins::copy_nodes(document);
+    let mut index = trees.index();
+    index.extend(foreign.iter().map(|(id, hash)| (id.key(), *hash)));
     let (decisions, decision_views) =
         decisions::DecisionHasher::new(&document.decisions, &index).hash_all();
     let resolve = |element: ElementId| match element {
@@ -250,6 +268,11 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         json!(decisions_root),
     ];
     content_view.extend(terms.map(|terms| json!(terms)));
+    // The Interface roots follow every other member, and only where the document holds an
+    // Interface, so that a document without one keeps the content root it had before.
+    if !trees.interfaces.is_empty() {
+        content_view.push(json!(trees.interfaces));
+    }
     let content = root(&mut views, "content", Domain::Content, &content_view);
     let bindings = root(
         &mut views,
@@ -260,12 +283,10 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
     let extended = extensions_view(document);
     let extensions = (!extended.is_empty())
         .then(|| root(&mut views, "extensions", Domain::Extensions, &extended));
-    let state = root(
-        &mut views,
-        "state",
-        Domain::State,
-        &state::view_one(document, content, bindings, extensions),
-    );
+    let pins = pins::view(document).map(|view| root(&mut views, "pins", Domain::Pins, &view));
+    let mut state_view = state::view_one(document, content, bindings, extensions);
+    state_view.extend(state::pins_member(pins));
+    let state = root(&mut views, "state", Domain::State, &state_view);
     if let Some(views) = views {
         views.decisions = decision_views;
     }
@@ -274,6 +295,8 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
         decisions,
         products: trees.products,
         components: trees.components,
+        interfaces: trees.interfaces,
+        foreign,
         roots: Roots {
             edges,
             tags,
@@ -283,6 +306,7 @@ fn hash(indexed: &Indexed<'_>, mut views: Option<&mut Views>) -> DocumentHashes 
             content,
             bindings,
             extensions,
+            pins,
             state,
         },
     }

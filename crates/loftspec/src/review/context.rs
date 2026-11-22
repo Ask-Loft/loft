@@ -4,7 +4,7 @@
 use std::collections::BTreeMap;
 
 use crate::ids::NodeId;
-use crate::kind::NodeKind;
+use crate::kind::{NodeKind, ParentKind};
 use crate::node::Node;
 
 use super::links;
@@ -17,14 +17,15 @@ type Scope = (Which, NodeId);
 /// A scope and the assertions it holds.
 type Grouped = (Scope, Vec<Assertion>);
 
-/// The scope of the assertion `id`: the Feature above a Requirement or a criterion, the node
-/// that holds a Constraint or a Quality Attribute.
+/// The scope of the assertion `id`: the node above a Requirement or a criterion that holds
+/// Requirements, as a Feature or an Interface does; the node that holds a Constraint or a Quality
+/// Attribute.
 fn scope_of(side: &Side<'_>, id: NodeId) -> NodeId {
     let ancestors = side.ancestors(id);
     let found = match id.kind() {
         NodeKind::Requirement | NodeKind::Criterion => ancestors
             .iter()
-            .find(|above| above.kind() == NodeKind::Feature)
+            .find(|above| ParentKind::Node(above.kind()).may_contain(NodeKind::Requirement))
             .copied(),
         _ => ancestors.first().copied(),
     };
@@ -63,14 +64,15 @@ fn above(side: &Side<'_>, id: NodeId) -> Vec<Holder> {
         .collect()
 }
 
-/// Every Requirement of the Feature `scope`, with its criteria.
+/// Every Requirement `scope` holds, with its criteria.
 fn requirements(side: &Side<'_>, scope: NodeId) -> Vec<WithCriteria> {
-    let Node::Feature(feature) = side.node(scope) else {
-        return Vec::new();
-    };
-    feature
-        .requirements
-        .iter()
+    side.node(scope)
+        .children()
+        .into_iter()
+        .filter_map(|child| match child {
+            Node::Requirement(requirement) => Some(requirement),
+            _ => None,
+        })
         .filter_map(|requirement| {
             let id = requirement.id?.into();
             let criteria: Vec<Fact> = requirement

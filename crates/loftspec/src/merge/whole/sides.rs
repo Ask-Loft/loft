@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 
 use super::super::Input;
 use super::super::flat::{
-    COMPONENT_FILES, DECISION_FILES, FEATURE_FILES, Flat, PRODUCT_FILES, Parent,
+    COMPONENT_FILES, DECISION_FILES, FEATURE_FILES, Flat, INTERFACE_FILES, PRODUCT_FILES, Parent,
 };
 use super::TreeMergeError;
 use crate::codec::{Content, Files, Rec, Role, SpecPath, Tree, filed_in_order, read_tree};
@@ -56,6 +56,17 @@ impl Trees {
         ]
     }
 
+    /// The path of every copy that any version holds, in path order.
+    pub(super) fn copies(&self) -> std::collections::BTreeSet<SpecPath> {
+        [self.base.as_ref(), Some(&self.ours), Some(&self.theirs)]
+            .into_iter()
+            .flatten()
+            .flat_map(|tree| tree.files.iter())
+            .filter(|(_, (role, _))| matches!(role, Role::Copy { .. }))
+            .map(|(path, _)| path.clone())
+            .collect()
+    }
+
     /// Each version of the file at `path`; none where a tree lacks it.
     pub(super) fn file(&self, path: &SpecPath) -> [Option<&Content>; 3] {
         [self.base.as_ref(), Some(&self.ours), Some(&self.theirs)].map(|tree| {
@@ -66,8 +77,8 @@ impl Trees {
 }
 
 /// One tree's record files by key: each Product in the order the manifest lists it, with its
-/// Features in the order each of its Feature Groups lists them, then the root Components and
-/// the decisions. The reader checked that every Product and Feature is listed once.
+/// Features in the order each of its Feature Groups lists them, then the root Components, the
+/// Interfaces and the decisions. The reader checked that every Product and Feature is listed once.
 fn flat(tree: &Tree) -> Flat {
     let mut flat = Flat::default();
     for filed in filed_in_order(tree) {
@@ -82,6 +93,9 @@ fn flat(tree: &Tree) -> Flat {
     }
     for (_, record) in tops(tree, |role| matches!(role, Role::Component { .. })) {
         flat.node(record, (Parent::Top, COMPONENT_FILES));
+    }
+    for (_, record) in tops(tree, |role| matches!(role, Role::Interface { .. })) {
+        flat.node(record, (Parent::Top, INTERFACE_FILES));
     }
     for (_, record) in tops(tree, |role| matches!(role, Role::Decision { .. })) {
         flat.node(record, (Parent::Top, DECISION_FILES));

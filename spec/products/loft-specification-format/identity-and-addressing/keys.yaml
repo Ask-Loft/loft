@@ -117,7 +117,7 @@ requirements:
       - key: 01a13737-c20a-744c-94d5-08b640debbe4
         name: "A decision's `successor` written by name takes the key of the decision with that title."
       - key: 01a13737-c20a-744c-94d5-08b74b95e0f1
-        name: "A `realizes`, `scopedTo`, `mentions` or subject reference written by name takes the key of the node with that name."
+        name: "A `realizes`, `scopedTo`, `provides`, `requires`, `mentions` or subject reference written by name takes the key of the node with that name."
       - key: 01a13737-c20a-744c-94d5-08b8a5d655ba
         name: "A reference by name may name an element that the same formatting mints a key for."
       - key: 01a13737-c20a-744c-94d5-08b9565d800f

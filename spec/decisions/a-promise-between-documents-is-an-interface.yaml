@@ -1,0 +1,83 @@
+key: 01a1f981-4db0-72b8-8a39-a683bdbf1539
+slug: a-promise-between-documents-is-an-interface
+title: "A promise between documents is an Interface"
+context: "Documents depend on one another, one for each repository, and today that dependence lives in prose and in `external` stand-in Components whose bodies restate what another document says. A reference to another document's Requirement or Component would make the coupling checkable, but it would couple to statements that describe how the other document's system works inside, which its owner must stay free to reword, split and move. What one document relies on from another is a promise made at a boundary, and the Format has no node for it. A promise runs either way: a library's document defines the API it provides, and a client's document defines the contract it requires of any server."
+state:
+  kind: accepted
+  selectedOption: 01a1f981-4db0-72b8-8a39-a6876f32d4d2
+  outcome: "The Format gains the node kind `interface`, a root node with the label prefix `IF` that holds Requirements and criteria of its own, written at the boundary, and may hold Constraints, Quality Attributes and Sections. A Component links to it with `provides` or `requires`, and either side's document may own it. Any document may hold Interfaces; only a link to another document's Interface needs both documents connected. Internal Features cite an Interface with `mentions` rather than restating it."
+drivers:
+  - key: 01a1f981-4db0-72b8-8a39-a684dec6b10c
+    kind: local
+    label: "Encapsulation"
+    statement: "Another document relies only on what the owner promised, so the owner stays free to change everything else."
+  - key: 01a1f981-4db0-72b8-8a39-a6855dbdd6ea
+    kind: local
+    label: "Either side defines"
+    statement: "A client's document can define the contract that any server answers, without depending on a server's document."
+  - key: 01a1f981-4db0-72b8-8a39-a68621960ed5
+    kind: local
+    label: "One version per promise"
+    statement: "What a requirer reviews changes only when the promise does."
+options:
+  - key: 01a1f981-4db0-72b8-8a39-a6876f32d4d2
+    title: "An Interface node with Requirements of its own"
+    description: "A new node kind, written at the boundary, that Components provide or require, and the only thing another document can reach."
+  - key: 01a1f981-4db0-72b8-8a39-a6888e2bb5f2
+    title: "A public Component boundary"
+    description: "A third `boundary` value, `public`, makes a Component's Features reachable from other documents."
+  - key: 01a1f981-4db0-72b8-8a39-a689f50faf19
+    title: "Exported Features"
+    description: "A Feature marked as exported becomes reachable from other documents, its Requirements being the promise."
+assessments:
+  - option: 01a1f981-4db0-72b8-8a39-a6876f32d4d2
+    driver: 01a1f981-4db0-72b8-8a39-a684dec6b10c
+    rating: supports
+    rationale: "another document reaches the Interface and nothing else"
+  - option: 01a1f981-4db0-72b8-8a39-a6876f32d4d2
+    driver: 01a1f981-4db0-72b8-8a39-a6855dbdd6ea
+    rating: supports
+    rationale: "either document may own the Interface and the other links to it"
+  - option: 01a1f981-4db0-72b8-8a39-a6876f32d4d2
+    driver: 01a1f981-4db0-72b8-8a39-a68621960ed5
+    rating: supports
+    rationale: "the Interface's content hash moves only when its own statements do"
+  - option: 01a1f981-4db0-72b8-8a39-a6888e2bb5f2
+    driver: 01a1f981-4db0-72b8-8a39-a684dec6b10c
+    rating: conflicts
+    rationale: "the Component's internal behavior becomes reachable"
+  - option: 01a1f981-4db0-72b8-8a39-a6888e2bb5f2
+    driver: 01a1f981-4db0-72b8-8a39-a6855dbdd6ea
+    rating: conflicts
+    rationale: "a Component is the provider's own, so a client cannot define what a server answers"
+  - option: 01a1f981-4db0-72b8-8a39-a6888e2bb5f2
+    driver: 01a1f981-4db0-72b8-8a39-a68621960ed5
+    rating: conflicts
+    rationale: "every change to the Component's Features changes what others rely on"
+  - option: 01a1f981-4db0-72b8-8a39-a689f50faf19
+    driver: 01a1f981-4db0-72b8-8a39-a684dec6b10c
+    rating: neutral
+    rationale: "only exported Features are reachable, but they are written from the inside"
+  - option: 01a1f981-4db0-72b8-8a39-a689f50faf19
+    driver: 01a1f981-4db0-72b8-8a39-a6855dbdd6ea
+    rating: supports
+    rationale: "a client's document can export a Feature that states the contract"
+  - option: 01a1f981-4db0-72b8-8a39-a689f50faf19
+    driver: 01a1f981-4db0-72b8-8a39-a68621960ed5
+    rating: conflicts
+    rationale: "a promise spreads over Features grouped by capability, which change for reasons of their own"
+consequences:
+  - key: 01a1f981-4db0-72b8-8a39-a68ae38d80ae
+    kind: obligation
+    statement: "The Format gains the kind `interface` with its label prefix, its containment, its content view, its `provides` and `requires` edges, its lint rules and its place in each projection."
+  - key: 01a1f981-4db0-72b8-8a39-a68b648e5524
+    kind: benefit
+    statement: "A document can mark a boundary between its own Components before it links to any other document."
+  - key: 01a1f981-4db0-72b8-8a39-a68c3782ef67
+    kind: cost
+    statement: "Statements that already describe a contract, such as those of the remote that a connected document publishes through, move into an Interface over time."
+subjects:
+  - role: affected
+    node: e1ab75a5-f206-4760-970f-bee0653c4f2a
+  - role: outcome
+    node: 01a1f981-4db1-765f-a897-21e84df7d944

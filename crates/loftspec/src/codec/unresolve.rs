@@ -9,16 +9,18 @@ use super::files::{Content, Role, Tree};
 use super::node_files::{Under, node_files};
 use super::record::{Rec, Val};
 use super::schema::Kind;
-use super::unresolve_parts::{decision_fields, node_ref, statement, target};
+use super::unresolve_parts::{decision_fields, foreign_ref, node_ref, statement, target};
 use super::unresolve_singles::{category_record, labels, manifest, tag_record, term_record};
+use crate::copy::Copy;
 use crate::decision::Decision;
 use crate::document::{Document, Edge};
 use crate::identity::Key;
 use crate::ids::{ElementId, NodeId};
 use crate::node::Node;
+use crate::slug::Slug;
 use crate::tree::{
-    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Product, QualityAttribute,
-    Requirement, Section,
+    Component, Constraint, Criterion, Details, Feature, FeatureGroup, Interface, Product,
+    QualityAttribute, Requirement, Section,
 };
 
 /// The record tree of a document.
@@ -41,13 +43,16 @@ pub fn unresolve(document: &Document) -> Tree {
         let terms = document.terms.iter().map(term_record).collect();
         put(&mut tree, Role::Terms, Content::Registry(terms));
     }
+    for copy in &document.copies {
+        put(&mut tree, copy.role(), Content::Bytes(copy.bytes.clone()));
+    }
     super::resolve_conflicts::attach(&mut tree, &document.conflicts);
     tree
 }
 
 /// The files of a document's nodes and decisions alone, without their conflicts.
 pub(crate) fn unresolve_elements(document: &Document) -> Tree {
-    let edges = Edges::of(&document.edges);
+    let edges = Edges::of(&document.edges).across(&document.copies);
     let mut tree = Tree::default();
     let mut file = |role: Role, node: Node<'_>| {
         let record = match (&role, node) {
@@ -59,7 +64,10 @@ pub(crate) fn unresolve_elements(document: &Document) -> Tree {
             }
             (_, Node::Product(product)) => edges.product(product),
             (_, Node::Feature(feature)) => edges.feature(feature),
-            _ => unreachable!("only a Product, a Feature and a root Component have a file"),
+            (_, Node::Interface(interface)) => edges.interface(interface),
+            _ => unreachable!(
+                "only a Product, a Feature, a root Component and an Interface have a file"
+            ),
         };
         put(&mut tree, role, Content::Record(record));
     };
@@ -69,6 +77,9 @@ pub(crate) fn unresolve_elements(document: &Document) -> Tree {
     for root in &document.components {
         let node = Node::Component(&root.component);
         node_files(node, Some(&root.slug), &Under::Root, &mut file);
+    }
+    for interface in &document.interfaces {
+        node_files(Node::Interface(interface), None, &Under::Root, &mut file);
     }
     for decision in &document.decisions {
         let role = Role::Decision {
@@ -99,12 +110,21 @@ pub(super) fn records(items: impl IntoIterator<Item = Rec>) -> Val {
     Val::List(items.into_iter().map(Val::Record).collect())
 }
 
+/// Adds `target` to the targets `map` holds for `source`.
+fn push(map: &mut BTreeMap<NodeId, Vec<Key>>, source: NodeId, target: Key) {
+    map.entry(source).or_default().push(target);
+}
+
 /// The document's edges, indexed by the record that writes them.
 pub(super) struct Edges {
     realizes: BTreeMap<NodeId, Vec<Key>>,
     scoped: BTreeMap<NodeId, Vec<Key>>,
+    provides: BTreeMap<NodeId, Vec<Key>>,
+    requires: BTreeMap<NodeId, Vec<Key>>,
     mentions: BTreeMap<ElementId, Vec<Key>>,
     subjects: BTreeMap<ElementId, Vec<Rec>>,
+    /// The handle of the copy that holds each node of another document an edge names.
+    foreign: BTreeMap<Key, Slug>,
     /// Whether a record is built without the nodes it holds, for its own record view.
     own: bool,
 }
@@ -114,26 +134,29 @@ impl Edges {
         let mut edges = Self {
             realizes: BTreeMap::new(),
             scoped: BTreeMap::new(),
+            provides: BTreeMap::new(),
+            requires: BTreeMap::new(),
             mentions: BTreeMap::new(),
             subjects: BTreeMap::new(),
+            foreign: BTreeMap::new(),
             own: false,
         };
         for edge in all {
             match *edge {
                 Edge::Realizes { feature, component } => {
-                    edges
-                        .realizes
-                        .entry(feature.into())
-                        .or_default()
-                        .push(component.key());
+                    push(&mut edges.realizes, feature.into(), component.key());
                 }
                 Edge::ScopedTo { component, product } => {
-                    edges
-                        .scoped
-                        .entry(component.into())
-                        .or_default()
-                        .push(product.key());
+                    push(&mut edges.scoped, component.into(), product.key());
                 }
+                Edge::Provides {
+                    component,
+                    interface,
+                } => push(&mut edges.provides, component.into(), interface.key()),
+                Edge::Requires {
+                    component,
+                    interface,
+                } => push(&mut edges.requires, component.into(), interface.key()),
                 Edge::Mentions { source, target } => {
                     edges.mentions.entry(source).or_default().push(target.key());
                 }
@@ -154,6 +177,34 @@ impl Edges {
             }
         }
         edges
+    }
+
+    /// These edges, writing each target that a node of one of `copies` is as a reference into
+    /// another document.
+    pub(super) fn across(mut self, copies: &[Copy]) -> Self {
+        for copy in copies {
+            let handle = &copy.handle;
+            self.foreign
+                .extend(copy.keys().into_iter().map(|key| (key, handle.clone())));
+        }
+        for subject in self.subjects.values_mut().flatten() {
+            let named = subject.get(field::NODE).and_then(Val::text);
+            let key = named.and_then(|text| Key::parse(text).ok());
+            if let Some(handle) = key.and_then(|key| self.foreign.get(&key)) {
+                let reference = foreign_ref(handle, key.expect("a parsed key"));
+                subject.set(field::NODE, reference);
+            }
+        }
+        self
+    }
+
+    /// The targets of one edge field: a key, or a reference into another document.
+    fn refs(&self, targets: Vec<Key>) -> Val {
+        let each = targets.into_iter().map(|key| match self.foreign.get(&key) {
+            Some(handle) => foreign_ref(handle, key),
+            None => Val::scalar(&key),
+        });
+        Val::List(each.collect())
     }
 
     /// Key, then the fields every node record shares, as each kind orders them.
@@ -204,7 +255,7 @@ impl Edges {
             .and_then(|id| self.mentions.get(&id))
             .cloned()
             .unwrap_or_default();
-        record.set(field::MENTIONS, keys(targets));
+        record.set(field::MENTIONS, self.refs(targets));
     }
 
     pub(super) fn section(&self, section: &Section) -> Rec {
@@ -282,6 +333,31 @@ impl Edges {
         record
     }
 
+    pub(super) fn interface(&self, interface: &Interface) -> Rec {
+        let id = interface.id.map(NodeId::from);
+        let mut record = self.node(
+            Kind::Interface,
+            id,
+            Some(&interface.name),
+            &interface.details,
+        );
+        record.set_text(field::SLUG, interface.slug.to_string());
+        let requirements = interface.requirements.iter();
+        let requirements = requirements.map(|requirement| self.requirement(requirement));
+        record.set(field::REQUIREMENTS, self.nested(requirements));
+        let constraints = interface.constraints.iter();
+        record.set(
+            field::CONSTRAINTS,
+            self.nested(constraints.map(|each| self.constraint(each))),
+        );
+        let qualities = interface.quality_attributes.iter();
+        record.set(
+            field::QUALITY_ATTRIBUTES,
+            self.nested(qualities.map(|each| self.quality(each))),
+        );
+        record
+    }
+
     pub(super) fn requirement(&self, requirement: &Requirement) -> Rec {
         let id = requirement.id.map(NodeId::from);
         let mut record = self.node(Kind::Requirement, id, None, &requirement.details);
@@ -316,11 +392,12 @@ impl Edges {
         if let Some(boundary) = component.boundary {
             record.set_text(field::BOUNDARY, boundary.as_str());
         }
-        let scoped = id
-            .and_then(|id| self.scoped.get(&id))
-            .cloned()
-            .unwrap_or_default();
-        record.set(field::SCOPED_TO, keys(scoped));
+        let targets = |map: &BTreeMap<NodeId, Vec<Key>>| {
+            id.and_then(|id| map.get(&id)).cloned().unwrap_or_default()
+        };
+        record.set(field::SCOPED_TO, keys(targets(&self.scoped)));
+        record.set(field::PROVIDES, self.refs(targets(&self.provides)));
+        record.set(field::REQUIRES, self.refs(targets(&self.requires)));
         record.set(
             "components",
             self.nested(

@@ -11,7 +11,7 @@ use crate::bindings::BindingError;
 use crate::conflict::{ConflictId, ConflictOwner, FieldPath};
 use crate::document::Document;
 use crate::identity::{Key, Label};
-use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, NodeId, OptionId};
+use crate::ids::{ComponentId, DecisionId, DriverId, ElementId, InterfaceId, NodeId, OptionId};
 use crate::index::{Index, IndexErrors, IntegrityError, SupersessionCycle};
 use crate::names::TagName;
 
@@ -47,6 +47,12 @@ pub enum ValidationError {
         component: ComponentId,
         ancestor: ComponentId,
     },
+    /// A Component that both provides and requires one Interface.
+    #[error("{component} both provides and requires {interface}")]
+    ProvidesAndRequires {
+        component: ComponentId,
+        interface: InterfaceId,
+    },
     /// A resolved decision with fewer than two options (AC-734).
     #[error("decision {0} is resolved with fewer than two options")]
     TooFewOptions(DecisionId),
@@ -66,6 +72,12 @@ pub enum ValidationError {
     /// An accepted, superseded or retired decision without an `outcome` subject (AC-740).
     #[error("decision {0} has no `subject` edge of role `outcome`")]
     NoOutcomeSubject(DecisionId),
+    /// A decision whose `outcome` subject is a node of a copy of another document's Interface.
+    #[error(
+        "decision {decision} names {node} of another document as its outcome: a decision's \
+         outcome is a node of its own document"
+    )]
+    ForeignOutcome { decision: DecisionId, node: NodeId },
     /// A merge conflict that is not yet resolved (RQ-126), with its identifier.
     #[error("{owner} holds the unresolved merge conflict {id} over `{field}`")]
     Conflict {
@@ -90,12 +102,17 @@ impl ValidationError {
                 component,
                 ancestor,
             } => vec![component.key(), ancestor.key()],
+            Self::ProvidesAndRequires {
+                component,
+                interface,
+            } => vec![component.key(), interface.key()],
             Self::FormerLabelInLiveDecision { decision, .. }
             | Self::TooFewOptions(decision)
             | Self::NoDriver(decision)
             | Self::MissingAssessment { decision, .. }
             | Self::NoConsequence(decision)
             | Self::NoOutcomeSubject(decision) => vec![decision.key()],
+            Self::ForeignOutcome { decision, node } => vec![decision.key(), node.key()],
             Self::Conflict { owner, .. } => owner.key().into_iter().collect(),
         }
     }

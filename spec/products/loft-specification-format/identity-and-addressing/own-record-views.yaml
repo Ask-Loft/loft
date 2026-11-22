@@ -42,7 +42,7 @@ requirements:
       - key: 01a15f00-828a-71f7-be8f-7a88af51cff5
         name: "The own record view excludes the conflicts the record carries."
       - key: 01a15f00-828a-71f7-be8f-7a8998d49e1b
-        name: "A Product's, a Feature Group's, a Feature's, a root Component's and a decision's own record view holds its `slug`."
+        name: "A Product's, a Feature Group's, a Feature's, a root Component's, an Interface's and a decision's own record view holds its `slug`."
       - key: 01a15f00-828a-71f7-be8f-7a8a0ba4028f
         name: "A node's own record view holds its `name` and its `body`."
       - key: 01a15f00-828a-71f7-be8f-7a8b31f482ef
@@ -50,7 +50,7 @@ requirements:
       - key: 01a15f00-828a-71f7-be8f-7a8c25396cc0
         name: "A node's own record view holds its tags in the order the author wrote them, duplicates kept."
       - key: 01a15f00-828a-71f7-be8f-7a8d62afbc2d
-        name: "A record's own record view holds the edges the writer writes in it: `realizes`, `scopedTo`, `mentions` and a decision's `subjects`, in canonical order."
+        name: "A record's own record view holds the edges the writer writes in it: `realizes`, `scopedTo`, `provides`, `requires`, `mentions` and a decision's `subjects`, in canonical order."
       - key: 01a15f00-828a-71f7-be8f-7a8ec31cc3d2
         name: "A node's own record view holds its `ext`."
       - key: 01a15f00-828a-71f7-be8f-7a8f93a05e52

@@ -9,6 +9,8 @@ mod real_git;
 
 mod clock_contract;
 mod conformance;
+mod conformance_copies;
+mod conformance_interfaces;
 mod git_contract;
 mod git_contract_base;
 mod git_contract_stopped;

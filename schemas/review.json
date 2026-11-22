@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "loft-review-1.json",
+  "$id": "loft-review-2.json",
   "title": "The result of `loft review --format json`, version 1",
   "oneOf": [
     {
@@ -16,7 +16,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-review/1"
+          "const": "loft-review/2"
         },
         "outcome": {
           "type": "string",
@@ -119,7 +119,7 @@
       ],
       "properties": {
         "schema": {
-          "const": "loft-review/1"
+          "const": "loft-review/2"
         },
         "outcome": {
           "const": "error"
@@ -241,7 +241,8 @@
             "component",
             "constraint",
             "quality_attribute",
-            "section"
+            "section",
+            "interface"
           ]
         },
         "path": {
