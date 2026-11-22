@@ -126,6 +126,31 @@ fn an_interface_is_the_scope_of_a_review_unit_of_kind_interface() {
 }
 
 #[test]
+fn a_reviewed_component_carries_the_interfaces_it_provides_and_requires() {
+    let scratch = with_lookup();
+    let output = scratch.loft(&["review", "--format", "json"]);
+    assert_eq!(output.status.code(), Some(0), "{}", stderr(&output));
+    let document = schema::conforming(&output.stdout, include_str!("../../../schemas/review.json"));
+    let store = document["units"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|unit| unit["realizes"].as_array().unwrap())
+        .map(|realized| &realized["component"]["node"])
+        .find(|node| node["key"] == SHELF_STORE)
+        .unwrap_or_else(|| panic!("the Shelf store is realized by no unit in {document}"));
+    assert_eq!(store["provides"], serde_json::json!([LOOKUP]));
+    assert_eq!(store["requires"], serde_json::json!([]));
+    let lookup = document["units"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|unit| unit["scope"]["node"]["key"] == LOOKUP)
+        .unwrap();
+    assert!(lookup["scope"]["node"].get("provides").is_none());
+}
+
+#[test]
 fn a_render_writes_the_interfaces_section_and_the_provides_line() {
     let scratch = with_lookup();
     let output = scratch.loft(&["render"]);

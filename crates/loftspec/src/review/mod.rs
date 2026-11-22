@@ -17,7 +17,7 @@ use serde_json::Value;
 use crate::decision::StateKind;
 use crate::document::{Document, TermEntry};
 use crate::identity::Label;
-use crate::ids::{ComponentId, DecisionId, ElementId, NodeId, ProductId};
+use crate::ids::{ComponentId, DecisionId, ElementId, InterfaceId, NodeId, ProductId};
 use crate::kind::NodeKind;
 
 pub use self::pages::{Page, PagedUnit, Refused, Version, page};
@@ -60,6 +60,10 @@ pub struct Fact {
     pub realizes: Vec<ComponentId>,
     /// For a Component, the Products it is scoped to, in the order of their keys.
     pub scoped_to: Vec<ProductId>,
+    /// For a Component, the Interfaces it provides, in the order of their keys.
+    pub provides: Vec<InterfaceId>,
+    /// For a Component, the Interfaces it requires, in the order of their keys.
+    pub requires: Vec<InterfaceId>,
     pub change: Option<Change>,
     /// Whether the fact is read from the base, which alone holds the node.
     pub from_base: bool,

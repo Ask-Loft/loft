@@ -97,6 +97,10 @@ impl Render<'_> {
             NodeKind::Component => {
                 let scoped_to = keys(fact.scoped_to.iter().map(|id| id.key()));
                 fields.insert("scopedTo".to_owned(), scoped_to);
+                let provides = keys(fact.provides.iter().map(|id| id.key()));
+                fields.insert("provides".to_owned(), provides);
+                let requires = keys(fact.requires.iter().map(|id| id.key()));
+                fields.insert("requires".to_owned(), requires);
             }
             _ => {}
         }

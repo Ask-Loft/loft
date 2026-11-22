@@ -14,7 +14,7 @@ use loftspec::publish::Lock;
 use loftspec::slug::Slug;
 use serde_json::json;
 
-use super::reach::{another, head_sequence, not_held, state, unreadable};
+use super::reach::{Other, another, head_sequence, not_held, reached, state, unreadable};
 use super::{Interface, Named, Report, clashing, connected, document, named, refused, save};
 use crate::remote::{self, SignIn};
 use crate::stop::Stop;
@@ -31,16 +31,23 @@ pub(super) fn run(
     connected(&document)?;
     let listed = (document.documents.iter()).find(|entry| entry.handle == handle);
     let address = address(&handle, listed, remote)?;
-    let client = remote::other(
-        &address,
-        listed.map(|entry| entry.key.to_string()).as_deref(),
-        SignIn::First { browser },
-    )?;
+    let key = listed.map(|entry| entry.key.to_string());
+    let whose = remote::Whose::Other {
+        handle: handle.as_str(),
+        key: key.as_deref(),
+    };
+    let other = Other {
+        handle: &handle,
+        listed: listed.is_some(),
+    };
+    let client = remote::other(&address, whose, SignIn::First { browser })
+        .map_err(|error| reached(error, other))?;
     let sequence = match at {
         Some(at) => at.get(),
-        None => head_sequence(&client, &handle)?,
+        None => head_sequence(&client, other)?,
     };
-    let (files, lock) = state(&client, sequence)?.ok_or_else(|| not_held(&address, sequence))?;
+    let (files, lock) =
+        state(&client, other, sequence)?.ok_or_else(|| not_held(&address, sequence))?;
     let other = lock.document_key;
     served(&document, listed, &lock, &address)?;
     let missing = || {

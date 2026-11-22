@@ -6,6 +6,7 @@ use std::path::Path;
 use loftspec::slug::Slug;
 use serde_json::json;
 
+use super::reach::{listed, reached};
 use super::{Report, document, refused};
 use crate::remote;
 use crate::stop::Stop;
@@ -16,7 +17,12 @@ pub(super) fn run(root: &Path, handle: &str, browser: bool) -> Result<Report, St
         .ok()
         .and_then(|handle| (document.documents.iter()).find(|entry| entry.handle == handle))
         .ok_or_else(|| refused(format!("`documents` does not list {handle}")))?;
-    remote::login(&entry.remote, &entry.key.to_string(), browser)?;
+    let key = entry.key.to_string();
+    let whose = remote::Whose::Other {
+        handle,
+        key: Some(&key),
+    };
+    remote::login(&entry.remote, whose, browser).map_err(|error| reached(error, listed(entry)))?;
     let address = &entry.remote;
     Ok(Report {
         outcome: "signed in",

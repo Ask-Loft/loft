@@ -166,10 +166,26 @@ requirements:
       shall: "reach it at the address of its entry of `documents`, or of `--remote`, with the person's sign-in to that address."
     criteria:
       - key: 01a1f981-4db0-72b8-8a39-a6e04cc92c07
-        name: "Where `loft/remotes.json` holds no sign-in for the address, `loft interface add` and `loft interface update` sign the person in to it first."
+        name: "Where `loft/remotes.json` holds no sign-in for the address, or the remote refuses the one it holds, `loft interface add` and `loft interface update` sign the person in to it, once, and go on."
       - key: 01a1f981-4db0-72b8-8a39-a6e1b6d6cb59
         name: "`LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` change no call to another document's remote."
       - key: 01a1f981-4db0-72b8-8a39-a6e264c76548
         name: "The calls made are the head and the published states that the document's own remote answers."
       - key: 01a1f981-4db0-72b8-8a39-a6e327973022
         name: "Each shared rule of reaching a remote holds for another document's remote as it holds for the document's own."
+  - key: 01a2040b-aaf8-7478-8d83-f1d1b2bb9da8
+    statement:
+      form: unwanted
+      if: "another document's remote refuses `loft interface` a sign-in or a call"
+      system: "`loft interface`"
+      shall: "refuse, exit 1 and say what mends the refusal in the words of `loft interface` and of the manifest's `documents`."
+    body: "The advice that `loft remote` gives for the document's own remote does not mend another document's: that document's address lies in its entry of `documents`, and its sign-in is made by `loft interface login`."
+    criteria:
+      - key: 01a2040b-aaf8-7478-8d83-f1d227140bfb
+        name: "Where the unauthenticated request of a sign-in is answered as by an address that may not be a document's remote, the error gives the form of a document's address on a Loft server with the other document's key in place of `<documentKey>`, or with `<documentKey>` where `documents` does not list the handle yet."
+      - key: 01a2040b-aaf8-7478-8d83-f1d3c11f3796
+        name: "That error says that the address lies in the handle's entry of `documents` in `spec/loftspec.yaml`, or, where `documents` does not list the handle, that `--remote` takes the other document's address."
+      - key: 01a2040b-aaf8-7478-8d83-f1d4043f2dca
+        name: "Where the remote refuses the sign-in, or the sign-in kept for its address has lapsed or is for a protected resource on another origin, the error says that `loft interface login <handle>` signs in again."
+      - key: 01a2040b-aaf8-7478-8d83-f1d567bd1078
+        name: "No error of `loft interface` but the one for a document that is not connected names a `loft remote` command."

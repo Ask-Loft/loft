@@ -79,9 +79,9 @@ requirements:
       - key: 01a1f967-f816-765c-9e69-fb977010945c
         name: "The error says that the address may not be a document's remote."
       - key: 01a1f967-f816-765c-9e69-fb9858ebd01e
-        name: "The error gives the form `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote` with the manifest's `documentKey` in place of `<documentKey>`."
+        name: "For the document's own remote, the error gives the form `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote` with the manifest's `documentKey` in place of `<documentKey>`."
       - key: 01a1f97c-52bb-707f-9285-bc934b680c8f
-        name: "The error says that `loft remote set` with the document's address replaces the `remote` that `spec/loftspec.yaml` names."
+        name: "For the document's own remote, the error says that `loft remote set` with the document's address replaces the `remote` that `spec/loftspec.yaml` names."
       - key: 01a1f967-f816-765c-9e69-fb9a9ccbbaaa
         name: "An answer of `401`, `408`, `429`, or `500` or above, is refused without that form."
   - key: 01a18e1f-8daa-7674-9603-5ae454b39feb
@@ -206,7 +206,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "Loft"
-      shall: "open a browser or listen on a loopback port only for `loft remote set` and `loft remote login`."
+      shall: "open a browser or listen on a loopback port only for `loft remote set`, `loft remote login`, `loft interface add`, `loft interface update` and `loft interface login`."
     criteria:
       - key: 01a18e1f-8daa-7674-9603-5b11fefeafdf
         name: "`loft publish` and `loft pull` open no browser and listen on no port."

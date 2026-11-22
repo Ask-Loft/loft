@@ -16,7 +16,7 @@ use serde_json::{Value, json};
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
-use crate::remote::{self, Client, RemoteError, signins};
+use crate::remote::{self, Client, RemoteError, Whose, signins};
 use crate::stop::Stop;
 
 /// The schema `--format json` writes to, by name and version.
@@ -97,7 +97,7 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
     let mut fields = json!({ "documentKey": key, "address": address });
     let mut lines = Vec::new();
     let outcome = if document.connected {
-        remote::signed_in(address, &key, browser, timeout)?;
+        remote::signed_in(address, Whose::Own { key: &key }, browser, timeout)?;
         lines.push(format!("the document {key} now names its remote {address}"));
         "set"
     } else {
@@ -106,7 +106,7 @@ fn set(root: &Path, address: &str, browser: bool) -> Result<Report, Stop> {
             Some(lock) => connect::history(root, lock)?,
             None => Vec::new(),
         };
-        let token = remote::signed_in(address, &key, browser, timeout)?;
+        let token = remote::signed_in(address, Whose::Own { key: &key }, browser, timeout)?;
         let client = Client::new(address, Some(token), timeout, wait);
         let connected = connect::connect(&client, &document, lock.as_ref(), &states)?;
         fields["head"] = connected.head.json();
@@ -145,7 +145,7 @@ fn login(root: &Path, browser: bool) -> Result<Report, Stop> {
             ),
         )
     })?;
-    remote::login(&address, &key, browser)?;
+    remote::login(&address, Whose::Own { key: &key }, browser)?;
     Ok(Report {
         outcome: "signed in",
         fields: json!({ "documentKey": key, "address": address }),

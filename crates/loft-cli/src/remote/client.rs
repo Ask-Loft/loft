@@ -4,13 +4,14 @@
 //! problem document alone, and one that the remote may lift is waited out once where
 //! `LOFT_REMOTE_WAIT` allows.
 
+use std::cell::RefCell;
 use std::fmt;
 use std::time::Duration;
 
 use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::Value;
 
-use super::{RemoteError, wire};
+use super::{RemoteError, Whose, signin, signins, wire};
 use crate::network::{self, Reply};
 
 /// The codes a remote's problem document may hold.
@@ -81,37 +82,63 @@ impl Refusal {
             problem,
         }
     }
-}
 
-impl fmt::Display for Refusal {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "the remote answered {}", self.status)?;
+    /// The refusal in words, where a refused sign-in says that `login`, a command, signs in
+    /// again, where one can.
+    #[must_use]
+    pub fn said(&self, login: Option<&str>) -> String {
+        let mut said = String::new();
+        self.write(&mut said, login)
+            .expect("a String takes every write");
+        said
+    }
+
+    fn write(&self, out: &mut impl fmt::Write, login: Option<&str>) -> fmt::Result {
+        write!(out, "the remote answered {}", self.status)?;
         if let Some(code) = self.code() {
-            write!(formatter, " with the code `{code}`")?;
+            write!(out, " with the code `{code}`")?;
         }
         if let Some(detail) = self.detail() {
-            write!(formatter, ": {detail}")?;
+            write!(out, ": {detail}")?;
         }
         if self.known() == Some("unauthenticated") {
-            formatter.write_str(
-                "; the remote refused the sign-in: `loft remote login` signs in again",
-            )?;
+            out.write_str("; the remote refused the sign-in")?;
+            if let Some(login) = login {
+                write!(out, ": {login} signs in again")?;
+            }
         }
         if self.later() {
-            formatter.write_str("; try again later")?;
+            out.write_str("; try again later")?;
         }
         Ok(())
     }
 }
 
-/// A remote's client: its address, the token its requests carry, their time limit, and how long
-/// a run may wait out a refusal.
+impl fmt::Display for Refusal {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.write(formatter, Some("`loft remote login`"))
+    }
+}
+
+/// A remote's client: its address, the token its requests carry, their time limit, how long a
+/// run may wait out a refusal, and, for another document's remote that a command may sign in to,
+/// how it signs in afresh where the remote refuses its sign-in.
 #[derive(Debug, Clone)]
 pub struct Client {
     address: String,
-    token: Option<String>,
+    token: RefCell<Option<String>>,
     timeout: Duration,
     wait: Option<u64>,
+    renewal: RefCell<Option<Renewal>>,
+}
+
+/// How a client signs in afresh, once: the handle under which `documents` lists another
+/// document, that document's key where it lists it, and whether a browser may be opened.
+#[derive(Debug, Clone)]
+struct Renewal {
+    handle: String,
+    key: Option<String>,
+    browser: bool,
 }
 
 impl Client {
@@ -119,10 +146,26 @@ impl Client {
     pub fn new(address: &str, token: Option<String>, timeout: Duration, wait: Option<u64>) -> Self {
         Self {
             address: address.to_owned(),
-            token,
+            token: RefCell::new(token),
             timeout,
             wait,
+            renewal: RefCell::new(None),
         }
+    }
+
+    /// The client, signing the person in afresh to the remote of `whose`, once, where the remote
+    /// refuses the sign-in its token carries; a browser is opened where `browser` allows. Only
+    /// another document's remote is signed in to so.
+    #[must_use]
+    pub fn renewing(self, whose: Whose<'_>, browser: bool) -> Self {
+        if let Whose::Other { handle, key } = whose {
+            *self.renewal.borrow_mut() = Some(Renewal {
+                handle: handle.to_owned(),
+                key: key.map(str::to_owned),
+                browser,
+            });
+        }
+        self
     }
 
     /// The document's address.
@@ -151,13 +194,11 @@ impl Client {
     /// `method <address>/<path>` of `body`, made once more after a refusal that the remote may
     /// lift where `LOFT_REMOTE_WAIT` allows the wait it asks for: its JSON answer.
     fn json(&self, method: &str, path: &str, body: Option<&[u8]>) -> Result<Value, RemoteError> {
-        let reply = self.call(method, path, body)?;
-        let reply = match self.waited(&reply) {
-            Some(length) => {
-                SystemClock::from_env().wait(length);
-                self.call(method, path, body)?
-            }
-            None => reply,
+        let reply = self.answered(method, path, body)?;
+        let reply = if self.renewed(&reply)? {
+            self.answered(method, path, body)?
+        } else {
+            reply
         };
         let read = serde_json::from_slice::<Value>(&reply.body).ok();
         match read {
@@ -167,6 +208,43 @@ impl Client {
                 refusal: Refusal::of(&reply),
             }),
         }
+    }
+
+    /// `method <address>/<path>` of `body`, made once more after a refusal that the remote may
+    /// lift where `LOFT_REMOTE_WAIT` allows the wait it asks for.
+    fn answered(
+        &self,
+        method: &str,
+        path: &str,
+        body: Option<&[u8]>,
+    ) -> Result<Reply, RemoteError> {
+        let reply = self.call(method, path, body)?;
+        match self.waited(&reply) {
+            Some(length) => {
+                SystemClock::from_env().wait(length);
+                self.call(method, path, body)
+            }
+            None => Ok(reply),
+        }
+    }
+
+    /// Whether the person was signed in afresh, and the new sign-in kept, because `reply`
+    /// refused the sign-in of a client that may make one; each client does so once.
+    fn renewed(&self, reply: &Reply) -> Result<bool, RemoteError> {
+        if reply.status != 401 || Refusal::of(reply).known() != Some("unauthenticated") {
+            return Ok(false);
+        }
+        let Some(renewal) = self.renewal.borrow_mut().take() else {
+            return Ok(false);
+        };
+        let whose = Whose::Other {
+            handle: &renewal.handle,
+            key: renewal.key.as_deref(),
+        };
+        let sign_in = signin::sign_in(&self.address, whose, renewal.browser, self.timeout)?;
+        signins::save(&self.address, &sign_in)?;
+        *self.token.borrow_mut() = Some(sign_in.access_token);
+        Ok(true)
     }
 
     /// How long to wait before the call is made once more, for a refusal that the remote may
@@ -193,7 +271,7 @@ impl Client {
     ) -> Result<Reply, RemoteError> {
         let url = format!("{}/{path}", self.address);
         network::allowed(&url).ok_or_else(|| RemoteError::Address(url.clone()))?;
-        let bearer = self.token.as_ref().map(|token| format!("Bearer {token}"));
+        let bearer = (self.token.borrow().as_ref()).map(|token| format!("Bearer {token}"));
         let mut headers = vec![("Accept", "application/json")];
         if let Some(bearer) = &bearer {
             headers.push(("Authorization", bearer));
