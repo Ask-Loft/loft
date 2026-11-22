@@ -175,7 +175,14 @@ function dress(element) {
 function newTabs(element) {
   for (const link of element.querySelectorAll('a[href]')) {
     // The address as written: a link within the page would resolve to this page's own `http:`.
-    if (/^https?:\/\//i.test(link.getAttribute('href') ?? '')) {
+    const href = link.getAttribute('href') ?? '';
+    if (/^https?:\/\//i.test(href)) {
+      const url = new URL(href);
+      // This page at a Yard Log is a route of it, which it shows in the tab it is in.
+      if (url.origin === location.origin && url.pathname === location.pathname && parse(url.hash)) {
+        link.setAttribute('href', url.hash);
+        continue;
+      }
       link.setAttribute('target', '_blank');
       link.setAttribute('rel', 'noopener noreferrer');
       // Read out as the link's description, so no one is moved off the page unwarned, while its
@@ -203,6 +210,9 @@ function stayOnPage(element) {
     const shown = () => link.setAttribute('href', location.hash || '#');
     for (const type of ['pointerdown', 'focus']) link.addEventListener(type, shown);
     link.addEventListener('click', (event) => {
+      // A click that asks for another tab or window goes to the Yard Log shown, as `shown` set it.
+      const { button = 0, metaKey, ctrlKey, shiftKey, altKey } = /** @type {MouseEvent} */ (event);
+      if (button !== 0 || metaKey || ctrlKey || shiftKey || altKey) return;
       event.preventDefault();
       if (!place) return;
       // Focusable, so the keyboard and a screen reader go on from the place, as they would after
@@ -217,13 +227,14 @@ function stayOnPage(element) {
 /**
  * The element of `element` that `name`, an address within the page without its `#`, names. The
  * id is matched as written, not decoded: `loft` writes an id and the address that names it alike,
- * encoding a letter outside ASCII in both.
+ * encoding a letter outside ASCII in both. A heading's id holds GitHub's prefix, which a link to
+ * it leaves out.
  * @param {Element} element
  * @param {string} name
  * @returns {HTMLElement | undefined}
  */
 function placeOf(element, name) {
-  return /** @type {HTMLElement[]} */ ([...element.querySelectorAll('[id]')]).find((node) => node.id === name);
+  return /** @type {HTMLElement[]} */ ([...element.querySelectorAll('[id]')]).find((node) => node.id === name || node.id === `user-content-${name}`);
 }
 
 /**

@@ -30,6 +30,9 @@ fn options(autolink: bool) -> Options<'static> {
     options.extension.strikethrough = true;
     options.extension.tasklist = true;
     options.extension.footnotes = true;
+    // An id for each heading, so that a link within the page can reach it; prefixed as GitHub
+    // prefixes it, so that it never takes an id of the page itself.
+    options.extension.header_id_prefix = Some("user-content-".to_owned());
     // Shown as text rather than dropped, so a reader sees what the Markdown holds.
     options.render.escape = true;
     options
@@ -334,6 +337,16 @@ mod tests {
             .to_owned();
         assert!(!html.contains("<b>"), "{html}");
         assert!(html.contains("&lt;b&gt;bold&lt;/b&gt;"), "{html}");
+    }
+
+    #[test]
+    fn a_heading_is_given_the_id_a_link_within_the_page_names_it_by() {
+        let html = to_html("## Notes\n\nSee [the notes](#notes).");
+        assert!(
+            html.contains("<h2 id=\"user-content-notes\">Notes"),
+            "{html}"
+        );
+        assert!(html.contains("<a href=\"#notes\">the notes</a>"), "{html}");
     }
 
     #[test]

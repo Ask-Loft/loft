@@ -276,3 +276,19 @@ fn a_link_within_an_image_s_description_is_drawn_as_its_text_within_the_image_s_
         "<p><a href=\"https://example.com/b.png\">see docs</a></p>\n"
     );
 }
+
+#[test]
+fn a_footnote_s_reference_within_a_written_link_is_drawn_right_after_that_link() {
+    let html = to_html("[see[^1]](https://example.com/x) now\n\n[^1]: Its source.");
+    assert!(
+        html.contains(
+            "<a href=\"https://example.com/x\">see</a><sup class=\"footnote-ref\"><a href=\"#fn-1\""
+        ),
+        "{html}"
+    );
+    assert_eq!(
+        html.matches("</a>").count(),
+        html.matches("<a ").count(),
+        "{html}"
+    );
+}

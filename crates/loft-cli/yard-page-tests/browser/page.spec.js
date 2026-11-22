@@ -234,6 +234,33 @@ test('opening a footnote’s reference in a new tab opens the Yard page on the Y
   await opened.close();
 });
 
+test('a footnote’s reference followed with the key for a new tab opens the Yard page on the Yard Log it shows', async ({ page }) => {
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="footnoted-note"]').click();
+  const shownLog = new URL(page.url()).hash;
+  const [opened] = await Promise.all([page.context().waitForEvent('page'), page.locator('#block-footnoted-note sup a').click({ modifiers: ['ControlOrMeta'] })]);
+  await opened.waitForLoadState();
+  expect(new URL(opened.url()).hash).toBe(shownLog);
+  expect(page.url()).toContain(shownLog);
+  await opened.close();
+});
+
+test('a link drawn from Markdown to the address of a Yard Log on this page opens no new tab and shows that Yard Log', async ({ page }) => {
+  write([{ id: 'own-address-note', kind: 'note', stage: 'shape', title: 'An own address', markdown: `Its page: ${address('wide-note')}` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="own-address-note"]').click();
+  const link = page.locator('#block-own-address-note .prose a');
+  await expect(link).not.toHaveAttribute('target', '_blank');
+  let opened = false;
+  page.context().once('page', () => { opened = true; });
+  await link.click();
+  await expect(page).toHaveURL(/block=wide-note/);
+  await expect(page.locator('#block-wide-note')).toBeInViewport();
+  expect(opened).toBe(false);
+});
+
 test('a decision’s consequence reads as a paragraph at the width of its block, not in a narrow column', async ({ page }) => {
   write([
     { id: 'wide-q', kind: 'question', stage: 'shape', prompt: 'Which way?', header: 'Way', options: [{ label: 'Left', recommended: true }, { label: 'Right' }] },

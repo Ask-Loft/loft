@@ -49,3 +49,12 @@ test('a link of rendered Markdown that opens in a new tab holds its own words al
   const link = html('<p>See <a href="https://example.com/plan">https://example.com/plan</a> for it.</p>').querySelector('p');
   assert.equal(link.textContent, 'See https://example.com/plan for it.');
 });
+
+test('a link to the address of a Yard Log on this page opens no new tab and names that Yard Log', () => {
+  const route = '#tree=%2Ftree&branch=main&block=d1';
+  const link = html(`<p><a href="${location.origin}${location.pathname}${route}">the decision</a></p>`).querySelector('a');
+  assert.equal(link.getAttribute('href'), route);
+  assert.equal(link.getAttribute('target'), null);
+  const elsewhere = html('<p><a href="http://127.0.0.1:9999/#tree=%2Ftree&branch=main">another page</a></p>').querySelector('a');
+  assert.equal(elsewhere.getAttribute('target'), '_blank');
+});

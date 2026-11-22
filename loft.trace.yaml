@@ -30594,6 +30594,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
         name: "a link of rendered Markdown within the page opens no new tab"
         body: bd0573a5d2b8035d783c848c7ec48b683dd44d3fbd117f244a5d43d21735d99b
+  - node: 01a20491-456b-7011-9545-1959e81d84c6
+    reviewed: 6b1b17605f74507330a631e2e2c7e13a1a7c849416fdd6e0c4ddcf0554af8ab7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link to the address of a Yard Log on this page opens no new tab and names that Yard Log"
+        body: fd7e76f4293019d19d4c9c1f00bd36005ddf0e540f9d5589b3be8da62a291c8d
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a link drawn from Markdown to the address of a Yard Log on this page opens no new tab and shows that Yard Log"
+        body: 9adf00f4b11abed26d1357adbd110ca36aa1cc0ac260dd0bd5f52de4000c2a6b
   - node: 01a2041e-7661-702d-9ee1-6b80abef3765
     reviewed: 773b6b92291514935b64f09236be89fa1ea064e965528a05fba03b90367c9b13
     tests:
@@ -30651,6 +30660,12 @@ links:
       - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
         name: "an_image_within_a_link_is_drawn_as_its_description_within_that_link"
         body: 37c57e29a28fe8c345a9b0bf6f9bc923d6385677f72a47e26bbfe856ebd37794
+  - node: 01a20491-456b-7011-9545-195aedcf1494
+    reviewed: ddaec11dba907f4b6e765cc10487e33dc33f8bca32bf47db4997f3fb524c1eae
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_footnote_s_reference_within_a_written_link_is_drawn_right_after_that_link"
+        body: 41117e720547cf6f92f94b4b2e11d6296ff29f7273631ea77cd717b983300ef3
   - node: 01a2044d-68b3-72a5-af48-16dcdf93ed51
     reviewed: 475cb16cdf7309d1b5769a382f1da153502467c0880be8a09f30f9d1d610bed4
     tests:
@@ -30672,6 +30687,15 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
         name: "following a footnote’s back link brings its reference into view"
         body: e963404f87d3cd7a56d768515de05d811274381b51d075c14cb6df6acf2a0020
+  - node: 01a20491-456b-7011-9545-195b39215549
+    reviewed: c2b74181d8e340c9d5ea01cce07c34c549b0bac2b2a283c378d7f07ad7bf674a
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "a_heading_is_given_the_id_a_link_within_the_page_names_it_by"
+        body: 022bf62f09cecd0a6979768c57eb69466251357acfa2b678bf775323f755bd8c
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a link in a note to a heading of the same note brings the heading into view"
+        body: d7a2dfd6c9b3f7be58ca05383a58afe5bba6e1ceaf1d92928de725c2b7a69e07
   - node: 01a2044d-68b3-72a5-af48-16ddb9a98d6c
     reviewed: e47c882b03d6abf54cdc5d10ecbd8f2fe1dfc79259755c24ad3869fea87653c9
     tests:
@@ -30708,6 +30732,12 @@ links:
   - node: 01a20464-13d3-709a-9add-498b2c07b680
     reviewed: 17b48d948491bb2147c387e9724ebde07f65823c2472442fe56bf6029381d1f9
     tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a footnote’s reference followed with the key for a new tab opens the Yard page on the Yard Log it shows"
+        body: 80a927df7b377f1906b0a346bb40a9938c0fed0d402f18a5fab5639a5b728f92
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "a click on a footnote’s reference that asks for another tab is left to the browser, on the Yard Log shown"
+        body: 1520b580da0454fe5aba0f9b442929e27c4c0998d1aeda1174e633b1bac73e88
       - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
         name: "opening a footnote’s reference in a new tab opens the Yard page on the Yard Log it shows"
         body: e55462dc7549a0fbd7c4921e09afa47c1b4e2e7d3663274ef9b33fd27d164f35

@@ -32,7 +32,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - Following a footnote on the Yard page, or another link to a place within it, brings that place
   into view and moves the focus to it, where it used to replace the Yard Log shown; opened in a new
   tab, it shows that same Yard Log.
-- A link to the address of a Yard Log opens that Yard Log.
+- A link to the address of a Yard Log, its full address on this page included, opens that Yard
+  Log in the same tab, and a link to a heading of a block brings that heading into view.
 - A table column that a block's Markdown aligns to the right or to the center stays so aligned.
 
 ## 2.4.1 (2026-11-22)

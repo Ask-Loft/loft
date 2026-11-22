@@ -16,6 +16,7 @@ for (const name of [
   'HTMLTextAreaElement',
   'SVGElement',
   'Event',
+  'MouseEvent',
   'MessageEvent',
   'localStorage',
   'location',

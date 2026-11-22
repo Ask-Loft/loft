@@ -117,3 +117,25 @@ test('opening a footnote’s reference in a new tab opens the Yard page on the Y
   reference.click();
   assert.deepEqual(brought, ['0#fn-1'], 'a click still brings the footnote into view');
 });
+
+test('following a link in a note to a heading of the same note brings the heading into view', () => {
+  const block = html('<h2 id="user-content-notes">Notes</h2>\n<p>See <a href="#notes">the notes</a>.</p>');
+  const brought = shown(block);
+  block.querySelector('a').click();
+  assert.deepEqual(brought, ['0#user-content-notes']);
+});
+
+test('a click on a footnote\u2019s reference that asks for another tab is left to the browser, on the Yard Log shown', () => {
+  location.hash = ROUTE;
+  const block = html(FOOTNOTED);
+  const brought = shown(block);
+  const reference = block.querySelector('a[href="#fn-1"]');
+  reference.dispatchEvent(new Event('pointerdown'));
+  for (const modifier of ['metaKey', 'ctrlKey', 'shiftKey']) {
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true, [modifier]: true });
+    reference.dispatchEvent(click);
+    assert.equal(click.defaultPrevented, false, modifier);
+  }
+  assert.equal(reference.getAttribute('href'), ROUTE);
+  assert.deepEqual(brought, []);
+});
