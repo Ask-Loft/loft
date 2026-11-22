@@ -121,6 +121,7 @@ mod render_interfaces;
 mod render_openspec;
 mod render_openspec_findings;
 mod review;
+mod review_edges;
 mod review_pages;
 mod roots;
 mod settle_conflicts;

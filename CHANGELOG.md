@@ -18,8 +18,8 @@ Unreleased below, and those of each 2.4 release still to come.
   Component provides or requires (`V2-013`, info). `loft render` gives Interfaces their own
   section and lists each Component's `provides` and `requires`; `loft find`, `loft status`,
   `loft review` and a `spec-change` view on the Yard page take them as they take every other kind.
-- `loft review --format json` follows the schema `loft-review/2`, whose node kinds add
-  `interface`, and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
+- `loft review --format json` follows the schema `loft-review/3`, whose node kinds add
+  `interface` to those of `loft-review/2`, and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
   `V2-013`. The output is otherwise as it was.
 - A connected document can link to an Interface of another connected document. The manifest's
   `documents` lists the other document under a handle of the document's own choosing, with the
@@ -78,6 +78,18 @@ everything 2.4.1 will hold.
 
 ## Unreleased
 
+- `loft review --base` reviews an assertion whose `mentions` entries alone changed as `changed`,
+  as `loft status --base` already lists it; it used to leave such an assertion out, and to call
+  one that moved and changed its `mentions` `moved`. Each node of the packet now carries
+  `mentions`, the keys of the nodes and decisions it mentions in the order of their keys, so a
+  changed assertion shows what it mentions beside what it mentioned at the base. A Feature also
+  carries `realizes`, the keys of the Components it realizes, and a Component `scopedTo`, the keys
+  of the Products it is scoped to, each in the order of their keys; and every node of the packet,
+  the scope and the nodes beside it included, is `changed` where its own content or any of these
+  entries differ from the base's, as `loft status --base` counts it. The output follows the
+  schema `loft-review/2`. `loftspec::review::Fact` gains the fields `mentions`, `realizes` and
+  `scoped_to`, and is now `#[non_exhaustive]`: code outside `loftspec` reads a `Fact` but no
+  longer builds one, and later fields will not break it.
 - `loft remote set` and `loft remote login` refuse a remote whose challenge names its protected
   resource metadata, or whose metadata names its protected resource, on another origin than the
   remote's address. The refusal comes before anything is asked of that origin, before a client is

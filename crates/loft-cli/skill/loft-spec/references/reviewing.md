@@ -31,7 +31,12 @@ changed, moved or removed, against everything those assertions are read with:
    gives each unit the nodes above its scope with their Constraints and Quality Attributes, every
    Requirement of a Feature with its criteria, the Components it realizes, the decisions and the
    terms its assertions bear on, and `before`, the base's text, for each changed, moved or
-   removed assertion. It judges nothing.
+   removed assertion. Each node lists the keys it mentions in `mentions`, a Feature the
+   Components it realizes in `realizes`, and a Component the Products it is scoped to in
+   `scopedTo`. An assertion whose text is `before`'s is changed in one of these lists; compare
+   them with `before`'s. A node beside the assertions carries no `before`: marked changed with its
+   text as it was, it gained or lost an entry of one of these lists since the base, which
+   `loft status --base` and `git diff` show. It judges nothing.
 3. Read each page in turn (`--page`), and each changed assertion against its whole unit,
    unchanged nodes included: most contradictions lie between a new assertion and an old one.
 
