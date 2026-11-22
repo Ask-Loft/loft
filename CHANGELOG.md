@@ -43,40 +43,9 @@ Unreleased below, and those of each 2.4 release still to come.
   Component provides, named and accepted as `<handle>:<label>`, and `V2-003` checks a citation
   `<handle>:<label>` against the copies.
 
-## 2.4.1-alpha.3 (2026-11-20)
-
-The third prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.4.1-alpha.3`. It lets you try the Yard page from
-another device, such as a phone in your tailnet, with `loft yard serve --listen` or the Claude
-Code plugin's `yardListen` setting; update the plugin with `loft`, since the yard protocol is now
-4. It also lets you try connecting a document to a Loft server at the address the server gives
-it, `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, with an error
-that names the refused request and shows that form, and a sign-in that refuses a remote whose
-metadata or resource lies on another origin. The Yard page now opens its panel of what waits
-when you return to a Yard Log where something waits. Everything 2.4.1-alpha.2 let you try is
-here too, and the entries under Unreleased below list everything 2.4.1 will hold.
-
-## 2.4.1-alpha.2 (2026-11-18)
-
-The second prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.4.1-alpha.2`. It lets you try a plan that a host
-such as T3 Code ends, now decided on the Yard page and answered to the agent: in 2.4.1-alpha.1
-the plugin's own hook held the plan, so the agent's `yard_wait` on it was refused and the
-person's decision never reached it. Everything 2.4.1-alpha.1 let you try is here too, and the
-entries under Unreleased below list everything 2.4.1 will hold.
-
-## 2.4.1-alpha.1 (2026-11-17)
-
-The first prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
-`cargo install --locked loft-cli --version 2.4.1-alpha.1`. It lets you try Yard Log that no
-longer changes the working tree under an agent's git commands: each session's token totals,
-activity and consultation counts are kept in git's own directory and enter `.yard/` only with a
-write of Yard Log. It also lets you try a plan that a host such as T3 Code ends staying open on
-the Yard page instead of being recorded as rejected, and the `spec-change` view's drawing of
-Constraints, Quality Attributes, Sections and decisions. The entries under Unreleased below list
-everything 2.4.1 will hold.
-
 ## Unreleased
+
+## 2.4.1 (2026-11-22)
 
 - `loft review --base` reviews an assertion whose `mentions` entries alone changed as `changed`,
   as `loft status --base` already lists it; it used to leave such an assertion out, and to call
@@ -206,6 +175,39 @@ everything 2.4.1 will hold.
 - A `loft` block records the whole report its view gives, however long. A list of more than
   1,000 items used to be cut to its first 1,000, with a count of the items left out, which lost
   part of Yard Log's history of the work.
+
+## 2.4.1-alpha.3 (2026-11-20)
+
+The third prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.3`. It lets you try the Yard page from
+another device, such as a phone in your tailnet, with `loft yard serve --listen` or the Claude
+Code plugin's `yardListen` setting; update the plugin with `loft`, since the yard protocol is now
+4. It also lets you try connecting a document to a Loft server at the address the server gives
+it, `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, with an error
+that names the refused request and shows that form, and a sign-in that refuses a remote whose
+metadata or resource lies on another origin. The Yard page now opens its panel of what waits
+when you return to a Yard Log where something waits. Everything 2.4.1-alpha.2 let you try is
+here too, and the entries under Unreleased below list everything 2.4.1 will hold.
+
+## 2.4.1-alpha.2 (2026-11-18)
+
+The second prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.2`. It lets you try a plan that a host
+such as T3 Code ends, now decided on the Yard page and answered to the agent: in 2.4.1-alpha.1
+the plugin's own hook held the plan, so the agent's `yard_wait` on it was refused and the
+person's decision never reached it. Everything 2.4.1-alpha.1 let you try is here too, and the
+entries under Unreleased below list everything 2.4.1 will hold.
+
+## 2.4.1-alpha.1 (2026-11-17)
+
+The first prerelease of 2.4.1: `npm install @ask-loft/loft@alpha`, or
+`cargo install --locked loft-cli --version 2.4.1-alpha.1`. It lets you try Yard Log that no
+longer changes the working tree under an agent's git commands: each session's token totals,
+activity and consultation counts are kept in git's own directory and enter `.yard/` only with a
+write of Yard Log. It also lets you try a plan that a host such as T3 Code ends staying open on
+the Yard page instead of being recorded as rejected, and the `spec-change` view's drawing of
+Constraints, Quality Attributes, Sections and decisions. The entries under Unreleased below list
+everything 2.4.1 will hold.
 
 ## 2.4.0 (2026-11-17)
 
