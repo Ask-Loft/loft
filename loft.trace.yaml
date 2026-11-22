@@ -34110,6 +34110,24 @@ links:
       - file: "crates/loft-cli/tests/yard_view_subjects.rs"
         name: "a_spec_change_view_draws_the_edge_to_a_removed_node_a_decision_gained_by_its_former_label"
         body: d96e942c1622fbe49f93252a33f5bd76b38c044e6aac199dfd3e5326af54816b
+  - node: 01a2046e-409d-70db-9f5b-3d48e88714d0
+    reviewed: 0d29b35e229430f1a97ab8657619e8204067ab19db43674858590876bb3ec9a8
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "the_diff_lists_a_moved_pin_with_its_publish_sequences_and_each_node_its_promise_changed"
+        body: 410d17024e32c0abeab7c74d4175f43b91b06787c3822d95ea897bc84b4fb18d
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "the_diff_lists_a_copy_added_with_the_publish_sequence_of_its_pin"
+        body: ad32a0cc7ed8835f7aa978af57ba02109855013cf3414f632914fa5604094d12
+  - node: 01a2046e-409d-70db-9f5b-3d49257335de
+    reviewed: f3e371511bcd4819978cc830be09bed2f02aba77138ccfb46129a76616ee214e
+    tests:
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "the_diff_lists_an_entry_of_documents_added_with_its_address"
+        body: 97993e9b288fa2d1eb79aef658d84bc4fdcb612d0243ea90213b9ef7e3afebe7
+      - file: "crates/loft-cli/tests/yard_view_documents.rs"
+        name: "the_diff_lists_an_entry_of_documents_readdressed_with_its_addresses_before_and_after"
+        body: 1caa1ac68c36a5d8551dbbc37e08b77a4b39ff2afde24b4be21034f77e6f1ec4
   - node: 01a16475-7fbc-7732-a78c-bc51485eea5d
     reviewed: dea93ed5f29437fa4001e0abc1666d588ba51096b7422c88b09feac71429f49b
     tests:

@@ -21,7 +21,7 @@ use loftspec::kind::NodeKind;
 use loftspec::node::Node;
 use serde_json::{Value, json};
 
-use super::graph_copies::{Copies, gained_interfaces};
+use super::graph_copies::{Copies, gained_interfaces, other_documents};
 use super::graph_edges::edges;
 use super::words;
 
@@ -134,7 +134,9 @@ pub fn report(base: &Document, document: &Document) -> Value {
     let changes = content_changes(base, document);
     let lists = [&changes.added, &changes.changed, &changes.removed];
     let mut marked = marks(lists.map(Vec::as_slice));
-    marked.extend(Copies::of(base, document).marks());
+    let pinned = Copies::of(base, document);
+    let pin_marks = pinned.marks();
+    marked.extend(pin_marks.clone());
     let decided = decision_changes(base, document);
     let mut gained: BTreeSet<Key> = (decided.subjects.values())
         .flat_map(|change| &change.gained)
@@ -168,7 +170,10 @@ pub fn report(base: &Document, document: &Document) -> Value {
         "nodes": nodes(&shown, &marked, &now, &then),
         "decisions": boxes,
         "edges": edges,
-        "diff": diff(&lists, &now, &then).into_iter().chain(listed).collect::<Vec<_>>(),
+        "diff": (diff(&lists, &pin_marks, &pinned.pins(), &now, &then).into_iter())
+            .chain(listed)
+            .chain(other_documents(base, document))
+            .collect::<Vec<_>>(),
     })
 }
 
@@ -223,14 +228,22 @@ pub fn labels(document: &Document) -> Value {
     json!(counts)
 }
 
-/// Every node added, changed and removed, with its words before and after, in the documents'
-/// order: the added and changed in the tree's, then the removed in the base's.
-fn diff(lists: &[&Vec<loftspec::ids::NodeId>; 3], now: &Walked, then: &Walked) -> Vec<Value> {
-    let changed: BTreeMap<Key, usize> = lists
-        .iter()
-        .enumerate()
-        .flat_map(|(index, ids)| ids.iter().map(move |id| (id.key(), index)))
-        .collect();
+/// Every node added, changed and removed, the document's own as `lists` gives them and the
+/// copies' as `copied` marks them, with its words before and after, in the documents' order: the
+/// added and changed in the tree's, then the removed in the base's. A copy's Interface carries
+/// its pin's publish sequence before and after, as `pins` gives it.
+fn diff(
+    lists: &[&Vec<loftspec::ids::NodeId>; 3],
+    copied: &BTreeMap<Key, &'static str>,
+    pins: &BTreeMap<Key, Value>,
+    now: &Walked,
+    then: &Walked,
+) -> Vec<Value> {
+    let own = (lists.iter().enumerate())
+        .flat_map(|(index, ids)| ids.iter().map(move |id| (id.key(), index)));
+    let from_pins = (copied.iter())
+        .filter_map(|(key, change)| Some((*key, CHANGES.iter().position(|is| is == change)?)));
+    let changed: BTreeMap<Key, usize> = own.chain(from_pins).collect();
     let removed = then.order.iter().filter(|key| changed.get(key) == Some(&2));
     let present = now.order.iter().filter(|key| changed.contains_key(key));
     present
@@ -240,7 +253,7 @@ fn diff(lists: &[&Vec<loftspec::ids::NodeId>; 3], now: &Walked, then: &Walked) -
             let before = (index > 0).then(|| then.entries.get(key)).flatten();
             let after = (index < 2).then(|| now.entries.get(key)).flatten();
             let entry = after.or(before)?;
-            Some(json!({
+            let mut listed = json!({
                 "key": key.to_string(),
                 "kind": entry.kind.as_str(),
                 "label": entry.label,
@@ -250,7 +263,14 @@ fn diff(lists: &[&Vec<loftspec::ids::NodeId>; 3], now: &Walked, then: &Walked) -
                     before.map(|entry| entry.words.as_str()),
                     after.map(|entry| entry.words.as_str()),
                 ),
-            }))
+            });
+            if let Some(handle) = &entry.document {
+                listed["document"] = json!(handle);
+            }
+            if let Some(pin) = pins.get(key) {
+                listed["pin"] = pin.clone();
+            }
+            Some(listed)
         })
         .collect()
 }

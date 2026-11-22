@@ -8,8 +8,11 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use loftspec::copy::Copy;
 use loftspec::diff::interface_changes;
-use loftspec::document::{Document, Edge};
+use loftspec::document::{Document, Edge, OtherDocument};
 use loftspec::identity::Key;
+use serde_json::{Value, json};
+
+use super::words;
 
 /// Each copy of `document`, by its handle and its Interface's key.
 fn by_pin(document: &Document) -> BTreeMap<(String, Key), &Copy> {
@@ -76,6 +79,58 @@ impl<'a> Copies<'a> {
         }
         marks
     }
+
+    /// The publish sequence of each added, removed and moved copy's pin before and after, by its
+    /// Interface's key, for its entry in the diff.
+    pub fn pins(&self) -> BTreeMap<Key, Value> {
+        let pin = |before: Option<&Copy>, after: Option<&Copy>| {
+            json!({
+                "before": before.map(|copy| copy.publish_sequence),
+                "after": after.map(|copy| copy.publish_sequence),
+            })
+        };
+        let added = (self.added.iter()).map(|copy| (copy.key(), pin(None, Some(copy))));
+        let removed = (self.removed.iter()).map(|copy| (copy.key(), pin(Some(copy), None)));
+        let moved = (self.moved.iter()).map(|moved| {
+            (
+                moved.after.key(),
+                pin(Some(moved.before), Some(moved.after)),
+            )
+        });
+        added.chain(removed).chain(moved).collect()
+    }
+}
+
+/// The diff's entry of each entry of `documents` that the branch added, removed or whose address
+/// it changed: its handle, its change and its address before and after.
+pub(super) fn other_documents(base: &Document, document: &Document) -> Vec<Value> {
+    let by_handle = |document: &Document| -> BTreeMap<String, String> {
+        (document.documents.iter())
+            .map(|OtherDocument { handle, remote, .. }| (handle.to_string(), remote.clone()))
+            .collect()
+    };
+    let (then, now) = (by_handle(base), by_handle(document));
+    let handles: BTreeSet<&String> = then.keys().chain(now.keys()).collect();
+    handles
+        .into_iter()
+        .filter_map(|handle| {
+            let (before, after) = (then.get(handle), now.get(handle));
+            let change = match (before, after) {
+                (None, Some(_)) => "added",
+                (Some(_), None) => "removed",
+                (Some(before), Some(after)) if before != after => "changed",
+                _ => return None,
+            };
+            Some(json!({
+                "key": format!("document:{handle}"),
+                "kind": "document",
+                "label": null,
+                "name": handle,
+                "change": change,
+                "words": words::pair(before.map(String::as_str), after.map(String::as_str)),
+            }))
+        })
+        .collect()
 }
 
 /// The Interfaces that a Component of `document` gained in its `provides` or `requires` against

@@ -10,7 +10,7 @@ use loftspec::identity::Key;
 use loftspec::slug::Slug;
 use serde_json::Value;
 
-use crate::common::copies::{HANDLE, copy_lookup};
+use crate::common::copies::{HANDLE, OTHER_REMOTE, copy_lookup};
 use crate::common::others::{ADDED, COPY, DROPPED, shelves};
 use crate::common::remote::spec;
 use crate::interfaces::{LOOKUP, SHELF_STORE, add_lookup};
@@ -138,4 +138,85 @@ fn a_moved_pin_draws_its_interface_changed_with_each_node_its_promise_changed() 
         assert_eq!(drawn["change"], change, "{drawn}");
         assert_eq!(drawn["document"], HANDLE, "{drawn}");
     }
+}
+
+/// The entry of the diff whose key is `key`.
+fn entry<'a>(graph: &'a Value, key: &str) -> &'a Value {
+    graph["diff"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|entry| entry["key"] == key)
+        .unwrap_or_else(|| panic!("no diff of {key}: {graph}"))
+}
+
+#[test]
+fn the_diff_lists_a_moved_pin_with_its_publish_sequences_and_each_node_its_promise_changed() {
+    let mut yard = Yard::with_spec();
+    copy_lookup(&yard.scratch);
+    pin_at(&yard, 1);
+    yard.rebased();
+    pin_at(&yard, 2);
+    let graph = diagram(&yard);
+    let lookup = entry(&graph, LOOKUP);
+    assert_eq!(lookup["change"], "changed", "{lookup}");
+    assert_eq!(lookup["label"], format!("{HANDLE}:IF-1"), "{lookup}");
+    assert_eq!(lookup["name"], "Shelf lookup", "{lookup}");
+    assert_eq!(lookup["document"], HANDLE, "{lookup}");
+    assert_eq!(
+        lookup["pin"],
+        serde_json::json!({ "before": 1, "after": 2 })
+    );
+    let answer = entry(&graph, ANSWER);
+    assert_eq!(answer["change"], "changed", "{answer}");
+    assert_eq!(
+        answer["words"]["after"],
+        "The returned book has the title and the author asked for."
+    );
+    assert_eq!(entry(&graph, DROPPED)["change"], "removed");
+    assert_eq!(entry(&graph, ADDED)["change"], "added");
+}
+
+#[test]
+fn the_diff_lists_a_copy_added_with_the_publish_sequence_of_its_pin() {
+    let mut yard = Yard::with_spec();
+    copy_lookup(&yard.scratch);
+    let bytes = fs::read(yard.scratch.file(COPY)).unwrap();
+    fs::remove_file(yard.scratch.file(COPY)).unwrap();
+    yard.rebased();
+    fs::write(yard.scratch.file(COPY), &bytes).unwrap();
+    let graph = diagram(&yard);
+    let lookup = entry(&graph, LOOKUP);
+    assert_eq!(lookup["change"], "added", "{lookup}");
+    assert_eq!(
+        lookup["pin"],
+        serde_json::json!({ "before": null, "after": 2 })
+    );
+}
+
+#[test]
+fn the_diff_lists_an_entry_of_documents_added_with_its_address() {
+    let yard = Yard::with_spec();
+    copy_lookup(&yard.scratch);
+    let graph = diagram(&yard);
+    let listed = entry(&graph, &format!("document:{HANDLE}"));
+    assert_eq!(listed["kind"], "document", "{listed}");
+    assert_eq!(listed["name"], HANDLE, "{listed}");
+    assert_eq!(listed["change"], "added", "{listed}");
+    assert_eq!(listed["words"]["after"], OTHER_REMOTE, "{listed}");
+    assert!(listed["words"].get("before").is_none(), "{listed}");
+}
+
+#[test]
+fn the_diff_lists_an_entry_of_documents_readdressed_with_its_addresses_before_and_after() {
+    let mut yard = Yard::with_spec();
+    copy_lookup(&yard.scratch);
+    yard.rebased();
+    let moved = "https://shelves.example/loft/t/plant/api/v2/documents/shelves/remote";
+    yard.scratch.edit("loftspec.yaml", OTHER_REMOTE, moved);
+    let graph = diagram(&yard);
+    let listed = entry(&graph, &format!("document:{HANDLE}"));
+    assert_eq!(listed["change"], "changed", "{listed}");
+    assert_eq!(listed["words"]["before"], OTHER_REMOTE, "{listed}");
+    assert_eq!(listed["words"]["after"], moved, "{listed}");
 }
