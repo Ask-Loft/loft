@@ -174,7 +174,8 @@ fn register(discovered: &Discovered, timeout: Duration) -> Result<String, String
         "response_types": ["code"],
         "token_endpoint_auth_method": "none",
     });
-    let reply = network::call(
+    let reply = network::call_within(
+        network::SIGN_IN_LIMIT,
         "POST",
         &discovered.registration_endpoint,
         &[("Content-Type", "application/json")],
@@ -212,7 +213,8 @@ impl std::fmt::Display for TokenError {
 /// A form-encoded `POST` of `form` to `endpoint`, its JSON answer; a refusal only where the
 /// answer is an OAuth error, a `400` or `401` that names its `error`.
 fn token(endpoint: &str, form: &[(&str, &str)], timeout: Duration) -> Result<Value, TokenError> {
-    let reply = network::call(
+    let reply = network::call_within(
+        network::SIGN_IN_LIMIT,
         "POST",
         endpoint,
         &[("Content-Type", "application/x-www-form-urlencoded")],

@@ -49,6 +49,12 @@ Unreleased below, and those of each 2.4 release still to come.
   U+001F, U+007F or U+0080 to U+009F, is written as U+FFFD. An error may quote what a remote or an
   authorization server answered, such as a problem document's `code` and `detail`, and an escape
   sequence in it no longer reaches the terminal.
+- `loft` reads at most 64 MiB of a remote's answer, where it read 256 MiB, and at most 1 MiB of an
+  answer to a sign-in's request for metadata, a registration or tokens. A longer answer is refused
+  with exit 1, naming the address and the limit.
+- The reader refuses a file whose block mappings and block sequences nest more than 64 deep, with
+  an error at the line and column of the one too deep. Until now a file nested a few thousand deep
+  overflowed the reader's stack and ended `loft` with no error.
 
 - An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
   `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its

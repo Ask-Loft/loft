@@ -204,7 +204,8 @@ fn unchallenged(asked: &str, whose: Whose<'_>, status: u16) -> String {
 
 /// The JSON object at `url`, an address a sign-in may contact.
 fn fetch(url: &str, timeout: Duration) -> Result<Value, String> {
-    let reply = network::call("GET", url, &[("Accept", "application/json")], None, timeout)
+    let headers = [("Accept", "application/json")];
+    let reply = network::call_within(network::SIGN_IN_LIMIT, "GET", url, &headers, None, timeout)
         .map_err(|error| format!("{url}: {error}"))?;
     serde_json::from_slice::<Value>(&reply.body)
         .ok()

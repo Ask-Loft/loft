@@ -2724,6 +2724,24 @@ links:
       - file: "crates/loft-cli/tests/fmt.rs"
         name: "a_comment_is_an_error_at_its_position_and_nothing_is_written"
         body: a34a80aa4ba9398a5fb12299f408e22391b833ccb1e051eadbe689776c8acf7e
+  - node: 01a209e1-45d3-75c7-ad35-ece27ddc20dc
+    reviewed: ffa71745c49c42a1ac56a5b7824ebc196f0b9ea80f92d0e905135f1170f7557a
+    tests:
+      - file: "crates/loftspec/tests/yaml_read.rs"
+        name: "a_value_inside_64_nested_mappings_and_sequences_is_read"
+        body: ce85a85380251e907c6d0da3915ce1564abd3365e3ca3a8b79802b901f910283
+  - node: 01a209e1-45d3-75c7-ad35-ece3d42ef1b5
+    reviewed: 29e0f11df1bc74fa45bbf2647a2f1993f3bb0c0505e7a396cd6569934bd3133e
+    tests:
+      - file: "crates/loftspec/tests/yaml_read.rs"
+        name: "a_mapping_or_sequence_inside_64_others_is_refused_at_its_first_line"
+        body: 92d600d330476e76e4a2db6bb2aeec1932b67f5eb26aa9b20ba8585a468cba41
+  - node: 01a209e1-45d3-75c7-ad35-ece4864ed1f2
+    reviewed: eb50a250e89cf7bcdf6fd798912d53f1b24530bdd84df31a18a6ee896479a766
+    tests:
+      - file: "crates/loftspec/tests/yaml_read.rs"
+        name: "a_file_nested_2000_deep_is_refused_as_one_nested_65_deep_is"
+        body: cbe5cb6143f0d3a900fd6fd740cab3877d22f2f1f6413b4f8eae6072e5f14fb3
   - node: e5e231ee-37b9-4eda-8f1a-6b72e2fe389f
     reviewed: 87049ea8f1057b198de9e5352ec8dabc40f2b745c0cc18bb59a77ca0edac306c
     tests:
@@ -20970,6 +20988,45 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_refusal_is_reported_with_its_status_and_code_and_says_when_to_try_again"
         body: 84c0b1d75fdb9cd78e217514d66e1cff163ef52608ffcdbfe4333a17300045c2
+  - node: 01a209e1-45d1-7294-9f68-a49a295a002f
+    reviewed: d7984eb98ce57b0e9e72c5054d94f9f6db7b79ce7828ebda3b2acbb6e99ae0fe
+    tests:
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
+        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
+  - node: 01a209e1-45d1-7294-9f68-a49b8a69c24a
+    reviewed: c4d6b7468363b4492827d37945ca045cf56ac439b40161dae5f826277a0ae6fa
+    tests:
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
+        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+  - node: 01a209e1-45d1-7294-9f68-a49c72eacf1a
+    reviewed: 2c6b2637a28ef9ec8c6ac2dc04e60b45b2fd9848e4c93267c0ed61679424a031
+    tests:
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
+        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
+        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
+  - node: 01a209e1-45d1-7294-9f68-a49d19e3a156
+    reviewed: a956a62802ace4ed3c7e722dc0dcdda137b74946416e1a18220595ab03f65602
+    tests:
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
+        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
+        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
+  - node: 01a209e1-45d1-7294-9f68-a49ef34ce022
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
+        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
+        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
   - node: 01a1587b-106c-7784-8c2e-ba42824b9735
     reviewed: 76d2ac0117f154cb27d03248ea21239a1cb68d54ced38214f5a96b972dadc003
     tests:

@@ -100,6 +100,8 @@ pub enum ErrorKind {
     UnexpectedMapping,
     #[error("a sequence entry on the line of another")]
     CompactSequence,
+    #[error("mappings and sequences nested more than 64 deep")]
+    TooDeep,
     #[error("a plain scalar that continues on the next line")]
     MultiLinePlainScalar,
     #[error("a double-quoted scalar that is not closed on its line")]
