@@ -25,6 +25,43 @@ requirements:
         name: "A save interrupted after its journal is complete is finished by the next command that opens the tree."
       - key: 01a12e66-85dc-70ec-b5ed-93daf58c4d95
         name: "A file a command writes beside `spec/`, such as the sidecar, is written in the same save as the tree."
+  - key: 01a209e1-45d1-7294-9f68-a48087e84485
+    statement:
+      form: unwanted
+      if: "the journal of a save names a path that no save of the tree writes, or a staged file that is not its own"
+      system: "`loftspec-store`"
+      shall: "refuse the journal and change no file."
+    criteria:
+      - key: 01a209e1-45d1-7294-9f68-a481ecd09040
+        name: "A journal is checked whole before any file it names is written or removed."
+      - key: 01a209e1-45d1-7294-9f68-a482a8558b5e
+        name: "A path of the journal that lies neither under `spec/` nor at `loft.lock.json`, `loft.trace.yaml`, `v1-sidecar.json` or `openspec-sidecar.json` beside it is refused."
+      - key: 01a209e1-45d1-7294-9f68-a483c25c1402
+        name: "A path that is absolute, or that holds an empty part, a `.` part or a `..` part, is refused."
+      - key: 01a209e1-45d1-7294-9f68-a484d7adaadc
+        name: "A path that holds a part named `.git`, in any letter case, is refused."
+      - key: 01a209e1-45d1-7294-9f68-a4855c942b83
+        name: "A path under `spec/` whose directory a symbolic link takes outside `spec/` is refused."
+      - key: 01a20a03-278e-71b9-a05f-99eb30e99d65
+        name: "A path beside `spec/` whose directory a symbolic link takes outside the directory that holds `spec/` is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ecd03e7fb8
+        name: "A path whose directory a symbolic link takes into a directory named `.git` is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ed1efd9662
+        name: "A path with a part that a file system may read as `.git`, by trailing dots or spaces, by characters it ignores or as the short name `git~1`, is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ee32954183
+        name: "A path with a part that holds `:` or a backslash is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ef71382cf8
+        name: "A journal whose directory, or whose directory of staged files, is or lies behind a symbolic link below the directory that holds `spec/` is refused."
+      - key: 01a209e1-45d1-7294-9f68-a486fa0057d9
+        name: "A staged file whose name is not a decimal number is refused."
+      - key: 01a209e1-45d1-7294-9f68-a4874195077c
+        name: "A staged file that is not a regular file is refused."
+      - key: 01a209e1-45d1-7294-9f68-a488514c225f
+        name: "A command that finds such a journal when it opens the tree exits 1 with an error that names the journal's directory and what it refuses."
+      - key: 01a209e1-45d1-7294-9f68-a4891a0e2ebf
+        name: "After the refusal, the journal and every file under the directory that holds `spec/` are as they were."
+      - key: 01a209e1-45d1-7294-9f68-a48a3364eb03
+        name: "A save whose own changes name such a path is refused before it stages a file."
   - key: 01a12e66-85dc-70ec-b5ed-93dba7c15e6c
     statement:
       form: ubiquitous

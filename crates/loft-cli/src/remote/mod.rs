@@ -5,6 +5,7 @@
 //! [`client::Client`]. A token is sent only in the `Authorization` header of a request to the
 //! remote, and printed nowhere.
 
+mod address;
 pub mod browser;
 pub mod client;
 pub mod files;
@@ -24,8 +25,8 @@ use std::time::Duration;
 use loft_ports::clock::{Clock as _, SystemClock};
 
 use crate::environment;
-use crate::network;
 
+pub use address::{checked, contactable};
 pub use client::{Client, Refusal};
 pub use said::Remedy;
 pub use whose::Whose;
@@ -69,6 +70,11 @@ pub enum RemoteError {
     SignInElsewhere { address: String, resource: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),
+    /// The address holds `part`, a query, a fragment or user information, which no remote's
+    /// address holds; `address` is the address without its user information.
+    AddressPart { address: String, part: &'static str },
+    /// `LOFT_REMOTE_TOKEN` is set and `LOFT_REMOTE_ENDPOINT` is not.
+    TokenAlone,
     /// The remote holds no document under the key.
     NotHeld { key: String },
     /// The remote holds no published state with the lock's publish sequence and state root.
@@ -125,6 +131,17 @@ impl fmt::Display for RemoteError {
                 formatter,
                 "{address}: a remote's address is `https`, or `http` on the loopback interface"
             ),
+            Self::AddressPart { address, part } => write!(
+                formatter,
+                "{address}: a remote's address holds no {part}: each request goes to the \
+                 address followed by its endpoint's path"
+            ),
+            Self::TokenAlone => write!(
+                formatter,
+                "{TOKEN_ENV} is set and {ENDPOINT_ENV} is not: a token from the environment \
+                 goes only to an address that {ENDPOINT_ENV} names, never to the one \
+                 spec/loftspec.yaml names"
+            ),
             Self::NotHeld { key } => write!(
                 formatter,
                 "the remote holds no document {key}: `loft remote set <address>` connects the \
@@ -169,17 +186,6 @@ impl fmt::Display for RemoteError {
             Self::File(reason) => formatter.write_str(reason),
         }
     }
-}
-
-/// `address` as a remote's address, if it may be contacted.
-///
-/// # Errors
-///
-/// The address is neither `https` nor `http` on the loopback interface.
-pub fn checked(address: &str) -> Result<&str, RemoteError> {
-    network::allowed(address)
-        .map(|_| address)
-        .ok_or_else(|| RemoteError::Address(address.to_owned()))
 }
 
 /// The value of `name` as a positive whole number of seconds, or none when it is not set.
@@ -244,18 +250,62 @@ pub fn reading(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
     reached(remote, key, true)
 }
 
-/// The client of [`connected`], or, where `unsigned` allows and the person has no sign-in to the
-/// remote, that of [`reading`].
-fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, RemoteError> {
+/// What names the remote of a connected document for one run, read before any connection, to
+/// this remote or another: how long a call may take and a run may wait, the address, from
+/// `LOFT_REMOTE_ENDPOINT` or else `remote`, and the token `LOFT_REMOTE_TOKEN` names.
+struct Named {
+    timeout: Duration,
+    wait: Option<u64>,
+    address: String,
+    token: Option<String>,
+}
+
+/// What names the remote of the document `key`, whose manifest names `remote`.
+fn named(remote: Option<&str>, key: &str) -> Result<Named, RemoteError> {
     let timeout = timeout()?;
     let wait = seconds(WAIT_ENV)?;
-    let address = environment::text(ENDPOINT_ENV)
+    let endpoint = environment::text(ENDPOINT_ENV);
+    let token = environment::text(TOKEN_ENV);
+    // The manifest's address is the repository's to name, and a token from the environment is
+    // not the repository's to send: it goes only where the environment says.
+    if token.is_some() && endpoint.is_none() {
+        return Err(RemoteError::TokenAlone);
+    }
+    let address = endpoint
         .or_else(|| remote.map(str::to_owned))
         .ok_or_else(|| RemoteError::NoAddress {
             key: key.to_owned(),
         })?;
     checked(&address)?;
-    let token = match environment::text(TOKEN_ENV) {
+    Ok(Named {
+        timeout,
+        wait,
+        address,
+        token,
+    })
+}
+
+/// Refuses what [`connected`] refuses before it opens a connection, for a command that reaches
+/// another remote first: a bad variable, a token without an address, no address, or one that
+/// may not be contacted.
+///
+/// # Errors
+///
+/// As [`connected`], but for the sign-in.
+pub fn nameable(remote: Option<&str>, key: &str) -> Result<(), RemoteError> {
+    named(remote, key).map(drop)
+}
+
+/// The client of [`connected`], or, where `unsigned` allows and the person has no sign-in to the
+/// remote, that of [`reading`].
+fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, RemoteError> {
+    let Named {
+        timeout,
+        wait,
+        address,
+        token,
+    } = named(remote, key)?;
+    let token = match token {
         Some(token) => token,
         None => match signins::held(&address, timeout) {
             Ok(token) => token,

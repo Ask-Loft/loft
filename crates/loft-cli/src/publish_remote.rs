@@ -55,6 +55,9 @@ pub fn publish(
     previous: Option<&Lock>,
 ) -> Result<Outcome, String> {
     let key = &document.id.key().to_string();
+    // Before the other documents' remotes are asked, so that what names this document's remote
+    // is refused before any connection.
+    remote::nameable(document.remote.as_deref(), key).map_err(through)?;
     interface::confirm(document)?;
     let client = remote::connected(document.remote.as_deref(), key).map_err(through)?;
     let head::Answered { head, visibility } = head::fetch(&client, key).map_err(through)?;

@@ -94,9 +94,11 @@ again. `loft pull --sequence <n>` writes an earlier published state, and
 
 `loft remote remove` disconnects the document and forgets your sign-in to the server; commit
 `spec/loftspec.yaml` again. In CI, `LOFT_REMOTE_ENDPOINT` and `LOFT_REMOTE_TOKEN` point a command
-at the server with a token of its own, without a sign-in; `LOFT_REMOTE_TIMEOUT` sets how long a
-call may take (30 seconds by default), and `LOFT_REMOTE_WAIT` how long a command may wait, once,
-when the server asks it to try again later.
+at the server with a token of its own, without a sign-in. Set both: a token from the environment
+goes only to an address from the environment, never to the one `spec/loftspec.yaml` names, and a
+command refuses `LOFT_REMOTE_TOKEN` alone. `LOFT_REMOTE_TIMEOUT` sets how long a call may take
+(30 seconds by default), and `LOFT_REMOTE_WAIT` how long a command may wait, once, when the server
+asks it to try again later.
 
 ## The merge driver
 

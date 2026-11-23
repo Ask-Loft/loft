@@ -57,6 +57,25 @@ requirements:
         name: "With `LOFT_REMOTE_TOKEN` set, `loft/remotes.json` is not read."
       - key: 01a18e1f-8daa-7674-9603-5ad48f5ff9c5
         name: "A token that `LOFT_REMOTE_TOKEN` names is never refreshed."
+  - key: 01a209e1-45d1-7294-9f68-a48b57c1c8bf
+    statement:
+      form: unwanted
+      if: "`LOFT_REMOTE_TOKEN` is set to a non-empty value while `LOFT_REMOTE_ENDPOINT` is unset or empty"
+      system: "Loft"
+      shall: "refuse to reach the remote and exit 1."
+    criteria:
+      - key: 01a209e1-45d1-7294-9f68-a48c05c11d42
+        name: "The error names `LOFT_REMOTE_TOKEN` and `LOFT_REMOTE_ENDPOINT`, and says that the token goes only to an address that `LOFT_REMOTE_ENDPOINT` names."
+      - key: 01a209e1-45d1-7294-9f68-a48d415195e7
+        name: "The token is not sent to the address that the manifest names."
+      - key: 01a209e1-45d1-7294-9f68-a48e73baab1b
+        name: "No connection is opened, to the document's remote or to another document's."
+      - key: 01a209e1-45d1-7294-9f68-a48f3044d649
+        name: "Nothing is written."
+      - key: 01a209e1-45d1-7294-9f68-a490fec0a87e
+        name: "With both set, the request carries the token to the address that `LOFT_REMOTE_ENDPOINT` names."
+      - key: 01a209e1-45d1-7294-9f68-a491b54ea440
+        name: "`loft remote set` and `loft remote login`, which send no such token, are not refused."
   - key: 01a156aa-d531-70a7-88e0-0bf6e06c5184
     statement:
       form: unwanted
@@ -141,6 +160,27 @@ requirements:
         name: "An `http` address off the loopback interface is never contacted."
       - key: 01a156aa-d531-70a7-88e0-0bffbc9b38d9
         name: "The error names the address."
+  - key: 01a209e1-45d1-7294-9f68-a4928fa6b3e3
+    statement:
+      form: unwanted
+      if: "the remote's address holds a query, a fragment or user information"
+      system: "Loft"
+      shall: "refuse to reach it and exit 1."
+    criteria:
+      - key: 01a209e1-45d1-7294-9f68-a493812f1b0a
+        name: "An address with a `?` after its path is never contacted."
+      - key: 01a209e1-45d1-7294-9f68-a4943492644c
+        name: "An address with a `#` after its path is never contacted."
+      - key: 01a209e1-45d1-7294-9f68-a49512741527
+        name: "An address with user information before its host is never contacted."
+      - key: 01a209e1-45d1-7294-9f68-a49677e801a5
+        name: "The error says which of the three the address holds, and names the address without its user information."
+      - key: 01a20a03-278e-71b9-a05f-99f0ad25950f
+        name: "An error for an address that does not read as one, with an `@` in it, leaves out what stands before the last `@`."
+      - key: 01a209e1-45d1-7294-9f68-a49704b4e72b
+        name: "`loft remote set` refuses such an address and writes nothing."
+      - key: 01a209e1-45d1-7294-9f68-a498f1ac3410
+        name: "An address with none of the three is reached as it is given."
   - key: 01a156aa-d531-70a7-88e0-0c007335154d
     statement:
       form: ubiquitous
@@ -203,6 +243,23 @@ requirements:
         name: "A problem document with the code `unauthenticated` is reported as a refused sign-in for the remote's address, and the error says that `loft remote login` signs in again."
       - key: 01a156aa-d531-70a7-88e0-0c121baaa69d
         name: "Nothing is written."
+  - key: 01a209e1-45d1-7294-9f68-a49943451c0b
+    statement:
+      form: unwanted
+      if: "an answer is longer than the limit Loft sets for it"
+      system: "Loft"
+      shall: "refuse and exit 1."
+    criteria:
+      - key: 01a209e1-45d1-7294-9f68-a49a295a002f
+        name: "Loft reads at most 1 MiB of an answer to a sign-in's request for metadata, a registration or tokens."
+      - key: 01a209e1-45d1-7294-9f68-a49b8a69c24a
+        name: "Loft reads at most 64 MiB of any other answer of a remote."
+      - key: 01a209e1-45d1-7294-9f68-a49c72eacf1a
+        name: "An answer as long as its limit is read whole."
+      - key: 01a209e1-45d1-7294-9f68-a49d19e3a156
+        name: "The error names the address."
+      - key: 01a209e1-45d1-7294-9f68-a49ef34ce022
+        name: "Nothing is written."
   - key: 01a1587b-106c-7784-8c2e-ba410e7ec31b
     statement:
       form: unwanted
@@ -263,6 +320,22 @@ requirements:
         name: "A problem document whose code lies outside the closed set is reported with its status and its code."
       - key: 01a15877-f751-7779-991e-1189b3626598
         name: "An answer that is not a problem document is reported with its status."
+  - key: 01a209e1-45d1-7294-9f68-a49f3ccf6c1a
+    statement:
+      form: ubiquitous
+      system: "Loft"
+      shall: "write to standard error no control character that the answer of a remote or of an authorization server holds."
+    criteria:
+      - key: 01a209e1-45d1-7294-9f68-a4a094eab1c4
+        name: "A character in U+0000 to U+001F other than the line feed, the tab and a carriage return that a line feed follows, U+007F, or a character in U+0080 to U+009F is written to standard error as U+FFFD."
+      - key: 01a20a03-278e-71b9-a05f-99f12802a8a9
+        name: "A carriage return that a line feed follows is left out."
+      - key: 01a209e1-45d1-7294-9f68-a4a173e26f93
+        name: "The `code` and the `detail` of a remote's problem document are written so."
+      - key: 01a209e1-45d1-7294-9f68-a4a29d2bf737
+        name: "The `error` of an authorization server's refusal is written so."
+      - key: 01a209e1-45d1-7294-9f68-a4a313e64eee
+        name: "Every other character is written as it is."
   - key: 01a15877-f751-7779-991e-118ab4b07b02
     statement:
       form: unwanted
