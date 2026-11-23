@@ -21081,6 +21081,30 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_refusal_is_reported_with_its_status_and_code_and_says_when_to_try_again"
         body: 84c0b1d75fdb9cd78e217514d66e1cff163ef52608ffcdbfe4333a17300045c2
+  - node: 01a209e1-45d1-7294-9f68-a4a094eab1c4
+    reviewed: c7727fa4a55f009ac19a452c81a7f71079c5d6a534112cc50da50ba2acef229c
+    tests:
+      - file: "crates/loft-cli/src/out.rs"
+        name: "each_control_character_but_the_line_feed_and_the_tab_is_written_as_the_replacement_character"
+        body: d020c39b2113400a3a36f50a4aa5c9c3798b7b61d316a316a2b31c0d8d71c559
+  - node: 01a209e1-45d1-7294-9f68-a4a173e26f93
+    reviewed: 291c4cf9bcf6bd66f4368b40487837e812ffa4ca3d6a81791a6e224bc39b6ee4
+    tests:
+      - file: "crates/loft-cli/tests/remote_words.rs"
+        name: "a_problem_document_s_code_and_detail_reach_standard_error_without_their_control_characters"
+        body: 49265059b5158c1ee9a3dd5ce34f4a4e982a6b6e50a638ea516b80437a954296
+  - node: 01a209e1-45d1-7294-9f68-a4a29d2bf737
+    reviewed: 1911d14245322df4e61fb38956c3b4680a78c99c6b29d21daa48ddf728cb0afd
+    tests:
+      - file: "crates/loft-cli/tests/remote_words.rs"
+        name: "an_authorization_server_s_error_reaches_standard_error_without_its_control_characters"
+        body: 344ecfaf3c84b32fe29491d746ac7bd1fa6aff46faa96395d156ef5079b35980
+  - node: 01a209e1-45d1-7294-9f68-a4a313e64eee
+    reviewed: e470299a262de200ed24760d2f4ae7a4aad2a1a4d1eeceea9b9fdcbe107e3f2e
+    tests:
+      - file: "crates/loft-cli/src/out.rs"
+        name: "every_other_character_is_written_as_it_is"
+        body: d9c090325d7d7db60e0c4161f8b5d1e64168f18b276493d366b0dd0d77acf42b
   - node: 01a15877-f751-7779-991e-118b450b985c
     reviewed: f6c71e61621d4265c58f28a04c66263cefc6799989336e3165a5cd95e4f29d0f
     tests:

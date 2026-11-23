@@ -99,6 +99,7 @@ mod remote_refresh;
 mod remote_remove;
 mod remote_set_help;
 mod remote_sign_in_refusals;
+mod remote_words;
 mod render;
 mod render_openspec;
 mod review;

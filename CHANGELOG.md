@@ -45,6 +45,10 @@ Unreleased below, and those of each 2.4 release still to come.
 - A remote's address that holds a query, a fragment or user information is refused, by
   `loft remote set` and by every command that reaches the remote, and an error that names an
   address leaves out its user information.
+- Standard error holds no control character but line feeds and tabs: each other one, in U+0000 to
+  U+001F, U+007F or U+0080 to U+009F, is written as U+FFFD. An error may quote what a remote or an
+  authorization server answered, such as a problem document's `code` and `detail`, and an escape
+  sequence in it no longer reaches the terminal.
 
 - An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
   `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its
