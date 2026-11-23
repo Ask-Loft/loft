@@ -3,7 +3,7 @@
 //! document's, mended by `loft interface login` and the handle's entry of `documents`. Both
 //! wordings lie here, side by side, so that neither drifts from the other.
 
-use super::{RemoteError, TOKEN_ENV};
+use super::{ENDPOINT_ENV, RemoteError, TOKEN_ENV};
 use crate::network;
 
 /// Whose remote an error came from, for the words of what mends it.
@@ -48,7 +48,9 @@ impl RemoteError {
         let own = remedy == Remedy::Own;
         let token = |said: String| {
             if own {
-                format!("{said}, or {TOKEN_ENV} names a token for one run")
+                format!(
+                    "{said}, or {TOKEN_ENV} names a token for one run, sent to the address {ENDPOINT_ENV} names"
+                )
             } else {
                 said
             }

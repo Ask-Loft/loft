@@ -68,6 +68,11 @@ pub enum RemoteError {
     SignInElsewhere { address: String, resource: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),
+    /// The address holds `part`, a query, a fragment or user information, which no remote's
+    /// address holds; `address` is the address without its user information.
+    AddressPart { address: String, part: &'static str },
+    /// `LOFT_REMOTE_TOKEN` is set and `LOFT_REMOTE_ENDPOINT` is not.
+    TokenAlone,
     /// The remote holds no document under the key.
     NotHeld { key: String },
     /// The remote holds no published state with the lock's publish sequence and state root.
@@ -119,6 +124,17 @@ impl fmt::Display for RemoteError {
                 formatter,
                 "{address}: a remote's address is `https`, or `http` on the loopback interface"
             ),
+            Self::AddressPart { address, part } => write!(
+                formatter,
+                "{address}: a remote's address holds no {part}: each request goes to the \
+                 address followed by its endpoint's path"
+            ),
+            Self::TokenAlone => write!(
+                formatter,
+                "{TOKEN_ENV} is set and {ENDPOINT_ENV} is not: a token from the environment \
+                 goes only to an address that {ENDPOINT_ENV} names, never to the one \
+                 spec/loftspec.yaml names"
+            ),
             Self::NotHeld { key } => write!(
                 formatter,
                 "the remote holds no document {key}: `loft remote set <address>` connects the \
@@ -163,15 +179,58 @@ impl fmt::Display for RemoteError {
     }
 }
 
-/// `address` as a remote's address, if it may be contacted.
+/// `address` as a remote's address, if it may be contacted and is an origin and a path alone:
+/// each request goes to the address followed by its endpoint's path, which a query or a
+/// fragment would swallow, and user information would travel with every request and be printed
+/// with every error.
+///
+/// # Errors
+///
+/// The address is neither `https` nor `http` on the loopback interface, or holds a query, a
+/// fragment or user information.
+pub fn checked(address: &str) -> Result<&str, RemoteError> {
+    let uri =
+        network::allowed(address).ok_or_else(|| RemoteError::Address(without_user(address)))?;
+    let user = (uri.authority()).is_some_and(|authority| authority.as_str().contains('@'));
+    let part = if address.contains('#') {
+        "fragment"
+    } else if address.contains('?') {
+        "query"
+    } else if user {
+        "user information"
+    } else {
+        return Ok(address);
+    };
+    Err(RemoteError::AddressPart {
+        address: without_user(address),
+        part,
+    })
+}
+
+/// `address` as the address of a request, if it may be contacted, whatever else it holds: an
+/// authorization server's endpoint may hold a query.
 ///
 /// # Errors
 ///
 /// The address is neither `https` nor `http` on the loopback interface.
-pub fn checked(address: &str) -> Result<&str, RemoteError> {
+pub fn contactable(address: &str) -> Result<&str, RemoteError> {
     network::allowed(address)
         .map(|_| address)
-        .ok_or_else(|| RemoteError::Address(address.to_owned()))
+        .ok_or_else(|| RemoteError::Address(without_user(address)))
+}
+
+/// `address` without the user information before its host, so that no error prints a password
+/// an address was given.
+fn without_user(address: &str) -> String {
+    let Some((scheme, rest)) = address.split_once("://") else {
+        return address.to_owned();
+    };
+    let end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
+    let (authority, tail) = rest.split_at(end);
+    let host = authority
+        .rsplit_once('@')
+        .map_or(authority, |(_, host)| host);
+    format!("{scheme}://{host}{tail}")
 }
 
 /// The value of `name` as a positive whole number of seconds, or none when it is not set.
@@ -241,13 +300,20 @@ pub fn reading(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
 fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, RemoteError> {
     let timeout = timeout()?;
     let wait = seconds(WAIT_ENV)?;
-    let address = environment::text(ENDPOINT_ENV)
+    let endpoint = environment::text(ENDPOINT_ENV);
+    let given = environment::text(TOKEN_ENV);
+    // The manifest's address is the repository's to name, and a token from the environment is
+    // not the repository's to send: it goes only where the environment says.
+    if given.is_some() && endpoint.is_none() {
+        return Err(RemoteError::TokenAlone);
+    }
+    let address = endpoint
         .or_else(|| remote.map(str::to_owned))
         .ok_or_else(|| RemoteError::NoAddress {
             key: key.to_owned(),
         })?;
     checked(&address)?;
-    let token = match environment::text(TOKEN_ENV) {
+    let token = match given {
         Some(token) => token,
         None => match signins::live(&address, timeout) {
             Ok(sign_in) => sign_in.access_token,

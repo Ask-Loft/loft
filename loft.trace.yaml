@@ -20613,6 +20613,51 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "the_environment_names_the_address_and_the_token_for_one_run"
         body: 78cd1422001783e2a53cb9e9b20962c7fc67fc6a10e207757af0fa6429598698
+  - node: 01a209e1-45d1-7294-9f68-a48c05c11d42
+    reviewed: 8bdeff9d6d0428aa2094873c57c4d44cad694943bb3e02c34d6b62dc657f781b
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_publish_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: cd890e8522bb78b911d45330d58b4ca7f916ac9aafb079fce48639bf024576b2
+  - node: 01a209e1-45d1-7294-9f68-a48d415195e7
+    reviewed: 7d582a936609058cccdd0042525066ad624622e77c93a6480ca1618d1403232c
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_publish_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: cd890e8522bb78b911d45330d58b4ca7f916ac9aafb079fce48639bf024576b2
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_pull_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: a47a57b755faf23661fdf18d657cd225d29c520d862fea8dee8a0a0331739234
+  - node: 01a209e1-45d1-7294-9f68-a48e73baab1b
+    reviewed: 98c322ee2f62a46c9aafa01ef85db7c7a4201d245dd1f7b9110af5c59f915c8a
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_publish_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: cd890e8522bb78b911d45330d58b4ca7f916ac9aafb079fce48639bf024576b2
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_pull_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: a47a57b755faf23661fdf18d657cd225d29c520d862fea8dee8a0a0331739234
+  - node: 01a209e1-45d1-7294-9f68-a48f3044d649
+    reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_publish_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: cd890e8522bb78b911d45330d58b4ca7f916ac9aafb079fce48639bf024576b2
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_pull_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: a47a57b755faf23661fdf18d657cd225d29c520d862fea8dee8a0a0331739234
+  - node: 01a209e1-45d1-7294-9f68-a490fec0a87e
+    reviewed: 56f0b34d0e0ee18c6db51c876265d362b6d48c36af1f22dc218ddf340035a100
+    tests:
+      - file: "crates/loft-cli/tests/publish_connected_reach.rs"
+        name: "the_environment_names_the_address_and_the_token_for_one_run"
+        body: 78cd1422001783e2a53cb9e9b20962c7fc67fc6a10e207757af0fa6429598698
+  - node: 01a209e1-45d1-7294-9f68-a491b54ea440
+    reviewed: d4674a9966a5b02e5f379bff136f16e0e76f5ab452075ea343b84dd1c11ca537
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "set_and_login_with_a_token_alone_in_the_environment_are_not_refused_and_send_none_of_it"
+        body: 72dbaa66cc950d89b0e8eac837541331503a9516c95c7a8d17aa321e3b03d202
   - node: 01a156aa-d531-70a7-88e0-0bf7778e83f4
     reviewed: a9916b15a0e7f76d8f7b5f10400b39219c3a63f46103d6e8b30f1880338e6416
     tests:
@@ -20781,6 +20826,45 @@ links:
       - file: "crates/loft-cli/tests/remote_connect.rs"
         name: "an_address_that_may_not_be_contacted_is_refused_before_anything"
         body: be3eace91c97bec68c18c0a959cbf811fdf371b64e350942c529bda8dfa484af
+  - node: 01a209e1-45d1-7294-9f68-a493812f1b0a
+    reviewed: 007bad159ad7eefe020d74d2edb282ea3f9d5b0837956e31a758cfff24394050
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "an_address_with_a_query_a_fragment_or_user_information_is_never_contacted"
+        body: 3e06310c64d100f43e582a585d06acae73c5f1b5d4863db2a551ddac721a665c
+  - node: 01a209e1-45d1-7294-9f68-a4943492644c
+    reviewed: 24b092ce3e132cb33f03eaa1d6535f76b71a3dbc3788dc63fa3733f2a3971226
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "an_address_with_a_query_a_fragment_or_user_information_is_never_contacted"
+        body: 3e06310c64d100f43e582a585d06acae73c5f1b5d4863db2a551ddac721a665c
+  - node: 01a209e1-45d1-7294-9f68-a49512741527
+    reviewed: 7b35a5022f894e13d6ec874a86d4fad7220889ab4c6d1c742981944dcbefc794
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "an_address_with_a_query_a_fragment_or_user_information_is_never_contacted"
+        body: 3e06310c64d100f43e582a585d06acae73c5f1b5d4863db2a551ddac721a665c
+  - node: 01a209e1-45d1-7294-9f68-a49677e801a5
+    reviewed: 83bb3cb5b6b8dc8112585de41cbb7ac034ada1cc23d12182fd5127fc9d7e74b2
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "an_address_with_a_query_a_fragment_or_user_information_is_never_contacted"
+        body: 3e06310c64d100f43e582a585d06acae73c5f1b5d4863db2a551ddac721a665c
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "set_refuses_an_address_with_a_query_a_fragment_or_user_information_and_writes_nothing"
+        body: ce139e55bade3150db524c1e9bbd36fa3cdbcd38588b0337ec0132cb3b92cb55
+  - node: 01a209e1-45d1-7294-9f68-a49704b4e72b
+    reviewed: 07cdadb55738d73670e9302ea83f35d110758db60125a52a3cdc4288cab04197
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "set_refuses_an_address_with_a_query_a_fragment_or_user_information_and_writes_nothing"
+        body: ce139e55bade3150db524c1e9bbd36fa3cdbcd38588b0337ec0132cb3b92cb55
+  - node: 01a209e1-45d1-7294-9f68-a498f1ac3410
+    reviewed: 8dffe5fbe05a207cb3d1354e6d9108a3bf16031801ec7a0a4190ca7c93db8b1c
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "an_address_with_none_of_the_three_is_reached_as_it_is_given"
+        body: 7cbe57184df7145f8d9aad257af8e424358462d6e922772b897fc60b7f6b9cb8
   - node: 01a156aa-d531-70a7-88e0-0c0166ab1840
     reviewed: fd06309c71bae0ee7422538bd22e3a98698983e11b84db5722c777bc95f3a9bd
     tests:

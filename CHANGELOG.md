@@ -37,6 +37,14 @@ Unreleased below, and those of each 2.4 release still to come.
   `.loft/save/plan.json` named, so a repository that carried one could write and delete files
   outside the tree on the first `loft` command run in it. A save refuses the same paths before it
   stages a file.
+- `LOFT_REMOTE_TOKEN` without `LOFT_REMOTE_ENDPOINT` is refused, with exit 1, before any
+  connection: a token from the environment goes only to an address from the environment. Until now
+  it went to the address the manifest's `remote` names, which the repository chooses. A run that
+  sets the token alone, in CI or by hand, now sets the address too. `loft remote set` and
+  `loft remote login`, which send no such token, are unchanged.
+- A remote's address that holds a query, a fragment or user information is refused, by
+  `loft remote set` and by every command that reaches the remote, and an error that names an
+  address leaves out its user information.
 
 - An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
   `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its
