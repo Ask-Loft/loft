@@ -123,3 +123,37 @@ impl RemoteError {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Remedy;
+    use crate::remote::RemoteError;
+
+    #[test]
+    fn a_resource_not_covered_is_said_with_the_login_of_whose_remote_it_is() {
+        let (address, resource) = ("https://h.example/documents/one", "https://h.example/notes");
+        let error = RemoteError::NotCovered {
+            address: address.to_owned(),
+            resource: resource.to_owned(),
+        };
+        let own = error.said(Remedy::Own).unwrap();
+        let other = error
+            .said(Remedy::Other {
+                handle: "shelves",
+                listed: true,
+            })
+            .unwrap();
+        for said in [&own, &other] {
+            for named in [address, resource, "does not cover"] {
+                assert!(said.contains(named), "{named}: {said}");
+            }
+        }
+        assert!(
+            own.contains("`loft remote login` signs in again to reach it"),
+            "{own}"
+        );
+        let login = "`loft interface login shelves` signs in again to reach it";
+        assert!(other.contains(login), "{other}");
+        assert!(!other.contains("loft remote"), "{other}");
+    }
+}

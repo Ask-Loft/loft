@@ -314,8 +314,16 @@ fn a_recorded_refresh_the_remote_refuses_stops_a_publish_and_remote_set_signs_in
         "though the own token is live: {output:?}"
     );
     let address = run.remote.address();
-    let said = [address.as_str(), retired.as_str(), "does not cover"];
-    assert_says(&output, &[said[0], said[1], said[2], "loft remote login"]);
+    let said = [
+        address.as_str(),
+        retired.as_str(),
+        "has lapsed",
+        "`invalid_target`",
+    ];
+    assert_says(
+        &output,
+        &[said[0], said[1], said[2], said[3], "loft remote login"],
+    );
     assert_eq!(
         browser.visits(),
         Vec::<String>::new(),
@@ -419,11 +427,13 @@ fn a_status_whose_recorded_refresh_the_remote_refuses_names_the_resource_and_int
     let file = fs::read(sign_ins_file(&scratch)).unwrap();
     let (message, _, browser) = status_refused(&scratch);
     let (address, retired) = (remote.address(), retired(&remote));
-    let login = format!("`loft interface login {HANDLE}` signs in again to reach it");
-    for said in [&address, &retired, "does not cover", &login] {
+    let login = format!("`loft interface login {HANDLE}` signs in again");
+    for said in [&address, &retired, "has lapsed", "`invalid_target`", &login] {
         assert!(message.contains(said), "{said}: {message}");
     }
-    assert!(!message.contains("loft remote"), "{message}");
+    for unsaid in ["does not cover", "loft remote"] {
+        assert!(!message.contains(unsaid), "{unsaid}: {message}");
+    }
     assert_eq!(
         browser.visits(),
         Vec::<String>::new(),

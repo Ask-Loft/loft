@@ -88,8 +88,10 @@ Unreleased below, and those of each 2.4 release still to come.
   `loft/remotes.json` and keeps every other member of the sign-in. For a sign-in over companion
   resources, the resource of a refresh whose answer is lost, or does not read, is recorded as
   `refreshing` and refreshed again first, since presenting the rotated refresh token for another
-  resource may end the whole sign-in. An earlier `loft` that refreshes such a sign-in keeps it for
-  the remote's own resource alone: sign in again to cover the companion resources.
+  resource may end the whole sign-in. A recorded refresh that the authorization server refuses
+  with `invalid_target` reads as a lapsed sign-in, since every command of the sign-in would repeat
+  it first: `loft remote login` signs you in again. An earlier `loft` that refreshes such a sign-in
+  keeps it for the remote's own resource alone: sign in again to cover the companion resources.
 - A refresh that the authorization server refuses with `invalid_target` no longer reads as a lapsed
   sign-in: `loft` says that the sign-in was made for a former resource of the remote and that
   `loft remote login` signs you in again, or `loft interface login <handle>` at another document's

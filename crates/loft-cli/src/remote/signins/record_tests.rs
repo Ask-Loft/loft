@@ -119,14 +119,16 @@ fn a_recorded_refresh_refused_invalid_target_keeps_the_record_and_sends_no_other
         let scratch = Scratch::holding(&remote, &entry);
         let before = scratch.bytes();
         let refused = access_token(&scratch.file, &address, None, TIMEOUT).unwrap_err();
-        let not_covered = RemoteError::NotCovered {
-            address: address.clone(),
-            resource: retired.clone(),
-        };
-        assert_eq!(refused, not_covered, "{seconds}: no token is given");
+        let error = format!("its refresh recorded for {retired} was refused with `invalid_target`");
+        assert_eq!(
+            refused,
+            lapsed(&address, &error),
+            "{seconds}: no token is given"
+        );
         let message = refused.to_string();
-        let names = message.contains(&retired) && message.contains("loft remote login");
-        assert!(names, "{seconds}: {message}");
+        for said in [retired.as_str(), "has lapsed", "loft remote login"] {
+            assert!(message.contains(said), "{seconds}: {said}: {message}");
+        }
         let repeated = (refresh_token(&entry), vec![retired]);
         assert_eq!(sent(&remote), [repeated], "{seconds}: no other refresh");
         assert_eq!(remote.refreshes(), 0, "{seconds}");

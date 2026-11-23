@@ -69,7 +69,7 @@ fn repeat(
     recorded: &str,
 ) -> Result<(), RemoteError> {
     let issued = signin::refresh(&held.sign_in, recorded, run.timeout)
-        .map_err(|error| failure(run, &held.sign_in, recorded, error))?;
+        .map_err(|error| repeat_failure(run, &held.sign_in, recorded, error))?;
     let own = &held.sign_in.resource;
     kept::keep_issued(entry(entries, run.address), own, recorded, &issued);
     super::write(run.file, entries)
@@ -130,6 +130,22 @@ fn failure(run: &Run, sign_in: &SignIn, resource: &str, error: TokenError) -> Re
             address: sign_in.token_endpoint.clone(),
             reason,
         },
+    }
+}
+
+/// The error that `error`, the failure of the repeat of a refresh of `sign_in` recorded for
+/// `recorded`, stops a call with: a lapsed sign-in where the authorization server refuses with
+/// `invalid_target` the repeat for a companion resource, since the record stays and every refresh
+/// of the sign-in would repeat it first; otherwise as [`failure`] gives it.
+fn repeat_failure(run: &Run, sign_in: &SignIn, recorded: &str, error: TokenError) -> RemoteError {
+    match error {
+        TokenError::Refused(code) if code == INVALID_TARGET && recorded != sign_in.resource => {
+            RemoteError::Lapsed {
+                address: run.address.to_owned(),
+                error: format!("its refresh recorded for {recorded} was refused with `{code}`"),
+            }
+        }
+        error => failure(run, sign_in, recorded, error),
     }
 }
 
