@@ -20596,7 +20596,7 @@ links:
         name: "a_redirect_from_the_remote_is_not_followed"
         body: d945c5cfa07c7b54e1f4a68e0ae3cfbdfb2d24a9eadf3cd345f4614571409306
   - node: 01a156aa-d531-70a7-88e0-0c05ea347c84
-    reviewed: f849cb49aa7de453c058204afa131725658adbe949a6e7576e096f6ee7a3c124
+    reviewed: e341b0b28e0c3bd3ff63e26236e55f94539523ba369236fad8801f45a0f360dc
     tests:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "the_environment_names_the_address_and_the_token_for_one_run"
@@ -21187,7 +21187,7 @@ links:
         name: "metadata_that_misnames_itself_or_lacks_what_a_sign_in_needs_ends_the_sign_in"
         body: 641c03b0bc141dcdbe65c8c080a2a679e3d4fabcf961ac1586959fe494f70079
   - node: 01a18e1f-8daa-7674-9603-5adf5decc59d
-    reviewed: f6271a49b0098ccbae38456b8c183d028f93fbbf21728d95211d0b5f8e93e3f2
+    reviewed: 6ad72fd0573541c7c1e05fbaf532ae7f623904a591928b80d69d7718b9886c14
     tests:
       - file: "crates/loft-cli/tests/remote_login.rs"
         name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
@@ -21217,7 +21217,7 @@ links:
         name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
         body: ff3022f344d4de385ef4a8fbf0911cdb7fb1ddfd7979cf724ed659906243628a
   - node: 01a1f967-f816-765c-9e69-fb957ac55be9
-    reviewed: 08d1b62dcf5f0a70f3dfb6dc7f5dca3bdf90bff35548ebf7e147e13375a1fb54
+    reviewed: 5624a31f7b26798e806dd39c47f4d196b99ac3940864f8670d1e896a5e1df1de
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "only_an_answer_a_wrong_address_gives_brings_the_form_with_the_manifest_s_key"
@@ -22368,6 +22368,30 @@ links:
       - file: "crates/loft-cli/tests/remote_contract.rs"
         name: "a_request_is_admitted_only_with_the_scenario_s_token_or_one_the_simulator_issued"
         body: 33b691a65e63d72668f183bdf447aa66a41ae8ac39f9b7855865bd171178209b
+  - node: 01a20625-1784-70df-9261-fdae7d682033
+    reviewed: f135b58e6df257198d9e9b9d7f6cd0a87dd0ee5f85c174ec2177128b8537e4b8
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_public.rs"
+        name: "a_public_document_s_head_and_states_are_answered_without_a_token_as_with_one"
+        body: f4a1ca9317a239181c5d1a30ea2d8942ed020a88520df1b61abd41238fc538c6
+  - node: 01a20625-1784-70df-9261-fdaf90c85617
+    reviewed: f3aa51f7b46e22ceff9aaeae5a1dd9e68104fc2d573bcd4d3e16e9a53801385c
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_public.rs"
+        name: "a_public_document_s_head_and_states_are_answered_without_a_token_as_with_one"
+        body: f4a1ca9317a239181c5d1a30ea2d8942ed020a88520df1b61abd41238fc538c6
+  - node: 01a20625-1784-70df-9261-fdb0acef5f4c
+    reviewed: 46659c8c17c87acddcee2539b5fb43d99e6a7c3182a2f2f6f35cd739213126e2
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_public.rs"
+        name: "a_public_document_s_drafts_and_writes_are_challenged_without_a_token"
+        body: 747797496f96f4bb34546a7591b11c0567a152ea01bfd2e8fc93f18fc9409d51
+  - node: 01a20625-1784-70df-9261-fdb1111a0060
+    reviewed: 9ae58a1fa1dd3877a869e4097dc5a332fe3e27dd7bb42069ec38e7a66b0ba700
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_public.rs"
+        name: "a_public_document_s_drafts_and_writes_are_challenged_without_a_token"
+        body: 747797496f96f4bb34546a7591b11c0567a152ea01bfd2e8fc93f18fc9409d51
   - node: 01a1f967-f818-72bf-b82d-caee9eb72ece
     reviewed: ae82daa86af267c19bd1cd8933d51ef16579994a3e265cacbca368c27945fc60
     tests:
@@ -22404,6 +22428,18 @@ links:
       - file: "crates/loft-cli/tests/remote_contract.rs"
         name: "the_head_names_the_document_s_key_lock_and_file_digests_in_path_order"
         body: 74a689a65221324e56698e85e53da8920e740a4bdbbc87a881faf6b97934b638
+  - node: 01a20625-1784-70df-9261-fdb27f4e4272
+    reviewed: 6ba292310f0d1ba90c2423d75582c43d4121f34b0d262dbaff434b36f722e23b
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_public.rs"
+        name: "the_head_names_the_visibility_its_scenario_names_beside_the_document_key"
+        body: 89e81a8c891190025d4e6058f0b858b93243b8d2d0c9062466088cbb21c30d47
+  - node: 01a20625-1784-70df-9261-fdb3e3b2d604
+    reviewed: 8ecf65f04c55d79db02143c4a07e7b0c104e53fcabfe7533b22fee9ad81bb088
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_public.rs"
+        name: "the_head_names_the_visibility_its_scenario_names_beside_the_document_key"
+        body: 89e81a8c891190025d4e6058f0b858b93243b8d2d0c9062466088cbb21c30d47
   - node: 01a156ae-6a51-7230-a9a1-fa9a03ea62f8
     reviewed: 2fbcee29e79ecba1face8e2f2b101703bf0ff20f6ea6dddf3c1cdefe541b6961
     tests:

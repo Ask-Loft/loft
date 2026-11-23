@@ -12,10 +12,11 @@ pub(super) fn head(state: &State) -> Response {
     let Some(held) = &state.held else {
         return refusal("not_found");
     };
-    Response::json(
-        200,
-        &json!({ "documentKey": state.scenario.key, "head": head_of(held) }),
-    )
+    let mut answer = json!({ "documentKey": state.scenario.key, "head": head_of(held) });
+    if let Some(visibility) = state.scenario.visibility {
+        answer["visibility"] = json!(visibility.name());
+    }
+    Response::json(200, &answer)
 }
 
 /// The head as `GET <address>/head` gives it: `null`, or its lock and its files' digests.

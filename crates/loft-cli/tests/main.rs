@@ -81,6 +81,7 @@ mod remote_contract;
 mod remote_contract_auth;
 mod remote_contract_failures;
 mod remote_contract_origins;
+mod remote_contract_public;
 mod remote_contract_refreshes;
 mod remote_contract_refusals;
 mod remote_contract_resources;
