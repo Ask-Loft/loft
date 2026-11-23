@@ -5,7 +5,7 @@
 use serde_json::{Value, json};
 use software_plant::remote::{Remote, RemoteScenario, TOKEN, Visibility};
 
-use crate::common::calls::call;
+use crate::common::calls::{Answer, call};
 use crate::common::remote::history;
 use crate::remote_contract::{assert_problem, get};
 
@@ -42,13 +42,18 @@ fn a_public_document_s_drafts_and_writes_are_challenged_without_a_token() {
         ("POST", "/publish", Some(json!({}))),
     ] {
         let answer = call(method, &format!("{address}{path}"), None, body.as_ref());
-        assert_problem(&answer, 401, "unauthenticated");
-        let challenge = answer.header("www-authenticate").unwrap();
-        assert!(
-            challenge.starts_with("Bearer resource_metadata=\""),
-            "{challenge}"
-        );
+        assert_challenged(&answer);
     }
+}
+
+/// Asserts that `answer` is `401 Unauthorized` with the code `unauthenticated` and the challenge.
+fn assert_challenged(answer: &Answer) {
+    assert_problem(answer, 401, "unauthenticated");
+    let challenge = answer.header("www-authenticate").unwrap();
+    assert!(
+        challenge.starts_with("Bearer resource_metadata=\""),
+        "{challenge}"
+    );
 }
 
 #[test]
@@ -71,7 +76,7 @@ fn the_head_names_the_visibility_its_scenario_names_beside_the_document_key() {
 fn a_private_document_s_head_is_challenged_without_a_token() {
     let remote = serving(Some(Visibility::Private));
     let answer = call("GET", &format!("{}/head", remote.address()), None, None);
-    assert_problem(&answer, 401, "unauthenticated");
+    assert_challenged(&answer);
 }
 
 #[test]
@@ -80,5 +85,5 @@ fn a_public_scenario_that_holds_no_document_challenges_its_head_without_a_token(
         .visibility(Visibility::Public);
     let remote = Remote::start(scenario);
     let answer = call("GET", &format!("{}/head", remote.address()), None, None);
-    assert_problem(&answer, 401, "unauthenticated");
+    assert_challenged(&answer);
 }
