@@ -165,6 +165,61 @@ fn a_journal_of_an_unknown_format_is_refused_and_left_alone() {
 }
 
 #[test]
+fn a_journal_that_names_a_file_no_save_of_the_tree_writes_is_refused_and_left_alone() {
+    for path in [
+        "README.md",
+        "../escaped",
+        "spec/../README.md",
+        ".git/config",
+    ] {
+        let scratch = tree();
+        scratch.put("README.md", "readme\n");
+        scratch.put(".loft/save/files/0", "staged\n");
+        scratch.put(
+            ".loft/save/plan.json",
+            &format!(
+                r#"{{"format":"loftspec-save/1","write":[{{"path":{path:?},"staged":"0"}}],"remove":[{path:?}]}}"#
+            ),
+        );
+        let before = scratch.snapshot();
+        let error = journal::recover(&scratch.0).unwrap_err();
+        assert!(
+            matches!(&error, StoreError::Journal(dir, message)
+                if dir.ends_with(JOURNAL) && message.contains(path)),
+            "{error}"
+        );
+        assert_eq!(scratch.snapshot(), before, "{path}");
+    }
+}
+
+#[test]
+fn a_save_writes_each_file_the_format_places_beside_the_tree_and_no_other() {
+    for name in [
+        "loft.lock.json",
+        "loft.trace.yaml",
+        "v1-sidecar.json",
+        "openspec-sidecar.json",
+    ] {
+        let scratch = tree();
+        let mut changes = Changes::default();
+        changes
+            .write
+            .insert(RootPath::beside(name), b"beside\n".to_vec());
+        journal::save(&scratch.0, &changes).unwrap();
+        assert_eq!(scratch.snapshot()[name], b"beside\n", "{name}");
+    }
+    let scratch = tree();
+    let before = scratch.snapshot();
+    let mut changes = Changes::default();
+    changes
+        .write
+        .insert(RootPath::beside("README.md"), b"beside\n".to_vec());
+    let error = journal::save(&scratch.0, &changes).unwrap_err();
+    assert!(matches!(error, StoreError::Journal(..)), "{error}");
+    assert_eq!(scratch.snapshot(), before);
+}
+
+#[test]
 fn a_second_save_is_refused_while_a_journal_is_there() {
     let scratch = tree();
     let _prepared = journal::prepare(&scratch.0, &changes()).unwrap();

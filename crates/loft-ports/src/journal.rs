@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::plan::{FORMAT, PLAN, PLAN_STAGED, Plan, STAGED, Staged};
 use crate::sync::{sync_dir, write_synced};
-use crate::{PortError, io_error};
+use crate::{PortError, check, io_error};
 
 /// A file's path from the root, its parts separated by `/`.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
@@ -54,6 +54,7 @@ pub struct Journal {
     root: PathBuf,
     dir: PathBuf,
     floor: Option<String>,
+    beside: BTreeSet<String>,
 }
 
 impl Journal {
@@ -65,15 +66,44 @@ impl Journal {
             root: root.into(),
             dir: dir.into(),
             floor: None,
+            beside: BTreeSet::new(),
         }
     }
 
-    /// The same journal, which removes a directory a removal leaves empty only below `floor`, a
-    /// directory under the root; without a floor, any below the root.
+    /// The same journal, which saves only files under `floor`, a directory under the root, and
+    /// removes a directory a removal leaves empty only below it; without a floor, any file and
+    /// any directory below the root.
     #[must_use]
     pub fn keeping(mut self, floor: &str) -> Self {
         self.floor = Some(floor.to_owned());
         self
+    }
+
+    /// The same journal, which also saves the files at `paths`, outside its floor.
+    #[must_use]
+    pub fn beside(mut self, paths: &[&str]) -> Self {
+        self.beside
+            .extend(paths.iter().map(|&path| path.to_owned()));
+        self
+    }
+
+    /// Whether the journal saves the file at `path`: any with no floor, or else one under the
+    /// floor or named beside it.
+    pub(crate) fn saves(&self, path: &str) -> bool {
+        self.floor.as_ref().is_none_or(|floor| {
+            let under = path.strip_prefix(floor.as_str());
+            under.is_some_and(|rest| rest.starts_with('/')) || self.beside.contains(path)
+        })
+    }
+
+    /// Refuses a path that the journal does not save, in words that name it.
+    fn checked(&self, path: &RelPath) -> Result<(), PortError> {
+        check::path(self, path.as_str()).map_err(|why| {
+            PortError::Journal(
+                self.dir.clone(),
+                format!("a save cannot write `{}`, which {why}", path.as_str()),
+            )
+        })
     }
 
     #[must_use]
@@ -110,10 +140,14 @@ impl Journal {
     ///
     /// # Errors
     ///
-    /// A journal is already there, or a staged file cannot be written.
+    /// A journal is already there, a path is not one the journal saves, or a staged file
+    /// cannot be written.
     pub fn prepare(&self, changes: &Changes) -> Result<Prepared, PortError> {
         if self.dir.exists() {
             return Err(PortError::Pending(self.dir.clone()));
+        }
+        for path in changes.write.keys().chain(&changes.remove) {
+            self.checked(path)?;
         }
         let staged_dir = self.dir.join(STAGED);
         fs::create_dir_all(&staged_dir).map_err(io_error(&staged_dir))?;
@@ -142,8 +176,9 @@ impl Journal {
     ///
     /// # Errors
     ///
-    /// The plan cannot be read or names an unknown format, or a file cannot be renamed or
-    /// removed.
+    /// The plan cannot be read, names an unknown format, or names a path or a staged file that
+    /// is not the journal's to save, in which case no file changes; or a file cannot be renamed
+    /// or removed.
     pub fn recover(&self) -> Result<(), PortError> {
         if !self.dir.exists() {
             return Ok(());

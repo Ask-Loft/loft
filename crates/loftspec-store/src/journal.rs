@@ -10,6 +10,9 @@ use std::path::Path;
 
 use loft_ports::journal::{self as port, Journal, RelPath};
 use loftspec::codec::{Files, SpecPath};
+use loftspec::convert::{openspec, v1};
+use loftspec::publish::LOCK;
+use loftspec::trace::TRACE;
 use serde::{Deserialize, Serialize};
 
 use crate::StoreError;
@@ -74,10 +77,15 @@ impl Changes {
     }
 }
 
-/// The journal of the tree under `root`, which removes a directory left empty only under
-/// `spec/`.
+/// The files a save may write beside `spec/`: the lock, the trace and each importer's sidecar.
+const BESIDE: [&str; 4] = [LOCK, TRACE, v1::SIDECAR, openspec::SIDECAR];
+
+/// The journal of the tree under `root`, which saves the files under `spec/` and those the
+/// Format places beside it, and removes a directory left empty only under `spec/`.
 fn journal(root: &Path) -> Journal {
-    Journal::new(root, root.join(JOURNAL)).keeping(SPEC)
+    Journal::new(root, root.join(JOURNAL))
+        .keeping(SPEC)
+        .beside(&BESIDE)
 }
 
 /// A save whose files are staged and whose plan is not yet committed.

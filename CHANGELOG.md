@@ -28,6 +28,15 @@ Unreleased below, and those of each 2.4 release still to come.
   visibility its scenario sets in its head answer. A scenario can forbid reading the head, as it
   can forbid a create or an import. The remote contract suite holds a real remote's answers for a
   public document to the simulator's, on demand, at `LOFT_REMOTE_CONTRACT_PUBLIC_ADDRESS`.
+- A save's journal is checked whole before any file moves. The next command to open the tree
+  finishes a committed journal only where each path it names is a plain path under `spec/`, or the
+  lock, the trace or an importer's sidecar beside it, outside any `.git` directory and behind no
+  link that leads out of the directory that holds `spec/`, and each staged file is a regular file
+  under the number the journal gave it. A journal that names anything else is refused with exit 1,
+  naming its directory, and no file changes. Until now `loft` moved whatever a
+  `.loft/save/plan.json` named, so a repository that carried one could write and delete files
+  outside the tree on the first `loft` command run in it. A save refuses the same paths before it
+  stages a file.
 
 - An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
   `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its
