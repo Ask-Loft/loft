@@ -55,27 +55,28 @@ impl Plan {
     /// anything may have written it.
     fn check(&self, journal: &Journal) -> Result<(), PortError> {
         let refused = |named: &str, why: &str| {
-            PortError::Journal(
-                journal.dir().to_owned(),
-                format!(
-                    "no save wrote this journal: it names `{named}`, which {why}. No file was \
-                     changed; delete the journal's directory to go on"
-                ),
-            )
+            PortError::Journal(journal.dir().to_owned(), Self::not_a_save(Some(named), why))
         };
         let staged_dir = journal.dir().join(STAGED);
         for entry in &self.write {
             check::staged(&staged_dir, &entry.staged).map_err(|why| refused(&entry.staged, why))?;
         }
-        for path in self
-            .write
-            .iter()
-            .map(|entry| &entry.path)
-            .chain(&self.remove)
-        {
-            check::path(journal, path.as_str()).map_err(|why| refused(path.as_str(), why))?;
-        }
-        Ok(())
+        let named = (self.write.iter().map(|entry| &entry.path)).chain(&self.remove);
+        check::paths(journal, named.map(RelPath::as_str))
+            .map_err(|found| refused(found.path, found.why))
+    }
+
+    /// The words for a journal that no save wrote: what it names, where it names something,
+    /// why that is refused, and what to do about it.
+    pub(crate) fn not_a_save(named: Option<&str>, why: &str) -> String {
+        let what = named.map_or_else(
+            || "it".to_owned(),
+            |named| format!("it names `{named}`, which"),
+        );
+        format!(
+            "no save wrote this journal: {what} {why}. No file was changed; delete the journal's \
+             directory, or the link to it, to go on"
+        )
     }
 
     /// Puts every staged file in place, removes the files to remove, and deletes the journal.

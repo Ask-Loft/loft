@@ -17964,6 +17964,54 @@ links:
       - file: "crates/loft-ports/tests/journal_checks.rs"
         name: "a_journal_with_no_floor_still_refuses_git_s_directory"
         body: 95c62880c52e380be9f0398b2983c79c6a3be794cedb70ba15e9ccbb80d83088
+  - node: 01a209e1-45d1-7294-9f68-a4855c942b83
+    reviewed: 3830aae26272dad3ce922bf03d849fb7b8f526b87fae66ad0431702de4315ee7
+    tests:
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_path_under_the_floor_behind_a_link_that_leaves_the_floor_is_refused"
+        body: 4b23f3fab9e81acd3e8491cec308630bb4955e7f951d3a5e27a1a75c3d56c85a
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_path_behind_a_link_that_leads_out_of_the_root_is_refused"
+        body: 9cb192aa03435cd8a164b21ccd5a972493ea22f932a2c4622f2842b6f0cd222e
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_floor_that_is_a_link_out_of_the_root_is_refused"
+        body: 0877c8f9f70859f8c06ad810eaa6b231c4b699f89ff8a44fcf663a45bcc93fb4
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_path_behind_a_link_that_stays_under_the_floor_is_saved"
+        body: cd9af63c46cd8907b55cb04d16fb38fb937af810f0a7342b2b18002e6af6daac
+  - node: 01a20a03-278e-71b9-a05f-99eb30e99d65
+    reviewed: 04bef885da772b0dc57ddd7b7b1a138e54d2b37bc86fccb94814c259bc2bb5ee
+    tests:
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_path_beside_the_floor_behind_a_link_that_leaves_the_root_is_refused"
+        body: 6b8b2f88277505cedc0dabf053c3b7576746238a0f3d21a1ef0b32df4966020f
+  - node: 01a20a03-278e-71b9-a05f-99ecd03e7fb8
+    reviewed: b6a250283f3fe9ab23264195996cf0928a5afde18d539f7df92c4094267eb50f
+    tests:
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_path_behind_a_link_into_git_s_directory_is_refused"
+        body: df640012b53b50f7352eee752a01265fb1691c6cd5173163a1a6ac12b8ad7dec
+  - node: 01a20a03-278e-71b9-a05f-99ed1efd9662
+    reviewed: 47d91fa88377ec51eeef63161177ab0320f2855faf7ed03c14ddc48298cbb5fd
+    tests:
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_part_that_a_file_system_may_read_as_git_s_directory_is_refused"
+        body: 4188f0539c6feb5bdda78a5102e86f339ff98f79e077db2b9b5ce731c5426946
+  - node: 01a20a03-278e-71b9-a05f-99ee32954183
+    reviewed: 2e9732b4a099470c399f4adad0fb29e47985eefc74d58af5d3722472bfc595af
+    tests:
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_part_that_holds_a_colon_or_a_backslash_is_refused"
+        body: 36644663db43d348b8d9f1d5bc425ed07d62ee0e7be9906124eb139676f96f39
+  - node: 01a20a03-278e-71b9-a05f-99ef71382cf8
+    reviewed: 060cc86d82165ed30338d3d9bae863bd2514a7714b5e017a658678cd378dae97
+    tests:
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_journal_whose_directory_lies_behind_a_link_is_refused_and_nothing_is_deleted"
+        body: 39728b02139321109a31ac3ce8a89cb2294dc824d0f22de2ba4d824f94f5a95c
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_journal_whose_staged_files_lie_behind_a_link_is_refused"
+        body: 6b3f437d1e20fbd8f0d2bfaecb0a9a6866232db39d7ef456069abaa4b4c18cde
   - node: 01a209e1-45d1-7294-9f68-a486fa0057d9
     reviewed: cc94fba0f5956301cb501a2a9c7a4e17bb2db7f3bca38309bfbcfb93e970f9fc
     tests:
@@ -17976,6 +18024,9 @@ links:
       - file: "crates/loft-ports/tests/journal_checks.rs"
         name: "a_staged_file_that_is_a_link_is_refused"
         body: 893d17461ffee10345880d65670c3e097f778dd66820742d9da549ded54436ba
+      - file: "crates/loft-ports/tests/journal_checks.rs"
+        name: "a_staged_file_that_is_a_directory_is_refused"
+        body: 297bf4c2b64a2d883dc2f453bca1e057c676f1812f96f55aef6ed88e06a3be05
   - node: 01a209e1-45d1-7294-9f68-a488514c225f
     reviewed: b7968cb1426f5d9c6ad9a2e705bf04c19acdf77d5f92e0f643e5e7b49578d047
     tests:
@@ -20634,6 +20685,18 @@ links:
       - file: "crates/loft-cli/tests/remote_address_checks.rs"
         name: "a_pull_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
         body: a47a57b755faf23661fdf18d657cd225d29c520d862fea8dee8a0a0331739234
+  - node: 01a209e1-45d1-7294-9f68-a48e73baab1b
+    reviewed: c8c93e8017f54f44bfbbd17e47423dd1e480cfabe85568d42ebb2ef9380ecc94
+    tests:
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_publish_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: cd890e8522bb78b911d45330d58b4ca7f916ac9aafb079fce48639bf024576b2
+      - file: "crates/loft-cli/tests/remote_address_checks.rs"
+        name: "a_pull_with_a_token_from_the_environment_and_no_address_from_it_opens_no_connection"
+        body: a47a57b755faf23661fdf18d657cd225d29c520d862fea8dee8a0a0331739234
+      - file: "crates/loft-cli/tests/publish_copies.rs"
+        name: "a_publish_with_a_token_and_no_address_from_the_environment_asks_no_other_document_s_remote"
+        body: 536d17520345e0e8e53ba5e0a1a94517d2be1aa0ac085bf7f85f77aaed035f5e
   - node: 01a209e1-45d1-7294-9f68-a48f3044d649
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
@@ -20849,13 +20912,19 @@ links:
         body: 3e06310c64d100f43e582a585d06acae73c5f1b5d4863db2a551ddac721a665c
       - file: "crates/loft-cli/tests/remote_address_checks.rs"
         name: "set_refuses_an_address_with_a_query_a_fragment_or_user_information_and_writes_nothing"
-        body: ce139e55bade3150db524c1e9bbd36fa3cdbcd38588b0337ec0132cb3b92cb55
+        body: 65c6499deeadc2a6975cc5afaf8797adf27169271e13c0191a30646840509a56
+  - node: 01a20a03-278e-71b9-a05f-99f0ad25950f
+    reviewed: 05dedd82d7f57809f131385e9eddaba8e04ea27ef394e0b1984286698e838065
+    tests:
+      - file: "crates/loft-cli/src/remote/address.rs"
+        name: "an_error_names_an_address_without_its_user_information"
+        body: 8e46ba1b9bc2ca73e406ef59f38a8e5cb01ae4b1c56f258fd0db572402c9777d
   - node: 01a209e1-45d1-7294-9f68-a49704b4e72b
     reviewed: 07cdadb55738d73670e9302ea83f35d110758db60125a52a3cdc4288cab04197
     tests:
       - file: "crates/loft-cli/tests/remote_address_checks.rs"
         name: "set_refuses_an_address_with_a_query_a_fragment_or_user_information_and_writes_nothing"
-        body: ce139e55bade3150db524c1e9bbd36fa3cdbcd38588b0337ec0132cb3b92cb55
+        body: 65c6499deeadc2a6975cc5afaf8797adf27169271e13c0191a30646840509a56
   - node: 01a209e1-45d1-7294-9f68-a498f1ac3410
     reviewed: 8dffe5fbe05a207cb3d1354e6d9108a3bf16031801ec7a0a4190ca7c93db8b1c
     tests:
@@ -20971,41 +21040,44 @@ links:
     reviewed: d7984eb98ce57b0e9e72c5054d94f9f6db7b79ce7828ebda3b2acbb6e99ae0fe
     tests:
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
-        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
-        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
+        name: "a_token_endpoint_s_answer_is_read_up_to_1_mib_and_refused_past_it"
+        body: 28cf05c1be5917e965865a6449ec64415fea3aebdd3827e2f7d9440b5bc151f1
+      - file: "crates/loft-cli/tests/remote_answer_limits.rs"
+        name: "a_sign_in_s_metadata_is_read_up_to_1_mib_and_refused_past_it"
+        body: fbd5cd63551193b7a551d7be5b85972e704e3b842759b2e81a4d4031cca5a222
   - node: 01a209e1-45d1-7294-9f68-a49b8a69c24a
     reviewed: c4d6b7468363b4492827d37945ca045cf56ac439b40161dae5f826277a0ae6fa
     tests:
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
         name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
-        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+        body: 7a961f5d3f429bc9015579e69240d33f4e209db0bf8e613d09f8ae5771908ef0
   - node: 01a209e1-45d1-7294-9f68-a49c72eacf1a
     reviewed: 2c6b2637a28ef9ec8c6ac2dc04e60b45b2fd9848e4c93267c0ed61679424a031
     tests:
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
         name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
-        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+        body: 7a961f5d3f429bc9015579e69240d33f4e209db0bf8e613d09f8ae5771908ef0
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
-        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
-        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
+        name: "a_token_endpoint_s_answer_is_read_up_to_1_mib_and_refused_past_it"
+        body: 28cf05c1be5917e965865a6449ec64415fea3aebdd3827e2f7d9440b5bc151f1
   - node: 01a209e1-45d1-7294-9f68-a49d19e3a156
     reviewed: a956a62802ace4ed3c7e722dc0dcdda137b74946416e1a18220595ab03f65602
     tests:
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
         name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
-        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+        body: 7a961f5d3f429bc9015579e69240d33f4e209db0bf8e613d09f8ae5771908ef0
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
-        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
-        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
+        name: "a_token_endpoint_s_answer_is_read_up_to_1_mib_and_refused_past_it"
+        body: 28cf05c1be5917e965865a6449ec64415fea3aebdd3827e2f7d9440b5bc151f1
   - node: 01a209e1-45d1-7294-9f68-a49ef34ce022
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
         name: "an_answer_of_a_remote_is_read_up_to_64_mib_and_refused_past_it"
-        body: 7c60cfe0bcdc13f895c4474c8732e7edd321c6df72e1eff19f7254631feea95b
+        body: 7a961f5d3f429bc9015579e69240d33f4e209db0bf8e613d09f8ae5771908ef0
       - file: "crates/loft-cli/tests/remote_answer_limits.rs"
-        name: "an_answer_to_a_sign_in_s_request_is_read_up_to_1_mib_and_refused_past_it"
-        body: eb853bab19ec62f69aed19e79855aa0d8ad50cf504deaf7702a5b0cf80be1fa5
+        name: "a_token_endpoint_s_answer_is_read_up_to_1_mib_and_refused_past_it"
+        body: 28cf05c1be5917e965865a6449ec64415fea3aebdd3827e2f7d9440b5bc151f1
   - node: 01a1587b-106c-7784-8c2e-ba42824b9735
     reviewed: 76d2ac0117f154cb27d03248ea21239a1cb68d54ced38214f5a96b972dadc003
     tests:
@@ -21117,18 +21189,33 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_refusal_is_reported_with_its_status_and_code_and_says_when_to_try_again"
         body: 84c0b1d75fdb9cd78e217514d66e1cff163ef52608ffcdbfe4333a17300045c2
+  - node: 01a209e1-45d1-7294-9f68-a4a094eab1c4
+    reviewed: a147842e2a58072b48d30e80960503e9e56343dd91ea787adfd4c3880da69116
+    tests:
+      - file: "crates/loft-cli/src/out.rs"
+        name: "each_control_character_but_the_line_feed_and_the_tab_is_written_as_the_replacement_character"
+        body: bf806627055dbd3038ca7bc5d53214f2ca6e5edc4e12b45ad9bb17ff6474d8f5
+      - file: "crates/loft-cli/src/out.rs"
+        name: "a_carriage_return_that_a_line_feed_follows_is_left_out_and_one_alone_is_replaced"
+        body: be3cff6e37139e3ef5d0a337d8001d0714ba6348467168dc7ce26e432b71fc58
+  - node: 01a20a03-278e-71b9-a05f-99f12802a8a9
+    reviewed: 3cdee3522b0067969aad7f1c2c0e3f4331be292b4765e4bed3abf2adee811f50
+    tests:
+      - file: "crates/loft-cli/src/out.rs"
+        name: "a_carriage_return_that_a_line_feed_follows_is_left_out_and_one_alone_is_replaced"
+        body: be3cff6e37139e3ef5d0a337d8001d0714ba6348467168dc7ce26e432b71fc58
   - node: 01a209e1-45d1-7294-9f68-a4a173e26f93
     reviewed: 291c4cf9bcf6bd66f4368b40487837e812ffa4ca3d6a81791a6e224bc39b6ee4
     tests:
       - file: "crates/loft-cli/tests/remote_words.rs"
         name: "a_problem_document_s_code_and_detail_reach_standard_error_without_their_control_characters"
-        body: 49265059b5158c1ee9a3dd5ce34f4a4e982a6b6e50a638ea516b80437a954296
+        body: f865a7f7778760172a7fbef24291023ddba06f4cf881279a8b2975cab14e2f5e
   - node: 01a209e1-45d1-7294-9f68-a4a29d2bf737
     reviewed: 1911d14245322df4e61fb38956c3b4680a78c99c6b29d21daa48ddf728cb0afd
     tests:
       - file: "crates/loft-cli/tests/remote_words.rs"
         name: "an_authorization_server_s_error_reaches_standard_error_without_its_control_characters"
-        body: 344ecfaf3c84b32fe29491d746ac7bd1fa6aff46faa96395d156ef5079b35980
+        body: 307f953d692a7bc186abff93992542f0049adccbf3476a920e2b5cb1c71e3d90
   - node: 01a209e1-45d1-7294-9f68-a4a313e64eee
     reviewed: e470299a262de200ed24760d2f4ae7a4aad2a1a4d1eeceea9b9fdcbe107e3f2e
     tests:

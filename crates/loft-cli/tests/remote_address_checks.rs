@@ -10,7 +10,7 @@ use software_plant::remote::{Remote, RemoteScenario, TOKEN};
 
 use crate::common::connected::{Connected, connected};
 use crate::common::remote::history;
-use crate::common::signed_in::{self, document, run, sign_ins_file};
+use crate::common::signed_in::{self, run, sign_ins_file};
 use crate::common::{Scratch, tree};
 use crate::remote_connect::published;
 
@@ -126,14 +126,7 @@ fn set_refuses_an_address_with_a_query_a_fragment_or_user_information_and_writes
             BrowserScenario::Visiting,
             None,
         );
-        assert_eq!(output.status.code(), Some(1), "{address}");
-        let message = document(&output)["errors"][0]["message"]
-            .as_str()
-            .unwrap()
-            .to_owned();
-        assert!(message.contains(part), "{address}: {message}");
-        assert!(message.contains("remote.example"), "{address}: {message}");
-        assert!(!message.contains("a-secret"), "{address}: {message}");
+        refused(&output, &[part, "remote.example"], &["a-secret"]);
         assert_eq!(browser.visits(), Vec::<String>::new(), "{address}");
         assert_eq!(tree(&scratch.0), before, "{address}");
         assert!(!sign_ins_file(&scratch).exists(), "{address}");

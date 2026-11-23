@@ -92,12 +92,7 @@ pub fn get_json(url: &str, left: Duration) -> Option<(u16, Vec<u8>)> {
 
 /// The most bytes read of an answer, unless its caller sets another limit: 64 MiB, which a
 /// published state of a document stays well within.
-pub const BODY_LIMIT: u64 = 64 << 20;
-
-/// The most bytes read of an answer to a sign-in's request for metadata, a registration or
-/// tokens: 1 MiB, since each is a small JSON object, and the address of each but the first
-/// comes from an answer before it.
-pub const SIGN_IN_LIMIT: u64 = 1 << 20;
+const BODY_LIMIT: u64 = 64 << 20;
 
 /// An answer as it came: its status, the headers a caller reads, and its body.
 #[derive(Debug, Clone)]

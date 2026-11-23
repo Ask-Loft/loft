@@ -5,7 +5,6 @@
 //! message goes to standard error once, and [`finish`] turns the exit code into 1 (RQ-154,
 //! AC-579). A failure to write standard error has nowhere to be reported, and is ignored.
 
-use std::borrow::Cow;
 use std::fmt;
 use std::io::{self, ErrorKind, Write};
 use std::process::ExitCode;
@@ -31,7 +30,7 @@ macro_rules! outln {
     };
 }
 
-/// Prints a line on standard error, as `eprintln!` does.
+/// Prints a line on standard error, as `eprintln!` does, but for its control characters.
 macro_rules! errln {
     ($($argument:tt)*) => {
         $crate::out::stderr_line(format_args!($($argument)*))
@@ -54,19 +53,16 @@ pub fn stdout_line(line: fmt::Arguments<'_>) {
 /// answered, so each control character but the line feed and the tab is written as U+FFFD:
 /// nothing a line quotes can move the cursor, clear the screen or rename the window.
 pub fn stderr_line(line: fmt::Arguments<'_>) {
-    let line = line.to_string();
-    let _ = writeln!(io::stderr().lock(), "{}", printable(&line));
+    let _ = writeln!(io::stderr().lock(), "{}", printable(&line.to_string()));
 }
 
 /// `text` with each control character but the line feed and the tab replaced by U+FFFD: every
-/// character in U+0000 to U+001F but those two, U+007F, and U+0080 to U+009F.
-fn printable(text: &str) -> Cow<'_, str> {
+/// character in U+0000 to U+001F but those two, U+007F, and U+0080 to U+009F. A carriage return
+/// that a line feed follows is left out, since the two end a line where a program such as git
+/// writes them, and one alone would move the cursor back over what was written.
+fn printable(text: &str) -> String {
     let unprintable = |character: char| character.is_control() && !matches!(character, '\n' | '\t');
-    if text.contains(unprintable) {
-        Cow::Owned(text.replace(unprintable, "\u{fffd}"))
-    } else {
-        Cow::Borrowed(text)
-    }
+    text.replace("\r\n", "\n").replace(unprintable, "\u{fffd}")
 }
 
 /// Flushes standard output and gives the code the command exits with: `code`, or 1 when writing
@@ -108,9 +104,16 @@ mod tests {
             .filter_map(char::from_u32)
             .filter(|character| !matches!(character, '\n' | '\t'));
         for control in controls {
-            let written = printable(&format!("a{control}b")).into_owned();
+            let written = printable(&format!("a{control}b"));
             assert_eq!(written, "a\u{fffd}b", "U+{:04X}", u32::from(control));
         }
+    }
+
+    #[test]
+    fn a_carriage_return_that_a_line_feed_follows_is_left_out_and_one_alone_is_replaced() {
+        assert_eq!(printable("one\r\ntwo\r\n"), "one\ntwo\n");
+        assert_eq!(printable("shown\rhidden\r"), "shown\u{fffd}hidden\u{fffd}");
+        assert_eq!(printable("a\r\r\nb"), "a\u{fffd}\nb");
     }
 
     #[test]

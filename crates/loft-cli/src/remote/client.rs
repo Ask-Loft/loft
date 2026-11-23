@@ -318,7 +318,7 @@ impl Client {
         body: Option<&[u8]>,
     ) -> Result<Reply, RemoteError> {
         let url = format!("{}/{path}", self.address);
-        network::allowed(&url).ok_or_else(|| RemoteError::Address(url.clone()))?;
+        super::contactable(&url)?;
         let bearer = (self.token.borrow().as_ref()).map(|token| format!("Bearer {token}"));
         let mut headers = vec![("Accept", "application/json")];
         if let Some(bearer) = &bearer {

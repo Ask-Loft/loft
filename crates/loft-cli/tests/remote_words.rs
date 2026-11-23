@@ -5,36 +5,20 @@
 
 use std::process::Output;
 
-use serde_json::{Value, json};
-use software_plant::http::{Answer, Request, Responder, Response, Server};
+use serde_json::json;
+use software_plant::http::{Response, Server};
 use software_plant::remote::{RemoteScenario, TOKEN, document_address};
-use software_plant::{BrowserScenario, Clock};
 
-use crate::common::EPOCH;
 use crate::common::connected::{Connected, connected};
-use crate::common::signed_in::{self, granted, keep};
+use crate::common::remote::Always;
 
 /// Clears the screen, renames the window, and ends with a C1 sequence, a DEL and a carriage
 /// return.
 const HOSTILE: &str = "\u{1b}[2J\u{1b}]0;renamed\u{7}gone\u{9b}31m\u{7f}\r";
 
-/// Answers every request with one status and one JSON body.
-struct Saying(u16, Value);
-
-impl Responder for Saying {
-    fn answer(&mut self, _: &Request) -> Answer {
-        Response::json(self.0, &self.1).into()
-    }
-}
-
 /// Publishes with the variables `env`, its errors written as text on standard error.
 fn publish(run: &Connected, env: &[(&str, &str)]) -> Output {
-    let (mut command, _) = signed_in::command_at(
-        &run.scratch,
-        BrowserScenario::Absent,
-        Some(&run.git),
-        &Clock::fixed(EPOCH).passing(),
-    );
+    let mut command = run.command();
     command
         .envs(env.iter().copied())
         .arg("publish")
@@ -42,9 +26,9 @@ fn publish(run: &Connected, env: &[(&str, &str)]) -> Output {
         .unwrap()
 }
 
-/// Asserts that the run failed and wrote `said` to standard error with no control character
-/// but line feeds and tabs, and with the replacement character where one was.
-fn written_without_controls(output: &Output, said: &str) {
+/// What the failed run wrote to standard error, after asserting that it holds `said`, no
+/// control character but line feeds and tabs, and the replacement character where one was.
+fn written_without_controls(output: &Output, said: &str) -> String {
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     let text = String::from_utf8(output.stderr.clone()).unwrap();
     assert!(text.contains(said), "{text:?}");
@@ -54,6 +38,7 @@ fn written_without_controls(output: &Output, said: &str) {
         .collect();
     assert_eq!(controls, Vec::<char>::new(), "{text:?}");
     assert!(text.contains('\u{fffd}'), "{text:?}");
+    text
 }
 
 #[test]
@@ -61,7 +46,7 @@ fn a_problem_document_s_code_and_detail_reach_standard_error_without_their_contr
     let run = connected(1, 1, RemoteScenario::accepting);
     run.change();
     let refusal = json!({ "code": "con\u{1b}[31mflict", "detail": HOSTILE });
-    let server = Server::start(Saying(409, refusal));
+    let server = Server::start(Always(Response::json(409, &refusal)));
     let address = document_address(&server.url(), &run.history.key);
     let output = publish(
         &run,
@@ -70,8 +55,7 @@ fn a_problem_document_s_code_and_detail_reach_standard_error_without_their_contr
             ("LOFT_REMOTE_TOKEN", TOKEN),
         ],
     );
-    written_without_controls(&output, "gone");
-    let text = String::from_utf8_lossy(&output.stderr).into_owned();
+    let text = written_without_controls(&output, "gone");
     assert!(text.contains("con\u{fffd}[31mflict"), "{text:?}");
     assert!(text.contains("\u{fffd}[2J"), "{text:?}");
 }
@@ -80,17 +64,10 @@ fn a_problem_document_s_code_and_detail_reach_standard_error_without_their_contr
 fn an_authorization_server_s_error_reaches_standard_error_without_its_control_characters() {
     let run = connected(1, 1, RemoteScenario::accepting);
     run.change();
-    let server = Server::start(Saying(
-        400,
-        json!({ "error": "invalid\u{1b}[2J_grant\u{9b}" }),
-    ));
-    // The kept sign-in is about to expire, so it is refreshed first, at the server above.
-    let mut kept = granted(&run.remote, 60);
-    kept["tokenEndpoint"] = json!(format!("{}/token", server.url()));
-    keep(&run.scratch, &json!({ run.remote.address(): kept }));
-    let output = publish(&run, &[]);
-    written_without_controls(&output, "_grant");
-    let text = String::from_utf8_lossy(&output.stderr).into_owned();
+    let refusal = json!({ "error": "invalid\u{1b}[2J_grant\u{9b}" });
+    let server = Server::start(Always(Response::json(400, &refusal)));
+    run.refreshing_at(&format!("{}/token", server.url()));
+    let text = written_without_controls(&publish(&run, &[]), "_grant");
     assert!(
         text.contains("invalid\u{fffd}[2J_grant\u{fffd}"),
         "{text:?}"

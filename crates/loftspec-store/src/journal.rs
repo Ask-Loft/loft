@@ -78,7 +78,7 @@ impl Changes {
 }
 
 /// The files a save may write beside `spec/`: the lock, the trace and each importer's sidecar.
-const BESIDE: [&str; 4] = [LOCK, TRACE, v1::SIDECAR, openspec::SIDECAR];
+pub const BESIDE: [&str; 4] = [LOCK, TRACE, v1::SIDECAR, openspec::SIDECAR];
 
 /// The journal of the tree under `root`, which saves the files under `spec/` and those the
 /// Format places beside it, and removes a directory left empty only under `spec/`.
@@ -101,8 +101,9 @@ pub struct Committed(port::Committed);
 ///
 /// # Errors
 ///
-/// A journal is already there, or a file cannot be written, renamed or removed. Before the
-/// commit every file is as it was; after it, [`recover`] finishes the save.
+/// A journal is already there, a path is not one a save of the tree writes, or a file cannot be
+/// written, renamed or removed. Before the commit every file is as it was; after it,
+/// [`recover`] finishes the save.
 pub fn save(root: &Path, changes: &Changes) -> Result<(), StoreError> {
     Ok(journal(root).save(&changes.port())?)
 }
@@ -111,7 +112,8 @@ pub fn save(root: &Path, changes: &Changes) -> Result<(), StoreError> {
 ///
 /// # Errors
 ///
-/// A journal is already there, or a staged file cannot be written.
+/// A journal is already there, a path is not one a save of the tree writes, or a staged file
+/// cannot be written.
 pub fn prepare(root: &Path, changes: &Changes) -> Result<Prepared, StoreError> {
     Ok(Prepared(journal(root).prepare(&changes.port())?))
 }
@@ -144,7 +146,9 @@ impl Committed {
 ///
 /// # Errors
 ///
-/// The plan cannot be read or names an unknown format, or a file cannot be renamed or removed.
+/// The journal is not one a save wrote: its directory lies behind a link, or its plan cannot be
+/// read, names an unknown format, or names a path or a staged file that is not a save's. Or a
+/// file cannot be renamed or removed.
 pub fn recover(root: &Path) -> Result<(), StoreError> {
     Ok(journal(root).recover()?)
 }

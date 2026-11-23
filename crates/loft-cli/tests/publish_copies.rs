@@ -71,6 +71,21 @@ fn a_publish_whose_copies_match_is_sent_as_any_publish_is() {
 }
 
 #[test]
+fn a_publish_with_a_token_and_no_address_from_the_environment_asks_no_other_document_s_remote() {
+    let (run, other) = holding_a_copy();
+    let asked = (other.requests().len(), run.remote.requests().len());
+    let output = run.publish_with(&[("LOFT_REMOTE_TOKEN", "a-token-from-the-environment")]);
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = Connected::message(&output);
+    assert!(message.contains("LOFT_REMOTE_ENDPOINT"), "{message}");
+    assert_eq!(
+        (other.requests().len(), run.remote.requests().len()),
+        asked,
+        "no connection is opened"
+    );
+}
+
+#[test]
 fn a_copy_that_differs_is_refused_naming_its_file_and_nothing_is_sent_or_written() {
     let (run, _other) = holding_a_copy();
     let text = fs::read_to_string(run.scratch.file(COPY)).unwrap();

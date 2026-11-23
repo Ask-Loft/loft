@@ -43,7 +43,7 @@ struct Parser<'a> {
 
 /// The most mappings and sequences one may lie inside another. The parser reads a nested one by
 /// calling itself, so a bound on the depth is a bound on its stack, whatever a file holds.
-const MAX_DEPTH: usize = 64;
+pub(super) const MAX_DEPTH: usize = 64;
 
 /// Whether a line's text starts a sequence entry.
 fn is_entry(text: &str) -> bool {

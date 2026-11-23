@@ -4,6 +4,7 @@
 //! themselves, through [`client::Client`]. A token is sent only in the `Authorization` header of
 //! a request to the remote, and printed nowhere.
 
+mod address;
 pub mod browser;
 pub mod client;
 pub mod files;
@@ -23,8 +24,8 @@ use std::time::Duration;
 use loft_ports::clock::{Clock as _, SystemClock};
 
 use crate::environment;
-use crate::network;
 
+pub use address::{checked, contactable};
 pub use client::{Client, Refusal};
 pub use said::Remedy;
 pub use whose::Whose;
@@ -179,60 +180,6 @@ impl fmt::Display for RemoteError {
     }
 }
 
-/// `address` as a remote's address, if it may be contacted and is an origin and a path alone:
-/// each request goes to the address followed by its endpoint's path, which a query or a
-/// fragment would swallow, and user information would travel with every request and be printed
-/// with every error.
-///
-/// # Errors
-///
-/// The address is neither `https` nor `http` on the loopback interface, or holds a query, a
-/// fragment or user information.
-pub fn checked(address: &str) -> Result<&str, RemoteError> {
-    let uri =
-        network::allowed(address).ok_or_else(|| RemoteError::Address(without_user(address)))?;
-    let user = (uri.authority()).is_some_and(|authority| authority.as_str().contains('@'));
-    let part = if address.contains('#') {
-        "fragment"
-    } else if address.contains('?') {
-        "query"
-    } else if user {
-        "user information"
-    } else {
-        return Ok(address);
-    };
-    Err(RemoteError::AddressPart {
-        address: without_user(address),
-        part,
-    })
-}
-
-/// `address` as the address of a request, if it may be contacted, whatever else it holds: an
-/// authorization server's endpoint may hold a query.
-///
-/// # Errors
-///
-/// The address is neither `https` nor `http` on the loopback interface.
-pub fn contactable(address: &str) -> Result<&str, RemoteError> {
-    network::allowed(address)
-        .map(|_| address)
-        .ok_or_else(|| RemoteError::Address(without_user(address)))
-}
-
-/// `address` without the user information before its host, so that no error prints a password
-/// an address was given.
-fn without_user(address: &str) -> String {
-    let Some((scheme, rest)) = address.split_once("://") else {
-        return address.to_owned();
-    };
-    let end = rest.find(['/', '?', '#']).unwrap_or(rest.len());
-    let (authority, tail) = rest.split_at(end);
-    let host = authority
-        .rsplit_once('@')
-        .map_or(authority, |(_, host)| host);
-    format!("{scheme}://{host}{tail}")
-}
-
 /// The value of `name` as a positive whole number of seconds, or none when it is not set.
 ///
 /// # Errors
@@ -295,16 +242,25 @@ pub fn reading(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
     reached(remote, key, true)
 }
 
-/// The client of [`connected`], or, where `unsigned` allows and the person has no sign-in to the
-/// remote, that of [`reading`].
-fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, RemoteError> {
+/// What names the remote of a connected document for one run, read before any connection, to
+/// this remote or another: how long a call may take and a run may wait, the address, from
+/// `LOFT_REMOTE_ENDPOINT` or else `remote`, and the token `LOFT_REMOTE_TOKEN` names.
+struct Named {
+    timeout: Duration,
+    wait: Option<u64>,
+    address: String,
+    token: Option<String>,
+}
+
+/// What names the remote of the document `key`, whose manifest names `remote`.
+fn named(remote: Option<&str>, key: &str) -> Result<Named, RemoteError> {
     let timeout = timeout()?;
     let wait = seconds(WAIT_ENV)?;
     let endpoint = environment::text(ENDPOINT_ENV);
-    let given = environment::text(TOKEN_ENV);
+    let token = environment::text(TOKEN_ENV);
     // The manifest's address is the repository's to name, and a token from the environment is
     // not the repository's to send: it goes only where the environment says.
-    if given.is_some() && endpoint.is_none() {
+    if token.is_some() && endpoint.is_none() {
         return Err(RemoteError::TokenAlone);
     }
     let address = endpoint
@@ -313,7 +269,35 @@ fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, Re
             key: key.to_owned(),
         })?;
     checked(&address)?;
-    let token = match given {
+    Ok(Named {
+        timeout,
+        wait,
+        address,
+        token,
+    })
+}
+
+/// Refuses what [`connected`] refuses before it opens a connection, for a command that reaches
+/// another remote first: a bad variable, a token without an address, no address, or one that
+/// may not be contacted.
+///
+/// # Errors
+///
+/// As [`connected`], but for the sign-in.
+pub fn nameable(remote: Option<&str>, key: &str) -> Result<(), RemoteError> {
+    named(remote, key).map(drop)
+}
+
+/// The client of [`connected`], or, where `unsigned` allows and the person has no sign-in to the
+/// remote, that of [`reading`].
+fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, RemoteError> {
+    let Named {
+        timeout,
+        wait,
+        address,
+        token,
+    } = named(remote, key)?;
+    let token = match token {
         Some(token) => token,
         None => match signins::live(&address, timeout) {
             Ok(sign_in) => sign_in.access_token,

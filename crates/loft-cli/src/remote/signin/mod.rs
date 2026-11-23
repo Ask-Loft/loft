@@ -165,6 +165,23 @@ fn random(bytes: usize) -> Result<String, String> {
     Ok(base64url(&buffer))
 }
 
+/// The most bytes read of an answer to a sign-in's request for metadata, a registration or
+/// tokens: 1 MiB, since each is a small JSON object, and the address of each but the first
+/// comes from an answer before it.
+const ANSWER_LIMIT: u64 = 1 << 20;
+
+/// A sign-in's request for metadata, a registration or tokens: `method` of `url` with `headers`
+/// and `body`, within `timeout`, its answer read up to [`ANSWER_LIMIT`].
+fn asked(
+    method: &str,
+    url: &str,
+    headers: &[(&str, &str)],
+    body: Option<&[u8]>,
+    timeout: Duration,
+) -> Result<network::Reply, String> {
+    network::call_within(ANSWER_LIMIT, method, url, headers, body, timeout)
+}
+
 /// Registers `loft` with the authorization server as a public native client, and gives its id.
 fn register(discovered: &Discovered, timeout: Duration) -> Result<String, String> {
     let body = json!({
@@ -174,8 +191,7 @@ fn register(discovered: &Discovered, timeout: Duration) -> Result<String, String
         "response_types": ["code"],
         "token_endpoint_auth_method": "none",
     });
-    let reply = network::call_within(
-        network::SIGN_IN_LIMIT,
+    let reply = asked(
         "POST",
         &discovered.registration_endpoint,
         &[("Content-Type", "application/json")],
@@ -213,8 +229,7 @@ impl std::fmt::Display for TokenError {
 /// A form-encoded `POST` of `form` to `endpoint`, its JSON answer; a refusal only where the
 /// answer is an OAuth error, a `400` or `401` that names its `error`.
 fn token(endpoint: &str, form: &[(&str, &str)], timeout: Duration) -> Result<Value, TokenError> {
-    let reply = network::call_within(
-        network::SIGN_IN_LIMIT,
+    let reply = asked(
         "POST",
         endpoint,
         &[("Content-Type", "application/x-www-form-urlencoded")],
