@@ -21,6 +21,24 @@ requirements:
         name: "Submissions of one Yard Log sent in the same second are listed by their local arrival revisions, regardless of their callers."
       - key: 01a1646f-546d-7042-befd-eb610be82633
         name: "With no open submission anywhere, nothing is shown above the list."
+  - key: 01a2084f-948f-74fd-b2ee-eb5cf4f223ea
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "hold the open submissions it shows above its list of branches within the sidebar's width, with the prompt or title of each block they wait on in at most three lines."
+    criteria:
+      - key: 01a2084f-948f-74fd-b2ee-eb5d9d331b89
+        name: "With a branch named `feature/XYZ-0000_some_very_long_branch_name_without_spaces`, the open submissions above the list are no wider than the sidebar."
+      - key: 01a2084f-948f-74fd-b2ee-eb5e20e549b8
+        name: "A branch's or a worktree's name with no space or hyphen in it breaks where it meets the sidebar's edge."
+      - key: 01a2084f-948f-74fd-b2ee-eb5fe0efce7e
+        name: "Every line of the open submissions above the list ends within the sidebar, and the sidebar does not scroll sideways."
+      - key: 01a2084f-948f-74fd-b2ee-eb6033d9a164
+        name: "A prompt or title that runs past three lines is cut at the end of the third, and ends in an ellipsis."
+      - key: 01a2084f-948f-74fd-b2ee-eb61449d1ca3
+        name: "The whole prompt or title of a block cut short above the list is given while the pointer rests on it."
+      - key: 01a2084f-948f-74fd-b2ee-eb6299e485be
+        name: "In a window narrower than 860 pixels, the open submissions are no wider than the sidebar laid over the page."
   - key: 01a1646f-546d-7042-befd-eb62e8627245
     statement:
       form: ubiquitous

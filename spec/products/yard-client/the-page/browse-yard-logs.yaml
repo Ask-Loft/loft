@@ -61,6 +61,30 @@ requirements:
         name: "The page draws the sidebar again only when the list of Yard Logs, the Yard Log chosen or the sidebar's fold changes."
       - key: 01a1a7a4-51ce-73b8-bd34-87aa6730ba3d
         name: "The foot of the sidebar says whether the page is following Yard Log live."
+  - key: 01a2084f-948f-74fd-b2ee-eb520cbaa4f3
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "let the person drag the right edge of the open sidebar to make it wider or narrower, and remember in this browser the width chosen."
+    criteria:
+      - key: 01a2084f-948f-74fd-b2ee-eb53a9214bd3
+        name: "The sidebar first opens 248 pixels wide."
+      - key: 01a2084f-948f-74fd-b2ee-eb54ac8d2681
+        name: "Dragging the sidebar's right edge makes the sidebar wider or narrower by the length dragged."
+      - key: 01a2084f-948f-74fd-b2ee-eb5555cca310
+        name: "The page beside the sidebar narrows or widens by as much as the sidebar widens or narrows."
+      - key: 01a2084f-948f-74fd-b2ee-eb56cbe58216
+        name: "The edge is reached by the keyboard, and the arrow keys left and right narrow and widen the sidebar."
+      - key: 01a2084f-948f-74fd-b2ee-eb57cf73bb7a
+        name: "The sidebar is never wider than 480 pixels, and always leaves at least 120 pixels of the window beside it, also as the window's size changes."
+      - key: 01a2084f-948f-74fd-b2ee-eb58196f58e2
+        name: "The sidebar is never narrower than 200 pixels, unless the window is too narrow to leave 120 pixels beside it."
+      - key: 01a2084f-948f-74fd-b2ee-eb5924b67500
+        name: "The width chosen is the sidebar's width the next time the page opens in this browser."
+      - key: 01a2084f-948f-74fd-b2ee-eb5a74a1c3b3
+        name: "Folded, the sidebar is a rail of the rail's own width, and opened again it takes the width chosen."
+      - key: 01a2084f-948f-74fd-b2ee-eb5b9b792af0
+        name: "In a window narrower than 860 pixels, dragging the right edge of the sidebar laid over the page makes it wider or narrower by the length dragged."
   - key: 01a1a7a4-51ce-73b8-bd34-87abe528f508
     statement:
       form: ubiquitous

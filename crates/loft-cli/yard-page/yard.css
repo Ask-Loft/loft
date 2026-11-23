@@ -221,9 +221,10 @@ button { font: inherit; }
 
 /* The window holds two columns, as Loft Web's does: the sidebar down its left from top to
    bottom, on a ground of its own, and the page beside it. Folded, the sidebar is a rail that holds
-   its button, an icon for each view and the count of what waits. */
+   its button, an icon for each view and the count of what waits. Open, it is as wide as the person
+   dragged its right edge (`lib/side-width.js`). */
 .layout {
-  --sidebar: 248px;
+  --sidebar: var(--side-width, 248px); /* FIRST of `lib/side-width.js` until it sets the width */
   --rail-width: 68px;
   display: grid;
   grid-template-columns: var(--sidebar) minmax(0, 1fr);
@@ -245,6 +246,12 @@ button { font: inherit; }
   border-right: 1px solid var(--line);
 }
 .side-content { flex: 1; min-height: 0; overflow: auto; overscroll-behavior-y: contain; }
+/* The sidebar's right edge, which the person drags, or moves with the arrow keys, to widen it. */
+.side-edge { position: absolute; top: 0; bottom: 0; right: -5px; z-index: 1; width: 10px; cursor: col-resize; touch-action: none; }
+.side-edge::after { content: ""; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px; }
+.side-edge:hover::after, .side-edge:focus-visible::after { background: var(--signal); }
+.side-edge:focus-visible { outline: none; }
+.is-folded .side-edge { display: none; }
 .page { grid-column: 2; display: flex; flex-direction: column; min-width: 0; height: 100vh; height: 100dvh; overflow: hidden; }
 /* The gutter of its scrollbar is kept, so that its width, by which the Gantt chart is drawn, holds whether or not it scrolls. */
 .main { flex: 1; min-width: 0; min-height: 0; overflow: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; padding: 28px 40px 48px; }
@@ -262,10 +269,11 @@ button { font: inherit; }
   font-size: 14px;
 }
 
-/* Too narrow for both side by side, the open sidebar lies over the page, which keeps the rail's room. */
+/* Too narrow for both side by side, the open sidebar lies over the page, which keeps the rail's room;
+   it leaves BESIDE of `lib/side-width.js` beside it even before the script bounds its width. */
 @media (max-width: 860px) {
   .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
-  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--sidebar), calc(100vw - 32px)); z-index: 20; border-right-color: var(--ink); box-shadow: var(--float); }
+  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--sidebar), calc(100vw - 120px)); z-index: 20; border-right-color: var(--ink); box-shadow: var(--float); }
   .main { padding: 20px 16px 40px; }
 }
 
@@ -295,7 +303,9 @@ button { font: inherit; }
 .wordmark { font-size: 20px; line-height: 1; font-weight: 700; letter-spacing: -0.05em; }
 .wordmark-initial { color: var(--signal); }
 .app-name { font-size: 14px; line-height: 1; color: var(--muted); }
-.side-lists { display: grid; gap: 22px; padding: 8px 14px 24px; }
+/* A name with nowhere to break, a branch's, a worktree's or a title's, breaks where it meets the
+   sidebar's edge, so nothing in the sidebar is wider than it. */
+.side-lists { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; padding: 8px 14px 24px; overflow-wrap: anywhere; }
 .side-lists[hidden] { display: none; }
 .connection { display: flex; align-items: center; gap: 8px; margin: 0; padding: 12px 24px 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
 .is-folded .connection { justify-content: center; padding: 12px 0 16px; }
@@ -371,6 +381,8 @@ button { font: inherit; }
 .wait-link .tree, .wait-link .repository { color: var(--muted); font-weight: 400; font-size: 13px; }
 .asked { margin: 2px 0 0; padding-left: 18px; font-size: 14px; }
 .asked .kind { margin-right: 4px; }
+/* Each block that waits takes at most three lines; the panel of what waits holds the whole of it. */
+.asked-line { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
 .sent { color: var(--muted); font-size: 13px; }
 
 .trees { display: grid; gap: 20px; }

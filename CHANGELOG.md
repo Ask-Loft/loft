@@ -5,6 +5,20 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- The Yard page keeps what waits on you within its sidebar. A branch's or worktree's name with
+  nowhere to break, such as `feature/XYZ-0000_some_very_long_branch_name_without_spaces`, used to
+  widen the list past the sidebar's edge and cut every line of it; any name in the sidebar now
+  breaks where it meets the edge. Each waiting question, approval or plan takes at most three
+  lines there, ending in an ellipsis, and gives its whole text while the pointer rests on it; the
+  panel of what waits still shows it in full. (#26)
+- The Yard page's sidebar can be widened: drag its right edge, or focus it and press the arrow
+  keys left and right. It opens 248 pixels wide and stays between 200 and 480, always leaving 120
+  pixels of the window beside it, and the width chosen is kept in this browser. In a window
+  narrower than 860 pixels the sidebar laid over the page is sized the same way.
+- Every edge the Yard page lets you drag ends a drag the browser cancels where it reached, and
+  drags by the main button only. Such a drag used to stay in hand, so the edge followed a pointer
+  that merely passed over it.
+
 ## 2.4.1 (2026-11-22)
 
 - `loft review --base` reviews an assertion whose `mentions` entries alone changed as `changed`,

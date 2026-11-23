@@ -1,5 +1,6 @@
 // A separator the person drags, or moves with the arrow keys, to set the size of what it edges:
-// the dock's top edge and the edge of the Gantt chart's column of names.
+// the dock's top edge, the timeline's splitter, the edge of the Gantt chart's column of names and
+// the sidebar's right edge.
 
 import { h } from './dom.js';
 
@@ -24,6 +25,8 @@ export function separator({ axis, step, attributes, read, show, keep }) {
   const keys = axis === 'x' ? { ArrowLeft: -step, ArrowRight: step } : { ArrowUp: step, ArrowDown: -step };
   const handle = h('div', { role: 'separator', tabindex: 0, 'aria-orientation': axis === 'x' ? 'vertical' : 'horizontal', ...attributes });
   handle.addEventListener('pointerdown', (/** @type {any} */ event) => {
+    // Only the main button drags: another opens a menu that may take the pointerup.
+    if ((event.button ?? 0) !== 0) return;
     from = axis === 'x' ? event.clientX : event.clientY;
     grabbed = read();
     handle.setPointerCapture?.(event.pointerId);
@@ -32,11 +35,14 @@ export function separator({ axis, step, attributes, read, show, keep }) {
   handle.addEventListener('pointermove', (/** @type {any} */ event) => {
     if (from !== null) show(grabbed + along(event));
   });
-  handle.addEventListener('pointerup', () => {
+  const end = () => {
     if (from === null) return;
     from = null;
     keep();
-  });
+  };
+  handle.addEventListener('pointerup', end);
+  // A drag the browser cancels ends with no pointerup, and keeps what it reached.
+  handle.addEventListener('lostpointercapture', end);
   handle.addEventListener('keydown', (/** @type {any} */ event) => {
     const moved = keys[event.key] ?? 0;
     if (!moved) return;

@@ -968,6 +968,150 @@ test('in a window narrower than 860 pixels the open sidebar lies over the page, 
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+/** A branch's name with nowhere to break, and a prompt of several sentences. */
+const LONG_BRANCH = 'feature/XYZ-0000_some_very_long_branch_name_without_spaces';
+const LONG_PROMPT =
+  'Which of the two shelves should take the oak books once the move is done? The lower one holds more of them, but it stands by the door, where the draft dries the wood. The upper one is drier, but it is out of reach for the younger readers, who borrow most of them. Choose before the movers come on Monday, since they will not come back for a second trip.';
+
+/** Routes the listing so that, besides what the page server gives, a submission on `LONG_BRANCH`, in a worktree whose folder has nowhere to break either, waits with `LONG_PROMPT`. */
+async function longWait(page) {
+  await page.route('**/api/trees', async (route) => {
+    const response = await route.fetch();
+    const listing = await response.json();
+    const wait = {
+      repository: setup.tree,
+      tree: '/work/oss_loft_worktree_whose_folder_has_nowhere_at_all_to_break',
+      main: false,
+      branch: LONG_BRANCH,
+      submission: 'long',
+      sent: { at: since(-60) },
+      agent: { host: 'claude-code', session: 's-long' },
+      blocks: ['long-q', 'long-a'],
+      asked: [
+        { id: 'long-q', kind: 'question', text: LONG_PROMPT },
+        { id: 'long-a', kind: 'approval', text: 'Approve the move' },
+      ],
+    };
+    await route.fulfill({ response, json: { ...listing, waiting: [...(listing.waiting ?? []), wait] } });
+  });
+}
+
+/** The sidebar's right edge. */
+function sideEdge(page) {
+  return page.getByRole('separator', { name: 'Width of the sidebar' });
+}
+
+/** Drags the sidebar's right edge `by` pixels to the right. */
+async function dragSide(page, by) {
+  const grip = await box(sideEdge(page));
+  await page.mouse.move(grip.x + grip.width / 2, grip.y + 200);
+  await page.mouse.down();
+  await page.mouse.move(grip.x + grip.width / 2 + by, grip.y + 200, { steps: 4 });
+  await page.mouse.up();
+}
+
+/** Every line of the open submissions above the list, measured: how far each runs past the sidebar's right edge, the sideways scroll of the sidebar, and the lines of the long prompt. */
+async function measureWaits(page) {
+  await expect(page.locator('#side .everywhere .wait-link .branch', { hasText: LONG_BRANCH })).toBeVisible();
+  return page.evaluate((prompt) => {
+    const side = /** @type {HTMLElement} */ (document.getElementById('side')).getBoundingClientRect();
+    const content = /** @type {HTMLElement} */ (document.getElementById('side-content'));
+    const section = /** @type {HTMLElement} */ (document.querySelector('#side .everywhere'));
+    let past = 0;
+    const walker = document.createTreeWalker(section, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects()) past = Math.max(past, rect.right - side.right);
+    }
+    const line = /** @type {HTMLElement} */ ([...section.querySelectorAll('.asked > li')].find((item) => item.getAttribute('title') === prompt)?.querySelector('.asked-line'));
+    const style = getComputedStyle(line);
+    return {
+      section: section.getBoundingClientRect().right - side.right,
+      past,
+      sideways: content.scrollWidth - content.clientWidth,
+      lines: line.getBoundingClientRect().height / Number.parseFloat(style.lineHeight),
+      cut: line.scrollHeight > line.clientHeight,
+    };
+  }, LONG_PROMPT);
+}
+
+test('with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines', async ({ page }) => {
+  await longWait(page);
+  await page.goto(address());
+  const measured = await measureWaits(page);
+  await expect(page.locator('#side .wait-link .branch').last()).toHaveText('feature/XYZ-0000_some_very_long_branch_name_without_spaces');
+  expect(measured.section).toBeLessThanOrEqual(0);
+  expect(measured.past).toBeLessThanOrEqual(0.5);
+  expect(measured.sideways).toBe(0);
+  // Three lines, give or take the fraction of a pixel the box rounds to; a fourth would be 4.
+  expect(measured.lines).toBeLessThan(3.5);
+  expect(measured.cut).toBe(true);
+  const item = page.locator('#side .asked > li', { hasText: 'Which of the two shelves' });
+  await expect(item).toHaveAttribute('title', LONG_PROMPT);
+  expect(await item.locator('.asked-line').evaluate((line) => getComputedStyle(line).webkitLineClamp)).toBe('3');
+});
+
+test('dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width', async ({ page }) => {
+  await page.goto(address());
+  const side = page.locator('#side');
+  const shown = page.locator('.page');
+  const opened = await box(shown);
+  expect((await box(side)).width).toBe(248);
+  const handle = sideEdge(page);
+  await handle.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(async () => (await box(side)).width).toBe(264);
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(async () => (await box(side)).width).toBe(232);
+  await dragSide(page, 60);
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  const moved = await box(shown);
+  expect(moved.x).toBe(292);
+  expect(moved.width).toBe(opened.width - 44);
+  await dragSide(page, 1000);
+  await expect.poll(async () => (await box(side)).width).toBe(480);
+  await dragSide(page, -1000);
+  await expect.poll(async () => (await box(side)).width).toBe(200);
+  await dragSide(page, 92);
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  await page.reload();
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  // Folded, the sidebar is the rail, with no edge to drag; opened again, it takes the width chosen.
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(68);
+  await expect(handle).toBeHidden();
+  await page.getByRole('button', { name: /^Open the sidebar/ }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  await page.evaluate(() => {
+    localStorage.removeItem('yard.side-width');
+    localStorage.removeItem('yard.list');
+  });
+});
+
+test('in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it', async ({ page }) => {
+  await page.setViewportSize({ width: 560, height: 900 });
+  await longWait(page);
+  await page.goto(address());
+  const side = page.locator('#side');
+  expect((await box(side)).width).toBe(248);
+  await dragSide(page, 40);
+  await expect.poll(async () => (await box(side)).width).toBe(288);
+  expect((await box(page.locator('.page'))).x).toBe(68);
+  await dragSide(page, 1000);
+  await expect.poll(async () => (await box(side)).width).toBe(560 - 120);
+  const measured = await measureWaits(page);
+  expect(measured.section).toBeLessThanOrEqual(0);
+  expect(measured.past).toBeLessThanOrEqual(0.5);
+  expect(measured.sideways).toBe(0);
+  await page.setViewportSize({ width: 400, height: 900 });
+  await expect.poll(async () => (await box(side)).width).toBe(400 - 120);
+  expect((await measureWaits(page)).past).toBeLessThanOrEqual(0.5);
+  await page.evaluate(() => localStorage.removeItem('yard.side-width'));
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
 /**
  * A long day of work, as the page server would give it: twelve stages of fifteen minutes with
  * three tasks each, the last stage's title far too long for the column, in two turns with a
