@@ -130,6 +130,8 @@ requirements:
     criteria:
       - key: 01a156ae-6a51-7230-a9a1-fa99b930ac7d
         name: "The body is a JSON object holding `documentKey` and `head`."
+      - key: 01a2068b-10dc-733f-ac5a-5439a44f15fa
+        name: "A token that its scenario does not let read the head is answered `403 Forbidden` with the code `forbidden`."
       - key: 01a20625-1784-70df-9261-fdb27f4e4272
         name: "The body holds `visibility`, `public` for a scenario that serves its document to anyone and `private` for one that names the document private, beside `documentKey`."
       - key: 01a20625-1784-70df-9261-fdb3e3b2d604
