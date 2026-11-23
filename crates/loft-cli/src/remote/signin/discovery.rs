@@ -220,8 +220,18 @@ fn unchallenged(asked: &str, whose: Whose<'_>, status: u16) -> String {
 
 /// The JSON object at `url`, an address a sign-in may contact.
 pub(super) fn fetch(url: &str, timeout: Duration) -> Result<Value, String> {
-    let reply = network::call("GET", url, &[("Accept", "application/json")], None, timeout)
-        .map_err(|error| format!("{url}: {error}"))?;
+    let reply = get(url, timeout).map_err(|error| format!("{url}: {error}"))?;
+    document(url, &reply)
+}
+
+/// The answer to a `GET` of `url` that asks for JSON, or why none came in full within `timeout`.
+pub(super) fn get(url: &str, timeout: Duration) -> Result<Reply, String> {
+    network::call("GET", url, &[("Accept", "application/json")], None, timeout)
+}
+
+/// The JSON object that `reply`, the answer to a `GET` of `url`, holds where it is answered
+/// `200`; otherwise its status, named with `url`.
+pub(super) fn document(url: &str, reply: &Reply) -> Result<Value, String> {
     serde_json::from_slice::<Value>(&reply.body)
         .ok()
         .filter(|value| reply.status == 200 && value.is_object())

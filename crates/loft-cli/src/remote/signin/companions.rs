@@ -12,7 +12,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use super::discovery::{RESOURCE_METADATA, fetch};
+use super::discovery::{RESOURCE_METADATA, document, get};
 use crate::network;
 use crate::out::errln;
 
@@ -36,7 +36,9 @@ pub struct Companion {
 
 /// Each companion resource that `metadata`, the protected resource metadata of `own` for the
 /// remote at `address`, lists and that a sign-in under `issuer` keeps, in the order listed. Each
-/// entry left out is named on standard error, with why.
+/// entry left out is named on standard error, with why. Where the metadata of one cannot be
+/// reached, it and each entry after it are left out, with one warning, and no metadata of theirs
+/// is asked for, so that a stalled origin holds the sign-in back for one time limit at most.
 pub fn kept(
     address: &str,
     own: &str,
@@ -50,22 +52,54 @@ pub fn kept(
     }
     let mut held = Vec::new();
     for (resource, kind) in listed {
-        let vouching = metadata_address(&resource)
-            .ok_or_else(|| ELSEWHERE.to_owned())
-            .and_then(|at| fetch(&at, timeout))
-            .and_then(|found| vouched(&resource, issuer, &found));
-        match vouching {
-            Ok(scopes) => held.push(Companion {
+        match learned(&resource, issuer, timeout) {
+            Learned::Vouched(scopes) => held.push(Companion {
                 resource,
                 kind,
                 scopes,
             }),
-            Err(why) => {
+            Learned::Unvouched(why) => {
                 errln!("warning: the sign-in to {address} leaves out {resource} ({kind}): {why}");
+            }
+            Learned::Unreached(why) => {
+                errln!(
+                    "warning: the sign-in to {address} leaves out {resource} ({kind}) and each \
+                     companion resource listed after it: {why}"
+                );
+                break;
             }
         }
     }
     held
+}
+
+/// What a sign-in learns of a listed companion resource from its own protected resource
+/// metadata.
+enum Learned {
+    /// The metadata vouches for it, with these scopes.
+    Vouched(Vec<String>),
+    /// The metadata answered, or lies where it may not be asked for, and does not vouch for it:
+    /// why.
+    Unvouched(String),
+    /// The metadata cannot be reached: why.
+    Unreached(String),
+}
+
+/// What the protected resource metadata of the companion resource `resource` says of it under
+/// the authorization server `issuer`, asked for within `timeout`.
+fn learned(resource: &str, issuer: &str, timeout: Duration) -> Learned {
+    let Some(at) = metadata_address(resource) else {
+        return Learned::Unvouched(ELSEWHERE.to_owned());
+    };
+    match get(&at, timeout) {
+        Err(error) => Learned::Unreached(format!("its metadata cannot be reached: {at}: {error}")),
+        Ok(reply) => {
+            match document(&at, &reply).and_then(|found| vouched(resource, issuer, &found)) {
+                Ok(scopes) => Learned::Vouched(scopes),
+                Err(why) => Learned::Unvouched(why),
+            }
+        }
+    }
 }
 
 /// The identifier and the kind of each entry of the `companion_resources` that `metadata`, the

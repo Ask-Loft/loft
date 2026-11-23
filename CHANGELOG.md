@@ -79,8 +79,10 @@ Unreleased below, and those of each 2.4 release still to come.
   own resource and each companion resource kept, with the scopes of each, so you consent once. A
   companion resource on another origin than the remote's address is left out before anything is
   asked of it, and one whose own metadata does not name it, name the remote's authorization server
-  and list its scopes is left out too; each is named in a warning, and the sign-in goes on. A
-  remote that lists none is signed in to, and its sign-in kept and refreshed, as before.
+  and list its scopes is left out too; each is named in a warning, and the sign-in goes on. Where
+  a companion resource's metadata cannot be reached, it and each one listed after it are left out
+  unasked, with one warning, so that a stalled origin holds the sign-in back for one time limit at
+  most. A remote that lists none is signed in to, and its sign-in kept and refreshed, as before.
 - `loft/remotes.json` keeps a sign-in over companion resources with `issuer` and `resources` beside
   the members an earlier `loft` reads, which keep their meaning for the remote's own resource. No
   command calls a companion resource yet: `loft publish`, `loft pull` and `loft interface` use each

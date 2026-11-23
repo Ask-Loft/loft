@@ -78,8 +78,10 @@ under the same sign-in, which its protected resource metadata lists. `loft remot
 and keep the sign-in with them in `loft/remotes.json`. `loft` itself calls none of them yet:
 `loft publish` and `loft pull` use the document's own access token. A companion resource on
 another origin than the address, or whose own metadata does not vouch for it, is left out with a
-warning. A sign-in made for a resource the server no longer serves stops working: `loft` says so,
-and `loft remote login` signs you in again.
+warning; one whose metadata cannot be reached is left out with every one listed after it, so a
+stalled server holds the sign-in back for one time limit at most. A sign-in made for a resource the
+server no longer serves stops working, and so does one whose recorded refresh for a companion
+resource the server refuses: `loft` says so, and `loft remote login` signs you in again.
 
 `loft publish` of a connected document runs on any branch over a committed `spec/`. It sends the
 change since the state its lock names, and writes the labels and the lock the server returns;

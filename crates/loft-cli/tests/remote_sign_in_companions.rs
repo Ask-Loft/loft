@@ -445,3 +445,50 @@ fn interface_login_signs_in_once_over_the_companion_resources_of_another_documen
     );
     assert!(remote.admits(sign_in["accessToken"].as_str().unwrap()));
 }
+
+#[test]
+fn a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it() {
+    let (remote, scratch, output, visits) = login(
+        RemoteScenario::accepting("doc-unreached")
+            .accompanied_by(Companion::new("notes", &["notes"]))
+            .accompanied_by(Companion::new("gone", &["gone"]).faulty(CompanionFault::Unreadable))
+            .accompanied_by(Companion::new("inbox", &["inbox"]).faulty(CompanionFault::Unanswered))
+            .accompanied_by(Companion::new("mail", &["mail"])),
+    );
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(visits.len(), 1, "one consent: {visits:?}");
+    let [notes, gone, inbox, mail] =
+        ["notes", "gone", "inbox", "mail"].map(|kind| remote.companion(kind));
+    assert_eq!(
+        every(&visits[0], "resource"),
+        [remote.resource(), notes.clone()]
+    );
+    assert_eq!(every(&visits[0], "scope"), ["documents notes"]);
+    // The metadata answered `404` does not stop the next entry, whose metadata is not answered;
+    // no entry after that one is asked about.
+    let targets = targets(&remote);
+    let asked = [&notes, &gone, &inbox, &mail].map(|resource| {
+        let path = resource.strip_prefix(remote.origin()).unwrap();
+        targets.contains(&format!("{RESOURCE_METADATA}{path}"))
+    });
+    assert_eq!(asked, [true, true, true, false], "{targets:?}");
+    let warned = warnings(&output);
+    assert_eq!(warned.len(), 2, "{warned:?}");
+    assert!(
+        warned[0].starts_with(&left_out(&remote, &gone, "gone", "")),
+        "{warned:?}"
+    );
+    let unreached = warned[1].as_str();
+    for said in [
+        remote.address().as_str(),
+        inbox.as_str(),
+        "(inbox)",
+        "its metadata cannot be reached",
+        "each companion resource listed after it",
+    ] {
+        assert!(unreached.contains(said), "{said}: {unreached}");
+    }
+    assert!(!unreached.contains(&mail), "{unreached}");
+    let resources = &kept(&scratch, &remote)["resources"];
+    assert_eq!(resources, &json!([{ "resource": notes, "kind": "notes" }]));
+}

@@ -21864,6 +21864,39 @@ links:
       - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
         name: "a_remote_that_lists_no_companion_resource_is_signed_in_to_and_kept_as_before"
         body: 4b2393eef96a3991b21a58705767085e391ad6927a3ffff95a8d72446e647af4
+  - node: 01a20880-0400-77b7-a4ea-c8941f6f4394
+    reviewed: 25e229714fe59428b7599665e6ce5a67e97098ad36089045e14d9de7d607a0df
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
+        name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
+        body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+  - node: 01a20880-0400-77b7-a4ea-c895d14c092c
+    reviewed: f4bbc4be19ff6382fa1075193690aeedd5200401927a2d04e23117895c977ea9
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
+        name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
+        body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+  - node: 01a20880-0400-77b7-a4ea-c896c7874b26
+    reviewed: 190a106fe1ffa25d7dbac7528804f6969e49d455501cbfed8de12d072c65deb2
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
+        name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
+        body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+  - node: 01a20880-0400-77b7-a4ea-c8978f23f21e
+    reviewed: 6aa8824a1775c354b62b2dd235f8ffcc55f5ce256fed5b59c624d8db5bbf148b
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
+        name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
+        body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+      - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
+        name: "a_companion_resource_whose_metadata_does_not_vouch_for_it_is_left_out_with_a_warning"
+        body: 83769906371d1df0813ee750f64c7153d23f303dc61ffb613a7c0d2799dab180
+  - node: 01a20880-0400-77b7-a4ea-c8981b136518
+    reviewed: ea9cb4966e53ab507f82ab4c653670173051361a7f6b90b024ed5b6058803584
+    tests:
+      - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
+        name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
+        body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
   - node: 01a18e1f-8daa-7674-9603-5ae5c87d9c4b
     reviewed: 98b07311ee6e2786cc816b756e5779e8956656bed6522f29bd3cc23206db923c
     tests:
