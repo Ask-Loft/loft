@@ -22350,6 +22350,12 @@ links:
       - file: "crates/loft-cli/src/yard/codex/app_server/notifications/tests.rs"
         name: "an_explicit_native_refusal_is_distinct_from_an_uncertain_transport_failure"
         body: c29ad2e03f7208049cbfa1b58d69e397395b8e6664d0dd4afd625d62457c5183
+  - node: 01a20888-d898-7799-86ed-19868665e08c
+    reviewed: 6ed1f1d8a5c827e07af4723a1e5f89a06a86282616edea9da7b74f03d536d2cb
+    tests:
+      - file: "crates/software-plant/tests/codex.rs"
+        name: "a_peer_gone_before_its_connection_is_set_up_leaves_the_next_connection_served"
+        body: d4a37063e96e2a0f36c86f86f76efc0c76995de4c323f29be79a1f7325bcce30
   - node: 01a17989-a8b9-74b1-9049-0740529d4832
     reviewed: 1de26044d1e9ad112ed0e4fe1e65d67412acfcaf1afe6bb1e188afbb147216f2
     tests:
