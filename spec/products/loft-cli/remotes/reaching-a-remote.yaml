@@ -77,10 +77,12 @@ requirements:
   - key: 01a20625-1782-738f-956e-4cbb76f3ed08
     statement:
       form: event_driven
-      when: "`loft pull` finds no sign-in for a connected document's remote"
+      when: "`loft pull` finds no sign-in it can send to a connected document's remote"
       system: "`loft pull`"
       shall: "send its requests to the remote without a token."
     criteria:
+      - key: 01a20648-8abc-7669-a31e-cf238801a665
+        name: "A kept sign-in whose refresh the authorization server refuses is not sent."
       - key: 01a20625-1782-738f-956e-4cbc06535a2c
         name: "With no sign-in kept for the address and `LOFT_REMOTE_TOKEN` unset, each request of the pull carries no `Authorization` header."
       - key: 01a20625-1782-738f-956e-4cbd94d45464
@@ -94,8 +96,10 @@ requirements:
       form: unwanted
       if: "the remote answers `401` to a request that `loft pull` sent without a token"
       system: "`loft pull`"
-      shall: "refuse with the error for no sign-in, and exit 1."
+      shall: "refuse with the error for the sign-in it could not send, or for none, and exit 1."
     criteria:
+      - key: 01a20648-8abc-7669-a31e-cf2482d4f2d9
+        name: "Where the sign-in kept under the address has lapsed, the error is the one for a lapsed sign-in."
       - key: 01a20625-1782-738f-956e-4cc1aae18790
         name: "The error names the document key and the address."
       - key: 01a20625-1782-738f-956e-4cc2f6c03e5e

@@ -194,7 +194,7 @@ requirements:
   - key: 01a18e1f-8daa-7674-9603-5b0b328c0ca1
     statement:
       form: unwanted
-      if: "the authorization server refuses a refresh"
+      if: "the authorization server refuses a refresh for a command other than `loft pull`"
       system: "Loft"
       shall: "refuse the command, say that the sign-in to the remote has lapsed, and exit 1."
     criteria:
