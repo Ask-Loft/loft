@@ -215,13 +215,14 @@ pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError>
     reached(remote, key, false)
 }
 
-/// [`connected`], as `loft pull` reaches the remote: where the person has no sign-in to it, or one
-/// only for a protected resource on another origin, the client sends no token, and the remote's
-/// `401` is answered with the error for that missing sign-in.
+/// [`connected`], as `loft pull` reaches the remote: where the person has no sign-in to it that it
+/// can send, none at all, one only for a protected resource on another origin or one whose refresh
+/// is refused, the client sends no token, and the remote's `401` is answered with the error for
+/// that sign-in.
 ///
 /// # Errors
 ///
-/// As [`connected`], but for a missing sign-in.
+/// As [`connected`], but for a sign-in it cannot send.
 pub fn reading(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
     reached(remote, key, true)
 }
@@ -241,9 +242,11 @@ fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, Re
         Some(token) => token,
         None => match signins::live(&address, timeout) {
             Ok(sign_in) => sign_in.access_token,
-            Err(missing @ (RemoteError::NoSignIn { .. } | RemoteError::SignInElsewhere { .. }))
-                if unsigned =>
-            {
+            Err(
+                missing @ (RemoteError::NoSignIn { .. }
+                | RemoteError::SignInElsewhere { .. }
+                | RemoteError::Lapsed { .. }),
+            ) if unsigned => {
                 return Ok(Client::new(&address, None, timeout, wait).unsigned(missing));
             }
             Err(error) => return Err(error),

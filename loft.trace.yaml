@@ -20577,6 +20577,12 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "publish_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_that_resource"
         body: ba45cd9f3654dce1296665f550b9a7da37dc7ed3c754984ca6030647bedc5481
+  - node: 01a20648-8abc-7669-a31e-cf238801a665
+    reviewed: c83a2ecfecbb0fe39ab23d0b826d1d8b0e88bd3dc413ced01e4d4ca2a435931c
+    tests:
+      - file: "crates/loft-cli/tests/pull_public.rs"
+        name: "a_pull_whose_sign_in_has_lapsed_reads_a_public_document_without_a_token"
+        body: 1b23665d5a8b24943a2d80ad57cc3bc3205cd2d7ed8a392c5f2d68bfc137e04d
   - node: 01a20625-1782-738f-956e-4cbc06535a2c
     reviewed: a0993ac842835e3c68f3ceb3b753b91ac97d0a27a3c7c2b180a4989e444b5162
     tests:
@@ -20601,6 +20607,12 @@ links:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_with_a_kept_sign_in_sends_its_token_to_a_public_document"
         body: 3a94deaa44ffa1af9641d95c56104aea2fbc71439e30928830d4a3b99e98929d
+  - node: 01a20648-8abc-7669-a31e-cf2482d4f2d9
+    reviewed: 4b09823a9d1524bf0956689402e2068454148c24ad13ff62a0f0440e70462ae2
+    tests:
+      - file: "crates/loft-cli/tests/pull_public.rs"
+        name: "a_pull_whose_sign_in_has_lapsed_that_the_remote_refuses_names_the_lapsed_sign_in"
+        body: 82b61763ac858fe27335ae6bcf880f8b377216334ed8bfedd313b50f9fd131bc
   - node: 01a20625-1782-738f-956e-4cc1aae18790
     reviewed: 90c6eb858eccb89439219e1e976d8da05ef8f2c9b79f77d66da6a07c7bbc66e2
     tests:

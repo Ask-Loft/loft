@@ -9,7 +9,7 @@ use software_plant::remote::{RemoteScenario, Visibility};
 
 use crate::common::connected::Connected;
 use crate::common::remote::{History, history, sent_to};
-use crate::common::signed_in::{document, keep, sign_ins_file};
+use crate::common::signed_in::{document, granted, keep, sign_ins_file};
 use crate::common::tree;
 use crate::pull::{behind, pull};
 
@@ -83,4 +83,49 @@ fn a_pull_with_a_kept_sign_in_sends_its_token_to_a_public_document() {
     let sent = requests(&run);
     assert_eq!(sent.len(), 3, "{sent:?}");
     assert!(sent.iter().all(|(_, token)| *token), "{sent:?}");
+}
+
+/// A repository that published two states, connected to a remote holding three, whose scenario
+/// names `visibility`, with a sign-in kept that expires within a minute and whose refresh the
+/// remote refuses.
+fn lapsed(visibility: Visibility) -> Connected {
+    let (run, _) = behind();
+    let ahead = history(3);
+    let run = run.serving(
+        RemoteScenario::accepting(&ahead.key)
+            .holding("Reading List", ahead.states.clone())
+            .visibility(visibility)
+            .lapsing(),
+    );
+    let kept = granted(&run.remote, 60);
+    keep(&run.scratch, &json!({ run.remote.address(): kept }));
+    run
+}
+
+#[test]
+fn a_pull_whose_sign_in_has_lapsed_reads_a_public_document_without_a_token() {
+    let run = lapsed(Visibility::Public);
+    let output = pull(&run.scratch, &[]);
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(document(&output)["outcome"], "pulled");
+    let sent = requests(&run);
+    assert_eq!(sent.len(), 3, "{sent:?}");
+    assert!(sent.iter().all(|(_, token)| !token), "{sent:?}");
+}
+
+#[test]
+fn a_pull_whose_sign_in_has_lapsed_that_the_remote_refuses_names_the_lapsed_sign_in() {
+    let run = lapsed(Visibility::Private);
+    let before = tree(&run.scratch.0);
+    let file = fs::read(sign_ins_file(&run.scratch)).unwrap();
+    let output = pull(&run.scratch, &[]);
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = Connected::message(&output);
+    for said in ["lapsed", "`loft remote login`"] {
+        assert!(message.contains(said), "{said}: {message}");
+    }
+    assert!(!message.contains("no sign-in"), "{message}");
+    assert_eq!(requests(&run), [("/head".to_owned(), false)]);
+    assert_eq!(tree(&run.scratch.0), before);
+    assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);
 }
