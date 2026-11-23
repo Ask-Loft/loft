@@ -71,6 +71,34 @@ Unreleased below, and those of each 2.4 release still to come.
   or at `--remote` before it is listed, and a refused, lapsed or misplaced sign-in names
   `loft interface login <handle>`. `loft interface add` and `loft interface update` sign the
   person in afresh, once, where the remote refuses the sign-in kept for its address.
+- A sign-in covers, with one consent, every companion resource that a remote lists beside the
+  document: other protected resources on the remote's origin, under its authorization server, which
+  its protected resource metadata names in `companion_resources`. `loft remote set` and
+  `loft remote login` make such a sign-in, and so do `loft interface login`, `add` and `update`
+  where they sign you in to another document's remote. One authorization request names the remote's
+  own resource and each companion resource kept, with the scopes of each, so you consent once. A
+  companion resource on another origin than the remote's address is left out before anything is
+  asked of it, and one whose own metadata does not name it, name the remote's authorization server
+  and list its scopes is left out too; each is named in a warning, and the sign-in goes on. A
+  remote that lists none is signed in to, and its sign-in kept and refreshed, as before.
+- `loft/remotes.json` keeps a sign-in over companion resources with `issuer` and `resources` beside
+  the members an earlier `loft` reads, which keep their meaning for the remote's own resource. No
+  command calls a companion resource yet: `loft publish`, `loft pull` and `loft interface` use each
+  remote's own access token, as before. Each refresh names one resource, runs under the lock beside
+  `loft/remotes.json` and keeps every other member of the sign-in. For a sign-in over companion
+  resources, the resource of a refresh whose answer is lost, or does not read, is recorded as
+  `refreshing` and refreshed again first, since presenting the rotated refresh token for another
+  resource may end the whole sign-in. An earlier `loft` that refreshes such a sign-in keeps it for
+  the remote's own resource alone: sign in again to cover the companion resources.
+- A refresh that the authorization server refuses with `invalid_target` no longer reads as a lapsed
+  sign-in: `loft` says that the sign-in was made for a former resource of the remote and that
+  `loft remote login` signs you in again, or `loft interface login <handle>` at another document's
+  remote, and `loft remote set`, `loft interface add` and `loft interface update` sign you in anew
+  in its place.
+- The `loft-spec` skill tells the agent to ask you to run `loft remote login`, or
+  `loft interface login <handle>` at another document's remote, when a command says that the
+  sign-in was made for a former resource of the remote or does not cover a resource, as it does
+  when one has lapsed.
 
 ## Unreleased
 

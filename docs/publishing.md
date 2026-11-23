@@ -72,6 +72,15 @@ server, `loft publish` says on standard error to whom the server serves it, and 
 only those the server admits. Where the server does not answer that question, `loft remote set`
 says so and imports all the same.
 
+A server may also offer companion resources beside the document: other services on its origin,
+under the same sign-in, which its protected resource metadata lists. `loft remote set` and
+`loft remote login` then ask your consent once for the document and every companion resource,
+and keep the sign-in with them in `loft/remotes.json`. `loft` itself calls none of them yet:
+`loft publish` and `loft pull` use the document's own access token. A companion resource on
+another origin than the address, or whose own metadata does not vouch for it, is left out with a
+warning. A sign-in made for a resource the server no longer serves stops working: `loft` says so,
+and `loft remote login` signs you in again.
+
 `loft publish` of a connected document runs on any branch over a committed `spec/`. It sends the
 change since the state its lock names, and writes the labels and the lock the server returns;
 commit both together. A publish whose answer was lost is replayed safely. When someone else has
