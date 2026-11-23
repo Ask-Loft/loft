@@ -31,8 +31,10 @@ https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote
 where `<host>` is your Loft server, `<tenant-slug>` is your workspace's slug on it, and
 `<documentKey>` is the `documentKey` in `spec/loftspec.yaml`. `loft` uses the address whole and
 adds each call's path under it, as in `<address>/head`. Run beside `spec/`, `loft remote set --help`
-gives the form with your `documentKey` filled in. An address whose first call gets no sign-in
-challenge back is refused, naming the request and its status. Where the answer is one a wrong
+gives the form with your `documentKey` filled in. A sign-in asks the document's head for the
+server's challenge, or, where the head answers without one, as it does for a public document, the
+document's drafts. An address that gives no sign-in challenge back is refused, naming the request
+and its status. Where the answer is one a wrong
 address gives, such as 404, the error also gives the form with your `documentKey`; a rate limit,
 a timeout or a server error does not cast doubt on the address.
 
@@ -54,6 +56,15 @@ trailing dot, or a CNAME. The refusal names the origin the server expects; run
 `loft remote set` with the document's address on that origin, which signs you in to it, and
 commit `spec/loftspec.yaml`. A sign-in an earlier `loft` kept for such an address is not used,
 and `loft publish` and `loft pull` say so and name the origin it was for.
+
+A server may serve a document to anyone: a public document, whose published states are read
+without signing in. `loft pull` needs no sign-in for one. With no sign-in kept for the address,
+and `LOFT_REMOTE_TOKEN` unset, it asks the server without a token; where the server serves the
+document only to those it admits, the pull stops, writes nothing and says that
+`loft remote login` signs in. A kept sign-in is always sent. Before a document's first publish to
+a server, `loft publish` says on standard error to whom the server serves it, and so does
+`loft remote set` before it imports the states the repository has already published: anyone, or
+only those the server admits.
 
 `loft publish` of a connected document runs on any branch over a committed `spec/`. It sends the
 change since the state its lock names, and writes the labels and the lock the server returns;

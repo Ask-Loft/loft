@@ -8,6 +8,20 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 What 2.5.0 will hold beyond the releases of 2.4, which it holds as well: the entries under
 Unreleased below, and those of each 2.4 release still to come.
 
+- `loft pull` reads a document its remote serves to anyone, a public document, without a sign-in:
+  with none kept for the remote's address and `LOFT_REMOTE_TOKEN` unset, it asks without a token,
+  and where the remote refuses that request it stops with the error for no sign-in, as before. A
+  kept sign-in is still sent, and `loft publish` still needs one.
+- A sign-in to the remote of a public document, whose head answers without a challenge, reads the
+  challenge from `GET <address>/drafts/main`; a private document's sign-in asks its head alone, as
+  before.
+- `loft publish`, before a document's first publish to its remote, and `loft remote set`, before it
+  imports the published states, say on standard error to whom the remote serves the document, as
+  the `visibility` of its head answer names it; nothing is said where the remote names none. The
+  JSON output is unchanged.
+- The Software Plant's remote simulator can serve its document to anyone, and names the
+  visibility its scenario sets in its head answer.
+
 - An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
   `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its
   own. A Component `provides` the Interfaces whose promise it keeps and `requires` those it relies
