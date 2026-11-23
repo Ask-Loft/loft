@@ -2,8 +2,8 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
-use std::io::ErrorKind;
-use std::os::unix::net::UnixListener;
+use std::io::{self, ErrorKind};
+use std::os::unix::net::{UnixListener, UnixStream};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
@@ -158,19 +158,26 @@ fn serve(listener: &UnixListener, scenario: &Scenario, shared: &Shared) {
                 thread::sleep(Duration::from_millis(2));
                 continue;
             };
-            stream.set_nonblocking(false).unwrap();
-            stream
-                .set_read_timeout(Some(Duration::from_millis(50)))
-                .unwrap();
-            stream
-                .set_write_timeout(Some(Duration::from_millis(50)))
-                .unwrap();
+            // A connection whose peer is gone before it is set up, or whose handshake fails or
+            // does not finish within the read timeout, is dropped, and the next one is served.
+            if set_up(&stream).is_err() {
+                continue;
+            }
             let Ok(mut socket) = accept(stream) else {
                 continue;
             };
             scope.spawn(move || connected(&mut socket, scenario, shared));
         }
     });
+}
+
+/// Makes an accepted stream's reads and writes block for at most 50 ms at a time, so that its
+/// connection notices a stop. On macOS no option can be set on a stream whose peer has already
+/// closed it.
+fn set_up(stream: &UnixStream) -> io::Result<()> {
+    stream.set_nonblocking(false)?;
+    stream.set_read_timeout(Some(Duration::from_millis(50)))?;
+    stream.set_write_timeout(Some(Duration::from_millis(50)))
 }
 
 type Peer = tungstenite::WebSocket<std::os::unix::net::UnixStream>;

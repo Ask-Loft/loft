@@ -3,6 +3,8 @@
 //! operating system before its first run.
 
 mod clock;
+#[cfg(unix)]
+mod codex;
 mod git;
 mod git_base;
 mod published;
