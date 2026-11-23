@@ -62,19 +62,36 @@ fn a_pull_with_no_sign_in_that_the_remote_refuses_is_refused_with_the_error_for_
     let output = pull(&run.scratch, &[]);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     let message = Connected::message(&output);
-    let address = run.remote.address();
-    for said in [
-        run.history.key.as_str(),
-        address.as_str(),
-        "no sign-in",
-        "LOFT_REMOTE_TOKEN",
-        "`loft remote login` signs in",
-    ] {
+    assert_unsigned_refusal(&run, &message);
+    for said in ["no sign-in", "`loft remote login` signs in"] {
         assert!(message.contains(said), "{said}: {message}");
     }
     assert_eq!(requests(&run), [("/head".to_owned(), false)]);
     assert_eq!(tree(&run.scratch.0), before);
     assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);
+}
+
+/// Asserts that `message`, the error of a pull that the remote refused without a token, names
+/// the refusal's status and code, the address, `LOFT_REMOTE_TOKEN` and the document key apart from
+/// the address, which holds the key as a Loft server's addresses do.
+fn assert_unsigned_refusal(run: &Connected, message: &str) {
+    let address = run.remote.address();
+    for said in [
+        address.as_str(),
+        "401",
+        "`unauthenticated`",
+        "without a token",
+        "LOFT_REMOTE_TOKEN",
+    ] {
+        assert!(message.contains(said), "{said}: {message}");
+    }
+    let key = run.history.key.as_str();
+    assert!(address.contains(key), "{address}");
+    let beside = message.replace(address.as_str(), "");
+    assert!(
+        beside.contains(key),
+        "{key} apart from the address: {message}"
+    );
 }
 
 #[test]
@@ -123,7 +140,8 @@ fn a_pull_whose_sign_in_has_lapsed_that_the_remote_refuses_names_the_lapsed_sign
     let output = pull(&run.scratch, &[]);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
     let message = Connected::message(&output);
-    for said in ["lapsed", "`loft remote login`"] {
+    assert_unsigned_refusal(&run, &message);
+    for said in ["lapsed", "`loft remote login` signs in again"] {
         assert!(message.contains(said), "{said}: {message}");
     }
     assert!(!message.contains("no sign-in"), "{message}");

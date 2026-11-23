@@ -20619,24 +20619,33 @@ links:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_with_a_kept_sign_in_sends_its_token_to_a_public_document"
         body: 3a94deaa44ffa1af9641d95c56104aea2fbc71439e30928830d4a3b99e98929d
+  - node: 01a2067e-f638-7716-98e2-ec1e0c95ab59
+    reviewed: 88c4c5c506a6851b9dfb07f7cb909abb56dffedbaa5112f0b9e4dbae6adf8ca1
+    tests:
+      - file: "crates/loft-cli/tests/pull_public.rs"
+        name: "a_pull_with_no_sign_in_that_the_remote_refuses_is_refused_with_the_error_for_no_sign_in"
+        body: 8674c2287a6b09c081823d5d04aaecb34da180464229aea51cec4f8b37449700
+      - file: "crates/loft-cli/tests/pull_public.rs"
+        name: "a_pull_whose_sign_in_has_lapsed_that_the_remote_refuses_names_the_lapsed_sign_in"
+        body: 4dbeedbf8465a60d324ca47e39c3577ce3cc47cd630249552410683e3a933300
   - node: 01a20648-8abc-7669-a31e-cf2482d4f2d9
     reviewed: 4b09823a9d1524bf0956689402e2068454148c24ad13ff62a0f0440e70462ae2
     tests:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_whose_sign_in_has_lapsed_that_the_remote_refuses_names_the_lapsed_sign_in"
-        body: 82b61763ac858fe27335ae6bcf880f8b377216334ed8bfedd313b50f9fd131bc
+        body: 4dbeedbf8465a60d324ca47e39c3577ce3cc47cd630249552410683e3a933300
   - node: 01a20625-1782-738f-956e-4cc1aae18790
     reviewed: 90c6eb858eccb89439219e1e976d8da05ef8f2c9b79f77d66da6a07c7bbc66e2
     tests:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_with_no_sign_in_that_the_remote_refuses_is_refused_with_the_error_for_no_sign_in"
-        body: 831c55d07b9db9b58c754471c84ad1316f77d735fb5141a5e7d90b355b86ec0b
+        body: 8674c2287a6b09c081823d5d04aaecb34da180464229aea51cec4f8b37449700
   - node: 01a20625-1782-738f-956e-4cc2f6c03e5e
     reviewed: f6ad386e83c473d47a2dff96625138b34dc89126841fcca51662fa67a65ed4f9
     tests:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_with_no_sign_in_that_the_remote_refuses_is_refused_with_the_error_for_no_sign_in"
-        body: 831c55d07b9db9b58c754471c84ad1316f77d735fb5141a5e7d90b355b86ec0b
+        body: 8674c2287a6b09c081823d5d04aaecb34da180464229aea51cec4f8b37449700
   - node: 01a20625-1782-738f-956e-4cc3eab09367
     reviewed: 42ce6c471a266941c4acc90104df084bef5d0e595b0846c8e5cd5fe518b9ccbb
     tests:
@@ -20648,13 +20657,13 @@ links:
     tests:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_with_no_sign_in_that_the_remote_refuses_is_refused_with_the_error_for_no_sign_in"
-        body: 831c55d07b9db9b58c754471c84ad1316f77d735fb5141a5e7d90b355b86ec0b
+        body: 8674c2287a6b09c081823d5d04aaecb34da180464229aea51cec4f8b37449700
   - node: 01a20625-1782-738f-956e-4cc585d66b36
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_with_no_sign_in_that_the_remote_refuses_is_refused_with_the_error_for_no_sign_in"
-        body: 831c55d07b9db9b58c754471c84ad1316f77d735fb5141a5e7d90b355b86ec0b
+        body: 8674c2287a6b09c081823d5d04aaecb34da180464229aea51cec4f8b37449700
   - node: 01a156aa-d531-70a7-88e0-0bfcfa55f191
     reviewed: 4f18a00f6c671ca074ad3097741868532bb6089b0c7152057dfa91f6f7047716
     tests:

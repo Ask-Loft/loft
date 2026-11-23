@@ -80,6 +80,14 @@ pub enum RemoteError {
     Unreadable { address: String, what: &'static str },
     /// The remote answered with a refusal.
     Refused { address: String, refusal: Refusal },
+    /// The remote refused, with `401`, a request for the document `key` that was sent without a
+    /// token for want of a sign-in, `missing`.
+    Unsigned {
+        key: String,
+        address: String,
+        refusal: Refusal,
+        missing: Box<RemoteError>,
+    },
     /// The authorization server refused to refresh the sign-in.
     Lapsed { address: String, error: String },
     /// A sign-in could not be made.
@@ -140,7 +148,8 @@ impl fmt::Display for RemoteError {
             Self::NoSignIn { .. }
             | Self::SignInElsewhere { .. }
             | Self::Lapsed { .. }
-            | Self::Refused { .. } => {
+            | Self::Refused { .. }
+            | Self::Unsigned { .. } => {
                 let said = self
                     .said(Remedy::Own)
                     .expect("an error of a sign-in, or a refusal");
@@ -247,7 +256,7 @@ fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, Re
                 | RemoteError::SignInElsewhere { .. }
                 | RemoteError::Lapsed { .. }),
             ) if unsigned => {
-                return Ok(Client::new(&address, None, timeout, wait).unsigned(missing));
+                return Ok(Client::new(&address, None, timeout, wait).unsigned(key, missing));
             }
             Err(error) => return Err(error),
         },
