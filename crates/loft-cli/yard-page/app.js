@@ -7,6 +7,7 @@ import { drawAll } from './lib/diagrams.js';
 import { latest } from './lib/latest.js';
 import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
+import { edge as sideEdge } from './lib/side-width.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
 import { failedLog, logHead, logView } from './views/log.js';
@@ -287,6 +288,8 @@ function logOf(route) {
 function start() {
   // The sidebar takes the person's choice before anything is loaded, so a folded one never shows open.
   document.body.classList.toggle('is-folded', prefs.folded());
+  // Its right edge, and the width the person chose, lie outside what is drawn again at each change.
+  document.getElementById('side')?.append(sideEdge());
   let shownLog = JSON.stringify(logOf(parse(location.hash)));
   window.addEventListener('hashchange', () => {
     state.notice = '';

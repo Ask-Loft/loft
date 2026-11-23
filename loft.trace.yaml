@@ -29547,6 +29547,81 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the sidebar runs down the window’s left from top to bottom, on a ground of its own, and stays while the Yard Log scrolls"
         body: af12dc21376a068daeba959d9bfdc86254f230ef057f6853d229be1da55b8884
+  - node: 01a2084f-948f-74fd-b2ee-eb53a9214bd3
+    reviewed: 926556c4fa879f197596a2a52333e2cc9d7ecd7f6101a3c404674b3ba6f9bdb1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar first opens 248 pixels wide"
+        body: 3cb5e543572328056e34e2d08935896604d1ce3f94ddbb7d5419038ac916da76
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb54ac8d2681
+    reviewed: e1bb58a2848ac1ff5ca42647b3a2b2c3ce0e09c78aa13b49eef170011df681de
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "dragging the sidebar’s right edge makes the sidebar wider or narrower by the length dragged"
+        body: 37cbfcd3ff6228ec4747d075682d62d9af8c003faa72fb75f9b65b7c8ac9f541
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5555cca310
+    reviewed: 43c733214fe984ce2ff548bc4f7b34dab155d3dde099c8fa9f909d94345b7b49
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb56cbe58216
+    reviewed: 13103bc3d753e4f4e0041329f553053d4ff7ff94e4d64c84b0f604b3d9ef2fec
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar’s edge is reached by the keyboard, and the arrow keys left and right narrow and widen the sidebar"
+        body: 68777557e5161f89276046530e38b12690944e7628e493d76856623d1793d81e
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb57cf73bb7a
+    reviewed: a3245f4677089416f139118b7fd3060d657622473a5ffbe56d59c5d9bbd07a0e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar is never wider than 480 pixels, and always leaves at least 120 pixels of the window beside it, also as the window changes"
+        body: 7c030bcdf44977b2e93b91105ba0d8f4c40ca93fb95bc8bc008021d86c2c2579
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
+  - node: 01a2084f-948f-74fd-b2ee-eb58196f58e2
+    reviewed: 95e1f1344801d486787c32b93c2cb02a5dfbe5e07e888eba43529c03c0642c19
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar is never narrower than 200 pixels, unless the window is too narrow to leave 120 pixels beside it"
+        body: ce6f512a0dc4300ce5797d09e27423d33abadb8ad30628c7094b9682bdddf23b
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5924b67500
+    reviewed: c0f9afcd1a9aeb73c3634d9207a3b21e0f3c7398a3845bd4292c9d1c7de0eb7c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the width chosen is the sidebar’s width the next time the page opens in this browser, and a resize chooses none"
+        body: 55121031bc5328d15ae60ebd4e3be81ccfb3df2da9bf0ce325d6cd86eb67e7b9
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5a74a1c3b3
+    reviewed: 5fea4ac34cab4aa081f698fca1e5d37102d73c2307b888f1f469d313b5478d22
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5b9b792af0
+    reviewed: 8a25664ff3d29fa6abbf0328deba1f1e1fca9ec65ab2e80a18e6aab14f96b1d0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
   - node: 01a1a7a4-51ce-73b8-bd34-87ac9b0845b5
     reviewed: 387e1cd7628f523772aca7c70f7c53798f6ff652df0ae8b3e261147b257bb4dd
     tests:
@@ -30762,6 +30837,51 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "with no open submission anywhere, nothing is shown above the list"
         body: 8c6c565f75c70fe7edafd562fc1918fce0a554d0ac6f7e6ded71d95c3045ed06
+  - node: 01a2084f-948f-74fd-b2ee-eb5d9d331b89
+    reviewed: 878875c60a3c2c32e72ac24ad885ead1a8ee76884aea23ee2c432eddc34751b4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+  - node: 01a2084f-948f-74fd-b2ee-eb5e20e549b8
+    reviewed: dfe99401598073d77cbc1cb3202979422cce80bb06455fef3dd88f856d395ede
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
+  - node: 01a2084f-948f-74fd-b2ee-eb5fe0efce7e
+    reviewed: 9024a245323c19019cd6ef59b8f50205193dd4b8c0c0e992ed1108acfc2479b5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
+  - node: 01a2084f-948f-74fd-b2ee-eb6033d9a164
+    reviewed: a05791a191abdaefc23fa5fc39a8dfec1a7f25744ea7682bf114ef06191409fe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+  - node: 01a2084f-948f-74fd-b2ee-eb61449d1ca3
+    reviewed: 14172afbe59c26a916841588145ba4de2b77ded534dcac19ad4af5599f35e644
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "the whole prompt or title of a block cut short above the list is given while the pointer rests on it"
+        body: 7a1f9353f02fae729eded153b3416c197d1b5c4bc9633248707ccc07bfcffc99
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+  - node: 01a2084f-948f-74fd-b2ee-eb6299e485be
+    reviewed: 279d68e2d33e5f35eff0c226f3bf698144036477d38a894912db87d5f1e8e251
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
   - node: 01a1646f-546d-7042-befd-eb6376a28807
     reviewed: a9f22f9e332c89c102ebeda46f9d2ac826b573bd556869bd914bfd1ce82c991d
     tests:
