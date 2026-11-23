@@ -235,7 +235,7 @@ requirements:
       shall: "refuse and exit 1."
     criteria:
       - key: 01a209e1-45d1-7294-9f68-a49a295a002f
-        name: "Loft reads at most 1 MiB of an answer to a request of a sign-in, whether the remote or an authorization server gives it."
+        name: "Loft reads at most 1 MiB of an answer to a sign-in's request for metadata, a registration or tokens."
       - key: 01a209e1-45d1-7294-9f68-a49b8a69c24a
         name: "Loft reads at most 64 MiB of any other answer of a remote."
       - key: 01a209e1-45d1-7294-9f68-a49c72eacf1a

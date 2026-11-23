@@ -40,7 +40,7 @@ requirements:
       - key: 01a209e1-45d3-75c7-ad35-ece3d42ef1b5
         name: "A block mapping or block sequence inside 64 others is an error naming its file, line and column."
       - key: 01a209e1-45d3-75c7-ad35-ece4864ed1f2
-        name: "A file that nests 100,000 deep is refused with that error."
+        name: "A file that nests 2,000 deep is refused with that error."
   - key: 38716538-528a-4e9d-a568-0c4c96b7efa5
     statement:
       form: ubiquitous
