@@ -16,8 +16,8 @@ use crate::common::others::{OWN_REMOTE, list, listing, shelves};
 use crate::common::remote::history;
 use crate::common::signed_in::{self, granted, keep, name_remote, run, sign_ins_file};
 use crate::common::{Scratch, stdout, tree};
-use crate::remote_connect::assert_nothing_written;
-use crate::remote_escapes::{assert_named, visible};
+use crate::remote_connect::{assert_nothing_written, codec_key};
+use crate::remote_escapes::{RULE, assert_named, shown};
 
 /// The address the manifest names before a test writes another in its place.
 const PLACEHOLDER: &str = "https://placeholder.example/documents/one";
@@ -32,10 +32,6 @@ const SPOILS: [(&str, &str, &str); 4] = [
     ("/b\\u00fccher", "/b\u{fc}cher", "/b\u{fc}cher"),
     ("#top\\u202e", "#top\u{202e}", "#top\\u{202e}"),
 ];
-
-/// What the error says of an address that holds a character outside visible ASCII.
-pub const RULE: &str = "a remote's address holds visible ASCII characters alone, with every other \
-     character percent-encoded";
 
 /// A Reading List connected to its remote, the manifest naming it as `address` followed by
 /// `escape`, an escape of the double-quoted scalar the manifest writes the address in.
@@ -113,21 +109,11 @@ fn an_address_an_entry_of_documents_lists_is_held_to_visible_ascii_and_named_esc
         assert_named(&output, &format!("{address}{escaped}: {RULE}"));
         assert_eq!(browser.visits(), Vec::<String>::new(), "no browser");
         assert!(!sign_ins_file(&scratch).exists(), "no sign-in is kept");
+        assert_eq!(tree(&scratch.0), before, "nothing is written");
         let other = format!("{address}/other");
         let added = format!("{HANDLE}:IF-1");
-        let args = [
-            "interface",
-            "add",
-            &added,
-            "--remote",
-            &other,
-            "--format",
-            "json",
-        ];
-        let (output, _) = run(&scratch, &args, BrowserScenario::Absent, None);
         let listed = format!("`documents` lists {HANDLE} at {address}{escaped}, not {other}");
-        assert_named(&output, &listed);
-        assert_eq!(tree(&scratch.0), before, "nothing is written");
+        add_refused(&scratch, &[&added, "--remote", &other], &listed);
     }
     assert!(remote.requests().is_empty(), "no connection is opened");
 }
@@ -137,7 +123,7 @@ fn remove_disconnects_a_document_whose_address_holds_such_a_character_naming_it_
     let address = "https://remote.example/documents/one";
     for (escape, _, escaped) in SPOILS {
         let scratch = named(address, escape);
-        let key = codec::read(&tree(&scratch.0)).unwrap().id.key().to_string();
+        let key = codec_key(&scratch);
         let (output, _) = run(
             &scratch,
             &["remote", "remove"],
@@ -146,7 +132,7 @@ fn remove_disconnects_a_document_whose_address_holds_such_a_character_naming_it_
         );
         assert_eq!(output.status.code(), Some(0), "{output:?}");
         let stdout = stdout(&output);
-        assert!(stdout.lines().all(visible), "{stdout:?}");
+        assert!(stdout.lines().all(shown), "{stdout:?}");
         let line = format!("disconnected the document {key} from {address}{escaped}\n");
         assert!(stdout.starts_with(&line), "{stdout}");
         let document = codec::read(&tree(&scratch.0)).unwrap();

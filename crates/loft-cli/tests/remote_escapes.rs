@@ -13,15 +13,18 @@ use software_plant::http::{Answer, Request, Responder, Response, Server};
 use software_plant::remote::wire::{pairs, query, value};
 use software_plant::remote::{Remote, RemoteScenario};
 
-use crate::common::connected::connected;
-use crate::common::signed_in::{document, granted, keep, name_remote, run, sign_ins_file};
+use crate::common::connected::{Connected, connected};
+use crate::common::signed_in::{granted, keep, name_remote, run, sign_ins_file};
 use crate::common::{Scratch, stderr, tree};
-use crate::remote_address_characters::RULE;
 
 /// Text that holds control characters of both ranges, a bidirectional control and a backslash.
 pub const HOSTILE: &str = "x\u{1b}]0;y\u{7}\u{9b}2J\u{202e}\\z";
 /// [`HOSTILE`] as an error writes it.
 pub const ESCAPED: &str = "x\\u{1b}]0;y\\u{7}\\u{9b}2J\\u{202e}\\\\z";
+
+/// What the error says of an address that holds a character outside visible ASCII.
+pub const RULE: &str = "a remote's address holds visible ASCII characters alone, with every other \
+     character percent-encoded";
 
 /// Text that a header can carry and an address may not: a tab, the one control character a
 /// header's value holds.
@@ -31,7 +34,7 @@ const TABBED_ESCAPED: &str = "a\\u{9}b";
 
 /// Whether `text`, one line, holds no control character, of Unicode's general category `Cc`, and
 /// no bidirectional control, of Unicode's property `Bidi_Control`.
-pub fn visible(text: &str) -> bool {
+pub fn shown(text: &str) -> bool {
     !text.chars().any(|character| {
         character.is_control()
             || matches!(character, '\u{61c}' | '\u{200e}' | '\u{200f}')
@@ -40,12 +43,11 @@ pub fn visible(text: &str) -> bool {
     })
 }
 
-/// The `message` of the first error of the JSON document a run printed.
-pub fn message(output: &Output) -> String {
-    document(output)["errors"][0]["message"]
-        .as_str()
-        .unwrap_or_default()
-        .to_owned()
+/// Asserts that no line of the standard error of `output` holds a control character or a
+/// bidirectional control.
+pub fn assert_shown(output: &Output) {
+    let stderr = stderr(output);
+    assert!(stderr.lines().all(shown), "{stderr:?}");
 }
 
 /// Asserts that a run that failed named `named` on standard error and in its JSON document's
@@ -53,9 +55,9 @@ pub fn message(output: &Output) -> String {
 /// or a bidirectional control.
 pub fn assert_named(output: &Output, named: &str) {
     assert_eq!(output.status.code(), Some(1), "{output:?}");
-    let (stderr, message) = (stderr(output), message(output));
-    assert!(stderr.lines().all(visible), "{stderr:?}");
-    assert!(visible(&message), "{message:?}");
+    assert_shown(output);
+    let (stderr, message) = (stderr(output), Connected::message(output));
+    assert!(shown(&message), "{message:?}");
     assert!(message.contains(named), "{message}");
     assert!(
         stderr.contains(&message),
@@ -147,7 +149,7 @@ fn a_kept_sign_in_for_a_resource_on_another_origin_names_that_resource_escaped()
 /// What a remote of the test's own spoils of a sign-in it otherwise answers as the contract
 /// states.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Spoiled {
+pub enum Spoiled {
     /// Its challenge names protected resource metadata on another origin, whose path ends in
     /// [`TABBED`].
     Challenge,
@@ -156,29 +158,32 @@ enum Spoiled {
     /// Its challenge names protected resource metadata whose fragment is [`TABBED`], and that
     /// metadata names its own address without the well-known path as the `resource`.
     ResourceFragment,
-    /// Its protected resource metadata names an issuer whose fragment is [`HOSTILE`], which the
-    /// authorization server's metadata does not name.
+    /// Its protected resource metadata names an issuer whose fragment is [`HOSTILE`].
     Issuer,
-    /// Its protected resource metadata names an issuer whose fragment is [`HOSTILE`], and the
-    /// authorization server's metadata names the same issuer.
-    EchoedIssuer,
     /// The authorization server's metadata names an authorization endpoint whose fragment is
     /// [`HOSTILE`].
     Endpoint,
-    /// The authorization endpoint sends the browser back with [`HOSTILE`] as the `error`.
+    /// The authorization endpoint sends the browser back with [`HOSTILE`] as the `error`, as it
+    /// does whatever is spoiled.
     Callback,
+    /// Its protected resource metadata lists the companion resource `/notes`, whose own metadata
+    /// names in its place a resource whose fragment is [`HOSTILE`].
+    Companion,
 }
 
 /// A remote of the test's own, at `/doc` on its origin, that spoils what [`Spoiled`] names.
-struct Spoiling(Spoiled);
+pub struct Spoiling(pub Spoiled);
 
 /// The path of the protected resource metadata of `/doc`.
 const RESOURCE_METADATA: &str = "/.well-known/oauth-protected-resource/doc";
 
+/// The path of the protected resource metadata of `/notes`.
+const COMPANION_METADATA: &str = "/.well-known/oauth-protected-resource/notes";
+
 impl Spoiling {
-    /// `text` where this remote spoils one of `those`, or else nothing.
-    fn spoiling<'a>(&self, those: &[Spoiled], text: &'a str) -> &'a str {
-        if those.contains(&self.0) { text } else { "" }
+    /// `text` where this remote spoils `that`, or else nothing.
+    fn spoiling<'a>(&self, that: Spoiled, text: &'a str) -> &'a str {
+        if self.0 == that { text } else { "" }
     }
 
     /// The challenge of an unauthenticated request, naming the metadata of `/doc`, or, for
@@ -189,7 +194,7 @@ impl Spoiling {
             format!("http://elsewhere.example{RESOURCE_METADATA}/{TABBED}")
         } else {
             let fragment = format!("#{TABBED}");
-            let fragment = self.spoiling(&[Spoiled::ResourceFragment], &fragment);
+            let fragment = self.spoiling(Spoiled::ResourceFragment, &fragment);
             format!("{origin}{RESOURCE_METADATA}{fragment}")
         };
         let challenge = format!("Bearer resource_metadata=\"{metadata}\"");
@@ -216,29 +221,40 @@ impl Responder for Spoiling {
     fn answer(&mut self, request: &Request) -> Answer {
         let origin = format!("http://{}", request.header("host").unwrap_or_default());
         let (path, asked) = (request.path.split_once('?')).unwrap_or((&request.path, ""));
-        // The address of `at` on the origin, followed by `suffix` where one of `those` is spoiled.
-        let address = |at: &str, those: &[Spoiled], suffix: &str| {
-            format!("{origin}{at}{}", self.spoiling(those, suffix))
+        // The address of `at` on the origin, followed by `suffix` where `that` is spoiled.
+        let address = |at: &str, that: Spoiled, suffix: &str| {
+            format!("{origin}{at}{}", self.spoiling(that, suffix))
         };
         let (fragment, tabbed) = (format!("#{HOSTILE}"), format!("#{TABBED}"));
-        let resource = address("/doc", &[Spoiled::Resource], HOSTILE)
-            + self.spoiling(&[Spoiled::ResourceFragment], &tabbed);
-        let issued = [Spoiled::Issuer, Spoiled::EchoedIssuer];
-        let authorization = address("/authorize", &[Spoiled::Endpoint], &fragment);
+        let resource = address("/doc", Spoiled::Resource, HOSTILE)
+            + self.spoiling(Spoiled::ResourceFragment, &tabbed);
+        let authorization = address("/authorize", Spoiled::Endpoint, &fragment);
         let response = match path {
             "/doc/head" => self.challenge(&origin),
-            RESOURCE_METADATA => Response::json(
+            RESOURCE_METADATA => {
+                let mut metadata = json!({
+                    "resource": resource,
+                    "authorization_servers": [address("/auth", Spoiled::Issuer, &fragment)],
+                    "scopes_supported": ["documents"],
+                });
+                if self.0 == Spoiled::Companion {
+                    metadata["companion_resources"] =
+                        json!([{ "resource": format!("{origin}/notes"), "kind": "notes" }]);
+                }
+                Response::json(200, &metadata)
+            }
+            COMPANION_METADATA => Response::json(
                 200,
                 &json!({
-                    "resource": resource,
-                    "authorization_servers": [address("/auth", &issued, &fragment)],
-                    "scopes_supported": ["documents"],
+                    "resource": format!("{origin}/notes{fragment}"),
+                    "authorization_servers": [format!("{origin}/auth")],
+                    "scopes_supported": ["notes"],
                 }),
             ),
             "/.well-known/oauth-authorization-server/auth" => Response::json(
                 200,
                 &json!({
-                    "issuer": address("/auth", &[Spoiled::EchoedIssuer], &fragment),
+                    "issuer": format!("{origin}/auth"),
                     "authorization_endpoint": authorization,
                     "token_endpoint": format!("{origin}/token"),
                     "registration_endpoint": format!("{origin}/register"),
@@ -253,6 +269,12 @@ impl Responder for Spoiling {
     }
 }
 
+/// The path and query of each request that `server` received, in order.
+fn paths(server: &Server) -> Vec<String> {
+    let requests = server.requests().into_iter();
+    requests.map(|request| request.path).collect()
+}
+
 #[test]
 fn a_sign_in_names_what_its_metadata_or_its_callback_gave_escaped() {
     for (spoiled, said) in [
@@ -261,16 +283,13 @@ fn a_sign_in_names_what_its_metadata_or_its_callback_gave_escaped() {
             format!("elsewhere.example{RESOURCE_METADATA}/{TABBED_ESCAPED}"),
         ),
         (Spoiled::Resource, format!("/doc{ESCAPED}")),
-        (Spoiled::Issuer, format!("/auth#{ESCAPED}")),
         (Spoiled::Endpoint, format!("/authorize#{ESCAPED}")),
         (Spoiled::Callback, format!("answered `{ESCAPED}`")),
     ] {
         let server = Server::start(Spoiling(spoiled));
         let (scratch, output) = login_at(&format!("{}/doc", server.url()));
         assert_named(&output, &said);
-        let paths: Vec<String> = (server.requests().into_iter())
-            .map(|request| request.path)
-            .collect();
+        let paths = paths(&server);
         let read = paths.iter().any(|path| path == RESOURCE_METADATA);
         assert_eq!(read, spoiled != Spoiled::Challenge, "{paths:?}");
         let authorized = paths.iter().any(|path| path.starts_with("/authorize"));
@@ -293,14 +312,12 @@ fn a_sign_in_refuses_a_resource_or_an_issuer_its_metadata_names_outside_visible_
             Spoiled::ResourceFragment,
             format!("/doc#{TABBED_ESCAPED}: {RULE}"),
         ),
-        (Spoiled::EchoedIssuer, format!("/auth#{ESCAPED}: {RULE}")),
+        (Spoiled::Issuer, format!("/auth#{ESCAPED}: {RULE}")),
     ] {
         let server = Server::start(Spoiling(spoiled));
         let (scratch, output) = login_at(&format!("{}/doc", server.url()));
         assert_named(&output, &named);
-        let paths: Vec<String> = (server.requests().into_iter())
-            .map(|request| request.path)
-            .collect();
+        let paths = paths(&server);
         let asked = |prefix: &str| paths.iter().any(|path| path.starts_with(prefix));
         assert!(
             !asked("/.well-known/oauth-authorization-server") && !asked("/register"),
@@ -340,6 +357,7 @@ fn a_lock_in_a_remote_s_answer_that_does_not_read_is_named_with_its_reason_escap
     let args = ["pull", "--format", "json"];
     let (output, _) = run(&scratch, &args, BrowserScenario::Absent, None);
     assert_named(&output, &format!("`{ESCAPED}`"));
-    assert!(message(&output).contains("does not read"), "{output:?}");
+    let message = Connected::message(&output);
+    assert!(message.contains("does not read"), "{message}");
     assert_eq!(tree(&scratch.0), before, "nothing is written");
 }

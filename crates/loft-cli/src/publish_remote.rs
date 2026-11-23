@@ -203,17 +203,16 @@ fn refused(error: &RemoteError, base: &Head) -> String {
             )
         }
         Some("invalid_request") => {
-            let paths: Vec<String> = refusal.problem["paths"]
+            let paths: Vec<&str> = refusal.problem["paths"]
                 .as_array()
                 .into_iter()
                 .flatten()
                 .filter_map(Value::as_str)
-                .map(|path| Escaped(path).to_string())
                 .collect();
             if paths.is_empty() {
                 error.to_string()
             } else {
-                format!("{error}: {}", paths.join(", "))
+                format!("{error}: {}", Escaped(&paths.join(", ")))
             }
         }
         _ => error.to_string(),
@@ -232,10 +231,9 @@ fn applied(
     base: &Head,
 ) -> Result<Outcome, String> {
     let lock = Lock::read(answer["lock"].to_string().as_bytes()).map_err(|error| {
-        let error = error.to_string();
         format!(
             "the remote returned a lock that does not read: {}",
-            Escaped(&error)
+            Escaped(&error.to_string())
         )
     })?;
     if answer["outcome"] == "unchanged" || Head::of_lock(Some(&lock)) == *base {
@@ -267,6 +265,7 @@ mod tests {
     use serde_json::{Value, json};
 
     use super::refused;
+    use crate::escaped::shown;
     use crate::remote::head::Head;
     use crate::remote::{Refusal, RemoteError};
 
@@ -305,7 +304,7 @@ mod tests {
         ] {
             let message = refused(&refusal(problem), &Head::none());
             assert!(message.contains(said), "{message:?}");
-            assert!(!message.chars().any(char::is_control), "{message:?}");
+            assert!(shown(&message), "{message:?}");
         }
     }
 }

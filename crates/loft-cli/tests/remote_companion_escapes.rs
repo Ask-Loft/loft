@@ -6,29 +6,22 @@
 //! of it. Each runs under the remote and browser simulators, or under a remote of the test's own
 //! where no scenario of the simulator gives such text.
 
-use std::process::Output;
-
 use serde_json::json;
-use software_plant::http::{Answer, Request, Responder, Response, Server};
+use software_plant::http::Server;
 use software_plant::remote::{Companion, CompanionFault, RESOURCE, RemoteScenario};
 
 use crate::common::connected::connected;
 use crate::common::oauth::RESOURCE_METADATA;
 use crate::common::signed_in::{granted_over, keep, kept_from};
-use crate::remote_escapes::{ESCAPED, HOSTILE, assert_named, login_at, visible};
+use crate::remote_escapes::{
+    ESCAPED, HOSTILE, Spoiled, Spoiling, assert_named, assert_shown, login_at,
+};
 use crate::remote_sign_in_companions::{every, kept, targets, warnings};
 use crate::remote_sign_in_refusals::login;
 
 /// The warning that a sign-in to the remote at `address` leaves out `named`, and why.
 fn left_out(address: &str, named: &str, why: &str) -> String {
     format!("warning: the sign-in to {address} leaves out {named}: {why}")
-}
-
-/// Asserts that no line of the standard error of `output` holds a control character or a
-/// bidirectional control.
-fn assert_shown(output: &Output) {
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.lines().all(visible), "{stderr:?}");
 }
 
 #[test]
@@ -137,61 +130,9 @@ fn a_sign_in_names_a_companion_whose_metadata_does_not_vouch_for_it_or_cannot_be
     assert!(sign_in.get("resources").is_none(), "{sign_in}");
 }
 
-/// A remote of the test's own, at `/doc` on its origin, that lists the companion resource
-/// `/notes`, whose own metadata names in its place a resource whose fragment is [`HOSTILE`]. Its
-/// authorization server registers no client, so that the sign-in ends once it has read them.
-struct Misnaming;
-
-impl Responder for Misnaming {
-    fn answer(&mut self, request: &Request) -> Answer {
-        let origin = format!("http://{}", request.header("host").unwrap_or_default());
-        let issuer = format!("{origin}/auth");
-        let response = match request.path.as_str() {
-            "/doc/head" => {
-                let mut response = Response::empty(401);
-                let metadata = format!("{origin}{RESOURCE_METADATA}/doc");
-                let challenge = format!("Bearer resource_metadata=\"{metadata}\"");
-                (response.headers).push(("WWW-Authenticate".to_owned(), challenge));
-                response
-            }
-            "/.well-known/oauth-protected-resource/doc" => Response::json(
-                200,
-                &json!({
-                    "resource": format!("{origin}/doc"),
-                    "authorization_servers": [issuer],
-                    "scopes_supported": ["documents"],
-                    "companion_resources": [
-                        { "resource": format!("{origin}/notes"), "kind": "notes" },
-                    ],
-                }),
-            ),
-            "/.well-known/oauth-protected-resource/notes" => Response::json(
-                200,
-                &json!({
-                    "resource": format!("{origin}/notes#{HOSTILE}"),
-                    "authorization_servers": [issuer],
-                    "scopes_supported": ["notes"],
-                }),
-            ),
-            "/.well-known/oauth-authorization-server/auth" => Response::json(
-                200,
-                &json!({
-                    "issuer": issuer,
-                    "authorization_endpoint": format!("{origin}/authorize"),
-                    "token_endpoint": format!("{origin}/token"),
-                    "registration_endpoint": format!("{origin}/register"),
-                    "code_challenge_methods_supported": ["S256"],
-                }),
-            ),
-            _ => Response::empty(404),
-        };
-        response.into()
-    }
-}
-
 #[test]
 fn a_sign_in_names_the_resource_that_a_companion_s_metadata_names_in_its_place_escaped() {
-    let server = Server::start(Misnaming);
+    let server = Server::start(Spoiling(Spoiled::Companion));
     let origin = server.url();
     let (_scratch, output) = login_at(&format!("{origin}/doc"));
     assert_eq!(output.status.code(), Some(1), "{output:?}");

@@ -7,12 +7,9 @@ use std::time::Duration;
 use serde_json::json;
 use software_plant::remote::{Remote, RemoteScenario};
 
+use super::tests::{ADDRESS, OWN, read_as_text};
 use super::{Learned, RESOURCE_METADATA, learned, listed, vouched};
 use crate::escaped::{ESCAPED, HOSTILE, shown};
-
-/// The address of a remote's document, and the remote's own protected resource.
-const ADDRESS: &str = "https://h.example/documents/one";
-const OWN: &str = "https://h.example/documents";
 
 #[test]
 fn a_listing_leaves_out_an_identifier_outside_visible_ascii_and_names_each_entry_escaped() {
@@ -27,10 +24,7 @@ fn a_listing_leaves_out_an_identifier_outside_visible_ascii_and_names_each_entry
         { "resource": HOSTILE, "kind": "bare" },
     ]});
     let (read, warnings) = listed(ADDRESS, OWN, &metadata);
-    let read: Vec<(&str, &str)> = (read.iter())
-        .map(|(resource, kind)| (resource.as_str(), kind.as_str()))
-        .collect();
-    assert_eq!(read, [("https://h.example/notes", "notes")]);
+    assert_eq!(read_as_text(&read), [("https://h.example/notes", "notes")]);
     let outside = "its identifier holds a character other than visible ASCII";
     assert_eq!(
         warnings,

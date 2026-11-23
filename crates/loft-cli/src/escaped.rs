@@ -12,6 +12,12 @@ const BIDI_CONTROLS: [char; 12] = [
     '\u{2066}', '\u{2067}', '\u{2068}', '\u{2069}',
 ];
 
+/// Whether `character` is one that [`Escaped`] writes as its code point: a control character or a
+/// bidirectional control.
+fn hidden(character: char) -> bool {
+    character.is_control() || BIDI_CONTROLS.contains(&character)
+}
+
 /// `text` as an error writes it: each control character, of Unicode's general category `Cc`, and
 /// each bidirectional control, of Unicode's property `Bidi_Control`, as `\u{<hex>}`, its code
 /// point in lowercase hexadecimal without leading zeros; each backslash as `\\`, so that an
@@ -24,7 +30,7 @@ impl fmt::Display for Escaped<'_> {
         for character in self.0.chars() {
             if character == '\\' {
                 formatter.write_str("\\\\")?;
-            } else if character.is_control() || BIDI_CONTROLS.contains(&character) {
+            } else if hidden(character) {
                 write!(formatter, "{}", character.escape_unicode())?;
             } else {
                 formatter.write_char(character)?;
@@ -54,14 +60,11 @@ pub const HOSTILE: &str = "x\u{1b}]0;y\u{7}\u{9b}2J\u{202e}\\z";
 #[cfg(test)]
 pub const ESCAPED: &str = "x\\u{1b}]0;y\\u{7}\\u{9b}2J\\u{202e}\\\\z";
 
-/// Whether `text` holds no control character, of Unicode's general category `Cc`, and no
-/// bidirectional control, of Unicode's property `Bidi_Control`, so that a terminal shows each of
-/// its characters.
+/// Whether `text` holds no character that [`Escaped`] writes as its code point, so that a terminal
+/// shows each of its characters.
 #[cfg(test)]
 pub fn shown(text: &str) -> bool {
-    !text
-        .chars()
-        .any(|character| character.is_control() || BIDI_CONTROLS.contains(&character))
+    !text.chars().any(hidden)
 }
 
 #[cfg(test)]

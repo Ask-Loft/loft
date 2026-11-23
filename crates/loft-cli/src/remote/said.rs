@@ -179,7 +179,35 @@ mod tests {
         assert!(!other.contains("loft remote"), "{other}");
     }
 
-    /// Each error, with [`HOSTILE`] in every text it holds.
+    /// The place of each variant among the samples of [`errors`]: a match with no wildcard, so
+    /// that a variant added to the type does not compile here until it is placed. `File`, the
+    /// one variant without a sample, is placed after them all, so that a variant placed before
+    /// it fails the test below until it is sampled.
+    const fn place(error: &RemoteError) -> usize {
+        match error {
+            RemoteError::NoAddress { .. } => 0,
+            RemoteError::NoSignIn { .. } => 1,
+            RemoteError::SignInElsewhere { .. } => 2,
+            RemoteError::Address(_) => 3,
+            RemoteError::Characters(_) => 4,
+            RemoteError::NotHeld { .. } => 5,
+            RemoteError::StateNotHeld { .. } => 6,
+            RemoteError::Variable { .. } => 7,
+            RemoteError::Unreachable { .. } => 8,
+            RemoteError::Unreadable { .. } => 9,
+            RemoteError::Refused { .. } => 10,
+            RemoteError::Unsigned { .. } => 11,
+            RemoteError::Lapsed { .. } => 12,
+            RemoteError::FormerResource { .. } => 13,
+            RemoteError::NotCovered { .. } => 14,
+            RemoteError::SignIn { .. } => 15,
+            RemoteError::File(_) => 16,
+        }
+    }
+
+    /// Each error but [`RemoteError::File`], whose reason is the system's own words about a
+    /// local file, with [`HOSTILE`] in every text it holds; the sign-in kept for another origin
+    /// twice, the second time with [`HOSTILE`] in a resource whose origin reads.
     fn errors() -> Vec<RemoteError> {
         let text = || HOSTILE.to_owned();
         let refusal = Refusal {
@@ -198,6 +226,7 @@ mod tests {
                 resource: format!("https://elsewhere.example/documents#{HOSTILE}"),
             },
             RemoteError::Address(text()),
+            RemoteError::Characters(text()),
             RemoteError::NotHeld { key: text() },
             RemoteError::StateNotHeld {
                 sequence: 1,
@@ -242,6 +271,14 @@ mod tests {
                 reason: text(),
             },
         ]
+    }
+
+    #[test]
+    fn every_remote_error_but_that_of_the_local_file_is_sampled_in_order() {
+        let mut places: Vec<usize> = errors().iter().map(place).collect();
+        places.dedup();
+        let unsampled = place(&RemoteError::File(String::new()));
+        assert_eq!(places, (0..unsampled).collect::<Vec<_>>());
     }
 
     #[test]

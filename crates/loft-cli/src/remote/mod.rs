@@ -398,6 +398,7 @@ mod tests {
     use std::time::Duration;
 
     use super::{checked, time_limit};
+    use crate::escaped::shown;
 
     #[test]
     fn a_call_may_take_30_seconds_unless_loft_remote_timeout_says_otherwise() {
@@ -422,7 +423,7 @@ mod tests {
         ] {
             let refused = checked(&address).unwrap_err().to_string();
             assert!(refused.starts_with(&format!("{named}: ")), "{refused:?}");
-            assert!(!refused.chars().any(char::is_control), "{refused:?}");
+            assert!(shown(&refused), "{refused:?}");
             assert!(
                 refused.contains("visible ASCII characters alone"),
                 "{refused}"

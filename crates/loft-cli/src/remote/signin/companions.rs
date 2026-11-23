@@ -287,11 +287,11 @@ mod tests {
     use super::{Companion, asked, listed, metadata_address, vouched};
 
     /// The address of a remote's document, and the remote's own protected resource.
-    const ADDRESS: &str = "https://h.example/documents/one";
-    const OWN: &str = "https://h.example/documents";
+    pub(super) const ADDRESS: &str = "https://h.example/documents/one";
+    pub(super) const OWN: &str = "https://h.example/documents";
 
     /// The identifier and the kind of each entry that a listing read.
-    fn read_as_text(read: &[(String, String)]) -> Vec<(&str, &str)> {
+    pub(super) fn read_as_text(read: &[(String, String)]) -> Vec<(&str, &str)> {
         read.iter()
             .map(|(resource, kind)| (resource.as_str(), kind.as_str()))
             .collect()
