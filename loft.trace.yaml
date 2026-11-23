@@ -21132,6 +21132,18 @@ links:
       - file: "crates/loft-cli/tests/remote_connect_notice.rs"
         name: "a_connect_to_a_remote_that_names_no_visibility_says_nothing_of_it"
         body: 9a898caa2a339e011286ee8e82a987ae0903dede4913f74ba6d7d3b43fbb5bb2
+  - node: 01a2067e-f638-7716-98e2-ec1ade9b0c22
+    reviewed: 66299cf5282df97e81cf05151caf09b2d7a596dea7f59709febf71851a02bbf6
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect_notice.rs"
+        name: "a_connect_whose_head_fails_says_it_cannot_read_the_visibility_and_still_imports"
+        body: daf3ab94555affd74f60c011f2b1a8f4e42a31f9e47a1aa2b36da7ae2fd984aa
+  - node: 01a2067e-f638-7716-98e2-ec1bfb9161f2
+    reviewed: c0eb0a57a200af088dd5218063beba99077dafe5e1124635bd00cd58e65cebcd
+    tests:
+      - file: "crates/loft-cli/tests/remote_connect_notice.rs"
+        name: "a_connect_whose_head_fails_says_it_cannot_read_the_visibility_and_still_imports"
+        body: daf3ab94555affd74f60c011f2b1a8f4e42a31f9e47a1aa2b36da7ae2fd984aa
   - node: 01a20625-1782-738f-956e-4cba4861560c
     reviewed: d3f2878506d57c05b16119dababafd2a089d54c5e38314232cbca967f51e0bcb
     tests:
@@ -22614,6 +22626,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract.rs"
         name: "the_head_names_the_document_s_key_lock_and_file_digests_in_path_order"
         body: 74a689a65221324e56698e85e53da8920e740a4bdbbc87a881faf6b97934b638
+  - node: 01a2068b-10dc-733f-ac5a-5439a44f15fa
+    reviewed: 32d1c98f621d63b6e91359e7c2b4707026f9e77f1f098d716b7a31e3101ee87e
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract.rs"
+        name: "a_scenario_that_forbids_reading_the_head_answers_it_forbidden_and_serves_its_states"
+        body: 22b2eb25bef519583ff1c2e54a36faba0c3b5ea59330e7d8c82e74df7e541e16
   - node: 01a20625-1784-70df-9261-fdb27f4e4272
     reviewed: 6ba292310f0d1ba90c2423d75582c43d4121f34b0d262dbaff434b36f722e23b
     tests:

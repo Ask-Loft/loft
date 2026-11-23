@@ -44,6 +44,34 @@ fn a_connect_to_a_remote_that_names_no_visibility_says_nothing_of_it() {
 }
 
 #[test]
+fn a_connect_whose_head_fails_says_it_cannot_read_the_visibility_and_still_imports() {
+    let history = history(2);
+    let (scratch, git) = published(&history);
+    let remote = Remote::start(RemoteScenario::accepting(&history.key).forbidding_head());
+    let (output, result) = set(&scratch, &remote, Some(&git));
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(result["outcome"], "connected");
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    for said in [
+        "cannot read from the remote to whom it serves",
+        "403",
+        "`forbidden`",
+    ] {
+        assert!(stderr.contains(said), "{said}: {stderr}");
+    }
+    assert!(!stderr.contains(SAID), "{stderr}");
+    let document = document_path(&history.key);
+    assert_eq!(
+        document_calls(&remote),
+        [
+            format!("POST {document}/create"),
+            format!("GET {document}/head"),
+            format!("POST {document}/import"),
+        ]
+    );
+}
+
+#[test]
 fn a_connect_that_imports_nothing_says_nothing_of_the_visibility() {
     let scratch = crate::common::Scratch::with_reading_list();
     let key = codec_key(&scratch);

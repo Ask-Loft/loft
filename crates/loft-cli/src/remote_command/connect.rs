@@ -93,9 +93,12 @@ pub fn connect(
     if found.sequence != 0 || states.is_empty() {
         return Err(differs(&found, &wanted));
     }
-    // The head is asked only for the notice: a refusal of it leaves the line unsaid.
-    let answered = head::fetch(client, &key).ok();
-    Visibility::say(answered.and_then(|answered| answered.visibility));
+    // The head is asked only for the notice: where it fails, the line says so and the import
+    // goes on.
+    match head::fetch(client, &key) {
+        Ok(answered) => Visibility::say(answered.visibility),
+        Err(error) => Visibility::unread(&error),
+    }
     let body = json!({
         "documentKey": key,
         "states": states.iter().map(wire).collect::<Vec<_>>(),

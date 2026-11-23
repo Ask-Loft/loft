@@ -6,9 +6,12 @@ use serde_json::{Value, json};
 use crate::http::Response;
 use crate::remote::problem::refusal;
 use crate::remote::wire::sha256_hex;
-use crate::remote::{Held, State};
+use crate::remote::{Call, Held, State};
 
 pub(super) fn head(state: &State) -> Response {
+    if state.scenario.forbidden.contains(&Call::Head) {
+        return refusal("forbidden");
+    }
     let Some(held) = &state.held else {
         return refusal("not_found");
     };

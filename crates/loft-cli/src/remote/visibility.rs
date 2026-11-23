@@ -4,6 +4,7 @@
 use serde_json::Value;
 
 use crate::out::errln;
+use crate::remote::RemoteError;
 
 /// To whom a remote serves a document.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -31,6 +32,12 @@ impl Visibility {
         if let Some(visibility) = visibility {
             errln!("{}", visibility.said());
         }
+    }
+
+    /// Says on standard error that the remote's head, which names to whom it serves the document,
+    /// could not be read, for `error`.
+    pub fn unread(error: &RemoteError) {
+        errln!("cannot read from the remote to whom it serves this document: {error}");
     }
 
     /// The line that says to whom the remote serves the document.

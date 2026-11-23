@@ -229,6 +229,17 @@ fn the_head_names_the_document_s_key_lock_and_file_digests_in_path_order() {
 }
 
 #[test]
+fn a_scenario_that_forbids_reading_the_head_answers_it_forbidden_and_serves_its_states() {
+    let history = history(1);
+    let scenario = RemoteScenario::accepting(&history.key)
+        .holding("Reading List", history.states.clone())
+        .forbidding_head();
+    let remote = Remote::start(scenario);
+    assert_problem(&get(&remote, "/head"), 403, "forbidden");
+    assert_eq!(get(&remote, "/states/1").status, 200);
+}
+
+#[test]
 fn a_published_state_and_a_draft_are_answered_with_their_files_or_not_found() {
     let history = history(2);
     let draft = history.states[0].files.clone();

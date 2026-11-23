@@ -101,6 +101,7 @@ pub(super) enum Misstating {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Call {
     Create,
+    Head,
     Import,
 }
 
@@ -255,6 +256,13 @@ impl RemoteScenario {
     #[must_use]
     pub fn forbidding_create(mut self) -> Self {
         self.forbidden.push(Call::Create);
+        self
+    }
+
+    /// Refuses every `GET <address>/head` as `forbidden`, while its other calls are answered.
+    #[must_use]
+    pub fn forbidding_head(mut self) -> Self {
+        self.forbidden.push(Call::Head);
         self
     }
 
