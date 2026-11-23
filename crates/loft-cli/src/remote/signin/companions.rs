@@ -7,6 +7,7 @@
 //! and lists its scopes, each a scope token of RFC 6749. It leaves out every other entry, says so
 //! on standard error, and goes on.
 
+use std::collections::HashSet;
 use std::time::Duration;
 
 use serde_json::Value;
@@ -211,9 +212,9 @@ pub fn asked(own: &str, companions: &[Companion]) -> String {
         return own.to_owned();
     }
     let listed = companions.iter().flat_map(|companion| &companion.scopes);
-    let mut scopes: Vec<&str> = Vec::new();
+    let (mut seen, mut scopes) = (HashSet::new(), Vec::new());
     for scope in own.split(' ').chain(listed.map(String::as_str)) {
-        if !scope.is_empty() && !scopes.contains(&scope) {
+        if !scope.is_empty() && seen.insert(scope) {
             scopes.push(scope);
         }
     }
