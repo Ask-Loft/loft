@@ -1,0 +1,124 @@
+key: 01a202c3-d1fd-723f-91a5-61b3feb6fad0
+slug: a-remote-lists-the-companion-resources-that-one-sign-in-covers
+title: "A remote lists the companion resources that one sign-in covers"
+context: "A remote's origin may serve protected resources beside the one a connected document's address lies under, under the same authorization server, and a person reaches each of them with the same sign-in. OAuth 2.0 lets one authorization request name each protected resource it asks for (RFC 8707), and the protected resource metadata that the remote's challenge names (RFC 9728) names one resource and its authorization server: neither says which other resources go with the remote. `loft` learns a sign-in from the remote's address alone, and holds the remote's protected resource, and the metadata its challenge names, to the origin of that address."
+state:
+  kind: accepted
+  selectedOption: 01a202c3-d1fd-723f-91a5-61b8ee8cf04a
+  outcome: "A remote's protected resource metadata may list, in `companion_resources`, each other protected resource that a sign-in to the remote covers, as an object of its identifier, `resource`, and its kind, `kind`. `loft` keeps a listed resource only where it lies on the origin of the remote's address, asking nothing of a listed resource on another origin, and where its own protected resource metadata names it, names the remote's authorization server and lists a scope; it leaves out each other one and says so. It asks for the remote's own resource and each kept one in one authorization request, with the scopes of each, and holds an access token for each resource alone: the remote's first from the code exchange, and every later one from a refresh that names its resource with the sign-in's one refresh token. A remote that lists none is signed in to as before."
+drivers:
+  - key: 01a202c3-d1fd-723f-91a5-61b46e957a26
+    kind: local
+    label: "One consent"
+    statement: "A person consents once for every resource that a sign-in to a remote covers."
+  - key: 01a202c3-d1fd-723f-91a5-61b5ebf4f569
+    kind: local
+    label: "Nothing to configure"
+    statement: "A person names only the remote's address."
+  - key: 01a202c3-d1fd-723f-91a5-61b6ba6be76c
+    kind: local
+    label: "Only the remote's resources"
+    statement: "A sign-in asks only for resources that go with the remote it is made for."
+  - key: 01a202c3-d1fd-723f-91a5-61b7defae7ec
+    kind: local
+    label: "Remotes that list nothing"
+    statement: "A remote that lists no companion resource, and a `loft` that reads no list, sign in as before."
+options:
+  - key: 01a202c3-d1fd-723f-91a5-61b8ee8cf04a
+    title: "Listed in the remote's protected resource metadata"
+    description: "The protected resource metadata of the remote's own resource lists the identifier and the kind of each companion resource, and each companion resource's own metadata names it and the remote's authorization server."
+  - key: 01a202c3-d1fd-723f-91a5-61b95a571dcc
+    title: "Listed in the authorization server's metadata"
+    description: "The authorization server's metadata lists each protected resource it issues tokens for, in `protected_resources` (RFC 9728)."
+  - key: 01a202c3-d1fd-723f-91a5-61baa18d3c7b
+    title: "A sign-in for each resource"
+    description: "`loft` signs in to the remote's own resource, and to each other resource on its own when a command first calls it, from that resource's challenge."
+assessments:
+  - option: 01a202c3-d1fd-723f-91a5-61b8ee8cf04a
+    driver: 01a202c3-d1fd-723f-91a5-61b46e957a26
+    rating: supports
+    rationale: "one authorization request names the remote's resource and each listed one"
+  - option: 01a202c3-d1fd-723f-91a5-61b8ee8cf04a
+    driver: 01a202c3-d1fd-723f-91a5-61b5ebf4f569
+    rating: supports
+    rationale: "the remote's own metadata names them"
+  - option: 01a202c3-d1fd-723f-91a5-61b8ee8cf04a
+    driver: 01a202c3-d1fd-723f-91a5-61b6ba6be76c
+    rating: supports
+    rationale: "the remote lists its own companion resources, and `loft` keeps those on its origin under its authorization server"
+  - option: 01a202c3-d1fd-723f-91a5-61b8ee8cf04a
+    driver: 01a202c3-d1fd-723f-91a5-61b7defae7ec
+    rating: supports
+    rationale: "without the list the sign-in is the one it was, and a client that reads no list ignores it"
+  - option: 01a202c3-d1fd-723f-91a5-61b95a571dcc
+    driver: 01a202c3-d1fd-723f-91a5-61b46e957a26
+    rating: supports
+    rationale: "one authorization request can name each listed resource"
+  - option: 01a202c3-d1fd-723f-91a5-61b95a571dcc
+    driver: 01a202c3-d1fd-723f-91a5-61b5ebf4f569
+    rating: supports
+    rationale: "the authorization server's metadata names them"
+  - option: 01a202c3-d1fd-723f-91a5-61b95a571dcc
+    driver: 01a202c3-d1fd-723f-91a5-61b6ba6be76c
+    rating: conflicts
+    rationale: "an authorization server lists every resource it issues tokens for, those of every other remote it serves among them"
+  - option: 01a202c3-d1fd-723f-91a5-61b95a571dcc
+    driver: 01a202c3-d1fd-723f-91a5-61b7defae7ec
+    rating: supports
+    rationale: "an authorization server without the list is used as before"
+  - option: 01a202c3-d1fd-723f-91a5-61baa18d3c7b
+    driver: 01a202c3-d1fd-723f-91a5-61b46e957a26
+    rating: conflicts
+    rationale: "the person consents again for each resource a command first calls"
+  - option: 01a202c3-d1fd-723f-91a5-61baa18d3c7b
+    driver: 01a202c3-d1fd-723f-91a5-61b5ebf4f569
+    rating: supports
+    rationale: "each resource's challenge names its metadata"
+  - option: 01a202c3-d1fd-723f-91a5-61baa18d3c7b
+    driver: 01a202c3-d1fd-723f-91a5-61b6ba6be76c
+    rating: supports
+    rationale: "`loft` signs in only to a resource that a command calls"
+  - option: 01a202c3-d1fd-723f-91a5-61baa18d3c7b
+    driver: 01a202c3-d1fd-723f-91a5-61b7defae7ec
+    rating: supports
+    rationale: "the sign-in to the remote's own resource does not change"
+consequences:
+  - key: 01a202c3-d1fd-723f-91a5-61bb0d16b845
+    kind: benefit
+    statement: "An access token that leaks from one resource is refused by every other."
+  - key: 01a202c3-d1fd-723f-91a5-61bc393ae12d
+    kind: cost
+    statement: "A resource that a remote begins to list after a sign-in is reached only once the person signs in again."
+  - key: 01a202c3-d1fd-723f-91a5-61bd139b7df0
+    kind: cost
+    statement: "Each refresh of a sign-in over companion resources writes `loft/remotes.json` once more, to record its resource before the refresh is sent."
+  - key: 01a202c3-d1fd-723f-91a5-61be963c115d
+    kind: obligation
+    statement: "A remote lists a companion resource only on its own origin and under its own authorization server, and accepts it beside its own resource in one authorization request."
+    subject: 01a1f09b-189b-76b3-863f-c7b48d1e9893
+  - key: 01a202c3-d1fd-723f-91a5-61bf5d31523c
+    kind: obligation
+    statement: "A remote admits at each of its protected resources only an access token issued for that resource."
+    subject: 01a1f09b-189b-76b3-863f-c7ad82ed5c58
+  - key: 01a202c3-d1fd-723f-91a5-61c05b34e243
+    kind: risk
+    statement: "`companion_resources` is an extension member of RFC 9728 that no registry holds, so a later standard could give the name another meaning."
+  - key: 01a202c3-d1fd-723f-91a5-61c17ae42148
+    kind: risk
+    statement: "An earlier `loft` keeps a sign-in over companion resources for the remote's own resource alone once it refreshes it, and one that runs within 120 seconds of a lost answer for a companion resource presents the rotated refresh token for another resource, which ends the whole sign-in."
+  - key: 01a202c3-d1fd-723f-91a5-61c25bb1f658
+    kind: risk
+    statement: "Remotes that share one origin and one authorization server are not told apart: one of them can list another's protected resource as a companion resource, and only the authorization server's refusal of an authorization request that names resources of two remotes keeps one sign-in from covering both."
+subjects:
+  - role: affected
+    node: 01a156aa-d52e-75b0-9a73-cb9538029bb3
+  - role: affected
+    node: 01a18e1f-8daa-7674-9603-5ad621016b05
+  - role: outcome
+    node: 01a18e1f-8daa-7674-9603-5b05e1af871f
+  - role: outcome
+    node: 01a1f09b-189b-76b3-863f-c7b48d1e9893
+  - role: outcome
+    node: 01a202c3-d203-70c5-9d96-10934a97174d
+mentions:
+  - 01a1f4f1-4303-70b9-a1c6-7441ee60f812

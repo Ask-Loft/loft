@@ -47,8 +47,9 @@ states in order and gives its labels, so a whole team publishes one document.
   against the form with the user rather than try another address.
 - After `loft remote set` or `loft remote remove`, commit `spec/loftspec.yaml`, which names the
   remote and marks the document `connected: true`, or no longer does.
-- When a command reports that the sign-in to the remote has lapsed or been refused, ask the user
-  to run `loft remote login`: the sign-in opens the user's browser, so it is theirs to complete.
+- When a command reports that the sign-in to the remote has lapsed, been refused, was made for a
+  former resource of the remote or does not cover a resource, ask the user to run
+  `loft remote login`: the sign-in opens the user's browser, so it is theirs to complete.
 - When a command reports that the sign-in kept for the address is for a protected resource on
   another origin, ask the user to run `loft remote login` first: it signs in again where the
   remote now serves its resource on the address's origin. Where that login is refused for the
@@ -78,8 +79,9 @@ remote, and only `loft interface` writes either.
   it only once the test still proves it.
 - `loft interface status` compares each copy with its remote and writes nothing; a connected
   `loft publish` refuses a copy that is not the one its remote published.
-- When the sign-in to another document's remote has lapsed, ask the user to run
-  `loft interface login <handle>`: the sign-in opens the user's browser.
+- When the sign-in to another document's remote has lapsed, was made for a former resource of the
+  remote or does not cover a resource, ask the user to run `loft interface login <handle>`: the
+  sign-in opens the user's browser.
 
 ## Publish
 

@@ -86,7 +86,7 @@ requirements:
       - key: 01a1a922-762b-74c0-854c-edd57d45f439
         name: "The workflow tells the agent to run `loft pull` when a connected publish is refused because the remote has moved on, and to settle each conflict record the pull writes before publishing again."
       - key: 01a1a922-762b-74c0-854c-edd6104ec8da
-        name: "The workflow tells the agent to ask the user to run `loft remote login` when a sign-in to the remote has lapsed, since the sign-in opens the user's browser."
+        name: "The workflow tells the agent to ask the user to run `loft remote login`, or `loft interface login <handle>` for another document's remote, when a sign-in to the remote has lapsed, was made for a former resource of the remote or does not cover a resource that a command calls, since the sign-in opens the user's browser."
   - key: 01a1f981-4db0-72b8-8a39-a6a98ce33f5e
     statement:
       form: ubiquitous

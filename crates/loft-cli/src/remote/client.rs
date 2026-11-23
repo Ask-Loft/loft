@@ -290,7 +290,7 @@ impl Client {
             key: renewal.key.as_deref(),
         };
         let sign_in = signin::sign_in(&self.address, whose, renewal.browser, self.timeout)?;
-        signins::save(&self.address, &sign_in)?;
+        signins::save(&signins::file()?, &self.address, &sign_in)?;
         *self.token.borrow_mut() = Some(sign_in.access_token);
         Ok(true)
     }

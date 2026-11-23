@@ -11,7 +11,7 @@ use software_plant::remote::{RemoteScenario, Visibility};
 
 use crate::common::connected::Connected;
 use crate::common::remote::{History, history, sent_to};
-use crate::common::signed_in::{self, document, granted, keep, sign_ins_file};
+use crate::common::signed_in::{self, document, granted, keep, kept_from, sign_ins_file};
 use crate::common::tree;
 use crate::pull::{behind, pull};
 
@@ -145,6 +145,64 @@ fn a_pull_whose_sign_in_has_lapsed_that_the_remote_refuses_names_the_lapsed_sign
         assert!(message.contains(said), "{said}: {message}");
     }
     assert!(!message.contains("no sign-in"), "{message}");
+    assert_eq!(requests(&run), [("/head".to_owned(), false)]);
+    assert_eq!(tree(&run.scratch.0), before);
+    assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);
+}
+
+/// A repository that published two states, connected to a remote holding three, whose scenario
+/// names `visibility`, with a sign-in kept that expires within a minute and was made for a
+/// protected resource on the remote's origin that it no longer serves, so that the remote refuses
+/// its refresh with `invalid_target`.
+fn made_for_former(visibility: Visibility) -> Connected {
+    let (run, _) = behind();
+    let ahead = history(3);
+    let run = run.serving(
+        RemoteScenario::accepting(&ahead.key)
+            .holding("Reading List", ahead.states.clone())
+            .visibility(visibility),
+    );
+    let former = format!("{}/former", run.remote.origin());
+    let grant = run.remote.grant_over(&[&former]);
+    let kept = kept_from(&run.remote, &former, &grant, 60);
+    keep(&run.scratch, &json!({ run.remote.address(): kept }));
+    run
+}
+
+#[test]
+fn a_pull_whose_sign_in_was_made_for_a_former_resource_reads_a_public_document_without_a_token() {
+    let run = made_for_former(Visibility::Public);
+    let file = fs::read(sign_ins_file(&run.scratch)).unwrap();
+    let output = pull(&run.scratch, &[]);
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    assert_eq!(document(&output)["outcome"], "pulled");
+    let sent = requests(&run);
+    assert_eq!(sent.len(), 3, "{sent:?}");
+    assert!(sent.iter().all(|(_, token)| !token), "{sent:?}");
+    assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);
+}
+
+#[test]
+fn a_pull_whose_sign_in_was_made_for_a_former_resource_that_the_remote_refuses_names_that_sign_in()
+{
+    let run = made_for_former(Visibility::Private);
+    let before = tree(&run.scratch.0);
+    let file = fs::read(sign_ins_file(&run.scratch)).unwrap();
+    let output = pull(&run.scratch, &[]);
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = Connected::message(&output);
+    assert_unsigned_refusal(&run, &message);
+    let former = format!("{}/former", run.remote.origin());
+    for said in [
+        "former resource",
+        former.as_str(),
+        "`loft remote login` signs in again",
+    ] {
+        assert!(message.contains(said), "{said}: {message}");
+    }
+    for unsaid in ["no sign-in", "lapsed"] {
+        assert!(!message.contains(unsaid), "{unsaid}: {message}");
+    }
     assert_eq!(requests(&run), [("/head".to_owned(), false)]);
     assert_eq!(tree(&run.scratch.0), before);
     assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);

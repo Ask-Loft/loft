@@ -1,8 +1,9 @@
 //! Reaching a connected document's remote: its address, from the manifest's `remote` or
 //! `LOFT_REMOTE_ENDPOINT`; the token a request carries, from `LOFT_REMOTE_TOKEN` or the person's
-//! sign-in to that address in `loft/remotes.json`, refreshed before it expires; and the calls
-//! themselves, through [`client::Client`]. A token is sent only in the `Authorization` header of
-//! a request to the remote, and printed nowhere.
+//! sign-in to that address in `loft/remotes.json`, its access token for the remote's own
+//! protected resource refreshed before it expires; and the calls themselves, through
+//! [`client::Client`]. A token is sent only in the `Authorization` header of a request to the
+//! remote, and printed nowhere.
 
 mod address;
 pub mod browser;
@@ -96,6 +97,11 @@ pub enum RemoteError {
     },
     /// The authorization server refused to refresh the sign-in.
     Lapsed { address: String, error: String },
+    /// The sign-in was made for `resource`, a protected resource that the remote no longer
+    /// serves.
+    FormerResource { address: String, resource: String },
+    /// The sign-in does not cover `resource`, a companion resource that a call needs.
+    NotCovered { address: String, resource: String },
     /// A sign-in could not be made.
     SignIn { address: String, reason: String },
     /// `loft/remotes.json` could not be read or written.
@@ -165,6 +171,8 @@ impl fmt::Display for RemoteError {
             Self::NoSignIn { .. }
             | Self::SignInElsewhere { .. }
             | Self::Lapsed { .. }
+            | Self::FormerResource { .. }
+            | Self::NotCovered { .. }
             | Self::Refused { .. }
             | Self::Unsigned { .. } => {
                 let said = self
@@ -225,7 +233,7 @@ pub fn now() -> Option<u64> {
 ///
 /// A variable is not a whole number of seconds, there is no address, no sign-in or only one for a
 /// protected resource on another origin, the address may not be contacted, or a refresh is
-/// refused.
+/// refused or cannot be made.
 pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
     reached(remote, key, false)
 }
@@ -299,12 +307,14 @@ fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, Re
     } = named(remote, key)?;
     let token = match token {
         Some(token) => token,
-        None => match signins::live(&address, timeout) {
-            Ok(sign_in) => sign_in.access_token,
+        None => match signins::held(&address, timeout) {
+            Ok(token) => token,
             Err(
                 missing @ (RemoteError::NoSignIn { .. }
                 | RemoteError::SignInElsewhere { .. }
-                | RemoteError::Lapsed { .. }),
+                | RemoteError::Lapsed { .. }
+                | RemoteError::FormerResource { .. }
+                | RemoteError::NotCovered { .. }),
             ) if unsigned => {
                 return Ok(Client::new(&address, None, timeout, wait).unsigned(key, missing));
             }
@@ -314,10 +324,12 @@ fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, Re
     Ok(Client::new(&address, Some(token), timeout, wait))
 }
 
-/// The access token of the person's sign-in to `address`, the remote of `whose`:
-/// the one `loft/remotes.json` holds, refreshed where it needs to be; or else, where it holds none,
-/// one only for a protected resource on another origin, or one whose refresh is refused, a new
-/// sign-in kept there in its place, opened in the person's browser where `browser` allows.
+/// The access token of the person's sign-in to `address`, the remote of `whose`, for the remote's
+/// own protected resource: the one `loft/remotes.json` holds, refreshed where it needs to be; or
+/// else, where it holds none, one only for a protected resource on another origin, one whose
+/// refresh is refused, one made for a former resource of the remote, or one whose recorded
+/// refresh the remote refuses, a new sign-in kept there in its place, opened in the person's
+/// browser where `browser` allows.
 ///
 /// # Errors
 ///
@@ -328,16 +340,19 @@ pub fn signed_in(
     browser: bool,
     timeout: Duration,
 ) -> Result<String, RemoteError> {
-    match signins::live(address, timeout) {
-        Ok(sign_in) => Ok(sign_in.access_token),
+    let file = signins::file()?;
+    match signins::access_token(&file, address, None, timeout) {
+        Ok(token) => Ok(token),
         Err(
             RemoteError::NoSignIn { .. }
             | RemoteError::SignInElsewhere { .. }
-            | RemoteError::Lapsed { .. },
+            | RemoteError::Lapsed { .. }
+            | RemoteError::FormerResource { .. }
+            | RemoteError::NotCovered { .. },
         ) => {
             let sign_in = signin::sign_in(address, whose, browser, timeout)?;
             let token = sign_in.access_token.clone();
-            signins::save(address, &sign_in)?;
+            signins::save(&file, address, &sign_in)?;
             Ok(token)
         }
         Err(error) => Err(error),
@@ -354,7 +369,7 @@ pub fn signed_in(
 pub fn login(address: &str, whose: Whose<'_>, browser: bool) -> Result<(), RemoteError> {
     checked(address)?;
     let sign_in = signin::sign_in(address, whose, browser, timeout()?)?;
-    signins::save(address, &sign_in)
+    signins::save(&signins::file()?, address, &sign_in)
 }
 
 /// How a command that reaches another document's remote holds the person's sign-in to it.
@@ -387,7 +402,7 @@ pub fn other(address: &str, whose: Whose<'_>, sign_in: SignIn) -> Result<Client,
             let client = Client::new(address, Some(token), timeout, wait);
             return Ok(client.renewing(whose, browser));
         }
-        SignIn::Kept => signins::live(address, timeout)?.access_token,
+        SignIn::Kept => signins::held(address, timeout)?,
     };
     Ok(Client::new(address, Some(token), timeout, wait))
 }

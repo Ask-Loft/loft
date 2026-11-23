@@ -181,7 +181,7 @@ fn remove(root: &Path) -> Result<Report, Stop> {
     document.connected = false;
     let mut fields = json!({ "documentKey": key });
     if let Some(address) = &address {
-        signins::forget(address)?;
+        signins::forget(&signins::file()?, address)?;
         fields["address"] = json!(address);
     }
     write_manifest(&store, &document)?;
