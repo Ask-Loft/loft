@@ -218,6 +218,18 @@ pub fn origin_and_path(url: &str) -> Option<(Origin, String)> {
     read(url).map(|(origin, uri)| (origin, uri.path().to_owned()))
 }
 
+/// `url` as [`origin_and_path`] reads it, with its query: its origin, its path, and its query
+/// with the `?` that opens it, or nothing where it has none. A fragment is never read.
+#[must_use]
+pub fn origin_path_and_query(url: &str) -> Option<(Origin, String, String)> {
+    read(url).map(|(origin, uri)| {
+        let query = uri
+            .query()
+            .map_or_else(String::new, |query| format!("?{query}"));
+        (origin, uri.path().to_owned(), query)
+    })
+}
+
 /// `url` as an origin alone, as [`origin_and_path`] reads it: an absolute address with a host,
 /// whose path is `/` or none, with no query and no fragment. The parser leaves a fragment out, so
 /// the text is looked at for one.
@@ -274,7 +286,7 @@ pub fn origin(url: &str) -> Option<Origin> {
 
 #[cfg(test)]
 mod tests {
-    use super::{allowed, origin, origin_and_path, same_origin};
+    use super::{allowed, origin, origin_and_path, origin_path_and_query, same_origin};
 
     #[test]
     fn https_is_allowed_anywhere_and_http_only_on_the_loopback_interface() {
@@ -386,6 +398,45 @@ mod tests {
         }
         // Only an `https` or `http` address lies on an origin that is compared.
         assert!(origin("ftp://files.example/a").is_none());
+    }
+
+    #[test]
+    fn an_address_is_read_as_its_origin_its_path_and_its_query() {
+        for (url, written, path, query) in [
+            (
+                "HTTPS://Remote.Example:443/mail/inbox?view=all#top",
+                "https://remote.example",
+                "/mail/inbox",
+                "?view=all",
+            ),
+            (
+                "https://remote.example/notes/",
+                "https://remote.example",
+                "/notes/",
+                "",
+            ),
+            (
+                "http://127.0.0.1:4000?view=all",
+                "http://127.0.0.1:4000",
+                "/",
+                "?view=all",
+            ),
+        ] {
+            let (origin, read, asked) =
+                origin_path_and_query(url).unwrap_or_else(|| panic!("{url}"));
+            assert_eq!(
+                (origin.to_string().as_str(), read.as_str(), asked.as_str()),
+                (written, path, query),
+                "{url}"
+            );
+        }
+        for url in [
+            "/notes?view=all",
+            "not an address",
+            "://remote.example/a?b=c",
+        ] {
+            assert!(origin_path_and_query(url).is_none(), "{url}");
+        }
     }
 
     #[test]

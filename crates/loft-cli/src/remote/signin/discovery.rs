@@ -6,27 +6,31 @@
 //! resource on that origin (the accepted decision "A remote's protected resource, and the
 //! metadata its challenge names, lie on the origin of its address"), so that an address cannot
 //! lead a sign-in to ask for another remote's resource and receive the access token issued for
-//! it.
+//! it. It also reads the companion resources the remote lists, in `companions`.
 
 use std::time::Duration;
 
 use serde_json::Value;
 
+use super::companions::{self, Companion};
 use crate::network::{self, Reply};
 use crate::remote::client::Client;
 use crate::remote::wire::bearer_parameters;
 use crate::remote::{RemoteError, Whose, checked};
 
 /// The path that protected resource metadata lies under (RFC 9728).
-const RESOURCE_METADATA: &str = "/.well-known/oauth-protected-resource";
+pub(super) const RESOURCE_METADATA: &str = "/.well-known/oauth-protected-resource";
 /// The path that authorization server metadata lies under (RFC 8414).
 const SERVER_METADATA: &str = "/.well-known/oauth-authorization-server";
 
-/// What a sign-in learns of the remote's authorization server.
+/// What a sign-in learns of the remote's authorization server: the remote's protected resource,
+/// the scope asked for, the issuer, the companion resources kept, and the endpoints.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Discovered {
     pub resource: String,
     pub scope: String,
+    pub issuer: String,
+    pub companions: Vec<Companion>,
     pub authorization_endpoint: String,
     pub token_endpoint: String,
     pub registration_endpoint: String,
@@ -101,7 +105,26 @@ pub fn discover(
             "the authorization server does not take PKCE with S256".to_owned(),
         ));
     }
-    let scope = named("scope").unwrap_or_else(|| {
+    let authorization_endpoint = endpoint("authorization_endpoint")?;
+    let token_endpoint = endpoint("token_endpoint")?;
+    let registration_endpoint = endpoint("registration_endpoint")?;
+    let companions = companions::kept(address, &resource, issuer, &metadata, timeout);
+    let scope = companions::asked(&own_scope(named("scope"), &metadata), &companions);
+    Ok(Discovered {
+        resource,
+        scope,
+        issuer: issuer.to_owned(),
+        companions,
+        authorization_endpoint,
+        token_endpoint,
+        registration_endpoint,
+    })
+}
+
+/// The remote's scope: `named`, the challenge's `scope`, or else every scope that `metadata`, the
+/// remote's protected resource metadata, lists in `scopes_supported`, separated by spaces.
+fn own_scope(named: Option<String>, metadata: &Value) -> String {
+    named.unwrap_or_else(|| {
         metadata["scopes_supported"]
             .as_array()
             .map(|scopes| {
@@ -112,13 +135,6 @@ pub fn discover(
                     .join(" ")
             })
             .unwrap_or_default()
-    });
-    Ok(Discovered {
-        resource,
-        scope,
-        authorization_endpoint: endpoint("authorization_endpoint")?,
-        token_endpoint: endpoint("token_endpoint")?,
-        registration_endpoint: endpoint("registration_endpoint")?,
     })
 }
 
@@ -203,9 +219,19 @@ fn unchallenged(asked: &str, whose: Whose<'_>, status: u16) -> String {
 }
 
 /// The JSON object at `url`, an address a sign-in may contact.
-fn fetch(url: &str, timeout: Duration) -> Result<Value, String> {
-    let reply = network::call("GET", url, &[("Accept", "application/json")], None, timeout)
-        .map_err(|error| format!("{url}: {error}"))?;
+pub(super) fn fetch(url: &str, timeout: Duration) -> Result<Value, String> {
+    let reply = get(url, timeout).map_err(|error| format!("{url}: {error}"))?;
+    document(url, &reply)
+}
+
+/// The answer to a `GET` of `url` that asks for JSON, or why none came in full within `timeout`.
+pub(super) fn get(url: &str, timeout: Duration) -> Result<Reply, String> {
+    network::call("GET", url, &[("Accept", "application/json")], None, timeout)
+}
+
+/// The JSON object that `reply`, the answer to a `GET` of `url`, holds where it is answered
+/// `200`; otherwise its status, named with `url`.
+pub(super) fn document(url: &str, reply: &Reply) -> Result<Value, String> {
     serde_json::from_slice::<Value>(&reply.body)
         .ok()
         .filter(|value| reply.status == 200 && value.is_object())

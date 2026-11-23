@@ -10,7 +10,7 @@ use loftspec::codec::{self, MANIFEST, SpecPath};
 use loftspec::publish::{Lock, PublishedAt};
 use serde_json::{Value, json};
 use software_plant::remote::wire::sha256_hex;
-use software_plant::remote::{Remote, StoredState};
+use software_plant::remote::{Grant, Remote, StoredState};
 use software_plant::{BrowserScenario, Clock, GitScenario, InstalledBrowser};
 
 use super::remote::{History, spec};
@@ -45,9 +45,36 @@ pub fn kept_sign_in<'a>(file: &'a Value, address: &str) -> &'a Value {
 /// the system clock, as a token does, issued by the simulator so that the remote admits it.
 pub fn granted(remote: &Remote, seconds: u64) -> Value {
     let grant = remote.grant();
+    kept_from(remote, &remote.resource(), &grant, seconds)
+}
+
+/// A sign-in to `remote` over its protected resource and the companion resources of `kinds`, as
+/// `loft` keeps it, issued by the simulator without a browser: every access token, each companion
+/// resource's among them, expires `seconds` from now by the system clock.
+pub fn granted_over(remote: &Remote, kinds: &[&str], seconds: u64) -> Value {
+    let own = remote.resource();
+    let companions: Vec<String> = kinds.iter().map(|kind| remote.companion(kind)).collect();
+    let mut resources = vec![own.as_str()];
+    resources.extend(companions.iter().map(String::as_str));
+    let grant = remote.grant_over(&resources);
+    let mut sign_in = kept_from(remote, &own, &grant, seconds);
+    let expires = sign_in["expiresAt"].clone();
+    let listed = kinds.iter().zip(&companions).map(|(kind, resource)| {
+        json!({ "resource": resource, "kind": kind,
+            "accessToken": grant.access[resource], "expiresAt": expires })
+    });
+    sign_in["issuer"] = json!(remote.issuer());
+    sign_in["resources"] = Value::Array(listed.collect());
+    sign_in
+}
+
+/// A sign-in to `remote` for `resource` as `loft` keeps it, with the six members alone: the
+/// client and tokens of `grant`, which `remote` issued, its access token expiring `seconds` from
+/// now by the system clock.
+pub fn kept_from(remote: &Remote, resource: &str, grant: &Grant, seconds: u64) -> Value {
     json!({
         "tokenEndpoint": format!("{}/auth/token", remote.origin()),
-        "resource": remote.resource(),
+        "resource": resource,
         "clientId": grant.client_id,
         "accessToken": grant.access_token,
         "expiresAt": PublishedAt::from_unix_seconds(real_now() + seconds).unwrap().to_string(),

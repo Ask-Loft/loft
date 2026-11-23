@@ -22,6 +22,7 @@
 //! names the premise; none passes without checking.
 
 use std::iter;
+use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 use software_plant::remote::wire::value;
@@ -30,7 +31,7 @@ use software_plant::remote::{Companion, CompanionFault, RESOURCE, Remote, Remote
 use crate::common::oauth::{
     KEY, UNKNOWN_CODE, assert_oauth_error, authorize_for, challenge_at, coded_for,
     companion_metadata, discover, exchange, fetch, location, metadata, parameter, refresh,
-    registered,
+    registered, send_companion_metadata, send_companion_metadata_within,
 };
 use crate::common::resources::{COMPANION_RESOURCES, companions_of, head_with, origin_of};
 use crate::remote_contract::assert_problem;
@@ -382,4 +383,59 @@ fn a_real_remote_refuses_an_unknown_code_for_any_resource_it_serves() {
     // consent to the first client's request, so that part runs against the simulator alone.
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
     refuses_an_unknown_code(&address);
+}
+
+#[test]
+fn a_companion_resource_whose_metadata_is_left_unanswered_has_each_request_closed_unanswered() {
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .accompanied_by(
+                Companion::new("silent", &["silent"]).faulty(CompanionFault::Unanswered),
+            )
+            .accompanied_by(Companion::new("notes", &["notes"])),
+    );
+    let (silent, notes) = (remote.companion("silent"), remote.companion("notes"));
+    let (resource, _) = metadata(&remote);
+    let listed = companions_of(&resource);
+    let kinds: Vec<&str> = listed.iter().map(|(_, kind)| kind.as_str()).collect();
+    assert_eq!(kinds, ["silent", "notes"], "the scenario still lists it");
+    for attempt in 1..=2 {
+        let started = Instant::now();
+        let unanswered = send_companion_metadata(&silent);
+        assert!(unanswered.is_err(), "{attempt}: {unanswered:?}");
+        // Closed at once, not held until the client gives up.
+        let took = started.elapsed();
+        assert!(took < Duration::from_secs(5), "{attempt}: {took:?}");
+    }
+    assert_eq!(
+        companion_metadata(&notes).status,
+        200,
+        "the others are answered"
+    );
+}
+
+#[test]
+fn a_companion_resource_whose_metadata_is_held_keeps_each_request_open_unanswered() {
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .accompanied_by(Companion::new("stalled", &["stalled"]).faulty(CompanionFault::Held))
+            .accompanied_by(Companion::new("notes", &["notes"])),
+    );
+    let (stalled, notes) = (remote.companion("stalled"), remote.companion("notes"));
+    let patient = Duration::from_secs(1);
+    for attempt in 1..=2 {
+        let started = Instant::now();
+        let held = send_companion_metadata_within(&stalled, patient);
+        assert!(held.is_err(), "{attempt}: {held:?}");
+        let took = started.elapsed();
+        assert!(
+            took >= patient,
+            "{attempt}: unanswered until the client gives up: {took:?}"
+        );
+    }
+    assert_eq!(
+        companion_metadata(&notes).status,
+        200,
+        "the others are answered"
+    );
 }
