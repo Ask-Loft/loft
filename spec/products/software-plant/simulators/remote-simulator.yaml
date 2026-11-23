@@ -52,7 +52,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The remote simulator"
-      shall: "admit a request under a document's address only with the bearer token its scenario names, or an access token it issued for the document's protected resource and has not revoked."
+      shall: "admit a request under a document's address only with the bearer token its scenario names, or an access token it issued for the document's protected resource and has not revoked, but for the reads a public scenario serves to anyone."
     criteria:
       - key: 01a156ae-6a51-7230-a9a1-fa92a3b72eb7
         name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the code `unauthenticated`."
@@ -80,6 +80,21 @@ requirements:
         name: "A request to a path the contract does not name is answered `404 Not Found` with the code `not_found`."
       - key: 01a156ae-6a51-7230-a9a1-fa97091dc743
         name: "A request with a method its path does not take is answered `405 Method Not Allowed` with the code `method_not_allowed`."
+  - key: 01a20625-1784-70df-9261-fdad13d5b701
+    statement:
+      form: optional
+      where: "the scenario serves its document to anyone"
+      system: "the remote simulator"
+      shall: "answer `GET <address>/head` and `GET <address>/states/<sequence>` without a token as it answers them with one."
+    criteria:
+      - key: 01a20625-1784-70df-9261-fdae7d682033
+        name: "`GET <address>/head` without an `Authorization` header is answered `200 OK`."
+      - key: 01a20625-1784-70df-9261-fdaf90c85617
+        name: "`GET <address>/states/<sequence>` without an `Authorization` header is answered as with the scenario's token."
+      - key: 01a20625-1784-70df-9261-fdb0acef5f4c
+        name: "`GET <address>/drafts/<branch>` without an `Authorization` header is answered `401 Unauthorized` with the code `unauthenticated` and the challenge."
+      - key: 01a20625-1784-70df-9261-fdb1111a0060
+        name: "`POST <address>/publish` without an `Authorization` header is answered `401 Unauthorized` with the code `unauthenticated` and the challenge."
   - key: 01a1f967-f818-72bf-b82d-caedce5504ba
     statement:
       form: ubiquitous
@@ -111,6 +126,10 @@ requirements:
     criteria:
       - key: 01a156ae-6a51-7230-a9a1-fa99b930ac7d
         name: "The body is a JSON object holding `documentKey` and `head`."
+      - key: 01a20625-1784-70df-9261-fdb27f4e4272
+        name: "The body holds `visibility`, `public` for a scenario that serves its document to anyone and `private` for one that names the document private, beside `documentKey`."
+      - key: 01a20625-1784-70df-9261-fdb3e3b2d604
+        name: "A scenario that names no visibility answers without `visibility`."
       - key: 01a156ae-6a51-7230-a9a1-fa9a03ea62f8
         name: "`head` holds `publishSequence`, `stateRoot`, `lock` and `files`."
       - key: 01a156ae-6a51-7230-a9a1-fa9bbfc7ffab

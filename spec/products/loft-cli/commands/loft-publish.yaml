@@ -145,6 +145,25 @@ requirements:
         name: "Two attempts at one publish over the same tree send the same retry key."
       - key: 01a156ac-9752-749b-be81-def383e41453
         name: "A tree whose state root equals the head's, under a lock that names the head, sends nothing and reports that nothing changed."
+  - key: 01a20625-1781-778c-b5f8-f50247f8bda1
+    statement:
+      form: event_driven
+      when: "`loft publish` is about to send a document's first publish to its remote"
+      system: "`loft publish`"
+      shall: "say on standard error, before it sends the publish, to whom the remote serves the document."
+    criteria:
+      - key: 01a20625-1781-778c-b5f8-f5039d4b8381
+        name: "A first publish is one to a remote whose head is `null`."
+      - key: 01a20625-1781-778c-b5f8-f50499101f0c
+        name: "Where the head answer's `visibility` is `public`, the line says that anyone reads the document's published states without signing in."
+      - key: 01a20625-1781-778c-b5f8-f5055fcbef36
+        name: "Where the head answer's `visibility` is `private`, the line says that only those the remote admits read the document."
+      - key: 01a20625-1781-778c-b5f8-f506701910fe
+        name: "Where the head answer names no `visibility`, or one Loft does not know, nothing is said."
+      - key: 01a20625-1781-778c-b5f8-f50788a5274c
+        name: "A publish to a remote whose head is not `null` says nothing of the visibility."
+      - key: 01a20625-1781-778c-b5f8-f50876f17ea4
+        name: "Standard output and the JSON document are as they are without the line."
   - key: 01a156ac-9752-749b-be81-def42467342e
     statement:
       form: event_driven

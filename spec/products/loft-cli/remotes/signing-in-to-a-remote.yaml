@@ -17,6 +17,10 @@ requirements:
     criteria:
       - key: 01a18e1f-8daa-7674-9603-5ad8de76adc2
         name: "The first request of a sign-in is `GET <address>/head` without an `Authorization` header."
+      - key: 01a20625-1782-738f-956e-4cc6f2747890
+        name: "Where that request is answered `200`, as a remote answers for a document it serves to anyone, the sign-in sends `GET <address>/drafts/main` without an `Authorization` header and reads the challenge from its answer."
+      - key: 01a20625-1782-738f-956e-4cc736e4cba6
+        name: "Where `GET <address>/head` is answered `401`, no other request is sent for the challenge."
       - key: 01a18e1f-8daa-7674-9603-5ad923207ac3
         name: "The challenge is the `WWW-Authenticate` header of a `401` answer, of the scheme `Bearer`, whose `resource_metadata` names the remote's protected resource metadata."
       - key: 01a18e1f-8daa-7674-9603-5adaaad6f201
@@ -35,7 +39,7 @@ requirements:
       shall: "refuse to sign in and exit 1."
     criteria:
       - key: 01a18e1f-8daa-7674-9603-5adf5decc59d
-        name: "An answer to the unauthenticated request other than a `401` with a `Bearer` challenge that names `resource_metadata` is refused."
+        name: "An answer to the last unauthenticated request other than a `401` with a `Bearer` challenge that names `resource_metadata` is refused."
       - key: 01a18e3a-7c03-7381-95d8-6009f68d4fc7
         name: "Protected resource metadata whose `resource` is not its own address with `/.well-known/oauth-protected-resource` taken out, as RFC 9728 requires, is refused."
       - key: 01a18e1f-8daa-7674-9603-5ae099541c19
@@ -45,7 +49,7 @@ requirements:
       - key: 01a18e1f-8daa-7674-9603-5ae2c1ed7a4a
         name: "The error names the address of the document that was refused."
       - key: 01a1f967-f816-765c-9e69-fb957ac55be9
-        name: "Where the unauthenticated request was refused, the error names that request as `GET <address>/head` and the status the remote gave."
+        name: "Where an unauthenticated request was refused, the error names that request, `GET <address>/head` or `GET <address>/drafts/main`, and the status the remote gave."
       - key: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
         name: "Nothing is written."
   - key: 01a1f4f1-4309-7056-a238-4b3a5ee7086f
@@ -72,7 +76,7 @@ requirements:
   - key: 01a1f967-f816-765c-9e69-fb9618c00f11
     statement:
       form: unwanted
-      if: "the unauthenticated request of a sign-in is answered with a status below `500` other than `401`, `408` and `429`"
+      if: "the last unauthenticated request of a sign-in is answered with a status below `500` other than `401`, `408` and `429`"
       system: "Loft"
       shall: "say that the address may not be a document's remote, and give the form of a document's address on a Loft server."
     criteria:
