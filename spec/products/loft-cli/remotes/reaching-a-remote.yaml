@@ -141,6 +141,70 @@ requirements:
         name: "An `http` address off the loopback interface is never contacted."
       - key: 01a156aa-d531-70a7-88e0-0bffbc9b38d9
         name: "The error names the address."
+  - key: 01a2088e-6d7b-7030-9dc9-5c89f625ed83
+    statement:
+      form: unwanted
+      if: "the remote's address holds a character other than the visible characters of ASCII, `!` to `~`"
+      system: "Loft"
+      shall: "refuse to reach it and exit 1."
+    body: "A double-quoted value of the manifest can hold any character through its escapes, and not every such character keeps an address from reading as one. An address holds visible ASCII alone, with every other character percent-encoded, so that the address a person reads is the address contacted, and an error that names it shows each of its characters."
+    criteria:
+      - key: 01a2088e-6d7b-7030-9dc9-5c8a4ccd92e4
+        name: "An address that holds a control character, a space or a character beyond ASCII is refused, in its fragment as anywhere else."
+      - key: 01a2088e-6d7b-7030-9dc9-5c8b3bc582b5
+        name: "An address whose characters beyond ASCII are percent-encoded is accepted."
+      - key: 01a2088e-6d7b-7030-9dc9-5c8cfe3f5778
+        name: "The address that `LOFT_REMOTE_ENDPOINT` names, that `loft remote set` is given or that an entry of `documents` lists is held to the rule as the manifest's is."
+      - key: 01a2088e-6d7b-7030-9dc9-5c8db165fe45
+        name: "No connection is opened."
+      - key: 01a2088e-6d7b-7030-9dc9-5c8e409d96a5
+        name: "The error names the address with its control characters escaped."
+      - key: 01a2088e-6d7b-7030-9dc9-5c8f579483a5
+        name: "The error says that a remote's address holds visible ASCII characters alone, with every other character percent-encoded."
+      - key: 01a2088e-6d7b-7030-9dc9-5c905da1a96f
+        name: "Nothing is written."
+      - key: 01a2088e-6d7b-7030-9dc9-5c91c3779e07
+        name: "`loft remote remove`, which reaches no remote, disconnects a document whose address holds such a character."
+      - key: 01a2088e-6d7b-7030-9dc9-5c92fb63f3d7
+        name: "The line of `loft remote remove` names such an address with its control characters escaped."
+  - key: 01a2088e-6d7b-7030-9dc9-5c93bfcc339d
+    statement:
+      form: unwanted
+      if: "an error of reaching a remote or of signing in to one, or a warning that a sign-in writes on standard error, names text that a remote, its authorization server, the tree, `LOFT_REMOTE_ENDPOINT` or `loft/remotes.json` gave"
+      system: "Loft"
+      shall: "write each control character and each bidirectional control of that text escaped."
+    body: "A remote's answers, the metadata a sign-in reads, the companion resources that metadata lists and the escapes of a double-quoted value in the tree can carry characters that a terminal takes as commands, or that reorder the text it shows. Written escaped, each of them reaches the terminal as visible text, so that an error or a warning shows what the remote or the tree said and nothing more. The reader's errors, which name text of any tree, one that a remote serves among them, lie outside this Requirement."
+    criteria:
+      - key: 01a2088e-6d7b-7030-9dc9-5c9499244b63
+        name: "A control character, of Unicode's general category `Cc`, is written as `\\u{`, its code point in lowercase hexadecimal without leading zeros, and `}`, so that the escape character reads `\\u{1b}`."
+      - key: 01a2088e-6d7b-7030-9dc9-5c95d7a557e5
+        name: "A bidirectional control, of Unicode's property `Bidi_Control`, is written in the same form, so that the right-to-left override reads `\\u{202e}`."
+      - key: 01a2088e-6d7b-7030-9dc9-5c9644b80d30
+        name: "A backslash of the text is written as `\\\\`, so that an escaped text stands for one text alone."
+      - key: 01a2088e-6d7b-7030-9dc9-5c97693e2752
+        name: "Every other character of the text, a letter beyond ASCII among them, is written as it is."
+      - key: 01a2088e-6d7b-7030-9dc9-5c98bdc0d546
+        name: "A problem document's `code` and `detail` are written escaped."
+      - key: 01a2088e-6d7b-7030-9dc9-5c9933a16624
+        name: "The OAuth `error` of a callback, a registration, a code exchange or a refresh is written escaped."
+      - key: 01a2088e-6d7b-7030-9dc9-5c9afbf03950
+        name: "A resource, an issuer or an address that a challenge or a metadata document names is written escaped."
+      - key: 01a2088e-6d7b-7030-9dc9-5c9bcdbc9f00
+        name: "A file's path, a head's state root and the reason a lock does not read, in a remote's answer, are written escaped."
+      - key: 01a2088e-6d7b-7030-9dc9-5c9c547ab3fb
+        name: "The `resource` of a sign-in that `loft/remotes.json` keeps is written escaped."
+      - key: 01a208d1-f095-73a9-b4f9-adecdd0ceb14
+        name: "The `kind` of a companion resource that a warning of a sign-in names is written escaped."
+      - key: 01a208d1-f095-73a9-b4f9-aded8ede63a1
+        name: "A value of a companion resource's `scopes_supported` that is not a scope token is written escaped, between double quotes where it is a string."
+      - key: 01a208d1-f095-73a9-b4f9-adeeb2593000
+        name: "The address of a companion resource's protected resource metadata, and why that metadata cannot be reached, are written escaped."
+      - key: 01a208d1-f095-73a9-b4f9-adefea017ea8
+        name: "A companion resource that a sign-in in `loft/remotes.json` lists in its `resources`, or records in its `refreshing`, is written escaped."
+      - key: 01a2088e-6d7b-7030-9dc9-5c9d4548a7e3
+        name: "The remote's address, as the manifest, `LOFT_REMOTE_ENDPOINT`, `loft remote set` or an entry of `documents` gives it, is written escaped."
+      - key: 01a2088e-6d7b-7030-9dc9-5c9e9e8b3864
+        name: "The `message` of the error in the JSON document holds the text escaped as standard error shows it."
   - key: 01a156aa-d531-70a7-88e0-0c007335154d
     statement:
       form: ubiquitous
