@@ -33632,7 +33632,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
-        body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+        body: c9b03ad7a7f1c0fb9f3d01c3809cc66d6f440db8697ba801d6454087cff8c05f
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a full post the page server does not take keeps the newest 1,000 events, and counts the oldest dropped"
         body: 546392e659e12898744ef1a6a9e963b800d67bfba294bd6a7190793ffbf4d055
@@ -33641,7 +33641,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
-        body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+        body: c9b03ad7a7f1c0fb9f3d01c3809cc66d6f440db8697ba801d6454087cff8c05f
   - node: 01a16a54-ced2-7361-9f2d-5f1bed8103e9
     reviewed: 689cce4d82c418f36b8d6ffec670e7045e86585cbef090c3b19cbdb696698476
     tests:
