@@ -63,7 +63,7 @@ requirements:
       - key: 01a209e1-45d1-7294-9f68-a48d415195e7
         name: "The token is not sent to the address that the manifest names."
       - key: 01a209e1-45d1-7294-9f68-a48e73baab1b
-        name: "No connection is opened."
+        name: "No connection is opened, to the document's remote or to another document's."
       - key: 01a209e1-45d1-7294-9f68-a48f3044d649
         name: "Nothing is written."
       - key: 01a209e1-45d1-7294-9f68-a490fec0a87e
@@ -165,6 +165,8 @@ requirements:
         name: "An address with user information before its host is never contacted."
       - key: 01a209e1-45d1-7294-9f68-a49677e801a5
         name: "The error says which of the three the address holds, and names the address without its user information."
+      - key: 01a20a03-278e-71b9-a05f-99f0ad25950f
+        name: "An error for an address that does not read as one, with an `@` in it, leaves out what stands before the last `@`."
       - key: 01a209e1-45d1-7294-9f68-a49704b4e72b
         name: "`loft remote set` refuses such an address and writes nothing."
       - key: 01a209e1-45d1-7294-9f68-a498f1ac3410
@@ -311,7 +313,9 @@ requirements:
       shall: "write to standard error no control character that the answer of a remote or of an authorization server holds."
     criteria:
       - key: 01a209e1-45d1-7294-9f68-a4a094eab1c4
-        name: "A character in U+0000 to U+001F other than the line feed and the tab, U+007F, or a character in U+0080 to U+009F is written to standard error as U+FFFD."
+        name: "A character in U+0000 to U+001F other than the line feed, the tab and a carriage return that a line feed follows, U+007F, or a character in U+0080 to U+009F is written to standard error as U+FFFD."
+      - key: 01a20a03-278e-71b9-a05f-99f12802a8a9
+        name: "A carriage return that a line feed follows is left out."
       - key: 01a209e1-45d1-7294-9f68-a4a173e26f93
         name: "The `code` and the `detail` of a remote's problem document are written so."
       - key: 01a209e1-45d1-7294-9f68-a4a29d2bf737

@@ -41,7 +41,17 @@ requirements:
       - key: 01a209e1-45d1-7294-9f68-a484d7adaadc
         name: "A path that holds a part named `.git`, in any letter case, is refused."
       - key: 01a209e1-45d1-7294-9f68-a4855c942b83
-        name: "A path whose directory a symbolic link takes outside the directory that holds `spec/`, or into a directory named `.git`, is refused."
+        name: "A path under `spec/` whose directory a symbolic link takes outside `spec/` is refused."
+      - key: 01a20a03-278e-71b9-a05f-99eb30e99d65
+        name: "A path beside `spec/` whose directory a symbolic link takes outside the directory that holds `spec/` is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ecd03e7fb8
+        name: "A path whose directory a symbolic link takes into a directory named `.git` is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ed1efd9662
+        name: "A path with a part that a file system may read as `.git`, by trailing dots or spaces, by characters it ignores or as the short name `git~1`, is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ee32954183
+        name: "A path with a part that holds `:` or a backslash is refused."
+      - key: 01a20a03-278e-71b9-a05f-99ef71382cf8
+        name: "A journal whose directory, or whose directory of staged files, is or lies behind a symbolic link below the directory that holds `spec/` is refused."
       - key: 01a209e1-45d1-7294-9f68-a486fa0057d9
         name: "A staged file whose name is not a decimal number is refused."
       - key: 01a209e1-45d1-7294-9f68-a4874195077c
