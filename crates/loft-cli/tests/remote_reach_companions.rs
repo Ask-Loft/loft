@@ -8,7 +8,6 @@
 use std::fs;
 use std::process::Output;
 
-use loftspec::publish::PublishedAt;
 use serde_json::{Value, json};
 use software_plant::remote::wire::{pairs, value};
 use software_plant::remote::{Companion, RESOURCE, Remote, RemoteScenario};
@@ -19,7 +18,7 @@ use crate::common::copies::HANDLE;
 use crate::common::oauth::{metadata, refresh};
 use crate::common::others::{listing, shelves, shelves_scenario};
 use crate::common::signed_in::{
-    self, granted, granted_over, keep, real_now, sign_ins, sign_ins_file,
+    self, granted, granted_over, keep, kept_from, sign_ins, sign_ins_file,
 };
 use crate::common::{Scratch, tree};
 use crate::interface_add::{conforming, interface};
@@ -84,15 +83,7 @@ fn refreshes(run: &Connected) -> Vec<(String, Vec<String>)> {
 fn made_for_former(remote: &Remote) -> Value {
     let former = format!("{}/former", remote.origin());
     let grant = remote.grant_over(&[&former]);
-    let expires = PublishedAt::from_unix_seconds(real_now() + 60).unwrap();
-    json!({
-        "tokenEndpoint": format!("{}/auth/token", remote.origin()),
-        "resource": former,
-        "clientId": grant.client_id,
-        "accessToken": grant.access_token,
-        "expiresAt": expires.to_string(),
-        "refreshToken": grant.refresh_token,
-    })
+    kept_from(remote, &former, &grant, 60)
 }
 
 /// `loft publish` over the tree of `run`, with a browser that visits any address it is given.
