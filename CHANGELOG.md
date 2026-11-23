@@ -90,15 +90,17 @@ Unreleased below, and those of each 2.4 release still to come.
   `loft/remotes.json` and keeps every other member of the sign-in. For a sign-in over companion
   resources, the resource of a refresh whose answer is lost, or does not read, is recorded as
   `refreshing` and refreshed again first, since presenting the rotated refresh token for another
-  resource may end the whole sign-in. A recorded refresh that the authorization server refuses
-  with `invalid_target` reads as a lapsed sign-in, since every command of the sign-in would repeat
-  it first: `loft remote login` signs you in again. An earlier `loft` that refreshes such a sign-in
-  keeps it for the remote's own resource alone: sign in again to cover the companion resources.
-- A refresh that the authorization server refuses with `invalid_target` no longer reads as a lapsed
-  sign-in: `loft` says that the sign-in was made for a former resource of the remote and that
-  `loft remote login` signs you in again, or `loft interface login <handle>` at another document's
-  remote, and `loft remote set`, `loft interface add` and `loft interface update` sign you in anew
-  in its place. `loft pull` treats such a sign-in as a lapsed one: it pulls a document that its
+  resource may end the whole sign-in. Where the authorization server refuses with
+  `invalid_target` the repeat of a refresh recorded for a companion resource, the sign-in reads as
+  lapsed, since every command of the sign-in would repeat it first: `loft remote login` signs you
+  in again. An earlier `loft` that refreshes such a sign-in keeps it for the remote's own resource
+  alone: sign in again to cover the companion resources.
+- A refresh for the remote's own resource that the authorization server refuses with
+  `invalid_target` no longer reads as a lapsed sign-in: `loft` says that the sign-in was made for a
+  former resource of the remote and that `loft remote login` signs you in again, or
+  `loft interface login <handle>` at another document's remote, and names `LOFT_REMOTE_TOKEN` at
+  the document's own remote, as the error for a lapsed sign-in does; `loft remote set`,
+  `loft interface add` and `loft interface update` sign you in anew in its place. `loft pull` treats such a sign-in as a lapsed one: it pulls a document that its
   remote serves to anyone without a token, and where the remote refuses, it names the sign-in made
   for a former resource.
 - The `loft-spec` skill tells the agent to ask you to run `loft remote login`, or
