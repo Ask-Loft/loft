@@ -2,9 +2,15 @@
 //! or in the file a test names: a JSON object whose `remotes` maps each remote's address to its
 //! sign-in. The file is written whole, with permission for its owner alone, through a file beside
 //! it and a rename, and a refresh holds a lock beside it so that two processes never rotate one
-//! refresh token at once.
+//! refresh token at once. A sign-in over companion resources holds an access token for each
+//! protected resource alone, and records the resource of each refresh before it is sent, so that
+//! a refresh whose answer is lost is repeated first.
 
+#[cfg(test)]
+mod fixture;
 mod kept;
+#[cfg(test)]
+mod record_tests;
 mod refresh;
 #[cfg(test)]
 mod tests;
@@ -20,6 +26,7 @@ use yardlog_store::lock::{self, Locked};
 use super::RemoteError;
 use crate::settings;
 
+use kept::Kept;
 pub use kept::{Covered, SignIn};
 
 /// The file's name in the configuration directory.
@@ -101,37 +108,51 @@ pub fn forget(file: &Path, address: &str) -> Result<bool, RemoteError> {
     write(file, &sign_ins).map(|()| true)
 }
 
-/// The sign-in that `file` keeps for `address`, refreshed first if its access token expires
-/// within five minutes. The refresh runs under the file's lock, after the file is read again, so
-/// that a process that waited for another uses the successor the other kept; the successor is
-/// written before it is used.
+/// The access token for `resource`, or for the remote's own protected resource where it is none,
+/// of the sign-in that `file` keeps for `address`: the one kept, where it expires later than five
+/// minutes ahead and the sign-in records no refresh; otherwise one refreshed under the file's
+/// lock, after the file is read again, so that a process that waited for another uses the
+/// successor the other kept, and after a recorded refresh is repeated. Each successor is written
+/// before the access token it came with is used.
 ///
 /// # Errors
 ///
 /// The file holds no sign-in for `address`, or one only for a protected resource on another
-/// origin or for a resource that reads as no address, or the refresh is refused or cannot be
-/// made.
-pub fn live(file: &Path, address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
-    let held = kept::find(&entries(file), address)?;
-    if !held.expiring(now()) {
-        return Ok(held);
+/// origin or for a resource that reads as no address; the sign-in records a refresh in a member
+/// that does not read, or does not cover `resource`; or a refresh is refused or cannot be made.
+pub fn access_token(
+    file: &Path,
+    address: &str,
+    resource: Option<&str>,
+    timeout: Duration,
+) -> Result<String, RemoteError> {
+    let held = Kept::find(&entries(file), address)?;
+    let wanted = held.wanted(address, resource)?;
+    if let Some(token) = held.live(&wanted, now()) {
+        return Ok(token);
     }
     let _lock = lock(file)?;
-    refresh::refreshed(file, address, timeout)
+    let run = refresh::Run {
+        file,
+        address,
+        timeout,
+    };
+    refresh::refreshed(&run, resource)
 }
 
-/// The sign-in that the person's `loft/remotes.json` keeps for `address`, as [`live`] gives it:
-/// none where there is no configuration directory to hold the file, so that a read finds no
-/// sign-in where a write still refuses.
+/// The access token for the remote's own protected resource of the sign-in that the person's
+/// `loft/remotes.json` keeps for `address`, as [`access_token`] gives it: none where there is no
+/// configuration directory to hold the file, so that a read finds no sign-in where a write still
+/// refuses.
 ///
 /// # Errors
 ///
-/// As [`live`], and no sign-in where there is no configuration directory.
-pub fn held(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
+/// As [`access_token`], and no sign-in where there is no configuration directory.
+pub fn held(address: &str, timeout: Duration) -> Result<String, RemoteError> {
     let file = settings::path(FILE).ok_or_else(|| RemoteError::NoSignIn {
         address: address.to_owned(),
     })?;
-    live(&file, address, timeout)
+    access_token(&file, address, None, timeout)
 }
 
 /// The time `expires_in` seconds from now, as a sign-in keeps it.

@@ -3,8 +3,8 @@
 //! (RFC 7591), and the authorization code grant with PKCE (RFC 7636) runs on a redirect to a
 //! loopback port of its own (RFC 8252), naming the remote's protected resource and each companion
 //! resource kept (RFC 8707), so that the person consents once. The code is exchanged for the
-//! remote's protected resource alone. A refresh rotates the refresh token, and the caller keeps
-//! the successor before it uses it.
+//! remote's protected resource alone. A refresh names one protected resource and rotates the
+//! refresh token, and the caller keeps the successor before it uses it.
 
 mod companions;
 mod discovery;
@@ -160,42 +160,31 @@ fn kept(discovered: Discovered, client_id: String, issued: Issued) -> SignIn {
     }
 }
 
-/// The sign-in `held` refreshed at its token endpoint.
+/// A refresh of `refresh_token`, which `client_id` holds, at the token endpoint `endpoint`, for
+/// the one protected resource `resource`: what it issues, the presented refresh token kept where
+/// the answer names none.
 ///
 /// # Errors
 ///
-/// The authorization server refuses, which means the sign-in has lapsed, or cannot be reached.
-pub fn refresh(address: &str, held: &SignIn, timeout: Duration) -> Result<SignIn, RemoteError> {
+/// The authorization server refuses, cannot be reached, or answers what does not read.
+pub fn refresh(
+    endpoint: &str,
+    client_id: &str,
+    refresh_token: &str,
+    resource: &str,
+    timeout: Duration,
+) -> Result<Issued, TokenError> {
     let answer = token(
-        &held.token_endpoint,
+        endpoint,
         &[
             ("grant_type", "refresh_token"),
-            ("refresh_token", &held.refresh_token),
-            ("client_id", &held.client_id),
-            ("resource", &held.resource),
+            ("refresh_token", refresh_token),
+            ("client_id", client_id),
+            ("resource", resource),
         ],
         timeout,
-    )
-    .map_err(|error| match error {
-        TokenError::Refused(error) => RemoteError::Lapsed {
-            address: address.to_owned(),
-            error,
-        },
-        TokenError::Unreachable(reason) => RemoteError::Unreachable {
-            address: held.token_endpoint.clone(),
-            reason,
-        },
-    })?;
-    let issued = issued(&answer, Some(&held.refresh_token)).ok_or_else(|| RemoteError::Lapsed {
-        address: address.to_owned(),
-        error: "the token answer does not read".to_owned(),
-    })?;
-    Ok(SignIn {
-        access_token: issued.access_token,
-        expires_at: issued.expires_at,
-        refresh_token: issued.refresh_token,
-        ..held.clone()
-    })
+    )?;
+    issued(&answer, Some(refresh_token)).ok_or(TokenError::Unreadable)
 }
 
 /// `bytes` random bytes from the system's source, in base64url.
@@ -231,11 +220,14 @@ fn register(discovered: &Discovered, timeout: Duration) -> Result<String, String
     }
 }
 
-/// Why the token endpoint gave no tokens.
+/// Why the token endpoint gave no tokens: it refused with an OAuth error; it could not be
+/// reached, or gave no answer that refuses; or it answered with what does not read, which may
+/// follow a rotation of the refresh token presented.
 #[derive(Debug)]
-enum TokenError {
+pub enum TokenError {
     Refused(String),
     Unreachable(String),
+    Unreadable,
 }
 
 impl std::fmt::Display for TokenError {
@@ -245,6 +237,7 @@ impl std::fmt::Display for TokenError {
             Self::Unreachable(reason) => {
                 write!(formatter, "the token endpoint cannot be reached: {reason}")
             }
+            Self::Unreadable => formatter.write_str("the token answer does not read"),
         }
     }
 }
@@ -272,10 +265,10 @@ fn token(endpoint: &str, form: &[(&str, &str)], timeout: Duration) -> Result<Val
 }
 
 /// What a token answer issues: the access token, when it expires, in UTC, and the refresh token.
-struct Issued {
-    access_token: String,
-    expires_at: String,
-    refresh_token: String,
+pub struct Issued {
+    pub access_token: String,
+    pub expires_at: String,
+    pub refresh_token: String,
 }
 
 /// What a token answer issues, keeping `previous` as the refresh token where the answer names

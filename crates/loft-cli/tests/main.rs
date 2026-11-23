@@ -94,6 +94,7 @@ mod remote_contract_writes;
 mod remote_login;
 mod remote_login_public;
 mod remote_reach;
+mod remote_reach_companions;
 mod remote_refresh;
 mod remote_remove;
 mod remote_set_help;

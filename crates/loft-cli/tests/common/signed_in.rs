@@ -55,6 +55,34 @@ pub fn granted(remote: &Remote, seconds: u64) -> Value {
     })
 }
 
+/// A sign-in to `remote` over its protected resource and the companion resources of `kinds`, as
+/// `loft` keeps it, issued by the simulator without a browser: every access token, each companion
+/// resource's among them, expires `seconds` from now by the system clock.
+pub fn granted_over(remote: &Remote, kinds: &[&str], seconds: u64) -> Value {
+    let own = remote.resource();
+    let companions: Vec<String> = kinds.iter().map(|kind| remote.companion(kind)).collect();
+    let mut resources = vec![own.as_str()];
+    resources.extend(companions.iter().map(String::as_str));
+    let grant = remote.grant_over(&resources);
+    let expires = PublishedAt::from_unix_seconds(real_now() + seconds)
+        .unwrap()
+        .to_string();
+    let listed = kinds.iter().zip(&companions).map(|(kind, resource)| {
+        json!({ "resource": resource, "kind": kind,
+            "accessToken": grant.access[resource], "expiresAt": expires })
+    });
+    json!({
+        "tokenEndpoint": format!("{}/auth/token", remote.origin()),
+        "resource": own,
+        "clientId": grant.client_id,
+        "accessToken": grant.access_token,
+        "expiresAt": expires,
+        "refreshToken": grant.refresh_token,
+        "issuer": remote.issuer(),
+        "resources": listed.collect::<Vec<Value>>(),
+    })
+}
+
 /// Writes `sign_ins`, by address, as `loft/remotes.json` for `scratch`.
 pub fn keep(scratch: &Scratch, sign_ins: &Value) {
     fs::create_dir_all(scratch.config()).unwrap();
