@@ -21153,6 +21153,18 @@ links:
       - file: "crates/loft-cli/tests/remote_login.rs"
         name: "a_sign_in_learns_the_server_registers_and_asks_for_a_code_with_pkce_on_a_loopback_port"
         body: f1e13533612ca933cad164d97937a4da5a6f597f5ac5a52e8d1d22cda1e1e29e
+  - node: 01a20625-1782-738f-956e-4cc6f2747890
+    reviewed: 7da6763db8a52ec5c9729376c959a63751ab3626122b9bfdf0000b6557ff5173
+    tests:
+      - file: "crates/loft-cli/tests/remote_login_public.rs"
+        name: "a_sign_in_reads_the_challenge_from_the_drafts_where_the_head_answers_without_one"
+        body: ed0da537d50888af1b849b494162c957194cd80016bab352feb75918bd56c108
+  - node: 01a20625-1782-738f-956e-4cc736e4cba6
+    reviewed: e19bb5e197e3667ef14d913eba8ebe11bf425011161aa336e4e12c2406b39d6b
+    tests:
+      - file: "crates/loft-cli/tests/remote_login_public.rs"
+        name: "a_sign_in_to_a_private_document_s_remote_asks_its_head_alone_for_the_challenge"
+        body: 48cb6680e313573ee5ea501095b2608b48f0d50ac053d0eb5ce1d04a0a12d638
   - node: 01a18e1f-8daa-7674-9603-5ad923207ac3
     reviewed: a44e14a28698f214f091d80df9624343693833af6103288af85f311f2a71b5ba
     tests:
@@ -21192,6 +21204,9 @@ links:
       - file: "crates/loft-cli/tests/remote_login.rs"
         name: "a_remote_that_gives_no_bearer_challenge_is_refused_naming_its_address"
         body: ff3022f344d4de385ef4a8fbf0911cdb7fb1ddfd7979cf724ed659906243628a
+      - file: "crates/loft-cli/tests/remote_login_public.rs"
+        name: "a_remote_that_challenges_neither_head_nor_drafts_is_refused_naming_the_drafts_request"
+        body: 66129ab0c399c496785b69282b6e69ad3bedec2bcf97aceda67c5746caf7a4b0
   - node: 01a18e3a-7c03-7381-95d8-6009f68d4fc7
     reviewed: ab238ba033cc76b826260b2dbd53c91bcba4539e1c5a6ecf4ec43e154ae2b950
     tests:
@@ -21228,6 +21243,9 @@ links:
       - file: "crates/loft-cli/tests/remote_sign_in_refusals.rs"
         name: "a_bearer_challenge_that_names_no_metadata_is_refused_naming_the_request"
         body: 5646a85a1a1bf0d1a6ba655b2359c8df5a06967fd5d5018112ac116f00592a40
+      - file: "crates/loft-cli/tests/remote_login_public.rs"
+        name: "a_remote_that_challenges_neither_head_nor_drafts_is_refused_naming_the_drafts_request"
+        body: 66129ab0c399c496785b69282b6e69ad3bedec2bcf97aceda67c5746caf7a4b0
   - node: 01a18e1f-8daa-7674-9603-5ae3f00e0b0f
     reviewed: cd9842940bd87441d55ef64ba48561fb2d582f4c3cb7a15cb42e014bf23e620c
     tests:

@@ -89,6 +89,7 @@ mod remote_contract_skill;
 mod remote_contract_token_requests;
 mod remote_contract_writes;
 mod remote_login;
+mod remote_login_public;
 mod remote_reach;
 mod remote_refresh;
 mod remote_remove;
