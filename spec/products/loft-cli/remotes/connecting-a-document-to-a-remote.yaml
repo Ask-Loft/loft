@@ -70,6 +70,10 @@ requirements:
         name: "Where `visibility` is `private`, the line says that only those the remote admits read the document."
       - key: 01a20625-1782-738f-956e-4cb9f1e7f8ad
         name: "Where the head answer names no `visibility`, or one Loft does not know, nothing is said."
+      - key: 01a2067e-f638-7716-98e2-ec1ade9b0c22
+        name: "Where the head request fails, the line says that Loft could not read to whom the remote serves the document, and names the failure."
+      - key: 01a2067e-f638-7716-98e2-ec1bfb9161f2
+        name: "Where the head request fails, the import request is still sent."
       - key: 01a20625-1782-738f-956e-4cba4861560c
         name: "A connect that imports nothing says nothing of the visibility."
   - key: 01a1587a-dee2-7262-8c7b-8958dac9405d

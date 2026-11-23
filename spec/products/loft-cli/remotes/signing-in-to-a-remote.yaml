@@ -170,6 +170,8 @@ requirements:
         name: "Every entry for another address is kept."
       - key: 01a18e1f-8daa-7674-9603-5b02b522f091
         name: "A missing file is created, with the directory that holds it."
+      - key: 01a2067e-f638-7716-98e2-ec1ffdf9bcbf
+        name: "Where the user has no configuration directory, the command refuses with an error that says there is none."
       - key: 01a18e1f-8daa-7674-9603-5b0311acba32
         name: "The file is written with read and write permission for its owner alone, through a file beside it and a rename."
       - key: 01a18e1f-8daa-7674-9603-5b0409a20482

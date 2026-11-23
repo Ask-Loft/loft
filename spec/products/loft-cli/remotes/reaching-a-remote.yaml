@@ -19,6 +19,8 @@ requirements:
         name: "The file is a JSON object whose `remotes` maps each remote's address to its sign-in, an object of `tokenEndpoint`, `resource`, `clientId`, `accessToken`, `expiresAt` and `refreshToken`."
       - key: 01a156aa-d531-70a7-88e0-0befdde18d29
         name: "An address that the file does not name has no sign-in in the file."
+      - key: 01a2067e-f638-7716-98e2-ec1c53e34e5d
+        name: "Where the user has no configuration directory, no address has a sign-in."
       - key: 01a1f4f1-4309-7056-a238-4b394d224dd7
         name: "A kept sign-in whose `resource` lies on another origin than the address it is kept under is neither refreshed nor sent, and counts as no sign-in for that address where a command needs one."
       - key: 01a1f9e5-e027-761e-ba8f-3ab9ff480a0a
@@ -85,6 +87,8 @@ requirements:
         name: "A kept sign-in whose refresh the authorization server refuses is not sent."
       - key: 01a20625-1782-738f-956e-4cbc06535a2c
         name: "With no sign-in kept for the address and `LOFT_REMOTE_TOKEN` unset, each request of the pull carries no `Authorization` header."
+      - key: 01a2067e-f638-7716-98e2-ec1d342922cb
+        name: "With no user configuration directory and `LOFT_REMOTE_TOKEN` unset, each request of the pull carries no `Authorization` header."
       - key: 01a20625-1782-738f-956e-4cbd94d45464
         name: "A kept sign-in whose `resource` lies on another origin than the address, or does not read as an `https` or `http` address, is not sent."
       - key: 01a20625-1782-738f-956e-4cbed122136f
@@ -96,8 +100,10 @@ requirements:
       form: unwanted
       if: "the remote answers `401` to a request that `loft pull` sent without a token"
       system: "`loft pull`"
-      shall: "refuse with the error for the sign-in it could not send, or for none, and exit 1."
+      shall: "refuse with the remote's refusal and the error for the sign-in it could not send, or for none, and exit 1."
     criteria:
+      - key: 01a2067e-f638-7716-98e2-ec1e0c95ab59
+        name: "The error names the refusal's status, and its code where the refusal is a problem document."
       - key: 01a20648-8abc-7669-a31e-cf2482d4f2d9
         name: "Where the sign-in kept under the address has lapsed, the error is the one for a lapsed sign-in."
       - key: 01a20625-1782-738f-956e-4cc1aae18790

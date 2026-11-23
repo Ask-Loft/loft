@@ -55,7 +55,7 @@ requirements:
       shall: "admit a request under a document's address only with the bearer token its scenario names, or an access token it issued for the document's protected resource and has not revoked, but for the reads a public scenario serves to anyone."
     criteria:
       - key: 01a156ae-6a51-7230-a9a1-fa92a3b72eb7
-        name: "A request without `Authorization: Bearer <token>` is answered `401 Unauthorized` with the code `unauthenticated`."
+        name: "A request without `Authorization: Bearer <token>`, other than a read that a public scenario serves to anyone, is answered `401 Unauthorized` with the code `unauthenticated`."
       - key: 01a18e1f-8dac-71f7-847a-72434a1d07fd
         name: "Each `401` answer under a document's address carries `WWW-Authenticate: Bearer` with `resource_metadata`, the address of its protected resource metadata, and the scenario's `scope`."
       - key: 01a1995a-1ff6-73c4-9f04-02266acd23bf
@@ -85,12 +85,16 @@ requirements:
       form: optional
       where: "the scenario serves its document to anyone"
       system: "the remote simulator"
-      shall: "answer `GET <address>/head` and `GET <address>/states/<sequence>` without a token as it answers them with one."
+      shall: "answer `GET <address>/head` and `GET <address>/states/<sequence>` for a document it holds without a token as it answers them with one."
     criteria:
       - key: 01a20625-1784-70df-9261-fdae7d682033
-        name: "`GET <address>/head` without an `Authorization` header is answered `200 OK`."
+        name: "`GET <address>/head` without an `Authorization` header, for a document the simulator holds, is answered `200 OK`."
       - key: 01a20625-1784-70df-9261-fdaf90c85617
-        name: "`GET <address>/states/<sequence>` without an `Authorization` header is answered as with the scenario's token."
+        name: "`GET <address>/states/<sequence>` without an `Authorization` header, for a document the simulator holds, is answered as with the scenario's token."
+      - key: 01a2067e-f638-7716-98e2-ec2056733cfe
+        name: "`GET <address>/head` without an `Authorization` header, for a document awaiting its create, is answered `401 Unauthorized` with the code `unauthenticated` and the challenge."
+      - key: 01a2067e-f638-7716-98e2-ec2190a983f7
+        name: "`GET <address>/head` without an `Authorization` header, for a document of a scenario that does not serve it to anyone, is answered `401 Unauthorized` with the code `unauthenticated` and the challenge."
       - key: 01a20625-1784-70df-9261-fdb0acef5f4c
         name: "`GET <address>/drafts/<branch>` without an `Authorization` header is answered `401 Unauthorized` with the code `unauthenticated` and the challenge."
       - key: 01a20625-1784-70df-9261-fdb1111a0060
