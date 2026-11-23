@@ -71,8 +71,7 @@ pub fn sign_in(
         timeout,
     )
     .map_err(|error| failed(error.to_string()))?;
-    let issued =
-        issued(&answer, None).ok_or_else(|| failed("the token answer does not read".to_owned()))?;
+    let issued = issued(&answer, None).ok_or_else(|| failed(TokenError::Unreadable.to_string()))?;
     Ok(kept(discovered, client_id, issued))
 }
 
@@ -160,31 +159,24 @@ fn kept(discovered: Discovered, client_id: String, issued: Issued) -> SignIn {
     }
 }
 
-/// A refresh of `refresh_token`, which `client_id` holds, at the token endpoint `endpoint`, for
-/// the one protected resource `resource`: what it issues, the presented refresh token kept where
-/// the answer names none.
+/// A refresh of `sign_in` at its token endpoint, for the one protected resource `resource`: what
+/// it issues, the refresh token presented kept where the answer names none.
 ///
 /// # Errors
 ///
 /// The authorization server refuses, cannot be reached, or answers what does not read.
-pub fn refresh(
-    endpoint: &str,
-    client_id: &str,
-    refresh_token: &str,
-    resource: &str,
-    timeout: Duration,
-) -> Result<Issued, TokenError> {
+pub fn refresh(sign_in: &SignIn, resource: &str, timeout: Duration) -> Result<Issued, TokenError> {
     let answer = token(
-        endpoint,
+        &sign_in.token_endpoint,
         &[
             ("grant_type", "refresh_token"),
-            ("refresh_token", refresh_token),
-            ("client_id", client_id),
+            ("refresh_token", &sign_in.refresh_token),
+            ("client_id", &sign_in.client_id),
             ("resource", resource),
         ],
         timeout,
     )?;
-    issued(&answer, Some(refresh_token)).ok_or(TokenError::Unreadable)
+    issued(&answer, Some(&sign_in.refresh_token)).ok_or(TokenError::Unreadable)
 }
 
 /// `bytes` random bytes from the system's source, in base64url.

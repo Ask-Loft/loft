@@ -15,7 +15,7 @@ use serde_json::{Map, Value};
 
 use super::kept::{self, Kept, SignIn};
 use crate::remote::RemoteError;
-use crate::remote::signin::{self, Issued, TokenError};
+use crate::remote::signin::{self, TokenError};
 
 /// The OAuth error that refuses a refresh for a protected resource that the sign-in does not
 /// hold, or that the authorization server does not serve (RFC 8707).
@@ -68,7 +68,7 @@ fn repeat(
     held: &Kept,
     recorded: &str,
 ) -> Result<(), RemoteError> {
-    let issued = send(run, &held.sign_in, recorded)
+    let issued = signin::refresh(&held.sign_in, recorded, run.timeout)
         .map_err(|error| failure(run, &held.sign_in, recorded, error))?;
     let own = &held.sign_in.resource;
     kept::keep_issued(entry(entries, run.address), own, recorded, &issued);
@@ -89,7 +89,7 @@ fn fresh(
         super::write(run.file, entries)?;
     }
     let own = &held.sign_in.resource;
-    match send(run, &held.sign_in, wanted) {
+    match signin::refresh(&held.sign_in, wanted, run.timeout) {
         Ok(issued) => {
             kept::keep_issued(entry(entries, run.address), own, wanted, &issued);
             super::write(run.file, entries)?;
@@ -104,17 +104,6 @@ fn fresh(
         }
         Err(error) => Err(failure(run, &held.sign_in, wanted, error)),
     }
-}
-
-/// A refresh of `sign_in` for the one protected resource `resource`.
-fn send(run: &Run, sign_in: &SignIn, resource: &str) -> Result<Issued, TokenError> {
-    signin::refresh(
-        &sign_in.token_endpoint,
-        &sign_in.client_id,
-        &sign_in.refresh_token,
-        resource,
-        run.timeout,
-    )
 }
 
 /// The error that `error`, the failure of a refresh of `sign_in` for `resource`, stops a call
