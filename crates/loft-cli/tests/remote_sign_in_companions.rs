@@ -18,27 +18,27 @@ use crate::common::signed_in::{self, sign_ins};
 use crate::remote_sign_in_refusals::login;
 
 /// Every value of `name` in the query of `url`, in order.
-fn every(url: &str, name: &str) -> Vec<String> {
+pub(crate) fn every(url: &str, name: &str) -> Vec<String> {
     let query = url.split_once('?').map_or("", |(_, query)| query);
     let named = pairs(query).into_iter().filter(|(field, _)| field == name);
     named.map(|(_, value)| value).collect()
 }
 
 /// The path and query of each request that the origin of `remote` received, in order.
-fn targets(remote: &Remote) -> Vec<String> {
+pub(crate) fn targets(remote: &Remote) -> Vec<String> {
     let requests = remote.requests().into_iter();
     requests.map(|request| request.path).collect()
 }
 
 /// Each line of the standard error of `output` that gives a warning.
-fn warnings(output: &Output) -> Vec<String> {
+pub(crate) fn warnings(output: &Output) -> Vec<String> {
     let stderr = String::from_utf8_lossy(&output.stderr);
     let warned = stderr.lines().filter(|line| line.starts_with("warning:"));
     warned.map(str::to_owned).collect()
 }
 
 /// The sign-in that `loft/remotes.json` under `scratch` keeps for the address of `remote`.
-fn kept(scratch: &Scratch, remote: &Remote) -> Value {
+pub(crate) fn kept(scratch: &Scratch, remote: &Remote) -> Value {
     sign_ins(scratch)[remote.address()].clone()
 }
 

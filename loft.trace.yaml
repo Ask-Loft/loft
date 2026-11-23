@@ -21870,18 +21870,27 @@ links:
       - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
         name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
         body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+      - file: "crates/loft-cli/tests/remote_sign_in_stalls.rs"
+        name: "a_companion_resource_whose_metadata_is_held_past_the_time_limit_is_left_out_with_every_one_after_it"
+        body: af1babd05f3c419a65ddfb4b4ff7bea64d4a32946a42692858532bd288a291c3
   - node: 01a20880-0400-77b7-a4ea-c895d14c092c
     reviewed: f4bbc4be19ff6382fa1075193690aeedd5200401927a2d04e23117895c977ea9
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
         name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
         body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+      - file: "crates/loft-cli/tests/remote_sign_in_stalls.rs"
+        name: "a_companion_resource_whose_metadata_is_held_past_the_time_limit_is_left_out_with_every_one_after_it"
+        body: af1babd05f3c419a65ddfb4b4ff7bea64d4a32946a42692858532bd288a291c3
   - node: 01a20880-0400-77b7-a4ea-c896c7874b26
     reviewed: 190a106fe1ffa25d7dbac7528804f6969e49d455501cbfed8de12d072c65deb2
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
         name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
         body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+      - file: "crates/loft-cli/tests/remote_sign_in_stalls.rs"
+        name: "a_companion_resource_whose_metadata_is_held_past_the_time_limit_is_left_out_with_every_one_after_it"
+        body: af1babd05f3c419a65ddfb4b4ff7bea64d4a32946a42692858532bd288a291c3
   - node: 01a20880-0400-77b7-a4ea-c8978f23f21e
     reviewed: 6aa8824a1775c354b62b2dd235f8ffcc55f5ce256fed5b59c624d8db5bbf148b
     tests:
@@ -21897,6 +21906,9 @@ links:
       - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
         name: "a_companion_resource_whose_metadata_cannot_be_reached_is_left_out_with_every_one_after_it"
         body: d15f07e22fca4cbf406c467709511261e4568c8b544e636d4528c10b1c77fe6c
+      - file: "crates/loft-cli/tests/remote_sign_in_stalls.rs"
+        name: "a_companion_resource_whose_metadata_is_held_past_the_time_limit_is_left_out_with_every_one_after_it"
+        body: af1babd05f3c419a65ddfb4b4ff7bea64d4a32946a42692858532bd288a291c3
   - node: 01a18e1f-8daa-7674-9603-5ae5c87d9c4b
     reviewed: 98b07311ee6e2786cc816b756e5779e8956656bed6522f29bd3cc23206db923c
     tests:
@@ -22329,6 +22341,9 @@ links:
       - file: "crates/loft-cli/tests/remote_reach_companions.rs"
         name: "a_status_whose_recorded_refresh_the_remote_refuses_names_the_resource_and_interface_login"
         body: 10a6ba6582370d90efa9481d1db457518196ba375e2b0d02895bdc693196f361
+      - file: "crates/loft-cli/src/remote/signins/record_tests.rs"
+        name: "a_recorded_refresh_for_the_sign_in_s_own_resource_refused_invalid_target_says_it_was_made_for_a_former_resource"
+        body: 82c62afd5157e0e481f7226ebffca7ba77ca4640d7571a5481b18782f8c24303
   - node: 01a202c3-d203-70c5-9d96-10cb59793291
     reviewed: 986a44ec4b4d30c21e2f8a8522a0679d3f73b9af5efcc88cc393084a38753d29
     tests:
@@ -22341,6 +22356,9 @@ links:
       - file: "crates/loft-cli/tests/remote_reach_companions.rs"
         name: "a_recorded_refresh_the_remote_refuses_stops_a_publish_and_remote_set_signs_in_anew"
         body: eb7d0a95db715d5a5028de3ce320002710b34927b8c9cba5bde2a0976f51002e
+      - file: "crates/loft-cli/src/remote/signins/record_tests.rs"
+        name: "a_recorded_refresh_for_the_sign_in_s_own_resource_refused_invalid_target_says_it_was_made_for_a_former_resource"
+        body: 82c62afd5157e0e481f7226ebffca7ba77ca4640d7571a5481b18782f8c24303
   - node: 01a202c3-d203-70c5-9d96-10cc5b8bece5
     reviewed: 4f2928b9cfabb283ba25dd77474fa017e7935c434483522b895d5891f8c21cba
     tests:
@@ -22419,6 +22437,9 @@ links:
       - file: "crates/loft-cli/tests/remote_reach_companions.rs"
         name: "a_status_whose_sign_in_was_made_for_a_former_resource_names_interface_login_and_keeps_it"
         body: 33703bfc673154938cc23639d493bbd36476cee99113527be75618d63795a43d
+      - file: "crates/loft-cli/src/remote/signins/record_tests.rs"
+        name: "a_recorded_refresh_for_the_sign_in_s_own_resource_refused_invalid_target_says_it_was_made_for_a_former_resource"
+        body: 82c62afd5157e0e481f7226ebffca7ba77ca4640d7571a5481b18782f8c24303
   - node: 01a202c3-d203-70c5-9d96-10d247c1ba72
     reviewed: 440b32dfea0eca8359405f3457b4626312ed01ce1fe8ccd945b5244fe2a80390
     tests:
@@ -22431,6 +22452,9 @@ links:
       - file: "crates/loft-cli/tests/remote_reach_companions.rs"
         name: "a_status_whose_sign_in_was_made_for_a_former_resource_names_interface_login_and_keeps_it"
         body: 33703bfc673154938cc23639d493bbd36476cee99113527be75618d63795a43d
+      - file: "crates/loft-cli/src/remote/signins/record_tests.rs"
+        name: "a_recorded_refresh_for_the_sign_in_s_own_resource_refused_invalid_target_says_it_was_made_for_a_former_resource"
+        body: 82c62afd5157e0e481f7226ebffca7ba77ca4640d7571a5481b18782f8c24303
   - node: 01a202c3-d203-70c5-9d96-10d32de52c25
     reviewed: 09291b20d2ac4821ca33ca9878ae27522abcb8794ce835380242c7d835eeec14
     tests:
@@ -22443,6 +22467,9 @@ links:
       - file: "crates/loft-cli/tests/remote_reach_companions.rs"
         name: "a_status_whose_sign_in_was_made_for_a_former_resource_names_interface_login_and_keeps_it"
         body: 33703bfc673154938cc23639d493bbd36476cee99113527be75618d63795a43d
+      - file: "crates/loft-cli/src/remote/signins/record_tests.rs"
+        name: "a_recorded_refresh_for_the_sign_in_s_own_resource_refused_invalid_target_says_it_was_made_for_a_former_resource"
+        body: 82c62afd5157e0e481f7226ebffca7ba77ca4640d7571a5481b18782f8c24303
   - node: 01a202c3-d203-70c5-9d96-10d4db4c492a
     reviewed: f1503f53aa1d7e44f442affb6b7326eb2aab6ead22a494ca7e3032cab23786d2
     tests:

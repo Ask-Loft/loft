@@ -137,6 +137,42 @@ fn a_recorded_refresh_refused_invalid_target_keeps_the_record_and_sends_no_other
 }
 
 #[test]
+fn a_recorded_refresh_for_the_sign_in_s_own_resource_refused_invalid_target_says_it_was_made_for_a_former_resource()
+ {
+    // Whether the access token expires within five minutes or not.
+    for seconds in [60, 3600] {
+        let remote = listing_notes(RemoteScenario::accepting("doc-former-record"));
+        let address = remote.address();
+        // Made for a resource the remote no longer serves, whose refresh's answer was lost.
+        let former = format!("{}/former", remote.origin());
+        let mut entry = over(&remote, &["notes"], seconds, true);
+        entry["resource"] = json!(former);
+        entry["refreshing"] = json!(former);
+        let scratch = Scratch::holding(&remote, &entry);
+        let before = scratch.bytes();
+        let refused = access_token(&scratch.file, &address, None, TIMEOUT).unwrap_err();
+        let made_for_former = RemoteError::FormerResource {
+            address: address.clone(),
+            resource: former.clone(),
+        };
+        assert_eq!(refused, made_for_former, "{seconds}: no token is given");
+        let message = refused.to_string();
+        for said in [
+            address.as_str(),
+            former.as_str(),
+            "`loft remote login` signs in again",
+        ] {
+            assert!(message.contains(said), "{seconds}: {said}: {message}");
+        }
+        assert!(!message.contains("has lapsed"), "{seconds}: {message}");
+        let repeated = (refresh_token(&entry), vec![former]);
+        assert_eq!(sent(&remote), [repeated], "{seconds}: no other refresh");
+        assert_eq!(remote.refreshes(), 0, "{seconds}");
+        assert_eq!(scratch.bytes(), before, "{seconds}: the record stays");
+    }
+}
+
+#[test]
 fn a_refused_refresh_removes_its_record_and_leaves_the_sign_in_as_it_was() {
     let remote = listing_notes(RemoteScenario::accepting("doc-refused").lapsing());
     let address = remote.address();
