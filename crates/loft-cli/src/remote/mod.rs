@@ -249,7 +249,7 @@ fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, Re
     checked(&address)?;
     let token = match environment::text(TOKEN_ENV) {
         Some(token) => token,
-        None => match signins::live(&address, timeout) {
+        None => match signins::held(&address, timeout) {
             Ok(sign_in) => sign_in.access_token,
             Err(
                 missing @ (RemoteError::NoSignIn { .. }
@@ -278,7 +278,8 @@ pub fn signed_in(
     browser: bool,
     timeout: Duration,
 ) -> Result<String, RemoteError> {
-    match signins::live(address, timeout) {
+    let file = signins::file()?;
+    match signins::live(&file, address, timeout) {
         Ok(sign_in) => Ok(sign_in.access_token),
         Err(
             RemoteError::NoSignIn { .. }
@@ -287,7 +288,7 @@ pub fn signed_in(
         ) => {
             let sign_in = signin::sign_in(address, whose, browser, timeout)?;
             let token = sign_in.access_token.clone();
-            signins::save(address, &sign_in)?;
+            signins::save(&file, address, &sign_in)?;
             Ok(token)
         }
         Err(error) => Err(error),
@@ -304,7 +305,7 @@ pub fn signed_in(
 pub fn login(address: &str, whose: Whose<'_>, browser: bool) -> Result<(), RemoteError> {
     checked(address)?;
     let sign_in = signin::sign_in(address, whose, browser, timeout()?)?;
-    signins::save(address, &sign_in)
+    signins::save(&signins::file()?, address, &sign_in)
 }
 
 /// How a command that reaches another document's remote holds the person's sign-in to it.
@@ -337,7 +338,7 @@ pub fn other(address: &str, whose: Whose<'_>, sign_in: SignIn) -> Result<Client,
             let client = Client::new(address, Some(token), timeout, wait);
             return Ok(client.renewing(whose, browser));
         }
-        SignIn::Kept => signins::live(address, timeout)?.access_token,
+        SignIn::Kept => signins::held(address, timeout)?.access_token,
     };
     Ok(Client::new(address, Some(token), timeout, wait))
 }
