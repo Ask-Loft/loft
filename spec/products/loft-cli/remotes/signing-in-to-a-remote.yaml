@@ -387,7 +387,7 @@ requirements:
   - key: 01a202c3-d203-70c5-9d96-10d0ff205435
     statement:
       form: unwanted
-      if: "the authorization server refuses with `invalid_target` a refresh that a connected command makes for the protected resource that the sign-in was made for"
+      if: "the authorization server refuses with `invalid_target` a refresh that a connected command other than `loft pull` makes for the protected resource that the sign-in was made for"
       system: "Loft"
       shall: "refuse the command, say that the sign-in was made for a former resource of the remote, and exit 1."
     criteria:
