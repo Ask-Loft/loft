@@ -72,3 +72,12 @@ fn a_private_document_s_head_is_challenged_without_a_token() {
     let answer = call("GET", &format!("{}/head", remote.address()), None, None);
     assert_problem(&answer, 401, "unauthenticated");
 }
+
+#[test]
+fn a_public_scenario_that_holds_no_document_challenges_its_head_without_a_token() {
+    let scenario = RemoteScenario::accepting("01a20625-0000-7000-8000-000000000001")
+        .visibility(Visibility::Public);
+    let remote = Remote::start(scenario);
+    let answer = call("GET", &format!("{}/head", remote.address()), None, None);
+    assert_problem(&answer, 401, "unauthenticated");
+}
