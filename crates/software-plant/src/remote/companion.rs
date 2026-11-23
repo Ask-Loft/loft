@@ -97,6 +97,7 @@ impl Companion {
                 | CompanionFault::Scopeless
                 | CompanionFault::EmptyScopes
                 | CompanionFault::Unreadable
+                | CompanionFault::Unanswered
                 | CompanionFault::NotAnObject,
             ) => None,
         }
@@ -119,6 +120,9 @@ pub enum CompanionFault {
     EmptyScopes,
     /// Metadata that is not found: its address is answered `404 Not Found`.
     Unreadable,
+    /// Metadata that is never answered: each request for it is closed before a byte of an
+    /// answer is written.
+    Unanswered,
     /// Metadata that is a JSON array, not an object.
     NotAnObject,
     /// Faithful metadata that lists a companion resource of its own.
@@ -238,19 +242,26 @@ impl State {
     /// The answer on the simulator's origin to `request`, where its whole target, the path and
     /// the query, is the address of the protected resource metadata of a companion resource
     /// there; nothing elsewhere.
-    pub(super) fn companion_metadata(&self, request: &Request) -> Option<Response> {
-        let companion = self.placed(&request.path, false)?;
-        Some(self.metadata_answer(companion, request))
+    pub(super) fn companion_metadata(&mut self, request: &Request) -> Option<Response> {
+        self.placed(&request.path, false)?;
+        Some(self.metadata_answer(request, false))
     }
 
-    /// The answer to `request` at the address of the protected resource metadata of `companion`:
-    /// that metadata as its scenario serves it, to a `GET`, or `not_found` where its scenario
-    /// makes it unreadable.
-    fn metadata_answer(&self, companion: &Companion, request: &Request) -> Response {
-        match self.served(companion) {
+    /// The answer to `request` at the address of the protected resource metadata of the companion
+    /// resource placed there, on the second port if `elsewhere`: that metadata as its scenario
+    /// serves it, to a `GET`, or `not_found` where its scenario makes it unreadable; and, where
+    /// its scenario leaves it unanswered, the connection closed without an answer.
+    fn metadata_answer(&mut self, request: &Request, elsewhere: bool) -> Response {
+        let Some(companion) = self.placed(&request.path, elsewhere) else {
+            return refusal("not_found");
+        };
+        let unanswered = companion.fault == Some(CompanionFault::Unanswered);
+        let answer = match self.served(companion) {
             Some(metadata) => only("GET", request, || Response::json(200, &metadata)),
             None => refusal("not_found"),
-        }
+        };
+        self.answer_lost |= unanswered;
+        answer
     }
 
     /// The scopes that `resource` accepts, if the scenario serves it: the document's protected
@@ -297,7 +308,7 @@ impl State {
             Some(CompanionFault::Unnamed) => metadata = without(metadata, "resource"),
             Some(CompanionFault::Scopeless) => metadata = without(metadata, "scopes_supported"),
             Some(CompanionFault::EmptyScopes) => metadata["scopes_supported"] = json!([]),
-            Some(CompanionFault::Unreadable) => return None,
+            Some(CompanionFault::Unreadable | CompanionFault::Unanswered) => return None,
             Some(CompanionFault::NotAnObject) => metadata = json!([metadata]),
             Some(CompanionFault::Relisting) => {
                 let relisted = format!("{}/relisted", self.origin);
@@ -319,10 +330,7 @@ pub(super) fn elsewhere(state: &mut State, request: &Request) -> Response {
         let metadata = document_metadata(state, state.metadata_origin());
         return only("GET", request, || Response::json(200, &metadata));
     }
-    match state.placed(&request.path, true) {
-        Some(companion) => state.metadata_answer(companion, request),
-        None => refusal("not_found"),
-    }
+    state.metadata_answer(request, true)
 }
 
 /// Where RFC 9728 places the protected resource metadata of the resource at `path`, a path that

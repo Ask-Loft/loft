@@ -24006,6 +24006,12 @@ links:
       - file: "crates/loft-cli/tests/remote_contract_resources.rs"
         name: "a_companion_resource_at_the_documents_path_with_a_query_has_metadata_of_its_own"
         body: a52a63118647b94f678f8dda6927241ddbe7bb47c7e10d37de2774de7df498c6
+  - node: 01a20880-0402-7303-af8e-ca9d95c2574e
+    reviewed: 4b79ef6abe0b567e7fdfcb477f7db5c5cd747bb841c6f882d84d976689493ea7
+    tests:
+      - file: "crates/loft-cli/tests/remote_contract_resources.rs"
+        name: "a_companion_resource_whose_metadata_is_left_unanswered_has_each_request_closed_unanswered"
+        body: 207a222d911573a6d0efbd12be850fa53e58af5745a251d747a09a6528a1b0c8
   - node: 01a1f09b-189b-76b3-863f-c7c16727d7fd
     reviewed: 480ea35e952c98f9e965a8b750c85bf6464b3f9e53bd32dd32dda2d30f51709b
     tests:

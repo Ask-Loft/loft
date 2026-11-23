@@ -119,6 +119,12 @@ pub fn companion_metadata(identifier: &str) -> Answer {
     call("GET", &resource_metadata_at(identifier), None, None)
 }
 
+/// The response to a `GET` of the protected resource metadata of the resource `identifier`, or
+/// the error that kept it from coming.
+pub fn send_companion_metadata(identifier: &str) -> Result<Response<Body>, ureq::Error> {
+    agent().get(&resource_metadata_at(identifier)).call()
+}
+
 /// The address of the protected resource metadata of the resource `identifier`, as RFC 9728,
 /// section 3.1, derives it: its origin, then `/.well-known/oauth-protected-resource`, then its
 /// path without a terminating `/`, then its query.

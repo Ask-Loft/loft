@@ -30,7 +30,7 @@ use software_plant::remote::{Companion, CompanionFault, RESOURCE, Remote, Remote
 use crate::common::oauth::{
     KEY, UNKNOWN_CODE, assert_oauth_error, authorize_for, challenge_at, coded_for,
     companion_metadata, discover, exchange, fetch, location, metadata, parameter, refresh,
-    registered,
+    registered, send_companion_metadata,
 };
 use crate::common::resources::{COMPANION_RESOURCES, companions_of, head_with, origin_of};
 use crate::remote_contract::assert_problem;
@@ -382,4 +382,29 @@ fn a_real_remote_refuses_an_unknown_code_for_any_resource_it_serves() {
     // consent to the first client's request, so that part runs against the simulator alone.
     let address = std::env::var("LOFT_REMOTE_CONTRACT_ADDRESS").expect("an address");
     refuses_an_unknown_code(&address);
+}
+
+#[test]
+fn a_companion_resource_whose_metadata_is_left_unanswered_has_each_request_closed_unanswered() {
+    let remote = Remote::start(
+        RemoteScenario::accepting(KEY)
+            .accompanied_by(
+                Companion::new("silent", &["silent"]).faulty(CompanionFault::Unanswered),
+            )
+            .accompanied_by(Companion::new("notes", &["notes"])),
+    );
+    let (silent, notes) = (remote.companion("silent"), remote.companion("notes"));
+    let (resource, _) = metadata(&remote);
+    let listed = companions_of(&resource);
+    let kinds: Vec<&str> = listed.iter().map(|(_, kind)| kind.as_str()).collect();
+    assert_eq!(kinds, ["silent", "notes"], "the scenario still lists it");
+    for attempt in 1..=2 {
+        let unanswered = send_companion_metadata(&silent);
+        assert!(unanswered.is_err(), "{attempt}: {unanswered:?}");
+    }
+    assert_eq!(
+        companion_metadata(&notes).status,
+        200,
+        "the others are answered"
+    );
 }
