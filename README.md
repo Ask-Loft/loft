@@ -9,6 +9,11 @@ doing, and is where you answer its questions and approve its changes and plans.
 There is no server to set up. Everything stays in git: the specification in `spec/`, the
 contract pinned by `loft.lock.json`, and each branch's record of the work in `.yard/`.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ask-Loft/loft/main/docs/images/yard-overview-dark.png">
+  <img alt="The Yard page: a branch in the middle of its build, with its stages, the tasks done and the one in progress, and in the sidebar the question and the approval that wait on you" src="https://raw.githubusercontent.com/Ask-Loft/loft/main/docs/images/yard-overview-light.png">
+</picture>
+
 ## Get started
 
 Install `loft`, or ask your agent to:
@@ -42,6 +47,12 @@ You talk; the agent writes. Each step below starts with something you might say.
 2. **Approve the change.** Each change to `spec/` comes to you for approval before it is
    committed, with the change drawn on the Yard page. Approve it, or reject it with what to
    change.
+
+   <picture>
+     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Ask-Loft/loft/main/docs/images/spec-change-dark.png">
+     <img alt="A change to spec/ drawn on the Yard page: a new Feature with its Requirements and criteria marked new, one criterion marked changed, and beneath it the approval that waits on you" src="https://raw.githubusercontent.com/Ask-Loft/loft/main/docs/images/spec-change-light.png">
+   </picture>
+
 3. **Approve the plan.** The agent works out the build from the criteria you approved: which
    criteria each step meets and which tests will show it. You approve the plan before any code
    is written.
