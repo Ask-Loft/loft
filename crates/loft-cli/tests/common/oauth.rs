@@ -8,6 +8,8 @@
 //! no remote serves and a code that no remote issued. A step that finds no member it needs fails
 //! naming the member and what it found instead, never a token or a secret.
 
+use std::time::Duration;
+
 use serde_json::{Value, json};
 use software_plant::remote::Remote;
 use software_plant::remote::wire::{base64url, pairs, query, sha256, value};
@@ -123,6 +125,19 @@ pub fn companion_metadata(identifier: &str) -> Answer {
 /// the error that kept it from coming.
 pub fn send_companion_metadata(identifier: &str) -> Result<Response<Body>, ureq::Error> {
     agent().get(&resource_metadata_at(identifier)).call()
+}
+
+/// [`send_companion_metadata`], waiting no longer than `limit` for the answer.
+pub fn send_companion_metadata_within(
+    identifier: &str,
+    limit: Duration,
+) -> Result<Response<Body>, ureq::Error> {
+    let agent: ureq::Agent = ureq::Agent::config_builder()
+        .http_status_as_error(false)
+        .timeout_global(Some(limit))
+        .build()
+        .into();
+    agent.get(&resource_metadata_at(identifier)).call()
 }
 
 /// The address of the protected resource metadata of the resource `identifier`, as RFC 9728,

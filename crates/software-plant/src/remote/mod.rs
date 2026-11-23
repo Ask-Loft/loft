@@ -88,6 +88,8 @@ struct State {
     auth: oauth::Auth,
     /// Whether the answer to the request being answered is lost.
     answer_lost: bool,
+    /// Whether the request being answered is held open without an answer.
+    answer_withheld: bool,
 }
 
 impl State {
@@ -123,6 +125,7 @@ impl Remote {
             replies: HashMap::new(),
             auth: oauth::Auth::default(),
             answer_lost: false,
+            answer_withheld: false,
         }));
         let (server, origin) = listen(&state, refusing, route);
         let (elsewhere, elsewhere_origin) = if placed_elsewhere {
@@ -344,6 +347,9 @@ impl Responder for Simulated {
         // the test nor the simulator's next request waits on it.
         let delay = oauth::refreshing(request).then_some(state.scenario.refresh_delay);
         let lost = std::mem::take(&mut state.answer_lost);
+        if std::mem::take(&mut state.answer_withheld) {
+            return Answer::Hold;
+        }
         drop(state);
         thread::sleep(delay.unwrap_or_default());
         if lost {

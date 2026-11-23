@@ -98,6 +98,7 @@ impl Companion {
                 | CompanionFault::EmptyScopes
                 | CompanionFault::Unreadable
                 | CompanionFault::Unanswered
+                | CompanionFault::Held
                 | CompanionFault::NotAnObject,
             ) => None,
         }
@@ -123,6 +124,9 @@ pub enum CompanionFault {
     /// Metadata that is never answered: each request for it is closed before a byte of an
     /// answer is written.
     Unanswered,
+    /// Metadata that is never answered, as a stalled origin answers: each request for it is kept
+    /// open without an answer until the simulator stops.
+    Held,
     /// Metadata that is a JSON array, not an object.
     NotAnObject,
     /// Faithful metadata that lists a companion resource of its own.
@@ -250,17 +254,20 @@ impl State {
     /// The answer to `request` at the address of the protected resource metadata of the companion
     /// resource placed there, on the second port if `elsewhere`: that metadata as its scenario
     /// serves it, to a `GET`, or `not_found` where its scenario makes it unreadable; and, where
-    /// its scenario leaves it unanswered, the connection closed without an answer.
+    /// its scenario leaves it unanswered, the connection closed without an answer, or, where it
+    /// holds it, kept open without one.
     fn metadata_answer(&mut self, request: &Request, elsewhere: bool) -> Response {
         let Some(companion) = self.placed(&request.path, elsewhere) else {
             return refusal("not_found");
         };
         let unanswered = companion.fault == Some(CompanionFault::Unanswered);
+        let withheld = companion.fault == Some(CompanionFault::Held);
         let answer = match self.served(companion) {
             Some(metadata) => only("GET", request, || Response::json(200, &metadata)),
             None => refusal("not_found"),
         };
         self.answer_lost |= unanswered;
+        self.answer_withheld |= withheld;
         answer
     }
 
@@ -308,7 +315,9 @@ impl State {
             Some(CompanionFault::Unnamed) => metadata = without(metadata, "resource"),
             Some(CompanionFault::Scopeless) => metadata = without(metadata, "scopes_supported"),
             Some(CompanionFault::EmptyScopes) => metadata["scopes_supported"] = json!([]),
-            Some(CompanionFault::Unreadable | CompanionFault::Unanswered) => return None,
+            Some(
+                CompanionFault::Unreadable | CompanionFault::Unanswered | CompanionFault::Held,
+            ) => return None,
             Some(CompanionFault::NotAnObject) => metadata = json!([metadata]),
             Some(CompanionFault::Relisting) => {
                 let relisted = format!("{}/relisted", self.origin);
