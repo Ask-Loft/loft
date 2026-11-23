@@ -22570,14 +22570,14 @@ links:
     reviewed: 46659c8c17c87acddcee2539b5fb43d99e6a7c3182a2f2f6f35cd739213126e2
     tests:
       - file: "crates/loft-cli/tests/remote_contract_public.rs"
-        name: "a_public_document_s_drafts_and_writes_are_challenged_without_a_token"
-        body: 485023288d9a8dc900b182794ea3c8344a24793ec9b00446c53894b4d9b14407
+        name: "a_public_document_answers_a_client_without_a_token_as_the_contract_states"
+        body: 4865bc1d1580361a89183d1ab31b5f5b616d4a140c5613bbe84f930ecaac248d
   - node: 01a20625-1784-70df-9261-fdb1111a0060
     reviewed: 9ae58a1fa1dd3877a869e4097dc5a332fe3e27dd7bb42069ec38e7a66b0ba700
     tests:
       - file: "crates/loft-cli/tests/remote_contract_public.rs"
-        name: "a_public_document_s_drafts_and_writes_are_challenged_without_a_token"
-        body: 485023288d9a8dc900b182794ea3c8344a24793ec9b00446c53894b4d9b14407
+        name: "a_public_document_answers_a_client_without_a_token_as_the_contract_states"
+        body: 4865bc1d1580361a89183d1ab31b5f5b616d4a140c5613bbe84f930ecaac248d
   - node: 01a1f967-f818-72bf-b82d-caee9eb72ece
     reviewed: ae82daa86af267c19bd1cd8933d51ef16579994a3e265cacbca368c27945fc60
     tests:

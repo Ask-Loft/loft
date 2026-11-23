@@ -33,10 +33,24 @@ fn a_public_document_s_head_and_states_are_answered_without_a_token_as_with_one(
     }
 }
 
-#[test]
-fn a_public_document_s_drafts_and_writes_are_challenged_without_a_token() {
-    let remote = serving(Some(Visibility::Public));
-    let address = remote.address();
+/// Asserts what the remote of the public document at `address`, which holds a published state,
+/// answers a client that sends no token: its head, naming the visibility `public` and the
+/// document key, and its first published state; its draft and its publish are challenged, so
+/// that a sign-in reads the challenge from its draft. The simulator and a real remote are held to
+/// the same assertions.
+fn assert_public_answers(address: &str) {
+    let head = call("GET", &format!("{address}/head"), None, None);
+    assert_eq!(head.status, 200, "{head:?}");
+    assert_eq!(head.body["visibility"], "public");
+    assert!(head.body["documentKey"].is_string(), "{head:?}");
+    assert!(
+        head.body["head"]["publishSequence"].as_u64() >= Some(1),
+        "{head:?}"
+    );
+    let state = call("GET", &format!("{address}/states/1"), None, None);
+    assert_eq!(state.status, 200, "{state:?}");
+    assert!(state.body["lock"].is_object(), "{state:?}");
+    assert!(state.body["files"].is_array(), "{state:?}");
     for (method, path, body) in [
         ("GET", "/drafts/main", None),
         ("POST", "/publish", Some(json!({}))),
@@ -44,6 +58,18 @@ fn a_public_document_s_drafts_and_writes_are_challenged_without_a_token() {
         let answer = call(method, &format!("{address}{path}"), None, body.as_ref());
         assert_challenged(&answer);
     }
+}
+
+#[test]
+fn a_public_document_answers_a_client_without_a_token_as_the_contract_states() {
+    assert_public_answers(&serving(Some(Visibility::Public)).address());
+}
+
+#[test]
+#[ignore = "reaches the public document at LOFT_REMOTE_CONTRACT_PUBLIC_ADDRESS"]
+fn a_real_remote_answers_a_client_without_a_token_for_a_public_document_as_the_simulator_does() {
+    let address = std::env::var("LOFT_REMOTE_CONTRACT_PUBLIC_ADDRESS").expect("an address");
+    assert_public_answers(&address);
 }
 
 /// Asserts that `answer` is `401 Unauthorized` with the code `unauthenticated` and the challenge.
