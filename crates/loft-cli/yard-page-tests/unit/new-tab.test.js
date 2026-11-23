@@ -14,6 +14,12 @@ test('a link to a web address in a block’s Markdown opens in a new tab', () =>
   for (const link of block.querySelectorAll('a')) assert.equal(link.getAttribute('target'), '_blank', link.href);
 });
 
+test('a link of rendered Markdown to a web address no URL parser reads still opens in a new tab and leaves the rest drawn', () => {
+  // As comrak writes `[docs](http://)`, `[x](<https://exa mple.com>)` and `[y](https://[::1/)`.
+  const block = html('<p><a href="http://">docs</a> <a href="https://exa%20mple.com">x</a> <a href="https://%5B::1/">y</a> <a href="https://example.com/a">a</a></p>');
+  assert.equal([...block.querySelectorAll('a')].map((link) => link.getAttribute('target')).join(' '), '_blank _blank _blank _blank');
+});
+
 test('a link to a web address in a node’s name opens in a new tab', () => {
   const name = inline('See <a href="https://example.com/docs">the docs</a>');
   assert.equal(name.querySelector('a').getAttribute('target'), '_blank');

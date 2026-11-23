@@ -180,8 +180,11 @@ function newTabs(element) {
     // The address as written: a link within the page would resolve to this page's own `http:`.
     const href = link.getAttribute('href') ?? '';
     if (/^https?:\/\//i.test(href)) {
-      const url = new URL(href);
-      if (url.origin === location.origin && url.pathname === location.pathname && parse(url.hash)) {
+      // `links.rs` keeps a link by its scheme alone, so an address such as `http://` reaches here,
+      // which `new URL` would throw on, and the whole Yard Log would go undrawn with it. Such a
+      // link names no Yard Log; it opens a new tab as any other does.
+      const url = URL.canParse(href) ? new URL(href) : null;
+      if (url && url.origin === location.origin && url.pathname === location.pathname && parse(url.hash)) {
         link.setAttribute('href', url.hash);
         continue;
       }

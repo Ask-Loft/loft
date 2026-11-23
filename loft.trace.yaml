@@ -30570,6 +30570,9 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
         name: "a link to a web address in a block’s Markdown opens in a new tab"
         body: 3281c5e74c09e08ab0b96a3575cc236f7effec6882495e5bc0002ccbcab3c09c
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link of rendered Markdown to a web address no URL parser reads still opens in a new tab and leaves the rest drawn"
+        body: 731f9c9967469ecefd0e1508584929ef6bae50e657c3e5259c0aaab0e7d79946
   - node: 01a20409-6c6c-74c7-a5f4-356b67be1720
     reviewed: b06de897e481a2840355e79a7c53b278cb4f4f252f20ab4726310424195ea30c
     tests:
