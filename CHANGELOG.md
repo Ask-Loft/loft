@@ -107,6 +107,23 @@ Unreleased below, and those of each 2.4 release still to come.
   `loft interface login <handle>` at another document's remote, when a command says that the
   sign-in was made for a former resource of the remote or does not cover a resource, as it does
   when one has lapsed.
+- Every error of reaching a remote or of signing in to one, and every warning of a sign-in about
+  a companion resource it leaves out, writes the text a remote, its authorization server, the
+  tree, `LOFT_REMOTE_ENDPOINT` or `loft/remotes.json` gave with each control character and each
+  bidirectional control escaped, as `\u{1b}` for the escape character, and each backslash as
+  `\\`, on standard error and in the JSON document's `message` alike, so that no character of
+  that text reaches the terminal as a control character. Every other character, a letter beyond
+  ASCII among them, is written as it is. A value of a companion resource's `scopes_supported`
+  that is not a scope is named the same way, a string between double quotes.
+- A remote's address holds visible ASCII alone, `!` to `~`, with every other character
+  percent-encoded. An address that holds another character, as the manifest's `remote` can
+  through the escapes of a double-quoted value, is refused before any request, whether the
+  manifest, `LOFT_REMOTE_ENDPOINT`, `loft remote set` or an entry of `documents` gives it, and the
+  error names it escaped. `loft remote remove`, which reaches no remote, still disconnects such a
+  document, naming its address escaped. A sign-in holds the resource and the issuer that its
+  metadata names to the same rule, as it holds the authorization server's endpoints, and leaves
+  out, with a warning and before anything is asked of it, a companion resource whose identifier
+  holds another character.
 
 ## Unreleased
 

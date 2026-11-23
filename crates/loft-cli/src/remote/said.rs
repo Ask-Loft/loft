@@ -4,6 +4,7 @@
 //! wordings lie here, side by side, so that neither drifts from the other.
 
 use super::{RemoteError, TOKEN_ENV};
+use crate::escaped::Escaped;
 use crate::network;
 
 /// Whose remote an error came from, for the words of what mends it.
@@ -53,37 +54,19 @@ impl RemoteError {
                 said
             }
         };
+        // Every text the error holds is written escaped, as `Display` writes it.
         Some(match self {
             Self::NoSignIn { address } => {
+                let address = Escaped(address);
                 let signs_in =
                     login.map_or_else(String::new, |login| format!(": {login} signs in"));
                 token(format!("no sign-in to {address} {kept}{signs_in}"))
             }
             Self::SignInElsewhere { address, resource } => {
-                let origin = network::origin(resource)
-                    .map_or_else(|| resource.clone(), |origin| origin.to_string());
-                let readdress = match remedy {
-                    Remedy::Own => format!(
-                        "`loft remote set <address>` with an address on {origin} names the \
-                         remote by it and signs in to it"
-                    ),
-                    Remedy::Other { handle, .. } => format!(
-                        "an address on {origin} in the entry of `documents` for {handle} names \
-                         the remote by it"
-                    ),
-                };
-                let again = login.map_or_else(String::new, |login| {
-                    format!(
-                        ", {login} signs in again once the remote serves its protected resource \
-                         on the address's origin"
-                    )
-                });
-                token(format!(
-                    "the sign-in kept under {address} {kept} is for a protected resource on \
-                     another origin than the address, {resource}: {readdress}{again}"
-                ))
+                token(elsewhere(address, resource, remedy))
             }
             Self::Lapsed { address, error } => {
+                let (address, error) = (Escaped(address), Escaped(error));
                 let again =
                     login.map_or_else(String::new, |login| format!(": {login} signs in again"));
                 token(format!(
@@ -91,6 +74,7 @@ impl RemoteError {
                 ))
             }
             Self::FormerResource { address, resource } => {
+                let (address, resource) = (Escaped(address), Escaped(resource));
                 let again =
                     login.map_or_else(String::new, |login| format!(": {login} signs in again"));
                 token(format!(
@@ -99,6 +83,7 @@ impl RemoteError {
                 ))
             }
             Self::NotCovered { address, resource } => {
+                let (address, resource) = (Escaped(address), Escaped(resource));
                 let again = login.map_or_else(String::new, |login| {
                     format!(": {login} signs in again to reach it")
                 });
@@ -107,6 +92,7 @@ impl RemoteError {
                 ))
             }
             Self::Refused { address, refusal } => {
+                let address = Escaped(address);
                 format!("{address}: {}", refusal.said(login.as_deref()))
             }
             Self::Unsigned {
@@ -115,8 +101,10 @@ impl RemoteError {
                 refusal,
                 missing,
             } => format!(
-                "{address}: {} to a request for the document {key} sent without a token: {}",
+                "{}: {} to a request for the document {} sent without a token: {}",
+                Escaped(address),
                 refusal.answered(),
+                Escaped(key),
                 missing.said(remedy)?
             ),
             _ => return None,
@@ -124,10 +112,44 @@ impl RemoteError {
     }
 }
 
+/// The error for the sign-in kept under `address`, which is for `resource`, a protected resource
+/// on another origin, in words for the remote `remedy` names, before the token that mends it for
+/// one run. Every text it holds is written escaped.
+fn elsewhere(address: &str, resource: &str, remedy: Remedy<'_>) -> String {
+    let origin =
+        network::origin(resource).map_or_else(|| resource.to_owned(), |origin| origin.to_string());
+    let (address, origin) = (Escaped(address), Escaped(&origin));
+    let resource = Escaped(resource);
+    let readdress = match remedy {
+        Remedy::Own => format!(
+            "`loft remote set <address>` with an address on {origin} names the remote by it and \
+             signs in to it"
+        ),
+        Remedy::Other { handle, .. } => format!(
+            "an address on {origin} in the entry of `documents` for {handle} names the remote by \
+             it"
+        ),
+    };
+    let again = remedy.login().map_or_else(String::new, |login| {
+        format!(
+            ", {login} signs in again once the remote serves its protected resource on the \
+             address's origin"
+        )
+    });
+    format!(
+        "the sign-in kept under {address} {} is for a protected resource on another origin than \
+         the address, {resource}: {readdress}{again}",
+        remedy.kept()
+    )
+}
+
 #[cfg(test)]
 mod tests {
-    use super::Remedy;
-    use crate::remote::RemoteError;
+    use serde_json::json;
+
+    use super::{Remedy, RemoteError};
+    use crate::escaped::{ESCAPED, HOSTILE, shown};
+    use crate::remote::{Refusal, TIMEOUT_ENV};
 
     #[test]
     fn a_resource_not_covered_is_said_with_the_login_of_whose_remote_it_is() {
@@ -155,5 +177,86 @@ mod tests {
         let login = "`loft interface login shelves` signs in again to reach it";
         assert!(other.contains(login), "{other}");
         assert!(!other.contains("loft remote"), "{other}");
+    }
+
+    /// Each error, with [`HOSTILE`] in every text it holds.
+    fn errors() -> Vec<RemoteError> {
+        let text = || HOSTILE.to_owned();
+        let refusal = Refusal {
+            status: 418,
+            problem: json!({ "code": HOSTILE, "detail": HOSTILE }),
+        };
+        vec![
+            RemoteError::NoAddress { key: text() },
+            RemoteError::NoSignIn { address: text() },
+            RemoteError::SignInElsewhere {
+                address: text(),
+                resource: text(),
+            },
+            RemoteError::SignInElsewhere {
+                address: "https://remote.example/documents/one".to_owned(),
+                resource: format!("https://elsewhere.example/documents#{HOSTILE}"),
+            },
+            RemoteError::Address(text()),
+            RemoteError::NotHeld { key: text() },
+            RemoteError::StateNotHeld {
+                sequence: 1,
+                state_root: text(),
+            },
+            RemoteError::Variable {
+                name: TIMEOUT_ENV,
+                value: text(),
+            },
+            RemoteError::Unreachable {
+                address: text(),
+                reason: text(),
+            },
+            RemoteError::Unreadable {
+                address: text(),
+                what: "head",
+            },
+            RemoteError::Refused {
+                address: text(),
+                refusal: refusal.clone(),
+            },
+            RemoteError::Unsigned {
+                key: text(),
+                address: text(),
+                refusal,
+                missing: Box::new(RemoteError::NoSignIn { address: text() }),
+            },
+            RemoteError::Lapsed {
+                address: text(),
+                error: text(),
+            },
+            RemoteError::FormerResource {
+                address: text(),
+                resource: text(),
+            },
+            RemoteError::NotCovered {
+                address: text(),
+                resource: text(),
+            },
+            RemoteError::SignIn {
+                address: text(),
+                reason: text(),
+            },
+        ]
+    }
+
+    #[test]
+    fn every_text_a_remote_error_names_is_written_with_its_control_characters_escaped() {
+        let other = Remedy::Other {
+            handle: "shelves",
+            listed: true,
+        };
+        for error in errors() {
+            let mut said = vec![error.to_string()];
+            said.extend(error.said(other));
+            for said in said {
+                assert!(shown(&said), "{error:?}: {said:?}");
+                assert!(said.contains(ESCAPED), "{error:?}: {said}");
+            }
+        }
     }
 }

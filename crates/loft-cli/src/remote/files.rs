@@ -4,6 +4,8 @@
 use loftspec::codec::{Files, SpecPath};
 use serde_json::Value;
 
+use crate::escaped::Escaped;
+
 /// The files of `list`, by their paths under `spec/`. The error names a file that has no path or
 /// text, or lies outside `spec/`, as one the remote `verb` (`gave`, `returned`).
 ///
@@ -23,8 +25,24 @@ pub fn read(list: &Value, verb: &str) -> Result<Files, String> {
                     .split('/')
                     .all(|segment| !matches!(segment, "" | "." | ".."))
             })
-            .ok_or_else(|| format!("the remote {verb} a file outside spec/: {path}"))?;
+            .ok_or_else(|| format!("the remote {verb} a file outside spec/: {}", Escaped(path)))?;
         files.insert(SpecPath::new(under), text.as_bytes().to_vec());
     }
     Ok(files)
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::read;
+
+    #[test]
+    fn a_path_outside_spec_is_named_with_its_control_characters_escaped() {
+        let list = json!([{ "path": "notes/\u{1b}[0m\u{202e}.yaml", "text": "" }]);
+        assert_eq!(
+            read(&list, "gave"),
+            Err("the remote gave a file outside spec/: notes/\\u{1b}[0m\\u{202e}.yaml".to_owned())
+        );
+    }
 }

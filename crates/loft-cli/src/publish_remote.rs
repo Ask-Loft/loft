@@ -16,6 +16,7 @@ use loftspec::publish::{Lock, ReadTree, Unverified, verify};
 use loftspec_store::FileStore;
 use serde_json::{Value, json};
 
+use crate::escaped::{self, Escaped};
 use crate::interface;
 use crate::remote::head::{self, Head};
 use crate::remote::sha256_hex;
@@ -186,7 +187,7 @@ fn retry_key(key: &str, base_root: Option<&str>, delta: &Value) -> String {
 }
 
 /// A refusal of the publish, as the error that stops it. A conflict is read by the head it
-/// names, by publish sequence and state root alone.
+/// names, by publish sequence and state root alone. What the remote gave is written escaped.
 fn refused(error: &RemoteError, base: &Head) -> String {
     let RemoteError::Refused { refusal, .. } = error else {
         return through(error);
@@ -194,19 +195,20 @@ fn refused(error: &RemoteError, base: &Head) -> String {
     match refusal.known() {
         Some("conflict") if Head::read(&refusal.problem["head"]).as_ref() != Some(base) => {
             let head = &refusal.problem["head"];
+            let sequence = escaped::value(&head["publishSequence"]);
             format!(
-                "the remote's head is at publish sequence {}, state root {}: `loft pull` brings \
-                 the tree to the head",
-                head["publishSequence"],
-                head["stateRoot"].as_str().unwrap_or("none")
+                "the remote's head is at publish sequence {sequence}, state root {}: `loft pull` \
+                 brings the tree to the head",
+                Escaped(head["stateRoot"].as_str().unwrap_or("none"))
             )
         }
         Some("invalid_request") => {
-            let paths: Vec<&str> = refusal.problem["paths"]
+            let paths: Vec<String> = refusal.problem["paths"]
                 .as_array()
                 .into_iter()
                 .flatten()
                 .filter_map(Value::as_str)
+                .map(|path| Escaped(path).to_string())
                 .collect();
             if paths.is_empty() {
                 error.to_string()
@@ -229,8 +231,13 @@ fn applied(
     previous: Option<&Lock>,
     base: &Head,
 ) -> Result<Outcome, String> {
-    let lock = Lock::read(answer["lock"].to_string().as_bytes())
-        .map_err(|error| format!("the remote returned a lock that does not read: {error}"))?;
+    let lock = Lock::read(answer["lock"].to_string().as_bytes()).map_err(|error| {
+        let error = error.to_string();
+        format!(
+            "the remote returned a lock that does not read: {}",
+            Escaped(&error)
+        )
+    })?;
     if answer["outcome"] == "unchanged" || Head::of_lock(Some(&lock)) == *base {
         return Ok(Outcome::Unchanged(lock));
     }
@@ -253,4 +260,52 @@ fn applied(
         .map(|(key, label)| (key.to_owned(), label.to_owned()))
         .collect();
     Ok(Outcome::Published { lock, labels })
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::{Value, json};
+
+    use super::refused;
+    use crate::remote::head::Head;
+    use crate::remote::{Refusal, RemoteError};
+
+    fn refusal(problem: Value) -> RemoteError {
+        RemoteError::Refused {
+            address: "https://remote.example/documents/one".to_owned(),
+            refusal: Refusal {
+                status: 409,
+                problem,
+            },
+        }
+    }
+
+    #[test]
+    fn a_refused_publish_names_the_head_and_the_paths_the_remote_gave_escaped() {
+        for (problem, said) in [
+            (
+                json!({ "code": "conflict",
+                    "head": { "publishSequence": 2, "stateRoot": "ab\u{1b}[0m" } }),
+                "publish sequence 2, state root ab\\u{1b}[0m:",
+            ),
+            (
+                json!({ "code": "conflict",
+                    "head": { "publishSequence": "\u{9b}2", "stateRoot": "ab" } }),
+                "publish sequence \"\\u{9b}2\", state root ab:",
+            ),
+            (
+                json!({ "code": "conflict",
+                    "head": { "publishSequence": "\u{1b}2\\", "stateRoot": "ab" } }),
+                "publish sequence \"\\u{1b}2\\\\\", state root ab:",
+            ),
+            (
+                json!({ "code": "invalid_request", "paths": ["spec/\u{1b}[0m\u{202e}.yaml"] }),
+                ": spec/\\u{1b}[0m\\u{202e}.yaml",
+            ),
+        ] {
+            let message = refused(&refusal(problem), &Head::none());
+            assert!(message.contains(said), "{message:?}");
+            assert!(!message.chars().any(char::is_control), "{message:?}");
+        }
+    }
 }

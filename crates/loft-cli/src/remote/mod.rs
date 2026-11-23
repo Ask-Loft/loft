@@ -24,6 +24,7 @@ use std::time::Duration;
 use loft_ports::clock::{Clock as _, SystemClock};
 
 use crate::environment;
+use crate::escaped::Escaped;
 use crate::network;
 
 pub use client::{Client, Refusal};
@@ -69,6 +70,8 @@ pub enum RemoteError {
     SignInElsewhere { address: String, resource: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),
+    /// The address holds a character other than the visible characters of ASCII.
+    Characters(String),
     /// The remote holds no document under the key.
     NotHeld { key: String },
     /// The remote holds no published state with the lock's publish sequence and state root.
@@ -113,22 +116,35 @@ impl RemoteError {
     }
 }
 
+/// The error in words: every text it names that a remote, its authorization server, the tree,
+/// `LOFT_REMOTE_ENDPOINT` or `loft/remotes.json` gave is written [`Escaped`], here and in
+/// [`RemoteError::said`], so that no character of it reaches the terminal as a command. A
+/// reason of [`RemoteError::File`] alone is the system's own words about a local file.
 impl fmt::Display for RemoteError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NoAddress { key } => write!(
                 formatter,
-                "the document {key} is connected but names no remote: `remote` in \
-                 spec/loftspec.yaml names it, or {ENDPOINT_ENV} for one run"
+                "the document {} is connected but names no remote: `remote` in \
+                 spec/loftspec.yaml names it, or {ENDPOINT_ENV} for one run",
+                Escaped(key)
             ),
             Self::Address(address) => write!(
                 formatter,
-                "{address}: a remote's address is `https`, or `http` on the loopback interface"
+                "{}: a remote's address is `https`, or `http` on the loopback interface",
+                Escaped(address)
+            ),
+            Self::Characters(address) => write!(
+                formatter,
+                "{}: a remote's address holds visible ASCII characters alone, with every other \
+                 character percent-encoded",
+                Escaped(address)
             ),
             Self::NotHeld { key } => write!(
                 formatter,
-                "the remote holds no document {key}: `loft remote set <address>` connects the \
-                 document to its remote"
+                "the remote holds no document {}: `loft remote set <address>` connects the \
+                 document to its remote",
+                Escaped(key)
             ),
             Self::StateNotHeld {
                 sequence,
@@ -136,21 +152,25 @@ impl fmt::Display for RemoteError {
             } => write!(
                 formatter,
                 "the remote holds no published state of publish sequence {sequence}, state root \
-                 {state_root}"
+                 {}",
+                Escaped(state_root)
             ),
             Self::Variable { name, value } => write!(
                 formatter,
-                "{name}={value}: not a positive whole number of seconds"
+                "{name}={}: not a positive whole number of seconds",
+                Escaped(value)
             ),
-            Self::Unreachable { address, reason } => {
-                write!(
-                    formatter,
-                    "{address}: the remote cannot be reached: {reason}"
-                )
-            }
-            Self::Unreadable { address, what } => {
-                write!(formatter, "{address}: the remote's {what} does not read")
-            }
+            Self::Unreachable { address, reason } => write!(
+                formatter,
+                "{}: the remote cannot be reached: {}",
+                Escaped(address),
+                Escaped(reason)
+            ),
+            Self::Unreadable { address, what } => write!(
+                formatter,
+                "{}: the remote's {what} does not read",
+                Escaped(address)
+            ),
             Self::NoSignIn { .. }
             | Self::SignInElsewhere { .. }
             | Self::Lapsed { .. }
@@ -163,20 +183,36 @@ impl fmt::Display for RemoteError {
                     .expect("an error of a sign-in, or a refusal");
                 formatter.write_str(&said)
             }
-            Self::SignIn { address, reason } => {
-                write!(formatter, "cannot sign in to {address}: {reason}")
-            }
+            Self::SignIn { address, reason } => write!(
+                formatter,
+                "cannot sign in to {}: {}",
+                Escaped(address),
+                Escaped(reason)
+            ),
             Self::File(reason) => formatter.write_str(reason),
         }
     }
 }
 
-/// `address` as a remote's address, if it may be contacted.
+/// Whether `address` holds the visible characters of ASCII alone, `!` to `~`, as the address of
+/// a remote or of a protected resource beside it does, every other character percent-encoded.
+#[must_use]
+pub fn visible(address: &str) -> bool {
+    address.bytes().all(|byte| byte.is_ascii_graphic())
+}
+
+/// `address` as a remote's address, if it may be contacted: visible ASCII alone, so that the
+/// address a person reads is the address contacted, and an `https` address or an `http` one on
+/// the loopback interface.
 ///
 /// # Errors
 ///
-/// The address is neither `https` nor `http` on the loopback interface.
+/// The address holds a character other than the visible characters of ASCII, or is neither
+/// `https` nor `http` on the loopback interface.
 pub fn checked(address: &str) -> Result<&str, RemoteError> {
+    if !visible(address) {
+        return Err(RemoteError::Characters(address.to_owned()));
+    }
     network::allowed(address)
         .map(|_| address)
         .ok_or_else(|| RemoteError::Address(address.to_owned()))
@@ -361,11 +397,46 @@ pub fn other(address: &str, whose: Whose<'_>, sign_in: SignIn) -> Result<Client,
 mod tests {
     use std::time::Duration;
 
-    use super::time_limit;
+    use super::{checked, time_limit};
 
     #[test]
     fn a_call_may_take_30_seconds_unless_loft_remote_timeout_says_otherwise() {
         assert_eq!(time_limit(None), Duration::from_secs(30));
         assert_eq!(time_limit(Some(5)), Duration::from_secs(5));
+    }
+
+    #[test]
+    fn an_address_holding_a_character_outside_visible_ascii_is_refused_naming_it_escaped() {
+        let at = "https://remote.example/documents/one";
+        for (address, named) in [
+            (format!("{at}#\u{1b}[0m"), format!("{at}#\\u{{1b}}[0m")),
+            (format!("{at}#top\u{202e}"), format!("{at}#top\\u{{202e}}")),
+            (format!("{at}/\u{9b}0m"), format!("{at}/\\u{{9b}}0m")),
+            (format!("{at}\u{7f}"), format!("{at}\\u{{7f}}")),
+            (format!("{at}/b\u{fc}cher"), format!("{at}/b\u{fc}cher")),
+            (format!("{at}/a b"), format!("{at}/a b")),
+            (
+                "http://127.0.0.1:9/one#\u{7}".to_owned(),
+                "http://127.0.0.1:9/one#\\u{7}".to_owned(),
+            ),
+        ] {
+            let refused = checked(&address).unwrap_err().to_string();
+            assert!(refused.starts_with(&format!("{named}: ")), "{refused:?}");
+            assert!(!refused.chars().any(char::is_control), "{refused:?}");
+            assert!(
+                refused.contains("visible ASCII characters alone"),
+                "{refused}"
+            );
+        }
+    }
+
+    #[test]
+    fn an_address_whose_characters_beyond_ascii_are_percent_encoded_is_accepted() {
+        for address in [
+            "https://remote.example/documents/b%C3%BCcher",
+            "http://127.0.0.1:9/documents/b%E2%80%AE",
+        ] {
+            assert_eq!(checked(address), Ok(address));
+        }
     }
 }

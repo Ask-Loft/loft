@@ -5,7 +5,7 @@
 //! the origin of the remote's address, asking nothing of a listed resource on another origin, and
 //! where its own protected resource metadata vouches for it: names it, names the remote's issuer
 //! and lists its scopes, each a scope token of RFC 6749. It leaves out every other entry, says so
-//! on standard error, and goes on.
+//! on standard error, and goes on. Each warning writes what the remote gave [`Escaped`].
 
 use std::collections::HashSet;
 use std::time::Duration;
@@ -13,8 +13,10 @@ use std::time::Duration;
 use serde_json::Value;
 
 use super::discovery::{RESOURCE_METADATA, document, get};
+use crate::escaped::{self, Escaped};
 use crate::network;
 use crate::out::errln;
+use crate::remote;
 
 /// The member of the remote's protected resource metadata that lists its companion resources.
 const COMPANION_RESOURCES: &str = "companion_resources";
@@ -47,11 +49,13 @@ pub fn kept(
     timeout: Duration,
 ) -> Vec<Companion> {
     let (listed, warnings) = listed(address, own, metadata);
+    let address = Escaped(address);
     for warning in warnings {
         errln!("warning: the sign-in to {address} {warning}");
     }
     let mut held = Vec::new();
     for (resource, kind) in listed {
+        let named = named(&resource, &kind);
         match learned(&resource, issuer, timeout) {
             Learned::Vouched(scopes) => held.push(Companion {
                 resource,
@@ -59,12 +63,12 @@ pub fn kept(
                 scopes,
             }),
             Learned::Unvouched(why) => {
-                errln!("warning: the sign-in to {address} leaves out {resource} ({kind}): {why}");
+                errln!("warning: the sign-in to {address} leaves out {named}: {why}");
             }
             Learned::Unreached(why) => {
                 errln!(
-                    "warning: the sign-in to {address} leaves out {resource} ({kind}) and each \
-                     companion resource listed after it: {why}"
+                    "warning: the sign-in to {address} leaves out {named} and each companion \
+                     resource listed after it: {why}"
                 );
                 break;
             }
@@ -73,15 +77,20 @@ pub fn kept(
     held
 }
 
+/// The entry of `resource` and `kind` as a warning names it, each written [`Escaped`].
+fn named(resource: &str, kind: &str) -> String {
+    format!("{} ({})", Escaped(resource), Escaped(kind))
+}
+
 /// What a sign-in learns of a listed companion resource from its own protected resource
 /// metadata.
 enum Learned {
     /// The metadata vouches for it, with these scopes.
     Vouched(Vec<String>),
     /// The metadata answered, or lies where it may not be asked for, and does not vouch for it:
-    /// why.
+    /// why, with what the remote gave written escaped.
     Unvouched(String),
-    /// The metadata cannot be reached: why.
+    /// The metadata cannot be reached: why, written escaped.
     Unreached(String),
 }
 
@@ -92,9 +101,15 @@ fn learned(resource: &str, issuer: &str, timeout: Duration) -> Learned {
         return Learned::Unvouched(ELSEWHERE.to_owned());
     };
     match get(&at, timeout) {
-        Err(error) => Learned::Unreached(format!("its metadata cannot be reached: {at}: {error}")),
+        Err(error) => Learned::Unreached(format!(
+            "its metadata cannot be reached: {}: {}",
+            Escaped(&at),
+            Escaped(&error)
+        )),
         Ok(reply) => {
-            match document(&at, &reply).and_then(|found| vouched(resource, issuer, &found)) {
+            // `document` names the address as it is; `vouched` writes what it names escaped.
+            let found = document(&at, &reply).map_err(|why| Escaped(&why).to_string());
+            match found.and_then(|found| vouched(resource, issuer, &found)) {
                 Ok(scopes) => Learned::Vouched(scopes),
                 Err(why) => Learned::Unvouched(why),
             }
@@ -104,8 +119,9 @@ fn learned(resource: &str, issuer: &str, timeout: Duration) -> Learned {
 
 /// The identifier and the kind of each entry of the `companion_resources` that `metadata`, the
 /// protected resource metadata of `own` for the remote at `address`, lists and that a sign-in
-/// asks about, in order; and, for each warning, what the sign-in leaves out and why. No entry of
-/// a member that is not a list is read, nor any entry after the first [`MOST`].
+/// asks about, in order; and, for each warning, what the sign-in leaves out and why, each entry
+/// [`named`]. No entry of a member that is not a list is read, nor any entry after the first
+/// [`MOST`].
 fn listed(address: &str, own: &str, metadata: &Value) -> (Vec<(String, String)>, Vec<String>) {
     let (mut read, mut warnings) = (Vec::new(), Vec::new());
     let Some(member) = metadata.get(COMPANION_RESOURCES) else {
@@ -127,7 +143,7 @@ fn listed(address: &str, own: &str, metadata: &Value) -> (Vec<(String, String)>,
         let why = left_out(address, own, &seen, &resource, &kind);
         seen.push((resource.clone(), kind.clone()));
         match why {
-            Some(why) => warnings.push(format!("leaves out {resource} ({kind}): {why}")),
+            Some(why) => warnings.push(format!("leaves out {}: {why}", named(&resource, &kind))),
             None => read.push((resource, kind)),
         }
     }
@@ -152,8 +168,10 @@ fn shape(entry: &Value) -> Option<(String, String)> {
 
 /// Why the entry of `resource` and `kind` that the protected resource metadata of `own` lists for
 /// the remote at `address`, after the entries `seen`, is left out before anything is asked of it:
-/// its identifier is malformed, it is the remote's own, an entry before it names the same resource
-/// or kind, or it lies on another origin. Nothing for an entry that a sign-in asks about.
+/// its identifier is malformed or holds a character other than visible ASCII, which an address
+/// that a remote's metadata names may not hold, it is the remote's own, an entry before it names
+/// the same resource or kind, or it lies on another origin. Nothing for an entry that a sign-in
+/// asks about.
 fn left_out(
     address: &str,
     own: &str,
@@ -163,6 +181,8 @@ fn left_out(
 ) -> Option<&'static str> {
     if malformed(resource) {
         Some("its identifier holds user information or a fragment")
+    } else if !remote::visible(resource) {
+        Some("its identifier holds a character other than visible ASCII")
     } else if resource == own {
         Some("it is the remote's own protected resource")
     } else if seen
@@ -189,18 +209,20 @@ fn malformed(resource: &str) -> bool {
 /// The scopes that `metadata`, the protected resource metadata read for the companion resource
 /// `resource`, lists, where it vouches for it under the authorization server `issuer`: it names
 /// the resource and the issuer and lists one scope or more, each a scope token. Otherwise why it
-/// does not, with the first value that is not a scope token written as JSON, so that a control
-/// character in it is escaped.
+/// does not, with what the metadata names written [`Escaped`], and the first value that is not a
+/// scope token as [`escaped::value`] writes it.
 fn vouched(resource: &str, issuer: &str, metadata: &Value) -> Result<Vec<String>, String> {
     match metadata["resource"].as_str() {
         None => return Err("its metadata names no resource".to_owned()),
         Some(named) if named != resource => {
+            let named = Escaped(named);
             return Err(format!("its metadata names another resource, {named}"));
         }
         Some(_) => {}
     }
     let servers = metadata["authorization_servers"].as_array();
     if !servers.is_some_and(|servers| servers.iter().any(|server| server == issuer)) {
+        let issuer = Escaped(issuer);
         return Err(format!(
             "its metadata does not name the authorization server {issuer}"
         ));
@@ -210,6 +232,7 @@ fn vouched(resource: &str, issuer: &str, metadata: &Value) -> Result<Vec<String>
         .filter(|scopes| !scopes.is_empty())
         .ok_or_else(|| "its metadata lists no scope".to_owned())?;
     if let Some(value) = scopes.iter().find(|value| !scope_token(value)) {
+        let value = escaped::value(value);
         return Err(format!("its metadata lists {value}, which is not a scope"));
     }
     let scopes = scopes.iter().filter_map(Value::as_str);
@@ -255,6 +278,8 @@ pub fn asked(own: &str, companions: &[Companion]) -> String {
     scopes.join(" ")
 }
 
+#[cfg(test)]
+mod escapes;
 #[cfg(test)]
 mod tests {
     use serde_json::{Value, json};
@@ -427,15 +452,17 @@ mod tests {
             let refused = Err(said.to_owned());
             assert_eq!(vouched(resource, issuer, &metadata), refused, "{metadata}");
         }
-        // A value that is not a scope token is shown as JSON, so a control character is escaped.
+        // A value that is not a scope token is shown escaped: a string between double quotes, any
+        // other value as JSON.
         for (value, shown) in [
             (json!(""), r#""""#),
             (json!("a b"), r#""a b""#),
-            (json!("a\tb"), r#""a\tb""#),
-            (json!("a\"b"), r#""a\"b""#),
+            (json!("a\tb"), r#""a\u{9}b""#),
+            (json!("a\"b"), r#""a"b""#),
             (json!("a\\b"), r#""a\\b""#),
             (json!("é"), r#""é""#),
             (json!(3), "3"),
+            (json!(["\u{9b}"]), r#"["\u{9b}"]"#),
         ] {
             let metadata = with("scopes_supported", json!(["notes", value]));
             let refused = Err(format!("its metadata lists {shown}, which is not a scope"));

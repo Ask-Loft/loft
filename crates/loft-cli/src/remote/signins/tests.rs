@@ -10,6 +10,7 @@ use software_plant::remote::{Companion, Remote, RemoteScenario};
 
 use super::fixture::{Scratch, TIMEOUT, listing_notes, over, refresh_token, sent};
 use super::{SignIn, access_token, expires_at, forget, save};
+use crate::escaped::{ESCAPED, HOSTILE, shown};
 use crate::remote::RemoteError;
 
 /// The members of `object`, sorted.
@@ -277,4 +278,26 @@ fn a_refresh_refused_invalid_target_for_the_sign_in_s_own_resource_says_it_was_m
     assert_names(&refused, &address, &former, &says);
     assert_eq!(sent(&remote), [(grant.refresh_token, vec![former])]);
     assert_eq!(scratch.bytes(), before, "the sign-in is left as it was");
+}
+
+#[test]
+fn a_companion_resource_the_remote_refuses_is_named_escaped_as_one_the_sign_in_does_not_cover() {
+    let remote = listing_notes(RemoteScenario::accepting("doc-hostile-companion"));
+    let address = remote.address();
+    // A companion resource kept in `resources` whose fragment the remote gave, which the remote
+    // does not serve.
+    let listed = format!("{}#{HOSTILE}", remote.companion("notes"));
+    let mut entry = over(&remote, &["notes"], 60, false);
+    entry["resources"][0]["resource"] = json!(listed);
+    let scratch = Scratch::holding(&remote, &entry);
+    let refused = access_token(&scratch.file, &address, Some(&listed), TIMEOUT).unwrap_err();
+    let not_covered = RemoteError::NotCovered {
+        address: address.clone(),
+        resource: listed,
+    };
+    assert_eq!(refused, not_covered);
+    let message = refused.to_string();
+    let named = format!("does not cover {}#{ESCAPED}", remote.companion("notes"));
+    assert!(message.contains(&named), "{message}");
+    assert!(shown(&message), "{message:?}");
 }

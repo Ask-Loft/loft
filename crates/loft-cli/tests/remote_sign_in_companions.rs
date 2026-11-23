@@ -203,7 +203,7 @@ fn a_companion_resource_whose_metadata_does_not_vouch_for_it_is_left_out_with_a_
         ),
         (
             Companion::new("notes", &["notes", "notes\tarchive"]),
-            r#"its metadata lists "notes\tarchive", which is not a scope"#,
+            r#"its metadata lists "notes\u{9}archive", which is not a scope"#,
         ),
     ] {
         let (remote, scratch, output, visits) = login(
