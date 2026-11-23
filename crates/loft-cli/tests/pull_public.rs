@@ -5,10 +5,10 @@
 use std::fs;
 
 use serde_json::json;
-use software_plant::remote::{RemoteScenario, Visibility, document_path};
+use software_plant::remote::{RemoteScenario, Visibility};
 
 use crate::common::connected::Connected;
-use crate::common::remote::{History, history};
+use crate::common::remote::{History, history, sent_to};
 use crate::common::signed_in::{document, keep, sign_ins_file};
 use crate::common::tree;
 use crate::pull::{behind, pull};
@@ -29,17 +29,11 @@ fn behind_one(visibility: Visibility, signed_in: bool) -> (Connected, History) {
     (run, ahead)
 }
 
-/// Each request under the document's address, by its path below it, and whether it carried a
+/// Each request under the document's address, by its path below it and whether it carried a
 /// token.
-fn requests(run: &Connected) -> Vec<(String, bool)> {
-    let document = document_path(&run.history.key);
-    run.remote
-        .requests()
-        .into_iter()
-        .filter_map(|request| {
-            let below = request.path.strip_prefix(&document)?.to_owned();
-            Some((below, request.header("Authorization").is_some()))
-        })
+pub fn requests(run: &Connected) -> Vec<(String, bool)> {
+    (sent_to(&run.remote, &run.history.key).into_iter())
+        .map(|sent| (sent.path, sent.token))
         .collect()
 }
 
@@ -65,10 +59,7 @@ fn a_pull_with_no_sign_in_that_the_remote_refuses_is_refused_with_the_error_for_
     let file = fs::read(sign_ins_file(&run.scratch)).unwrap();
     let output = pull(&run.scratch, &[]);
     assert_eq!(output.status.code(), Some(1), "{output:?}");
-    let message = document(&output)["errors"][0]["message"]
-        .as_str()
-        .unwrap_or_default()
-        .to_owned();
+    let message = Connected::message(&output);
     let address = run.remote.address();
     for said in [
         run.history.key.as_str(),

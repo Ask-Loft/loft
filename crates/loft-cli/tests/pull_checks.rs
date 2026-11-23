@@ -134,23 +134,9 @@ fn pull_with_a_sign_in_kept_for_a_resource_on_another_origin_sends_none_and_is_r
         assert!(message.contains(said), "{said}: {message}");
     }
     assert!(!message.contains("no sign-in"), "{message}");
-    let sent: Vec<(String, bool)> = (run.remote.requests().into_iter())
-        .map(|request| {
-            let token = request.header("Authorization").is_some();
-            (
-                request
-                    .path
-                    .rsplit('/')
-                    .next()
-                    .unwrap_or_default()
-                    .to_owned(),
-                token,
-            )
-        })
-        .collect();
     assert_eq!(
-        sent,
-        [("head".to_owned(), false)],
+        crate::pull_public::requests(&run),
+        [("/head".to_owned(), false)],
         "the head alone, with no token"
     );
     assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);

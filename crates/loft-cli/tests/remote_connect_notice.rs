@@ -5,11 +5,8 @@
 use software_plant::remote::{Remote, RemoteScenario, Visibility, document_path};
 
 use crate::common::remote::history;
-use crate::publish_notice::{PRIVATE, PUBLIC};
+use crate::publish_notice::{PRIVATE, PUBLIC, SAID};
 use crate::remote_connect::{codec_key, document_calls, published, set};
-
-/// The words every line on the visibility begins with.
-const SAID: &str = "the remote serves this document";
 
 #[test]
 fn a_connect_that_imports_says_to_whom_the_remote_serves_the_document_after_asking_its_head() {

@@ -3,6 +3,8 @@
 
 use serde_json::Value;
 
+use crate::out::errln;
+
 /// To whom a remote serves a document.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Visibility {
@@ -21,6 +23,13 @@ impl Visibility {
             "public" => Some(Self::Public),
             "private" => Some(Self::Private),
             _ => None,
+        }
+    }
+
+    /// Says on standard error to whom the remote serves the document, where `visibility` names it.
+    pub fn say(visibility: Option<Self>) {
+        if let Some(visibility) = visibility {
+            errln!("{}", visibility.said());
         }
     }
 

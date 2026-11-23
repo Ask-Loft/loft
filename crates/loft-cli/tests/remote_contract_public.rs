@@ -14,10 +14,11 @@ fn serving(visibility: Option<Visibility>) -> Remote {
     let history = history(2);
     let scenario =
         RemoteScenario::accepting(&history.key).holding("Reading List", history.states.clone());
-    Remote::start(match visibility {
-        Some(visibility) => scenario.visibility(visibility),
-        None => scenario,
-    })
+    Remote::start(
+        visibility
+            .into_iter()
+            .fold(scenario, RemoteScenario::visibility),
+    )
 }
 
 #[test]

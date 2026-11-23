@@ -11,7 +11,7 @@ Unreleased below, and those of each 2.4 release still to come.
 - `loft pull` reads a document its remote serves to anyone, a public document, without a sign-in:
   with none kept for the remote's address and `LOFT_REMOTE_TOKEN` unset, it asks without a token,
   and where the remote refuses that request it stops with the error for no sign-in, as before. A
-  kept sign-in is still sent, and `loft publish` still needs one.
+  sign-in kept for the address is still sent, and `loft publish` still needs one.
 - A sign-in to the remote of a public document, whose head answers without a challenge, reads the
   challenge from `GET <address>/drafts/main`; a private document's sign-in asks its head alone, as
   before.

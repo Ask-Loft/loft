@@ -10,9 +10,9 @@ use loftspec::publish::Lock;
 use loftspec_store::repository::GitCommand;
 use serde_json::{Value, json};
 
-use crate::out::errln;
 use crate::remote::head::{self, Head};
 use crate::remote::history::{self, Published};
+use crate::remote::visibility::Visibility;
 use crate::remote::{Client, RemoteError};
 use crate::stop::Stop;
 
@@ -59,12 +59,12 @@ pub struct Connected {
 
 /// Connects `document`, whose lock is `lock` and whose history is `states`, at the remote that
 /// `client` reaches. Before it imports the history, it says to whom the remote serves the
-/// document, where the remote's head names it.
+/// document, where the remote's head names it and the head is answered.
 ///
 /// # Errors
 ///
 /// The remote refuses the create other than as a `conflict`, holds another head than the lock's,
-/// refuses its head, or refuses the import, or the import answers another head.
+/// or refuses the import, or the import answers another head.
 pub fn connect(
     client: &Client,
     document: &Document,
@@ -93,10 +93,9 @@ pub fn connect(
     if found.sequence != 0 || states.is_empty() {
         return Err(differs(&found, &wanted));
     }
-    let (_, visibility) = head::fetched(client, &key).map_err(|error| refused("head", &error))?;
-    if let Some(visibility) = visibility {
-        errln!("{}", visibility.said());
-    }
+    // The head is asked only for the notice: a refusal of it leaves the line unsaid.
+    let answered = head::fetch(client, &key).ok();
+    Visibility::say(answered.and_then(|answered| answered.visibility));
     let body = json!({
         "documentKey": key,
         "states": states.iter().map(wire).collect::<Vec<_>>(),

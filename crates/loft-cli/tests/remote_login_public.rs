@@ -6,25 +6,19 @@
 use serde_json::json;
 use software_plant::BrowserScenario;
 use software_plant::http::{Answer, Request, Responder, Response, Server};
-use software_plant::remote::{Remote, RemoteScenario, Visibility, document_address, document_path};
+use software_plant::remote::{Remote, RemoteScenario, Visibility, document_address};
 
 use crate::common::Scratch;
-use crate::common::remote::history;
+use crate::common::remote::{history, sent_to};
 use crate::common::signed_in::{name_remote, run, sign_ins_file};
 use crate::remote_sign_in_refusals::login;
 
 /// The requests under the document's address that `remote` received without a token, by their
 /// method and their path below the address.
 fn unauthenticated(remote: &Remote, key: &str) -> Vec<String> {
-    let document = document_path(key);
-    remote
-        .requests()
-        .into_iter()
-        .filter(|request| request.header("Authorization").is_none())
-        .filter_map(|request| {
-            let below = request.path.strip_prefix(&document)?.to_owned();
-            Some(format!("{} {below}", request.method))
-        })
+    (sent_to(remote, key).into_iter())
+        .filter(|sent| !sent.token)
+        .map(|sent| format!("{} {}", sent.method, sent.path))
         .collect()
 }
 

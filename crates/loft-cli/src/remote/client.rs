@@ -129,10 +129,18 @@ pub struct Client {
     token: RefCell<Option<String>>,
     timeout: Duration,
     wait: Option<u64>,
-    renewal: RefCell<Option<Renewal>>,
-    /// The error for the person's missing sign-in, which a `401` to a client that sends no token
-    /// is answered with.
-    unsigned: Option<RemoteError>,
+    /// What the client does where the remote answers `401`; nothing more where it holds none.
+    unauthorized: RefCell<Option<Unauthorized>>,
+}
+
+/// What a client does where the remote answers `401`.
+#[derive(Debug, Clone)]
+enum Unauthorized {
+    /// Signs the person in afresh, once, and asks again.
+    Renew(Renewal),
+    /// Answers with the error for the person's missing sign-in, as a client that sends no token
+    /// for want of one does.
+    Missing(RemoteError),
 }
 
 /// How a client signs in afresh, once: the handle under which `documents` lists another
@@ -152,8 +160,7 @@ impl Client {
             token: RefCell::new(token),
             timeout,
             wait,
-            renewal: RefCell::new(None),
-            unsigned: None,
+            unauthorized: RefCell::new(None),
         }
     }
 
@@ -161,10 +168,8 @@ impl Client {
     /// `missing`, the error for that missing sign-in.
     #[must_use]
     pub fn unsigned(self, missing: RemoteError) -> Self {
-        Self {
-            unsigned: Some(missing),
-            ..self
-        }
+        *self.unauthorized.borrow_mut() = Some(Unauthorized::Missing(missing));
+        self
     }
 
     /// The client, signing the person in afresh to the remote of `whose`, once, where the remote
@@ -173,11 +178,11 @@ impl Client {
     #[must_use]
     pub fn renewing(self, whose: Whose<'_>, browser: bool) -> Self {
         if let Whose::Other { handle, key } = whose {
-            *self.renewal.borrow_mut() = Some(Renewal {
+            *self.unauthorized.borrow_mut() = Some(Unauthorized::Renew(Renewal {
                 handle: handle.to_owned(),
                 key: key.map(str::to_owned),
                 browser,
-            });
+            }));
         }
         self
     }
@@ -214,7 +219,9 @@ impl Client {
         } else {
             reply
         };
-        if let Some(missing) = self.unsigned.as_ref().filter(|_| reply.status == 401) {
+        if reply.status == 401
+            && let Some(Unauthorized::Missing(missing)) = &*self.unauthorized.borrow()
+        {
             return Err(missing.clone());
         }
         let read = serde_json::from_slice::<Value>(&reply.body).ok();
@@ -251,8 +258,13 @@ impl Client {
         if reply.status != 401 || Refusal::of(reply).known() != Some("unauthenticated") {
             return Ok(false);
         }
-        let Some(renewal) = self.renewal.borrow_mut().take() else {
-            return Ok(false);
+        let taken = self.unauthorized.borrow_mut().take();
+        let renewal = match taken {
+            Some(Unauthorized::Renew(renewal)) => renewal,
+            kept => {
+                *self.unauthorized.borrow_mut() = kept;
+                return Ok(false);
+            }
         };
         let whose = Whose::Other {
             handle: &renewal.handle,

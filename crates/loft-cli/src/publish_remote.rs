@@ -17,9 +17,9 @@ use loftspec_store::FileStore;
 use serde_json::{Value, json};
 
 use crate::interface;
-use crate::out::errln;
 use crate::remote::head::{self, Head};
 use crate::remote::sha256_hex;
+use crate::remote::visibility::Visibility;
 use crate::remote::{self, Client, RemoteError, files, history};
 
 /// What a connected document is, as every refusal to publish one names it.
@@ -57,10 +57,8 @@ pub fn publish(
     let key = &document.id.key().to_string();
     interface::confirm(document)?;
     let client = remote::connected(document.remote.as_deref(), key).map_err(through)?;
-    let (head, visibility) = head::fetched(&client, key).map_err(through)?;
-    if let Some(visibility) = visibility.filter(|_| head.is_null()) {
-        errln!("{}", visibility.said());
-    }
+    let head::Answered { head, visibility } = head::fetch(&client, key).map_err(through)?;
+    let first = head.is_null();
     let base = Head::of_lock(previous);
     let at_head = Head::read(&head).unwrap_or_else(Head::none) == base;
     if let Some(lock) = previous
@@ -89,6 +87,7 @@ pub fn publish(
     body["documentKey"] = json!(key);
     body["base"] = base.json();
     body["retryKey"] = json!(retry);
+    Visibility::say(visibility.filter(|_| first));
     let answer = client
         .post("publish", &body)
         .map_err(|error| refused(&error, &base))?;

@@ -61,10 +61,10 @@ A server may serve a document to anyone: a public document, whose published stat
 without signing in. `loft pull` needs no sign-in for one. With no sign-in kept for the address,
 and `LOFT_REMOTE_TOKEN` unset, it asks the server without a token; where the server serves the
 document only to those it admits, the pull stops, writes nothing and says that
-`loft remote login` signs in. A kept sign-in is always sent. Before a document's first publish to
-a server, `loft publish` says on standard error to whom the server serves it, and so does
-`loft remote set` before it imports the states the repository has already published: anyone, or
-only those the server admits.
+`loft remote login` signs in. A sign-in kept for the address is sent, as it is for every
+command. Before a document's first publish to a server, `loft publish` says on standard error to
+whom the server serves it, and so does `loft remote set` before it imports the states the
+repository has already published: anyone, or only those the server admits.
 
 `loft publish` of a connected document runs on any branch over a committed `spec/`. It sends the
 change since the state its lock names, and writes the labels and the lock the server returns;
