@@ -224,7 +224,7 @@ button { font: inherit; }
    its button, an icon for each view and the count of what waits. Open, it is as wide as the person
    dragged its right edge (`lib/side-width.js`). */
 .layout {
-  --sidebar: var(--side-width, 248px);
+  --sidebar: var(--side-width, 248px); /* FIRST of `lib/side-width.js` until it sets the width */
   --rail-width: 68px;
   display: grid;
   grid-template-columns: var(--sidebar) minmax(0, 1fr);
@@ -269,10 +269,11 @@ button { font: inherit; }
   font-size: 14px;
 }
 
-/* Too narrow for both side by side, the open sidebar lies over the page, which keeps the rail's room. */
+/* Too narrow for both side by side, the open sidebar lies over the page, which keeps the rail's room;
+   it leaves BESIDE of `lib/side-width.js` beside it even before the script bounds its width. */
 @media (max-width: 860px) {
   .layout { grid-template-columns: var(--rail-width) minmax(0, 1fr); }
-  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: var(--sidebar); z-index: 20; border-right-color: var(--ink); box-shadow: var(--float); }
+  body:not(.is-folded) .side { position: fixed; left: 0; top: 0; bottom: 0; width: min(var(--sidebar), calc(100vw - 120px)); z-index: 20; border-right-color: var(--ink); box-shadow: var(--float); }
   .main { padding: 20px 16px 40px; }
 }
 

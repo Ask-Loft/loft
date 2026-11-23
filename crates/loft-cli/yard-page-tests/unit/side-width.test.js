@@ -123,6 +123,36 @@ test('while the person drags the edge it is held, and what waits on the drag is 
   assert.equal(told, 1, 'a key moves the edge without holding it');
 });
 
+test('a drag the browser cancels ends where it reached, kept, and a button other than the main one drags nothing', () => {
+  let told = 0;
+  const handle = edge(() => {
+    told += 1;
+  });
+  handle.dispatchEvent(Object.assign(pointer('pointerdown', 248), { button: 2 }));
+  handle.dispatchEvent(pointer('pointermove', 400));
+  assert.equal(held(), false);
+  assert.equal(width(), 248);
+  handle.dispatchEvent(pointer('pointerdown', 248));
+  handle.dispatchEvent(pointer('pointermove', 300));
+  handle.dispatchEvent(new window.Event('lostpointercapture'));
+  assert.equal(held(), false);
+  assert.equal(told, 1);
+  assert.equal(prefs.get('side-width'), '300');
+  handle.dispatchEvent(pointer('pointermove', 400));
+  assert.equal(width(), 300, 'a pointer passing over the edge after the drag moves nothing');
+});
+
+test('a window resized during a drag leaves the width the drag reached, and letting go bounds it in the window', () => {
+  const handle = edge();
+  handle.dispatchEvent(pointer('pointerdown', 248));
+  handle.dispatchEvent(pointer('pointermove', 448));
+  viewport(500);
+  assert.equal(width(), 448);
+  handle.dispatchEvent(pointer('pointerup', 448));
+  assert.equal(width(), 500 - 120);
+  assert.equal(prefs.get('side-width'), String(500 - 120));
+});
+
 test('the width chosen is the sidebar’s width the next time the page opens in this browser, and a resize chooses none', () => {
   drag(edge(), 248, 328);
   viewport(400);

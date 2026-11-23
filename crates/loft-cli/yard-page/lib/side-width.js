@@ -64,6 +64,7 @@ function set(chosen) {
 
 /** Keeps the width the person chose, once a drag or a key ends. */
 function keep() {
+  set(current.width);
   prefs.set('side-width', String(current.width));
   release();
 }
@@ -83,16 +84,15 @@ export function edge(settled = () => {}) {
     show: set,
     keep,
   });
-  handle.addEventListener('pointerdown', () => {
-    current.held = true;
+  handle.addEventListener('pointerdown', (/** @type {any} */ event) => {
+    if ((event.button ?? 0) === 0) current.held = true;
   });
-  // A drag the browser cancels ends with no pointerup.
-  handle.addEventListener('lostpointercapture', release);
   current.handle = handle;
   set(kept());
   return handle;
 }
 
 window.addEventListener('resize', () => {
-  if (current.handle) set(kept());
+  // A drag in hand keeps the width it reached; `keep` bounds it in the window as it then is.
+  if (current.handle && !current.held) set(kept());
 });

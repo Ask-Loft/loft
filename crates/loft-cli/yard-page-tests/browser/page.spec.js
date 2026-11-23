@@ -971,7 +971,7 @@ test('in a window narrower than 860 pixels the open sidebar lies over the page, 
 /** A branch's name with nowhere to break, and a prompt of several sentences. */
 const LONG_BRANCH = 'feature/XYZ-0000_some_very_long_branch_name_without_spaces';
 const LONG_PROMPT =
-  'Which of the two shelves should take the oak books once the move is done? The lower one holds more of them, but it stands by the door, where the draught dries the wood. The upper one is drier, but it is out of reach for the younger readers, who borrow most of them. Choose before the movers come on Monday, since they will not come back for a second trip.';
+  'Which of the two shelves should take the oak books once the move is done? The lower one holds more of them, but it stands by the door, where the draft dries the wood. The upper one is drier, but it is out of reach for the younger readers, who borrow most of them. Choose before the movers come on Monday, since they will not come back for a second trip.';
 
 /** Routes the listing so that, besides what the page server gives, a submission on `LONG_BRANCH`, in a worktree whose folder has nowhere to break either, waits with `LONG_PROMPT`. */
 async function longWait(page) {
