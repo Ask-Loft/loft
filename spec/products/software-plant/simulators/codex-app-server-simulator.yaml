@@ -25,6 +25,8 @@ requirements:
         name: "Scenarios include repeated snapshots, counter resets, absent optional counters and unrelated notifications."
       - key: 01a17989-a8b9-74b1-9049-073f82de693f
         name: "Scenarios include refused or silent connections, disconnects and malformed responses."
+      - key: 01a20888-d898-7799-86ed-19868665e08c
+        name: "A peer that is gone before the simulator sets up its connection does not stop the simulator from serving the next connection."
       - key: 01a17989-a8b9-74b1-9049-0740529d4832
         name: "The same supported subscription and usage scenarios run against the simulator and real Codex."
       - key: 01a17989-a8b9-74b1-9049-0741c5c9ac70
