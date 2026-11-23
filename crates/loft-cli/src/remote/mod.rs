@@ -13,6 +13,7 @@ mod said;
 pub mod signin;
 pub mod signins;
 pub mod states;
+pub mod visibility;
 mod whose;
 mod wire;
 

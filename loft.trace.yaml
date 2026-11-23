@@ -14001,6 +14001,48 @@ links:
       - file: "crates/loft-cli/tests/publish_connected.rs"
         name: "a_tree_at_the_head_its_lock_names_sends_nothing_and_says_so"
         body: 21355f34409936209932e9884e5afd0ac56ddd33ca7ce86cf44dae9645d25c49
+  - node: 01a20625-1781-778c-b5f8-f5039d4b8381
+    reviewed: 4887615d8f5a53bce3a0b85317df898e4c05875adf22e022f7ea3df7906715c1
+    tests:
+      - file: "crates/loft-cli/tests/publish_notice.rs"
+        name: "a_first_publish_says_to_whom_the_remote_serves_the_document"
+        body: d3d6e7c8430d4962fd2c583ff9ff819d7ac5e705cd87ac3702c942dbd6d8ef96
+      - file: "crates/loft-cli/tests/publish_notice.rs"
+        name: "a_publish_to_a_remote_that_holds_a_head_says_nothing_of_the_visibility"
+        body: 0c5c491693a77a32491053514a7ee5eb4ae5d6cb21c29649df614d1ee49b5461
+  - node: 01a20625-1781-778c-b5f8-f50499101f0c
+    reviewed: b6de6f0ac8979c57b72304cfde61fb3e0eeb63ee2c56c52f4a185858222935b3
+    tests:
+      - file: "crates/loft-cli/tests/publish_notice.rs"
+        name: "a_first_publish_says_to_whom_the_remote_serves_the_document"
+        body: d3d6e7c8430d4962fd2c583ff9ff819d7ac5e705cd87ac3702c942dbd6d8ef96
+  - node: 01a20625-1781-778c-b5f8-f5055fcbef36
+    reviewed: cba609688200de455cf4b0db8e520b64b7a62b199377531b0f7152e9cfed9ebb
+    tests:
+      - file: "crates/loft-cli/tests/publish_notice.rs"
+        name: "a_first_publish_says_to_whom_the_remote_serves_the_document"
+        body: d3d6e7c8430d4962fd2c583ff9ff819d7ac5e705cd87ac3702c942dbd6d8ef96
+  - node: 01a20625-1781-778c-b5f8-f506701910fe
+    reviewed: 42db59fab4ad26916c06f74c550777abb90240dc9af5142155721e44d57d7083
+    tests:
+      - file: "crates/loft-cli/tests/publish_notice.rs"
+        name: "a_first_publish_to_a_remote_that_names_no_visibility_says_nothing_of_it"
+        body: c47c7789f7d336d9e89cab36021bd6add6e89e393a331a06c4811f563db552a8
+      - file: "crates/loft-cli/src/remote/visibility.rs"
+        name: "a_head_answer_names_a_visibility_loft_knows_or_none"
+        body: 5fcd1e8c821c93c5afbe5c5977147ca04799c3c68fc34322d7b2e8ad51f31f98
+  - node: 01a20625-1781-778c-b5f8-f50788a5274c
+    reviewed: 70ca62e88a309efa09c06bd0848fdaf753e7861a36fb61df16a56ef80a02c7f6
+    tests:
+      - file: "crates/loft-cli/tests/publish_notice.rs"
+        name: "a_publish_to_a_remote_that_holds_a_head_says_nothing_of_the_visibility"
+        body: 0c5c491693a77a32491053514a7ee5eb4ae5d6cb21c29649df614d1ee49b5461
+  - node: 01a20625-1781-778c-b5f8-f50876f17ea4
+    reviewed: c9bf2b016748dd3cdf9cc7969d0802482bdc5333cc9659c0e817ddd222c56378
+    tests:
+      - file: "crates/loft-cli/tests/publish_notice.rs"
+        name: "a_first_publish_says_to_whom_the_remote_serves_the_document"
+        body: d3d6e7c8430d4962fd2c583ff9ff819d7ac5e705cd87ac3702c942dbd6d8ef96
   - node: 01a156ac-9752-749b-be81-def5819471f0
     reviewed: cea68ff70a1c6affaac992a1beaff30d7075c040e6c9ad6fe63035e9866295f4
     tests:

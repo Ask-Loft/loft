@@ -63,6 +63,7 @@ mod publish_connected_reach;
 mod publish_copies;
 mod publish_former;
 mod publish_meet_contract;
+mod publish_notice;
 mod publish_settle;
 mod pull;
 mod pull_checks;

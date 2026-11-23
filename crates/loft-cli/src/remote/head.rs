@@ -3,6 +3,7 @@
 use loftspec::publish::Lock;
 use serde_json::{Value, json};
 
+use crate::remote::visibility::Visibility;
 use crate::remote::{Client, RemoteError};
 
 /// The remote's head of the document `key`: `null`, or its publish sequence, state root, lock
@@ -13,11 +14,21 @@ use crate::remote::{Client, RemoteError};
 /// The remote cannot be reached, refuses, holds no document `key`, or gives a head that does
 /// not read.
 pub fn fetch(client: &Client, key: &str) -> Result<Value, RemoteError> {
+    fetched(client, key).map(|(head, _)| head)
+}
+
+/// [`fetch`]'s head, beside the visibility the remote's answer names, if it names one Loft knows.
+///
+/// # Errors
+///
+/// As [`fetch`].
+pub fn fetched(client: &Client, key: &str) -> Result<(Value, Option<Visibility>), RemoteError> {
     match client.get("head") {
         Ok(mut answer) => {
+            let visibility = Visibility::of(&answer);
             let head = answer["head"].take();
             if head.is_null() || Head::read(&head).is_some() {
-                Ok(head)
+                Ok((head, visibility))
             } else {
                 Err(RemoteError::Unreadable {
                     address: client.address().to_owned(),
