@@ -8,6 +8,27 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 What 2.5.0 will hold beyond the releases of 2.4, which it holds as well: the entries under
 Unreleased below, and those of each 2.4 release still to come.
 
+- `loft pull` reads a document its remote serves to anyone, a public document, without a sign-in.
+  Where it has no sign-in it can send to the remote's address (none is kept, there is no
+  configuration directory, the one kept is for another origin, or its refresh is refused) and
+  `LOFT_REMOTE_TOKEN` is unset, it asks without a token. Where the remote answers `401`, the pull
+  stops with the remote's status and code beside the error for that sign-in. A live sign-in kept
+  for the address is still sent, and `loft publish` still needs one.
+- A sign-in to the remote of a public document, whose head answers without a challenge, reads the
+  challenge from `GET <address>/drafts/main`; a private document's sign-in asks its head alone, as
+  before.
+- `loft publish`, before a document's first publish to its remote, and `loft remote set`, before it
+  imports the published states, say on standard error to whom the remote serves the document, as
+  the `visibility` of its head answer names it; nothing is said where the remote names none.
+  Where `loft remote set` cannot read the head, it says so, with the error, and imports. The JSON
+  output is unchanged.
+- The error for a lapsed sign-in to a document's own remote names `LOFT_REMOTE_TOKEN`, as the
+  errors for a missing sign-in do.
+- The Software Plant's remote simulator can serve its document to anyone, and names the
+  visibility its scenario sets in its head answer. A scenario can forbid reading the head, as it
+  can forbid a create or an import. The remote contract suite holds a real remote's answers for a
+  public document to the simulator's, on demand, at `LOFT_REMOTE_CONTRACT_PUBLIC_ADDRESS`.
+
 - An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
   `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its
   own. A Component `provides` the Interfaces whose promise it keeps and `requires` those it relies

@@ -34,7 +34,7 @@ pub use companion::{Companion, CompanionFault};
 pub use documents::misstated_root;
 pub use oauth::Grant;
 use scenario::{Call, Held, Misstating, Mode};
-pub use scenario::{Consent, Metadata, RemoteScenario};
+pub use scenario::{Consent, Metadata, RemoteScenario, Visibility};
 
 /// The bearer token every scenario admits, as `LOFT_REMOTE_TOKEN` gives it to the binary.
 pub const TOKEN: &str = "simulator-token";

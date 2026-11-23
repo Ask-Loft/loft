@@ -107,7 +107,8 @@ fn a_pull_with_nothing_to_write_reports_unchanged_naming_what_it_pulled() {
 }
 
 #[test]
-fn pull_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_that_resource() {
+fn pull_with_a_sign_in_kept_for_a_resource_on_another_origin_sends_none_and_is_refused_naming_that_resource()
+ {
     let run = connected(1, 1, RemoteScenario::accepting);
     let address = run.remote.address();
     let resource = "http://127.0.0.1:9/documents";
@@ -133,7 +134,11 @@ fn pull_with_a_sign_in_kept_for_a_resource_on_another_origin_is_refused_naming_t
         assert!(message.contains(said), "{said}: {message}");
     }
     assert!(!message.contains("no sign-in"), "{message}");
-    assert!(run.remote.requests().is_empty(), "no connection is opened");
+    assert_eq!(
+        crate::pull_public::requests(&run),
+        [("/head".to_owned(), false)],
+        "the head alone, with no token"
+    );
     assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);
     assert_eq!(tree(&run.scratch.0), before);
 }

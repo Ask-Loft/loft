@@ -1,5 +1,6 @@
 //! The calls under the document's address: its head, a published state, a draft, a publish, a
-//! create and an import, each admitted only with a bearer token the simulator accepts.
+//! create and an import, each admitted only with a bearer token the simulator accepts, but the
+//! head and the published states of a document it holds and serves to anyone.
 //!
 //! The admission and the routing lie here; each call lies in a module of its own.
 
@@ -14,7 +15,7 @@ use serde_json::Value;
 
 use super::problem::refusal;
 use super::wire::decode_segment;
-use super::{Metadata, State, TOKEN};
+use super::{Metadata, State, TOKEN, Visibility};
 use crate::http::{Request, Response};
 use create::create;
 use head::head;
@@ -62,7 +63,11 @@ pub(super) fn answer(state: &mut State, request: &Request, rest: &str) -> Respon
     let bearer = request
         .header("Authorization")
         .and_then(|value| value.strip_prefix("Bearer "));
-    if !bearer.is_some_and(|token| state.admits(token)) {
+    let open = get
+        && state.held.is_some()
+        && state.scenario.visibility == Some(Visibility::Public)
+        && matches!(segments.as_slice(), ["head"] | ["states", _]);
+    if !open && !bearer.is_some_and(|token| state.admits(token)) {
         return state.challenge();
     }
     let body = || serde_json::from_slice::<Value>(&request.body).unwrap_or(Value::Null);

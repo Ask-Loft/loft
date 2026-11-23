@@ -6,7 +6,7 @@ use std::collections::BTreeMap;
 use loftspec::codec::{Files, SpecPath};
 use loftspec::publish::{self, Lock, Made, Publication, PublishedAt, ReadTree};
 use serde_json::Value;
-use software_plant::remote::StoredState;
+use software_plant::remote::{Remote, StoredState, document_path};
 
 use super::{EPOCH, reading_list};
 
@@ -109,4 +109,29 @@ pub const DECISION_KEY: &str = "00000000-0000-4000-8000-00000000008c";
 pub fn departed(labels: &str, key: &str) -> bool {
     let binding = &labels[labels.find(key).expect("a binding of the key")..];
     binding[..binding.find("  - key:").unwrap_or(binding.len())].contains("departed: true")
+}
+
+/// A request `remote` received under the address of the document `key`: its method, its path
+/// below that address, and whether it carried a token.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Sent {
+    pub method: String,
+    pub path: String,
+    pub token: bool,
+}
+
+/// Each request `remote` received under the address of the document `key`, in order.
+pub fn sent_to(remote: &Remote, key: &str) -> Vec<Sent> {
+    let document = document_path(key);
+    remote
+        .requests()
+        .into_iter()
+        .filter_map(|request| {
+            Some(Sent {
+                path: request.path.strip_prefix(&document)?.to_owned(),
+                token: request.header("Authorization").is_some(),
+                method: request.method,
+            })
+        })
+        .collect()
 }

@@ -55,6 +55,27 @@ requirements:
         name: "A document that the remote has just created holds no published state."
       - key: 01a1587e-87ac-73f3-b49f-67766fe6bc05
         name: "A document whose create the remote refuses as a `conflict` with publish sequence `0` and state root `null` holds no published state, and is imported into."
+  - key: 01a20625-1782-738f-956e-4cb5a63801a3
+    statement:
+      form: event_driven
+      when: "`loft remote set` is about to import a repository's published states into its remote"
+      system: "`loft remote set`"
+      shall: "say on standard error, before the import, to whom the remote serves the document."
+    criteria:
+      - key: 01a20625-1782-738f-956e-4cb62443bfbd
+        name: "Before the import request, `loft remote set` asks the remote for its head, whose `visibility` names to whom it serves the document."
+      - key: 01a20625-1782-738f-956e-4cb7d17b0a0c
+        name: "Where `visibility` is `public`, the line says that anyone reads the document's published states without signing in."
+      - key: 01a20625-1782-738f-956e-4cb895f7e61a
+        name: "Where `visibility` is `private`, the line says that only those the remote admits read the document."
+      - key: 01a20625-1782-738f-956e-4cb9f1e7f8ad
+        name: "Where the head answer names no `visibility`, or one Loft does not know, nothing is said."
+      - key: 01a2067e-f638-7716-98e2-ec1ade9b0c22
+        name: "Where the head request fails, the line says that Loft could not read to whom the remote serves the document, and names the failure."
+      - key: 01a2067e-f638-7716-98e2-ec1bfb9161f2
+        name: "Where the head request fails, the import request is still sent."
+      - key: 01a20625-1782-738f-956e-4cba4861560c
+        name: "A connect that imports nothing says nothing of the visibility."
   - key: 01a1587a-dee2-7262-8c7b-8958dac9405d
     statement:
       form: event_driven

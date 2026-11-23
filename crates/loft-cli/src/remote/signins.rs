@@ -58,11 +58,13 @@ fn path() -> Result<PathBuf, RemoteError> {
 }
 
 /// Every entry the file holds, by address, as it was written: none for a file that is missing
-/// or does not read. An entry this `loft` does not read is kept as it is when the file is
-/// written again.
-fn entries() -> Result<Map<String, Value>, RemoteError> {
-    let file = settings::read_at(&path()?);
-    Ok(file["remotes"].as_object().cloned().unwrap_or_default())
+/// or does not read, or where there is no configuration directory to hold it, so that a read
+/// finds no sign-in where a write still refuses. An entry this `loft` does not read is kept as
+/// it is when the file is written again.
+fn entries() -> Map<String, Value> {
+    settings::path(FILE)
+        .and_then(|path| settings::read_at(&path)["remotes"].as_object().cloned())
+        .unwrap_or_default()
 }
 
 /// The sign-in that `entry`, the entry kept under `address`, holds, where it reads as one and its
@@ -114,7 +116,7 @@ fn lock() -> Result<Locked, RemoteError> {
 /// The file cannot be written.
 pub fn save(address: &str, sign_in: &SignIn) -> Result<(), RemoteError> {
     let _lock = lock()?;
-    let mut sign_ins = entries()?;
+    let mut sign_ins = entries();
     sign_ins.insert(address.to_owned(), json!(sign_in));
     write(&sign_ins)
 }
@@ -130,7 +132,7 @@ pub fn forget(address: &str) -> Result<bool, RemoteError> {
         return Ok(false);
     }
     let _lock = lock()?;
-    let mut sign_ins = entries()?;
+    let mut sign_ins = entries();
     if sign_ins.remove(address).is_none() {
         return Ok(false);
     }
@@ -148,12 +150,12 @@ pub fn forget(address: &str) -> Result<bool, RemoteError> {
 /// origin or for a resource that reads as no address, or the refresh is refused or cannot be
 /// made.
 pub fn live(address: &str, timeout: Duration) -> Result<SignIn, RemoteError> {
-    let held = sign_in(entries()?.get(address), address)?;
+    let held = sign_in(entries().get(address), address)?;
     if !held.expiring(now()) {
         return Ok(held);
     }
     let _lock = lock()?;
-    let mut sign_ins = entries()?;
+    let mut sign_ins = entries();
     let held = sign_in(sign_ins.get(address), address)?;
     if !held.expiring(now()) {
         return Ok(held);

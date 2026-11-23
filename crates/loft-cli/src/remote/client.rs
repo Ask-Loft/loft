@@ -93,14 +93,17 @@ impl Refusal {
         said
     }
 
+    /// What the remote answered: its status, and its code and detail where it gave them.
+    #[must_use]
+    pub fn answered(&self) -> String {
+        let code =
+            (self.code()).map_or_else(String::new, |code| format!(" with the code `{code}`"));
+        let detail = (self.detail()).map_or_else(String::new, |detail| format!(": {detail}"));
+        format!("the remote answered {}{code}{detail}", self.status)
+    }
+
     fn write(&self, out: &mut impl fmt::Write, login: Option<&str>) -> fmt::Result {
-        write!(out, "the remote answered {}", self.status)?;
-        if let Some(code) = self.code() {
-            write!(out, " with the code `{code}`")?;
-        }
-        if let Some(detail) = self.detail() {
-            write!(out, ": {detail}")?;
-        }
+        out.write_str(&self.answered())?;
         if self.known() == Some("unauthenticated") {
             out.write_str("; the remote refused the sign-in")?;
             if let Some(login) = login {
@@ -129,7 +132,26 @@ pub struct Client {
     token: RefCell<Option<String>>,
     timeout: Duration,
     wait: Option<u64>,
-    renewal: RefCell<Option<Renewal>>,
+    /// What the client does where the remote answers `401`; nothing more where it holds none.
+    unauthorized: RefCell<Option<Unauthorized>>,
+}
+
+/// What a client does where the remote answers `401`.
+#[derive(Debug, Clone)]
+enum Unauthorized {
+    /// Signs the person in afresh, once, and asks again.
+    Renew(Renewal),
+    /// Answers with the remote's refusal beside the error for the person's missing sign-in, as
+    /// a client that sends no token for want of one does.
+    Missing(Missing),
+}
+
+/// The sign-in a client sends no token for want of: the key of the document it reads, and the
+/// error for that sign-in.
+#[derive(Debug, Clone)]
+struct Missing {
+    key: String,
+    error: RemoteError,
 }
 
 /// How a client signs in afresh, once: the handle under which `documents` lists another
@@ -149,8 +171,19 @@ impl Client {
             token: RefCell::new(token),
             timeout,
             wait,
-            renewal: RefCell::new(None),
+            unauthorized: RefCell::new(None),
         }
+    }
+
+    /// The client of the document `key`, sending no token for want of a sign-in, whose remote's
+    /// `401` is answered with the refusal beside `missing`, the error for that missing sign-in.
+    #[must_use]
+    pub fn unsigned(self, key: &str, missing: RemoteError) -> Self {
+        *self.unauthorized.borrow_mut() = Some(Unauthorized::Missing(Missing {
+            key: key.to_owned(),
+            error: missing,
+        }));
+        self
     }
 
     /// The client, signing the person in afresh to the remote of `whose`, once, where the remote
@@ -159,11 +192,11 @@ impl Client {
     #[must_use]
     pub fn renewing(self, whose: Whose<'_>, browser: bool) -> Self {
         if let Whose::Other { handle, key } = whose {
-            *self.renewal.borrow_mut() = Some(Renewal {
+            *self.unauthorized.borrow_mut() = Some(Unauthorized::Renew(Renewal {
                 handle: handle.to_owned(),
                 key: key.map(str::to_owned),
                 browser,
-            });
+            }));
         }
         self
     }
@@ -200,6 +233,16 @@ impl Client {
         } else {
             reply
         };
+        if reply.status == 401
+            && let Some(Unauthorized::Missing(missing)) = &*self.unauthorized.borrow()
+        {
+            return Err(RemoteError::Unsigned {
+                key: missing.key.clone(),
+                address: self.address.clone(),
+                refusal: Refusal::of(&reply),
+                missing: Box::new(missing.error.clone()),
+            });
+        }
         let read = serde_json::from_slice::<Value>(&reply.body).ok();
         match read {
             Some(value) if (200..300).contains(&reply.status) && value.is_object() => Ok(value),
@@ -234,8 +277,13 @@ impl Client {
         if reply.status != 401 || Refusal::of(reply).known() != Some("unauthenticated") {
             return Ok(false);
         }
-        let Some(renewal) = self.renewal.borrow_mut().take() else {
-            return Ok(false);
+        let taken = self.unauthorized.borrow_mut().take();
+        let renewal = match taken {
+            Some(Unauthorized::Renew(renewal)) => renewal,
+            kept => {
+                *self.unauthorized.borrow_mut() = kept;
+                return Ok(false);
+            }
         };
         let whose = Whose::Other {
             handle: &renewal.handle,

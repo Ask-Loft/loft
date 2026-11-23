@@ -13,6 +13,7 @@ mod said;
 pub mod signin;
 pub mod signins;
 pub mod states;
+pub mod visibility;
 mod whose;
 mod wire;
 
@@ -79,6 +80,14 @@ pub enum RemoteError {
     Unreadable { address: String, what: &'static str },
     /// The remote answered with a refusal.
     Refused { address: String, refusal: Refusal },
+    /// The remote refused, with `401`, a request for the document `key` that was sent without a
+    /// token for want of a sign-in, `missing`.
+    Unsigned {
+        key: String,
+        address: String,
+        refusal: Refusal,
+        missing: Box<RemoteError>,
+    },
     /// The authorization server refused to refresh the sign-in.
     Lapsed { address: String, error: String },
     /// A sign-in could not be made.
@@ -139,7 +148,8 @@ impl fmt::Display for RemoteError {
             Self::NoSignIn { .. }
             | Self::SignInElsewhere { .. }
             | Self::Lapsed { .. }
-            | Self::Refused { .. } => {
+            | Self::Refused { .. }
+            | Self::Unsigned { .. } => {
                 let said = self
                     .said(Remedy::Own)
                     .expect("an error of a sign-in, or a refusal");
@@ -211,6 +221,24 @@ pub fn now() -> Option<u64> {
 /// protected resource on another origin, the address may not be contacted, or a refresh is
 /// refused.
 pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
+    reached(remote, key, false)
+}
+
+/// [`connected`], as `loft pull` reaches the remote: where the person has no sign-in to it that it
+/// can send, none at all, one only for a protected resource on another origin or one whose refresh
+/// is refused, the client sends no token, and the remote's `401` is answered with the error for
+/// that sign-in.
+///
+/// # Errors
+///
+/// As [`connected`], but for a sign-in it cannot send.
+pub fn reading(remote: Option<&str>, key: &str) -> Result<Client, RemoteError> {
+    reached(remote, key, true)
+}
+
+/// The client of [`connected`], or, where `unsigned` allows and the person has no sign-in to the
+/// remote, that of [`reading`].
+fn reached(remote: Option<&str>, key: &str, unsigned: bool) -> Result<Client, RemoteError> {
     let timeout = timeout()?;
     let wait = seconds(WAIT_ENV)?;
     let address = environment::text(ENDPOINT_ENV)
@@ -221,7 +249,17 @@ pub fn connected(remote: Option<&str>, key: &str) -> Result<Client, RemoteError>
     checked(&address)?;
     let token = match environment::text(TOKEN_ENV) {
         Some(token) => token,
-        None => signins::live(&address, timeout)?.access_token,
+        None => match signins::live(&address, timeout) {
+            Ok(sign_in) => sign_in.access_token,
+            Err(
+                missing @ (RemoteError::NoSignIn { .. }
+                | RemoteError::SignInElsewhere { .. }
+                | RemoteError::Lapsed { .. }),
+            ) if unsigned => {
+                return Ok(Client::new(&address, None, timeout, wait).unsigned(key, missing));
+            }
+            Err(error) => return Err(error),
+        },
     };
     Ok(Client::new(&address, Some(token), timeout, wait))
 }

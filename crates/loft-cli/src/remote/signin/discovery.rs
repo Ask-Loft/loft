@@ -12,7 +12,7 @@ use std::time::Duration;
 
 use serde_json::Value;
 
-use crate::network;
+use crate::network::{self, Reply};
 use crate::remote::client::Client;
 use crate::remote::wire::bearer_parameters;
 use crate::remote::{RemoteError, Whose, checked};
@@ -48,13 +48,14 @@ pub fn discover(
         address: address.to_owned(),
         reason,
     };
-    let challenged = Client::new(address, None, timeout, None).call("GET", "head", None)?;
+    let (asked, challenged) = challenge(address, timeout)?;
+    let asked = format!("{address}/{asked}");
     let parameters = challenged
         .www_authenticate
         .iter()
         .filter(|_| challenged.status == 401)
         .find_map(|header| bearer_parameters(header))
-        .ok_or_else(|| failed(unchallenged(address, whose, challenged.status)))?;
+        .ok_or_else(|| failed(unchallenged(&asked, whose, challenged.status)))?;
     let named = |name: &str| {
         parameters
             .iter()
@@ -63,7 +64,7 @@ pub fn discover(
     };
     let metadata_url = named("resource_metadata").ok_or_else(|| {
         failed(format!(
-            "GET {address}/head answered 401 with a `Bearer` challenge that names no \
+            "GET {asked} answered 401 with a `Bearer` challenge that names no \
              `resource_metadata`"
         ))
     })?;
@@ -171,13 +172,27 @@ fn named_resource(address: &str, url: &str, metadata: &Value) -> Result<String, 
     Ok(resource.to_owned())
 }
 
-/// Why an answer of `status` to the unauthenticated `GET <address>/head` cannot start a sign-in:
-/// the request and its status, and, for an answer a wrong address gives, that the address may not
-/// be a document's remote, the form of the address of the document whose remote it is meant to
-/// be and what mends it.
-fn unchallenged(address: &str, whose: Whose<'_>, status: u16) -> String {
-    let refused =
-        format!("GET {address}/head answered {status}, not a 401 with a `Bearer` challenge");
+/// The path below `address` of the unauthenticated request a sign-in reads the remote's challenge
+/// from, and its answer: `head`, or, where the head answers `200`, as a remote answers for a
+/// document it serves to anyone, the drafts of `main`, which it serves only to those it admits.
+fn challenge(address: &str, timeout: Duration) -> Result<(&'static str, Reply), RemoteError> {
+    let client = Client::new(address, None, timeout, None);
+    let head = client.call("GET", "head", None)?;
+    if head.status != 200 {
+        return Ok(("head", head));
+    }
+    Ok((DRAFTS, client.call("GET", DRAFTS, None)?))
+}
+
+/// The path of the drafts of `main` below a document's address.
+const DRAFTS: &str = "drafts/main";
+
+/// Why an answer of `status` to the unauthenticated `GET <asked>` cannot start a sign-in: the
+/// request and its status, and, for an answer a wrong address gives, that the address may not be
+/// a document's remote, the form of the address of the document whose remote it is meant to be
+/// and what mends it.
+fn unchallenged(asked: &str, whose: Whose<'_>, status: u16) -> String {
+    let refused = format!("GET {asked} answered {status}, not a 401 with a `Bearer` challenge");
     if matches!(status, 401 | 408 | 429) || status >= 500 {
         return refused;
     }

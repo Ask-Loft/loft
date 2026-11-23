@@ -6,16 +6,20 @@ use serde_json::{Value, json};
 use crate::http::Response;
 use crate::remote::problem::refusal;
 use crate::remote::wire::sha256_hex;
-use crate::remote::{Held, State};
+use crate::remote::{Call, Held, State};
 
 pub(super) fn head(state: &State) -> Response {
+    if state.scenario.forbidden.contains(&Call::Head) {
+        return refusal("forbidden");
+    }
     let Some(held) = &state.held else {
         return refusal("not_found");
     };
-    Response::json(
-        200,
-        &json!({ "documentKey": state.scenario.key, "head": head_of(held) }),
-    )
+    let mut answer = json!({ "documentKey": state.scenario.key, "head": head_of(held) });
+    if let Some(visibility) = state.scenario.visibility {
+        answer["visibility"] = json!(visibility.name());
+    }
+    Response::json(200, &answer)
 }
 
 /// The head as `GET <address>/head` gives it: `null`, or its lock and its files' digests.

@@ -1,7 +1,7 @@
 key: 01a156aa-d531-70a7-88e0-0bebdc0a9327
 slug: reaching-a-remote
 name: "Reaching a remote"
-body: "Where `loft` finds the address of a connected document's remote, which the manifest names as `remote` so that every clone shares it, and the person's sign-in to that remote, which `loft remote` keeps in a file private to the user; which addresses it accepts, how it forms each request, and what it never does with a token. The address names one origin and path and is used whole, so that one server can hold many documents under addresses of its own choosing. A Loft server gives each document the address `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, where `<documentKey>` is the manifest's `documentKey`, and `loft` adds each call's path under it, as in `<address>/head`. A call to the remote is what a connected command exists to make, so the switches of telemetry and of the update check leave it alone. A refusal that the remote may lift, such as a rate limit, is reported as one to try again later, and `LOFT_REMOTE_WAIT` lets a run wait out a short one."
+body: "Where `loft` finds the address of a connected document's remote, which the manifest names as `remote` so that every clone shares it, and the person's sign-in to that remote, which `loft remote` keeps in a file private to the user; which addresses it accepts, how it forms each request, and what it never does with a token. The address names one origin and path and is used whole, so that one server can hold many documents under addresses of its own choosing. A Loft server gives each document the address `https://<host>/loft/t/<tenant-slug>/api/v2/documents/<documentKey>/remote`, where `<documentKey>` is the manifest's `documentKey`, and `loft` adds each call's path under it, as in `<address>/head`. A call to the remote is what a connected command exists to make, so the switches of telemetry and of the update check leave it alone. A refusal that the remote may lift, such as a rate limit, is reported as one to try again later, and `LOFT_REMOTE_WAIT` lets a run wait out a short one. A remote may serve a document to anyone, a public document, so a pull asks it without a token where the person has no sign-in, and needs one only where the remote refuses that request."
 realizes:
   - 01a13a90-3554-7631-bb13-097e6805bffe
 mentions:
@@ -19,6 +19,8 @@ requirements:
         name: "The file is a JSON object whose `remotes` maps each remote's address to its sign-in, an object of `tokenEndpoint`, `resource`, `clientId`, `accessToken`, `expiresAt` and `refreshToken`."
       - key: 01a156aa-d531-70a7-88e0-0befdde18d29
         name: "An address that the file does not name has no sign-in in the file."
+      - key: 01a2067e-f638-7716-98e2-ec1c53e34e5d
+        name: "Where the user has no configuration directory, no address has a sign-in."
       - key: 01a1f4f1-4309-7056-a238-4b394d224dd7
         name: "A kept sign-in whose `resource` lies on another origin than the address it is kept under is neither refreshed nor sent, and counts as no sign-in for that address where a command needs one."
       - key: 01a1f9e5-e027-761e-ba8f-3ab9ff480a0a
@@ -52,7 +54,7 @@ requirements:
   - key: 01a156aa-d531-70a7-88e0-0bf6e06c5184
     statement:
       form: unwanted
-      if: "a command finds no address or no sign-in for a connected document's remote"
+      if: "a command finds no address for a connected document's remote, or a command other than `loft pull` finds no sign-in for it"
       system: "Loft"
       shall: "refuse and exit 1."
     criteria:
@@ -73,6 +75,46 @@ requirements:
       - key: 01a156aa-d531-70a7-88e0-0bf9810a25c3
         name: "No connection is opened."
       - key: 01a156aa-d531-70a7-88e0-0bfae3b7a232
+        name: "Nothing is written."
+  - key: 01a20625-1782-738f-956e-4cbb76f3ed08
+    statement:
+      form: event_driven
+      when: "`loft pull` finds no sign-in it can send to a connected document's remote"
+      system: "`loft pull`"
+      shall: "send its requests to the remote without a token."
+    criteria:
+      - key: 01a20648-8abc-7669-a31e-cf238801a665
+        name: "A kept sign-in whose refresh the authorization server refuses is not sent."
+      - key: 01a20625-1782-738f-956e-4cbc06535a2c
+        name: "With no sign-in kept for the address and `LOFT_REMOTE_TOKEN` unset, each request of the pull carries no `Authorization` header."
+      - key: 01a2067e-f638-7716-98e2-ec1d342922cb
+        name: "With no user configuration directory and `LOFT_REMOTE_TOKEN` unset, each request of the pull carries no `Authorization` header."
+      - key: 01a20625-1782-738f-956e-4cbd94d45464
+        name: "A kept sign-in whose `resource` lies on another origin than the address, or does not read as an `https` or `http` address, is not sent."
+      - key: 01a20625-1782-738f-956e-4cbed122136f
+        name: "A remote that answers those requests is pulled from as it is with a sign-in."
+      - key: 01a20625-1782-738f-956e-4cbff6037f20
+        name: "Where a sign-in is kept for the address, the pull sends its access token."
+  - key: 01a20625-1782-738f-956e-4cc0ae160152
+    statement:
+      form: unwanted
+      if: "the remote answers `401` to a request that `loft pull` sent without a token"
+      system: "`loft pull`"
+      shall: "refuse with the remote's refusal and the error for the sign-in it could not send, or for none, and exit 1."
+    criteria:
+      - key: 01a2067e-f638-7716-98e2-ec1e0c95ab59
+        name: "The error names the refusal's status, and its code where the refusal is a problem document."
+      - key: 01a20648-8abc-7669-a31e-cf2482d4f2d9
+        name: "Where the sign-in kept under the address has lapsed, the error is the one for a lapsed sign-in."
+      - key: 01a20625-1782-738f-956e-4cc1aae18790
+        name: "The error names the document key and the address."
+      - key: 01a20625-1782-738f-956e-4cc2f6c03e5e
+        name: "The error names `LOFT_REMOTE_TOKEN` and says that `loft remote login` signs in."
+      - key: 01a20625-1782-738f-956e-4cc3eab09367
+        name: "Where the sign-in kept under the address is for a protected resource on another origin, the error is the one for that sign-in."
+      - key: 01a20625-1782-738f-956e-4cc41a5d11c5
+        name: "No request follows the refused one."
+      - key: 01a20625-1782-738f-956e-4cc585d66b36
         name: "Nothing is written."
   - key: 01a156aa-d531-70a7-88e0-0bfbf98318c6
     statement:
@@ -108,7 +150,7 @@ requirements:
       shall: "send a token only in the `Authorization` header of a request to the remote."
     criteria:
       - key: 01a156aa-d531-70a7-88e0-0c05ea347c84
-        name: "Each request to the remote carries `Authorization: Bearer <token>`, with the access token of the sign-in or the token that `LOFT_REMOTE_TOKEN` names."
+        name: "Each request to the remote but a sign-in's unauthenticated requests and a pull's with no sign-in carries `Authorization: Bearer <token>`, with the access token of the sign-in or the token that `LOFT_REMOTE_TOKEN` names."
       - key: 01a156aa-d531-70a7-88e0-0c062e417478
         name: "No request to another address carries a token."
       - key: 01a156aa-d531-70a7-88e0-0c071fca5250

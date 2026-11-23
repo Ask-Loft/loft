@@ -3,21 +3,32 @@
 use loftspec::publish::Lock;
 use serde_json::{Value, json};
 
+use crate::remote::visibility::Visibility;
 use crate::remote::{Client, RemoteError};
 
-/// The remote's head of the document `key`: `null`, or its publish sequence, state root, lock
-/// and file digests, which [`Head::read`] reads.
+/// The remote's answer to `GET <address>/head`: the head, and to whom it serves the document.
+#[derive(Debug)]
+pub struct Answered {
+    /// `null`, or the head's publish sequence, state root, lock and file digests, which
+    /// [`Head::read`] reads.
+    pub head: Value,
+    /// The visibility the answer names, where it names one Loft knows.
+    pub visibility: Option<Visibility>,
+}
+
+/// The remote's head of the document `key`, and its visibility.
 ///
 /// # Errors
 ///
 /// The remote cannot be reached, refuses, holds no document `key`, or gives a head that does
 /// not read.
-pub fn fetch(client: &Client, key: &str) -> Result<Value, RemoteError> {
+pub fn fetch(client: &Client, key: &str) -> Result<Answered, RemoteError> {
     match client.get("head") {
         Ok(mut answer) => {
+            let visibility = Visibility::of(&answer);
             let head = answer["head"].take();
             if head.is_null() || Head::read(&head).is_some() {
-                Ok(head)
+                Ok(Answered { head, visibility })
             } else {
                 Err(RemoteError::Unreadable {
                     address: client.address().to_owned(),

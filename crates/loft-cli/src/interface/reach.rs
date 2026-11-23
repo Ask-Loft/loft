@@ -40,20 +40,22 @@ pub(super) fn reached(error: RemoteError, other: Other<'_>) -> Stop {
 /// The publish sequence of the head of the remote `client` reaches, the remote of `other`.
 pub(super) fn head_sequence(client: &Client, other: Other<'_>) -> Result<u64, Stop> {
     let handle = other.handle;
-    let head = head::fetch(client, handle.as_str()).map_err(|error| match error {
-        RemoteError::NotHeld { .. } => {
-            let given = if other.listed {
-                format!("the address `documents` lists under {handle}")
-            } else {
-                "the address `--remote` gives".to_owned()
-            };
-            refused(format!(
-                "{handle}: the remote at {} holds no such document; check {given}",
-                client.address()
-            ))
-        }
-        error => reached(error, other),
-    })?;
+    let head = head::fetch(client, handle.as_str())
+        .map_err(|error| match error {
+            RemoteError::NotHeld { .. } => {
+                let given = if other.listed {
+                    format!("the address `documents` lists under {handle}")
+                } else {
+                    "the address `--remote` gives".to_owned()
+                };
+                refused(format!(
+                    "{handle}: the remote at {} holds no such document; check {given}",
+                    client.address()
+                ))
+            }
+            error => reached(error, other),
+        })?
+        .head;
     match Head::read(&head) {
         Some(head) if head.sequence > 0 => Ok(head.sequence),
         _ => Err(refused(format!(

@@ -86,11 +86,23 @@ impl RemoteError {
             Self::Lapsed { address, error } => {
                 let again =
                     login.map_or_else(String::new, |login| format!(": {login} signs in again"));
-                format!("the sign-in to {address} has lapsed ({error}){again}")
+                token(format!(
+                    "the sign-in to {address} has lapsed ({error}){again}"
+                ))
             }
             Self::Refused { address, refusal } => {
                 format!("{address}: {}", refusal.said(login.as_deref()))
             }
+            Self::Unsigned {
+                key,
+                address,
+                refusal,
+                missing,
+            } => format!(
+                "{address}: {} to a request for the document {key} sent without a token: {}",
+                refusal.answered(),
+                missing.said(remedy)?
+            ),
             _ => return None,
         })
     }

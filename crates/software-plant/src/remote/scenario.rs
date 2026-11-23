@@ -23,6 +23,26 @@ pub(super) enum Mode {
     Silent,
 }
 
+/// To whom a remote serves its document, as its head names it.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Visibility {
+    /// Anyone: the head and the published states are answered with no token.
+    Public,
+    /// Those the remote admits alone.
+    Private,
+}
+
+impl Visibility {
+    /// The name the head gives it.
+    #[must_use]
+    pub const fn name(self) -> &'static str {
+        match self {
+            Self::Public => "public",
+            Self::Private => "private",
+        }
+    }
+}
+
 /// What the two metadata documents say, as the contract states them or as a misconfigured
 /// server serves them.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -81,6 +101,7 @@ pub(super) enum Misstating {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Call {
     Create,
+    Head,
     Import,
 }
 
@@ -131,6 +152,8 @@ pub struct RemoteScenario {
     pub(super) companions: Vec<Companion>,
     /// The member that lists the companion resources, as the scenario scripts it.
     pub(super) listing: Option<Value>,
+    /// To whom the remote serves its document, where the scenario names it.
+    pub(super) visibility: Option<Visibility>,
 }
 
 impl RemoteScenario {
@@ -162,6 +185,7 @@ impl RemoteScenario {
             skill: None,
             companions: Vec::new(),
             listing: None,
+            visibility: None,
         }
     }
 
@@ -196,6 +220,14 @@ impl RemoteScenario {
         }
     }
 
+    /// The remote, naming `visibility` in its head, and serving its head and published states
+    /// with no token where it is public.
+    #[must_use]
+    pub fn visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = Some(visibility);
+        self
+    }
+
     /// Holds the document under the scenario's key, named `name`, with `states` published.
     #[must_use]
     pub fn holding(mut self, name: &str, states: Vec<StoredState>) -> Self {
@@ -224,6 +256,13 @@ impl RemoteScenario {
     #[must_use]
     pub fn forbidding_create(mut self) -> Self {
         self.forbidden.push(Call::Create);
+        self
+    }
+
+    /// Refuses every `GET <address>/head` as `forbidden`, while its other calls are answered.
+    #[must_use]
+    pub fn forbidding_head(mut self) -> Self {
+        self.forbidden.push(Call::Head);
         self
     }
 

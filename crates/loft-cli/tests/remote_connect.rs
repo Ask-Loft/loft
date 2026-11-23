@@ -83,6 +83,7 @@ fn set_creates_the_document_and_imports_every_published_state_before_naming_the_
         document_calls(&remote),
         [
             format!("POST {}/create", document_path(key)),
+            format!("GET {}/head", document_path(key)),
             format!("POST {}/import", document_path(key)),
         ]
     );
@@ -436,7 +437,7 @@ fn an_address_that_may_not_be_contacted_is_refused_before_anything() {
 }
 
 /// The document key of the tree under `scratch`.
-fn codec_key(scratch: &Scratch) -> String {
+pub fn codec_key(scratch: &Scratch) -> String {
     loftspec::codec::read(&tree(&scratch.0))
         .unwrap()
         .id
