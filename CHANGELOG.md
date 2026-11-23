@@ -94,7 +94,9 @@ Unreleased below, and those of each 2.4 release still to come.
   sign-in: `loft` says that the sign-in was made for a former resource of the remote and that
   `loft remote login` signs you in again, or `loft interface login <handle>` at another document's
   remote, and `loft remote set`, `loft interface add` and `loft interface update` sign you in anew
-  in its place.
+  in its place. `loft pull` treats such a sign-in as a lapsed one: it pulls a document that its
+  remote serves to anyone without a token, and where the remote refuses, it names the sign-in made
+  for a former resource.
 - The `loft-spec` skill tells the agent to ask you to run `loft remote login`, or
   `loft interface login <handle>` at another document's remote, when a command says that the
   sign-in was made for a former resource of the remote or does not cover a resource, as it does

@@ -93,16 +93,18 @@ impl RemoteError {
             Self::FormerResource { address, resource } => {
                 let again =
                     login.map_or_else(String::new, |login| format!(": {login} signs in again"));
-                format!(
+                token(format!(
                     "the sign-in to {address} was made for a former resource of the remote, \
                      {resource}{again}"
-                )
+                ))
             }
             Self::NotCovered { address, resource } => {
                 let again = login.map_or_else(String::new, |login| {
                     format!(": {login} signs in again to reach it")
                 });
-                format!("the sign-in to {address} does not cover {resource}{again}")
+                token(format!(
+                    "the sign-in to {address} does not cover {resource}{again}"
+                ))
             }
             Self::Refused { address, refusal } => {
                 format!("{address}: {}", refusal.said(login.as_deref()))
