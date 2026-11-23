@@ -168,7 +168,7 @@ requirements:
       shall: "leave the companion resource out of the sign-in, say so on standard error and go on signing in."
     criteria:
       - key: 01a202c3-d203-70c5-9d96-10adb306091e
-        name: "A companion resource whose metadata does not answer with the status 200 and a JSON object is left out."
+        name: "A companion resource whose metadata answers with another status than 200, or with what is not a JSON object, is left out."
       - key: 01a202c3-d203-70c5-9d96-10ae7c907c93
         name: "A companion resource whose metadata names another `resource`, or none, is left out."
       - key: 01a202c3-d203-70c5-9d96-10af6d7610a0
@@ -181,6 +181,23 @@ requirements:
         name: "The authorization request names no companion resource left out and asks for no scope that only its metadata lists."
       - key: 01a202c3-d203-70c5-9d96-10b3419e1e0f
         name: "A sign-in that leaves out every listed companion resource is signed in to for the remote's protected resource alone, as before."
+  - key: 01a20880-0400-77b7-a4ea-c893a36f344a
+    statement:
+      form: unwanted
+      if: "the protected resource metadata of a listed companion resource cannot be reached"
+      system: "Loft"
+      shall: "leave that companion resource and each one listed after it out of the sign-in without requesting their metadata, say so on standard error and go on signing in."
+    criteria:
+      - key: 01a20880-0400-77b7-a4ea-c8941f6f4394
+        name: "A companion resource whose metadata request ends without an answer, or gets no answer in full within the time limit of a call, is left out."
+      - key: 01a20880-0400-77b7-a4ea-c895d14c092c
+        name: "No request is sent for the metadata of a companion resource listed after it."
+      - key: 01a20880-0400-77b7-a4ea-c896c7874b26
+        name: "One warning on standard error names the remote's address and the companion resource, and says that its metadata cannot be reached and that each companion resource listed after it is left out."
+      - key: 01a20880-0400-77b7-a4ea-c8978f23f21e
+        name: "A companion resource whose metadata answers, with any status, does not stop the companion resources listed after it from being read."
+      - key: 01a20880-0400-77b7-a4ea-c8981b136518
+        name: "The sign-in goes on with the remote's protected resource and each companion resource kept before it."
   - key: 01a18e1f-8daa-7674-9603-5ae454b39feb
     statement:
       form: event_driven

@@ -409,6 +409,8 @@ requirements:
         name: "A companion resource whose scopes its scenario empties is answered with a `scopes_supported` that holds none."
       - key: 01a1f09b-189b-76b3-863f-c7c0b7b1246a
         name: "A companion resource whose metadata its scenario makes unreadable is answered `404 Not Found` with the code `not_found`."
+      - key: 01a20880-0402-7303-af8e-ca9d95c2574e
+        name: "A companion resource whose metadata its scenario leaves unanswered has each request for that metadata closed without an answer."
       - key: 01a1f09b-189b-76b3-863f-c7c16727d7fd
         name: "A companion resource whose metadata its scenario makes no object is answered `200 OK` with a JSON array."
       - key: 01a1f09b-189b-76b3-863f-c7c2af2e0b53

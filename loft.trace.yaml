@@ -21814,7 +21814,7 @@ links:
         name: "entries_after_the_first_sixteen_are_left_out_with_one_warning_and_nothing_is_asked_of_them"
         body: 8076b7b7e19dfb13348dfc3d9636f112e8c4ed890dfe45edfb6a903a389e0acf
   - node: 01a202c3-d203-70c5-9d96-10adb306091e
-    reviewed: b066c5da05d4ba9559f4612bbbd8fa17b384be879e0e011c7328c9a5d2e8b883
+    reviewed: 13b151c64c12916803c5837cbfcce041c8a5ebce313e0825c5a259d9158cdae8
     tests:
       - file: "crates/loft-cli/tests/remote_sign_in_companions.rs"
         name: "a_companion_resource_whose_metadata_does_not_vouch_for_it_is_left_out_with_a_warning"
