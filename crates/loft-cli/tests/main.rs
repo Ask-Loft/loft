@@ -67,6 +67,7 @@ mod publish_settle;
 mod pull;
 mod pull_checks;
 mod pull_copies;
+mod pull_public;
 mod reads_tree;
 mod reconcile;
 mod reconcile_foreign;

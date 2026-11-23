@@ -143,7 +143,7 @@ fn attempt(root: &Path, source: &Source) -> Result<Pulled, Stop> {
     }
     let key = document.id.key().to_string();
     let client =
-        remote::connected(document.remote.as_deref(), &key).map_err(|error| unreached(&error))?;
+        remote::reading(document.remote.as_deref(), &key).map_err(|error| unreached(&error))?;
     let head = head::fetch(&client, &key).map_err(|error| unreached(&error))?;
     let pulled = match source {
         Source::Head => {

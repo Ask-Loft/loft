@@ -130,6 +130,9 @@ pub struct Client {
     timeout: Duration,
     wait: Option<u64>,
     renewal: RefCell<Option<Renewal>>,
+    /// The error for the person's missing sign-in, which a `401` to a client that sends no token
+    /// is answered with.
+    unsigned: Option<RemoteError>,
 }
 
 /// How a client signs in afresh, once: the handle under which `documents` lists another
@@ -150,6 +153,17 @@ impl Client {
             timeout,
             wait,
             renewal: RefCell::new(None),
+            unsigned: None,
+        }
+    }
+
+    /// The client, sending no token for want of a sign-in, whose remote's `401` is answered with
+    /// `missing`, the error for that missing sign-in.
+    #[must_use]
+    pub fn unsigned(self, missing: RemoteError) -> Self {
+        Self {
+            unsigned: Some(missing),
+            ..self
         }
     }
 
@@ -200,6 +214,9 @@ impl Client {
         } else {
             reply
         };
+        if let Some(missing) = self.unsigned.as_ref().filter(|_| reply.status == 401) {
+            return Err(missing.clone());
+        }
         let read = serde_json::from_slice::<Value>(&reply.body).ok();
         match read {
             Some(value) if (200..300).contains(&reply.status) && value.is_object() => Ok(value),
