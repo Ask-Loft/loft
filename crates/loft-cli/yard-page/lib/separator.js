@@ -1,5 +1,6 @@
 // A separator the person drags, or moves with the arrow keys, to set the size of what it edges:
-// the dock's top edge and the edge of the Gantt chart's column of names.
+// the dock's top edge, the timeline's splitter, the edge of the Gantt chart's column of names and
+// the sidebar's right edge.
 
 import { h } from './dom.js';
 

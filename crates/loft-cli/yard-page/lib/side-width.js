@@ -2,7 +2,8 @@
 // it with the arrow keys, kept in this browser once a drag or a key ends. It is never wider than
 // MOST and always leaves BESIDE of the window beside it, and never narrower than LEAST unless the
 // window is too narrow for both; a resized window fits it again without choosing a width. The
-// stylesheet reads it as `--side-width`, so a drag draws nothing of the sidebar again.
+// stylesheet reads it as `--side-width`, so a drag draws nothing of the sidebar again; what is
+// drawn by the room beside it waits until the person lets the edge go (`held`, `settled`).
 
 import * as prefs from './prefs.js';
 import { separator } from './separator.js';
@@ -16,8 +17,20 @@ export const BESIDE = 120;
 /** How far an arrow key moves the edge, in pixels. */
 const STEP = 16;
 
-/** The edge drawn now, and the sidebar's width. */
-const current = { /** @type {HTMLElement | null} */ handle: null, width: FIRST };
+/** The edge drawn now, the sidebar's width, whether the person holds the edge, and what is told once they let it go. */
+const current = { /** @type {HTMLElement | null} */ handle: null, width: FIRST, held: false, settled: () => {} };
+
+/** Whether the person holds the sidebar's edge, dragging it. */
+export function held() {
+  return current.held;
+}
+
+/** Lets the edge go, if the person held it, and tells what waited on it. */
+function release() {
+  if (!current.held) return;
+  current.held = false;
+  current.settled();
+}
 
 /**
  * The sidebar's width for the width `chosen`, or for none, in a window `viewport` pixels wide.
@@ -32,8 +45,7 @@ export function sideWidth(chosen, viewport) {
 
 /** The width kept in this browser, or none. */
 function kept() {
-  const width = Number(prefs.get('side-width'));
-  return Number.isFinite(width) && width > 0 ? width : null;
+  return prefs.size('side-width');
 }
 
 /**
@@ -50,17 +62,20 @@ function set(chosen) {
   handle?.setAttribute('aria-valuemax', String(sideWidth(Number.POSITIVE_INFINITY, viewport)));
 }
 
-/** Keeps the width the person chose. */
+/** Keeps the width the person chose, once a drag or a key ends. */
 function keep() {
   prefs.set('side-width', String(current.width));
+  release();
 }
 
 /**
  * The sidebar's right edge, fitted to the width kept in this browser: dragged, or moved with the
- * arrow keys, it sets the sidebar's width.
+ * arrow keys, it sets the sidebar's width; `settled` is told once a drag ends.
+ * @param {() => void} [settled]
  */
-export function edge() {
-  current.handle = separator({
+export function edge(settled = () => {}) {
+  current.settled = settled;
+  const handle = separator({
     axis: 'x',
     step: STEP,
     attributes: { class: 'side-edge', 'aria-label': 'Width of the sidebar', 'aria-controls': 'side' },
@@ -68,8 +83,14 @@ export function edge() {
     show: set,
     keep,
   });
+  handle.addEventListener('pointerdown', () => {
+    current.held = true;
+  });
+  // A drag the browser cancels ends with no pointerup.
+  handle.addEventListener('lostpointercapture', release);
+  current.handle = handle;
   set(kept());
-  return current.handle;
+  return handle;
 }
 
 window.addEventListener('resize', () => {

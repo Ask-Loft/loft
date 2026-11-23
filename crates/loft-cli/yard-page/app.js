@@ -7,7 +7,7 @@ import { drawAll } from './lib/diagrams.js';
 import { latest } from './lib/latest.js';
 import * as prefs from './lib/prefs.js';
 import { format, parse } from './lib/route.js';
-import { edge as sideEdge } from './lib/side-width.js';
+import { held as sideHeld, edge as sideEdge } from './lib/side-width.js';
 import { wantedBy } from './model/change.js';
 import { settle } from './views/gantt.js';
 import { failedLog, logHead, logView } from './views/log.js';
@@ -288,8 +288,6 @@ function logOf(route) {
 function start() {
   // The sidebar takes the person's choice before anything is loaded, so a folded one never shows open.
   document.body.classList.toggle('is-folded', prefs.folded());
-  // Its right edge, and the width the person chose, lie outside what is drawn again at each change.
-  document.getElementById('side')?.append(sideEdge());
   let shownLog = JSON.stringify(logOf(parse(location.hash)));
   window.addEventListener('hashchange', () => {
     state.notice = '';
@@ -300,14 +298,21 @@ function start() {
     if (same) render();
     else void load();
   });
-  // The Gantt chart is drawn again when the room it has changes; the padding that the timeline and
-  // the other views give the pane differently is not a change of that room.
+  // The Gantt chart is drawn again when the room it has changes, and while the person drags the
+  // sidebar's edge only once they let it go; the padding that the timeline and the other views
+  // give the pane differently is not a change of that room.
+  const room = document.getElementById('log') ?? document.body;
   let width = 0;
-  new ResizeObserver(([entry]) => {
-    const next = /** @type {HTMLElement} */ (entry.target).clientWidth;
+  const fit = () => {
+    const next = room.clientWidth;
     if (next !== width && width && prefs.view() === 'gantt') render();
     width = next;
-  }).observe(document.getElementById('log') ?? document.body);
+  };
+  new ResizeObserver(() => {
+    if (!sideHeld()) fit();
+  }).observe(room);
+  // The sidebar's right edge, and the width the person chose, lie outside what is drawn again at each change.
+  document.getElementById('side')?.append(sideEdge(fit));
   api.follow({
     onHello: (protocol) => {
       // A page server of another version took over: the page takes up its files. What the person

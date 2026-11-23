@@ -98,8 +98,8 @@ export function timeline(log, given) {
 
 /** The list's width this browser keeps, within its bounds. */
 function listWidth() {
-  const kept = Number(prefs.get('split'));
-  return Number.isFinite(kept) && kept > 0 ? bounded(kept) : LIST.width;
+  const kept = prefs.size('split');
+  return kept === null ? LIST.width : bounded(kept);
 }
 
 /** @param {number} width */

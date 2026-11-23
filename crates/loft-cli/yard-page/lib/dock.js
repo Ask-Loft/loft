@@ -33,8 +33,7 @@ export function dockHeight(chosen, viewport, margin) {
 
 /** The height kept in this browser, or none. */
 function kept() {
-  const height = Number(prefs.get('dock-height'));
-  return Number.isFinite(height) && height > 0 ? height : null;
+  return prefs.size('dock-height');
 }
 
 /** @param {HTMLElement} panel */

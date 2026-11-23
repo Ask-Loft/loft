@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 
 import * as prefs from '../../yard-page/lib/prefs.js';
-import { BESIDE, FIRST, LEAST, MOST, edge, sideWidth } from '../../yard-page/lib/side-width.js';
+import { BESIDE, FIRST, LEAST, MOST, edge, held, sideWidth } from '../../yard-page/lib/side-width.js';
 
 const window = /** @type {any} */ (globalThis.window);
 
@@ -103,6 +103,24 @@ test('the sidebar is never narrower than 200 pixels, unless the window is too na
   drag(handle, 248, -1000);
   assert.equal(width(), 200);
   assert.equal(handle.getAttribute('aria-valuemin'), '200');
+});
+
+test('while the person drags the edge it is held, and what waits on the drag is told once, when the edge is let go', () => {
+  let told = 0;
+  const handle = edge(() => {
+    told += 1;
+  });
+  handle.dispatchEvent(pointer('pointerdown', 248));
+  handle.dispatchEvent(pointer('pointermove', 300));
+  handle.dispatchEvent(pointer('pointermove', 320));
+  assert.equal(held(), true);
+  assert.equal(told, 0);
+  handle.dispatchEvent(pointer('pointerup', 320));
+  assert.equal(held(), false);
+  assert.equal(told, 1);
+  handle.dispatchEvent(new window.Event('lostpointercapture'));
+  handle.dispatchEvent(key('ArrowRight'));
+  assert.equal(told, 1, 'a key moves the edge without holding it');
 });
 
 test('the width chosen is the sidebar’s width the next time the page opens in this browser, and a resize chooses none', () => {

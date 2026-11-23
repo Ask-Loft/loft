@@ -36,8 +36,8 @@ export function columnWidth(start, moved) {
 
 /** The column's width kept in this browser, or its first width. */
 function keptWidth() {
-  const kept = Number(prefs.get('gantt-names'));
-  return Number.isFinite(kept) && kept > 0 ? columnWidth(kept, 0) : NAMES.first;
+  const kept = prefs.size('gantt-names');
+  return kept === null ? NAMES.first : columnWidth(kept, 0);
 }
 
 /**
