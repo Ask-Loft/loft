@@ -20463,6 +20463,12 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "without_a_sign_in_the_publish_is_refused_naming_the_address_and_login"
         body: 68d4642862299323a6a527cefe447b821478fb0678b90a4d9e7ad2eea9379bed
+  - node: 01a2067e-f638-7716-98e2-ec1c53e34e5d
+    reviewed: 5a281356113f19cc3e564e423be9f55b0121a64754037106a163bef7deabe49b
+    tests:
+      - file: "crates/loft-cli/tests/pull_public.rs"
+        name: "a_pull_without_a_configuration_directory_reads_a_public_document_without_a_token"
+        body: caf76f724cbd8ce7f83719bfe6b311c9e75f26cde8948fbc998c8c51b15ee7c1
   - node: 01a1f4f1-4309-7056-a238-4b394d224dd7
     reviewed: 2e517cd98be1018996733e03ea823c01cba2319bc8976aad423e61b14dfa1463
     tests:
@@ -20589,6 +20595,12 @@ links:
       - file: "crates/loft-cli/tests/pull_public.rs"
         name: "a_pull_with_no_sign_in_reads_a_public_document_without_a_token"
         body: c33a470437a8fe7629edbe291957f0d0ea09cb601469b61172b936de2d00645e
+  - node: 01a2067e-f638-7716-98e2-ec1d342922cb
+    reviewed: cecdbee8cf4444267782510afa95922df1bc85fbac7ca13a36f77e099129c793
+    tests:
+      - file: "crates/loft-cli/tests/pull_public.rs"
+        name: "a_pull_without_a_configuration_directory_reads_a_public_document_without_a_token"
+        body: caf76f724cbd8ce7f83719bfe6b311c9e75f26cde8948fbc998c8c51b15ee7c1
   - node: 01a20625-1782-738f-956e-4cbd94d45464
     reviewed: 5175ebfb9e4b76784b1623cd1843ad70b3e014682b12f2e2f745a5f6553eb106
     tests:
@@ -21687,6 +21699,12 @@ links:
       - file: "crates/loft-cli/tests/remote_login.rs"
         name: "login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_address"
         body: 43a232814cb9d6b90b8f0f1ea3419fd1b4455e15608b8508609d6e6147dfb415
+  - node: 01a2067e-f638-7716-98e2-ec1ffdf9bcbf
+    reviewed: 04fc908fc515114c58b0e516df03e61e365f392800afb3eae00c139918db77ef
+    tests:
+      - file: "crates/loft-cli/tests/remote_login.rs"
+        name: "login_without_a_configuration_directory_is_refused_saying_there_is_none"
+        body: d11b23b62825dc613af3c11eff2f72dc0cd3d704fc04aead50715d45fadc4c08
   - node: 01a18e1f-8daa-7674-9603-5b0311acba32
     reviewed: d4915f2562d1ddb433b95844eab61cc482c62332356a87e0664ae46fa691a814
     tests:

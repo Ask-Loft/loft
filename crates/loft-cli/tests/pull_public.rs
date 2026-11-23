@@ -3,13 +3,15 @@
 //! nothing written; a kept sign-in is still sent.
 
 use std::fs;
+use std::process::Command;
 
 use serde_json::json;
+use software_plant::BrowserScenario;
 use software_plant::remote::{RemoteScenario, Visibility};
 
 use crate::common::connected::Connected;
 use crate::common::remote::{History, history, sent_to};
-use crate::common::signed_in::{document, granted, keep, sign_ins_file};
+use crate::common::signed_in::{self, document, granted, keep, sign_ins_file};
 use crate::common::tree;
 use crate::pull::{behind, pull};
 
@@ -128,4 +130,30 @@ fn a_pull_whose_sign_in_has_lapsed_that_the_remote_refuses_names_the_lapsed_sign
     assert_eq!(requests(&run), [("/head".to_owned(), false)]);
     assert_eq!(tree(&run.scratch.0), before);
     assert_eq!(fs::read(sign_ins_file(&run.scratch)).unwrap(), file);
+}
+
+/// `command` with no configuration directory on any platform: no home, no `XDG_CONFIG_HOME` and
+/// no `APPDATA`.
+pub fn homeless(command: &mut Command) -> &mut Command {
+    for name in ["HOME", "USERPROFILE", "XDG_CONFIG_HOME", "APPDATA"] {
+        command.env_remove(name);
+    }
+    command
+}
+
+#[test]
+fn a_pull_without_a_configuration_directory_reads_a_public_document_without_a_token() {
+    let (run, ahead) = behind_one(Visibility::Public, false);
+    let (mut command, _) = signed_in::command(&run.scratch, BrowserScenario::Absent, None);
+    let output = homeless(&mut command)
+        .args(["pull", "--format", "json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(0), "{output:?}");
+    let result = document(&output);
+    assert_eq!(result["outcome"], "pulled");
+    assert_eq!(result["stateRoot"], ahead.states[2].lock["stateRoot"]);
+    let sent = requests(&run);
+    assert_eq!(sent.len(), 3, "{sent:?}");
+    assert!(sent.iter().all(|(_, token)| !token), "{sent:?}");
 }

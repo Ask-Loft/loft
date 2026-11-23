@@ -16,6 +16,7 @@ use crate::common::signed_in::{
     self, document, granted, keep, name_remote, run, sign_ins, sign_ins_file,
 };
 use crate::common::{Scratch, tree};
+use crate::pull_public::homeless;
 use crate::snapshot::snapshot;
 
 /// A connected Reading List whose manifest names `remote`.
@@ -83,6 +84,23 @@ fn login_signs_in_through_the_browser_and_keeps_the_sign_in_under_the_remote_s_a
         String::from_utf8_lossy(&output.stderr)
     );
     assert!(!printed.contains(&access) && !printed.contains(&refresh));
+}
+
+#[test]
+fn login_without_a_configuration_directory_is_refused_saying_there_is_none() {
+    let remote = Remote::start(RemoteScenario::accepting("doc-homeless"));
+    let scratch = connected(&remote);
+    let before: Files = tree(&scratch.0);
+    let (mut command, _) = signed_in::command(&scratch, BrowserScenario::Visiting, None);
+    let output = homeless(&mut command)
+        .args(["remote", "login"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let message = String::from_utf8_lossy(&output.stderr);
+    assert!(message.contains("no configuration directory"), "{message}");
+    assert_eq!(tree(&scratch.0), before, "no file of the tree is written");
+    assert!(!sign_ins_file(&scratch).exists());
 }
 
 #[test]
