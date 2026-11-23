@@ -345,7 +345,7 @@ requirements:
       - key: 01a202c3-d203-70c5-9d96-10cb59793291
         name: "No other refresh is sent after a repeat that the authorization server refuses."
       - key: 01a202c3-d203-70c5-9d96-10cc5b8bece5
-        name: "A connected command whose repeat the authorization server refuses with `invalid_target` ends with exit 1 and an error that names the recorded resource and `loft remote login`, or `loft interface login <handle>` for another document's remote, whether or not the access token it needs expires within 5 minutes."
+        name: "A connected command whose repeat of a refresh recorded for a companion resource the authorization server refuses with `invalid_target` ends with exit 1 and an error that says that the sign-in has lapsed because its refresh recorded for that resource was refused with `invalid_target`, names that resource and says that `loft remote login` signs in again, or `loft interface login <handle>` for another document's remote, whether or not the access token it needs expires within 5 minutes."
       - key: 01a202c3-d203-70c5-9d96-10cd707b6034
         name: "A repeat whose answer is lost, or that cannot reach the token endpoint, leaves the record in place."
       - key: 01a202c3-d203-70c5-9d96-10ce2d7837ef
@@ -392,7 +392,7 @@ requirements:
       - key: 01a202c3-d203-70c5-9d96-10d6f08d8670
         name: "A companion resource that the sign-in's `resources` does not list on the origin of the address is not covered, and no request is sent for it."
       - key: 01a202c3-d203-70c5-9d96-10d702b1ab03
-        name: "A companion resource whose refresh the authorization server refuses with `invalid_target` is not covered."
+        name: "A companion resource whose refresh, other than the repeat of a recorded refresh, the authorization server refuses with `invalid_target` is not covered."
       - key: 01a202c3-d203-70c5-9d96-10d8359bea9e
         name: "The error names the remote's address and the companion resource."
       - key: 01a202c3-d203-70c5-9d96-10d9ac298e6e

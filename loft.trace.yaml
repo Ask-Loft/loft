@@ -22309,7 +22309,7 @@ links:
         name: "a_recorded_refresh_the_remote_refuses_stops_a_publish_and_remote_set_signs_in_anew"
         body: 1574c5c50ca27308b640c373c83846e4fdc5ed5f2dcc87e388006389a0517c9d
   - node: 01a202c3-d203-70c5-9d96-10cc5b8bece5
-    reviewed: 18bfa7dfd7f24330c42acebb437a8f084efb3cff557b12304934fb8667eb2335
+    reviewed: 4f2928b9cfabb283ba25dd77474fa017e7935c434483522b895d5891f8c21cba
     tests:
       - file: "crates/loft-cli/tests/remote_reach_companions.rs"
         name: "a_recorded_refresh_the_remote_refuses_stops_a_publish_and_remote_set_signs_in_anew"
@@ -22429,7 +22429,7 @@ links:
         name: "a_companion_resource_listed_on_another_origin_than_the_address_is_not_covered"
         body: 1c3c57782daffb26b2fd3dc796b3209a7502b647ba801ccc2489560a53861a2f
   - node: 01a202c3-d203-70c5-9d96-10d702b1ab03
-    reviewed: bd7a516a99781c2c77d8fde9f05288ac76988464321c8b2c8695999c0440e29c
+    reviewed: c4ec24cc9b7f1f7e67ea6cf4b1505ccb9911f09db0f6177f929e0b07ca3cc7ca
     tests:
       - file: "crates/loft-cli/src/remote/signins/tests.rs"
         name: "a_companion_refresh_refused_invalid_target_is_not_covered_and_the_sign_in_serves_its_other_resources"
