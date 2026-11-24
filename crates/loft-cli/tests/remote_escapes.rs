@@ -2,11 +2,14 @@
 //! reaching the remote or of signing in to it: each control character and each bidirectional
 //! control is written escaped, on standard error and in the JSON document's `message` alike; and
 //! a resource or an issuer that a sign-in's metadata names outside visible ASCII is refused, as a
-//! remote's address is. Each runs under the remote and browser simulators, or under a remote of
-//! the test's own where no scenario of the simulator gives such text.
+//! remote's address is. A line that this escaping leaves alone, such as a reader's error, reaches
+//! standard error with U+FFFD in place of each control character. Each runs under the remote and
+//! browser simulators, or under a remote of the test's own where no scenario of the simulator
+//! gives such text.
 
 use std::process::Output;
 
+use loftspec::codec::MANIFEST;
 use serde_json::json;
 use software_plant::BrowserScenario;
 use software_plant::http::{Answer, Request, Responder, Response, Server};
@@ -360,4 +363,20 @@ fn a_lock_in_a_remote_s_answer_that_does_not_read_is_named_with_its_reason_escap
     let message = Connected::message(&output);
     assert!(message.contains("does not read"), "{message}");
     assert_eq!(tree(&scratch.0), before, "nothing is written");
+}
+
+#[test]
+fn a_reader_s_error_reaches_standard_error_with_the_replacement_character_for_each_control_character()
+ {
+    // The manifest's format, with a control character of each range, which the reader's error
+    // quotes as it is.
+    let scratch = Scratch::with_reading_list();
+    scratch.edit(MANIFEST, "loftspec/1", "\"x\\e[2J\\x9b\\x7fy\"");
+    let output = scratch.loft(&["verify"]);
+    assert_eq!(output.status.code(), Some(1), "{output:?}");
+    let written = stderr(&output);
+    let quoted = "names format `x\u{fffd}[2J\u{fffd}\u{fffd}y`";
+    assert!(written.contains(quoted), "{written:?}");
+    let controls = written.matches(|character: char| character.is_control() && character != '\n');
+    assert_eq!(controls.count(), 0, "{written:?}");
 }

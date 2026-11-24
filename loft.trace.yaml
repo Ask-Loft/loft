@@ -21552,6 +21552,9 @@ links:
       - file: "crates/loft-cli/src/out.rs"
         name: "a_carriage_return_that_a_line_feed_follows_is_left_out_and_one_alone_is_replaced"
         body: be3cff6e37139e3ef5d0a337d8001d0714ba6348467168dc7ce26e432b71fc58
+      - file: "crates/loft-cli/tests/remote_escapes.rs"
+        name: "a_reader_s_error_reaches_standard_error_with_the_replacement_character_for_each_control_character"
+        body: fd52214471dcbebd1f4c7bfd6ecc9e0e0e275072547667e52e2fa1e295fb34d7
   - node: 01a20a03-278e-71b9-a05f-99f12802a8a9
     reviewed: 3cdee3522b0067969aad7f1c2c0e3f4331be292b4765e4bed3abf2adee811f50
     tests:
