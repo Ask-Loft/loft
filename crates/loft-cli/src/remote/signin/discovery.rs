@@ -42,7 +42,8 @@ pub struct Discovered {
 ///
 /// The remote gives no challenge, its challenge names metadata on another origin than
 /// `address`, or a metadata document is missing, does not read, names a resource on another
-/// origin than `address`, or is not one a sign-in can follow.
+/// origin than `address`, names a resource, an issuer or an endpoint that [`contactable`] refuses,
+/// or is not one a sign-in can follow.
 pub fn discover(
     address: &str,
     whose: Whose<'_>,
@@ -74,6 +75,7 @@ pub fn discover(
     })?;
     let (metadata, resource) =
         resource_metadata(address, &metadata_url, timeout).map_err(failed)?;
+    contactable(&resource)?;
     let issuer = metadata["authorization_servers"][0]
         .as_str()
         .ok_or_else(|| {
@@ -85,6 +87,7 @@ pub fn discover(
              address, {issuer}"
         ))
     })?;
+    contactable(issuer)?;
     let server = fetch(&server_url, timeout).map_err(failed)?;
     if server["issuer"] != issuer {
         return Err(failed(format!(

@@ -6,6 +6,7 @@ use loftspec::codec::Files;
 use loftspec::publish::Lock;
 
 use super::{Client, RemoteError, files, history};
+use crate::escaped::Escaped;
 
 /// Why a published state could not be taken.
 #[derive(Debug)]
@@ -34,7 +35,8 @@ pub fn state(client: &Client, sequence: u64) -> Result<(Files, Lock), StateError
     })?;
     let lock = Lock::read(state["lock"].to_string().as_bytes()).map_err(|error| {
         StateError::Disagrees(format!(
-            "the lock of publish sequence {sequence} does not read: {error}"
+            "the lock of publish sequence {sequence} does not read: {}",
+            Escaped(&error.to_string())
         ))
     })?;
     let files = files::read(&state["files"], "gave").map_err(StateError::Disagrees)?;
