@@ -39471,6 +39471,93 @@ links:
       - file: "crates/loft-cli/tests/yard_page.rs"
         name: "where_a_running_page_server_does_not_serve_the_tree_the_command_names_its_port_and_says_so"
         body: db8ef22934866b8a9cf601a12b16d644c37f89be9c2ba89ea677c97e79d31d9e
+  - node: 01a20dc8-c592-7688-83f8-16e6faa7bc84
+    reviewed: 3981df69ecf72c3c7dd345bb13fbd196af888fd57210eef4e8f03a3f30229fe0
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_batch_names_its_format_and_holds_its_records_in_order"
+        body: b1e60df76d9b9148527f0c02f78a90a66eb8ad50c53e249726ad06addef00097
+  - node: 01a20dc8-c592-7688-83f8-16ea4b18b14d
+    reviewed: e4501f7d86937f182f4568c8328c545d19e818ee93391a70bdf0fd3db3ac2ea6
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_stage_s_version_names_the_stage_as_its_block_and_the_stage_s_id"
+        body: 49420b57c7905645e7920f271b492ebc674a92ae6350cbb680c52756e853b2cb
+  - node: 01a20dc8-c593-7357-875c-81924ef805c3
+    reviewed: f28dfacc2a8cbd7fbb960cc98d14428b977dca1a203c2533586f90c4118d620e
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_note_and_an_approval_with_the_same_fields_differ_only_in_kind_and_placing"
+        body: 81b7dc9495d2d0641a973628ef705c567bb05c15ab1918b5893248b8445ee1f9
+  - node: 01a20dc8-c593-7357-875c-81935ad74e7c
+    reviewed: c7b228fd28ce979318263f67b18d4f75dd01ea62bfc975b1a6b9120a44e18275
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_record_names_its_version_its_yard_log_stage_and_block_and_the_block_s_kind_and_id"
+        body: 92eb09e22d63181b19dab64972397b2331d3f7f1a14ea19640662a68738394d8
+  - node: 01a20dc8-c593-7357-875c-8194db5b41ff
+    reviewed: 9acc5dc39a4cfcbe4032b1f371c3a994fd92135cd232c9d0d80cbc46c266d352
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_record_holds_no_decision_number"
+        body: 4aff9128e92d6c8ac9b1ef25532be99508a259abfb98122128191b7ff58dd83d
+  - node: 01a20dc8-c593-7357-875c-8196421e3c60
+    reviewed: ee5767c97516d33c5dccb75f18d5af9b28fbdec09c3b1f54a4de9e846f402b2d
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "the_version_keeps_the_fields_of_its_record_in_the_stage_s_file_in_their_order"
+        body: beba131635ecce3a59efb0a1c666a45043ad995d340146df001b4007d448f227
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "texts_are_strings_integers_numbers_and_a_flag_the_boolean_true"
+        body: 0a93f2857ac853abfd7a63122eaee45dc0d846c48d04ee4ab5a61ae74431e614
+  - node: 01a20dc8-c593-7357-875c-8197e465bd38
+    reviewed: f96a6138c86cee209b24f4db50e6a579c9e8ec6739c875d46029103dcb8d71a6
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "texts_are_strings_integers_numbers_and_a_flag_the_boolean_true"
+        body: 0a93f2857ac853abfd7a63122eaee45dc0d846c48d04ee4ab5a61ae74431e614
+  - node: 01a20dc8-c593-7357-875c-8198847821a4
+    reviewed: 6987831ed54bf6aa35f3e2aae4738ff09abe942ed4dd18e14897b8ed2debe494
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "texts_are_strings_integers_numbers_and_a_flag_the_boolean_true"
+        body: 0a93f2857ac853abfd7a63122eaee45dc0d846c48d04ee4ab5a61ae74431e614
+  - node: 01a20dc8-c593-7357-875c-81998e450589
+    reviewed: 476cd547e3da25ff0ca9653d7f6bbe40c784e78c47ef54a65c19051ee975aa41
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "texts_are_strings_integers_numbers_and_a_flag_the_boolean_true"
+        body: 0a93f2857ac853abfd7a63122eaee45dc0d846c48d04ee4ab5a61ae74431e614
+  - node: 01a20dc8-c593-7357-875c-819a936e5ec8
+    reviewed: 84abee4531c0e9fa4ac6d88c39f9b08273214a8cdb003c8520c32699f0faa8d7
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_loft_block_s_report_is_nested_json_and_not_text"
+        body: e749d708f889a3d00d09cdc5abc38ac43bbf8d783e6dbcc89c2367f43d53af4b
+  - node: 01a20dc8-c593-7357-875c-819b14cdaa1b
+    reviewed: 6a7ba4acbe1b943fa96e9070a81cd0a73e7727a2a0315071bef996a497f54762
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "writing_records_changes_no_byte_of_yard_log_s_files"
+        body: c9fc27d6983376cfd3c61a334b92331fafaf0989767fba2fea5962943d8b954a
+  - node: 01a20dc8-c593-7357-875c-819dc40f121e
+    reviewed: ca3d1047efa8708c1bb80e3b08906d36deb745fde76be66a02f470e979b9e3d3
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_record_carries_no_answer_person_submission_root_or_branch_outside_its_version"
+        body: 87e92121322940d9d030a7100ce4aa76e4728867b2155251e543403de3d5b4fc
+  - node: 01a20dc8-c593-7357-875c-819e3fbb66fc
+    reviewed: 67dfe440266dfcebf95010d998ef377aeafe415c5850bb60d98cdb3fbd48eb7d
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_record_carries_no_answer_person_submission_root_or_branch_outside_its_version"
+        body: 87e92121322940d9d030a7100ce4aa76e4728867b2155251e543403de3d5b4fc
+  - node: 01a20dc8-c593-7357-875c-819f28a37c85
+    reviewed: 8eab466a7ab84f3a7a2d451b9c373c1c884013680f3fee131cc864266bec5d1d
+    tests:
+      - file: "crates/yardlog/tests/batch.rs"
+        name: "a_record_carries_no_answer_person_submission_root_or_branch_outside_its_version"
+        body: 87e92121322940d9d030a7100ce4aa76e4728867b2155251e543403de3d5b4fc
   - node: 01a1d600-053c-73ed-b18e-e5a0c1114446
     reviewed: 9053d55a1c2bb4d36c39e44ae7192c5f2555f7b328a282a3c8fa0547644c5b8c
     tests:
