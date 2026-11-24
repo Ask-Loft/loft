@@ -197,8 +197,12 @@ requirements:
         name: "The address that `LOFT_REMOTE_ENDPOINT` names, that `loft remote set` is given or that an entry of `documents` lists is held to the rule as the manifest's is."
       - key: 01a2088e-6d7b-7030-9dc9-5c8db165fe45
         name: "No connection is opened."
+      - key: 01a20c96-943b-71a7-bafc-306fe55595d6
+        name: "An address that also holds a query, a fragment or user information is refused for its characters."
       - key: 01a2088e-6d7b-7030-9dc9-5c8e409d96a5
         name: "The error names the address with its control characters escaped."
+      - key: 01a20c96-943b-71a7-bafc-3070911b2898
+        name: "The error names the address without its user information."
       - key: 01a2088e-6d7b-7030-9dc9-5c8f579483a5
         name: "The error says that a remote's address holds visible ASCII characters alone, with every other character percent-encoded."
       - key: 01a2088e-6d7b-7030-9dc9-5c905da1a96f
