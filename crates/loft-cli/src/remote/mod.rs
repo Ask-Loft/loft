@@ -71,7 +71,8 @@ pub enum RemoteError {
     SignInElsewhere { address: String, resource: String },
     /// The address is neither `https` nor `http` on the loopback interface.
     Address(String),
-    /// The address holds a character other than the visible characters of ASCII.
+    /// The address, here without its user information, holds a character other than the
+    /// visible characters of ASCII.
     Characters(String),
     /// The address holds `part`, a query, a fragment or user information, which no remote's
     /// address holds; `address` is the address without its user information.

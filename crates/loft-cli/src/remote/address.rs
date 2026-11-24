@@ -41,14 +41,14 @@ pub fn visible(address: &str) -> bool {
     address.bytes().all(|byte| byte.is_ascii_graphic())
 }
 
-/// Refuses `address` where it holds a character other than the visible characters of ASCII.
-/// The characters are held first, before anything reads the address, so that the address a
-/// person reads is the address contacted.
+/// Refuses `address` where it holds a character other than the visible characters of ASCII,
+/// naming it without its user information. The characters are held first, before anything
+/// reads the address, so that the address a person reads is the address contacted.
 fn in_visible_ascii(address: &str) -> Result<(), RemoteError> {
     if visible(address) {
         Ok(())
     } else {
-        Err(RemoteError::Characters(address.to_owned()))
+        Err(RemoteError::Characters(without_user(address)))
     }
 }
 
@@ -114,7 +114,7 @@ fn without_user(address: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{RemoteError, checked, without_user};
+    use super::{RemoteError, checked, contactable, without_user};
 
     #[test]
     fn an_error_names_an_address_without_its_user_information() {
@@ -140,6 +140,33 @@ mod tests {
             ("ci:secret@host.example/doc", "…@host.example/doc"),
         ] {
             assert_eq!(without_user(address), shown, "{address}");
+        }
+    }
+
+    #[test]
+    fn an_address_outside_visible_ascii_is_refused_for_its_characters_and_named_without_its_user_information()
+     {
+        for (address, named) in [
+            (
+                "https://ci:secret@host.example/doc?x#\u{1b}[0m",
+                "https://host.example/doc?x#\u{1b}[0m",
+            ),
+            (
+                "https://ci:se\u{202e}cret@host.example/doc",
+                "https://host.example/doc",
+            ),
+            (
+                "https://host.example/doc?b\u{fc}cher",
+                "https://host.example/doc?b\u{fc}cher",
+            ),
+            (
+                "https://host.example/doc#top\u{9b}",
+                "https://host.example/doc#top\u{9b}",
+            ),
+        ] {
+            let refused = RemoteError::Characters(named.to_owned());
+            assert_eq!(checked(address), Err(refused.clone()), "{address}");
+            assert_eq!(contactable(address), Err(refused), "{address}");
         }
     }
 

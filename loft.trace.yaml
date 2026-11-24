@@ -21039,6 +21039,12 @@ links:
       - file: "crates/loft-cli/tests/remote_address_characters.rs"
         name: "an_address_an_entry_of_documents_lists_is_held_to_visible_ascii_and_named_escaped"
         body: a044ef99d001a2126e1bc958a77a24a145b9d0af111754d9ea6914d42a87d46b
+  - node: 01a20c96-943b-71a7-bafc-306fe55595d6
+    reviewed: bbf3704ad0247682331b469a0d54d48f825cd0a601406ae3d0bf5155cddee329
+    tests:
+      - file: "crates/loft-cli/src/remote/address.rs"
+        name: "an_address_outside_visible_ascii_is_refused_for_its_characters_and_named_without_its_user_information"
+        body: fa7a0fba93ad8c73e91594ee293aa1dfe8dfd7700dc014d7f5c036c855c87fc3
   - node: 01a2088e-6d7b-7030-9dc9-5c8e409d96a5
     reviewed: edf39ce2f35316166bd9176a67095fd2bd12036f9350a3b228cc8ea0d47bb857
     tests:
@@ -21048,6 +21054,12 @@ links:
       - file: "crates/loft-cli/tests/remote_address_characters.rs"
         name: "a_manifest_address_that_decodes_outside_visible_ascii_is_refused_before_any_request"
         body: 77e3c421fb6be531255c369e63bdc6b20854d29303f8914337ae344f058fc9f9
+  - node: 01a20c96-943b-71a7-bafc-3070911b2898
+    reviewed: bc7afd725da11c6dbe1efa019ec45ffbe1bfa26c386fbdc7c594a3b97430364e
+    tests:
+      - file: "crates/loft-cli/src/remote/address.rs"
+        name: "an_address_outside_visible_ascii_is_refused_for_its_characters_and_named_without_its_user_information"
+        body: fa7a0fba93ad8c73e91594ee293aa1dfe8dfd7700dc014d7f5c036c855c87fc3
   - node: 01a2088e-6d7b-7030-9dc9-5c8f579483a5
     reviewed: 87b9797834fbd41116c8bff1302619f84e98a493e0f8b505887a87bdf2f6d4a0
     tests:

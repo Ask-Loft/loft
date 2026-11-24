@@ -149,7 +149,8 @@ Unreleased below, and those of each 2.4 release still to come.
   percent-encoded. An address that holds another character, as the manifest's `remote` can
   through the escapes of a double-quoted value, is refused before any request, whether the
   manifest, `LOFT_REMOTE_ENDPOINT`, `loft remote set` or an entry of `documents` gives it, and the
-  error names it escaped. `loft remote remove`, which reaches no remote, still disconnects such a
+  error names it escaped. An address that also holds a query, a fragment or user information is
+  refused for its characters, and the error leaves out its user information. `loft remote remove`, which reaches no remote, still disconnects such a
   document, naming its address escaped. A sign-in holds the resource and the issuer that its
   metadata names to the same rule, as it holds the authorization server's endpoints, and leaves
   out, with a warning and before anything is asked of it, a companion resource whose identifier
