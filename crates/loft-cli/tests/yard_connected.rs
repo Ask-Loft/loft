@@ -174,7 +174,7 @@ fn a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not() {
         assert_eq!(written["revision"], offline["revision"]);
         assert_eq!(entries(&yard).len(), 1, "{endpoint}");
         let said = stderr(&output);
-        assert!(said.contains("did not reach Yard Server"), "{said}");
+        assert!(said.contains("did not leave the outbox"), "{said}");
         assert_eq!(said.lines().count(), 1, "{said}");
     }
     assert_eq!(failing.requests().len(), 1);

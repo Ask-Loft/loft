@@ -305,6 +305,19 @@ fn a_failing_simulator_answers_its_status_as_a_problem_document() {
 }
 
 #[test]
+fn a_failing_simulator_names_the_code_the_contract_gives_its_status() {
+    for (status, code) in [
+        (401, "unauthenticated"),
+        (503, "service_unavailable"),
+        (500, "internal_error"),
+    ] {
+        let server = YardServer::failing(status);
+        let answer = Target::simulated(&server).post(&fresh(1));
+        assert_eq!(refusal(&answer), (status, Some(code.to_owned())));
+    }
+}
+
+#[test]
 fn a_silent_simulator_never_answers_and_a_refusing_one_refuses() {
     let server = YardServer::silent();
     let quiet: ureq::Agent = ureq::Agent::config_builder()

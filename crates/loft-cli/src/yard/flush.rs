@@ -115,7 +115,10 @@ fn once(outbox: &Outbox, credential: &str) -> Flushed {
                 taken,
                 failed: None,
             },
-            Err(error) => failed(taken, error.to_string()),
+            Err(error) => failed(
+                taken,
+                format!("Yard Server took the batch, but the outbox could not drop it: {error}"),
+            ),
         },
         Ok(reply) => {
             let why = refusal(reply.status, &reply.body);
@@ -157,7 +160,7 @@ pub fn after_write() {
     let flushed = once(&outbox, &token);
     if let Some(why) = &flushed.failed {
         errln!(
-            "The versions did not reach Yard Server at {}: {why}; they stay in the outbox for the next write or `loft yard flush`.",
+            "The batch did not leave the outbox for Yard Server at {}: {why}; its versions stay there for the next write or `loft yard flush`.",
             outbox.endpoint()
         );
     }
@@ -192,7 +195,7 @@ pub fn run(args: &FlushArgs) -> Finished {
     };
     let flushed = once(&outbox, &token);
     let found = &flushed.taken;
-    let line = format!(
+    let mut line = format!(
         "{} to Yard Server at {}: {} sent, {} remaining, {} skipped, {} moved into dead/.",
         flushed.outcome,
         outbox.endpoint(),
@@ -201,6 +204,9 @@ pub fn run(args: &FlushArgs) -> Finished {
         found.skipped,
         found.dead
     );
+    if let Some(why) = &flushed.failed {
+        line = format!("{line} {why}.");
+    }
     let fields = flushed.fields();
     let errors = flushed
         .failed

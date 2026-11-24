@@ -10,7 +10,7 @@ use std::time::Duration;
 use serde_json::{Map, Value, json};
 
 use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
-use crate::remote::problem::{problem, refusal};
+use crate::remote::problem::{CODES, problem, refusal};
 
 /// The path that takes a batch of versions, under the server's address.
 pub const BATCHES: &str = "/batches";
@@ -199,12 +199,16 @@ fn version_key(record: &Value) -> Option<&str> {
     record.get("version")?.get("key")?.as_str()
 }
 
-/// The problem document of an error scenario at `status`.
+/// The problem document of an error scenario at `status`: the code the remote's closed set gives
+/// that status, else `internal_error` for a server error and `invalid_request` for another.
 fn failure(status: u16) -> Response {
-    let code = if status >= 500 {
-        "internal_error"
-    } else {
-        "invalid_request"
-    };
+    let code = CODES.iter().find(|(_, known)| *known == status).map_or(
+        if status >= 500 {
+            "internal_error"
+        } else {
+            "invalid_request"
+        },
+        |(code, _)| code,
+    );
     problem(status, code, Map::new())
 }

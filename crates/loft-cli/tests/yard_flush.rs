@@ -53,7 +53,7 @@ fn a_flush_sends_what_a_write_left_and_counts_it() {
     );
     let message = failed["errors"][0]["message"].as_str().unwrap();
     assert!(message.contains("503"), "{message}");
-    assert!(message.contains("internal_error"), "{message}");
+    assert!(message.contains("service_unavailable"), "{message}");
     let silent = YardServer::silent();
     write(&yard, STAGE_BATCH, &connected(&silent.url()));
     let (code, quiet) = flush(&yard, &connected(&silent.url()));
@@ -219,4 +219,22 @@ fn the_claude_hook_makes_no_request_to_yard_server_with_entries_waiting() {
     assert!(hooked.status.success());
     assert_eq!(server.requests().len(), before);
     assert_eq!(entries(&yard).len(), 1);
+}
+
+#[test]
+fn a_failed_flush_says_why_on_standard_error_without_json() {
+    let yard = Yard::new();
+    let failing = YardServer::failing(401);
+    write(&yard, STAGE_BATCH, &connected(&failing.url()));
+    let output = yard
+        .scratch
+        .command(Some(&yard.git), &yard.clock)
+        .envs(connected(&failing.url()))
+        .args(["yard", "flush"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    let said = crate::common::stderr(&output);
+    assert!(said.contains("401"), "{said}");
+    assert!(said.contains("unauthenticated"), "{said}");
 }

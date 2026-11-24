@@ -117,17 +117,18 @@ impl Outbox {
     }
 
     /// The oldest `most` entries for this outbox's address, in the order of their version
-    /// keys, with the files that are not entries moved into `dead/` on the way.
+    /// keys, with the files that are not entries moved into `dead/` on the way. A file that
+    /// cannot be read, or moved, is passed over, so that one file never holds up the rest.
     ///
     /// # Errors
     ///
-    /// The outbox cannot be listed, or a file cannot be read or moved.
+    /// The outbox cannot be listed.
     pub fn take(&self, most: usize) -> Result<Taken, YardStoreError> {
         let mut taken = Taken::default();
         for name in self.names()? {
             let path = self.dir.join(&name);
-            // Gone since the listing: sent or moved by another run.
-            let Some(bytes) = read_if_present(&path)? else {
+            // Gone since the listing, sent or moved by another run, or not readable at all.
+            let Ok(Some(bytes)) = read_if_present(&path) else {
                 continue;
             };
             match entry::read(&bytes) {
@@ -141,7 +142,7 @@ impl Outbox {
                 }
                 Read::Entry { .. } => {}
                 Read::Newer => taken.skipped += 1,
-                Read::Foreign => taken.dead += usize::from(self.bury(&name)?),
+                Read::Foreign => taken.dead += usize::from(self.bury(&name).unwrap_or(false)),
             }
         }
         Ok(taken)

@@ -384,3 +384,27 @@ fn the_person_s_answer_puts_no_entry() {
     assert!(answered.is_ok());
     assert_eq!(entries(&tree.scratch), before);
 }
+
+#[cfg(unix)]
+#[test]
+fn a_file_that_cannot_be_read_is_passed_over_and_the_rest_are_taken() {
+    use std::os::unix::fs::PermissionsExt as _;
+    let scratch = Scratch::new();
+    let ours = outbox(&scratch, ENDPOINT);
+    let locked = ".yard/outbox/00000000-0000-7000-8000-000000000001.json";
+    scratch.put(locked, &entry(ENDPOINT, "1", 1));
+    scratch.put(
+        ".yard/outbox/00000000-0000-7000-8000-000000000002.json",
+        &entry(ENDPOINT, "2", 1),
+    );
+    let path = scratch.0.join(locked);
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o000)).unwrap();
+    let readable = fs::read(&path).is_ok();
+    let taken = ours.take(16);
+    fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
+    let taken = taken.unwrap();
+    if !readable {
+        assert_eq!(taken.entries.len(), 1);
+        assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000002");
+    }
+}
