@@ -14,6 +14,7 @@ use yardlog_store::{Held, Place, YardStore, YardStoreError};
 use super::args::Beyond;
 use super::failure::{self, Failure};
 use super::page;
+use crate::out::errln;
 
 /// The branch's Yard Log, where a command finds it.
 pub struct Branch {
@@ -32,7 +33,7 @@ impl Branch {
 
     /// The Yard Log of the branch `place` is on.
     pub fn at(git: YardGit, place: Place, beyond: Beyond) -> Result<Self, Failure> {
-        let store = YardStore::new(place)?;
+        let store = YardStore::new(place)?.with_outbox(super::flush::outbox());
         Ok(Self { git, store, beyond })
     }
 
@@ -133,7 +134,13 @@ impl Branch {
         change: impl FnOnce(Option<YardLog>) -> Result<(YardLog, T), Unapplied<R>>,
     ) -> Result<Result<T, R>, Failure> {
         match self.store.update(change) {
-            Ok(updated) => Ok(Ok(updated.value)),
+            Ok(updated) => {
+                super::flush::noted(updated.outboxed);
+                if let Some(unsent) = &updated.unsent {
+                    errln!("{unsent}");
+                }
+                Ok(Ok(updated.value))
+            }
             Err(Unapplied::Store(error)) => Err(error.into()),
             Err(Unapplied::Refused(refused)) => Ok(Err(refused)),
             Err(Unapplied::Failed(failure)) => Err(failure),

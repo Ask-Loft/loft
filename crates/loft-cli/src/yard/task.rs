@@ -88,7 +88,7 @@ pub(super) fn under_lock<T>(
 pub fn run(root: &Path, args: TaskArgs) -> Finished {
     let as_json = args.output.json();
     let done = attempt(root, args);
-    failure::end(SCHEMA, as_json, done, |outcome, fields| {
+    let finished = failure::end(SCHEMA, as_json, done, |outcome, fields| {
         let what = match (&fields["task"], &fields["released"]) {
             (Value::String(task), _) => format!("Task `{task}` is {}", fields["state"]),
             (_, Value::Array(ids)) if !ids.is_empty() => format!("Released {}", words(ids)),
@@ -98,7 +98,9 @@ pub fn run(root: &Path, args: TaskArgs) -> Finished {
             "{what} ({outcome}); Yard Log at revision {}",
             fields["revision"]
         )
-    })
+    });
+    super::flush::after_write();
+    finished
 }
 
 fn words(ids: &[Value]) -> String {

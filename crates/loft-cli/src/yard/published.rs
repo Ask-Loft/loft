@@ -27,13 +27,15 @@ const OUTCOME: &str = "recorded";
 pub fn run(root: &Path, args: PublishedArgs) -> Finished {
     let as_json = args.output.json();
     let recorded = attempt(root, args).map(|fields| (OUTCOME, fields));
-    failure::end(SCHEMA, as_json, recorded, |_, fields| {
+    let finished = failure::end(SCHEMA, as_json, recorded, |_, fields| {
         format!(
             "Recorded the publish in the Yard Log of {} at revision {}",
             fields["branch"].as_str().unwrap_or_default(),
             fields["revision"]
         )
-    })
+    });
+    super::flush::after_write();
+    finished
 }
 
 fn attempt(dir: &Path, args: PublishedArgs) -> Result<Value, Failure> {

@@ -11,3 +11,7 @@ LOFT_UPDATE_ENDPOINT = "http://127.0.0.1:9"
 # A dogfood `LOFT_YARD_HOME` is never inherited: every test keeps the machine's files in its own
 # home. An empty value is ignored, so `~/.yard/` of the home each test gives applies.
 LOFT_YARD_HOME = { value = "", force = true }
+# Connected mode is off in every process Cargo runs: a test that turns it on names a Yard Server
+# simulator of the Software Plant.
+LOFT_YARD_SERVER_ENDPOINT = { value = "", force = true }
+LOFT_YARD_SERVER_TOKEN = { value = "", force = true }

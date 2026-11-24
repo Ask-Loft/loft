@@ -154,6 +154,7 @@ mod yard_codex_tasks;
 mod yard_codex_usage;
 mod yard_codex_watch;
 mod yard_commands;
+mod yard_connected;
 mod yard_consultation;
 mod yard_continue;
 mod yard_continued_holds;
@@ -161,6 +162,7 @@ mod yard_delegation;
 #[cfg(unix)]
 mod yard_dogfood;
 mod yard_event_ids;
+mod yard_flush;
 mod yard_home;
 mod yard_hosts;
 mod yard_live_sessions;
