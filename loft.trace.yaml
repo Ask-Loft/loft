@@ -39645,6 +39645,9 @@ links:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_record_is_taken_with_its_fields_in_the_order_written"
         body: 05ec327ffcbb77ce7cdb60ead46e2f5da97114e0d26c65db28c735d0c635d5d1
+      - file: "crates/loft-cli/tests/yard_server_e2e.rs"
+        name: "a_note_written_by_loft_arrives_in_yard_server_as_yard_log_holds_it"
+        body: 644ead07db786daef310e61d46a149d2946e69e1a523c8aed46bd38d8c0a8300
   - node: 01a20dc8-c593-7357-875c-81af8c1c1fd0
     reviewed: 41c6f5ba66aafa25b555568d589bf1ccec5af6e24bc2c13ec737ff9f0148f431
     tests:
@@ -39873,6 +39876,9 @@ links:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "until_a_batch_is_taken_the_next_sending_takes_the_same_oldest_entries_again"
         body: 6786f45530b9f637c7a525f13983c3f2b5f02f7df482bef1821a9c276d84525d
+      - file: "crates/loft-cli/tests/yard_server_e2e.rs"
+        name: "a_batch_stored_and_unanswered_is_sent_again_by_the_next_flush_and_held_once"
+        body: 051b68cffee415fc2dc64445446fea0c0d6aa934846441867ddcffedea38997a
   - node: 01a20dc8-c593-7357-875c-81e26152c5c3
     reviewed: e23e259210669d6e69aa783ef243264dc1afed49c547859b271e812cf1bed133
     tests:
@@ -39891,6 +39897,9 @@ links:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
         body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+      - file: "crates/loft-cli/tests/yard_server_e2e.rs"
+        name: "a_note_written_by_loft_arrives_in_yard_server_as_yard_log_holds_it"
+        body: 644ead07db786daef310e61d46a149d2946e69e1a523c8aed46bd38d8c0a8300
   - node: 01a20dc8-c593-7357-875c-81e6f263b0fb
     reviewed: 9810a6212b09725260c6a277994f9457ec3307b9482f0375e1961e661aa02ccb
     tests:
