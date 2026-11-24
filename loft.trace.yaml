@@ -20693,7 +20693,7 @@ links:
         body: 685096c0aeb98eca51919386028dcf7c4d0f9dbc5a7495905a654282f362a7bf
       - file: "crates/loft-cli/src/remote/signins/kept.rs"
         name: "a_sign_in_whose_companion_resources_do_not_read_still_serves_its_own_resource"
-        body: efb25eb9856103b5e9dfb3034de6a0e33bbd0c9d402b4249249f52e3e55db2e5
+        body: 8cb94ec0a0361c4dd1380e12508a4544cdaa37db929eaec4edf2b1f531089c4c
   - node: 01a18e1f-8daa-7674-9603-5ad333b36e05
     reviewed: 6f8e361fca1ee375d070e2b40143ef2382aa4bd303e62c8e199d2f0a9a3c5310
     tests:

@@ -47,7 +47,7 @@ pub struct SignIn {
     pub issuer: Option<String>,
     #[serde(
         default,
-        deserialize_with = "lenient",
+        deserialize_with = "companions",
         skip_serializing_if = "Vec::is_empty"
     )]
     pub resources: Vec<Covered>,
@@ -73,6 +73,24 @@ where
     T: DeserializeOwned + Default,
 {
     Ok(serde_json::from_value(Value::deserialize(deserializer)?).unwrap_or_default())
+}
+
+/// The companion resources, read leniently where each is an object: the derived reader would
+/// also read a list of a companion's values, in their order, and a refresh could keep no token it
+/// issued for that companion in a list.
+fn companions<'de, D>(deserializer: D) -> Result<Vec<Covered>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let listed = Value::deserialize(deserializer)?;
+    let objects = listed
+        .as_array()
+        .is_some_and(|items| items.iter().all(Value::is_object));
+    Ok(if objects {
+        serde_json::from_value(listed).unwrap_or_default()
+    } else {
+        Vec::new()
+    })
 }
 
 /// Whether `expires_at` falls within [`MARGIN`] of `now`, or does not read.
@@ -308,6 +326,12 @@ mod tests {
         let cases = [
             (json!(3), None, json!("x")),
             (json!(null), None, json!([{ "resource": NOTES }])),
+            // The derived reader would also read a list of a companion's values, in their order.
+            (
+                json!(null),
+                None,
+                json!([[NOTES, "notes", "access-9", LATER]]),
+            ),
             (
                 json!(issuer),
                 Some(issuer),
