@@ -1,12 +1,14 @@
 //! The Markdown of Yard Log's blocks as the page shows it: rendered to HTML here, by `loft`, so
-//! that the page never renders Markdown itself. Any HTML the Markdown holds is shown as text,
-//! a link keeps only an address of the web, of mail or within the page, and an image is shown
-//! as a link to it, so that no element a block names is made in the page and nothing is loaded
-//! from elsewhere. A fenced code block marked `mermaid` stays a code block of that language,
+//! that the page never renders Markdown itself. comrak renders it, a port of cmark-gfm, so that a
+//! bare address in a block's Markdown is linked where GitHub links it. Any HTML the Markdown holds
+//! is shown as text, so that no element a block names is made in the page, and `links` decides
+//! which links stay. A fenced code block marked `mermaid` stays a code block of that language,
 //! which the page draws as a diagram. The names of the nodes a `loft` view reports are rendered
-//! the same way, each on one line.
+//! the same way, each on one line, with no bare address linked.
 
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd, html};
+mod links;
+
+use comrak::{Arena, Options};
 use serde_json::Value;
 
 /// The Markdown fields of a stage's or a block's body, each with the field its HTML is given in:
@@ -21,21 +23,40 @@ const FIELDS: [(&str, &str); 6] = [
     ("note", "noteHtml"),
 ];
 
+fn options(autolink: bool) -> Options<'static> {
+    let mut options = Options::default();
+    options.extension.autolink = autolink;
+    options.extension.table = true;
+    options.extension.strikethrough = true;
+    options.extension.tasklist = true;
+    options.extension.footnotes = true;
+    // An id for each heading, so that a link within the page can reach it; prefixed as GitHub
+    // prefixes it, so that it never takes an id of the page itself.
+    options.extension.header_id_prefix = Some("user-content-".to_owned());
+    // Shown as text rather than dropped, so a reader sees what the Markdown holds.
+    options.render.escape = true;
+    options
+}
+
+fn render(markdown: &str, autolink: bool) -> String {
+    let options = options(autolink);
+    let arena = Arena::new();
+    let root = comrak::parse_document(&arena, markdown, &options);
+    links::keep_safe(root);
+    let mut html = String::new();
+    comrak::format_html(root, &options, &mut html).expect("writing to a String never fails");
+    html
+}
+
 /// `markdown` as HTML.
 pub fn to_html(markdown: &str) -> String {
-    let options = Options::ENABLE_TABLES
-        | Options::ENABLE_STRIKETHROUGH
-        | Options::ENABLE_TASKLISTS
-        | Options::ENABLE_FOOTNOTES;
-    let mut out = String::new();
-    html::push_html(&mut out, Safe::new(Parser::new_ext(markdown, options)));
-    out
+    render(markdown, true)
 }
 
 /// `markdown` as HTML for one line, such as a node's name: the inside of the one paragraph it
 /// makes, or none where it makes anything else.
 pub fn to_inline_html(markdown: &str) -> Option<String> {
-    let html = to_html(markdown);
+    let html = render(markdown, false);
     let inner = html.strip_prefix("<p>")?.strip_suffix("</p>\n")?;
     (!inner.contains("</p>")).then(|| inner.to_owned())
 }
@@ -126,86 +147,6 @@ fn render_names(value: &mut Value) {
     }
 }
 
-/// Whether a link may keep `address`: one of the web or of mail, one within the page, or one
-/// relative to it, never a script's or another scheme's.
-fn is_safe(address: &str) -> bool {
-    let lower = address.trim().to_ascii_lowercase();
-    if ["http://", "https://", "mailto:"]
-        .iter()
-        .any(|scheme| lower.starts_with(scheme))
-    {
-        return true;
-    }
-    // An address with no scheme: nothing before the first `/`, `?` or `#` holds a `:`.
-    let head = lower.split(['/', '?', '#']).next().unwrap_or_default();
-    !head.contains(':')
-}
-
-/// The events of a parser with raw HTML turned to text, unsafe links undone and images turned
-/// to links.
-struct Safe<'a, I: Iterator<Item = Event<'a>>> {
-    events: I,
-    /// For each link open, whether it was kept.
-    links: Vec<bool>,
-}
-
-impl<'a, I: Iterator<Item = Event<'a>>> Safe<'a, I> {
-    const fn new(events: I) -> Self {
-        Self {
-            events,
-            links: Vec::new(),
-        }
-    }
-
-    /// The event `event` becomes, or none where it is dropped: a link or an image whose address
-    /// is not kept is dropped with its end, its text staying.
-    fn turn(&mut self, event: Event<'a>) -> Option<Event<'a>> {
-        match event {
-            Event::Html(text) | Event::InlineHtml(text) => Some(Event::Text(text)),
-            Event::Start(
-                Tag::Link {
-                    link_type,
-                    dest_url,
-                    title,
-                    id,
-                }
-                | Tag::Image {
-                    link_type,
-                    dest_url,
-                    title,
-                    id,
-                },
-            ) => {
-                let kept = is_safe(&dest_url);
-                self.links.push(kept);
-                kept.then_some(Event::Start(Tag::Link {
-                    link_type,
-                    dest_url,
-                    title,
-                    id,
-                }))
-            }
-            Event::End(TagEnd::Link | TagEnd::Image) => {
-                (self.links.pop() == Some(true)).then_some(Event::End(TagEnd::Link))
-            }
-            other => Some(other),
-        }
-    }
-}
-
-impl<'a, I: Iterator<Item = Event<'a>>> Iterator for Safe<'a, I> {
-    type Item = Event<'a>;
-
-    fn next(&mut self) -> Option<Event<'a>> {
-        while let Some(event) = self.events.next() {
-            if let Some(turned) = self.turn(event) {
-                return Some(turned);
-            }
-        }
-        None
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -258,6 +199,49 @@ mod tests {
         let html = to_inline_html("A <b>bold</b> name").unwrap_or_default();
         assert!(!html.contains("<b>"), "{html}");
         assert!(html.contains("&lt;b&gt;bold&lt;/b&gt;"), "{html}");
+    }
+
+    #[test]
+    fn a_bare_address_in_every_markdown_field_is_drawn_as_a_link() {
+        let mut document = serde_json::json!({"stages": [{
+            "version": {"body": {"title": "Model", "goal": "Per https://example.com/goal"}},
+            "blocks": [
+                {"version": {"body": {"title": "Ship", "consequence": "See https://example.com/consequence"}}},
+                {"version": {"body": {"title": "Fix", "detail": "See https://example.com/detail", "state": "done"}}},
+                {"version": {"body": {"prompt": "Which?", "context": "See https://example.com/context",
+                    "options": [{"label": "Top", "detail": "See https://example.com/option"}]}}},
+                {"kind": "loft", "version": {"body": {"view": "trace", "note": "See https://example.com/note"}}},
+                {"version": {"body": {"title": "Ship it?", "markdown": "See https://example.com/approval"}}},
+                {"version": {"body": {"title": "The plan", "markdown": "See https://example.com/plan"}}}
+            ]
+        }]});
+        render_document(&mut document);
+        let stage = &document["stages"][0];
+        let body = |index: usize| &stage["blocks"][index]["version"]["body"];
+        let fields = [
+            (&stage["version"]["body"]["goalHtml"], "goal"),
+            (&body(0)["consequenceHtml"], "consequence"),
+            (&body(1)["detailHtml"], "detail"),
+            (&body(2)["contextHtml"], "context"),
+            (&body(2)["options"][0]["detailHtml"], "option"),
+            (&body(3)["noteHtml"], "note"),
+            (&body(4)["html"], "approval"),
+            (&body(5)["html"], "plan"),
+        ];
+        for (html, field) in fields {
+            let html = html.as_str().unwrap_or_default();
+            let address = format!("https://example.com/{field}");
+            let expected = format!("<a href=\"{address}\">{address}</a>");
+            assert!(html.contains(&expected), "{field}: {html}");
+        }
+    }
+
+    #[test]
+    fn a_bare_address_in_a_name_stays_text() {
+        assert_eq!(
+            to_inline_html("See https://example.com/x").as_deref(),
+            Some("See https://example.com/x")
+        );
     }
 
     #[test]
@@ -353,6 +337,16 @@ mod tests {
             .to_owned();
         assert!(!html.contains("<b>"), "{html}");
         assert!(html.contains("&lt;b&gt;bold&lt;/b&gt;"), "{html}");
+    }
+
+    #[test]
+    fn a_heading_is_given_the_id_a_link_within_the_page_names_it_by() {
+        let html = to_html("## Notes\n\nSee [the notes](#notes).");
+        assert!(
+            html.contains("<h2 id=\"user-content-notes\">Notes"),
+            "{html}"
+        );
+        assert!(html.contains("<a href=\"#notes\">the notes</a>"), "{html}");
     }
 
     #[test]

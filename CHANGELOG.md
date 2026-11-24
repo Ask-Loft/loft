@@ -18,6 +18,23 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 - Every edge the Yard page lets you drag ends a drag the browser cancels where it reached, and
   drags by the main button only. Such a drag used to stay in hand, so the edge followed a pointer
   that merely passed over it.
+- The Yard page draws a bare `http://`, `https://` or `mailto:` address in a block's Markdown as
+  a link where GitHub does, where it used to show it as text: the page server now renders
+  Markdown with comrak, a port of GitHub's renderer. An `_`, `*` or `~` within an address stays
+  part of it rather than making emphasis, and a mark or quote that ends a sentence, or a closing
+  parenthesis the address does not open, stays out of the link. An address in code, in a link the
+  Markdown writes out or after a `[` that opens no link stays as it is. A `www.` address and a
+  bare email address stay text, and a node's name still shows an address as text.
+- A link to a web address in a block's Markdown or in a node's name opens in a new tab, so
+  following it leaves the Yard page as it was; a screen reader hears that it does, and text copied
+  from the block does not hold those words. A link written to a file, or to an address that begins
+  with `//`, is drawn as its text, and an image or a link within a link as its text.
+- Following a footnote on the Yard page, a link to a heading of its block, or another link to a
+  place within the page, brings that place into view and moves the focus to it, where it used to
+  replace the Yard Log shown; opened in a new tab, it shows that same Yard Log.
+- A link to the address of a Yard Log, written as its route or as the page's full address, opens
+  that Yard Log in the same tab.
+- A table column that a block's Markdown aligns to the right or to the center stays so aligned.
 
 ## 2.4.1 (2026-11-22)
 
