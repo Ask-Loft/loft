@@ -78,6 +78,8 @@ mod release_check;
 mod release_feed_contract;
 mod release_workflow;
 mod remote_address_characters;
+mod remote_address_checks;
+mod remote_answer_limits;
 mod remote_companion_escapes;
 mod remote_connect;
 mod remote_connect_notice;

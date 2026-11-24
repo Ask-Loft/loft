@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 use loftspec::codec::{Files, SpecPath};
 use loftspec::publish::{self, Lock, Made, Publication, PublishedAt, ReadTree};
 use serde_json::Value;
+use software_plant::http::{Answer, Request, Responder, Response};
 use software_plant::remote::{Remote, StoredState, document_path};
 
 use super::{EPOCH, reading_list};
@@ -134,4 +135,13 @@ pub fn sent_to(remote: &Remote, key: &str) -> Vec<Sent> {
             })
         })
         .collect()
+}
+
+/// A server's answer to every request: one response.
+pub struct Always(pub Response);
+
+impl Responder for Always {
+    fn answer(&mut self, _: &Request) -> Answer {
+        self.0.clone().into()
+    }
 }

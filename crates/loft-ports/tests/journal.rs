@@ -142,7 +142,9 @@ fn empty_directories_are_removed_only_below_the_floor() {
     let scratch = Scratch::new();
     scratch.put("spec/products/a/product.yaml", "a\n");
     scratch.put("only/one.yaml", "x\n");
-    let journal = Journal::new(scratch.0.clone(), scratch.0.join(".loft/save")).keeping("spec");
+    let journal = Journal::new(scratch.0.clone(), scratch.0.join(".loft/save"))
+        .keeping("spec")
+        .beside(&["only/one.yaml"]);
     let mut changes = Changes::default();
     changes.remove.insert(path("spec/products/a/product.yaml"));
     changes.remove.insert(path("only/one.yaml"));

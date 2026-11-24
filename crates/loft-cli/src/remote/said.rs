@@ -3,7 +3,7 @@
 //! document's, mended by `loft interface login` and the handle's entry of `documents`. Both
 //! wordings lie here, side by side, so that neither drifts from the other.
 
-use super::{RemoteError, TOKEN_ENV};
+use super::{ENDPOINT_ENV, RemoteError, TOKEN_ENV};
 use crate::escaped::Escaped;
 use crate::network;
 
@@ -49,7 +49,9 @@ impl RemoteError {
         let own = remedy == Remedy::Own;
         let token = |said: String| {
             if own {
-                format!("{said}, or {TOKEN_ENV} names a token for one run")
+                format!(
+                    "{said}, or {TOKEN_ENV} names a token for one run, sent to the address {ENDPOINT_ENV} names"
+                )
             } else {
                 said
             }
@@ -180,9 +182,9 @@ mod tests {
     }
 
     /// The place of each variant among the samples of [`errors`]: a match with no wildcard, so
-    /// that a variant added to the type does not compile here until it is placed. `File`, the
-    /// one variant without a sample, is placed after them all, so that a variant placed before
-    /// it fails the test below until it is sampled.
+    /// that a variant added to the type does not compile here until it is placed. `TokenAlone`
+    /// and `File`, the two variants without a sample, are placed after them all, so that a
+    /// variant placed before them fails the test below until it is sampled.
     const fn place(error: &RemoteError) -> usize {
         match error {
             RemoteError::NoAddress { .. } => 0,
@@ -190,24 +192,27 @@ mod tests {
             RemoteError::SignInElsewhere { .. } => 2,
             RemoteError::Address(_) => 3,
             RemoteError::Characters(_) => 4,
-            RemoteError::NotHeld { .. } => 5,
-            RemoteError::StateNotHeld { .. } => 6,
-            RemoteError::Variable { .. } => 7,
-            RemoteError::Unreachable { .. } => 8,
-            RemoteError::Unreadable { .. } => 9,
-            RemoteError::Refused { .. } => 10,
-            RemoteError::Unsigned { .. } => 11,
-            RemoteError::Lapsed { .. } => 12,
-            RemoteError::FormerResource { .. } => 13,
-            RemoteError::NotCovered { .. } => 14,
-            RemoteError::SignIn { .. } => 15,
-            RemoteError::File(_) => 16,
+            RemoteError::AddressPart { .. } => 5,
+            RemoteError::NotHeld { .. } => 6,
+            RemoteError::StateNotHeld { .. } => 7,
+            RemoteError::Variable { .. } => 8,
+            RemoteError::Unreachable { .. } => 9,
+            RemoteError::Unreadable { .. } => 10,
+            RemoteError::Refused { .. } => 11,
+            RemoteError::Unsigned { .. } => 12,
+            RemoteError::Lapsed { .. } => 13,
+            RemoteError::FormerResource { .. } => 14,
+            RemoteError::NotCovered { .. } => 15,
+            RemoteError::SignIn { .. } => 16,
+            RemoteError::TokenAlone => 17,
+            RemoteError::File(_) => 18,
         }
     }
 
-    /// Each error but [`RemoteError::File`], whose reason is the system's own words about a
-    /// local file, with [`HOSTILE`] in every text it holds; the sign-in kept for another origin
-    /// twice, the second time with [`HOSTILE`] in a resource whose origin reads.
+    /// Each error that names text it was given, with [`HOSTILE`] in every text it holds: each
+    /// but [`RemoteError::TokenAlone`], which names none, and [`RemoteError::File`], whose
+    /// reason is the system's own words about a local file. The sign-in kept for another origin
+    /// stands twice, the second time with [`HOSTILE`] in a resource whose origin reads.
     fn errors() -> Vec<RemoteError> {
         let text = || HOSTILE.to_owned();
         let refusal = Refusal {
@@ -227,6 +232,10 @@ mod tests {
             },
             RemoteError::Address(text()),
             RemoteError::Characters(text()),
+            RemoteError::AddressPart {
+                address: text(),
+                part: "query",
+            },
             RemoteError::NotHeld { key: text() },
             RemoteError::StateNotHeld {
                 sequence: 1,
@@ -274,11 +283,12 @@ mod tests {
     }
 
     #[test]
-    fn every_remote_error_but_that_of_the_local_file_is_sampled_in_order() {
+    fn every_remote_error_that_names_text_it_was_given_is_sampled_in_order() {
         let mut places: Vec<usize> = errors().iter().map(place).collect();
         places.dedup();
-        let unsampled = place(&RemoteError::File(String::new()));
+        let unsampled = place(&RemoteError::TokenAlone);
         assert_eq!(places, (0..unsampled).collect::<Vec<_>>());
+        assert_eq!(place(&RemoteError::File(String::new())), unsampled + 1);
     }
 
     #[test]

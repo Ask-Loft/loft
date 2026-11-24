@@ -16,7 +16,7 @@ use super::companions::{self, Companion};
 use crate::network::{self, Reply};
 use crate::remote::client::Client;
 use crate::remote::wire::bearer_parameters;
-use crate::remote::{RemoteError, Whose, checked};
+use crate::remote::{RemoteError, Whose, contactable};
 
 /// The path that protected resource metadata lies under (RFC 9728).
 pub(super) const RESOURCE_METADATA: &str = "/.well-known/oauth-protected-resource";
@@ -42,7 +42,7 @@ pub struct Discovered {
 ///
 /// The remote gives no challenge, its challenge names metadata on another origin than
 /// `address`, or a metadata document is missing, does not read, names a resource on another
-/// origin than `address`, names a resource, an issuer or an endpoint that [`checked`] refuses,
+/// origin than `address`, names a resource, an issuer or an endpoint that [`contactable`] refuses,
 /// or is not one a sign-in can follow.
 pub fn discover(
     address: &str,
@@ -75,7 +75,7 @@ pub fn discover(
     })?;
     let (metadata, resource) =
         resource_metadata(address, &metadata_url, timeout).map_err(failed)?;
-    checked(&resource)?;
+    contactable(&resource)?;
     let issuer = metadata["authorization_servers"][0]
         .as_str()
         .ok_or_else(|| {
@@ -87,7 +87,7 @@ pub fn discover(
              address, {issuer}"
         ))
     })?;
-    checked(issuer)?;
+    contactable(issuer)?;
     let server = fetch(&server_url, timeout).map_err(failed)?;
     if server["issuer"] != issuer {
         return Err(failed(format!(
@@ -98,7 +98,7 @@ pub fn discover(
         let value = server[name]
             .as_str()
             .ok_or_else(|| failed(format!("the authorization server names no `{name}`")))?;
-        checked(value).map(str::to_owned)
+        contactable(value).map(str::to_owned)
     };
     let s256 = server["code_challenge_methods_supported"]
         .as_array()
@@ -229,7 +229,7 @@ pub(super) fn fetch(url: &str, timeout: Duration) -> Result<Value, String> {
 
 /// The answer to a `GET` of `url` that asks for JSON, or why none came in full within `timeout`.
 pub(super) fn get(url: &str, timeout: Duration) -> Result<Reply, String> {
-    network::call("GET", url, &[("Accept", "application/json")], None, timeout)
+    super::asked("GET", url, &[("Accept", "application/json")], None, timeout)
 }
 
 /// The JSON object that `reply`, the answer to a `GET` of `url`, holds where it is answered
