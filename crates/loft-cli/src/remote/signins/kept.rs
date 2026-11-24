@@ -96,17 +96,21 @@ impl Kept {
     ///
     /// # Errors
     ///
-    /// There is no entry, or it does not read as a sign-in, or its resource reads as no `https`
-    /// or `http` address. Or it is one for a protected resource on another origin, which an
-    /// earlier `loft` could keep: it is no sign-in for the address and is neither refreshed nor
-    /// sent, whatever refresh it records, and its error, unlike that of a missing one, names that
-    /// resource. Or it records a refresh in a member that is not a string: a refresh that cannot
-    /// be repeated may have rotated the refresh token, so none is sent, and it reads as lapsed.
+    /// There is no entry, or it is not a JSON object, or it does not read as a sign-in, or its
+    /// resource reads as no `https` or `http` address. Or it is one for a protected resource on
+    /// another origin, which an earlier `loft` could keep: it is no sign-in for the address and
+    /// is neither refreshed nor sent, whatever refresh it records, and its error, unlike that of
+    /// a missing one, names that resource. Or it records a refresh in a member that is not a
+    /// string: a refresh that cannot be repeated may have rotated the refresh token, so none is
+    /// sent, and it reads as lapsed.
     pub(super) fn find(entries: &Map<String, Value>, address: &str) -> Result<Self, RemoteError> {
         let none = || RemoteError::NoSignIn {
             address: address.to_owned(),
         };
-        let entry = entries.get(address).ok_or_else(none)?;
+        // The derived reader would also read a list of the members' values, in their order, and
+        // a refresh could keep nothing it issued in a list.
+        let entry = entries.get(address).filter(|entry| entry.is_object());
+        let entry = entry.ok_or_else(none)?;
         let sign_in = SignIn::deserialize(entry).map_err(|_| none())?;
         // A resource that reads as no address lies on no origin, so it is not on another one.
         let origin = network::origin(&sign_in.resource).ok_or_else(none)?;

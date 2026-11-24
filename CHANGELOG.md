@@ -124,7 +124,9 @@ Unreleased below, and those of each 2.4 release still to come.
   `invalid_target` the repeat of a refresh recorded for a companion resource, the sign-in reads as
   lapsed, since every command of the sign-in would repeat it first: `loft remote login` signs you
   in again. An earlier `loft` that refreshes such a sign-in keeps it for the remote's own resource
-  alone: sign in again to cover the companion resources.
+  alone: sign in again to cover the companion resources. An entry that is not a JSON object, such
+  as a list of a sign-in's values, which an earlier `loft` read as a sign-in, is no sign-in for its
+  address: it is neither refreshed nor sent.
 - A refresh for the remote's own resource that the authorization server refuses with
   `invalid_target` no longer reads as a lapsed sign-in: `loft` says that the sign-in was made for a
   former resource of the remote and that `loft remote login` signs you in again, or

@@ -20676,6 +20676,12 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in"
         body: 529f644f777d4c03488bc6dcab4d67b2d4aef553d525c3d1f6248756272a4cb6
+  - node: 01a20dc2-fbd1-759a-88c6-3d463f924ed6
+    reviewed: 928d22947b0e7c5c30f9a5f358831e1662ca2ec6de2030b3d77beed24377a0bd
+    tests:
+      - file: "crates/loft-cli/src/remote/signins/tests.rs"
+        name: "an_entry_that_is_not_an_object_is_no_sign_in_and_is_neither_refreshed_nor_sent"
+        body: a059fdad5de5984da47f9bb8d19b7a68d7ea220c0d289044670b034e440f5196
   - node: 01a202c3-d202-749b-a2d8-738d6f359e4f
     reviewed: 4d1d66b07399313a76e2bbcb3babcc6ea47f212bc05f41f1e9a07d9a0c22274d
     tests:

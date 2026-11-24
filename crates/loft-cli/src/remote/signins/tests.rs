@@ -301,3 +301,38 @@ fn a_companion_resource_the_remote_refuses_is_named_escaped_as_one_the_sign_in_d
     assert!(message.contains(&named), "{message}");
     assert!(shown(&message), "{message:?}");
 }
+
+#[test]
+fn an_entry_that_is_not_an_object_is_no_sign_in_and_is_neither_refreshed_nor_sent() {
+    let remote = Remote::start(RemoteScenario::accepting("doc-not-an-object"));
+    let address = remote.address();
+    let none = RemoteError::NoSignIn {
+        address: address.clone(),
+    };
+    // A list of a sign-in's values in the order of its members: with a minute left its access
+    // token would be refreshed, and with an hour left sent.
+    let members = [
+        "tokenEndpoint",
+        "resource",
+        "clientId",
+        "accessToken",
+        "expiresAt",
+        "refreshToken",
+    ];
+    let lists = [60, 3600].map(|seconds| {
+        let entry = over(&remote, &[], seconds, false);
+        let values = members.iter().map(|member| entry[*member].clone());
+        Value::Array(values.collect())
+    });
+    for entry in lists.into_iter().chain([json!("refresh-1"), json!(null)]) {
+        let scratch = Scratch::holding(&remote, &entry);
+        let before = scratch.bytes();
+        let token = access_token(&scratch.file, &address, None, TIMEOUT);
+        assert_eq!(token, Err(none.clone()), "{entry}");
+        assert!(
+            remote.requests().is_empty(),
+            "{entry}: nothing is refreshed"
+        );
+        assert_eq!(scratch.bytes(), before, "{entry}: nothing is written");
+    }
+}
