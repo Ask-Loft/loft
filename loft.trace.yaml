@@ -24858,6 +24858,153 @@ links:
   - node: 01a18e1f-8dac-71f7-847a-7242668fd69f
     reviewed: db337175f4ff2fc917300472bbcfdc4e9da189f39e7b434a0656fd58fa1bde0b
     unverified: "Only the person's own system can show it: a test may not open the person's browser, and the on-demand browser contract runs the system's opener directly rather than through loft, so the binary's choice of the opener without BROWSER is read from the code."
+  - node: 01a20de0-8348-72dc-8ab4-3dad2112bdfa
+    reviewed: 086deda5a768536414f10903189969444bf17ac454e357359f6045770d5aab73
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_records_each_request_in_the_order_received"
+        body: aee2f1ac1326c0eaac3f9edc98fe2359ca68874e3acab38f162a1026617e5108
+  - node: 01a20de0-8348-72dc-8ab4-3daeb89cc1e0
+    reviewed: 706b7e8cd4db196a6bb0ff879a2cf13e7d29effe8aa4b5a7a58725c6a99d516d
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_records_each_request_in_the_order_received"
+        body: aee2f1ac1326c0eaac3f9edc98fe2359ca68874e3acab38f162a1026617e5108
+  - node: 01a20de0-8348-72dc-8ab4-3db061a809f1
+    reviewed: 2a070a9c39d46781776090496556673a6754f84d730c0216700c3361e9d9140a
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3db1aae54829
+    reviewed: 5b34f5ccbe8ef77e1fe52db1e599c48a970eeb4fb7f92f7edcbf5bcf9c7d0256
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "a_silent_simulator_never_answers_and_a_refusing_one_refuses"
+        body: 3236c3d8cd949d900f7519a503aa179f953b5fd1c481c185f72901526a01d546
+  - node: 01a20de0-8348-72dc-8ab4-3db23389e261
+    reviewed: d71006d523a359f781ff29a64837e0a40ccda022c65fafd219dc10a4787379e9
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "a_failing_simulator_answers_its_status_as_a_problem_document"
+        body: 69c898bc8838b71bf8f59d5292a5a487b0c26de7a69f8e35729bd7a195d12847
+  - node: 01a20de0-8348-72dc-8ab4-3db3d08522be
+    reviewed: 56a0e3ef309b9c16eb4d27b91b9966717db64e0b7036e872c8cc1911a7760d18
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "a_silent_simulator_never_answers_and_a_refusing_one_refuses"
+        body: 3236c3d8cd949d900f7519a503aa179f953b5fd1c481c185f72901526a01d546
+  - node: 01a20de0-8348-72dc-8ab4-3db45e1d0135
+    reviewed: 000946c424b3a9dffc90ac43bee6741fb0b262507d50a380e9245975e94b766b
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "a_hanging_up_simulator_stores_the_batch_and_sends_no_answer"
+        body: 73e954f09a4d13598fce08ee6f145d90d2d6a51a78265781d9d00ad6235a4539
+  - node: 01a20de0-8348-72dc-8ab4-3db52876f4e5
+    reviewed: 11d38f9150822792db1f31e61f330a3bb45b3749d455c9dedb56197609413908
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "a_late_simulator_stores_the_batch_and_answers_after_its_delay"
+        body: 5d48424cbc23444a81bd07d63177b31440c99216a9e004750650f82b7794a181
+  - node: 01a20de0-8348-72dc-8ab4-3db7fa378c36
+    reviewed: f85ab3c55ff39ad8e09fa32aa008972724d2cd30aac8651d7f107ebd7f871be9
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3db882baff76
+    reviewed: f7e1c18fdd4c5c2f39eb18443d0d43a62faa799bcd877e42bda1f4577f395f04
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3db97410ad9c
+    reviewed: 0d99b4fdfb45b06c04f4cc70c1e03df5b5897fe4119fb7c0994217f65ecb267a
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "a_refused_request_stores_nothing"
+        body: 69c0093170e973633e59050546593a61c3f228ef6e5304996faaef7070bb1686
+  - node: 01a20de0-8348-72dc-8ab4-3dbb2d996fa4
+    reviewed: ea6671884c3f1fa9972017eb4068ffb062b2742e52bb349b10ec966deb7930d7
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dbc5cd64e8e
+    reviewed: a3e616e316c8e68c66bcae9df379d218a8dd2eb900bc5b731bcaf91e9219e765
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dbd9fac17e4
+    reviewed: 554908e52d0c68883cbdb55e71bcf0a9ef14958070d66e17ee5619963c3e44ca
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_holds_each_version_once_in_the_order_first_received"
+        body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
+  - node: 01a20de0-8348-72dc-8ab4-3dbf426be513
+    reviewed: 8554efa0707ff3469d870546aa3476a328ce3dc2053a10a328be8f50b2002f4f
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_holds_each_version_once_in_the_order_first_received"
+        body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
+  - node: 01a20de0-8348-72dc-8ab4-3dc0f07af9eb
+    reviewed: 35cb6f8527042b5062502ec9fb4ae8477ea451f74f916285d0a0c02b5f43e6be
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc1874b3e23
+    reviewed: cb4fbfce014c593276961827aaacd86d2a3ad53dc96b7c3e7b151c22f6096079
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc3c351d49c
+    reviewed: 13aade0e5a7a62577f6c640bc069a3820036d68286b13d7009b6fdfdb184a578
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc4c72e0cf4
+    reviewed: 1a990e74aafe0fdf2dab4f9045af49373f64f3efc70e9c7c7f7e9dad91dbfe56
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc58f57b905
+    reviewed: 2c6b56e15e11e1dbd445377d25101493e707ea5c3aff7cee1cad36d563483d49
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc6e26db7d9
+    reviewed: c10923aa1a62dec39e1b483f5f93ec27ff9fc47bdf08c8236fe989336f67795f
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc71d16d06a
+    reviewed: 31781edb06afbcf3fae0782de96d40c14dfe4caef2f011bfcb34fec53392f39b
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc85bffd0f6
+    reviewed: e193f1531556a303f0cec7a6d8d0e781296efb2092b8650474c8fea03fd9ffd7
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a20de0-8348-72dc-8ab4-3dc903794565
+    reviewed: ac6f6bbad300536e0560e48f2fd710aa4542f885b60507b20f5b7ebf897e59a8
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
   - node: 01a1d600-053b-77ad-8132-b982f4fbae63
     reviewed: 5bc2ff80dfab7c1ca28618d5736380837fc1a438f4db457c731eeaf3536f4d72
     tests:

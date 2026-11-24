@@ -2,7 +2,8 @@
 //! It answers one request per connection, from a [`Responder`] a simulator supplies, records
 //! every request it reads, and stops when it is dropped. A responder that holds the connection
 //! keeps it open without a word, as a service that never answers does; one that hangs up closes
-//! it without a word, as a service whose answer is lost does.
+//! it without a word, as a service whose answer is lost does; and one that answers late writes
+//! its answer only after a pause, from a thread of its own, as a slow service does.
 
 use std::fmt::Write as _;
 use std::io::{self, BufRead, BufReader, Read, Write};
@@ -86,6 +87,8 @@ pub enum Answer {
     Hold,
     /// Closes the connection before a byte of a response is written.
     HangUp,
+    /// Writes the response once `after` has passed, without holding up the next connection.
+    Late { response: Response, after: Duration },
 }
 
 impl From<Response> for Answer {
@@ -202,6 +205,13 @@ fn serve(
                 let _ = stream.shutdown(Shutdown::Both);
             }
             Answer::Hold => held.push(stream),
+            Answer::Late { response, after } => {
+                thread::spawn(move || {
+                    thread::sleep(after);
+                    let _ = write(&mut stream, &response);
+                    let _ = stream.shutdown(Shutdown::Both);
+                });
+            }
         }
     }
 }
@@ -269,6 +279,7 @@ const fn reason(status: u16) -> &'static str {
         200 => "OK",
         202 => "Accepted",
         400 => "Bad Request",
+        401 => "Unauthorized",
         403 => "Forbidden",
         404 => "Not Found",
         405 => "Method Not Allowed",
