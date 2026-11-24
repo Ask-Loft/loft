@@ -10,7 +10,7 @@ use std::time::Duration;
 use serde_json::{Map, Value, json};
 
 use crate::http::{Answer, Request, Responder, Response, Server, refusing_url};
-use crate::remote::problem::problem;
+use crate::remote::problem::{problem, refusal};
 
 /// The path that takes a batch of versions, under the server's address.
 pub const BATCHES: &str = "/batches";
@@ -163,23 +163,23 @@ impl Batches {
 /// The records of `request`, or the refusal it is answered with.
 fn admit(request: &Request) -> Result<Vec<Value>, Response> {
     if request.path != BATCHES {
-        return Err(refusal(404, "not_found"));
+        return Err(refusal("not_found"));
     }
     if request.method != "POST" {
-        return Err(refusal(405, "method_not_allowed"));
+        return Err(refusal("method_not_allowed"));
     }
     let bearer = format!("Bearer {TOKEN}");
     if request.header("Authorization") != Some(bearer.as_str()) {
-        return Err(refusal(401, "unauthenticated"));
+        return Err(refusal("unauthenticated"));
     }
     let json = request
         .header("Content-Type")
         .and_then(|value| value.split(';').next())
         .is_some_and(|kind| kind.trim().eq_ignore_ascii_case("application/json"));
     if !json {
-        return Err(refusal(415, "unsupported_media_type"));
+        return Err(problem(415, "unsupported_media_type", Map::new()));
     }
-    records(&request.body).ok_or_else(|| refusal(400, "invalid_request"))
+    records(&request.body).ok_or_else(|| refusal("invalid_request"))
 }
 
 /// The records of a batch of versions, where `body` is one the server can take.
@@ -199,10 +199,6 @@ fn version_key(record: &Value) -> Option<&str> {
     record.get("version")?.get("key")?.as_str()
 }
 
-fn refusal(status: u16, code: &str) -> Response {
-    problem(status, code, Map::new())
-}
-
 /// The problem document of an error scenario at `status`.
 fn failure(status: u16) -> Response {
     let code = if status >= 500 {
@@ -210,5 +206,5 @@ fn failure(status: u16) -> Response {
     } else {
         "invalid_request"
     };
-    refusal(status, code)
+    problem(status, code, Map::new())
 }

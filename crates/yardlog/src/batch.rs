@@ -40,35 +40,28 @@ pub fn record(yard_log: YardLogKey, stage: StageKey, block: &Block, version: &Ve
     let Out::Mapping(fields) = write_version(version) else {
         unreachable!("a version is written as a mapping of fields")
     };
-    text.push('{');
-    for (n, (name, value)) in fields.iter().enumerate() {
-        if n > 0 {
-            text.push(',');
-        }
-        text.push_str(&string(name));
-        text.push(':');
-        match (&version.body, *name) {
+    let members = fields.iter().map(|(name, value)| (*name, value));
+    separated(&mut text, ('{', '}'), members, |text, (name, value)| {
+        member(text, name);
+        match (&version.body, name) {
             (Body::Loft(loft), "report") => {
                 text.push_str(&serde_json::Value::from(&loft.report).to_string());
             }
-            _ => json(value, &mut text),
+            _ => json(value, text),
         }
-    }
-    text.push_str("}}");
+    });
+    text.push('}');
     text
 }
 
 /// A batch of versions holding `records`, each the JSON text of a record, in order.
 #[must_use]
 pub fn batch<S: AsRef<str>>(records: &[S]) -> String {
-    let mut text = format!("{{\"format\":{},\"records\":[", string(FORMAT));
-    for (n, record) in records.iter().enumerate() {
-        if n > 0 {
-            text.push(',');
-        }
+    let mut text = format!("{{\"format\":{},\"records\":", string(FORMAT));
+    separated(&mut text, ('[', ']'), records.iter(), |text, record| {
         text.push_str(record.as_ref());
-    }
-    text.push_str("]}");
+    });
+    text.push('}');
     text
 }
 
@@ -82,16 +75,9 @@ fn json(value: &Out, text: &mut String) {
             entries.iter().map(|(name, value)| (name.as_str(), value)),
             text,
         ),
-        Out::Sequence(items) => {
-            text.push('[');
-            for (n, item) in items.iter().enumerate() {
-                if n > 0 {
-                    text.push(',');
-                }
-                json(item, text);
-            }
-            text.push(']');
-        }
+        Out::Sequence(items) => separated(text, ('[', ']'), items.iter(), |text, item| {
+            json(item, text);
+        }),
         Out::Token(value) | Out::Text(value) => text.push_str(&string(value)),
         Out::Integer(value) => {
             let _ = write!(text, "{value}");
@@ -107,19 +93,36 @@ fn json(value: &Out, text: &mut String) {
 }
 
 fn object<'a>(members: impl Iterator<Item = (&'a str, &'a Out)>, text: &mut String) {
-    text.push('{');
-    for (n, (name, value)) in members.enumerate() {
+    separated(text, ('{', '}'), members, |text, (name, value)| {
+        member(text, name);
+        json(value, text);
+    });
+}
+
+/// `items` written by `each` between the brackets `open` and `close`, separated by commas.
+fn separated<T>(
+    text: &mut String,
+    (open, close): (char, char),
+    items: impl Iterator<Item = T>,
+    mut each: impl FnMut(&mut String, T),
+) {
+    text.push(open);
+    for (n, item) in items.enumerate() {
         if n > 0 {
             text.push(',');
         }
-        text.push_str(&string(name));
-        text.push(':');
-        json(value, text);
+        each(text, item);
     }
-    text.push('}');
+    text.push(close);
+}
+
+/// The name of a member and its colon.
+fn member(text: &mut String, name: &str) {
+    text.push_str(&string(name));
+    text.push(':');
 }
 
 /// `value` as a JSON string.
 fn string(value: &str) -> String {
-    serde_json::Value::from(value).to_string()
+    serde_json::to_string(value).expect("a string always writes as JSON")
 }

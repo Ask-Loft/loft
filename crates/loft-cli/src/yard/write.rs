@@ -26,16 +26,14 @@ const OUTCOME: &str = "written";
 pub fn run(root: &Path, args: WriteArgs) -> Finished {
     let as_json = args.output.json();
     let written = attempt(root, args).map(|fields| (OUTCOME, fields));
-    let finished = failure::end(SCHEMA, as_json, written, |_, fields| {
+    failure::end(SCHEMA, as_json, written, |_, fields| {
         format!(
             "Yard Log of {} at revision {}; {}",
             fields["branch"].as_str().unwrap_or_default(),
             fields["revision"],
             super::read::page_line(&fields["page"])
         )
-    });
-    super::flush::after_write();
-    finished
+    })
 }
 
 /// What a write applied: the batch's result, and the format Yard Log was upgraded from.

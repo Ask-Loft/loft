@@ -7,7 +7,7 @@ use serde_json::Value;
 use software_plant::YardServer;
 
 use crate::yard::{Yard, block, document};
-use crate::yard_connected::{STAGE_BATCH, connected, entries, held, run, write};
+use crate::yard_connected::{STAGE_BATCH, connected, entries, flush, held, write};
 
 #[test]
 fn a_note_written_by_loft_arrives_in_yard_server_as_yard_log_holds_it() {
@@ -49,10 +49,7 @@ fn a_batch_stored_and_unanswered_is_sent_again_by_the_next_flush_and_held_once()
     write(&yard, STAGE_BATCH, &variables);
     assert_eq!(held(&server), ["build"]);
     assert_eq!(entries(&yard).len(), 1);
-    let (code, flushed) = {
-        let output = run(&yard, &["flush"], &variables);
-        (output.status.code(), document("flush", &output))
-    };
+    let (code, flushed) = flush(&yard, &variables);
     assert_eq!(
         (code, &flushed["outcome"]),
         (Some(1), &Value::from("failed"))

@@ -186,7 +186,11 @@ impl YardStore {
                 .into());
             }
         };
-        let before = current.as_ref().map(version_keys).unwrap_or_default();
+        // Only the outbox needs the versions held before the change.
+        let before = match (&self.outbox, &current) {
+            (Some(_), Some(log)) => version_keys(log),
+            _ => BTreeSet::new(),
+        };
         let (next, value) = change(current)?;
         let mut changes = self.folder.changes(&read, &next);
         let saved_all = self.save_live(&mut changes);
@@ -320,12 +324,7 @@ impl YardStore {
 
 /// The key of every version `log` holds.
 fn version_keys(log: &YardLog) -> BTreeSet<yardlog::keys::VersionKey> {
-    log.stages
-        .iter()
-        .flat_map(|file| std::iter::once(&file.stage).chain(&file.blocks))
-        .flat_map(|block| &block.versions)
-        .map(|version| version.key)
-        .collect()
+    log.versions().map(|(_, _, version)| version.key).collect()
 }
 
 /// `branch`'s name as a single file name: `%` and `/` escaped, so that no two branches, nor a

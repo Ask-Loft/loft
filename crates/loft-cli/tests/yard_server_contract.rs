@@ -70,6 +70,11 @@ fn record(yard_log: &str, version: &str, markdown: &str) -> Value {
     })
 }
 
+/// A batch of the one record `record`.
+fn one(record: &Value) -> Value {
+    json!({ "format": FORMAT, "records": [record] })
+}
+
 /// A batch of `count` fresh versions in one Yard Log.
 fn fresh(count: usize) -> Value {
     let yard_log = Key::mint().to_string();
@@ -135,9 +140,8 @@ fn holds_a_version_once(target: &Target) -> (u16, u16, bool) {
 fn keeps_the_first_yard_log(target: &Target) -> (u16, &'static str) {
     let version = Key::mint().to_string();
     let (first, second) = (Key::mint().to_string(), Key::mint().to_string());
-    target.post(&json!({ "format": FORMAT, "records": [record(&first, &version, "a")] }));
-    let answer =
-        target.post(&json!({ "format": FORMAT, "records": [record(&second, &version, "a")] }));
+    target.post(&one(&record(&first, &version, "a")));
+    let answer = target.post(&one(&record(&second, &version, "a")));
     let echoed = answer.body["records"][0]["yardLog"].as_str();
     let under = if echoed == Some(first.as_str()) {
         "first"
@@ -150,9 +154,8 @@ fn keeps_the_first_yard_log(target: &Target) -> (u16, &'static str) {
 /// The status of a version sent again with other contents, and the contents it is echoed with.
 fn keeps_the_first_contents(target: &Target) -> (u16, Value) {
     let (yard_log, version) = (Key::mint().to_string(), Key::mint().to_string());
-    target.post(&json!({ "format": FORMAT, "records": [record(&yard_log, &version, "first")] }));
-    let answer = target
-        .post(&json!({ "format": FORMAT, "records": [record(&yard_log, &version, "second")] }));
+    target.post(&one(&record(&yard_log, &version, "first")));
+    let answer = target.post(&one(&record(&yard_log, &version, "second")));
     (
         answer.status,
         answer.body["records"][0]["version"]["markdown"].clone(),

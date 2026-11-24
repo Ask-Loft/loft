@@ -26,9 +26,9 @@ pub fn write(endpoint: &str, record: &str) -> String {
 
 /// What the bytes of a file of the outbox read as.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Read {
+pub enum Read<'a> {
     /// An entry this `loft` reads: its address and its record, as the text it holds.
-    Entry { endpoint: String, record: String },
+    Entry { endpoint: String, record: &'a str },
     /// An entry of a newer version of the format, for a newer `loft` to send.
     Newer,
     /// Not an entry: not JSON, another format, or an entry without its address or record.
@@ -37,16 +37,15 @@ pub enum Read {
 
 /// What `bytes` read as.
 #[must_use]
-pub fn read(bytes: &[u8]) -> Read {
-    let Ok(fields) = serde_json::from_slice::<BTreeMap<String, Box<RawValue>>>(bytes) else {
+pub fn read(bytes: &[u8]) -> Read<'_> {
+    let Ok(fields) = serde_json::from_slice::<BTreeMap<String, &RawValue>>(bytes) else {
         return Read::Foreign;
     };
     let field = |name: &str| fields.get(name).map(|raw| raw.get());
     let format = field("format").and_then(|raw| serde_json::from_str::<String>(raw).ok());
     let version = format
         .as_deref()
-        .and_then(|format| format.strip_prefix(NAME))
-        .and_then(|version| version.parse::<u32>().ok());
+        .and_then(|format| crate::format::versioned(format, NAME));
     match version {
         Some(VERSION) => {}
         Some(newer) if newer > VERSION => return Read::Newer,
@@ -56,10 +55,9 @@ pub fn read(bytes: &[u8]) -> Read {
         .and_then(|raw| serde_json::from_str::<serde_json::Value>(raw).ok())
         .and_then(|to| to.get("endpoint")?.as_str().map(str::to_owned));
     match (endpoint, field("record")) {
-        (Some(endpoint), Some(record)) if record.starts_with('{') => Read::Entry {
-            endpoint,
-            record: record.to_owned(),
-        },
+        (Some(endpoint), Some(record)) if record.starts_with('{') => {
+            Read::Entry { endpoint, record }
+        }
         _ => Read::Foreign,
     }
 }

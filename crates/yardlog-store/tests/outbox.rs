@@ -17,6 +17,12 @@ fn outbox(scratch: &Scratch, endpoint: &str) -> Outbox {
     Home::at(scratch.0.join(".yard")).outbox(endpoint)
 }
 
+/// The store of `feat/x`'s Yard Log, copying new versions into the outbox for [`ENDPOINT`].
+fn connected_store(tree: &Tree) -> yardlog_store::YardStore {
+    tree.store("feat/x")
+        .with_outbox(Some(outbox(&tree.scratch, ENDPOINT)))
+}
+
 /// The entries in the outbox's directory, by file name, read as JSON.
 fn entries(scratch: &Scratch) -> Vec<(String, Value)> {
     let dir = scratch.0.join(".yard/outbox");
@@ -40,11 +46,8 @@ fn entries(scratch: &Scratch) -> Vec<(String, Value)> {
 fn version_keys(tree: &Tree, branch: &str) -> Vec<String> {
     let log = read(&tree.store(branch));
     let mut keys: Vec<String> = log
-        .stages
-        .iter()
-        .flat_map(|file| std::iter::once(&file.stage).chain(&file.blocks))
-        .flat_map(|block| &block.versions)
-        .map(|version| version.key.to_string())
+        .versions()
+        .map(|(_, _, version)| version.key.to_string())
         .collect();
     keys.sort();
     keys
@@ -53,9 +56,7 @@ fn version_keys(tree: &Tree, branch: &str) -> Vec<String> {
 #[test]
 fn a_write_puts_one_entry_for_each_version_it_adds_stages_included() {
     let tree = Tree::new();
-    let store = tree
-        .store("feat/x")
-        .with_outbox(Some(outbox(&tree.scratch, ENDPOINT)));
+    let store = connected_store(&tree);
     write(
         &store,
         &json!([
@@ -89,9 +90,7 @@ fn a_write_puts_one_entry_for_each_version_it_adds_stages_included() {
 #[test]
 fn an_entry_holds_its_format_its_address_and_the_record_of_a_batch_and_nothing_else() {
     let tree = Tree::new();
-    let store = tree
-        .store("feat/x")
-        .with_outbox(Some(outbox(&tree.scratch, ENDPOINT)));
+    let store = connected_store(&tree);
     write(
         &store,
         &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
@@ -131,9 +130,7 @@ fn without_an_outbox_a_write_puts_no_entry() {
 #[test]
 fn a_refused_write_and_a_write_that_adds_no_version_put_no_entry() {
     let tree = Tree::new();
-    let store = tree
-        .store("feat/x")
-        .with_outbox(Some(outbox(&tree.scratch, ENDPOINT)));
+    let store = connected_store(&tree);
     write(
         &store,
         &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
@@ -154,9 +151,7 @@ fn an_outbox_that_cannot_be_written_keeps_the_write_and_names_the_version_left_o
     let tree = Tree::new();
     tree.scratch
         .put(".yard/outbox", "a file where the directory should be");
-    let store = tree
-        .store("feat/x")
-        .with_outbox(Some(outbox(&tree.scratch, ENDPOINT)));
+    let store = connected_store(&tree);
     let updated = write(
         &store,
         &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
@@ -353,9 +348,7 @@ fn a_later_write_puts_no_entry_again_for_a_version_already_sent() {
 #[test]
 fn the_person_s_answer_puts_no_entry() {
     let tree = Tree::new();
-    let store = tree
-        .store("feat/x")
-        .with_outbox(Some(outbox(&tree.scratch, ENDPOINT)));
+    let store = connected_store(&tree);
     write(
         &store,
         &json!([

@@ -61,6 +61,19 @@ use failure::Failure;
 
 /// Runs a `loft yard` command in `root`.
 pub fn run(root: &Path, action: YardAction) -> Finished {
+    // The commands that write versions for an agent send them before they exit.
+    let sends = matches!(
+        action,
+        YardAction::Write(_) | YardAction::Task(_) | YardAction::Published(_)
+    );
+    let finished = run_action(root, action);
+    if sends {
+        flush::after_write();
+    }
+    finished
+}
+
+fn run_action(root: &Path, action: YardAction) -> Finished {
     match action {
         YardAction::Claude { action } => claude::run(action),
         YardAction::Codex { action } => codex::run(action),

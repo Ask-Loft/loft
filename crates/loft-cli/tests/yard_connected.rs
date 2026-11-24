@@ -26,7 +26,7 @@ pub fn connected(endpoint: &str) -> [(&'static str, String); 2] {
     ]
 }
 
-fn pairs<'a>(variables: &'a [(&'static str, String)]) -> Vec<(&'static str, &'a str)> {
+pub fn pairs<'a>(variables: &'a [(&'static str, String)]) -> Vec<(&'static str, &'a str)> {
     variables
         .iter()
         .map(|(name, value)| (*name, value.as_str()))
@@ -74,6 +74,20 @@ pub fn held(server: &YardServer) -> Vec<String> {
         .iter()
         .map(|record| record["id"].as_str().unwrap().to_owned())
         .collect()
+}
+
+/// `loft yard flush` under `variables`: its exit status and its document.
+pub fn flush(yard: &Yard, variables: &[(&'static str, String)]) -> (Option<i32>, Value) {
+    let output = run(yard, &["flush"], variables);
+    (output.status.code(), document("flush", &output))
+}
+
+/// Leaves one entry waiting in the outbox for the address `variables` names: the stage is
+/// written offline, then 17 notes, of which the write sends 16.
+pub fn one_waiting(yard: &Yard, variables: &[(&'static str, String)]) {
+    write(yard, STAGE_BATCH, &[]);
+    write(yard, &notes(17), variables);
+    assert_eq!(entries(yard).len(), 1);
 }
 
 /// A batch of `count` notes in the stage `build`, `n1` to `n<count>`.
@@ -169,14 +183,24 @@ fn a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not() {
 
 #[test]
 fn a_silent_yard_server_holds_a_write_at_most_two_seconds_and_the_entries_stay() {
+    // The same write without connected mode is the baseline: what a silent Yard Server adds is
+    // the wait alone, and a busy machine slows both runs alike.
+    let plain = Yard::new();
+    let started = Instant::now();
+    write(&plain, STAGE_BATCH, &[]);
+    let baseline = started.elapsed();
     let yard = Yard::new();
     let server = YardServer::silent();
     let started = Instant::now();
     let output = write(&yard, STAGE_BATCH, &connected(&server.url()));
     let took = started.elapsed();
     assert_eq!(document("write", &output)["outcome"], "written");
-    assert!(took < Duration::from_secs(4), "{took:?}");
     assert!(took >= Duration::from_secs(2), "{took:?}");
+    let added = took.saturating_sub(baseline);
+    assert!(
+        added < Duration::from_secs(3),
+        "{added:?} over {baseline:?}"
+    );
     assert_eq!(entries(&yard).len(), 1);
 }
 
@@ -204,7 +228,7 @@ fn a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending
     let left = entries(&yard);
     assert_eq!(left.len(), 1);
     assert_eq!(left[0]["record"]["id"], "n17");
-    let flushed = document("flush", &run(&yard, &["flush"], &variables));
+    let (_, flushed) = flush(&yard, &variables);
     assert_eq!(flushed["outcome"], "sent");
     assert_eq!(
         (&flushed["sent"], &flushed["remaining"]),
@@ -220,11 +244,7 @@ fn until_a_batch_is_taken_the_next_sending_takes_the_same_oldest_entries_again()
     let server = YardServer::hanging_up();
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
-    write(
-        &yard,
-        r#"[{"id":"n1","kind":"note","stage":"build","markdown":"x"}]"#,
-        &variables,
-    );
+    write(&yard, &notes(1), &variables);
     let requests = server.requests();
     let second: Value = serde_json::from_slice(&requests[1].body).unwrap();
     let ids: Vec<&str> = second["records"]
@@ -243,11 +263,7 @@ fn each_address_takes_only_its_own_entries() {
     let theirs = YardServer::failing(503);
     let ours = YardServer::accepting();
     write(&yard, STAGE_BATCH, &connected(&theirs.url()));
-    write(
-        &yard,
-        r#"[{"id":"n1","kind":"note","stage":"build","markdown":"x"}]"#,
-        &connected(&ours.url()),
-    );
+    write(&yard, &notes(1), &connected(&ours.url()));
     assert_eq!(held(&ours), ["n1"]);
     let left = entries(&yard);
     assert_eq!(left.len(), 1);

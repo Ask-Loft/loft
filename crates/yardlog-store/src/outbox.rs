@@ -94,31 +94,18 @@ impl Outbox {
         before: &BTreeSet<VersionKey>,
         log: &YardLog,
     ) -> (usize, Option<String>) {
-        let new = log.stages.iter().flat_map(|file| {
-            let stage = file.stage.key.stage();
-            std::iter::once(&file.stage)
-                .chain(&file.blocks)
-                .flat_map(move |block| {
-                    block
-                        .versions
-                        .iter()
-                        .map(move |version| (stage, block, version))
-                })
-        });
         let mut put = 0;
-        let left_out: Vec<String> = new
-            .filter(|(_, _, version)| !before.contains(&version.key) && version.arrived.is_none())
-            .filter_map(|(stage, block, version)| {
-                let record = yardlog::batch::record(log.root.key, stage, block, version);
-                match self.put(version.key, &record) {
-                    Ok(()) => {
-                        put += 1;
-                        None
-                    }
-                    Err(error) => Some(format!("{} ({error})", version.key)),
-                }
-            })
-            .collect();
+        let mut left_out = Vec::new();
+        let new = log
+            .versions()
+            .filter(|(_, _, version)| !before.contains(&version.key) && version.arrived.is_none());
+        for (stage, block, version) in new {
+            let record = yardlog::batch::record(log.root.key, stage, block, version);
+            match self.put(version.key, &record) {
+                Ok(()) => put += 1,
+                Err(error) => left_out.push(format!("{} ({error})", version.key)),
+            }
+        }
         let warning = (!left_out.is_empty()).then(|| {
             format!(
                 "the outbox {} could not take version {}; it is saved in Yard Log and will not be sent to Yard Server",
@@ -146,9 +133,11 @@ impl Outbox {
             match entry::read(&bytes) {
                 Read::Entry { endpoint, record } if endpoint == self.endpoint => {
                     taken.waiting += 1;
-                    let key = name.trim_end_matches(".json").to_owned();
                     let room = taken.entries.len() < most;
-                    taken.entries.extend(room.then_some(Entry { key, record }));
+                    taken.entries.extend(room.then(|| Entry {
+                        key: name.trim_end_matches(".json").to_owned(),
+                        record: record.to_owned(),
+                    }));
                 }
                 Read::Entry { .. } => {}
                 Read::Newer => taken.skipped += 1,

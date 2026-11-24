@@ -10,12 +10,9 @@ use software_plant::YardServer;
 use crate::common::Scratch;
 use crate::yard::{Yard, document};
 use crate::yard_codex::{event, plan_update};
-use crate::yard_connected::{STAGE_BATCH, connected, entries, held, outbox, run, write};
-
-fn flush(yard: &Yard, variables: &[(&'static str, String)]) -> (Option<i32>, serde_json::Value) {
-    let output = run(yard, &["flush"], variables);
-    (output.status.code(), document("flush", &output))
-}
+use crate::yard_connected::{
+    STAGE_BATCH, connected, entries, flush, held, one_waiting, outbox, pairs, run, write,
+};
 
 #[test]
 fn without_connected_mode_a_flush_is_off_and_makes_no_request() {
@@ -124,10 +121,7 @@ fn the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_alon
     let mut input = event(&yard, "PostToolUse");
     input["tool_use_id"] = json!("plan-call");
     let input = plan_update(input, &[("Build", "in_progress")]);
-    let pairs: Vec<(&str, &str)> = variables
-        .iter()
-        .map(|(name, value)| (*name, value.as_str()))
-        .collect();
+    let pairs = pairs(&variables);
     let hooked = yard.run_with_under(&["codex", "hook"], &input.to_string(), &pairs);
     assert!(hooked.status.success());
     assert_eq!(server.requests().len(), 0);
@@ -139,7 +133,7 @@ fn the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_alon
     assert_eq!(ours[0]["record"]["kind"], "task");
     yard.run_with_under(
         &["write", "--session", "codex-session", "--host", "codex"],
-        r#"[{"id":"n1","kind":"note","stage":"build","markdown":"x"}]"#,
+        &crate::yard_connected::notes(1),
         &pairs,
     );
     let kinds: Vec<String> = server
@@ -155,15 +149,9 @@ fn the_page_server_makes_no_request_to_yard_server_with_entries_waiting() {
     let yard = Yard::new();
     let server = YardServer::accepting();
     let variables = connected(&server.url());
-    write(&yard, STAGE_BATCH, &[]);
-    // 17 versions: the write sends 16 and one waits for this address.
-    write(&yard, &crate::yard_connected::notes(17), &variables);
-    assert_eq!(entries(&yard).len(), 1);
+    one_waiting(&yard, &variables);
     let before = server.requests().len();
-    let pairs: Vec<(&str, &str)> = variables
-        .iter()
-        .map(|(name, value)| (*name, value.as_str()))
-        .collect();
+    let pairs = pairs(&variables);
     let page_server =
         crate::served::Served::start_with(&yard, crate::served::free_port(), &pairs, &[]);
     assert_eq!(page_server.get("/").status, 200);
@@ -222,13 +210,9 @@ fn the_claude_hook_makes_no_request_to_yard_server_with_entries_waiting() {
     let yard = Yard::new();
     let server = YardServer::accepting();
     let variables = connected(&server.url());
-    write(&yard, STAGE_BATCH, &[]);
-    write(&yard, &crate::yard_connected::notes(17), &variables);
+    one_waiting(&yard, &variables);
     let before = server.requests().len();
-    let pairs: Vec<(&str, &str)> = variables
-        .iter()
-        .map(|(name, value)| (*name, value.as_str()))
-        .collect();
+    let pairs = pairs(&variables);
     let mut start = crate::yard_claude_hook::input(&yard, "SessionStart", "s1");
     start["source"] = json!("startup");
     let hooked = yard.run_with_under(&["claude", "hook"], &start.to_string(), &pairs);

@@ -17,6 +17,8 @@ use yardlog_store::home::Home;
 use yardlog_store::outbox::{Outbox, Taken};
 
 use super::args::FlushArgs;
+use super::failure;
+use crate::environment;
 use crate::finish::Finished;
 use crate::json;
 use crate::network;
@@ -39,17 +41,17 @@ const BATCHES: &str = "batches";
 /// Whether a write of this run put entries into the outbox.
 static PUT: AtomicBool = AtomicBool::new(false);
 
-/// Yard Server's address and token, where connected mode is on: both variables set and not
-/// empty.
-pub fn connected() -> Option<(String, String)> {
-    let variable = |name| std::env::var(name).ok().filter(|value| !value.is_empty());
-    Some((variable(ENDPOINT)?, variable(TOKEN)?))
+/// The outbox of the Yard Server connected mode names, with its token, where connected mode is
+/// on, both variables set and not empty, and a home is known.
+fn connection() -> Option<(Outbox, String)> {
+    let endpoint = environment::text(ENDPOINT)?;
+    let token = environment::text(TOKEN)?;
+    Some((Home::from_env()?.outbox(&endpoint), token))
 }
 
-/// The outbox of the Yard Server connected mode names, where it is on and a home is known.
+/// The outbox each new version is copied into, where connected mode is on.
 pub fn outbox() -> Option<Outbox> {
-    let (endpoint, _) = connected()?;
-    Some(Home::from_env()?.outbox(&endpoint))
+    connection().map(|(outbox, _)| outbox)
 }
 
 /// Notes that a write of this run put `count` entries into the outbox.
@@ -149,7 +151,7 @@ pub fn after_write() {
     if !PUT.load(Ordering::SeqCst) {
         return;
     }
-    let (Some(outbox), Some((_, token))) = (outbox(), connected()) else {
+    let Some((outbox, token)) = connection() else {
         return;
     };
     let flushed = once(&outbox, &token);
@@ -184,25 +186,26 @@ fn unsendable(taken: &Taken, outbox: &Outbox) {
 /// Yard Log.
 pub fn run(args: &FlushArgs) -> Finished {
     let as_json = args.output.json();
-    let (Some(outbox), Some((_, token))) = (outbox(), connected()) else {
+    let Some((outbox, token)) = connection() else {
         let fields = json!({ "sent": 0, "remaining": 0, "skipped": 0, "dead": 0 });
         return report(as_json, "off", fields, Vec::new(), "Connected mode is off.");
     };
     let flushed = once(&outbox, &token);
-    let fields = flushed.fields();
+    let found = &flushed.taken;
     let line = format!(
         "{} to Yard Server at {}: {} sent, {} remaining, {} skipped, {} moved into dead/.",
         flushed.outcome,
         outbox.endpoint(),
-        fields["sent"],
-        fields["remaining"],
-        fields["skipped"],
-        fields["dead"]
+        flushed.sent,
+        found.waiting - flushed.sent,
+        found.skipped,
+        found.dead
     );
+    let fields = flushed.fields();
     let errors = flushed
         .failed
         .iter()
-        .map(|why| json::error_at("yard-server", why, Vec::new()))
+        .map(|why| failure::error("yard-server", why))
         .collect();
     report(as_json, flushed.outcome, fields, errors, &line)
 }

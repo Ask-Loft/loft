@@ -39,15 +39,8 @@ fn record_of(log: &YardLog, id: &str) -> Value {
 }
 
 fn find<'a>(log: &'a YardLog, id: &str) -> (&'a StageFile, &'a Block) {
-    log.stages
-        .iter()
-        .find_map(|file| {
-            std::iter::once(&file.stage)
-                .chain(&file.blocks)
-                .find(|block| block.id.as_str() == id)
-                .map(|block| (file, block))
-        })
-        .unwrap()
+    let key = log.find(&yardlog::Handle::parse(id).unwrap()).unwrap().key;
+    log.block(key).unwrap()
 }
 
 #[test]
@@ -177,12 +170,8 @@ fn a_loft_block_s_report_is_nested_json_and_not_text() {
 fn writing_records_changes_no_byte_of_yard_log_s_files() {
     let log = full();
     let before: BTreeMap<String, String> = log.files().into_iter().collect();
-    for file in &log.stages {
-        for block in std::iter::once(&file.stage).chain(&file.blocks) {
-            for version in &block.versions {
-                let _ = record(log.root.key, file.stage.key.stage(), block, version);
-            }
-        }
+    for (stage, block, version) in log.versions() {
+        let _ = record(log.root.key, stage, block, version);
     }
     let after: BTreeMap<String, String> = log.files().into_iter().collect();
     assert_eq!(before, after);
