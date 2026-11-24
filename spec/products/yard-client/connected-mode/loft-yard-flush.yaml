@@ -1,0 +1,60 @@
+key: 01a20dc8-c593-7357-875c-81c4d2d63486
+slug: loft-yard-flush
+name: "`loft yard flush`"
+body: |
+  `loft yard flush` flushes the outbox to Yard Server by hand: it runs the same sending a writing command runs before it exits, once, and writes nothing of Yard Log. It is called flush, not send, since sending in Yard means putting questions to the person. It acts for the person and reads the outbox alone, so it runs anywhere, inside a repository or not, and takes no `--session`.
+
+  Its outcome says what happened: `off` where connected mode is off, `empty` where the outbox holds no entry for the address, `sent` where Yard Server took a batch, and `failed` where the batch did not go. Beside it, the result counts the versions sent, the entries left for the address, the entries passed over and the files moved into `~/.yard/outbox/dead/`.
+tags:
+  - yard-command
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+mentions:
+  - 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+requirements:
+  - key: 01a20dc8-c593-7357-875c-81c524194373
+    statement:
+      form: event_driven
+      when: "`loft yard flush` runs in connected mode"
+      system: "`loft yard flush`"
+      shall: "send one batch of versions from the outbox to Yard Server, as a writing command does before it exits."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81c681815faa
+        name: "Yard Log is not written."
+      - key: 01a20dc8-c593-7357-875c-81c77bf48921
+        name: "The command runs outside a git repository."
+      - key: 01a20dc8-c593-7357-875c-81c876c5f72c
+        name: "The command runs without `--session` and is not refused for it."
+      - key: 01a20dc8-c593-7357-875c-81c96789856e
+        name: "Each run sends at most one batch."
+  - key: 01a20dc8-c593-7357-875c-81caa6679480
+    statement:
+      form: ubiquitous
+      system: "`loft yard flush`"
+      shall: "name its outcome as `off`, `empty`, `sent` or `failed`."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81cb9e5b9242
+        name: "Without connected mode the outcome is `off`, no request is made and the command exits 0."
+      - key: 01a20dc8-c593-7357-875c-81ccc2919c6f
+        name: "With no entry for the address the outcome is `empty`, no request is made and the command exits 0."
+      - key: 01a20dc8-c593-7357-875c-81cd0e4b8123
+        name: "Where Yard Server takes the batch the outcome is `sent` and the command exits 0."
+      - key: 01a20dc8-c593-7357-875c-81ced80e7650
+        name: "Where the batch does not go the outcome is `failed` and the command exits 1."
+      - key: 01a20dc8-c593-7357-875c-81cf6362e4f4
+        name: "A `failed` result names among its errors the status of the refusal and its code where it is a problem document, or that Yard Server did not answer."
+  - key: 01a20dc9-2271-7343-84c0-93e347454761
+    statement:
+      form: ubiquitous
+      system: "The result of `loft yard flush`"
+      shall: "count what the run did with the outbox."
+    criteria:
+      - key: 01a20dc9-2271-7343-84c0-93e4c1dcc394
+        name: "`sent` counts the versions Yard Server took."
+      - key: 01a20dc9-2271-7343-84c0-93e516aaeabd
+        name: "`remaining` counts the entries for the address left in the outbox."
+      - key: 01a20dc8-c593-7357-875c-81d0b58e58ea
+        name: "`skipped` counts the entries of a newer `yardlog-outbox` version that were passed over."
+      - key: 01a20dc9-2271-7343-84c0-93e6f2d568f6
+        name: "`dead` counts the files moved into `~/.yard/outbox/dead/`."

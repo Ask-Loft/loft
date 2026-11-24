@@ -1,0 +1,80 @@
+key: 01a20dc9-eaae-7491-b6c6-e7fcf3935f9d
+slug: a-batch-of-versions-mirrors-yard-log-s-records-in-json
+title: "A batch of versions mirrors Yard Log's records in JSON"
+context: "Connected mode sends the versions agents write to Yard Server. The request needs a shape that Yard Server can read field by field, that stays true to Yard Log's files as both change, and that can carry other records later without a new contract."
+state:
+  kind: accepted
+  selectedOption: 01a20dc9-eaae-7491-b6c6-e8004ed128ce
+  outcome: "Each version goes as the JSON form of its record in its stage's file, built from the same tree of fields as the YAML, in a format of its own, `yardlog-batch/1`, kept in `yardlog`; beside the version go its placing keys, the block's kind and id, and the kind of record."
+drivers:
+  - key: 01a20dc9-eaae-7491-b6c6-e7fddc47d223
+    kind: local
+    label: "One source"
+    statement: "The file and the batch cannot drift apart."
+  - key: 01a20dc9-eaae-7491-b6c6-e7fe8954fad6
+    kind: local
+    label: "Readable by field"
+    statement: "Yard Server reads each field of a version without parsing YAML."
+  - key: 01a20dc9-eaae-7491-b6c6-e7ff3b72f956
+    kind: local
+    label: "Room to grow"
+    statement: "Answers and other records can join a batch later without a new contract."
+options:
+  - key: 01a20dc9-eaae-7491-b6c6-e8004ed128ce
+    title: "JSON from the same tree"
+    description: "The version's YAML record, field for field, as JSON, with a field naming the kind of record beside it."
+  - key: 01a20dc9-eaae-7491-b6c6-e801b66d5a4a
+    title: "A wire model of its own"
+    description: "A separate set of types for the request, mapped from Yard Log's model."
+  - key: 01a20dc9-eaae-7491-b6c6-e8027a365890
+    title: "YAML text"
+    description: "Each version's YAML, as text, inside a JSON envelope."
+assessments:
+  - option: 01a20dc9-eaae-7491-b6c6-e8004ed128ce
+    driver: 01a20dc9-eaae-7491-b6c6-e7fddc47d223
+    rating: supports
+    rationale: "the writer of the file and of the batch share one tree"
+  - option: 01a20dc9-eaae-7491-b6c6-e8004ed128ce
+    driver: 01a20dc9-eaae-7491-b6c6-e7fe8954fad6
+    rating: supports
+    rationale: "every field is a JSON member"
+  - option: 01a20dc9-eaae-7491-b6c6-e8004ed128ce
+    driver: 01a20dc9-eaae-7491-b6c6-e7ff3b72f956
+    rating: supports
+    rationale: "the kind of record tells a version from what joins later"
+  - option: 01a20dc9-eaae-7491-b6c6-e801b66d5a4a
+    driver: 01a20dc9-eaae-7491-b6c6-e7fddc47d223
+    rating: conflicts
+    rationale: "a second model must be kept in step by hand"
+  - option: 01a20dc9-eaae-7491-b6c6-e801b66d5a4a
+    driver: 01a20dc9-eaae-7491-b6c6-e7fe8954fad6
+    rating: supports
+    rationale: "every field is a JSON member"
+  - option: 01a20dc9-eaae-7491-b6c6-e801b66d5a4a
+    driver: 01a20dc9-eaae-7491-b6c6-e7ff3b72f956
+    rating: supports
+    rationale: "new types can be added"
+  - option: 01a20dc9-eaae-7491-b6c6-e8027a365890
+    driver: 01a20dc9-eaae-7491-b6c6-e7fddc47d223
+    rating: supports
+    rationale: "the text is the file's own"
+  - option: 01a20dc9-eaae-7491-b6c6-e8027a365890
+    driver: 01a20dc9-eaae-7491-b6c6-e7fe8954fad6
+    rating: conflicts
+    rationale: "Yard Server must parse YAML"
+  - option: 01a20dc9-eaae-7491-b6c6-e8027a365890
+    driver: 01a20dc9-eaae-7491-b6c6-e7ff3b72f956
+    rating: neutral
+    rationale: "the envelope can name other records, but each needs its own parsing"
+consequences:
+  - key: 01a20dc9-eaae-7491-b6c6-e803b7003045
+    kind: benefit
+    statement: "A field added to Yard Log's records reaches Yard Server with no change to the sending."
+  - key: 01a20dc9-eaae-7491-b6c6-e804f63dd940
+    kind: cost
+    statement: "A change of Yard Log's records changes what Yard Server reads, so such a change takes a new version of `yardlog-batch`."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a20dc8-c593-7357-875c-8195f82ca8e7

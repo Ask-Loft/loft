@@ -1,7 +1,7 @@
 key: 01a16469-559e-73c4-85f2-71b305365c69
 slug: yardlog-store
 name: "yardlog-store"
-body: "The `yardlog-store` crate. It reads and writes a branch's Yard Log in the files under `.yard/<branch>/`, through the journaled save of `loft-ports`, one write at a time for each branch's Yard Log, under a lock kept in git's own directory for the worktree. Each session's token totals and activity beside them, which change no revision, it writes whole outside that lock. It holds the leases of waits and the machine's state in `~/.yard/`, and settles Yard Log after a merge."
+body: "The `yardlog-store` crate. It reads and writes a branch's Yard Log in the files under `.yard/<branch>/`, through the journaled save of `loft-ports`, one write at a time for each branch's Yard Log, under a lock kept in git's own directory for the worktree. Each session's token totals and activity beside them, which change no revision, it writes whole outside that lock. It holds the leases of waits and the machine's state in `~/.yard/`, puts a copy of each new version into the outbox in connected mode, and settles Yard Log after a merge."
 tags:
   - git
 scopedTo:

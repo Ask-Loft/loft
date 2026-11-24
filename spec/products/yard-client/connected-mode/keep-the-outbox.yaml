@@ -1,0 +1,118 @@
+key: 01a20dc8-c593-7357-875c-81a0c59cbae3
+slug: keep-the-outbox
+name: "Keep the outbox"
+body: |
+  The outbox, `~/.yard/outbox/`, is a transactional outbox: the write that seals a version also puts a copy of it there, ready to be sent as it is, and the copy stays until Yard Server has taken it. Sending reads the outbox alone, with no git, no lock of Yard Log and no worktree, so a worktree removed or a branch renamed meanwhile does not stop a version from going. The outbox holds an entry for each version not yet sent, named by the version's key; a version is sealed once written, so an entry never goes stale, though the block's `id` it carries is the one the block had when the version was written.
+
+  One outbox serves every tree and every Yard Server on the machine. Each entry names the address of the Yard Server it is for, and sending takes only the entries of its own address, so that turning connected mode to another server never sends a version where it was not meant to go. The address goes no further than the machine.
+
+  A version is copied after its write is saved and before the lock of Yard Log is released. A crash between the two leaves the version saved and never sent, which is the better failure: the outbox never holds a version that Yard Log does not. Versions that a merge of Yard Log brings in, and versions a crash left unsent, wait for the history sync of a later wave.
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+  - 01a16469-559e-73c4-85f2-71b305365c69
+mentions:
+  - 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+requirements:
+  - key: 01a20dc8-c593-7357-875c-81a10fb9ad0e
+    statement:
+      form: event_driven
+      when: "a write of Yard Log in connected mode adds versions of blocks or stages"
+      system: "`yardlog-store`"
+      shall: "put an entry for each new version into `~/.yard/outbox/<version key>.json`, after the write is saved and before the lock of Yard Log is released."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81a247c61fa1
+        name: "A `loft yard write`, a `loft yard task`, a `loft yard published` and a `loft yard codex hook` that add versions put one entry for each version they add."
+      - key: 01a20dc8-c593-7357-875c-81a3c400ca2c
+        name: "A new version of a stage gets an entry as a version of a block does."
+      - key: 01a20dc8-c593-7357-875c-81a4f344ecf0
+        name: "No entry exists for a version before the write that adds it is saved."
+      - key: 01a20dc8-c593-7357-875c-81a5503fc54f
+        name: "Each entry is written to a temporary file and renamed into place."
+      - key: 01a20dc8-c593-7357-875c-81a61535463f
+        name: "A write the store refuses puts no entry."
+      - key: 01a20dc8-c593-7357-875c-81a726262890
+        name: "A write that adds no version puts no entry."
+      - key: 01a20dc8-c593-7357-875c-81a8ebaaa6b5
+        name: "The person's answers and decisions put no entry."
+      - key: 01a20dc8-c593-7357-875c-81a9cf2d6bc2
+        name: "An upgrade of Yard Log puts no entry."
+      - key: 01a20dc8-c593-7357-875c-81aafbe7e696
+        name: "Settling Yard Log after a merge puts no entry."
+  - key: 01a20dc8-c593-7357-875c-81ab4374dc35
+    statement:
+      form: ubiquitous
+      system: "An outbox entry"
+      shall: "hold `format: yardlog-outbox/1`, the base address of the Yard Server it is for as `to.endpoint`, and the version's record of a batch of versions as `record`."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81ac32a6c1c7
+        name: "An entry is a JSON object of `format`, `to` and `record`."
+      - key: 01a20dc8-c593-7357-875c-81ad156d0928
+        name: "`to.endpoint` is the address `LOFT_YARD_SERVER_ENDPOINT` named when the version was written."
+      - key: 01a20dc8-c593-7357-875c-81ae19c1ae49
+        name: "`record` is the record that a batch of versions carries for the version."
+      - key: 01a20dc8-c593-7357-875c-81af8c1c1fd0
+        name: "An entry holds no token, no path of a worktree and no branch name outside the version's body."
+  - key: 01a20dc8-c593-7357-875c-81b0a261ad1f
+    statement:
+      form: unwanted
+      if: "an entry cannot be written to the outbox"
+      system: "the writing command"
+      shall: "keep the write, give its own result and name the version left out of the outbox on standard error."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81b11232bdec
+        name: "Yard Log holds the write."
+      - key: 01a20dc8-c593-7357-875c-81b24b2f3743
+        name: "The command's outcome, exit status and JSON document are those it gives without connected mode."
+      - key: 01a20dc8-c593-7357-875c-81b3a3413dd9
+        name: "The warning names the outbox and the version's key."
+  - key: 01a20dc8-c593-7357-875c-81b422f88df0
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "read the outbox only through its own files, taking the entries for one address in the order of their version keys."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81b5a4bea003
+        name: "Only files whose names end in `.json` are read as entries, so a temporary file is never read."
+      - key: 01a20dc8-c593-7357-875c-81b69520ca66
+        name: "Entries whose `to.endpoint` names another address are neither read into a batch nor changed."
+      - key: 01a20dc8-c593-7357-875c-81b700c9f2c8
+        name: "Entries for one address are taken from the oldest version key to the newest."
+      - key: 01a20dc8-c593-7357-875c-81b85c39f0a4
+        name: "Reading the outbox needs no git, no lock of Yard Log and no worktree."
+  - key: 01a20dc8-c593-7357-875c-81b98e9b7ef5
+    statement:
+      form: unwanted
+      if: "a file of the outbox does not read as an entry, or names a format other than `yardlog-outbox`"
+      system: "Yard Client"
+      shall: "move it into `~/.yard/outbox/dead/` and take the next entry in its place."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81ba34a8bf50
+        name: "A file that is not JSON is moved into `~/.yard/outbox/dead/`."
+      - key: 01a20dc8-c593-7357-875c-81bbb57959a7
+        name: "A JSON file whose `format` does not name `yardlog-outbox` is moved into `~/.yard/outbox/dead/`."
+      - key: 01a20dc8-c593-7357-875c-81bcccf755b5
+        name: "A file in `~/.yard/outbox/dead/` is never read again."
+      - key: 01a20dc8-c593-7357-875c-81bde131b8ab
+        name: "The entries after a moved file are sent as if it had not been there."
+  - key: 01a20dc8-c593-7357-875c-81be67af9843
+    statement:
+      form: unwanted
+      if: "an entry names a version of `yardlog-outbox` newer than this `loft` writes"
+      system: "Yard Client"
+      shall: "leave it in the outbox, unsent, and take the next entry in its place."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81bfe9bd7572
+        name: "An entry of `yardlog-outbox/2` stays in the outbox, unchanged."
+      - key: 01a20dc8-c593-7357-875c-81c099764854
+        name: "The entries after it are sent as if it had not been there."
+  - key: 01a20dc8-c593-7357-875c-81c1322dc85e
+    statement:
+      form: unwanted
+      if: "an entry is gone between listing the outbox and reading or removing it"
+      system: "Yard Client"
+      shall: "pass it over without an error."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81c29dad1e44
+        name: "The batch goes on without the vanished entry."
+      - key: 01a20dc8-c593-7357-875c-81c3b1fcdff0
+        name: "No error or warning names the vanished entry."

@@ -3,3 +3,4 @@ rules:
     properNames:
       - "Yard Client"
       - "Yard Log"
+      - "Yard Server"

@@ -39058,11 +39058,11 @@ links:
         name: "each_yard_command_has_a_feature_that_lists_yard_command"
         body: 04b5ffe8207d1c16463ba785361b13aae19637b9b8a709dd51cbeb2f4ac5932b
   - node: 01a1646f-546d-7042-befd-ea6063179e7b
-    reviewed: 7fd85b76a83a9ddddaa00999d8661e901dd5127ed6f7199ef9d4c4ed23521f41
+    reviewed: 41bdce8609ee9ed693cfee3d1ed30c6a95b5455a0ca4e9e3162ccae4a6d3c2ae
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_but_serve_protocol_and_continue_lists_needs_repository"
-        body: 0a2e02a975d6ef28966c92c0e6dc1cb7a65498ef932dac1bab54bd2a98b2193c
+        body: a4c46777b838753c64af2b10f7d228a46ec4b3868a43a2a5ed8e3918f6b2b7fe
   - node: 01a182b6-3c58-7235-ad04-3918a33b8514
     reviewed: 0676bf94426ed7746485bd87e02ef190addf0a7798e9044361dc7d71301114be
     tests:
