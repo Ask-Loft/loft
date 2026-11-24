@@ -1,0 +1,208 @@
+//! The outbox, `~/.yard/outbox/`: a transactional outbox of the versions not yet sent to Yard
+//! Server. The write that seals a version puts an entry for it there, `<version key>.json`,
+//! holding the address of the Yard Server it is for and the version's record of a batch of
+//! versions, ready to be sent as it is. One outbox serves every tree and every Yard Server on the
+//! machine; each is read for one address alone, oldest version first, with no git, no lock of
+//! Yard Log and no worktree. A file that is not an entry is moved into `dead/` and never read
+//! again; an entry of a newer format is left for a newer `loft`.
+
+use std::collections::BTreeSet;
+use std::fs;
+use std::io::ErrorKind;
+use std::path::{Path, PathBuf};
+
+use loft_ports::io_error;
+use loft_ports::sync::{move_into_place, read_if_present, remove_if_present, replace_synced};
+use yardlog::YardLog;
+use yardlog::entry::{self, Read};
+use yardlog::keys::VersionKey;
+
+use crate::YardStoreError;
+
+pub use yardlog::entry::FORMAT;
+
+/// Where the files that are not entries are moved, inside the outbox.
+pub const DEAD: &str = "dead";
+
+/// The outbox of one Yard Server's address.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Outbox {
+    dir: PathBuf,
+    endpoint: String,
+}
+
+/// An entry taken from the outbox: its version's key and its record, as the entry holds it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Entry {
+    pub key: String,
+    pub record: String,
+}
+
+/// What a take found in the outbox for its address.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Taken {
+    /// The oldest entries, at most as many as were asked for.
+    pub entries: Vec<Entry>,
+    /// Every entry waiting for the address, those taken included.
+    pub waiting: usize,
+    /// The entries of a newer format, left in place.
+    pub skipped: usize,
+    /// The files moved into `dead/`.
+    pub dead: usize,
+}
+
+impl Outbox {
+    /// The outbox in `dir` of the Yard Server at `endpoint`.
+    #[must_use]
+    pub fn new(dir: impl Into<PathBuf>, endpoint: &str) -> Self {
+        Self {
+            dir: dir.into(),
+            endpoint: endpoint.to_owned(),
+        }
+    }
+
+    #[must_use]
+    pub fn dir(&self) -> &Path {
+        &self.dir
+    }
+
+    #[must_use]
+    pub fn endpoint(&self) -> &str {
+        &self.endpoint
+    }
+
+    /// Puts an entry for `key`, holding `record`, through a temporary file renamed into place.
+    ///
+    /// # Errors
+    ///
+    /// The outbox or the entry cannot be written.
+    pub fn put(&self, key: VersionKey, record: &str) -> Result<(), YardStoreError> {
+        fs::create_dir_all(&self.dir).map_err(io_error(&self.dir))?;
+        let text = entry::write(&self.endpoint, record);
+        Ok(replace_synced(
+            &self.dir.join(format!("{key}.json")),
+            text.as_bytes(),
+            false,
+        )?)
+    }
+
+    /// Puts an entry for each version of `log` whose key `before` does not hold and that no
+    /// merge brought in: how many it put, and a warning that names the outbox and each version
+    /// left out of it, where any was.
+    pub(crate) fn put_new(
+        &self,
+        before: &BTreeSet<VersionKey>,
+        log: &YardLog,
+    ) -> (usize, Option<String>) {
+        let new = log.stages.iter().flat_map(|file| {
+            let stage = file.stage.key.stage();
+            std::iter::once(&file.stage)
+                .chain(&file.blocks)
+                .flat_map(move |block| {
+                    block
+                        .versions
+                        .iter()
+                        .map(move |version| (stage, block, version))
+                })
+        });
+        let mut put = 0;
+        let left_out: Vec<String> = new
+            .filter(|(_, _, version)| !before.contains(&version.key) && version.arrived.is_none())
+            .filter_map(|(stage, block, version)| {
+                let record = yardlog::batch::record(log.root.key, stage, block, version);
+                match self.put(version.key, &record) {
+                    Ok(()) => {
+                        put += 1;
+                        None
+                    }
+                    Err(error) => Some(format!("{} ({error})", version.key)),
+                }
+            })
+            .collect();
+        let warning = (!left_out.is_empty()).then(|| {
+            format!(
+                "the outbox {} could not take version {}; it is saved in Yard Log and will not be sent to Yard Server",
+                self.dir.display(),
+                left_out.join(", ")
+            )
+        });
+        (put, warning)
+    }
+
+    /// The oldest `most` entries for this outbox's address, in the order of their version
+    /// keys, with the files that are not entries moved into `dead/` on the way.
+    ///
+    /// # Errors
+    ///
+    /// The outbox cannot be listed, or a file cannot be read or moved.
+    pub fn take(&self, most: usize) -> Result<Taken, YardStoreError> {
+        let mut taken = Taken::default();
+        for name in self.names()? {
+            let path = self.dir.join(&name);
+            // Gone since the listing: sent or moved by another run.
+            let Some(bytes) = read_if_present(&path)? else {
+                continue;
+            };
+            match entry::read(&bytes) {
+                Read::Entry { endpoint, record } if endpoint == self.endpoint => {
+                    taken.waiting += 1;
+                    let key = name.trim_end_matches(".json").to_owned();
+                    let room = taken.entries.len() < most;
+                    taken.entries.extend(room.then_some(Entry { key, record }));
+                }
+                Read::Entry { .. } => {}
+                Read::Newer => taken.skipped += 1,
+                Read::Foreign => taken.dead += usize::from(self.bury(&name)?),
+            }
+        }
+        Ok(taken)
+    }
+
+    /// Removes `entries` from the outbox; one already gone is no error.
+    ///
+    /// # Errors
+    ///
+    /// An entry is there and cannot be removed.
+    pub fn remove(&self, entries: &[Entry]) -> Result<(), YardStoreError> {
+        for taken in entries {
+            remove_if_present(&self.dir.join(format!("{}.json", taken.key)))?;
+        }
+        Ok(())
+    }
+
+    /// The names of the files that may be entries, in order: those ending in `.json`, and not
+    /// a temporary file, whose name starts with `.`.
+    fn names(&self) -> Result<Vec<String>, YardStoreError> {
+        let listing = match fs::read_dir(&self.dir) {
+            Ok(listing) => listing,
+            Err(error) if error.kind() == ErrorKind::NotFound => return Ok(Vec::new()),
+            Err(error) => return Err(io_error(&self.dir)(error).into()),
+        };
+        let mut names: Vec<String> = listing
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_file()))
+            .filter_map(|entry| entry.file_name().into_string().ok())
+            .filter(|name| {
+                Path::new(name)
+                    .extension()
+                    .is_some_and(|extension| extension == "json")
+                    && !name.starts_with('.')
+            })
+            .collect();
+        names.sort();
+        Ok(names)
+    }
+
+    /// Moves the file `name` into `dead/`: whether it was there to move.
+    fn bury(&self, name: &str) -> Result<bool, YardStoreError> {
+        let dead = self.dir.join(DEAD);
+        fs::create_dir_all(&dead).map_err(io_error(&dead))?;
+        let from = self.dir.join(name);
+        match move_into_place(&from, &dead.join(name)) {
+            Ok(()) => Ok(true),
+            // Gone since it was read: moved or removed by another run.
+            Err(_) if !from.exists() => Ok(false),
+            Err(error) => Err(error.into()),
+        }
+    }
+}

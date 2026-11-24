@@ -9,6 +9,7 @@ mod files;
 pub mod git;
 pub mod home;
 pub mod lock;
+pub mod outbox;
 pub mod place;
 pub mod session;
 pub mod store;

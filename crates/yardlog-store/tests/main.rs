@@ -14,4 +14,5 @@ mod home;
 mod leases;
 #[cfg(unix)]
 mod lock_probe;
+mod outbox;
 mod session_files;
