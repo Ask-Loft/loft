@@ -20676,6 +20676,12 @@ links:
       - file: "crates/loft-cli/tests/publish_connected_reach.rs"
         name: "a_kept_sign_in_whose_resource_reads_as_no_address_is_no_sign_in"
         body: 529f644f777d4c03488bc6dcab4d67b2d4aef553d525c3d1f6248756272a4cb6
+  - node: 01a20dc2-fbd1-759a-88c6-3d463f924ed6
+    reviewed: 928d22947b0e7c5c30f9a5f358831e1662ca2ec6de2030b3d77beed24377a0bd
+    tests:
+      - file: "crates/loft-cli/src/remote/signins/tests.rs"
+        name: "an_entry_that_is_not_an_object_is_no_sign_in_and_is_neither_refreshed_nor_sent"
+        body: a059fdad5de5984da47f9bb8d19b7a68d7ea220c0d289044670b034e440f5196
   - node: 01a202c3-d202-749b-a2d8-738d6f359e4f
     reviewed: 4d1d66b07399313a76e2bbcb3babcc6ea47f212bc05f41f1e9a07d9a0c22274d
     tests:
@@ -20687,7 +20693,7 @@ links:
         body: 685096c0aeb98eca51919386028dcf7c4d0f9dbc5a7495905a654282f362a7bf
       - file: "crates/loft-cli/src/remote/signins/kept.rs"
         name: "a_sign_in_whose_companion_resources_do_not_read_still_serves_its_own_resource"
-        body: efb25eb9856103b5e9dfb3034de6a0e33bbd0c9d402b4249249f52e3e55db2e5
+        body: 8cb94ec0a0361c4dd1380e12508a4544cdaa37db929eaec4edf2b1f531089c4c
   - node: 01a18e1f-8daa-7674-9603-5ad333b36e05
     reviewed: 6f8e361fca1ee375d070e2b40143ef2382aa4bd303e62c8e199d2f0a9a3c5310
     tests:

@@ -29,6 +29,8 @@ requirements:
         name: "A kept sign-in whose `resource` lies on another origin than the address it is kept under is neither refreshed nor sent, and counts as no sign-in for that address where a command needs one."
       - key: 01a1f9e5-e027-761e-ba8f-3ab9ff480a0a
         name: "A kept sign-in whose `resource` does not read as an `https` or `http` address is neither refreshed nor sent, and counts as no sign-in for that address where a command needs one."
+      - key: 01a20dc2-fbd1-759a-88c6-3d463f924ed6
+        name: "An entry of `remotes` that is not a JSON object, such as a list of a sign-in's values, is neither refreshed nor sent, and counts as no sign-in for the address it is kept under where a command needs one."
       - key: 01a202c3-d202-749b-a2d8-738d6f359e4f
         name: "A kept sign-in without `resources`, or whose `resources` does not read, covers the protected resource that its `resource` names alone."
       - key: 01a18e1f-8daa-7674-9603-5ad333b36e05
