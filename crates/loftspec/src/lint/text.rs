@@ -101,11 +101,20 @@ fn shown_events(markdown: &str) -> impl Iterator<Item = (Event<'_>, Range<usize>
 /// The text a reader is shown of `markdown`, as one string: emphasis and links drop their
 /// marks, so that `512 **MB**` reads `512 MB`; each code span stands as the one mark `\u{1}`,
 /// which is neither a letter nor a digit; a line break is a space; and each paragraph, heading,
-/// list item, code block and HTML block ends a line.
+/// list item, code block and HTML block ends a line, as each paragraph, heading, list, list item
+/// and block quote that starts after other text begins one, so that an item nested in a tight
+/// list stands apart from the text before it.
 pub(super) fn plain(markdown: &str) -> String {
     let mut text = String::new();
     for (event, _) in shown_events(markdown) {
         match event {
+            Event::Start(
+                Tag::Paragraph
+                | Tag::Heading { .. }
+                | Tag::List(_)
+                | Tag::Item
+                | Tag::BlockQuote(_),
+            ) if !text.is_empty() && !text.ends_with('\n') => text.push('\n'),
             Event::Text(piece) => text.push_str(&piece),
             Event::Code(_) => text.push('\u{1}'),
             Event::SoftBreak | Event::HardBreak => text.push(' '),

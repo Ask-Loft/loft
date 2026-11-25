@@ -1,7 +1,7 @@
 //! `V2-014` (F-21): a quantity in a decimal byte unit in a document that also states one in a
 //! binary byte unit and defines no decimal byte unit.
 
-use crate::common::decisions::{DECISION, decision, set_state};
+use crate::common::decisions::{DECISION, decision, set_state, superseded};
 use crate::common::lint::{configured, findings, keys, of, severity};
 use crate::common::{key, section, small_document, term};
 use loftspec::decision::DecisionState;
@@ -17,7 +17,7 @@ pub(crate) const FEATURE: u32 = 3;
 const PRODUCT: u32 = 1;
 
 /// The small document with F-1's body and P-1's body set.
-fn with_bodies(feature: &str, product: &str) -> Document {
+pub(crate) fn with_bodies(feature: &str, product: &str) -> Document {
     let mut document = small_document();
     document.products[0].details.body = Some(product.to_owned());
     document.products[0].feature_groups[0].features[0]
@@ -98,6 +98,8 @@ fn a_quantity_takes_nothing_one_space_one_no_break_space_or_one_hyphen_before_it
         "16-MB",
         "1,024 MB",
         "1.5 MB",
+        "4-16 MB",
+        ".5 MB",
     ] {
         let document = beside_binary(&format!("A page holds {written}."));
         assert_eq!(named(&document), one(FEATURE, "MB"), "{written}");
@@ -186,6 +188,7 @@ fn a_decision_is_read_in_every_state() {
             outcome: "Kept.".to_owned(),
             rationale: "Over.".to_owned(),
         },
+        superseded(0, PRODUCT),
     ];
     for state in states {
         let mut document = beside_binary("Nothing measured.");
@@ -304,9 +307,16 @@ fn a_decimal_unit_given_as_a_count_of_bytes_settles_the_document() {
 
 #[test]
 fn a_term_named_after_a_decimal_unit_settles_the_document() {
-    for name in ["MB", "KB", "megabyte", "Kilobytes"] {
+    for (name, definition) in [
+        ("MB", "A megabyte."),
+        ("KB", "1,000 bytes."),
+        ("megabyte", "What megabyte means."),
+        ("Kilobytes", "Kilobytes of 1,024 bytes each."),
+    ] {
         let mut document = beside_binary("A page holds 5 MB.");
-        document.terms.push(term(65, name, &[]));
+        let mut entry = term(65, name, &[]);
+        entry.definition = definition.to_owned();
+        document.terms.push(entry);
         assert!(byte_units(&document).is_empty(), "{name}");
     }
 }
@@ -403,7 +413,9 @@ fn a_decimal_unit_defined_by_its_full_name_settles_the_document() {
 fn a_term_named_after_a_decimal_unit_in_the_plural_settles_the_document() {
     for name in ["MBs", "KBs"] {
         let mut document = beside_binary("A page holds 5 MB.");
-        document.terms.push(term(65, name, &[]));
+        let mut entry = term(65, name, &[]);
+        entry.definition = "Megabytes or kilobytes, as the name says.".to_owned();
+        document.terms.push(entry);
         assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{name}");
     }
 }
