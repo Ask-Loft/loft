@@ -5,11 +5,13 @@
 //! Every node and every decision is read, whatever the decision's state, as the text a Markdown
 //! reader shows, so that emphasis drops its marks and code spans and fenced code state nothing.
 //! A quantity is a number followed by a unit, with nothing, one space, one no-break space or one
-//! hyphen between them; units are matched in their own case, so `Mb` is neither family. One
-//! definition of a decimal unit settles every decimal unit of the document: a term named after
-//! one, or a text that gives one, by its symbol or its full name, as a count of bytes
-//! (`1 MB = 1,000,000 bytes`, `MB (10^6 bytes)`, `a megabyte is 1000^2 bytes`), or names it in
-//! parentheses (`kB (kilobytes)`).
+//! hyphen between them; units are matched in their own case, so `Mb` is neither family. A number
+//! inside a web address, or right after a letter, `_`, `/`, `.` or `-`, begins no quantity. One
+//! definition of a decimal unit settles every decimal unit of the document: a term whose name or
+//! alias is one, or a text that gives one, by its symbol or its full name, as a count of bytes
+//! (`1 MB = 1,000,000 bytes`, `MB: 10^6 bytes`, `A megabyte is 1000^2 bytes`). Since one false
+//! definition silences the whole document, a text defines a unit only where the unit opens a
+//! clause, alone or after `1`, `one`, `a`, `an` or `the`.
 
 use super::context::{Context, Item};
 use super::text::plain;
@@ -22,7 +24,11 @@ const BINARY: [&str; 4] = ["KiB", "MiB", "GiB", "TiB"];
 /// The full names of the decimal units, as a term may be named, in either number.
 const DECIMAL_NAMES: [&str; 4] = ["kilobyte", "megabyte", "gigabyte", "terabyte"];
 /// The words after a unit that make the text after them its definition.
-const DEFINING: [&str; 6] = ["=", "is", "means", "equals", "denotes", "stands for"];
+const DEFINING: [&str; 7] = ["=", ":", "is", "means", "equals", "denotes", "stands for"];
+/// The words that may stand between the opening of a clause and the unit it defines.
+const LEADERS: [&str; 5] = ["1", "one", "a", "an", "the"];
+/// The marks after which a clause opens, beside the start of a text or a line.
+const CLAUSE_MARKS: [char; 8] = ['\n', '.', '!', '?', ':', ';', ',', '('];
 
 /// What one element's texts say about byte units.
 #[derive(Default)]
@@ -75,7 +81,9 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     let document = context.document;
     let termed = document.terms.iter().any(|term| {
         let definition = plain(&term.definition);
-        names_decimal_unit(&term.name) || defines_decimal(&definition, &units(&definition))
+        let mut names = std::iter::once(&term.name).chain(&term.aliases);
+        names.any(|name| names_decimal_unit(name))
+            || defines_decimal(&definition, &units(&definition))
     });
     if termed {
         return;
@@ -169,31 +177,59 @@ fn is_word(c: char) -> bool {
 }
 
 /// Whether the unit at `at` follows a number, with nothing, one space, one no-break space or one
-/// hyphen between them, and the number starts a word.
+/// hyphen between them, where the number starts a word outside a web address.
 fn is_quantity(text: &str, at: usize) -> bool {
     let head = &text[..at];
     let head = head.strip_suffix([' ', '\u{a0}', '-']).unwrap_or(head);
-    let rest = head.trim_end_matches(|c: char| c.is_ascii_digit() || matches!(c, ',' | '.'));
-    let run = &head[rest.len()..];
-    run.ends_with(|c: char| c.is_ascii_digit())
-        && (run.starts_with([',', '.']) || !rest.ends_with(is_word))
+    let run = head.trim_end_matches(|c: char| c.is_ascii_digit() || matches!(c, ',' | '.'));
+    let number = head[run.len()..].trim_start_matches([',', '.']);
+    let before = &head[..head.len() - number.len()];
+    number.ends_with(|c: char| c.is_ascii_digit())
+        && !before.ends_with(|c: char| is_word(c) || matches!(c, '/' | '.' | '-'))
+        && !in_web_address(text, before.len())
+}
+
+/// Whether the word around `at` is a web address.
+fn in_web_address(text: &str, at: usize) -> bool {
+    let start = (text[..at].char_indices().rev())
+        .find(|(_, c)| c.is_whitespace())
+        .map_or(0, |(space, c)| space + c.len_utf8());
+    let end = (text[at..].find(char::is_whitespace)).map_or(text.len(), |space| at + space);
+    let word = &text[start..end];
+    word.contains("://") || strip_prefix_ignoring_case(word, "www.").is_some()
 }
 
 /// Whether `text`, whose units are `units`, gives a decimal unit, by its symbol or its full
-/// name, as a count of bytes, or names it in parentheses.
+/// name, as a count of bytes, where the unit opens a clause.
 fn defines_decimal(text: &str, units: &[(usize, &'static str)]) -> bool {
-    let by_symbol = (units.iter())
+    let symbols = (units.iter())
         .filter(|(_, unit)| DECIMAL.contains(unit))
-        .any(|(at, unit)| definition_follows(text[at + unit.len()..].trim_start()));
-    by_symbol
-        || full_name_ends(text)
-            .into_iter()
-            .any(|end| definition_follows(text[end..].trim_start()))
+        .map(|&(at, unit)| (at, at + unit.len()));
+    let mut spans = symbols.chain(full_names(text));
+    spans.any(|(start, end)| {
+        opens_clause(&text[..start]) && definition_follows(text[end..].trim_start())
+    })
 }
 
-/// Where each full name of a decimal unit in `text`, in either number and any case, ends.
-fn full_name_ends(text: &str) -> Vec<usize> {
-    let mut ends = Vec::new();
+/// Whether a unit after `head` opens a clause, alone or after one of `LEADERS`.
+fn opens_clause(head: &str) -> bool {
+    let head = head.trim_end_matches([' ', '\t', '\u{a0}']);
+    let head = (LEADERS.iter())
+        .find_map(|leader| {
+            let cut = head.len().checked_sub(leader.len())?;
+            let (rest, word) = (head.get(..cut)?, &head[cut..]);
+            let bounded = !rest.ends_with(|c: char| is_word(c) || matches!(c, '.' | ','));
+            (word.eq_ignore_ascii_case(leader) && bounded).then_some(rest)
+        })
+        .unwrap_or(head);
+    let head = head.trim_end_matches([' ', '\t', '\u{a0}']);
+    head.is_empty() || head.ends_with(CLAUSE_MARKS)
+}
+
+/// Where each full name of a decimal unit in `text`, in either number and any case, starts and
+/// ends.
+fn full_names(text: &str) -> Vec<(usize, usize)> {
+    let mut spans = Vec::new();
     for (at, _) in text.char_indices() {
         for name in DECIMAL_NAMES {
             let Some(after) = strip_prefix_ignoring_case(&text[at..], name) else {
@@ -203,25 +239,22 @@ fn full_name_ends(text: &str) -> Vec<usize> {
             let end = text.len() - after.len();
             let before = text[..at].chars().next_back();
             if !before.is_some_and(is_word) && !after.starts_with(is_word) {
-                ends.push(end);
+                spans.push((at, end));
             }
         }
     }
-    ends
+    spans
 }
 
 /// Whether `rest`, the text after a unit, defines it: a defining word and a count of bytes, or a
-/// parenthesis that opens on a count of bytes or a decimal unit's full name.
+/// parenthesis that opens on a count of bytes.
 fn definition_follows(rest: &str) -> bool {
     if let Some(inside) = rest.strip_prefix('(') {
-        let inside = inside.trim_start();
-        return byte_count(inside)
-            || (DECIMAL_NAMES.iter())
-                .any(|name| strip_prefix_ignoring_case(inside, name).is_some());
+        return byte_count(inside.trim_start());
     }
     DEFINING.iter().any(|word| {
         strip_prefix_ignoring_case(rest, word).is_some_and(|after| {
-            let boundary = *word == "=" || after.starts_with(char::is_whitespace);
+            let boundary = matches!(*word, "=" | ":") || after.starts_with(char::is_whitespace);
             let after = after.trim_start();
             let after = strip_prefix_ignoring_case(after, "exactly").map_or(after, str::trim_start);
             boundary && byte_count(after)

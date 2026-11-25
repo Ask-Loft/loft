@@ -12,7 +12,7 @@ use loftspec::lint::{Finding, RuleId, Severity};
 use loftspec::statement::{EarsForm, Statement};
 
 /// The Feature F-1, keyed 3.
-const FEATURE: u32 = 3;
+pub(crate) const FEATURE: u32 = 3;
 /// The Product P-1, keyed 1.
 const PRODUCT: u32 = 1;
 
@@ -27,11 +27,11 @@ fn with_bodies(feature: &str, product: &str) -> Document {
 }
 
 /// The small document with F-1's body set, beside a Product that states a binary quantity.
-fn beside_binary(feature: &str) -> Document {
+pub(crate) fn beside_binary(feature: &str) -> Document {
     with_bodies(feature, "A block holds 4 KiB.")
 }
 
-fn byte_units(document: &Document) -> Vec<Finding> {
+pub(crate) fn byte_units(document: &Document) -> Vec<Finding> {
     of(&findings(document), RuleId::V2014)
         .into_iter()
         .cloned()
@@ -39,14 +39,14 @@ fn byte_units(document: &Document) -> Vec<Finding> {
 }
 
 /// The element each `V2-014` finding names and the unit it is about.
-fn named(document: &Document) -> Vec<(Vec<Key>, Option<String>)> {
+pub(crate) fn named(document: &Document) -> Vec<(Vec<Key>, Option<String>)> {
     byte_units(document)
         .iter()
         .map(|finding| (keys(finding), finding.term.clone()))
         .collect()
 }
 
-fn one(element: u32, unit: &str) -> Vec<(Vec<Key>, Option<String>)> {
+pub(crate) fn one(element: u32, unit: &str) -> Vec<(Vec<Key>, Option<String>)> {
     vec![(vec![key(element)], Some(unit.to_owned()))]
 }
 
@@ -278,14 +278,13 @@ fn a_document_with_one_family_of_units_yields_no_finding() {
 #[test]
 fn a_decimal_unit_given_as_a_count_of_bytes_settles_the_document() {
     for definition in [
-        "Here 1 MB = 1,000,000 bytes.",
+        "1 MB = 1,000,000 bytes.",
         "A MB is 1,000,000 bytes.",
         "A MB means 10^6 bytes.",
         "One MB equals exactly 1 000 000 bytes.",
         "MB denotes 1000000 bytes.",
         "MB stands for 10^6 bytes.",
-        "Sizes are in MB (10^6 bytes).",
-        "Sizes are in kB (kilobytes).",
+        "MB (10^6 bytes) is the unit of size.",
     ] {
         let document = beside_binary("A page holds 5 MB.");
         let mut defined = document.clone();
@@ -375,7 +374,7 @@ fn a_code_span_beside_a_unit_or_a_number_states_no_quantity() {
 
 #[test]
 fn a_power_of_any_base_is_a_count_of_bytes() {
-    for definition in ["Here 1 MB = 1000^2 bytes.", "A KB is 1000 ^ 1 bytes."] {
+    for definition in ["1 MB = 1000^2 bytes.", "A KB is 1000 ^ 1 bytes."] {
         let mut document = beside_binary("A page holds 5 MB.");
         document.components[0].component.details.body = Some(definition.to_owned());
         assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");

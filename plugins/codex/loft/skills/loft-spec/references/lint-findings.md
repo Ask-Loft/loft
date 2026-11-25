@@ -552,8 +552,8 @@ requirements:
       - name: "The note is listed after it is saved."
 ```
 
-A term named after a decimal unit settles every decimal unit of the document, decisions included,
-which are not edited once resolved:
+A term named after a decimal unit, or with one as an alias, settles every decimal unit of the
+document, decisions included, which are not edited once resolved:
 
 ```yaml fragment
 - name: "MB"

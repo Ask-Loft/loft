@@ -6873,6 +6873,12 @@ links:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_unit_with_no_number_before_it_states_no_quantity"
         body: ea2fe55f2fa8c3264d106f1d72550ee659f91e93138acfb4cf4cdd907b880ea5
+  - node: 01a2146f-d6af-70f6-acc1-b8a9a1138a83
+    reviewed: e8038a6751d38a0c16964bdbdd15b7ce7b6230eb248892af72021a5d90659491
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_number_inside_a_web_address_or_after_a_path_mark_begins_no_quantity"
+        body: 05b30cff676450cf481efee766c45ba7557e3546b9848f9bbfbe825709990396
   - node: 01a21358-4147-72be-a72f-0d0fc0b9991c
     reviewed: 05c11efca212dad62af808e1279cdb78e430a14f480cedfef43b4bbb71a9d1bb
     tests:
@@ -6931,19 +6937,40 @@ links:
         name: "a_document_with_one_family_of_units_yields_no_finding"
         body: c1d9d3c329a843a782fd1445beaa03dc45b789048316f89f14a44b6c5f1d3d01
   - node: 01a21358-4147-72be-a72f-0d152a0876e9
-    reviewed: ffde6b982e81b543684ed1007c2e014bb004557e559a2ded488cd0956e1fd6bd
+    reviewed: 4e06f1043bf96b6590e1e4a205ccba557340a2635213688dd72b71ca87a6519a
     tests:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_decimal_unit_given_as_a_count_of_bytes_settles_the_document"
-        body: ed56f0c2fd9a648d598a216b57819b7e92e435c5b93add3040b6bcf78c515167
+        body: 8fa6203d2686697a7b0246cd1cc2a8527f72b200ed1f7c40592ca47a8c6f25fa
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_power_of_any_base_is_a_count_of_bytes"
-        body: d05f888f050193aaafc727cecb705016f2259ec5e5b0d3a4ae1f0325e73b9c94
+        body: 1221d774cfa54b6d5843c4d44aaf888556cf0d907caad50a599e4c5ab3c3d6aa
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_decimal_unit_defined_by_its_full_name_settles_the_document"
         body: a7fc5aad2efbc386febb8770a5b619447ce653b5a9efa9ec3a1fcf2b1f26d116
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_full_name_in_parentheses_is_no_count_of_bytes"
+        body: 7e8582869725d226a242a216fd0944e23f0bdf51c36ce328015d67e78cc3bd88
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_unit_followed_by_a_colon_and_a_count_of_bytes_defines_it"
+        body: 596ff8ec8ecb97e460f56f57fd7bec2657f90c177df6f04e7bac1aec486f8f2a
+  - node: 01a2146f-d6af-70f6-acc1-b8aa3ef9a1da
+    reviewed: 1f2a59f04dc8d749c684119b00c92fe75242bc16a0c4d8026620f904ca5a5f1e
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "an_ordinary_sentence_with_a_quantity_and_a_count_of_bytes_defines_no_unit"
+        body: f6f79a1b14f888517106c9d5336faeb91f838d115d6629b524ad3333fbc19727
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_unit_that_opens_a_clause_alone_or_after_one_or_an_article_defines_it"
+        body: 536777f195ea40257151fc4c1fafe8d5f0ec857a217e7d5524d6c40420be34fc
+  - node: 01a2146f-d6af-70f6-acc1-b8ab93372603
+    reviewed: bed27d2e362e680d73caa4d7aaf024434ed394cae6f0e3a22bb4e9ac0b9e75f1
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_unit_that_opens_a_clause_alone_or_after_one_or_an_article_defines_it"
+        body: 536777f195ea40257151fc4c1fafe8d5f0ec857a217e7d5524d6c40420be34fc
   - node: 01a21358-4147-72be-a72f-0d1643400930
-    reviewed: 3be48ca7e7029e394645dbd8d7ad12a90a01175de252460bf7959edc819c21e7
+    reviewed: caddd6adc637a8014c1c5dc350f1d9d89c111ac2d376a2807f7a79897365a3e6
     tests:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_settles_the_document"
@@ -6951,6 +6978,9 @@ links:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_in_the_plural_settles_the_document"
         body: 79804cd8bdbde5ad31bc206d6cc595454a7b9a3086f30539fa9c61edca8ae905
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_term_whose_alias_is_a_decimal_unit_settles_the_document"
+        body: 1662e2a5a7e928c1d7e0c6dabbafde608d9a6b7857fdcc1a8ff6b7dc41376445
   - node: 01a21358-4147-72be-a72f-0d172df94e9d
     reviewed: 2afd5de5d1c91fa238e4c54f08f7087bc5a8c9acec82381c587766054c76707a
     tests:
