@@ -3,14 +3,16 @@
 //! units mean. A reader then cannot tell whether `1 MB` is 1,000,000 bytes or 1,048,576.
 //!
 //! Every node and every decision is read, whatever the decision's state, as the text a Markdown
-//! reader shows, so that code spans and fenced code state nothing. A quantity is a number
+//! reader shows, so that emphasis drops its marks and code spans and fenced code state nothing. A quantity is a number
 //! followed by a unit, with nothing, one space, one no-break space or one hyphen between them;
 //! units are matched in their own case, so `Mb` is neither family. One definition of a decimal
 //! unit settles every decimal unit of the document: a term named after one, or a text that gives
-//! one as a count of bytes (`1 MB = 1,000,000 bytes`, `MB (10^6 bytes)`, `kB (kilobytes)`).
+//! one, by its symbol or its full name, as a count of bytes (`1 MB = 1,000,000 bytes`,
+//! `MB (10^6 bytes)`, `a megabyte is 1000^2 bytes`), or names it in parentheses (`kB (kilobytes)`).
+
+use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
 
 use super::context::{Context, Item};
-use super::text::Body;
 use super::{Raw, RuleId};
 use crate::decision::{Decision, DecisionState, DriverPayload};
 use crate::identity::Key;
@@ -34,8 +36,8 @@ struct Use {
 
 impl Use {
     fn read(&mut self, text: &str) {
-        let shown = Body::read(text);
-        let shown = shown.text();
+        let shown = shown(text);
+        let shown = shown.as_str();
         for (at, unit) in units(shown) {
             if !is_quantity(shown, at) {
                 continue;
@@ -72,20 +74,19 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     );
     let defined = uses.iter().any(|(_, each)| each.defines)
         || document.terms.iter().any(|term| {
-            names_decimal_unit(&term.name) || defines_decimal(Body::read(&term.definition).text())
+            names_decimal_unit(&term.name) || defines_decimal(&shown(&term.definition))
         });
-    let Some(binary) = uses
-        .iter()
-        .find(|(_, each)| each.binary)
+    let binary: Vec<Key> = (uses.iter())
+        .filter(|(_, each)| each.binary)
         .map(|(key, _)| *key)
-    else {
-        return;
-    };
-    if defined {
+        .collect();
+    if binary.is_empty() || defined {
         return;
     }
     for (key, each) in &uses {
         if let Some(unit) = each.decimal {
+            // Another element where there is one, so that the finding points beyond itself.
+            let binary = binary.iter().find(|other| *other != key).unwrap_or(key);
             let message = format!(
                 "A quantity in a decimal byte unit stands beside quantities in binary byte \
                  units, as in {binary}, and the document defines no decimal byte unit."
@@ -157,10 +158,10 @@ fn decision_use(decision: &Decision) -> Use {
     each
 }
 
-/// Whether a term's name is a decimal unit, or its full name in either number.
+/// Whether a term's name is a decimal unit, or its full name, in either number.
 fn names_decimal_unit(name: &str) -> bool {
     let name = name.trim();
-    if DECIMAL.contains(&name) {
+    if DECIMAL.contains(&name.strip_suffix('s').unwrap_or(name)) {
         return true;
     }
     let name = name.to_lowercase();
@@ -207,12 +208,33 @@ fn is_quantity(text: &str, at: usize) -> bool {
     !before.is_some_and(is_word)
 }
 
-/// Whether `text` gives a decimal unit as a count of bytes, or names it in parentheses.
+/// Whether `text` gives a decimal unit, by its symbol or its full name, as a count of bytes, or
+/// names it in parentheses.
 fn defines_decimal(text: &str) -> bool {
-    units(text)
-        .into_iter()
+    let by_symbol = (units(text).into_iter())
         .filter(|(_, unit)| DECIMAL.contains(unit))
-        .any(|(at, unit)| definition_follows(text[at + unit.len()..].trim_start()))
+        .any(|(at, unit)| definition_follows(text[at + unit.len()..].trim_start()));
+    by_symbol || full_names(text).any(|end| definition_follows(text[end..].trim_start()))
+}
+
+/// Where each full name of a decimal unit in `text`, in either number and any case, ends.
+fn full_names(text: &str) -> impl Iterator<Item = usize> + '_ {
+    let lower = text.to_ascii_lowercase();
+    let mut ends = Vec::new();
+    for name in DECIMAL_NAMES {
+        for (at, _) in lower.match_indices(name) {
+            let mut end = at + name.len();
+            if lower[end..].starts_with('s') {
+                end += 1;
+            }
+            let before = lower[..at].chars().next_back();
+            let after = lower[end..].chars().next();
+            if !before.is_some_and(is_word) && !after.is_some_and(is_word) {
+                ends.push(end);
+            }
+        }
+    }
+    ends.into_iter()
 }
 
 /// Whether `rest`, the text after a unit, defines it: a defining word and a count of bytes, or a
@@ -234,8 +256,8 @@ fn definition_follows(rest: &str) -> bool {
     })
 }
 
-/// Whether `text` opens on a count of bytes: a number, or `10^n` or `2^n`, then `byte` or
-/// `bytes` as a word.
+/// Whether `text` opens on a count of bytes: a number, or a power such as `10^6` or `1000^2`,
+/// then `byte` or `bytes` as a word.
 fn byte_count(text: &str) -> bool {
     let rest = power(text).or_else(|| number(text));
     rest.is_some_and(|rest| {
@@ -247,16 +269,17 @@ fn byte_count(text: &str) -> bool {
     })
 }
 
-/// The text after a power such as `10^6` or `2 ^ 20` at the start of `text`.
+/// The text after a power of any integer base, such as `10^6`, `1000^2` or `2 ^ 20`, at the
+/// start of `text`.
 fn power(text: &str) -> Option<&str> {
-    let rest = text
-        .strip_prefix("10")
-        .or_else(|| text.strip_prefix('2'))?
-        .trim_start()
-        .strip_prefix('^')?
-        .trim_start();
-    let digits = rest.len() - rest.trim_start_matches(|c: char| c.is_ascii_digit()).len();
-    (digits > 0).then(|| &rest[digits..])
+    let rest = digits(text)?.trim_start().strip_prefix('^')?.trim_start();
+    digits(rest)
+}
+
+/// The text after the run of digits that opens `text`, where one does.
+fn digits(text: &str) -> Option<&str> {
+    let rest = text.trim_start_matches(|c: char| c.is_ascii_digit());
+    (rest.len() < text.len()).then_some(rest)
 }
 
 /// The text after a number at the start of `text`: digits, with commas, full stops and spaces
@@ -274,4 +297,32 @@ fn number(text: &str) -> Option<&str> {
         }
     }
     Some(&text[last_digit..])
+}
+
+/// The text of `markdown` as a reader sees it: emphasis and links drop their marks, so that
+/// `512 **MB**` reads `512 MB`; a code span stands as one mark that is neither a number nor a
+/// unit; code blocks and HTML blocks are left out; each block ends a line.
+fn shown(markdown: &str) -> String {
+    let mut text = String::new();
+    let mut excluded = 0_u32;
+    for event in Parser::new_ext(markdown, Options::empty()) {
+        match event {
+            Event::Start(Tag::CodeBlock(_) | Tag::HtmlBlock) => excluded += 1,
+            Event::End(TagEnd::CodeBlock | TagEnd::HtmlBlock) => {
+                excluded -= 1;
+                text.push('\n');
+            }
+            _ if excluded > 0 => {}
+            Event::Text(piece) => text.push_str(&piece),
+            Event::Code(_) => text.push('\u{1}'),
+            Event::SoftBreak | Event::HardBreak => text.push(' '),
+            Event::End(
+                TagEnd::Paragraph | TagEnd::Heading(_) | TagEnd::Item | TagEnd::TableCell,
+            ) => {
+                text.push('\n');
+            }
+            _ => {}
+        }
+    }
+    text
 }

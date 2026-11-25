@@ -348,3 +348,81 @@ fn a_suppression_of_the_decimal_element_drops_its_finding() {
     );
     assert_eq!(of(&configured(&document, &yaml), RuleId::V2014).len(), 1);
 }
+
+#[test]
+fn an_emphasized_unit_or_number_is_read_as_the_text_shows_it() {
+    for (feature, product) in [
+        ("A page holds 512 **MB**.", "A block holds 4 KiB."),
+        ("A page holds 512 MB.", "A block holds 4 *KiB*."),
+        ("A page holds **512 MB**.", "A block holds _4_ KiB."),
+    ] {
+        assert_eq!(
+            named(&with_bodies(feature, product)),
+            one(FEATURE, "MB"),
+            "{feature} {product}"
+        );
+    }
+}
+
+#[test]
+fn a_code_span_beside_a_unit_or_a_number_states_no_quantity() {
+    for feature in ["A page holds `512` MB.", "A page holds 512 `MB`."] {
+        let document = with_bodies(feature, "A block holds 4 KiB.");
+        assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{feature}");
+    }
+}
+
+#[test]
+fn a_power_of_any_base_is_a_count_of_bytes() {
+    for definition in ["Here 1 MB = 1000^2 bytes.", "A KB is 1000 ^ 1 bytes."] {
+        let mut document = with_bodies("A page holds 5 MB.", "A block holds 4 KiB.");
+        document.components[0].component.details.body = Some(definition.to_owned());
+        assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");
+    }
+}
+
+#[test]
+fn a_decimal_unit_defined_by_its_full_name_settles_the_document() {
+    for definition in [
+        "A megabyte is 1,000,000 bytes.",
+        "One kilobyte means 1,000 bytes.",
+        "Gigabytes (10^9 bytes) are used.",
+    ] {
+        let mut document = with_bodies("A page holds 5 MB.", "A block holds 4 KiB.");
+        document.components[0].component.details.body = Some(definition.to_owned());
+        assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");
+    }
+    let mut document = with_bodies("A page holds 5 MB.", "A block holds 4 KiB.");
+    document.components[0].component.details.body =
+        Some("A mebibyte is 1,048,576 bytes.".to_owned());
+    assert_eq!(named(&document), one(FEATURE, "MB"));
+}
+
+#[test]
+fn a_term_named_after_a_decimal_unit_in_the_plural_settles_the_document() {
+    for name in ["MBs", "KBs"] {
+        let mut document = with_bodies("A page holds 5 MB.", "A block holds 4 KiB.");
+        document.terms.push(term(65, name, &[]));
+        assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{name}");
+    }
+}
+
+#[test]
+fn the_binary_element_named_is_another_than_the_finding_s_own_where_there_is_one() {
+    let mut document = with_bodies("A page holds 5 MB in blocks of 4 KiB.", "Nothing measured.");
+    document.decisions[0].context = "A block holds 4 KiB.".to_owned();
+    let found = byte_units(&document);
+    assert_eq!(found.len(), 1);
+    assert!(
+        found[0].message.contains(&key(DECISION).to_string()),
+        "{}",
+        found[0].message
+    );
+    let document = with_bodies("A page holds 5 MB in blocks of 4 KiB.", "Nothing measured.");
+    let found = byte_units(&document);
+    assert!(
+        found[0].message.contains(&key(FEATURE).to_string()),
+        "{}",
+        found[0].message
+    );
+}
