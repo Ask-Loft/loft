@@ -72,8 +72,8 @@ Unreleased below, and those of each 2.4 release still to come.
 - `loft review --format json` follows the schema `loft-review/3`, whose node kinds add
   `interface` to those of `loft-review/2` and whose Component carries `provides` and
   `requires`, the keys of the Interfaces it provides and requires, a change to which alone marks
-  it `changed`; and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
-  `V2-013`. The output is otherwise as it was.
+  it `changed`; and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012`,
+  `V2-013` and `V2-014`. The output is otherwise as it was.
 - A connected document can link to an Interface of another connected document. The manifest's
   `documents` lists the other document under a handle of the document's own choosing, with the
   address of its remote, and a copy of the Interface, as that document published it at one
@@ -158,6 +158,19 @@ Unreleased below, and those of each 2.4 release still to come.
   metadata names to the same rule, as it holds the authorization server's endpoints, and leaves
   out, with a warning and before anything is asked of it, a companion resource whose identifier
   holds another character.
+- `loft check` reports a new lint rule, `V2-014`, at warning: a quantity stated in a decimal byte
+  unit (`kB`, `KB`, `MB`, `GB`, `TB`) in a document that also states one in a binary byte unit
+  (`KiB`, `MiB`, `GiB`, `TiB`) and never says what its decimal units mean, since a reader cannot
+  tell whether `1 MB` is 1,000,000 bytes or 1,048,576. A quantity is a number followed by the unit,
+  with at most one space, no-break space or hyphen between them; units are matched in their own
+  case, and text in code is not read. Every node and every decision is read, whatever its state.
+  One finding names each node or decision that states a decimal quantity. One definition of a
+  decimal unit settles the whole document: a term of `spec/terms.yaml` named after it, such as
+  `MB` or `megabyte`, or a text that gives it as a count of bytes, such as `1 MB = 1,000,000
+  bytes`; since a resolved decision is not edited, a term is the way to settle units a decision
+  uses. A definition of a binary unit alone does not. `schemas/check.json` lists the rule, and the
+  published lint defaults state it. This repository's specification defines `KB` and `MB` as
+  terms.
 
 ## Unreleased
 
