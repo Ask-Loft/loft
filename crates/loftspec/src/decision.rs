@@ -36,6 +36,83 @@ pub struct Decision {
 }
 
 impl Decision {
+    /// Every prose field of the decision, in the order of its file: its title and context, each
+    /// local driver's label and statement, each option's title and description, each
+    /// assessment's rationale, each consequence's statement, and what its state records in words.
+    /// Each record is taken apart whole, so that a field added to one must be placed here.
+    #[must_use]
+    pub fn texts(&self) -> Vec<&str> {
+        let Self {
+            id: _,
+            slug: _,
+            title,
+            context,
+            state,
+            drivers,
+            options,
+            assessments,
+            consequences,
+        } = self;
+        let mut texts = vec![title.as_str(), context.as_str()];
+        for Driver { id: _, payload } in drivers {
+            match payload {
+                DriverPayload::Local { label, statement } => {
+                    texts.extend([label, statement].map(String::as_str));
+                }
+                DriverPayload::Subject { subject: _ } => {}
+            }
+        }
+        for DecisionOption {
+            id: _,
+            title,
+            description,
+        } in options
+        {
+            texts.extend([title, description].map(String::as_str));
+        }
+        for Assessment {
+            option: _,
+            driver: _,
+            rating: _,
+            rationale,
+        } in assessments
+        {
+            texts.push(rationale);
+        }
+        for Consequence {
+            id: _,
+            kind: _,
+            statement,
+            subject: _,
+        } in consequences
+        {
+            texts.push(statement);
+        }
+        match state {
+            DecisionState::Proposed => {}
+            DecisionState::Accepted {
+                selected_option: _,
+                outcome,
+            }
+            | DecisionState::Superseded {
+                selected_option: _,
+                outcome,
+                successor: _,
+            } => {
+                texts.push(outcome);
+            }
+            DecisionState::Rejected { rationale } => texts.push(rationale),
+            DecisionState::Retired {
+                selected_option: _,
+                outcome,
+                rationale,
+            } => {
+                texts.extend([outcome, rationale].map(String::as_str));
+            }
+        }
+        texts
+    }
+
     /// The nodes the decision names in its drivers and its consequences; its subjects are edges
     /// of its document.
     pub fn named(&self) -> impl Iterator<Item = NodeRef> + '_ {

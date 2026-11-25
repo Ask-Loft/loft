@@ -3,17 +3,17 @@
 //! units mean. A reader then cannot tell whether `1 MB` is 1,000,000 bytes or 1,048,576.
 //!
 //! Every node and every decision is read, whatever the decision's state, as the text a Markdown
-//! reader shows, so that emphasis drops its marks and code spans and fenced code state nothing. A quantity is a number
-//! followed by a unit, with nothing, one space, one no-break space or one hyphen between them;
-//! units are matched in their own case, so `Mb` is neither family. One definition of a decimal
-//! unit settles every decimal unit of the document: a term named after one, or a text that gives
-//! one, by its symbol or its full name, as a count of bytes (`1 MB = 1,000,000 bytes`,
-//! `MB (10^6 bytes)`, `a megabyte is 1000^2 bytes`), or names it in parentheses (`kB (kilobytes)`).
+//! reader shows, so that emphasis drops its marks and code spans and fenced code state nothing.
+//! A quantity is a number followed by a unit, with nothing, one space, one no-break space or one
+//! hyphen between them; units are matched in their own case, so `Mb` is neither family. One
+//! definition of a decimal unit settles every decimal unit of the document: a term named after
+//! one, or a text that gives one, by its symbol or its full name, as a count of bytes
+//! (`1 MB = 1,000,000 bytes`, `MB (10^6 bytes)`, `a megabyte is 1000^2 bytes`), or names it in
+//! parentheses (`kB (kilobytes)`).
 
 use super::context::{Context, Item};
 use super::text::plain;
 use super::{Raw, RuleId};
-use crate::decision::{Decision, DecisionState, DriverPayload};
 use crate::identity::Key;
 use crate::node::Node;
 
@@ -35,57 +35,74 @@ struct Use {
 
 impl Use {
     fn read(&mut self, text: &str) {
+        // Every unit ends in `B`, and every full name holds a `b`.
+        if !text.contains(['B', 'b']) {
+            return;
+        }
         let shown = plain(text);
-        let shown = shown.as_str();
-        for (at, unit) in units(shown) {
-            if !is_quantity(shown, at) {
-                continue;
-            }
-            if BINARY.contains(&unit) {
-                self.binary = true;
-            } else if self.decimal.is_none() {
-                self.decimal = Some(unit);
+        let units = units(&shown);
+        for &(at, unit) in &units {
+            if is_quantity(&shown, at) {
+                self.note(unit);
             }
         }
-        self.defines |= defines_decimal(shown);
+        self.defines |= defines_decimal(&shown, &units);
     }
 
     /// A Quality Attribute's unit field: a byte unit there is a quantity in it.
     fn unit(&mut self, unit: &str) {
         let unit = unit.trim();
+        if let Some(unit) = DECIMAL.iter().chain(&BINARY).find(|each| **each == unit) {
+            self.note(unit);
+        }
+    }
+
+    /// A quantity in `unit`: binary, or the first decimal one.
+    fn note(&mut self, unit: &'static str) {
         if BINARY.contains(&unit) {
             self.binary = true;
-        } else if let Some(decimal) = DECIMAL.iter().find(|each| **each == unit) {
-            self.decimal = self.decimal.or(Some(decimal));
+        } else {
+            self.decimal.get_or_insert(unit);
         }
+    }
+
+    const fn states_a_unit(&self) -> bool {
+        self.binary || self.decimal.is_some()
     }
 }
 
 pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     let document = context.document;
-    let mut uses: Vec<(Key, Use)> = context
-        .items
-        .iter()
-        .map(|item| (item.id.key(), node_use(item)))
+    let termed = document.terms.iter().any(|term| {
+        let definition = plain(&term.definition);
+        names_decimal_unit(&term.name) || defines_decimal(&definition, &units(&definition))
+    });
+    if termed {
+        return;
+    }
+    let nodes = (context.items.iter()).map(|item| (item.id.key(), node_use(item)));
+    let decisions = (document.decisions.iter()).map(|decision| {
+        let mut each = Use::default();
+        for text in decision.texts() {
+            each.read(text);
+        }
+        (decision.id.key(), each)
+    });
+    let mut defined = false;
+    let uses: Vec<(Key, Use)> = nodes
+        .chain(decisions)
+        .inspect(|(_, each)| defined |= each.defines)
+        .filter(|(_, each)| each.states_a_unit())
         .collect();
-    uses.extend(
-        (document.decisions.iter()).map(|decision| (decision.id.key(), decision_use(decision))),
-    );
-    let defined = uses.iter().any(|(_, each)| each.defines)
-        || document.terms.iter().any(|term| {
-            names_decimal_unit(&term.name) || defines_decimal(&plain(&term.definition))
-        });
-    let binary: Vec<Key> = (uses.iter())
-        .filter(|(_, each)| each.binary)
-        .map(|(key, _)| *key)
-        .collect();
-    if binary.is_empty() || defined {
+    if defined || !uses.iter().any(|(_, each)| each.binary) {
         return;
     }
     for (key, each) in &uses {
         if let Some(unit) = each.decimal {
             // Another element where there is one, so that the finding points beyond itself.
-            let binary = binary.iter().find(|other| *other != key).unwrap_or(key);
+            let binary = (uses.iter())
+                .find(|(other, them)| them.binary && other != key)
+                .map_or(*key, |(other, _)| *other);
             let message = format!(
                 "A quantity in a decimal byte unit stands beside quantities in binary byte \
                  units, as in {binary}, and the document defines no decimal byte unit."
@@ -120,55 +137,18 @@ fn node_use(item: &Item<'_>) -> Use {
     each
 }
 
-/// What a decision's every text says, whatever its state.
-fn decision_use(decision: &Decision) -> Use {
-    let mut each = Use::default();
-    each.read(&decision.title);
-    each.read(&decision.context);
-    for driver in &decision.drivers {
-        if let DriverPayload::Local { label, statement } = &driver.payload {
-            each.read(label);
-            each.read(statement);
-        }
-    }
-    for option in &decision.options {
-        each.read(&option.title);
-        each.read(&option.description);
-    }
-    for assessment in &decision.assessments {
-        each.read(&assessment.rationale);
-    }
-    for consequence in &decision.consequences {
-        each.read(&consequence.statement);
-    }
-    match &decision.state {
-        DecisionState::Proposed => {}
-        DecisionState::Accepted { outcome, .. } | DecisionState::Superseded { outcome, .. } => {
-            each.read(outcome);
-        }
-        DecisionState::Rejected { rationale } => each.read(rationale),
-        DecisionState::Retired {
-            outcome, rationale, ..
-        } => {
-            each.read(outcome);
-            each.read(rationale);
-        }
-    }
-    each
-}
-
 /// Whether a term's name is a decimal unit, or its full name, in either number.
 fn names_decimal_unit(name: &str) -> bool {
     let name = name.trim();
-    if DECIMAL.contains(&name.strip_suffix('s').unwrap_or(name)) {
-        return true;
-    }
-    let name = name.to_lowercase();
-    let singular = name.strip_suffix('s').unwrap_or(&name);
-    DECIMAL_NAMES.contains(&singular)
+    let singular = name.strip_suffix(['s', 'S']).unwrap_or(name);
+    DECIMAL.contains(&singular)
+        || DECIMAL_NAMES
+            .iter()
+            .any(|full| singular.eq_ignore_ascii_case(full))
 }
 
-/// Each unit in `text` that stands as a word of its own, with its byte offset.
+/// Each unit in `text` that stands as a word of its own, with its byte offset. The text is
+/// scanned by hand, not by `crate::text::token_ranges`, since `512MB` is one token there.
 fn units(text: &str) -> Vec<(usize, &'static str)> {
     let mut found = Vec::new();
     for unit in DECIMAL.iter().chain(&BINARY) {
@@ -195,45 +175,39 @@ fn is_quantity(text: &str, at: usize) -> bool {
     let head = head.strip_suffix([' ', '\u{a0}', '-']).unwrap_or(head);
     let rest = head.trim_end_matches(|c: char| c.is_ascii_digit() || matches!(c, ',' | '.'));
     let run = &head[rest.len()..];
-    if !run.ends_with(|c: char| c.is_ascii_digit()) {
-        return false;
-    }
-    let lead = run.len() - run.trim_start_matches([',', '.']).len();
-    let before = if lead > 0 {
-        run[..lead].chars().next_back()
-    } else {
-        rest.chars().next_back()
-    };
-    !before.is_some_and(is_word)
+    run.ends_with(|c: char| c.is_ascii_digit())
+        && (run.starts_with([',', '.']) || !rest.ends_with(is_word))
 }
 
-/// Whether `text` gives a decimal unit, by its symbol or its full name, as a count of bytes, or
-/// names it in parentheses.
-fn defines_decimal(text: &str) -> bool {
-    let by_symbol = (units(text).into_iter())
+/// Whether `text`, whose units are `units`, gives a decimal unit, by its symbol or its full
+/// name, as a count of bytes, or names it in parentheses.
+fn defines_decimal(text: &str, units: &[(usize, &'static str)]) -> bool {
+    let by_symbol = (units.iter())
         .filter(|(_, unit)| DECIMAL.contains(unit))
         .any(|(at, unit)| definition_follows(text[at + unit.len()..].trim_start()));
-    by_symbol || full_names(text).any(|end| definition_follows(text[end..].trim_start()))
+    by_symbol
+        || full_name_ends(text)
+            .into_iter()
+            .any(|end| definition_follows(text[end..].trim_start()))
 }
 
 /// Where each full name of a decimal unit in `text`, in either number and any case, ends.
-fn full_names(text: &str) -> impl Iterator<Item = usize> + '_ {
-    let lower = text.to_ascii_lowercase();
+fn full_name_ends(text: &str) -> Vec<usize> {
     let mut ends = Vec::new();
-    for name in DECIMAL_NAMES {
-        for (at, _) in lower.match_indices(name) {
-            let mut end = at + name.len();
-            if lower[end..].starts_with('s') {
-                end += 1;
-            }
-            let before = lower[..at].chars().next_back();
-            let after = lower[end..].chars().next();
-            if !before.is_some_and(is_word) && !after.is_some_and(is_word) {
+    for (at, _) in text.char_indices() {
+        for name in DECIMAL_NAMES {
+            let Some(after) = strip_prefix_ignoring_case(&text[at..], name) else {
+                continue;
+            };
+            let after = strip_prefix_ignoring_case(after, "s").unwrap_or(after);
+            let end = text.len() - after.len();
+            let before = text[..at].chars().next_back();
+            if !before.is_some_and(is_word) && !after.starts_with(is_word) {
                 ends.push(end);
             }
         }
     }
-    ends.into_iter()
+    ends
 }
 
 /// Whether `rest`, the text after a unit, defines it: a defining word and a count of bytes, or a
@@ -241,15 +215,15 @@ fn full_names(text: &str) -> impl Iterator<Item = usize> + '_ {
 fn definition_follows(rest: &str) -> bool {
     if let Some(inside) = rest.strip_prefix('(') {
         let inside = inside.trim_start();
-        let lower = inside.to_lowercase();
-        return byte_count(inside) || DECIMAL_NAMES.iter().any(|name| lower.starts_with(name));
+        return byte_count(inside)
+            || (DECIMAL_NAMES.iter())
+                .any(|name| strip_prefix_ignoring_case(inside, name).is_some());
     }
-    let lower = rest.to_lowercase();
     DEFINING.iter().any(|word| {
-        lower.strip_prefix(word).is_some_and(|after| {
+        strip_prefix_ignoring_case(rest, word).is_some_and(|after| {
             let boundary = *word == "=" || after.starts_with(char::is_whitespace);
             let after = after.trim_start();
-            let after = after.strip_prefix("exactly").map_or(after, str::trim_start);
+            let after = strip_prefix_ignoring_case(after, "exactly").map_or(after, str::trim_start);
             boundary && byte_count(after)
         })
     })
@@ -260,12 +234,18 @@ fn definition_follows(rest: &str) -> bool {
 fn byte_count(text: &str) -> bool {
     let rest = power(text).or_else(|| number(text));
     rest.is_some_and(|rest| {
-        let lower = rest.trim_start().to_lowercase();
-        let word = lower
-            .strip_prefix("bytes")
-            .or_else(|| lower.strip_prefix("byte"));
+        let rest = rest.trim_start();
+        let word = strip_prefix_ignoring_case(rest, "bytes")
+            .or_else(|| strip_prefix_ignoring_case(rest, "byte"));
         word.is_some_and(|after| !after.starts_with(is_word))
     })
+}
+
+/// `text` after `prefix`, where `text` opens on it in any ASCII case.
+fn strip_prefix_ignoring_case<'a>(text: &'a str, prefix: &str) -> Option<&'a str> {
+    let head = text.get(..prefix.len())?;
+    head.eq_ignore_ascii_case(prefix)
+        .then(|| &text[prefix.len()..])
 }
 
 /// The text after a power of any integer base, such as `10^6`, `1000^2` or `2 ^ 20`, at the
