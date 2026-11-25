@@ -45,9 +45,8 @@ struct Kept {
     consultation: Option<Consultation>,
 }
 
-/// What one session keeps, by the tree and branch of each Yard Log it keeps it in. Boxed: a
-/// map's leaf holds eleven slots, mostly empty for the one Yard Log a session usually keeps in.
-type ByLog = BTreeMap<(String, String), Box<Kept>>;
+/// What one session keeps, by the tree and branch of each Yard Log it keeps it in.
+type ByLog = BTreeMap<(String, String), Kept>;
 
 #[derive(Default)]
 struct SessionKept {

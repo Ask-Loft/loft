@@ -5,10 +5,6 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
-- The Yard page server keeps a session it has heard of in about 3 KB of memory, where it used to
-  take about 13 KB: what a session keeps for each Yard Log is now held apart from the map that
-  finds it, so the map's empty slots no longer take its full size. With the 256 sessions it keeps
-  at most, that is about 3 MB less.
 - The Yard page keeps what waits on you within its sidebar. A branch's or worktree's name with
   nowhere to break, such as `feature/XYZ-0000_some_very_long_branch_name_without_spaces`, used to
   widen the list past the sidebar's edge and cut every line of it; any name in the sidebar now
