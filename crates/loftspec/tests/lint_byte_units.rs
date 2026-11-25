@@ -94,6 +94,7 @@ fn a_quantity_takes_nothing_one_space_one_no_break_space_or_one_hyphen_before_it
         "512MB",
         "512 MB",
         "512\u{a0}MB",
+        "512\u{202f}MB",
         "16-MB",
         "1,024 MB",
         "1.5 MB",

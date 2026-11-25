@@ -145,10 +145,11 @@ fn node_use(item: &Item<'_>) -> Use {
     each
 }
 
-/// Whether a term's name is a decimal unit, or its full name, in either number.
+/// Whether a term's name is a decimal unit, or its full name, in either number: a lowercase `s`
+/// makes it plural, so that `MBs` is a unit and `KBS` an acronym.
 fn names_decimal_unit(name: &str) -> bool {
     let name = name.trim();
-    let singular = name.strip_suffix(['s', 'S']).unwrap_or(name);
+    let singular = name.strip_suffix('s').unwrap_or(name);
     DECIMAL.contains(&singular)
         || DECIMAL_NAMES
             .iter()
@@ -176,11 +177,14 @@ fn is_word(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
 }
 
-/// Whether the unit at `at` follows a number, with nothing, one space, one no-break space or one
-/// hyphen between them, where the number starts a word outside a web address.
+/// Whether the unit at `at` follows a number, with nothing, one space, one no-break space (wide
+/// or narrow, as `number` reads inside a number) or one hyphen between them, where the number
+/// starts a word outside a web address.
 fn is_quantity(text: &str, at: usize) -> bool {
     let head = &text[..at];
-    let head = head.strip_suffix([' ', '\u{a0}', '-']).unwrap_or(head);
+    let head = head
+        .strip_suffix([' ', '\u{a0}', '\u{202f}', '-'])
+        .unwrap_or(head);
     let run = head.trim_end_matches(|c: char| c.is_ascii_digit() || matches!(c, ',' | '.'));
     let number = head[run.len()..].trim_start_matches([',', '.']);
     let before = &head[..head.len() - number.len()];

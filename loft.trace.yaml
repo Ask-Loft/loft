@@ -6863,7 +6863,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_quantity_takes_nothing_one_space_one_no_break_space_or_one_hyphen_before_its_unit"
-        body: 874dc9bcda8b0c051c5852d57d9ec8148e75afa1dcc9d8862085d4aed128eea5
+        body: dca7b209041421d582d21e09a852fee93ee1bbc7f401bf8ab5403fe188b3f383
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "an_emphasized_unit_or_number_is_read_as_the_text_shows_it"
         body: dc8c6761fd5939b60ec766edbc8c2459c753a2a85fd83ca2780213dd042d5983
@@ -6981,6 +6981,9 @@ links:
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_whose_alias_is_a_decimal_unit_settles_the_document"
         body: 1662e2a5a7e928c1d7e0c6dabbafde608d9a6b7857fdcc1a8ff6b7dc41376445
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "only_a_lowercase_s_makes_a_term_s_name_plural"
+        body: c59ed17e93e7cd02a9d8b31cd5da27de87605ae5096e739e708e63a016473096
   - node: 01a21358-4147-72be-a72f-0d172df94e9d
     reviewed: 2afd5de5d1c91fa238e4c54f08f7087bc5a8c9acec82381c587766054c76707a
     tests:

@@ -80,6 +80,15 @@ fn a_term_whose_alias_is_a_decimal_unit_settles_the_document() {
 }
 
 #[test]
+fn only_a_lowercase_s_makes_a_term_s_name_plural() {
+    for name in ["KBS", "TBS", "MBS"] {
+        let mut document = beside_binary("A page holds 5 MB.");
+        document.terms.push(term(65, name, &[]));
+        assert_eq!(named(&document), one(FEATURE, "MB"), "{name}");
+    }
+}
+
+#[test]
 fn a_unit_followed_by_a_colon_and_a_count_of_bytes_defines_it() {
     for text in ["MB: 1,000,000 bytes", "A megabyte: 1,000,000 bytes."] {
         for document in with_text(text) {
