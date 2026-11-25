@@ -41,8 +41,9 @@ struct Use {
 
 impl Use {
     fn read(&mut self, text: &str) {
-        // Every unit ends in `B`, and every full name holds a `b`.
-        if !text.contains(['B', 'b']) {
+        // Every unit ends in `B`, and a full name holds `byte` or, in capitals, a `B`; most
+        // prose holds neither, and is not given a Markdown parse.
+        if !text.contains('B') && !text.contains("byte") {
             return;
         }
         let shown = plain(text);
@@ -96,13 +97,17 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
         }
         (decision.id.key(), each)
     });
-    let mut defined = false;
-    let uses: Vec<(Key, Use)> = nodes
-        .chain(decisions)
-        .inspect(|(_, each)| defined |= each.defines)
-        .filter(|(_, each)| each.states_a_unit())
-        .collect();
-    if defined || !uses.iter().any(|(_, each)| each.binary) {
+    let mut uses: Vec<(Key, Use)> = Vec::new();
+    // The elements are read lazily, so that a definition ends the reading.
+    for (key, each) in nodes.chain(decisions) {
+        if each.defines {
+            return;
+        }
+        if each.states_a_unit() {
+            uses.push((key, each));
+        }
+    }
+    if !uses.iter().any(|(_, each)| each.binary) {
         return;
     }
     for (key, each) in &uses {
