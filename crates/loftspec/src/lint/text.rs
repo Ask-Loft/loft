@@ -3,6 +3,8 @@
 //! the text a Markdown reader shows, without code blocks, HTML blocks or code spans, each token
 //! and sentence with the body line it starts on.
 
+use std::ops::Range;
+
 use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -21,17 +23,11 @@ impl Body {
             .chain(markdown.match_indices('\n').map(|(at, _)| at + 1))
             .collect();
         let line_of = |offset: usize| line_starts.partition_point(|start| *start <= offset);
-        let mut excluded = 0_u32;
         let mut text = String::new();
         let mut pieces = Vec::new();
-        for (event, range) in Parser::new_ext(markdown, Options::empty()).into_offset_iter() {
-            match event {
-                Event::Start(Tag::CodeBlock(_) | Tag::HtmlBlock) => excluded += 1,
-                Event::End(TagEnd::CodeBlock | TagEnd::HtmlBlock) => excluded -= 1,
-                Event::Text(piece) if excluded == 0 => {
-                    join(&mut text, &mut pieces, &piece, line_of(range.start));
-                }
-                _ => {}
+        for (event, range) in shown_events(markdown) {
+            if let Event::Text(piece) = event {
+                join(&mut text, &mut pieces, &piece, line_of(range.start));
             }
         }
         Self { text, pieces }
@@ -80,6 +76,50 @@ impl Body {
             .filter(|(tokens, _)| !tokens.is_empty())
             .collect()
     }
+}
+
+/// The events of `markdown` a reader is shown, each with its byte range: everything but what
+/// lies inside a code block or an HTML block, whose end is kept so that a reader can mark where
+/// the block stood.
+fn shown_events(markdown: &str) -> impl Iterator<Item = (Event<'_>, Range<usize>)> {
+    let mut excluded = 0_u32;
+    Parser::new_ext(markdown, Options::empty())
+        .into_offset_iter()
+        .filter(move |(event, _)| match event {
+            Event::Start(Tag::CodeBlock(_) | Tag::HtmlBlock) => {
+                excluded += 1;
+                false
+            }
+            Event::End(TagEnd::CodeBlock | TagEnd::HtmlBlock) => {
+                excluded -= 1;
+                true
+            }
+            _ => excluded == 0,
+        })
+}
+
+/// The text a reader is shown of `markdown`, as one string: emphasis and links drop their
+/// marks, so that `512 **MB**` reads `512 MB`; each code span stands as the one mark `\u{1}`,
+/// which is neither a letter nor a digit; a line break is a space; and each paragraph, heading,
+/// list item, code block and HTML block ends a line.
+pub(super) fn plain(markdown: &str) -> String {
+    let mut text = String::new();
+    for (event, _) in shown_events(markdown) {
+        match event {
+            Event::Text(piece) => text.push_str(&piece),
+            Event::Code(_) => text.push('\u{1}'),
+            Event::SoftBreak | Event::HardBreak => text.push(' '),
+            Event::End(
+                TagEnd::Paragraph
+                | TagEnd::Heading(_)
+                | TagEnd::Item
+                | TagEnd::CodeBlock
+                | TagEnd::HtmlBlock,
+            ) => text.push('\n'),
+            _ => {}
+        }
+    }
+    text
 }
 
 /// Appends one text piece, a space before it after the first.

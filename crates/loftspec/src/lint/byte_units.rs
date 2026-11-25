@@ -10,9 +10,8 @@
 //! one, by its symbol or its full name, as a count of bytes (`1 MB = 1,000,000 bytes`,
 //! `MB (10^6 bytes)`, `a megabyte is 1000^2 bytes`), or names it in parentheses (`kB (kilobytes)`).
 
-use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
-
 use super::context::{Context, Item};
+use super::text::plain;
 use super::{Raw, RuleId};
 use crate::decision::{Decision, DecisionState, DriverPayload};
 use crate::identity::Key;
@@ -36,7 +35,7 @@ struct Use {
 
 impl Use {
     fn read(&mut self, text: &str) {
-        let shown = shown(text);
+        let shown = plain(text);
         let shown = shown.as_str();
         for (at, unit) in units(shown) {
             if !is_quantity(shown, at) {
@@ -74,7 +73,7 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     );
     let defined = uses.iter().any(|(_, each)| each.defines)
         || document.terms.iter().any(|term| {
-            names_decimal_unit(&term.name) || defines_decimal(&shown(&term.definition))
+            names_decimal_unit(&term.name) || defines_decimal(&plain(&term.definition))
         });
     let binary: Vec<Key> = (uses.iter())
         .filter(|(_, each)| each.binary)
@@ -297,32 +296,4 @@ fn number(text: &str) -> Option<&str> {
         }
     }
     Some(&text[last_digit..])
-}
-
-/// The text of `markdown` as a reader sees it: emphasis and links drop their marks, so that
-/// `512 **MB**` reads `512 MB`; a code span stands as one mark that is neither a number nor a
-/// unit; code blocks and HTML blocks are left out; each block ends a line.
-fn shown(markdown: &str) -> String {
-    let mut text = String::new();
-    let mut excluded = 0_u32;
-    for event in Parser::new_ext(markdown, Options::empty()) {
-        match event {
-            Event::Start(Tag::CodeBlock(_) | Tag::HtmlBlock) => excluded += 1,
-            Event::End(TagEnd::CodeBlock | TagEnd::HtmlBlock) => {
-                excluded -= 1;
-                text.push('\n');
-            }
-            _ if excluded > 0 => {}
-            Event::Text(piece) => text.push_str(&piece),
-            Event::Code(_) => text.push('\u{1}'),
-            Event::SoftBreak | Event::HardBreak => text.push(' '),
-            Event::End(
-                TagEnd::Paragraph | TagEnd::Heading(_) | TagEnd::Item | TagEnd::TableCell,
-            ) => {
-                text.push('\n');
-            }
-            _ => {}
-        }
-    }
-    text
 }
