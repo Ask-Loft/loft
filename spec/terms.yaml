@@ -1,0 +1,6 @@
+- key: 01a21358-414c-76ac-b012-625a823264e2
+  name: "KB"
+  definition: "A kilobyte: 1,000 bytes."
+- key: 01a21358-414c-76ac-b012-625b135d65ed
+  name: "MB"
+  definition: "A megabyte: 1,000,000 bytes."

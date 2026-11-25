@@ -1,7 +1,7 @@
 key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
 slug: lint-rules-of-v2
 name: "Lint rules of v2"
-body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset. `V2-010` and `V2-011` concern decision history: an edit to the meaning of a decision that was published resolved, and a change of state that its published state does not allow, deleting a resolved decision among them. Both judge from the state the last publish recorded in `spec/labels.yaml`, which is part of the tree, so they read no history of a repository; a decision is changed by a new decision that supersedes it, never by an edit. `V2-012` and `V2-013` concern Interfaces: one that promises nothing, and one that no Component of its document provides or requires."
+body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset. `V2-010` and `V2-011` concern decision history: an edit to the meaning of a decision that was published resolved, and a change of state that its published state does not allow, deleting a resolved decision among them. Both judge from the state the last publish recorded in `spec/labels.yaml`, which is part of the tree, so they read no history of a repository; a decision is changed by a new decision that supersedes it, never by an edit. `V2-012` and `V2-013` concern Interfaces: one that promises nothing, and one that no Component of its document provides or requires. `V2-014` concerns the writing craft again: a quantity stated in decimal byte units, such as `MB`, in a document that also states quantities in binary byte units, such as `MiB`, and never says what its decimal units mean, so that a reader cannot tell whether `1 MB` is 1,000,000 bytes or 1,048,576. A decision is read as well, whatever its state; since a resolved decision is not edited, a document settles its units once, with a term for each decimal unit in `spec/terms.yaml`."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -257,3 +257,41 @@ requirements:
         name: "A copy of another document's Interface yields no `V2-013` finding."
       - key: 01a1f981-4db1-765f-a897-2274b5c47615
         name: "The default severity of `V2-013` is info."
+  - key: 01a21358-4147-72be-a72f-0d0903323ed4
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-014` each node or decision that states a quantity in a decimal byte unit where the document also states a quantity in a binary byte unit and defines no decimal byte unit."
+    criteria:
+      - key: 01a21358-4147-72be-a72f-0d0aeaafcebb
+        name: "The decimal byte units are `kB`, `KB`, `MB`, `GB` and `TB`."
+      - key: 01a21358-4147-72be-a72f-0d0b88020c37
+        name: "The binary byte units are `KiB`, `MiB`, `GiB` and `TiB`."
+      - key: 01a21358-4147-72be-a72f-0d0c3409d7d9
+        name: "A unit is matched in its own case, so that `Mb` is neither a decimal nor a binary byte unit."
+      - key: 01a21358-4147-72be-a72f-0d0d5b49c452
+        name: "A quantity is a number followed by a unit, with nothing, one space, one no-break space or one hyphen between them, such as `512 MB`, `64MiB` or `16-KiB`."
+      - key: 01a21358-4147-72be-a72f-0d0e2e096c7c
+        name: "A unit with no number before it, such as `MB` in a sentence about units, states no quantity."
+      - key: 01a21358-4147-72be-a72f-0d0fc0b9991c
+        name: "A Quality Attribute whose target's unit is a byte unit states a quantity in that unit."
+      - key: 01a21358-4147-72be-a72f-0d104b2a340f
+        name: "A node's name, statement, body and Sections, a Quality Attribute's target and a Constraint's required value are read for quantities."
+      - key: 01a21358-4147-72be-a72f-0d1106cfdd22
+        name: "A decision's title, context, drivers, options, assessments, consequences and the outcome and rationale of its state are read for quantities, whatever the state."
+      - key: 01a21358-4147-72be-a72f-0d125b1ec45c
+        name: "Text inside a code span or a fenced code block states no quantity."
+      - key: 01a21358-4147-72be-a72f-0d13a90eccd7
+        name: "Each node or decision that states a quantity in a decimal byte unit yields one `V2-014` finding where the same element or another states a quantity in a binary byte unit."
+      - key: 01a21358-4147-72be-a72f-0d1468b46834
+        name: "A document whose quantities are all in decimal byte units, or all in binary byte units, yields no `V2-014` finding."
+      - key: 01a21358-4147-72be-a72f-0d152a0876e9
+        name: "A document in which a node's text, a decision's text or a term's definition gives a decimal byte unit as a count of bytes, such as `1 MB = 1,000,000 bytes` or `MB (10^6 bytes)`, yields no `V2-014` finding."
+      - key: 01a21358-4147-72be-a72f-0d1643400930
+        name: "A document whose term list holds a term named after a decimal byte unit or its full name, such as `MB` or `megabyte`, yields no `V2-014` finding."
+      - key: 01a21358-4147-72be-a72f-0d172df94e9d
+        name: "A definition of a binary byte unit alone leaves the finding in place."
+      - key: 01a21358-4147-72be-a72f-0d18c7a0989c
+        name: "The finding names the decimal unit the element uses and the key of a node or decision that states a quantity in a binary byte unit."
+      - key: 01a21358-4147-72be-a72f-0d199a8c0bae
+        name: "The default severity of `V2-014` is warning."
