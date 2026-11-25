@@ -273,6 +273,8 @@ requirements:
         name: "A quantity is a number followed by a unit, with nothing, one space, one no-break space or one hyphen between them, such as `512 MB`, `64MiB` or `16-KiB`."
       - key: 01a21358-4147-72be-a72f-0d0e2e096c7c
         name: "A unit with no number before it, such as `MB` in a sentence about units, states no quantity."
+      - key: 01a2146f-d6af-70f6-acc1-b8a9a1138a83
+        name: "A number inside a web address, or one that comes right after a letter, `_`, `/`, `.` or `-`, begins no quantity, so that `https://example.com/files/512MB.bin` states none."
       - key: 01a21358-4147-72be-a72f-0d0fc0b9991c
         name: "A Quality Attribute whose target's unit is a byte unit states a quantity in that unit."
       - key: 01a21358-4147-72be-a72f-0d104b2a340f
@@ -286,9 +288,13 @@ requirements:
       - key: 01a21358-4147-72be-a72f-0d1468b46834
         name: "A document whose quantities are all in decimal byte units, or all in binary byte units, yields no `V2-014` finding."
       - key: 01a21358-4147-72be-a72f-0d152a0876e9
-        name: "A document in which a node's text, a decision's text or a term's definition gives a decimal byte unit as a count of bytes, such as `1 MB = 1,000,000 bytes` or `MB (10^6 bytes)`, yields no `V2-014` finding."
+        name: "A document in which a node's text, a decision's text or a term's definition gives a decimal byte unit as a count of bytes, such as `1 MB = 1,000,000 bytes`, `MB: 1,000,000 bytes` or `MB (10^6 bytes)`, yields no `V2-014` finding."
+      - key: 01a2146f-d6af-70f6-acc1-b8aa3ef9a1da
+        name: "A text gives a decimal byte unit as a count of bytes only where the unit or its full name opens a clause, alone or after one of `1`, `one`, `a`, `an`, `the`, so that neither `The index overhead per 1 MB is 64 bytes.` nor `A 64 MB cache (4096 bytes per entry)` defines a unit."
+      - key: 01a2146f-d6af-70f6-acc1-b8ab93372603
+        name: "A clause opens where a text or a line starts, and after any of `.`, `!`, `?`, `:`, `;`, `,`, `(`."
       - key: 01a21358-4147-72be-a72f-0d1643400930
-        name: "A document whose term list holds a term named after a decimal byte unit or its full name, such as `MB` or `megabyte`, yields no `V2-014` finding."
+        name: "A document with a term whose name, or one of whose aliases, is a decimal byte unit or its full name, which a lowercase `s` may make plural, such as `MB`, `MBs`, `megabytes`, yields no `V2-014` finding."
       - key: 01a21358-4147-72be-a72f-0d172df94e9d
         name: "A definition of a binary byte unit alone leaves the finding in place."
       - key: 01a21358-4147-72be-a72f-0d18c7a0989c
