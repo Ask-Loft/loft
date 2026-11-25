@@ -73,6 +73,7 @@ mod interfaces_edges;
 mod interfaces_labels;
 mod label_allocation;
 mod lint;
+mod lint_byte_units;
 mod lint_config;
 mod lint_craft;
 mod lint_foreign;

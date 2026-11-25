@@ -37,6 +37,11 @@ impl Body {
         Self { text, pieces }
     }
 
+    /// The shown text: the text pieces joined by single spaces.
+    pub(super) fn text(&self) -> &str {
+        &self.text
+    }
+
     /// The body line of an offset into the shown text.
     fn line_at(&self, offset: usize) -> usize {
         let at = self.pieces.partition_point(|(start, _)| *start <= offset);

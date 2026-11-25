@@ -6840,6 +6840,120 @@ links:
       - file: "crates/loftspec/tests/lint_interfaces.rs"
         name: "an_interface_no_component_links_to_is_info_by_default"
         body: a43a54ba4439f8610e87d6d7b7e8e9c71f993cc2147d37c41f979ce29b8fad35
+  - node: 01a21358-4147-72be-a72f-0d0aeaafcebb
+    reviewed: 89aa776f1883eea2df338336598d0b853767aff307ff0ad6b12db2ddb9cbf9b3
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "each_decimal_unit_is_recognized"
+        body: cc9e33f66f6f7e4387b842f0dc7b5d7cfb64547572f2f47cb4206dd258a7a7ba
+  - node: 01a21358-4147-72be-a72f-0d0b88020c37
+    reviewed: 2a5bbe1d9ef317fa2baafdf95a918ed47686fdfe427c03fc89c30e5009056d5e
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "each_binary_unit_is_recognized"
+        body: 58cbb6524ddbd13e80c5386379179afc4efc0db4cc7dd51a41865e10d283e614
+  - node: 01a21358-4147-72be-a72f-0d0c3409d7d9
+    reviewed: 211d2a878b076599a9f6c2f77de8bdd88ed9a1c01098ac9ff0ab8f9db4598726
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_unit_is_matched_in_its_own_case"
+        body: e4d2dd4e14bfbd7ce15f1e39ab959a09ad4463829c3ed10ddb68b62229f57666
+  - node: 01a21358-4147-72be-a72f-0d0d5b49c452
+    reviewed: e8c5e2da18379c61e24bec2b7c06842c17a9faad05b1427d327268423460237f
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_quantity_takes_nothing_one_space_one_no_break_space_or_one_hyphen_before_its_unit"
+        body: 65092b4814d3830c877ffa126c577839a6bb23f5de829caf4d928b1a828669be
+  - node: 01a21358-4147-72be-a72f-0d0e2e096c7c
+    reviewed: 727d35b49a098a24dd6e57f12a9dccfafa5b8d3d6b656b48a213701ecd88e2b1
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_unit_with_no_number_before_it_states_no_quantity"
+        body: c53d0e8f1a5083adf3f13cc5589c6473b85af898d3b38717507949b70b81119a
+  - node: 01a21358-4147-72be-a72f-0d0fc0b9991c
+    reviewed: 05c11efca212dad62af808e1279cdb78e430a14f480cedfef43b4bbb71a9d1bb
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_quality_attribute_whose_unit_is_a_byte_unit_states_a_quantity_in_it"
+        body: fdbb0b553bff22ef9866b184ee0e333786cd983421a1a12171a34510a52e2081
+  - node: 01a21358-4147-72be-a72f-0d104b2a340f
+    reviewed: 47b0caff914be383e2efeaf99e31e450ca28d998f94ef0e4de44e6b11c9f71f9
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_name_a_statement_and_a_section_are_read"
+        body: 8ffec5f854aaab9b78b2ac70ed76af6f193e58d8531df6728bf71214e3fcaae8
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_quality_attributes_target_and_a_constraints_required_value_are_read"
+        body: 255a1155c416a4c31caae8eb56c37c578486ee80b6c3c2034d27aa2865e56a68
+  - node: 01a21358-4147-72be-a72f-0d1106cfdd22
+    reviewed: 845664d77dfd02543de5af400e49712973c2a40eff11816d41903f2f685f2be2
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_decision_is_read_in_every_state"
+        body: 7c62404cafd5bd751ec38d24a61348d39be2cb7de9b769e5121da22dcbc1ce85
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "every_text_field_of_a_decision_is_read"
+        body: 9ddf1749b32dd1e6f3a046528995cb701994b87b00f65b1b759bbbe557f9d4b5
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_binary_quantity_in_a_decision_counts_too"
+        body: cfbcc09f80210d0f9fa69cbaeedbe3f43671ab6f68abac341ef23e32dda0cc7d
+  - node: 01a21358-4147-72be-a72f-0d125b1ec45c
+    reviewed: d4a238ffbb3dd8cb446d0a745d6387b7284a51180af8cf9b969f50cc30fcacbc
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "text_in_a_code_span_or_a_fenced_code_block_states_no_quantity"
+        body: b179917455f8109cdf03365b613140cf640a15157aee9b28588931155f5ad31e
+  - node: 01a21358-4147-72be-a72f-0d13a90eccd7
+    reviewed: 3763f8e49276dbc2d05b40848f19081a3159980c70fd4416b772d88070c0bfaa
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_decimal_quantity_beside_a_binary_one_is_one_finding_on_the_decimal_element"
+        body: e5dc86943d7900358e9bfbac27fe99fdd0954cfa16805738421a092c6ee80a68
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "each_element_that_states_a_decimal_quantity_is_one_finding"
+        body: bf95d177ae4d3c3b89eeefd25bd4231836f65512c0ffe01f9cbbf4baee1f3f70
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "one_element_that_states_both_families_is_a_finding"
+        body: db90ddb6e881eb8d7156b4970ba495541522e72b70798bb76bbb3dcd860d241e
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_suppression_of_the_decimal_element_drops_its_finding"
+        body: 5d94fb697bbcb52f7c9c9c05edc800b3c7152e0096c26f9ec4fb53fc1187288f
+  - node: 01a21358-4147-72be-a72f-0d1468b46834
+    reviewed: c759c5dce4832f6ebc721e527083be04b33a6b4e90cde00e4206389593a069e2
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_document_with_one_family_of_units_yields_no_finding"
+        body: 652732f2094c2e91f4b2d12ad6e2d6f7d44ce15dd8e074775d30ec5ef89601ef
+  - node: 01a21358-4147-72be-a72f-0d152a0876e9
+    reviewed: ffde6b982e81b543684ed1007c2e014bb004557e559a2ded488cd0956e1fd6bd
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_decimal_unit_given_as_a_count_of_bytes_settles_the_document"
+        body: 50b62b4638d6b529f28002b09c1359c74b90f7dcf34b80d444710ea39e5898ef
+  - node: 01a21358-4147-72be-a72f-0d1643400930
+    reviewed: 3be48ca7e7029e394645dbd8d7ad12a90a01175de252460bf7959edc819c21e7
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_term_named_after_a_decimal_unit_settles_the_document"
+        body: 61714c545480f79d1ea166b8deaf7289486a4b04b1435708355e0f377a186015
+  - node: 01a21358-4147-72be-a72f-0d172df94e9d
+    reviewed: 2afd5de5d1c91fa238e4c54f08f7087bc5a8c9acec82381c587766054c76707a
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_definition_of_a_binary_unit_alone_leaves_the_finding"
+        body: a3852a5ea9ddda246b5a3e382418d0b914fadd778b2948134ca069ce257db3e9
+  - node: 01a21358-4147-72be-a72f-0d18c7a0989c
+    reviewed: 0e9803d8966f8c7dca7acd47acb62d6e7061059b83a9bebc98212c7beaf6995c
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "the_finding_names_its_unit_and_the_key_of_a_binary_element"
+        body: 39308ea277c99f38cf306cc4001042067a93d3c2a451439ba620571565548702
+  - node: 01a21358-4147-72be-a72f-0d199a8c0bae
+    reviewed: fc4538f9aac6f6b55d5c44d0de0e1bea962cef1ef0cb56f65a998e44636cc8e2
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_decimal_quantity_beside_a_binary_one_is_one_finding_on_the_decimal_element"
+        body: e5dc86943d7900358e9bfbac27fe99fdd0954cfa16805738421a092c6ee80a68
   - node: add44f32-26a2-4513-b7aa-9daef87e8a0d
     reviewed: 3668e5999079c9295b1cdeb1c4bf24219069cb3c89ee5a3acb3f45bc5b11eec9
     tests:

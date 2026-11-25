@@ -473,6 +473,7 @@ requirements:
 | `V2-006` | info | A Requirement with more than `maxCriteria` criteria (20) or a body of more than `maxBodyWords` words (150) | Promote it to a Feature, as `writing-rules.md` says |
 | `V2-007` | warning | A word of its `lexicon` ("shall", "must") in a body, outside code | Move the obligation into a statement or a criterion |
 | `V2-008` | info | A statement whose system is "the" and a name in `properNames` | Drop the article |
+| `V2-014` | warning | A quantity in a decimal byte unit (`kB`, `KB`, `MB`, `GB`, `TB`) in a node or decision, where the document also states one in a binary byte unit (`KiB`, `MiB`, `GiB`, `TiB`) and defines no decimal unit; code is not read | State every quantity in one family, or define the decimal units once as terms of `spec/terms.yaml` |
 
 ```yaml rule=V2-005 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"
@@ -532,6 +533,31 @@ requirements:
       shall: "keep the note."
     criteria:
       - name: "The note is listed after it is saved."
+```
+
+A reader cannot tell whether `512 MB` beside `4 KiB` means 512,000,000 bytes or 536,870,912.
+
+```yaml rule=V2-014 path=spec/products/notes/writing/write-a-note.yaml
+name: "Write a note"
+body: "Saving a short note of up to 4 KiB in a store of 512 MB."
+realizes:
+  - 00000000-0000-7000-8000-000000000101
+requirements:
+  - statement:
+      form: event_driven
+      when: "the user saves a note"
+      system: "the note store"
+      shall: "keep the note."
+    criteria:
+      - name: "The note is listed after it is saved."
+```
+
+A term named after a decimal unit settles every decimal unit of the document, decisions included,
+which are not edited once resolved:
+
+```yaml fragment
+- name: "MB"
+  definition: "A megabyte: 1,000,000 bytes."
 ```
 
 ## Rules of decision history
