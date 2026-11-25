@@ -18,6 +18,7 @@ use super::text::plain;
 use super::{Raw, RuleId};
 use crate::identity::Key;
 use crate::node::Node;
+use crate::text::strip_prefix_ignoring_case;
 
 const DECIMAL: [&str; 5] = ["kB", "KB", "MB", "GB", "TB"];
 const BINARY: [&str; 4] = ["KiB", "MiB", "GiB", "TiB"];
@@ -281,13 +282,6 @@ fn byte_count(text: &str) -> bool {
             .or_else(|| strip_prefix_ignoring_case(rest, "byte"));
         word.is_some_and(|after| !after.starts_with(is_word))
     })
-}
-
-/// `text` after `prefix`, where `text` opens on it in any ASCII case.
-fn strip_prefix_ignoring_case<'a>(text: &'a str, prefix: &str) -> Option<&'a str> {
-    let head = text.get(..prefix.len())?;
-    head.eq_ignore_ascii_case(prefix)
-        .then(|| &text[prefix.len()..])
 }
 
 /// The text after a power of any integer base, such as `10^6`, `1000^2` or `2 ^ 20`, at the

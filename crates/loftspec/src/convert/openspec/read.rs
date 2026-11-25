@@ -5,6 +5,8 @@
 use std::borrow::Borrow;
 use std::ops::Range;
 
+use crate::text::strip_prefix_ignoring_case;
+
 /// A main spec's lines, with a byte order mark removed and every line ending read as LF.
 #[derive(Debug)]
 pub(super) struct Source {
@@ -360,12 +362,6 @@ fn requirement_name(text: &str) -> Option<String> {
 /// The scenario name of a level-4 heading that begins with `Scenario:`.
 fn scenario_name(text: &str) -> Option<String> {
     strip_prefix_ignoring_case(text, "scenario:").map(|rest| rest.trim().to_owned())
-}
-
-fn strip_prefix_ignoring_case<'a>(text: &'a str, prefix: &str) -> Option<&'a str> {
-    text.get(..prefix.len())
-        .filter(|head| head.eq_ignore_ascii_case(prefix))
-        .map(|_| &text[prefix.len()..])
 }
 
 /// Whether a level-2 heading, in lower case, names a delta section.
