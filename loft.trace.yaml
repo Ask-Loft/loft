@@ -24928,17 +24928,11 @@ links:
         name: "a_refused_request_stores_nothing"
         body: 69c0093170e973633e59050546593a61c3f228ef6e5304996faaef7070bb1686
   - node: 01a20de0-8348-72dc-8ab4-3dbb2d996fa4
-    reviewed: ea6671884c3f1fa9972017eb4068ffb062b2742e52bb349b10ec966deb7930d7
-    tests:
-      - file: "crates/loft-cli/tests/yard_server_contract.rs"
-        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
-        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+    reviewed: 4c42acae2ec15a7e7ed4873a8cad2abec27bd74b106b71ab82ef35a2b733172e
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20de0-8348-72dc-8ab4-3dbc5cd64e8e
-    reviewed: a3e616e316c8e68c66bcae9df379d218a8dd2eb900bc5b731bcaf91e9219e765
-    tests:
-      - file: "crates/loft-cli/tests/yard_server_contract.rs"
-        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
-        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+    reviewed: 7f5a7218c6a457a788fbdb0b3e01365451fcd204767a2f978dd096b27bacf237
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20de0-8348-72dc-8ab4-3dbd9fac17e4
     reviewed: 554908e52d0c68883cbdb55e71bcf0a9ef14958070d66e17ee5619963c3e44ca
     tests:
@@ -24946,26 +24940,14 @@ links:
         name: "the_simulator_holds_each_version_once_in_the_order_first_received"
         body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
   - node: 01a20de0-8348-72dc-8ab4-3dbf426be513
-    reviewed: 8554efa0707ff3469d870546aa3476a328ce3dc2053a10a328be8f50b2002f4f
-    tests:
-      - file: "crates/loft-cli/tests/yard_server_contract.rs"
-        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
-        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
-      - file: "crates/loft-cli/tests/yard_server_contract.rs"
-        name: "the_simulator_holds_each_version_once_in_the_order_first_received"
-        body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
+    reviewed: 85a3576d45ede1d59689b330aeb3e8829eb5bd77b828c6f7f7aed99d955aecd2
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20de0-8348-72dc-8ab4-3dc0f07af9eb
-    reviewed: 35cb6f8527042b5062502ec9fb4ae8477ea451f74f916285d0a0c02b5f43e6be
-    tests:
-      - file: "crates/loft-cli/tests/yard_server_contract.rs"
-        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
-        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+    reviewed: 543cb494933c14910718d1b0bf478f12919acc104af1511a2e014b12e7f83114
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20de0-8348-72dc-8ab4-3dc1874b3e23
-    reviewed: cb4fbfce014c593276961827aaacd86d2a3ad53dc96b7c3e7b151c22f6096079
-    tests:
-      - file: "crates/loft-cli/tests/yard_server_contract.rs"
-        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
-        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+    reviewed: df6d72cc0b8b19a5a858f67763a6ddfe4d3f04f0a35f29268d94b2417beed3a1
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20de0-8348-72dc-8ab4-3dc3c351d49c
     reviewed: 13aade0e5a7a62577f6c640bc069a3820036d68286b13d7009b6fdfdb184a578
     tests:
@@ -29485,7 +29467,7 @@ links:
         name: "the_control_token_is_made_once_and_readable_only_by_its_owner"
         body: ebc2cf52a7ae63290c26551aa2a4e3ee174002c0795ee0ff75f642949e47e717
   - node: 01a20dc8-c593-7357-875c-820578f9386b
-    reviewed: 8440ec3dc1250a4b72d49d6ca55bc07d4334a17230a6683d175e048ec065833d
+    reviewed: 23c695dc2bcf453d8380a9c4a946bd0730ab61b44d92f21259eaeb6a9fb0d777
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_write_puts_one_entry_for_each_version_it_adds_stages_included"
@@ -38986,26 +38968,11 @@ links:
         name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
         body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
   - node: 01a1f074-174c-750c-b689-edae6ba14580
-    reviewed: b66892d51e9d30c38fc6e8a3e35fe6999464cf5cd3386aa14a4fc333e3bd96b6
-    tests:
-      - file: "crates/loft-cli/tests/yard_protocol.rs"
-        name: "the_report_gives_protocol_four_for_listen_and_join"
-        body: 0af7db847037973f95eaa8f7762cc8af4a3c97a9cd8c00b5938ee9654e0f4b86
+    reviewed: 99b9cf8e0edd272b9d8be43072ecc04ba8c98f82bd86f3742f5f8ac1cb677b9e
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a177f9-f61a-77e3-89ef-0d0bfe35cd61
-    reviewed: f31c21c93ee78efda355527190d5d0c5744c00595f80e287901411df6d3f54ad
-    tests:
-      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
-        name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
-        body: dfc949e64409e10150359c87524d6cd41ff0309da68bff9bc91278f086beb7e6
-      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
-        name: "protocol one keeps the Claude arguments and events without adapter descriptors"
-        body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
-      - file: "plugins/claude/loft/tests/yard-events.test.ts"
-        name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
-        body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
-      - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
-        body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+    reviewed: 93d0547294280b35e3977faf2c41242110bf16f7eb76d52bffdae891f5ec5cea
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a1646f-546d-7042-befd-ea43c0bb2e34
     reviewed: f9d7ec8d86cde32fd131534ed2250c2467037800d605df6ff6d1cc7923d2b0e4
     tests:
@@ -39217,11 +39184,8 @@ links:
         name: "each_yard_command_has_a_feature_that_lists_yard_command"
         body: 04b5ffe8207d1c16463ba785361b13aae19637b9b8a709dd51cbeb2f4ac5932b
   - node: 01a1646f-546d-7042-befd-ea6063179e7b
-    reviewed: 41bdce8609ee9ed693cfee3d1ed30c6a95b5455a0ca4e9e3162ccae4a6d3c2ae
-    tests:
-      - file: "crates/loft-cli/tests/yard_commands.rs"
-        name: "each_yard_command_but_serve_protocol_and_continue_lists_needs_repository"
-        body: a4c46777b838753c64af2b10f7d228a46ec4b3868a43a2a5ed8e3918f6b2b7fe
+    reviewed: 4855b3a51c6f9961f3df9b691d407913725931dfe3a0c6904f5cb2596adc1622
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a182b6-3c58-7235-ad04-3918a33b8514
     reviewed: 0676bf94426ed7746485bd87e02ef190addf0a7798e9044361dc7d71301114be
     tests:
@@ -39754,11 +39718,8 @@ links:
         name: "a_flush_runs_outside_a_repository_without_a_session_and_writes_no_yard_log"
         body: b546196466d1e5ab092ba4eed821845e177a7f40bae6b4cb36417a6fc6a18ca9
   - node: 01a20dc8-c593-7357-875c-81c96789856e
-    reviewed: d7f947bccaf646985d08fbae91b8918fb099de301fd5fd2b634f478e88c2fd05
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+    reviewed: 5943c24b8ef9e4a0a110e09f915035a712c1bd9a1fc77da7b55fa818c81a57ba
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81cb9e5b9242
     reviewed: 99951ba4f25032ce2b9f8a9bf26aadaafeb7c1ec775d14c8d32c33b5396f7fc8
     tests:
@@ -39772,17 +39733,11 @@ links:
         name: "with_no_entry_for_the_address_a_flush_is_empty_and_makes_no_request"
         body: 33019a0b978a00dba946aac485848c673b82dde7dc38bda8842ba3817a7903fb
   - node: 01a20dc8-c593-7357-875c-81cd0e4b8123
-    reviewed: 3c85757155c26a37baa643bf0f0e84250f099286ab82af246dcd35499b777ff1
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+    reviewed: e47fdca4956a82b0ae08ab90553b73920cdad90d4627ec646f385af87819c49c
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81ced80e7650
-    reviewed: 094852a8759467ca9bc816eb4e7ff13b50648f68ef06014c29e073d02ae19d11
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "a_flush_sends_what_a_write_left_and_counts_it"
-        body: d2646451429250eb08374f786e2716ce383aed0f6dc017a3d117ba110c10f740
+    reviewed: 781668176345a48474d4c2331b133691500eb1e609f95500f96b898cd4fc2016
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81cf6362e4f4
     reviewed: 3dcda61ddb995a9d201c171c56d266f2b57598d638a3f3dc1f5522a0b14daac3
     tests:
@@ -39793,20 +39748,11 @@ links:
         name: "a_failed_flush_says_why_on_standard_error_without_json"
         body: 5712dee3aca168d48789efa576d6a473b4ce67fe755d130e2817e7e5c01a4bd0
   - node: 01a20dc9-2271-7343-84c0-93e4c1dcc394
-    reviewed: d7d62c12afc0c99c40146e62a486ebe7334a180a858a6d0b831ca499dba20d28
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+    reviewed: c9b0e97abe789f7849f50818a73c89f9a46ef1d6ed9fc56725fe4b49a4ce8cde
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc9-2271-7343-84c0-93e516aaeabd
-    reviewed: 0c4cb8eee472e0a51335321f1dcc2401f83fc19c9d62d0f935079f6d3a2bddbf
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
-      - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "a_flush_sends_what_a_write_left_and_counts_it"
-        body: d2646451429250eb08374f786e2716ce383aed0f6dc017a3d117ba110c10f740
+    reviewed: 2ee47956b2f49b25c3e3e7fc4505468c45329a992443b93ac7ef30cd8f3c76de
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81d0b58e58ea
     reviewed: 43b21c67186170179ec9f1a887533ad227126428d37598c0a52722e69325625d
     tests:
@@ -39814,35 +39760,11 @@ links:
         name: "a_flush_counts_and_moves_aside_what_it_cannot_send"
         body: 9f46146e7741742093125f9d431d13f4670c249b872577f3e972cc82a896bc8a
   - node: 01a20dc9-2271-7343-84c0-93e6f2d568f6
-    reviewed: 2e9a9453823163a1c230e2cf322514f482371a0822f9e2561682d38c1c23ec8e
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "a_flush_counts_and_moves_aside_what_it_cannot_send"
-        body: 9f46146e7741742093125f9d431d13f4670c249b872577f3e972cc82a896bc8a
+    reviewed: 8584cdb111448a9aee25a0136915381ae70744b5ddd7d345b30fad5a03fcb2e1
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81d5f6da6742
-    reviewed: 474214c4442c5854ca71676f3805e5f89af92688fc4c36a895dde3ba5bf72f06
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
-  - node: 01a20dc8-c593-7357-875c-81d687500081
-    reviewed: eaa3f3ec2ca9562eab2405a19296143f7a8e38dc3007577b1ae9713bd8375502
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
-  - node: 01a20dc8-c593-7357-875c-81d7cddabf23
-    reviewed: e1f2e8341abff3224773da8ecaa6e75d17420995e85a729e943afc9932c5d2a8
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_refused_write_and_an_unchanged_task_send_nothing"
-        body: 5e7360bbf1430d7f0f9936bae22acd4af58dd80e2bb76f324d68dd3955d562e6
-  - node: 01a20dc8-c593-7357-875c-81d85de2aa1c
-    reviewed: 0adc63e186cb30793d562a89c8f052278398db83452d7eadeb17249674d8b006
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_refused_write_and_an_unchanged_task_send_nothing"
-        body: 5e7360bbf1430d7f0f9936bae22acd4af58dd80e2bb76f324d68dd3955d562e6
+    reviewed: 0339d2a5871cabf4ca5d7f176c8fda772d074775d83efd8cf41dc0645bcf98a8
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81da6e94fefe
     reviewed: 35d9f01c5961ff575440bdcb3886f3cf8e8a3d7664adbc9e2c3eac648123ce8e
     tests:
@@ -39861,18 +39783,9 @@ links:
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "the_page_server_makes_no_request_to_yard_server_with_entries_waiting"
         body: 728f25222e6e3e500f0db023fcb8f11e8f15f7eb55854cdfa1b3d907c3aa2c1c
-  - node: 01a20dc8-c593-7357-875c-81ddcdf769ff
-    reviewed: f03428617f5d285e5ad02434797b00ccd23071ea2a7abb2a9f9e219d634f89c4
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_along"
-        body: 58bb492d8ea9a16c7fb869deab0a925508c8c84eb891eaaab1a5e07fe955d421
   - node: 01a20dc8-c593-7357-875c-81df3a9589ac
-    reviewed: 92094be0ef82489b3e2138668588c1cd124018d49198dfd72c84ef7f0413979a
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+    reviewed: 520b0627aed2cb36a886bd4647443f81f57b1a174bb9e36a2337b4da94550e4b
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81e08eb59c4c
     reviewed: 8f62f762600da4557f90d0341f680e2f777d9693d63c31fe4ba23f3fb2f55619
     tests:
@@ -39880,26 +39793,14 @@ links:
         name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
         body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
   - node: 01a20dc8-c593-7357-875c-81e1a071d50a
-    reviewed: 9e9e79f128d5ad6b06a7a02410db0da0d49d459a43b8fe4105786aea0c0f3225
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "until_a_batch_is_taken_the_next_sending_takes_the_same_oldest_entries_again"
-        body: 2dfd1ae541ef8483d42740b36a561feecf0876e253ae5f278f145af4784c34f8
-      - file: "crates/loft-cli/tests/yard_server_e2e.rs"
-        name: "a_batch_stored_and_unanswered_is_sent_again_by_the_next_flush_and_held_once"
-        body: e38e8e4ff365b5d8e89c7fc8e22b8acba60ae8d7925a38bafd24b4980f301557
+    reviewed: 69e85a93fb730fb41d7b55cd967f8af14b160b94c3fd52ceca60a74ffc32190f
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81e26152c5c3
     reviewed: e23e259210669d6e69aa783ef243264dc1afed49c547859b271e812cf1bed133
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "with_no_entry_for_the_address_a_flush_is_empty_and_makes_no_request"
         body: 33019a0b978a00dba946aac485848c673b82dde7dc38bda8842ba3817a7903fb
-  - node: 01a20dc8-c593-7357-875c-81e3d40da5b2
-    reviewed: d7f947bccaf646985d08fbae91b8918fb099de301fd5fd2b634f478e88c2fd05
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
   - node: 01a20dc8-c593-7357-875c-81e5c11e1ea8
     reviewed: 4d77466092dec87fd2c03561a751bfaa851bce88f11eac552685b4bf38e1b447
     tests:
@@ -39916,17 +39817,11 @@ links:
         name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
         body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
   - node: 01a20dc8-c593-7357-875c-81e88d3d0e76
-    reviewed: bee9a3feae86779ca79a2c13d20213c8b413c7521b93c8c9d1ab0f11812ed047
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+    reviewed: c7cbb9e35b8840b646f2608a8c965255794881a89c819a42fdfb3198452c271b
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81eb86f2fa9a
-    reviewed: 8a3e6c9c86ce125e7c7e8d73f9cca333368cd1d4a55452f49e214f1e8cd88c50
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
+    reviewed: 206fcf9ca96341d44f6f0f5ea169ec617b1a12d6ec5dc3a4863e8a4a4d3ba6e1
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81ece9cd459e
     reviewed: 47d49e1017215d4056c16eb7b5e74bb59787ed3e35e736b77d74c156d87b531b
     tests:
@@ -39934,11 +39829,8 @@ links:
         name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
         body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
   - node: 01a20dc8-c593-7357-875c-81eda327f1fc
-    reviewed: 1b8528412e0060a3ce75e9a4774573b1332f61c1d7b6001cf671ac22289f9796
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_silent_yard_server_holds_a_write_at_most_two_seconds_and_the_entries_stay"
-        body: 14d3e27c2703994da7a7143384e747caea7b8020de63c4d77812691cbfe84edd
+    reviewed: 3684d29d1faf999f5cb70bc6d38971c50f7dea78e965bd0e12cdeba101e83e95
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a20dc8-c593-7357-875c-81ee69667a91
     reviewed: 0f84312ed0af3a5c03863868c62313d81db96e1a50704fefe122fa294e21d00c
     tests:
@@ -40027,11 +39919,8 @@ links:
         name: "an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay"
         body: a7b1fa4a684e4febb4f28fb0603d48ca89b7addd0d26c27df0ab227a436e9a1a
   - node: 01a20dc8-c593-7357-875c-8203782fac5a
-    reviewed: 9ef914715c749c988427e549400965de223492d45bcdf36e32b5200a84faeb9f
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay"
-        body: a7b1fa4a684e4febb4f28fb0603d48ca89b7addd0d26c27df0ab227a436e9a1a
+    reviewed: 983573294aab976389b8f78b976f19f8778a74dd53fec47e09398ec20bdc9caa
+    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
   - node: 01a1d600-053c-73ed-b18e-e5a0c1114446
     reviewed: 9053d55a1c2bb4d36c39e44ae7192c5f2555f7b328a282a3c8fa0547644c5b8c
     tests:

@@ -4,7 +4,7 @@ name: "Turn connected mode on"
 body: |
   Connected mode is off unless the person turns it on, and then Yard Client works as it always has, keeping Yard Log on the machine alone. Two variables of the environment turn it on: `LOFT_YARD_SERVER_ENDPOINT`, the base address of Yard Server, to which each request adds its own path, and `LOFT_YARD_SERVER_TOKEN`, the token Yard Server admits the person by. A request that the contract adds later adds its own path to the same address, with no new variable.
 
-  In connected mode, Yard Log is still written on the machine first and committed with the work as before; the versions written are also copied into the outbox and sent to Yard Server from there. Retries, sending in the background and the answers of the person come in later waves.
+  In connected mode, Yard Log is still written on the machine first and committed with the work as before; the versions written are also copied into the outbox and sent to Yard Server from there, in the background. The answers of the person come in a later wave.
 realizes:
   - 01a13a90-3554-7631-bb13-097e6805bffe
   - 01a16469-559e-73c4-85f2-71a7729da1ec
@@ -67,4 +67,4 @@ requirements:
       - key: 01a20dc8-c593-7357-875c-8202fa019217
         name: "An `http` address off the loopback interface is never contacted."
       - key: 01a20dc8-c593-7357-875c-8203782fac5a
-        name: "A writing command gives the result it gives without connected mode and names the refused address on standard error."
+        name: "`loft yard flush` ends `failed`, and its error names the refused address."

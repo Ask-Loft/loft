@@ -1,0 +1,108 @@
+key: 01a213cb-9c28-769e-b7c8-43e545631796
+slug: loft-yard-status
+name: "`loft yard status`"
+body: |
+  `loft yard status` says whether the versions agents write leave the machine, and where they do not, why. The session of an agent host flushes the outbox in the background, where no one reads what a run says, so this is where a person looks once something does not arrive on Yard Server.
+
+  It reads the outbox, `~/.yard/outbox/dead/` and `~/.yard/flush.json`, and nothing else: it makes no request to Yard Server and writes nothing. Each fact is one line, a lowercase key, a colon and the fact, as `loft status` writes its lines, so that a line can be found with `grep`; `--format json` gives the same facts as one document. It is a report, so it exits 0 whatever it finds, and it runs anywhere, inside a repository or not, without `--session`. With connected mode off it still shows what waits and what was moved aside, since versions written while it was on may be there.
+tags:
+  - yard-command
+realizes:
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+mentions:
+  - 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+  - 01a20dc8-c593-7357-875c-81d1ad8af92a
+requirements:
+  - key: 01a213cb-9c28-769e-b7c8-43e61dea83de
+    statement:
+      form: ubiquitous
+      system: "`loft yard status`"
+      shall: "say whether connected mode is on and, where it is, the address of the Yard Server it sends to, and where it is not, why."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43e7f582e912
+        name: "With connected mode on, the line reads `connected mode: on, sending to <address>`."
+      - key: 01a213cb-9c28-769e-b7c8-43e8f96d25e3
+        name: "With neither variable set, the line reads `connected mode: off`."
+      - key: 01a21406-1007-7756-963c-2315e982470c
+        name: "With one of `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN` set and the other unset or empty, the line reads `connected mode: off` and names the variable missing."
+      - key: 01a21406-1007-7756-963c-2316163b168a
+        name: "Where `LOFT_YARD_SERVER_ENDPOINT` names an address the network client refuses, the line names the address and says it is refused."
+      - key: 01a213cb-9c28-769e-b7c8-43e9d68b7479
+        name: "With both variables set and no home directory known, the line says that no home directory is known."
+      - key: 01a213cb-9c28-769e-b7c8-43eaf8f0f08b
+        name: "No line and no field holds the token."
+  - key: 01a213cb-9c28-769e-b7c8-43eb800e6d3c
+    statement:
+      form: ubiquitous
+      system: "`loft yard status`"
+      shall: "count the entries of the outbox that wait, by the address they are for, and among them those that Yard Server will take later and those of a newer `loft`."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43ec467145ba
+        name: "With connected mode on, the line `waiting:` counts the entries for the address."
+      - key: 01a213cb-9c28-769e-b7c8-43ed8c88dd70
+        name: "The same line counts the entries for another address, the entries Yard Server will take later and the entries of a newer `yardlog-outbox` version, where there are any."
+      - key: 01a21406-1007-7756-963c-2317faa993d5
+        name: "With connected mode off, the line `waiting:` counts every entry, with the address each is for."
+      - key: 01a213cb-9c28-769e-b7c8-43ee9cac6d49
+        name: "With no entry waiting, the line reads `waiting: none`."
+  - key: 01a213cb-9c28-769e-b7c8-43efdcd660eb
+    statement:
+      form: optional
+      where: "connected mode is on"
+      system: "`loft yard status`"
+      shall: "report the last run of the sending for its address, as `~/.yard/flush.json` records it."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43f0dfed8025
+        name: "The line `last attempt:` gives the time the run ended, in UTC, and its outcome."
+      - key: 01a213cb-9c28-769e-b7c8-43f106e76e68
+        name: "Where a batch did not go, the line gives why."
+      - key: 01a213cb-9c28-769e-b7c8-43f227f72357
+        name: "Where Yard Server asked to come back after a time that has not passed, the line gives that time."
+      - key: 01a213cb-9c28-769e-b7c8-43f3a299d1f9
+        name: "Where no run is recorded for the address, or `~/.yard/flush.json` does not read, the line reads `last attempt: none`."
+  - key: 01a213cb-9c28-769e-b7c8-43f45a05af6a
+    statement:
+      form: ubiquitous
+      system: "`loft yard status`"
+      shall: "list the files of `~/.yard/outbox/dead/`, each with the reason it was moved there."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43f59872d55b
+        name: "The line `dead:` counts the files other than `.reason` files."
+      - key: 01a213cb-9c28-769e-b7c8-43f6ce052008
+        name: "Each file has a line of its own, `dead <file name>: <reason>`, in the order of the file names."
+      - key: 01a213cb-9c28-769e-b7c8-43f786cba56f
+        name: "A file without a reason is listed with the reason `unknown`."
+      - key: 01a21406-1007-7756-963c-231850362e9a
+        name: "A `.reason` file without its file is not listed."
+      - key: 01a213cb-9c28-769e-b7c8-43f870f9c796
+        name: "With no file in `~/.yard/outbox/dead/`, the line reads `dead: none` and no file line follows."
+  - key: 01a21406-1007-7756-963c-2319bbde0f66
+    statement:
+      form: ubiquitous
+      system: "The JSON document of `loft yard status`"
+      shall: "hold the same facts as its lines, by name."
+    criteria:
+      - key: 01a21406-1007-7756-963c-231ae6145a1e
+        name: "The document holds `connected` as `true` or `false`, `endpoint` where connected mode is on, and `missing` naming each variable unset or empty."
+      - key: 01a21406-1007-7756-963c-231b3d51156e
+        name: "The document holds `waiting` with `forAddress`, `otherAddresses`, `later` and `skipped` as counts."
+      - key: 01a21406-1007-7756-963c-231c990cdd6f
+        name: "The document holds `lastAttempt` with `ended`, `outcome`, `why` and `notBefore` where a run is recorded, and `null` where none is."
+      - key: 01a21406-1007-7756-963c-231d8d01aa2a
+        name: "The document holds `dead` as a list of `file` and `reason`, in the order of the file names."
+  - key: 01a213cb-9c28-769e-b7c8-43f930983636
+    statement:
+      form: ubiquitous
+      system: "`loft yard status`"
+      shall: "exit 0 whatever it finds, without a request to Yard Server and without a write."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43fa79962c40
+        name: "The command exits 0 with entries waiting, with a failed last run and with files in `~/.yard/outbox/dead/`."
+      - key: 01a213cb-9c28-769e-b7c8-43fb5eab1b2c
+        name: "The command makes no request to Yard Server."
+      - key: 01a213cb-9c28-769e-b7c8-43fce35367cf
+        name: "The command changes no file of the outbox, of `~/.yard/outbox/dead/` and of `~/.yard/flush.json`."
+      - key: 01a213cb-9c28-769e-b7c8-43fdb66632b6
+        name: "The command runs outside a git repository."
+      - key: 01a213cb-9c28-769e-b7c8-43fe3c694ce0
+        name: "The command runs without `--session` and is not refused for it."

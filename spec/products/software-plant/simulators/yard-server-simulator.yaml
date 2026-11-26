@@ -4,7 +4,7 @@ name: "Yard Server simulator"
 body: |
   An HTTP endpoint on the test machine that stands in for Yard Server. A test points the binary under test at it with `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN`, scripts how it answers, and reads the requests it received and the versions it stored. Its Requirements state Yard Server's wire contract for a batch of versions, which a real Yard Server is built to pass in the same contract suite, whose real half runs only on demand against `LOFT_YARD_SERVER_CONTRACT_ADDRESS` with `LOFT_YARD_SERVER_CONTRACT_TOKEN`.
 
-  It keeps what it stores in memory, by each version's key, in the order it first received them, and forgets it when the test ends. Every refusal is an RFC 9457 problem document with a `code`, named as the remote's are: `unauthenticated`, `invalid_request`, `not_found`, `method_not_allowed` and `unsupported_media_type`.
+  It keeps what it stores in memory, by each version's key, in the order it first received them, and forgets it when the test ends. Every refusal is an RFC 9457 problem document with a `code`, named as the remote's are: `unauthenticated`, `invalid_request`, `not_found`, `method_not_allowed`, `unsupported_media_type`, `payload_too_large`, `rate_limited` and `service_unavailable`.
 tags:
   - plant-simulator
 realizes:
@@ -26,7 +26,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The Yard Server simulator"
-      shall: "behave toward each request as its scenario names: as Yard Server's contract states, by refusing the connection, with one error status, or with silence."
+      shall: "behave toward each request as its scenario names: as Yard Server's contract states, by refusing the connection, with one error status, by asking to come back later, by refusing named versions, by putting named versions off until later, by answering with the outcomes it names, or with silence."
     criteria:
       - key: 01a20de0-8348-72dc-8ab4-3db061a809f1
         name: "An accepting scenario answers each request as Yard Server's contract states."
@@ -40,6 +40,14 @@ requirements:
         name: "A hanging-up scenario stores the batch as an accepting one does and closes the connection before a byte of its answer is sent."
       - key: 01a20de0-8348-72dc-8ab4-3db52876f4e5
         name: "A late scenario stores the batch as an accepting one does and sends its answer only after the delay it names."
+      - key: 01a213ce-418d-753d-a2da-ac738a0a774b
+        name: "A scenario that asks to come back later answers each request `429` with the code `rate_limited`, or `503` with the code `service_unavailable`, and the `Retry-After` it names."
+      - key: 01a213ce-418d-753d-a2da-ac74599ef1e3
+        name: "A scenario that refuses named versions answers each of them `refused` with the code it names, and stores and answers the others as an accepting one does."
+      - key: 01a21406-1006-7412-b332-118ab687b777
+        name: "A scenario that puts named versions off answers each of them `later` with the code it names, stores none of them, and stores and answers the others as an accepting one does."
+      - key: 01a21406-1006-7412-b332-118b5ca18aa2
+        name: "A scenario that answers with the outcomes it names answers `200` with exactly the body it names, so that a test can give an answer that does not read, leaves a version out or names an unknown outcome."
   - key: 01a20de0-8348-72dc-8ab4-3db6eca90288
     statement:
       form: ubiquitous
@@ -57,12 +65,16 @@ requirements:
       form: event_driven
       when: "the Yard Server simulator receives a batch of versions as `POST <address>/batches`"
       system: "the simulator"
-      shall: "store each version it does not yet hold and answer `200` with the batch as it stored it."
+      shall: "store each version it does not yet hold and answer `200` with each version's key and outcome."
     criteria:
       - key: 01a20de0-8348-72dc-8ab4-3dbb2d996fa4
-        name: "The answer is a JSON object of `format: yardlog-batch/1` and `records`, one for each record sent, in the order sent."
+        name: "The answer is a JSON object of `format: yardlog-answer/1` and `outcomes`, one for each record sent, in the order sent."
       - key: 01a20de0-8348-72dc-8ab4-3dbc5cd64e8e
-        name: "Each record of the answer is the record the simulator holds for the version's key."
+        name: "Each outcome holds the version's key as `version` and `outcome`, with `code` beside an outcome of `refused` or `later`."
+      - key: 01a213ce-418d-753d-a2da-ac753d3ff088
+        name: "A version the simulator did not hold before is answered `stored`."
+      - key: 01a21406-1006-7412-b332-118c4411a2ca
+        name: "A record that holds a version's key but is not a record of a batch of versions is answered `refused` with the code `invalid_record`, and the other records of the batch are stored."
       - key: 01a20de0-8348-72dc-8ab4-3dbd9fac17e4
         name: "A test reads the records the simulator holds, in the order it first received them."
   - key: 01a20de0-8348-72dc-8ab4-3dbea9cf2c72
@@ -72,11 +84,11 @@ requirements:
       shall: "hold a version once by its key, whichever Yard Log a batch names it under."
     criteria:
       - key: 01a20de0-8348-72dc-8ab4-3dbf426be513
-        name: "A batch sent twice is answered `200` both times and leaves one record for each version."
+        name: "A batch sent twice is answered `200` both times, its versions `held` the second time, and leaves one record for each version."
       - key: 01a20de0-8348-72dc-8ab4-3dc0f07af9eb
-        name: "A version sent under another Yard Log's key is answered `200` and leaves one record, under the first Yard Log's key."
+        name: "A version sent under another Yard Log's key is answered `held` and leaves one record, under the first Yard Log's key."
       - key: 01a20de0-8348-72dc-8ab4-3dc1874b3e23
-        name: "A version sent again with other contents is answered `200` and leaves the first record as it was."
+        name: "A version sent again with other contents is answered `conflict` and leaves the first record as it was."
   - key: 01a20de0-8348-72dc-8ab4-3dc26cc4fa9d
     statement:
       form: unwanted
@@ -90,6 +102,8 @@ requirements:
         name: "A batch of no record is answered `400` with the code `invalid_request`."
       - key: 01a20de0-8348-72dc-8ab4-3dc58f57b905
         name: "A batch of more than 16 records is answered `400` with the code `invalid_request`."
+      - key: 01a213ce-418d-753d-a2da-ac76b7258e48
+        name: "A body larger than 1 MiB is answered `413` with the code `payload_too_large`."
       - key: 01a20de0-8348-72dc-8ab4-3dc6e26db7d9
         name: "A record without a version's key is answered `400` with the code `invalid_request`."
       - key: 01a20de0-8348-72dc-8ab4-3dc71d16d06a
