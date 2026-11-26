@@ -35,6 +35,8 @@ pub(super) struct Flushed {
     pub put_off: BTreeMap<String, String>,
     /// The keys of the entries for the address left in the outbox, put off ones included.
     pub waiting: BTreeSet<String>,
+    /// The keys `~/.yard/flush.json` records as those of versions Yard Server will take later.
+    pub held: BTreeSet<String>,
     /// The time Yard Server asked the run not to come back before, in seconds.
     pub not_before: Option<u64>,
 }
@@ -51,6 +53,7 @@ impl Flushed {
             taken: BTreeSet::new(),
             put_off: BTreeMap::new(),
             waiting: BTreeSet::new(),
+            held: BTreeSet::new(),
             not_before: None,
         }
     }
@@ -62,15 +65,22 @@ impl Flushed {
         }
     }
 
-    /// The entries whose versions Yard Server will take later.
+    /// The entries for the address left in the outbox whose versions Yard Server will take later,
+    /// as it answered in this run or as `~/.yard/flush.json` records.
     pub fn later(&self) -> usize {
-        self.put_off.len()
+        self.waiting.iter().filter(|key| self.is_later(key)).count()
     }
 
     /// The entries for the address left in the outbox, other than those put off and skipped.
     pub fn remaining(&self) -> usize {
-        let put_off = |key: &&String| self.put_off.contains_key(*key);
-        self.waiting.iter().filter(|key| !put_off(key)).count()
+        self.waiting
+            .iter()
+            .filter(|key| !self.is_later(key))
+            .count()
+    }
+
+    fn is_later(&self, key: &str) -> bool {
+        self.put_off.contains_key(key) || self.held.contains(key)
     }
 }
 

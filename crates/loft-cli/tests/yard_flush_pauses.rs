@@ -251,6 +251,40 @@ fn a_run_records_the_versions_yard_server_will_take_later_with_their_codes() {
 }
 
 #[test]
+fn a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later() {
+    let yard = Yard::new();
+    write(&yard, STAGE_BATCH, &connected("http://127.0.0.1:1"));
+    let key = fs::read_dir(outbox(&yard))
+        .unwrap()
+        .next()
+        .unwrap()
+        .unwrap()
+        .file_name();
+    let key = key.to_string_lossy().trim_end_matches(".json").to_owned();
+    let server = YardServer::putting_off(&[(&key, "unknown_report_version")]);
+    let entry = outbox(&yard).join(format!("{key}.json"));
+    let mut readdressed: Value = serde_json::from_slice(&fs::read(&entry).unwrap()).unwrap();
+    readdressed["to"]["endpoint"] = json!(server.url());
+    fs::write(&entry, readdressed.to_string()).unwrap();
+    let variables = connected(&server.url());
+    let (_, sent) = flush(&yard, &variables);
+    let counts = |run: &Value| (run["later"].clone(), run["remaining"].clone());
+    assert_eq!(counts(&sent), (json!(1), json!(0)));
+    let mut all: Value = serde_json::from_slice(&fs::read(flush_json(&yard)).unwrap()).unwrap();
+    all[server.url()]["notBefore"] = json!("2100-01-01T00:00:00Z");
+    fs::write(flush_json(&yard), all.to_string()).unwrap();
+    let (_, paused) = flush(&yard, &variables);
+    assert_eq!(paused["outcome"], "paused");
+    assert_eq!(counts(&paused), (json!(1), json!(0)));
+    let _held = lock::try_lock(&yard.scratch.home().join(".yard/flush.lock"))
+        .unwrap()
+        .unwrap();
+    let (_, busy) = flush(&yard, &variables);
+    assert_eq!(busy["outcome"], "busy");
+    assert_eq!(counts(&busy), (json!(1), json!(0)));
+}
+
+#[test]
 fn a_flush_json_that_does_not_read_is_taken_as_holding_no_record_and_written_anew() {
     let yard = Yard::new();
     let server = YardServer::accepting();

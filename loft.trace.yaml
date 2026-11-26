@@ -40050,6 +40050,9 @@ links:
   - node: 01a20dc9-2271-7343-84c0-93e516aaeabd
     reviewed: 2ee47956b2f49b25c3e3e7fc4505468c45329a992443b93ac7ef30cd8f3c76de
     tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later"
+        body: c046953488305cb3735253c5b0e9ce174ce7fe1840c941361a3f6fe1750b54c2
       - file: "crates/loft-cli/tests/yard_flush_runs.rs"
         name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
         body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
@@ -40065,6 +40068,9 @@ links:
   - node: 01a21406-1007-7756-963c-2314f22f8083
     reviewed: 3f75693edd6183fcced3768a122f124d6dcfbaec420524e612af29c5feecc7e6
     tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later"
+        body: c046953488305cb3735253c5b0e9ce174ce7fe1840c941361a3f6fe1750b54c2
       - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
         name: "an_entry_whose_version_yard_server_will_take_later_stays_and_a_later_run_sends_it_again"
         body: 05c2bc78ad321670c5c402d4e50253b2df31de87069169e87e97608abae7caaa

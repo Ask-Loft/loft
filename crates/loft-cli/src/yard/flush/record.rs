@@ -34,6 +34,12 @@ impl Record {
     pub fn paused(&self, now: u64) -> Option<u64> {
         self.not_before.filter(|time| now < *time)
     }
+
+    /// The keys of the versions Yard Server will take later.
+    #[must_use]
+    pub fn later_keys(&self) -> BTreeSet<String> {
+        self.later.keys().cloned().collect()
+    }
 }
 
 /// What a run that replaces its address's record did.
@@ -58,7 +64,7 @@ pub fn read(home: &Home, endpoint: &str) -> Option<Record> {
 
 /// Replaces `endpoint`'s record with `run`'s, keeping from the record it replaces a time to come
 /// back after that has not passed, and the `later` key of each entry the run did not take while
-/// `waiting`, the keys of the entries for the address, holds it.
+/// `waiting`, the keys of the entries for the address, holds it: the record written.
 ///
 /// # Errors
 ///
@@ -68,14 +74,16 @@ pub fn replace(
     endpoint: &str,
     run: &Run<'_>,
     waiting: &BTreeSet<String>,
-) -> Result<(), YardStoreError> {
+) -> Result<Record, YardStoreError> {
+    let mut written = Record::default();
     home.update(HomeFile::Flush, |held| {
         let mut all = home_json::object(held.as_deref());
         let previous = all.get(endpoint).and_then(parse).unwrap_or_default();
-        let record = next(&previous, run, waiting);
-        all.insert(endpoint.to_owned(), value(&record));
+        written = next(&previous, run, waiting);
+        all.insert(endpoint.to_owned(), value(&written));
         Some(home_json::ordered(&all))
-    })
+    })?;
+    Ok(written)
 }
 
 /// The record that replaces `previous` after `run`.

@@ -144,6 +144,9 @@ pub fn run(args: &FlushArgs) -> Finished {
         Ok(None) => {
             let busy = Flushed {
                 waiting: waiting(&connection.outbox),
+                held: record::read(&connection.home, &endpoint)
+                    .map(|record| record.later_keys())
+                    .unwrap_or_default(),
                 ..Flushed::quiet("busy")
             };
             let line = format!(
@@ -186,11 +189,12 @@ fn locked(connection: &Connection) -> Flushed {
     let clock = super::clock();
     let endpoint = connection.outbox.endpoint();
     let now = clock.now().unwrap_or_default();
-    let pause = record::read(&connection.home, endpoint).and_then(|record| record.paused(now));
-    if let Some(time) = pause {
+    let recorded = record::read(&connection.home, endpoint).unwrap_or_default();
+    if let Some(time) = recorded.paused(now) {
         return Flushed {
             not_before: Some(time),
             waiting: waiting(&connection.outbox),
+            held: recorded.later_keys(),
             ..Flushed::quiet("paused")
         };
     }
@@ -209,12 +213,15 @@ fn locked(connection: &Connection) -> Flushed {
         taken: &flushed.taken,
         later: &flushed.put_off,
     };
-    if let Err(error) = record::replace(&connection.home, endpoint, &run, &flushed.waiting) {
-        flushed.failed.push(Failed::outbox(format!(
-            "{} cannot be written: {error}",
-            connection.home.path(HomeFile::Flush).display()
-        )));
-        flushed.outcome = "failed";
+    match record::replace(&connection.home, endpoint, &run, &flushed.waiting) {
+        Ok(written) => flushed.held = written.later_keys(),
+        Err(error) => {
+            flushed.failed.push(Failed::outbox(format!(
+                "{} cannot be written: {error}",
+                connection.home.path(HomeFile::Flush).display()
+            )));
+            flushed.outcome = "failed";
+        }
     }
     flushed
 }
