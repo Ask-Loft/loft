@@ -7,7 +7,6 @@
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use loft_ports::clock::Clock as _;
 use serde_json::{Map, Value, json};
 use yardlog::Time;
 use yardlog_store::home::Home;
@@ -73,7 +72,7 @@ pub fn run(args: &StatusArgs) -> Finished {
 }
 
 fn report() -> Report {
-    let now = flush::clock().now().unwrap_or_default();
+    let now = crate::remote::now().unwrap_or_default();
     let home = Home::from_env();
     let records = home.as_ref().map(record::read_all).unwrap_or_default();
     let (connected, last) = match flush::mode() {

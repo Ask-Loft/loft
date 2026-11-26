@@ -18,7 +18,6 @@ use super::translate::{Hook, HookKind};
 use crate::yard::flush;
 use crate::yard::post::post;
 use flushing::Flushing;
-use loft_ports::clock::Clock as _;
 
 const BEAT: Duration = Duration::from_secs(5);
 const LIFETIME: Duration = Duration::from_hours(24);
@@ -94,7 +93,7 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
             flushing.tick(
                 clock,
                 beat,
-                || flush::due(&flush::mode(), flush::clock().now().unwrap_or_default()),
+                || flush::due(&flush::mode(), crate::remote::now().unwrap_or_default()),
                 || {
                     commands::flush(hook.dir())?
                         .spawn()

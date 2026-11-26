@@ -116,9 +116,7 @@ pub fn call(
     body: Option<&[u8]>,
     timeout: Duration,
 ) -> Result<Reply, String> {
-    let uri = allowed(url).ok_or_else(|| {
-        format!("{url}: an address is `https`, or `http` on the loopback interface")
-    })?;
+    let uri = allowed(url).ok_or_else(|| format!("{url}: {CONTACTED}"))?;
     let mut request = ureq::http::Request::builder().method(method).uri(uri);
     for (name, value) in headers {
         request = request.header(*name, *value);

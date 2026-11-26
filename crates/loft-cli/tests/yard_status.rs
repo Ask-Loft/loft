@@ -9,12 +9,13 @@ use serde_json::{Value, json};
 use software_plant::yard_server::TOKEN;
 use software_plant::{Clock, YardServer};
 
+use crate::common::signed_in::real_now;
 use crate::common::{EPOCH, Scratch};
 use crate::snapshot::snapshot;
 use crate::yard::{Yard, document};
 use crate::yard_connected::{
     STAGE_BATCH, come_back_after, connected, dated, flush, flush_json, flush_record, keys, notes,
-    outbox, pairs, put_off_record, system_now, write,
+    outbox, pairs, put_off_record, write,
 };
 
 /// `loft yard status` under `variables`, as text and as JSON.
@@ -284,7 +285,7 @@ fn last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed() {
             not_before.as_str().unwrap()
         )
     );
-    let passed = system_now() - 1;
+    let passed = real_now() - 1;
     come_back_after(&yard, &server.url(), passed);
     let (text, json) = status(&yard, &variables);
     assert_eq!(

@@ -7,7 +7,6 @@
 use std::fs;
 use std::path::PathBuf;
 use std::process::Output;
-use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::{Value, json};
 use software_plant::YardServer;
@@ -92,15 +91,6 @@ pub fn come_back_after(yard: &Yard, endpoint: &str, seconds: u64) {
     fs::write(flush_json(yard), all.to_string()).unwrap();
 }
 
-/// The time now, in seconds since the Unix epoch, as the system's clock tells it: a flush dates
-/// its runs and its pauses by it, whatever `SOURCE_DATE_EPOCH` says.
-pub fn system_now() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs()
-}
-
 /// `seconds` since the Unix epoch, as `~/.yard/flush.json` writes a time.
 pub fn dated(seconds: u64) -> String {
     Time::from_unix_seconds(seconds).unwrap().to_string()
@@ -113,19 +103,6 @@ pub fn seconds_of(time: &Value) -> u64 {
         .parse::<Time>()
         .unwrap()
         .unix_seconds()
-}
-
-/// `seconds` since the Unix epoch as an HTTP date, such as `Thu, 01 Jan 2026 01:00:00 GMT`.
-pub fn http_date(seconds: u64) -> String {
-    const DAYS: [&str; 7] = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"];
-    const MONTHS: [&str; 12] = [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-    ];
-    let text = dated(seconds);
-    let (year, month, day, time) = (&text[0..4], &text[5..7], &text[8..10], &text[11..19]);
-    let weekday = DAYS[usize::try_from(seconds / 86_400 % 7).unwrap()];
-    let month = MONTHS[month.parse::<usize>().unwrap() - 1];
-    format!("{weekday}, {day} {month} {year} {time} GMT")
 }
 
 /// The record of a run, as `~/.yard/flush.json` keeps it, in which Yard Server put off the
