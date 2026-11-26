@@ -1,6 +1,8 @@
-//! A count of bytes that gives a decimal byte unit: a number or a power equal to the unit's
-//! value, 1000^k or 1024^k bytes for its power k, then `byte` or `bytes`, closing its clause.
+//! A count of bytes that gives a decimal byte unit: digits, comma groups of three or a power
+//! equal to the unit's value, 1000^k or 1024^k bytes for its power k, then `byte` or `bytes`,
+//! closing its clause.
 
+use crate::lint::text::is_written_number;
 use crate::text::strip_prefix_ignoring_case;
 
 /// The marks that may follow a count of bytes that closes its clause, beside the end of the
@@ -24,17 +26,6 @@ pub(super) fn gives_value(text: &str, k: u32) -> bool {
             .any(|base| base.checked_pow(k) == Some(value))
 }
 
-/// Whether a count of bytes equal to the value of a unit of power `k` stands anywhere in
-/// `text`, each count starting a word.
-pub(super) fn holds_value(text: &str, k: u32) -> bool {
-    text.char_indices().any(|(at, c)| {
-        let before = text[..at].chars().next_back();
-        let starts =
-            !before.is_some_and(|b| b.is_alphanumeric() || matches!(b, '_' | ',' | '.' | '^'));
-        c.is_ascii_digit() && starts && gives_value(&text[at..], k)
-    })
-}
-
 /// A power of any integer base, such as `10^6`, `1000^2` or `2 ^ 20`, at the start of `text`:
 /// its value and the text after it.
 fn power(text: &str) -> Option<(u128, &str)> {
@@ -51,20 +42,14 @@ fn digits(text: &str) -> Option<(u128, &str)> {
     Some((run.parse().ok()?, rest))
 }
 
-/// A number at the start of `text`: digits, with commas, full stops and spaces between them,
-/// read as one integer. Its value and the text after its last digit.
+/// A number written with digits at the start of `text`, as `LQ-002` reads one: digits, or
+/// digits grouped by commas in threes, such as `1,048,576`. Its value and the text after it.
 fn number(text: &str) -> Option<(u128, &str)> {
-    if !text.starts_with(|c: char| c.is_ascii_digit()) {
+    let run = text.trim_start_matches(|c: char| c.is_ascii_digit() || c == ',');
+    let written = text[..text.len() - run.len()].trim_end_matches(',');
+    if !is_written_number(written) {
         return None;
     }
-    let (mut value, mut last_digit) = (0_u128, 0);
-    for (at, c) in text.char_indices() {
-        if let Some(digit) = c.to_digit(10) {
-            value = value.checked_mul(10)?.checked_add(u128::from(digit))?;
-            last_digit = at + 1;
-        } else if !matches!(c, ',' | '.' | ' ' | '\u{a0}' | '\u{202f}') {
-            break;
-        }
-    }
-    Some((value, &text[last_digit..]))
+    let digits: String = written.chars().filter(char::is_ascii_digit).collect();
+    Some((digits.parse().ok()?, &text[written.len()..]))
 }

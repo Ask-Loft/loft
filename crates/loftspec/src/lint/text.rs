@@ -196,3 +196,35 @@ pub(super) fn occurrences(tokens: &[String], lexicon: &[Vec<String>]) -> usize {
         .map(|phrase| phrase_positions(tokens, phrase).len())
         .sum()
 }
+
+/// Whether `text` is a number written with digits: digits alone, or digits grouped by commas in
+/// threes after a lead group of one to three digits, such as `65,536`. A full stop or a space
+/// separates no group.
+pub(super) fn is_written_number(text: &str) -> bool {
+    let digits = |text: &str| !text.is_empty() && text.chars().all(|c| c.is_ascii_digit());
+    let grouped = text.split_once(',').is_some_and(|(lead, groups)| {
+        (1..=3).contains(&lead.len())
+            && digits(lead)
+            && groups
+                .split(',')
+                .all(|group| group.len() == 3 && digits(group))
+    });
+    digits(text) || grouped
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_written_number;
+
+    #[test]
+    fn a_written_number_is_digits_or_comma_groups_of_three() {
+        for written in ["65536", "65,536", "1,048,576", "1"] {
+            assert!(is_written_number(written), "{written}");
+        }
+        for other in [
+            "", "1.024", "1 000", "1,0000", "1000,000", ",000", "1,", "one",
+        ] {
+            assert!(!is_written_number(other), "{other}");
+        }
+    }
+}

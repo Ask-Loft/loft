@@ -81,9 +81,15 @@ fn a_term_whose_alias_is_a_decimal_unit_settles_the_document() {
 
 #[test]
 fn only_a_lowercase_s_makes_a_term_s_name_plural() {
-    for name in ["KBS", "TBS", "MBS"] {
+    for (name, definition) in [
+        ("KBS", "1,000 bytes."),
+        ("MBS", "1,000,000 bytes."),
+        ("TBS", "1,000,000,000,000 bytes."),
+    ] {
         let mut document = beside_binary("A page holds 5 MB.");
-        document.terms.push(term(65, name, &[]));
+        let mut entry = term(65, name, &[]);
+        entry.definition = definition.to_owned();
+        document.terms.push(entry);
         assert_eq!(named(&document), one(FEATURE, "MB"), "{name}");
     }
 }
@@ -190,7 +196,12 @@ fn a_term_named_after_a_unit_settles_only_where_its_definition_names_or_counts_i
         document.terms.push(entry);
         assert_eq!(named(&document), one(FEATURE, "MB"), "{definition}");
     }
-    for definition in ["A kilobyte: 1,000 bytes.", "1,024 bytes.", "Kilobytes."] {
+    for definition in [
+        "A kilobyte: 1,000 bytes.",
+        "1,024 bytes.",
+        "Kilobytes.",
+        "Exactly 1,000 bytes.",
+    ] {
         let mut document = beside_binary("A page holds 5 MB.");
         let mut entry = term(65, "KB", &[]);
         entry.definition = definition.to_owned();
@@ -243,5 +254,82 @@ fn a_narrow_no_break_space_before_a_defined_unit_keeps_its_clause_open() {
         for document in with_text(text) {
             assert!(byte_units(&document).is_empty(), "{text}");
         }
+    }
+}
+
+#[test]
+fn a_term_settles_only_where_the_full_name_or_the_value_opens_its_definition() {
+    for (name, definition) in [
+        (
+            "MB",
+            "The message broker. It rejects payloads over 1,048,576 bytes.",
+        ),
+        (
+            "KB",
+            "The knowledge base; each article holds at most 1,000 bytes.",
+        ),
+        (
+            "KB",
+            "The knowledge base the support agent searches; articles stay under one kilobyte.",
+        ),
+    ] {
+        let mut document = beside_binary("A page holds 5 MB.");
+        let mut entry = term(65, name, &[]);
+        entry.definition = definition.to_owned();
+        document.terms.push(entry);
+        assert!(
+            named(&document).contains(&one(FEATURE, "MB")[0]),
+            "{definition}"
+        );
+    }
+    let mut document = beside_binary("A page holds 5 MB.");
+    let mut entry = term(65, "MB", &[]);
+    entry.definition = "A megabyte: 1,000,000 bytes.".to_owned();
+    document.terms.push(entry);
+    assert_eq!(byte_units(&document), Vec::<Finding>::new());
+}
+
+#[test]
+fn a_count_is_digits_comma_groups_of_three_or_a_power() {
+    for text in [
+        "1 MB = 1.000.000 bytes.",
+        "1 MB = 1 000 000 bytes.",
+        "A KB is 1.024 bytes.",
+        "1 kB = 10.24 bytes.",
+        "1 MB = 1,0000,00 bytes.",
+        "1 MB = 1000,000 bytes.",
+    ] {
+        for document in with_text(text) {
+            assert!(named(&document).contains(&one(FEATURE, "MB")[0]), "{text}");
+        }
+    }
+    for text in [
+        "1 MB = 1000000 bytes.",
+        "1 MB = 1,000,000 bytes.",
+        "1 MB = 2^20 bytes.",
+    ] {
+        for document in with_text(text) {
+            assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{text}");
+        }
+    }
+}
+
+#[test]
+fn a_range_or_a_leading_dot_after_a_mark_begins_no_quantity() {
+    for written in [
+        "example.com/get?size=.5MB",
+        "?range=4-16MB",
+        "files/2024-512MB.bin",
+        "an arm64-16GB instance",
+    ] {
+        let document = beside_binary(&format!("Download {written} first."));
+        assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{written}");
+    }
+}
+
+#[test]
+fn a_parenthesis_on_the_next_list_item_defines_nothing() {
+    for document in with_text("- Limit: 1 MB\n- (1,000,000 bytes)") {
+        assert!(named(&document).contains(&one(FEATURE, "MB")[0]));
     }
 }

@@ -35,10 +35,10 @@ const DECIMAL_NAMES: [&str; 4] = ["kilobyte", "megabyte", "gigabyte", "terabyte"
 const DEFINING: [&str; 7] = ["=", ":", "is", "means", "equals", "denotes", "stands for"];
 /// The words that may stand between the opening of a clause and the unit it defines.
 const LEADERS: [&str; 5] = ["1", "one", "a", "an", "the"];
-/// The marks after which a clause opens, beside the start of the text; a line break starts a
-/// paragraph, a list item or a heading in the text shown.
 /// The spaces that may stand between the opening of a clause, a leader and the unit.
 const SPACES: [char; 4] = [' ', '\t', '\u{a0}', '\u{202f}'];
+/// The marks after which a clause opens, beside the start of the text; a line break starts a
+/// paragraph, a list item or a heading in the text shown.
 const CLAUSE_MARKS: [char; 8] = ['\n', '.', '!', '?', ':', ';', ',', '('];
 
 /// What one element's texts say about byte units.
@@ -159,16 +159,27 @@ fn node_use(item: &Item<'_>) -> Use {
 }
 
 /// Whether `term`, named after a decimal unit by its name or an alias, has a definition that
-/// names the unit's full name or gives its value as a count of bytes.
+/// opens on the unit's full name or on its value as a count of bytes, after at most one of
+/// `LEADERS` or `exactly`.
 fn term_settles(term: &TermEntry) -> bool {
     let names = std::iter::once(&term.name).chain(&term.aliases);
     let mut powers = names.filter_map(|name| named_power(name)).peekable();
     if powers.peek().is_none() {
         return false;
     }
-    let definition = plain(&term.definition);
-    let full: Vec<u32> = full_names(&definition).iter().map(|&(.., k)| k).collect();
-    powers.any(|k| full.contains(&k) || count::holds_value(&definition, k))
+    let shown = plain(&term.definition);
+    let opening = shown.trim_start();
+    let opening = (LEADERS.iter().chain(&["exactly"]))
+        .find_map(|leader| {
+            let after = strip_prefix_ignoring_case(opening, leader)?;
+            after
+                .starts_with(SPACES)
+                .then(|| after.trim_start_matches(SPACES))
+        })
+        .unwrap_or(opening);
+    let full =
+        (full_names(opening).into_iter()).find_map(|(start, _, k)| (start == 0).then_some(k));
+    powers.any(|k| full == Some(k) || count::gives_value(opening, k))
 }
 
 /// The power of the decimal unit a term's name is, by its symbol or its full name, in either
@@ -216,26 +227,37 @@ fn is_word(c: char) -> bool {
 }
 
 /// Whether the unit at `at` follows a number, with nothing, one space, one no-break space (wide
-/// or narrow, as `number` reads inside a number) or one hyphen between them, where the number
-/// starts a word outside a web address.
+/// or narrow) or one hyphen between them, where the number lies outside a web address and comes
+/// right after none of a letter, a digit or one of `_ / . - = ? & #`. A range such as `4-16 MB`
+/// and a decimal such as `.5 MB` begin a quantity all the same, where the number before the `-`,
+/// or the `.` itself, comes after none of those.
 fn is_quantity(text: &str, at: usize) -> bool {
     let head = &text[..at];
     let head = head
         .strip_suffix([' ', '\u{a0}', '\u{202f}', '-'])
         .unwrap_or(head);
+    let (before, number) = split_number(head);
+    let range = before.strip_suffix('-').is_some_and(|rest| {
+        let (earlier, first) = split_number(rest);
+        !first.is_empty() && !blocked(earlier)
+    });
+    let decimal = before.strip_suffix('.').is_some_and(|rest| !blocked(rest));
+    number.ends_with(|c: char| c.is_ascii_digit())
+        && (range || decimal || !blocked(before))
+        && !in_web_address(text, before.len())
+}
+
+/// `head` cut before the number that ends it: digits with commas and full stops between them,
+/// starting on a digit. The number is empty where `head` ends on none.
+fn split_number(head: &str) -> (&str, &str) {
     let run = head.trim_end_matches(|c: char| c.is_ascii_digit() || matches!(c, ',' | '.'));
     let number = head[run.len()..].trim_start_matches([',', '.']);
-    let before = &head[..head.len() - number.len()];
-    let range = before
-        .strip_suffix('-')
-        .is_some_and(|rest| rest.ends_with(|c: char| c.is_ascii_digit()));
-    let decimal = before
-        .strip_suffix('.')
-        .is_some_and(|rest| !rest.ends_with(is_word));
-    let blocked = before.ends_with(|c: char| is_word(c) || "/.-=?&#".contains(c));
-    number.ends_with(|c: char| c.is_ascii_digit())
-        && (range || decimal || !blocked)
-        && !in_web_address(text, before.len())
+    (&head[..head.len() - number.len()], number)
+}
+
+/// Whether a number right after `before` begins no quantity.
+fn blocked(before: &str) -> bool {
+    before.ends_with(|c: char| is_word(c) || "/.-=?&#".contains(c))
 }
 
 /// Whether the word around `at` is a web address.
@@ -257,7 +279,7 @@ fn defines_decimal(text: &str, units: &[(usize, &'static str)]) -> bool {
         .map(|&(at, unit)| (at, at + unit.len(), symbol_power(unit)));
     let mut spans = symbols.chain(full_names(text));
     spans.any(|(start, end, k)| {
-        let rest = text[end..].trim_start();
+        let rest = text[end..].trim_start_matches(SPACES);
         match rest.strip_prefix('(') {
             Some(inside) => count::gives_value(inside.trim_start(), k),
             None => opens_clause(&text[..start]) && defined_after_word(rest, k),

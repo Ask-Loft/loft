@@ -6874,17 +6874,14 @@ links:
         name: "a_number_inside_a_web_address_or_after_a_path_mark_begins_no_quantity"
         body: 57c77d06e59512c2687e7886096a8b6dc867d66ed67977814d9baf5693fbabd9
   - node: 01a214b5-d973-7194-bf7e-adf2021955c3
-    reviewed: c475fe4f5407ccd9fb9a5e95e2e401d3e22bd399373262e12774c94e67e15c70
+    reviewed: 0ae6ae4a256acca219feb1273d1d87b82b7a735a27185b8ae3c375596ea4f780
     tests:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_quantity_takes_nothing_one_space_one_no_break_space_or_one_hyphen_before_its_unit"
         body: dee250f82ec37b0363d143aa87af23a81df35c9d81a54f086057abc46d5817fa
-  - node: 01a21358-4147-72be-a72f-0d0fc0b9991c
-    reviewed: 05c11efca212dad62af808e1279cdb78e430a14f480cedfef43b4bbb71a9d1bb
-    tests:
-      - file: "crates/loftspec/tests/lint_byte_units.rs"
-        name: "a_quality_attribute_whose_unit_is_a_byte_unit_states_a_quantity_in_it"
-        body: 436a03cf7795d02c88a5bb5618ba1e3373bbd59a92e4f61eed0f8b17cf5e3a4c
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_range_or_a_leading_dot_after_a_mark_begins_no_quantity"
+        body: 4d6d52af026e7bb8416be2ea5209d4fcf59a0ec4aee23f2f58f884cf0db1632f
   - node: 01a21358-4147-72be-a72f-0d104b2a340f
     reviewed: 08e0a11908c75e0b9e10df7920ad1ff550a6aa0629702086bc90f6ab357527bd
     tests:
@@ -6947,7 +6944,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_decimal_unit_given_as_a_count_of_bytes_settles_the_document"
-        body: 8fa6203d2686697a7b0246cd1cc2a8527f72b200ed1f7c40592ca47a8c6f25fa
+        body: dfc1a014c5fcfd3891fd52ff8a544e15a7e10cd34342f3a2eca71e28d3f81aea
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_power_of_any_base_is_a_count_of_bytes"
         body: 1221d774cfa54b6d5843c4d44aaf888556cf0d907caad50a599e4c5ab3c3d6aa
@@ -6963,6 +6960,15 @@ links:
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_parenthesis_right_after_the_unit_needs_no_clause_opening"
         body: e7801ab071c12d77f4913e7c751229db6b48241842c7c2009401fc7f2640e772
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_parenthesis_on_the_next_list_item_defines_nothing"
+        body: 0643939d5a5e9236593993dffcbcf570939a36ec716df324c485f1f5fd1ab185
+  - node: 01a21698-e527-74e5-8471-b2bbcea22833
+    reviewed: bc37575be1ae3a0bc93170f461651c50164018c30476fa2dd66054dc3bc43284
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_count_is_digits_comma_groups_of_three_or_a_power"
+        body: b56c454b793a33c4c48862ed5d260694538da593ad7f7dfadae30f20bff98cba
   - node: 01a214b5-d973-7194-bf7e-adf3d86c4219
     reviewed: 2ab5ca6f6f703d43e4de24b46ed990fa8c183ce821ff731230ee48e8dab1be72
     tests:
@@ -7004,28 +7010,31 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_settles_the_document"
-        body: a0b34f57d6b493036b3b7fc719dcb11d731e7ae107c7b087163b0bc90c0b6000
+        body: a419ade708015b565baeed16084c45e2d21b3792a6b6950715e0bc06681bcde3
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_in_the_plural_settles_the_document"
-        body: 2865e51ca84b2ac0ee8f323c86be7ed64ac76b95fdd77460c6c34c764a8bfb8d
+        body: fee1d615876f8507002e097b7a8a541e38503fb66e2d861643e4c6b1857e68a4
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_whose_alias_is_a_decimal_unit_settles_the_document"
         body: 1662e2a5a7e928c1d7e0c6dabbafde608d9a6b7857fdcc1a8ff6b7dc41376445
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "only_a_lowercase_s_makes_a_term_s_name_plural"
-        body: c59ed17e93e7cd02a9d8b31cd5da27de87605ae5096e739e708e63a016473096
+        body: 94a0c1565507a60effa482fcf9e9c6775aabc14b3e73ba63251279b47ad72bc9
   - node: 01a214b5-d973-7194-bf7e-adf55116d7d7
-    reviewed: b0c93984eb82fad538cec8331ac86666993b7ed143b53622ebbecff92a808da8
+    reviewed: c5eb59d8820fa7180a72c03f9282937a91eb74be11d9233938640c9a2c94afd4
     tests:
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_named_after_a_unit_settles_only_where_its_definition_names_or_counts_it"
-        body: 4a4ee5d6da03fa7f415b1d12318b9727f1b1571df5dce298e1c5ce4a0f431876
+        body: 0a72f07c2589e28a0af00a12bed001860962780859e761d46b4f3c34a92a1bc6
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_settles_the_document"
-        body: a0b34f57d6b493036b3b7fc719dcb11d731e7ae107c7b087163b0bc90c0b6000
+        body: a419ade708015b565baeed16084c45e2d21b3792a6b6950715e0bc06681bcde3
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_whose_alias_is_a_decimal_unit_settles_the_document"
         body: 1662e2a5a7e928c1d7e0c6dabbafde608d9a6b7857fdcc1a8ff6b7dc41376445
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_term_settles_only_where_the_full_name_or_the_value_opens_its_definition"
+        body: b2b35fb039db2f8cecf46a8bb14e40a1b660b188296df3871dffc3ceffbef2be
   - node: 01a21358-4147-72be-a72f-0d172df94e9d
     reviewed: 2afd5de5d1c91fa238e4c54f08f7087bc5a8c9acec82381c587766054c76707a
     tests:
@@ -7050,6 +7059,12 @@ links:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_decimal_quantity_beside_a_binary_one_is_one_finding_on_the_decimal_element"
         body: 99f0eb4d36fab743bc4e3c7572bccb2adebdea5161ad213454d381c0fcddcfdb
+  - node: 01a21358-4147-72be-a72f-0d0fc0b9991c
+    reviewed: 05c11efca212dad62af808e1279cdb78e430a14f480cedfef43b4bbb71a9d1bb
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_units.rs"
+        name: "a_quality_attribute_whose_unit_is_a_byte_unit_states_a_quantity_in_it"
+        body: 436a03cf7795d02c88a5bb5618ba1e3373bbd59a92e4f61eed0f8b17cf5e3a4c
   - node: add44f32-26a2-4513-b7aa-9daef87e8a0d
     reviewed: 3668e5999079c9295b1cdeb1c4bf24219069cb3c89ee5a3acb3f45bc5b11eec9
     tests:

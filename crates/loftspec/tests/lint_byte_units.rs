@@ -285,7 +285,7 @@ fn a_decimal_unit_given_as_a_count_of_bytes_settles_the_document() {
         "1 MB = 1,000,000 bytes.",
         "A MB is 1,000,000 bytes.",
         "A MB means 10^6 bytes.",
-        "One MB equals exactly 1 000 000 bytes.",
+        "One MB equals exactly 1,000,000 bytes.",
         "MB denotes 1000000 bytes.",
         "MB stands for 10^6 bytes.",
         "MB (10^6 bytes) is the unit of size.",
@@ -310,7 +310,7 @@ fn a_term_named_after_a_decimal_unit_settles_the_document() {
     for (name, definition) in [
         ("MB", "A megabyte."),
         ("KB", "1,000 bytes."),
-        ("megabyte", "What megabyte means."),
+        ("megabyte", "A megabyte, in decimal."),
         ("Kilobytes", "Kilobytes of 1,024 bytes each."),
     ] {
         let mut document = beside_binary("A page holds 5 MB.");
@@ -411,10 +411,13 @@ fn a_decimal_unit_defined_by_its_full_name_settles_the_document() {
 
 #[test]
 fn a_term_named_after_a_decimal_unit_in_the_plural_settles_the_document() {
-    for name in ["MBs", "KBs"] {
+    for (name, definition) in [
+        ("MBs", "Megabytes, as the name says."),
+        ("KBs", "1,000 bytes."),
+    ] {
         let mut document = beside_binary("A page holds 5 MB.");
         let mut entry = term(65, name, &[]);
-        entry.definition = "Megabytes or kilobytes, as the name says.".to_owned();
+        entry.definition = definition.to_owned();
         document.terms.push(entry);
         assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{name}");
     }
