@@ -165,11 +165,7 @@ fn bury(outbox: &Outbox, entry: &Entry, reason: &str, settled: &mut Settled) {
 
 /// The path of `entry`'s file.
 fn file(outbox: &Outbox, entry: &Entry) -> String {
-    outbox
-        .dir()
-        .join(format!("{}.json", entry.key))
-        .display()
-        .to_string()
+    outbox.path_of(entry).display().to_string()
 }
 
 /// The code of a problem document.

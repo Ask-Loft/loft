@@ -1,7 +1,7 @@
 // The flush of the outbox in the background (the Feature "Flush in the background"): where the
 // `loft` the mod runs speaks the yard protocol that brings `loft yard flush`, the mod runs it
-// without waiting for it after each write of Yard Log it makes, at the session's first beat, and
-// at each later beat while the last flush left work. One flush runs at a time: a write made while
+// without waiting for it after each write of Yard Log it makes, at the session's first beat
+// (`startFlush`), and at each later beat while the last flush left work (`flushAtBeat`). One flush runs at a time: a write made while
 // one runs is followed by one more once it ends. A flush that ends `off` ends them for the rest
 // of the session, and one that still runs 6 minutes after it started is stopped.
 
@@ -26,16 +26,14 @@ export type Flushing = {
   leftWork: boolean
   /** Whether a flush ended `off`, which ends them for the session. */
   off: boolean
-  /** Whether the session's first beat has come. */
-  beaten: boolean
 }
 
 export function flushingOf(): Flushing {
-  return { running: false, again: false, leftWork: false, off: false, beaten: false }
+  return { running: false, again: false, leftWork: false, off: false }
 }
 
 /** Starts `loft yard flush` in `cwd` without waiting for it, unless none may run. */
-export function flush($: EngineInterface, settings: Settings, flushing: Flushing, cwd: string): void {
+export function startFlush($: EngineInterface, settings: Settings, flushing: Flushing, cwd: string): void {
   if (flushing.off || (settings.protocol ?? 0) < FLUSHES) return
   if (flushing.running) {
     flushing.again = true
@@ -52,14 +50,12 @@ export function flush($: EngineInterface, settings: Settings, flushing: Flushing
     flushing.running = false
     if (flushing.again) {
       flushing.again = false
-      flush($, settings, flushing, cwd)
+      startFlush($, settings, flushing, cwd)
     }
   })()
 }
 
-/** At a beat: the session's first beat flushes, and a later one while the last flush left work. */
+/** At a beat after the session's first: flushes while the last flush left work. */
 export function flushAtBeat($: EngineInterface, settings: Settings, flushing: Flushing, cwd: string): void {
-  const first = !flushing.beaten
-  flushing.beaten = true
-  if (first || flushing.leftWork) flush($, settings, flushing, cwd)
+  if (flushing.leftWork) startFlush($, settings, flushing, cwd)
 }

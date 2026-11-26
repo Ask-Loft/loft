@@ -23,10 +23,6 @@ pub(super) struct Flushed {
     pub outcome: &'static str,
     /// The versions Yard Server stored or already held, in every batch of the run.
     pub sent: usize,
-    /// The entries for the address left in the outbox, other than those put off and skipped.
-    pub remaining: usize,
-    /// The entries whose versions Yard Server will take later.
-    pub later: usize,
     /// The entries of a newer format passed over.
     pub skipped: usize,
     /// The files moved into `dead/` in the run.
@@ -49,8 +45,6 @@ impl Flushed {
         Self {
             outcome,
             sent: 0,
-            remaining: 0,
-            later: 0,
             skipped: 0,
             dead: 0,
             failed: Vec::new(),
@@ -66,6 +60,17 @@ impl Flushed {
             failed: vec![failed],
             ..Self::quiet("failed")
         }
+    }
+
+    /// The entries whose versions Yard Server will take later.
+    pub fn later(&self) -> usize {
+        self.put_off.len()
+    }
+
+    /// The entries for the address left in the outbox, other than those put off and skipped.
+    pub fn remaining(&self) -> usize {
+        let put_off = |key: &&String| self.put_off.contains_key(*key);
+        self.waiting.iter().filter(|key| !put_off(key)).count()
     }
 }
 
@@ -111,12 +116,6 @@ pub(super) fn drain(
     } else if flushed.not_before.is_some() {
         flushed.outcome = "paused";
     }
-    flushed.later = flushed.put_off.len();
     flushed.waiting = super::waiting(outbox);
-    flushed.remaining = flushed
-        .waiting
-        .iter()
-        .filter(|key| !flushed.put_off.contains_key(*key))
-        .count();
     flushed
 }

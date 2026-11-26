@@ -20,7 +20,7 @@ use std::time::Duration;
 use loft_ports::clock::Clock as _;
 use serde_json::{Value, json};
 use yardlog::Time;
-use yardlog_store::home::Home;
+use yardlog_store::home::{Home, HomeFile};
 use yardlog_store::lock;
 use yardlog_store::outbox::{self, Outbox};
 
@@ -59,8 +59,8 @@ pub(in crate::yard) struct Connection {
 
 /// Whether connected mode is on, as the environment says.
 pub(in crate::yard) enum Mode {
-    /// A variable is unset or empty.
-    Off,
+    /// A variable is unset or empty: each that is.
+    Off(Vec<&'static str>),
     /// Both variables are set, and no home directory is known to keep the outbox in.
     Homeless,
     On(Connection),
@@ -69,7 +69,11 @@ pub(in crate::yard) enum Mode {
 pub(in crate::yard) fn mode() -> Mode {
     let (Some(endpoint), Some(token)) = (environment::text(ENDPOINT), environment::text(TOKEN))
     else {
-        return Mode::Off;
+        let missing = [ENDPOINT, TOKEN]
+            .into_iter()
+            .filter(|name| environment::text(name).is_none())
+            .collect();
+        return Mode::Off(missing);
     };
     let Some(home) = Home::from_env() else {
         return Mode::Homeless;
@@ -86,7 +90,7 @@ pub(in crate::yard) fn mode() -> Mode {
 pub fn outbox() -> Option<Outbox> {
     match mode() {
         Mode::On(connection) => Some(connection.outbox),
-        Mode::Off | Mode::Homeless => None,
+        Mode::Off(_) | Mode::Homeless => None,
     }
 }
 
@@ -98,10 +102,7 @@ pub(in crate::yard) fn due(mode: &Mode, now: u64) -> bool {
         return false;
     };
     let last = record::read(&connection.home, connection.outbox.endpoint());
-    let paused = last
-        .as_ref()
-        .and_then(|last| last.not_before)
-        .is_some_and(|time| now < time);
+    let paused = last.as_ref().and_then(|last| last.paused(now)).is_some();
     let later = last.map(|last| last.later).unwrap_or_default();
     !paused
         && waiting(&connection.outbox)
@@ -127,7 +128,7 @@ fn wait() -> Result<Duration, String> {
 pub fn run(args: &FlushArgs) -> Finished {
     let as_json = args.output.json();
     let connection = match mode() {
-        Mode::Off => return report(as_json, &Flushed::quiet("off"), "Connected mode is off."),
+        Mode::Off(_) => return report(as_json, &Flushed::quiet("off"), "Connected mode is off."),
         Mode::Homeless => {
             let why = format!(
                 "{ENDPOINT} and {TOKEN} are set, but no home directory is known to keep the outbox in"
@@ -152,8 +153,8 @@ pub fn run(args: &FlushArgs) -> Finished {
         "{} to Yard Server at {endpoint}: {} sent, {} remaining, {} later, {} skipped, {} moved into dead/.",
         flushed.outcome,
         flushed.sent,
-        flushed.remaining,
-        flushed.later,
+        flushed.remaining(),
+        flushed.later(),
         flushed.skipped,
         flushed.dead
     );
@@ -175,8 +176,8 @@ fn locked(connection: &Connection) -> Flushed {
     let clock = super::clock();
     let endpoint = connection.outbox.endpoint();
     let now = clock.now().unwrap_or_default();
-    let pause = record::read(&connection.home, endpoint).and_then(|record| record.not_before);
-    if let Some(time) = pause.filter(|time| now < *time) {
+    let pause = record::read(&connection.home, endpoint).and_then(|record| record.paused(now));
+    if let Some(time) = pause {
         return Flushed {
             not_before: Some(time),
             ..Flushed::quiet("paused")
@@ -201,7 +202,7 @@ fn locked(connection: &Connection) -> Flushed {
     if let Err(error) = record::replace(&connection.home, endpoint, &run, &flushed.waiting) {
         flushed.failed.push(Failed::outbox(format!(
             "{} cannot be written: {error}",
-            connection.home.dir().join("flush.json").display()
+            connection.home.path(HomeFile::Flush).display()
         )));
         flushed.outcome = "failed";
     }
@@ -221,8 +222,8 @@ fn waiting(outbox: &Outbox) -> BTreeSet<String> {
 fn report(as_json: bool, flushed: &Flushed, line: &str) -> Finished {
     let fields = json!({
         "sent": flushed.sent,
-        "remaining": flushed.remaining,
-        "later": flushed.later,
+        "remaining": flushed.remaining(),
+        "later": flushed.later(),
         "skipped": flushed.skipped,
         "dead": flushed.dead,
     });

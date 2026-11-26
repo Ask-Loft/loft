@@ -62,7 +62,7 @@ fn a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_
     let flushed = drain(&outbox, software_plant::yard_server::TOKEN, WAIT, &clock);
     assert_eq!(server.requests().len(), 2);
     assert_eq!(flushed.outcome, "sent");
-    assert_eq!((flushed.sent, flushed.remaining), (32, 8));
+    assert_eq!((flushed.sent, flushed.remaining()), (32, 8));
     fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
@@ -76,7 +76,7 @@ fn a_run_with_time_to_spare_sends_every_batch() {
     };
     let flushed = drain(&outbox, software_plant::yard_server::TOKEN, WAIT, &clock);
     assert_eq!(server.requests().len(), 3);
-    assert_eq!((flushed.sent, flushed.remaining), (40, 0));
+    assert_eq!((flushed.sent, flushed.remaining()), (40, 0));
     fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
@@ -128,7 +128,7 @@ fn a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went() 
     assert_eq!(flushed.outcome, "paused");
     assert_eq!(flushed.sent, 16);
     assert_eq!(flushed.not_before, Some(60));
-    assert_eq!(flushed.remaining, 4);
+    assert_eq!(flushed.remaining(), 4);
     fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
@@ -243,7 +243,7 @@ fn a_flush_is_due_once_an_entry_for_the_address_waits() {
 
 #[test]
 fn no_flush_is_due_without_connected_mode() {
-    assert!(!super::due(&super::Mode::Off, 0));
+    assert!(!super::due(&super::Mode::Off(Vec::new()), 0));
     assert!(!super::due(&super::Mode::Homeless, 0));
 }
 

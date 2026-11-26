@@ -156,6 +156,7 @@ fn a_timeout_that_is_not_a_positive_whole_number_of_seconds_fails_with_no_reques
             "{message}"
         );
         assert_eq!(server.requests().len(), 0, "{value}");
+        assert_eq!(failed["remaining"], 1, "{value}");
     }
 }
 

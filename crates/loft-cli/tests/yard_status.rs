@@ -2,9 +2,7 @@
 //! why. It reads the outbox, `dead/` and `~/.yard/flush.json`, makes no request, writes nothing
 //! and exits 0 whatever it finds.
 
-use std::collections::BTreeMap;
 use std::fs;
-use std::path::{Path, PathBuf};
 use std::process::Output;
 
 use serde_json::{Value, json};
@@ -12,6 +10,7 @@ use software_plant::yard_server::TOKEN;
 use software_plant::{Clock, YardServer};
 
 use crate::common::{EPOCH, Scratch};
+use crate::snapshot::snapshot;
 use crate::yard::{Yard, document};
 use crate::yard_connected::{STAGE_BATCH, connected, flush, notes, outbox, pairs, write};
 
@@ -45,23 +44,6 @@ fn line(output: &Output, key: &str) -> String {
         .into_iter()
         .find(|line| line.starts_with(&format!("{key}: ")))
         .unwrap_or_else(|| panic!("no line {key}: in {:?}", lines(output)))
-}
-
-/// Every file under `dir`, by path, with its bytes.
-fn files(dir: &Path) -> BTreeMap<PathBuf, Vec<u8>> {
-    let mut found = BTreeMap::new();
-    let Ok(listing) = fs::read_dir(dir) else {
-        return found;
-    };
-    for entry in listing {
-        let path = entry.unwrap().path();
-        if path.is_dir() {
-            found.extend(files(&path));
-        } else {
-            found.insert(path.clone(), fs::read(&path).unwrap());
-        }
-    }
-    found
 }
 
 /// Puts the file `name` into `dead/`, with `reason` beside it where one is given.
@@ -344,12 +326,12 @@ fn status_exits_0_makes_no_request_and_changes_no_file_whatever_it_finds() {
     flush(&yard, &variables);
     dead(&yard, "a.json", Some("conflict"));
     let home = yard.scratch.home().join(".yard");
-    let before = files(&home);
+    let before = snapshot(&home);
     let requests = failing.requests().len();
     let (text, _) = status(&yard, &variables);
     assert_eq!(text.status.code(), Some(0));
     assert_eq!(failing.requests().len(), requests);
-    assert_eq!(files(&home), before);
+    assert_eq!(snapshot(&home), before);
 }
 
 #[test]

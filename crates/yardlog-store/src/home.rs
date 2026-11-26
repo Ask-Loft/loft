@@ -109,10 +109,16 @@ impl Home {
         self.dir.join(file.name())
     }
 
-    /// The outbox of versions not yet sent to the Yard Server at `endpoint`, `outbox/`.
+    /// The directory of the outbox of versions not yet sent to Yard Server, `outbox/`.
+    #[must_use]
+    pub fn outbox_dir(&self) -> PathBuf {
+        self.dir.join("outbox")
+    }
+
+    /// The outbox of versions not yet sent to the Yard Server at `endpoint`.
     #[must_use]
     pub fn outbox(&self, endpoint: &str) -> Outbox {
-        Outbox::new(self.dir.join("outbox"), endpoint)
+        Outbox::new(self.outbox_dir(), endpoint)
     }
 
     /// A session's event log, `events/<session id>.jsonl`.

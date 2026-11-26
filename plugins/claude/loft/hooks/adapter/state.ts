@@ -9,7 +9,7 @@ import type { EngineInterface, PluginOptions } from 'claude-code'
 import { settingsOf, type Ran, type Settings } from '../loft'
 import { relativeTo } from '../model'
 import { HOST, type descriptor } from './contract'
-import { flush, flushingOf, WRITES, type Flushing } from './flushing'
+import { flushingOf, startFlush, WRITES, type Flushing } from './flushing'
 import { outboxOf, type Outbox } from './outbox'
 import { pageOf, type Asker } from './log'
 import { callerArgs, succeeded, yard, type Caller } from './run'
@@ -118,7 +118,7 @@ export function askerOf(caller: Caller): Asker {
  */
 export async function run($: EngineInterface, cwd: string, args: readonly string[], stdin?: string): Promise<Ran> {
   const ran = await yard($, state.settings, cwd, args, stdin === undefined ? {} : { stdin })
-  if (state.isOn && succeeded(ran) && WRITES.has(args[0] ?? '')) flush($, state.settings, state.flushing, cwd)
+  if (state.isOn && succeeded(ran) && WRITES.has(args[0] ?? '')) startFlush($, state.settings, state.flushing, cwd)
   const url = pageOf(ran.doc)
   // Written only when it changes: every dialog and pane that shows it is drawn again on a write.
   if (url && url !== (await read($, page))) await update($, page, () => url)

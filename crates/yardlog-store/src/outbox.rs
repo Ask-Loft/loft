@@ -96,7 +96,7 @@ impl Outbox {
         fs::create_dir_all(&self.dir).map_err(io_error(&self.dir))?;
         let text = entry::write(&self.endpoint, record);
         Ok(replace_synced(
-            &self.dir.join(format!("{key}.json")),
+            &self.dir.join(file_of(&key.to_string())),
             text.as_bytes(),
             false,
         )?)
@@ -166,13 +166,15 @@ impl Outbox {
             full: false,
         };
         for (name, size) in listed(&self.dir)? {
+            if passed.contains(key_of(&name)) {
+                continue;
+            }
             let path = self.dir.join(&name);
             // Gone since the listing, sent or moved by another run, or not readable at all.
             let Ok(Some(text)) = read_if_present(&path) else {
                 continue;
             };
             match entry::read(&text) {
-                Read::Entry { .. } if passed.contains(&key_of(&name)) => {}
                 Read::Entry { endpoint, record } if endpoint == self.endpoint => {
                     taken.waiting += 1;
                     room.take(&mut taken.entries, &name, record, size);
@@ -187,6 +189,12 @@ impl Outbox {
         Ok(taken)
     }
 
+    /// The path of `entry`'s file.
+    #[must_use]
+    pub fn path_of(&self, entry: &Entry) -> PathBuf {
+        self.dir.join(file_of(&entry.key))
+    }
+
     /// Moves `entry` into `dead/`, beside a `.reason` file that holds `reason`: whether it was
     /// there to move.
     ///
@@ -194,7 +202,7 @@ impl Outbox {
     ///
     /// The entry is there and cannot be moved, or its reason cannot be written.
     pub fn bury(&self, entry: &Entry, reason: &str) -> Result<bool, YardStoreError> {
-        self.bury_file(&format!("{}.json", entry.key), reason)
+        self.bury_file(&file_of(&entry.key), reason)
     }
 
     /// Removes `entries` from the outbox; one already gone is no error.
@@ -204,7 +212,7 @@ impl Outbox {
     /// An entry is there and cannot be removed.
     pub fn remove(&self, entries: &[Entry]) -> Result<(), YardStoreError> {
         for taken in entries {
-            remove_if_present(&self.dir.join(format!("{}.json", taken.key)))?;
+            remove_if_present(&self.path_of(taken))?;
         }
         Ok(())
     }
@@ -250,7 +258,7 @@ impl Room {
         if !self.full {
             self.bytes += size;
             entries.push(Entry {
-                key: key_of(name),
+                key: key_of(name).to_owned(),
                 record: record.to_owned(),
             });
         }
@@ -273,7 +281,7 @@ pub fn survey(dir: &Path) -> Result<Survey, YardStoreError> {
                 .waiting
                 .entry(endpoint.clone())
                 .or_default()
-                .push(key_of(&name)),
+                .push(key_of(&name).to_owned()),
             Read::Newer => survey.newer += 1,
             Read::Foreign => {}
         }
@@ -296,22 +304,10 @@ pub struct Dead {
 /// `dead/` is there and cannot be listed.
 pub fn dead(dir: &Path) -> Result<Vec<Dead>, YardStoreError> {
     let dead = dir.join(DEAD);
-    let listing = match fs::read_dir(&dead) {
-        Ok(listing) => listing,
-        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(Vec::new()),
-        Err(error) => return Err(io_error(&dead)(error).into()),
-    };
     let suffix = format!(".{REASON}");
-    let mut names: Vec<String> = listing
-        .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_file()))
-        .filter_map(|entry| entry.file_name().into_string().ok())
-        .filter(|name| !name.ends_with(&suffix) && !name.starts_with('.'))
-        .collect();
-    names.sort();
-    Ok(names
+    Ok(files(&dead, |name| !name.ends_with(&suffix))?
         .into_iter()
-        .map(|file| {
+        .map(|(file, _)| {
             let reason = fs::read_to_string(dead.join(format!("{file}{suffix}")))
                 .ok()
                 .and_then(|text| text.lines().next().map(str::to_owned))
@@ -322,13 +318,29 @@ pub fn dead(dir: &Path) -> Result<Vec<Dead>, YardStoreError> {
 }
 
 /// The version key an entry file is named by.
-fn key_of(name: &str) -> String {
-    name.trim_end_matches(".json").to_owned()
+fn key_of(name: &str) -> &str {
+    name.strip_suffix(".json").unwrap_or(name)
+}
+
+/// The name of the entry file of the version `key`.
+fn file_of(key: &str) -> String {
+    format!("{key}.json")
 }
 
 /// The files in `dir` that may be entries, in order, each with its size from the listing: those
 /// ending in `.json`, and not a temporary file, whose name starts with `.`.
 fn listed(dir: &Path) -> Result<Vec<(String, u64)>, YardStoreError> {
+    files(dir, |name| {
+        Path::new(name)
+            .extension()
+            .is_some_and(|extension| extension == "json")
+    })
+}
+
+/// The files in `dir` whose names `keep` keeps, in the order of their names, each with its size
+/// from the listing; a temporary file, whose name starts with `.`, never; none where `dir` is not
+/// there.
+fn files(dir: &Path, keep: impl Fn(&str) -> bool) -> Result<Vec<(String, u64)>, YardStoreError> {
     let listing = match fs::read_dir(dir) {
         Ok(listing) => listing,
         Err(error) if error.kind() == ErrorKind::NotFound => return Ok(Vec::new()),
@@ -339,11 +351,7 @@ fn listed(dir: &Path) -> Result<Vec<(String, u64)>, YardStoreError> {
         .filter_map(|entry| {
             let metadata = entry.metadata().ok().filter(fs::Metadata::is_file)?;
             let name = entry.file_name().into_string().ok()?;
-            let entry_file = Path::new(&name)
-                .extension()
-                .is_some_and(|extension| extension == "json")
-                && !name.starts_with('.');
-            entry_file.then_some((name, metadata.len()))
+            (keep(&name) && !name.starts_with('.')).then_some((name, metadata.len()))
         })
         .collect();
     names.sort();

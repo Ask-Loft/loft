@@ -27,6 +27,15 @@ pub struct Record {
     pub later: BTreeMap<String, String>,
 }
 
+impl Record {
+    /// The time Yard Server asked the flush not to come back before, where it has not come by
+    /// `now`, in seconds since the Unix epoch.
+    #[must_use]
+    pub fn paused(&self, now: u64) -> Option<u64> {
+        self.not_before.filter(|time| now < *time)
+    }
+}
+
 /// What a run that replaces its address's record did.
 pub struct Run<'a> {
     pub ended: u64,

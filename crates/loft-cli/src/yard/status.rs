@@ -16,7 +16,6 @@ use yardlog_store::outbox::{self, Survey};
 use super::args::StatusArgs;
 use super::flush::record::{self, Record};
 use super::flush::{self, ENDPOINT, Mode, TOKEN};
-use crate::environment;
 use crate::finish::Finished;
 use crate::json;
 use crate::network;
@@ -24,9 +23,6 @@ use crate::out::outln;
 
 const SCHEMA: &str = "loft-yard-status/1";
 const OUTCOME: &str = "reported";
-
-/// The directory `outbox/` names under the home of Yard.
-const OUTBOX: &str = "outbox";
 
 /// Whether connected mode is on, and where it is not, why.
 enum Connected {
@@ -74,13 +70,7 @@ fn report() -> Report {
     let now = super::clock().now().unwrap_or_default();
     let home = Home::from_env();
     let (connected, last) = match flush::mode() {
-        Mode::Off => {
-            let missing = [ENDPOINT, TOKEN]
-                .into_iter()
-                .filter(|name| environment::text(name).is_none())
-                .collect();
-            (Connected::Off(missing), None)
-        }
+        Mode::Off(missing) => (Connected::Off(missing), None),
         Mode::Homeless => (Connected::Homeless, None),
         Mode::On(connection) => {
             let endpoint = connection.outbox.endpoint().to_owned();
@@ -89,7 +79,7 @@ fn report() -> Report {
             (Connected::On { endpoint, refused }, last)
         }
     };
-    let dir = home.map(|home| home.dir().join(OUTBOX));
+    let dir = home.map(|home| home.outbox_dir());
     let survey = dir
         .as_deref()
         .and_then(|dir| outbox::survey(dir).ok())
@@ -228,7 +218,7 @@ fn last_line(last: Option<&Record>, now: u64) -> String {
     if let Some(why) = &last.why {
         line = format!("{line}: {why}");
     }
-    if let Some(after) = last.not_before.filter(|after| now < *after) {
+    if let Some(after) = last.paused(now) {
         line = format!(
             "{line}; Yard Server asked to come back after {}",
             time(after)
