@@ -241,11 +241,10 @@ fn fields(report: &Report) -> Value {
             (true, Vec::new(), *refused)
         }
     };
-    let home = report.home_known;
     fields.insert("connected".to_owned(), json!(connected));
     fields.insert("missing".to_owned(), json!(missing));
     fields.insert("refused".to_owned(), json!(refused));
-    fields.insert("homeKnown".to_owned(), json!(home));
+    fields.insert("homeKnown".to_owned(), json!(report.home_known));
     let waiting = &report.waiting;
     let by_address: Vec<Value> = waiting
         .by_address

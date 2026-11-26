@@ -3,8 +3,6 @@
 
 use std::fs;
 
-use serde_json::json;
-
 use yardlog::batch::{MOST_BYTES, MOST_RECORDS};
 use yardlog_store::outbox::{self, DEAD};
 
@@ -98,12 +96,8 @@ fn a_file_that_is_not_an_entry_is_moved_into_dead_with_the_reason_not_an_entry()
 fn an_entry_whose_record_holds_no_version_key_is_moved_into_dead_and_the_others_are_taken() {
     let scratch = Scratch::new();
     put(&scratch, ENDPOINT, 1, 10);
-    let keyless = json!({
-        "format": "yardlog-outbox/1",
-        "to": {"endpoint": ENDPOINT},
-        "record": {"record": "version", "id": "2", "version": {}},
-    });
-    scratch.put(&format!(".yard/outbox/{}", name(2)), &keyless.to_string());
+    let keyless = yardlog::entry::write(ENDPOINT, r#"{"record":"version","id":"2","version":{}}"#);
+    scratch.put(&format!(".yard/outbox/{}", name(2)), &keyless);
     put(&scratch, ENDPOINT, 3, 10);
     assert_eq!(taken(&scratch), [key(1), key(3)]);
     assert_eq!(

@@ -152,9 +152,12 @@ pub fn run(args: &FlushArgs) -> Finished {
             );
             return report(as_json, &busy, &line);
         }
-        Err(error) => Flushed::failed(Failed::outbox(format!(
-            "the lock of the flush cannot be taken: {error}"
-        ))),
+        Err(error) => Flushed {
+            waiting: waiting(&connection.outbox),
+            ..Flushed::failed(Failed::outbox(format!(
+                "the lock of the flush cannot be taken: {error}"
+            )))
+        },
     };
     let mut line = format!(
         "{} to Yard Server at {endpoint}: {} sent, {} remaining, {} later, {} skipped, {} moved into dead/.",
@@ -193,11 +196,10 @@ fn locked(connection: &Connection) -> Flushed {
     }
     let mut flushed = match wait() {
         Ok(wait) => sending::drain(&connection.outbox, &connection.token, wait, clock),
-        Err(why) => {
-            let mut flushed = Flushed::failed(Failed::yard_server(why));
-            flushed.waiting = waiting(&connection.outbox);
-            flushed
-        }
+        Err(why) => Flushed {
+            waiting: waiting(&connection.outbox),
+            ..Flushed::failed(Failed::yard_server(why))
+        },
     };
     let run = record::Run {
         ended: clock.now().unwrap_or(now),

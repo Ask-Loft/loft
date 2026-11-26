@@ -64,8 +64,13 @@ pub fn read(bytes: &[u8]) -> Read<'_> {
 /// Whether `record` is an object that holds its version's key, as each record of a batch must:
 /// Yard Server refuses a whole batch where one record's key does not read.
 fn keyed(record: &str) -> bool {
-    serde_json::from_str::<serde_json::Value>(record)
-        .ok()
-        .and_then(|record| record.get("version")?.get("key")?.as_str().map(drop))
-        .is_some()
+    field_of(record, "version")
+        .and_then(|version| field_of(version, "key"))
+        .is_some_and(|key| key.starts_with('"'))
+}
+
+/// The text of the field `name` of the JSON object `text`, read without reading its values.
+fn field_of<'a>(text: &'a str, name: &str) -> Option<&'a str> {
+    let fields: BTreeMap<String, &'a RawValue> = serde_json::from_str(text).ok()?;
+    fields.get(name).copied().map(RawValue::get)
 }

@@ -39833,7 +39833,7 @@ links:
     tests:
       - file: "crates/yardlog-store/tests/outbox_batches.rs"
         name: "an_entry_whose_record_holds_no_version_key_is_moved_into_dead_and_the_others_are_taken"
-        body: 213816da666aa65d3f1d10c10ab6d51dd5f03411042fd7272a2337319fd64095
+        body: 0cb3251b3f405d2caf0f6643c09b0a92e03037a117d01cf512ec5e6b4fefd517
       - file: "crates/yardlog-store/tests/outbox_batches.rs"
         name: "a_file_that_is_not_an_entry_is_moved_into_dead_with_the_reason_not_an_entry"
         body: 615bdce42364108bb4eab45753a51c022f90fb171c0e0ea12da4f39f3fe4e0e0
