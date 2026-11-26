@@ -296,7 +296,7 @@ requirements:
       - key: 01a21358-4147-72be-a72f-0d1643400930
         name: "A term is named after a decimal byte unit where its name, or one of its aliases, is the unit or its full name, which a lowercase `s` may make plural, such as `MB`, `MBs`, `megabytes`."
       - key: 01a214b5-d973-7194-bf7e-adf55116d7d7
-        name: "A document with a term named after a decimal byte unit, whose definition opens on the unit's full name or on its value as a count of bytes, after at most one of `1`, `one`, `a`, `an`, `the`, `exactly`, yields no `V2-014` finding, so that a term `KB` defined as `The knowledge base, at most 1,000 bytes per article` settles nothing."
+        name: "A document with a term named after a decimal byte unit, whose definition opens on the unit's value as a count of bytes, or on its full name followed by the end of the text, by one of `.`, `,`, `;`, `)`, `:`, `=`, by the word `of`, after at most one of `1`, `one`, `a`, `an`, `the`, `exactly`, yields no `V2-014` finding, so that neither a `KB` defined as `The knowledge base, at most 1,000 bytes per article` nor a `MB` defined as `The megabyte broker that relays uploads.` settles anything."
       - key: 01a21358-4147-72be-a72f-0d172df94e9d
         name: "A definition of a binary byte unit alone leaves the finding in place."
       - key: 01a21358-4147-72be-a72f-0d18c7a0989c
