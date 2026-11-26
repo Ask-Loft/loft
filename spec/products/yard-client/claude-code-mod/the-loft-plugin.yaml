@@ -50,6 +50,8 @@ requirements:
         name: "Each command hook passes `loft` the id of the Claude Code process that runs it."
       - key: 01a183e9-dfd2-74b1-a45a-14c2f1e0d78d
         name: "The PermissionRequest hook allows a day before Claude Code ends it, so that a plan decided late on the page still reaches Claude Code."
+      - key: 01a218cc-9b78-72be-83c3-b6d050db797b
+        name: "The repository checks out `hooks/run-loft.sh` with line feeds alone, on Windows too, so that `sh` reads it."
   - key: 01a21838-627a-77f5-b8f0-19fc129301b8
     statement:
       form: ubiquitous

@@ -73,6 +73,9 @@ consequences:
   - key: 01a21838-6272-74ef-9f37-1de384632114
     kind: cost
     statement: "A `loft` installed elsewhere, outside the host's search path, still needs `loftCommand` or the search path."
+  - key: 01a218cc-9b72-704a-be58-4d5c329ca5ce
+    kind: obligation
+    statement: "The Claude adapter's constraint on the commands it runs admits the `loft` in cargo's `bin` directory beside the one `loftCommand` names."
 subjects:
   - role: affected
     node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e

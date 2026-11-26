@@ -18,7 +18,7 @@ components:
         verificationFate: proved
 constraints:
   - key: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
-    name: "The Claude adapter shall run no command but the one that its `loftCommand` setting names."
+    name: "The Claude adapter shall run no command but the one that its `loftCommand` setting names and, while that setting is `loft`, the `loft` in the `bin` directory of cargo's home."
     verificationFate: proved
   - key: 01a16469-559e-73c4-85f2-71b2642c0076
     name: "The Claude adapter shall need Claude Code 2.1.287 or later."
