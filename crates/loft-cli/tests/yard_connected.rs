@@ -1,7 +1,8 @@
 //! Connected mode: with `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN` set, each
-//! version an agent writes is copied into the outbox and sent to Yard Server by the command that
-//! wrote it, once its result is printed; without them, Yard Client keeps Yard Log on the machine
-//! alone. Each test points `loft` at the Software Plant's Yard Server simulator.
+//! version an agent writes is copied into the outbox, and `loft yard flush` sends it to Yard
+//! Server from there; the writing command itself makes no request. Without them, Yard Client
+//! keeps Yard Log on the machine alone. Each test points `loft` at the Software Plant's Yard
+//! Server simulator.
 
 use std::fs;
 use std::path::PathBuf;
@@ -83,10 +84,10 @@ pub fn flush(yard: &Yard, variables: &[(&'static str, String)]) -> (Option<i32>,
 }
 
 /// Leaves one entry waiting in the outbox for the address `variables` names: the stage is
-/// written offline, then 17 notes, of which the write sends 16.
+/// written offline, then one note.
 pub fn one_waiting(yard: &Yard, variables: &[(&'static str, String)]) {
     write(yard, STAGE_BATCH, &[]);
-    write(yard, &notes(17), variables);
+    write(yard, &notes(1), variables);
     assert_eq!(entries(yard).len(), 1);
 }
 
@@ -99,12 +100,17 @@ pub fn notes(count: usize) -> String {
 }
 
 #[test]
-fn a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox() {
+fn a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them() {
     let yard = Yard::new();
     let server = YardServer::accepting();
-    let output = write(&yard, STAGE_BATCH, &connected(&server.url()));
+    let variables = connected(&server.url());
+    let output = write(&yard, STAGE_BATCH, &variables);
     let written = document("write", &output);
     assert_eq!(written["outcome"], "written", "{written}");
+    assert_eq!(server.requests().len(), 0);
+    assert_eq!(entries(&yard).len(), 1);
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(0), &json!("sent")));
     assert_eq!(held(&server), ["build"]);
     assert_eq!(entries(&yard), Vec::<Value>::new());
     let requests = server.requests();
@@ -126,11 +132,9 @@ fn a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox(
 fn a_base_address_ending_in_a_slash_takes_one_slash_before_the_path() {
     let yard = Yard::new();
     let server = YardServer::accepting();
-    write(
-        &yard,
-        STAGE_BATCH,
-        &connected(&format!("{}/", server.url())),
-    );
+    let variables = connected(&format!("{}/", server.url()));
+    write(&yard, STAGE_BATCH, &variables);
+    flush(&yard, &variables);
     assert_eq!(server.requests()[0].path, BATCHES);
 }
 
@@ -160,82 +164,98 @@ fn without_both_variables_nothing_is_copied_and_nothing_is_sent() {
 }
 
 #[test]
-fn a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not() {
+fn a_write_gives_the_same_result_whether_yard_server_can_be_reached_or_not() {
     let plain = Yard::new();
     let offline = document("write", &write(&plain, STAGE_BATCH, &[]));
+    let accepting = YardServer::accepting();
     let failing = YardServer::failing(503);
-    let refusing = YardServer::failing(401);
-    for endpoint in [failing.url(), refusing.url(), YardServer::refusing()] {
+    let silent = YardServer::silent();
+    for endpoint in [
+        accepting.url(),
+        failing.url(),
+        silent.url(),
+        YardServer::refusing(),
+    ] {
         let yard = Yard::new();
         let output = write(&yard, STAGE_BATCH, &connected(&endpoint));
         assert_eq!(output.status.code(), Some(0));
-        let written = document("write", &output);
-        assert_eq!(written["outcome"], offline["outcome"]);
-        assert_eq!(written["revision"], offline["revision"]);
+        let mut written = document("write", &output);
+        let mut alone = offline.clone();
+        // Each run mints keys of its own in a scratch tree of its own; the rest is the same.
+        for document in [&mut written, &mut alone] {
+            document["blocks"][0]["key"] = json!("");
+            document["blocks"][0]["version"] = json!("");
+            document["tree"] = json!("");
+            document["commonDir"] = json!("");
+        }
+        assert_eq!(written, alone, "{endpoint}");
+        assert_eq!(stderr(&output), "", "{endpoint}");
         assert_eq!(entries(&yard).len(), 1, "{endpoint}");
-        let said = stderr(&output);
-        assert!(said.contains("did not leave the outbox"), "{said}");
-        assert_eq!(said.lines().count(), 1, "{said}");
     }
-    assert_eq!(failing.requests().len(), 1);
-    assert_eq!(refusing.requests().len(), 1);
+    for server in [&accepting, &failing, &silent] {
+        assert_eq!(server.requests().len(), 0);
+    }
 }
 
 #[test]
-fn a_silent_yard_server_holds_a_write_at_most_two_seconds_and_the_entries_stay() {
-    // The same write without connected mode is the baseline: what a silent Yard Server adds is
-    // the wait alone, and a busy machine slows both runs alike.
-    let plain = Yard::new();
-    let started = Instant::now();
-    write(&plain, STAGE_BATCH, &[]);
-    let baseline = started.elapsed();
+fn a_flush_gives_up_on_a_silent_yard_server_once_its_wait_has_passed_and_the_entries_stay() {
     let yard = Yard::new();
     let server = YardServer::silent();
+    let variables = connected(&server.url());
+    write(&yard, STAGE_BATCH, &variables);
     let started = Instant::now();
-    let output = write(&yard, STAGE_BATCH, &connected(&server.url()));
+    let (code, flushed) = flush(&yard, &variables);
     let took = started.elapsed();
-    assert_eq!(document("write", &output)["outcome"], "written");
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
     assert!(took >= Duration::from_secs(2), "{took:?}");
-    let added = took.saturating_sub(baseline);
-    assert!(
-        added < Duration::from_secs(3),
-        "{added:?} over {baseline:?}"
-    );
+    assert!(took < Duration::from_secs(5), "{took:?}");
     assert_eq!(entries(&yard).len(), 1);
+    assert_eq!(server.requests().len(), 1);
 }
 
 #[test]
 fn an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay() {
     let yard = Yard::new();
     let endpoint = "http://192.0.2.1:9";
-    let output = write(&yard, STAGE_BATCH, &connected(endpoint));
-    assert_eq!(output.status.code(), Some(0));
+    let variables = connected(endpoint);
+    write(&yard, STAGE_BATCH, &variables);
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
     assert_eq!(entries(&yard).len(), 1);
     assert_eq!(entries(&yard)[0]["to"]["endpoint"], endpoint);
-    let said = stderr(&output);
-    assert!(said.contains(endpoint), "{said}");
+    let message = flushed["errors"][0]["message"].as_str().unwrap();
+    assert!(message.contains(endpoint), "{message}");
 }
 
 #[test]
-fn a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending() {
+fn a_flush_sends_17_entries_as_the_16_oldest_and_then_the_newest() {
     let yard = Yard::new();
     let server = YardServer::accepting();
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &[]);
     write(&yard, &notes(17), &variables);
-    let first: Vec<String> = (1..=16).map(|n| format!("n{n}")).collect();
-    assert_eq!(held(&server), first);
-    let left = entries(&yard);
-    assert_eq!(left.len(), 1);
-    assert_eq!(left[0]["record"]["id"], "n17");
     let (_, flushed) = flush(&yard, &variables);
     assert_eq!(flushed["outcome"], "sent");
     assert_eq!(
         (&flushed["sent"], &flushed["remaining"]),
-        (&json!(1), &json!(0))
+        (&json!(17), &json!(0))
     );
+    let batches: Vec<Vec<String>> = server
+        .requests()
+        .iter()
+        .map(|request| {
+            let batch: Value = serde_json::from_slice(&request.body).unwrap();
+            batch["records"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|record| record["id"].as_str().unwrap().to_owned())
+                .collect()
+        })
+        .collect();
+    let first: Vec<String> = (1..=16).map(|n| format!("n{n}")).collect();
+    assert_eq!(batches, [first, vec!["n17".to_owned()]]);
     assert_eq!(entries(&yard), Vec::<Value>::new());
-    assert_eq!(held(&server).last().unwrap(), "n17");
 }
 
 #[test]
@@ -244,7 +264,9 @@ fn until_a_batch_is_taken_the_next_sending_takes_the_same_oldest_entries_again()
     let server = YardServer::hanging_up();
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
+    flush(&yard, &variables);
     write(&yard, &notes(1), &variables);
+    flush(&yard, &variables);
     let requests = server.requests();
     let second: Value = serde_json::from_slice(&requests[1].body).unwrap();
     let ids: Vec<&str> = second["records"]
@@ -264,7 +286,9 @@ fn each_address_takes_only_its_own_entries() {
     let ours = YardServer::accepting();
     write(&yard, STAGE_BATCH, &connected(&theirs.url()));
     write(&yard, &notes(1), &connected(&ours.url()));
+    flush(&yard, &connected(&ours.url()));
     assert_eq!(held(&ours), ["n1"]);
+    assert_eq!(theirs.requests().len(), 0);
     let left = entries(&yard);
     assert_eq!(left.len(), 1);
     assert_eq!(left[0]["to"]["endpoint"], theirs.url());
@@ -275,6 +299,7 @@ fn no_file_of_the_outbox_or_of_yard_log_holds_the_token() {
     let yard = Yard::new();
     let server = YardServer::failing(503);
     write(&yard, STAGE_BATCH, &connected(&server.url()));
+    flush(&yard, &connected(&server.url()));
     for dir in [outbox(&yard), yard.folder(crate::yard::BRANCH)] {
         for entry in fs::read_dir(&dir).unwrap() {
             let path = entry.unwrap().path();
@@ -287,7 +312,7 @@ fn no_file_of_the_outbox_or_of_yard_log_holds_the_token() {
 }
 
 #[test]
-fn a_refused_write_and_an_unchanged_task_send_nothing() {
+fn a_refused_write_and_an_unchanged_task_put_no_entry() {
     let yard = Yard::new();
     let server = YardServer::accepting();
     let variables = connected(&server.url());
@@ -297,10 +322,6 @@ fn a_refused_write_and_an_unchanged_task_send_nothing() {
             {"id":"t1","kind":"task","stage":"build","title":"T","state":"open"}]"#,
         &[],
     );
-    // 17 versions: the write sends 16 and one waits, which a sending would take.
-    write(&yard, &notes(17), &variables);
-    assert_eq!(entries(&yard).len(), 1);
-    let before = server.requests().len();
     let refused = write(
         &yard,
         r#"[{"id":"n1","kind":"note","stage":"missing","markdown":"x"}]"#,
@@ -313,12 +334,13 @@ fn a_refused_write_and_an_unchanged_task_send_nothing() {
         &variables,
     );
     assert_eq!(document("task", &unchanged)["outcome"], "unchanged");
-    assert_eq!(server.requests().len(), before);
+    assert_eq!(entries(&yard).len(), 0);
     let changed = run(
         &yard,
         &["task", "t1", "--state", "active", "--session", "s1"],
         &variables,
     );
     assert_eq!(document("task", &changed)["outcome"], "changed");
-    assert_eq!(server.requests().len(), before + 1);
+    assert_eq!(entries(&yard).len(), 1);
+    assert_eq!(server.requests().len(), 0);
 }

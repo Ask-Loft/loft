@@ -135,7 +135,6 @@ impl Branch {
     ) -> Result<Result<T, R>, Failure> {
         match self.store.update(change) {
             Ok(updated) => {
-                super::flush::noted(updated.outboxed);
                 if let Some(unsent) = &updated.unsent {
                     errln!("{unsent}");
                 }

@@ -142,6 +142,22 @@ impl Outbox {
     ///
     /// The outbox cannot be listed.
     pub fn take(&self, most: usize, most_bytes: u64) -> Result<Taken, YardStoreError> {
+        self.take_after(most, most_bytes, &BTreeSet::new())
+    }
+
+    /// As [`Outbox::take`], passing over the entries whose keys `passed` holds, as a run passes
+    /// over the entries it has taken once, whatever became of them: they are neither taken nor
+    /// counted as waiting.
+    ///
+    /// # Errors
+    ///
+    /// The outbox cannot be listed.
+    pub fn take_after(
+        &self,
+        most: usize,
+        most_bytes: u64,
+        passed: &BTreeSet<String>,
+    ) -> Result<Taken, YardStoreError> {
         let mut taken = Taken::default();
         let mut room = Room {
             most,
@@ -156,6 +172,7 @@ impl Outbox {
                 continue;
             };
             match entry::read(&text) {
+                Read::Entry { .. } if passed.contains(&key_of(&name)) => {}
                 Read::Entry { endpoint, record } if endpoint == self.endpoint => {
                     taken.waiting += 1;
                     room.take(&mut taken.entries, &name, record, size);

@@ -1,6 +1,6 @@
-//! `loft yard flush`, and who else sends: the command runs the sending a writing command runs
-//! before it exits, by hand and anywhere, and names its outcome; the hooks of the agent hosts and
-//! the page server never send.
+//! `loft yard flush`, and who else sends: the command runs the sending, by hand and anywhere,
+//! and names its outcome; the writing commands, the hooks of the agent hosts and the page server
+//! never send.
 
 use std::time::Duration;
 
@@ -109,7 +109,7 @@ fn a_flush_counts_and_moves_aside_what_it_cannot_send() {
 }
 
 #[test]
-fn the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_along() {
+fn the_codex_hook_puts_entries_and_sends_none_and_a_flush_takes_them() {
     let yard = Yard::new();
     let server = YardServer::accepting();
     let variables = connected(&server.url());
@@ -131,17 +131,13 @@ fn the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_alon
         .collect();
     assert_eq!(ours.len(), 1);
     assert_eq!(ours[0]["record"]["kind"], "task");
-    yard.run_with_under(
-        &["write", "--session", "codex-session", "--host", "codex"],
-        &crate::yard_connected::notes(1),
-        &pairs,
-    );
+    flush(&yard, &variables);
     let kinds: Vec<String> = server
         .records()
         .iter()
         .map(|record| record["kind"].as_str().unwrap().to_owned())
         .collect();
-    assert_eq!(kinds, ["task", "note"]);
+    assert_eq!(kinds, ["task"]);
 }
 
 #[test]
@@ -167,6 +163,8 @@ fn an_answer_that_arrives_too_late_leaves_the_batch_to_be_sent_again_and_stored_
     let variables = connected(&server.url());
     let output = write(&yard, STAGE_BATCH, &variables);
     assert_eq!(document("write", &output)["outcome"], "written");
+    let (code, _) = flush(&yard, &variables);
+    assert_eq!(code, Some(1));
     assert_eq!(held(&server), ["build"]);
     assert_eq!(entries(&yard).len(), 1);
     let (code, _) = flush(&yard, &variables);
@@ -176,7 +174,7 @@ fn an_answer_that_arrives_too_late_leaves_the_batch_to_be_sent_again_and_stored_
 }
 
 #[test]
-fn a_recorded_publish_sends_its_version() {
+fn a_recorded_publish_puts_its_version_and_a_flush_sends_it() {
     let mut yard = Yard::with_spec();
     let on = |branch: &str| {
         software_plant::GitScenario::clean_on(branch)
@@ -201,6 +199,8 @@ fn a_recorded_publish_sends_its_version() {
         &connected(&server.url()),
     );
     assert_eq!(document("published", &output)["outcome"], "recorded");
+    assert_eq!(server.requests().len(), 0);
+    flush(&yard, &connected(&server.url()));
     assert_eq!(held(&server), ["published"]);
     assert_eq!(entries(&yard), Vec::<serde_json::Value>::new());
 }
@@ -237,4 +237,30 @@ fn a_failed_flush_says_why_on_standard_error_without_json() {
     let said = crate::common::stderr(&output);
     assert!(said.contains("401"), "{said}");
     assert!(said.contains("unauthenticated"), "{said}");
+    assert_eq!(entries(&yard).len(), 1);
+}
+
+#[test]
+fn a_flush_to_an_address_where_no_server_listens_fails_and_the_entries_stay() {
+    let yard = Yard::new();
+    let variables = connected(&YardServer::refusing());
+    write(&yard, STAGE_BATCH, &variables);
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
+    let message = flushed["errors"][0]["message"].as_str().unwrap();
+    assert!(message.contains("did not answer"), "{message}");
+    assert_eq!(entries(&yard).len(), 1);
+}
+
+#[test]
+fn a_batch_that_does_not_go_ends_the_run_with_no_further_request() {
+    let yard = Yard::new();
+    let failing = YardServer::failing(503);
+    let variables = connected(&failing.url());
+    write(&yard, STAGE_BATCH, &[]);
+    write(&yard, &crate::yard_connected::notes(17), &variables);
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
+    assert_eq!(failing.requests().len(), 1);
+    assert_eq!(flushed["remaining"], 17);
 }

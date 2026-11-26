@@ -1,7 +1,7 @@
 //! A version an agent writes reaches Yard Server end to end: the real `loft` binary writes Yard
-//! Log in connected mode, and the version Yard Server holds is the one Yard Log holds, field for
-//! field. Where Yard Server stores a batch and its answer is lost, the next sending sends it
-//! again and Yard Server still holds one copy.
+//! Log in connected mode and flushes the outbox, and the version Yard Server holds is the one
+//! Yard Log holds, field for field. Where Yard Server stores a batch and its answer is lost, the
+//! next flush sends it again and Yard Server still holds one copy.
 
 use serde_json::Value;
 use software_plant::YardServer;
@@ -21,6 +21,7 @@ fn a_note_written_by_loft_arrives_in_yard_server_as_yard_log_holds_it() {
         &variables,
     );
     assert_eq!(document("write", &output)["outcome"], "written");
+    flush(&yard, &variables);
     assert_eq!(held(&server), ["build", "n1"]);
     let read = yard.read("s1", &[]);
     let note = block(&read, "n1");
@@ -47,6 +48,7 @@ fn a_batch_stored_and_unanswered_is_sent_again_by_the_next_flush_and_held_once()
     let server = YardServer::hanging_up();
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
+    flush(&yard, &variables);
     assert_eq!(held(&server), ["build"]);
     assert_eq!(entries(&yard).len(), 1);
     let (code, flushed) = flush(&yard, &variables);
