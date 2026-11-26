@@ -227,6 +227,13 @@ fn an_entry_counts_as_later_by_the_record_of_the_address_it_is_for_whatever_the_
         "waiting: 1 for this address; 1 for other addresses, 1 of them later"
     );
     assert_eq!(json["waiting"]["later"], json!(1));
+    assert_eq!(
+        json["waiting"]["byAddress"],
+        json!([
+            {"address": "http://127.0.0.1:1", "waiting": 1, "later": 0},
+            {"address": "http://127.0.0.1:2", "waiting": 1, "later": 1},
+        ])
+    );
 }
 
 #[test]
@@ -242,8 +249,8 @@ fn with_connected_mode_off_waiting_counts_every_entry_with_its_address() {
     assert_eq!(
         json["waiting"]["byAddress"],
         json!([
-            {"address": "http://127.0.0.1:1", "waiting": 1},
-            {"address": "http://127.0.0.1:2", "waiting": 2},
+            {"address": "http://127.0.0.1:1", "waiting": 1, "later": 0},
+            {"address": "http://127.0.0.1:2", "waiting": 2, "later": 0},
         ])
     );
 }

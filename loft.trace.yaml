@@ -40592,7 +40592,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_status.rs"
         name: "an_entry_counts_as_later_by_the_record_of_the_address_it_is_for_whatever_the_mode"
-        body: 1a90b3cab4be1733efec0041a41a6ba4e0409e47b69ef449e14cc0c120021f70
+        body: e2217c4d0051bc3a236955c800a3cb02edf82f77cfd98663d87bb189a9e3ed16
       - file: "crates/loft-cli/tests/yard_status.rs"
         name: "waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft"
         body: 303ad23225472930f163fba04d44d859b04ade7bea3552edc95c93d125b2bfc3
@@ -40601,7 +40601,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_status.rs"
         name: "with_connected_mode_off_waiting_counts_every_entry_with_its_address"
-        body: 3a8144d96dd47e5e7270734a3bf0c4778160c4ef28541f97bf3e230d8e10e16d
+        body: a6bc33409e0a39268371e06c2a96f4e733b21d243f4206a1d24d8de07880917d
   - node: 01a213cb-9c28-769e-b7c8-43ee9cac6d49
     reviewed: 68ed5208b4f45b842d5fe9053288ea5d303a3acec265ed7a18e649a231ab2316
     tests:

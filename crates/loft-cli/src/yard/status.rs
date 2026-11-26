@@ -277,7 +277,9 @@ fn fields(report: &Report) -> Value {
     let by_address: Vec<Value> = waiting
         .by_address
         .iter()
-        .map(|(address, (count, _))| json!({ "address": address, "waiting": count }))
+        .map(|(address, (count, later))| {
+            json!({ "address": address, "waiting": count, "later": later })
+        })
         .collect();
     fields.insert(
         "waiting".to_owned(),

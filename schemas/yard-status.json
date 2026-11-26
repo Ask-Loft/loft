@@ -76,7 +76,7 @@
             "later": {
               "type": "integer",
               "minimum": 0,
-              "description": "Among the entries for the address, those whose versions ~/.yard/flush.json records as ones Yard Server will take later."
+              "description": "Among the entries waiting for every address, those whose versions ~/.yard/flush.json records, for the address each is for, as ones Yard Server will take later: the sum of byAddress' later."
             },
             "skipped": {
               "type": "integer",
@@ -90,7 +90,8 @@
                 "additionalProperties": false,
                 "required": [
                   "address",
-                  "waiting"
+                  "waiting",
+                  "later"
                 ],
                 "properties": {
                   "address": {
@@ -99,10 +100,15 @@
                   "waiting": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "later": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Among them, those whose versions the address's record in ~/.yard/flush.json holds as ones Yard Server will take later."
                   }
                 }
               },
-              "description": "The entries waiting for each address, in the order of the addresses."
+              "description": "The entries waiting for each address, and among them those Yard Server will take later, in the order of the addresses."
             }
           }
         },
