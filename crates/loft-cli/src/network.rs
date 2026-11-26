@@ -170,6 +170,10 @@ fn agent(left: Duration, user_agent: &str) -> Agent {
         .into()
 }
 
+/// What the network client contacts, as a refusal of another address says it.
+pub const CONTACTED: &str =
+    "only an https address, or an http one on the loopback interface, is contacted";
+
 /// `url` as the address the request goes to, if it may be contacted: any `https` address, and
 /// an `http` one only on the loopback interface, where nothing crosses a network. The address
 /// is parsed once, by the parser the request uses, so the host checked is the host contacted.

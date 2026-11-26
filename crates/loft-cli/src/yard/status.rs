@@ -193,7 +193,8 @@ fn connected_line(connected: &Connected) -> String {
             endpoint,
             refused: true,
         } => format!(
-            "connected mode: on, sending to {endpoint}, which is refused: only an https address, or an http one on the loopback interface, is contacted"
+            "connected mode: on, sending to {endpoint}, which is refused: {}",
+            network::CONTACTED
         ),
     }
 }

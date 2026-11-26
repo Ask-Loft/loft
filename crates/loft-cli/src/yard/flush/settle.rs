@@ -72,6 +72,13 @@ pub(super) fn send(
     let records: Vec<&str> = entries.iter().map(|entry| entry.record.as_str()).collect();
     let body = batch(&records);
     let url = format!("{}/{BATCHES}", outbox.endpoint().trim_end_matches('/'));
+    if network::allowed(&url).is_none() {
+        return failure(Failed::yard_server(format!(
+            "the address {} is refused: {}",
+            outbox.endpoint(),
+            network::CONTACTED
+        )));
+    }
     let bearer = format!("Bearer {credential}");
     let headers = [
         ("Authorization", bearer.as_str()),

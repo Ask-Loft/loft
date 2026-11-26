@@ -296,7 +296,11 @@ fn an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries
     assert_eq!(entries(&yard).len(), 1);
     assert_eq!(entries(&yard)[0]["to"]["endpoint"], endpoint);
     let message = flushed["errors"][0]["message"].as_str().unwrap();
-    assert!(message.contains(endpoint), "{message}");
+    assert!(
+        message.contains(&format!("the address {endpoint} is refused")),
+        "{message}"
+    );
+    assert!(!message.contains("did not answer"), "{message}");
 }
 
 #[test]
