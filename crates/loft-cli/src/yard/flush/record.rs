@@ -57,9 +57,17 @@ pub struct Run<'a> {
 /// The record `home` holds for `endpoint`, where it holds one that reads.
 #[must_use]
 pub fn read(home: &Home, endpoint: &str) -> Option<Record> {
-    let bytes = home.read(HomeFile::Flush).ok()?;
-    let all = home_json::object(bytes.as_deref());
-    parse(all.get(endpoint)?)
+    read_all(home).remove(endpoint)
+}
+
+/// The records `home` holds that read, by address.
+#[must_use]
+pub fn read_all(home: &Home) -> BTreeMap<String, Record> {
+    let bytes = home.read(HomeFile::Flush).ok().flatten();
+    home_json::object(bytes.as_deref())
+        .iter()
+        .filter_map(|(endpoint, record)| Some((endpoint.clone(), parse(record)?)))
+        .collect()
 }
 
 /// Replaces `endpoint`'s record with `run`'s, keeping from the record it replaces a time to come

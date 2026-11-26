@@ -4,7 +4,7 @@
 //! line, a lowercase key, a colon and the fact, as `loft status` writes its lines; `--format json`
 //! gives the same facts as one document. It exits 0 whatever it finds.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 use std::path::Path;
 
 use loft_ports::clock::Clock as _;
@@ -38,9 +38,13 @@ enum Connected {
 struct Waiting {
     for_address: usize,
     other_addresses: usize,
-    later: usize,
+    /// Of the entries for the address, those Yard Server will take later.
+    later_for_address: usize,
+    /// Of the entries for other addresses, those Yard Server will take later.
+    later_elsewhere: usize,
     skipped: usize,
-    by_address: BTreeMap<String, usize>,
+    /// The entries for each address, and of them those Yard Server will take later.
+    by_address: BTreeMap<String, (usize, usize)>,
 }
 
 /// What `loft yard status` reports.
@@ -71,12 +75,13 @@ pub fn run(args: &StatusArgs) -> Finished {
 fn report() -> Report {
     let now = super::clock().now().unwrap_or_default();
     let home = Home::from_env();
+    let records = home.as_ref().map(record::read_all).unwrap_or_default();
     let (connected, last) = match flush::mode() {
         Mode::Off(missing) => (Connected::Off(missing), None),
         Mode::Homeless => (Connected::Homeless, None),
         Mode::On(connection) => {
             let endpoint = connection.outbox.endpoint().to_owned();
-            let last = record::read(&connection.home, &endpoint);
+            let last = records.get(&endpoint).cloned();
             let refused = network::allowed(&endpoint).is_none();
             (Connected::On { endpoint, refused }, last)
         }
@@ -89,7 +94,7 @@ fn report() -> Report {
         .unwrap_or_default();
     let dead = dir.as_deref().map(dead).unwrap_or_default();
     Report {
-        waiting: waiting(&connected, &survey, last.as_ref()),
+        waiting: waiting(&connected, &survey, &records),
         connected,
         last,
         dead,
@@ -98,26 +103,36 @@ fn report() -> Report {
     }
 }
 
-/// What waits in the outbox, for the address where connected mode is on: an entry counts as put
-/// off where the last run for the address recorded its version as `later`.
-fn waiting(connected: &Connected, survey: &Survey, last: Option<&Record>) -> Waiting {
-    let by_address: BTreeMap<String, usize> = survey
+/// What waits in the outbox, for the address where connected mode is on and for the others: an
+/// entry counts as put off where the record of the address it is for, in `records`, holds its
+/// version as `later`.
+fn waiting(connected: &Connected, survey: &Survey, records: &BTreeMap<String, Record>) -> Waiting {
+    let by_address: BTreeMap<String, (usize, usize)> = survey
         .waiting
         .iter()
-        .map(|(address, keys)| (address.clone(), keys.len()))
+        .map(|(address, keys)| {
+            let later = records.get(address).map_or(0, |record| {
+                keys.iter()
+                    .filter(|key| record.later.contains_key(*key))
+                    .count()
+            });
+            (address.clone(), (keys.len(), later))
+        })
         .collect();
-    let all: usize = by_address.values().sum();
-    let ours: &[String] = match connected {
-        Connected::On { endpoint, .. } => survey.waiting.get(endpoint).map_or(&[], Vec::as_slice),
-        _ => &[],
+    let (all, all_later) = by_address
+        .values()
+        .fold((0, 0), |(all, later), (count, put_off)| {
+            (all + count, later + put_off)
+        });
+    let (ours, ours_later) = match connected {
+        Connected::On { endpoint, .. } => by_address.get(endpoint).copied().unwrap_or_default(),
+        _ => (0, 0),
     };
-    let put_off: BTreeSet<&String> = last
-        .map(|last| last.later.keys().collect())
-        .unwrap_or_default();
     Waiting {
-        for_address: ours.len(),
-        other_addresses: all - ours.len(),
-        later: ours.iter().filter(|key| put_off.contains(key)).count(),
+        for_address: ours,
+        other_addresses: all - ours,
+        later_for_address: ours_later,
+        later_elsewhere: all_later - ours_later,
         skipped: survey.newer,
         by_address,
     }
@@ -187,20 +202,24 @@ fn waiting_line(connected: &Connected, waiting: &Waiting) -> String {
     let mut parts = Vec::new();
     if let Connected::On { .. } = connected {
         if waiting.for_address > 0 || waiting.other_addresses > 0 {
-            let mut ours = format!("{} for this address", waiting.for_address);
-            if waiting.later > 0 {
-                ours = format!("{ours}, {} of them later", waiting.later);
-            }
-            parts.push(ours);
+            parts.push(counted(
+                waiting.for_address,
+                waiting.later_for_address,
+                "this address",
+            ));
         }
         if waiting.other_addresses > 0 {
-            parts.push(format!("{} for other addresses", waiting.other_addresses));
+            parts.push(counted(
+                waiting.other_addresses,
+                waiting.later_elsewhere,
+                "other addresses",
+            ));
         }
     } else if !waiting.by_address.is_empty() {
         let each: Vec<String> = waiting
             .by_address
             .iter()
-            .map(|(address, count)| format!("{count} for {address}"))
+            .map(|(address, (count, later))| counted(*count, *later, address))
             .collect();
         parts.push(each.join(", "));
     }
@@ -211,6 +230,15 @@ fn waiting_line(connected: &Connected, waiting: &Waiting) -> String {
         "waiting: none".to_owned()
     } else {
         format!("waiting: {}", parts.join("; "))
+    }
+}
+
+/// `count` entries for `whom`, naming the `later` of them Yard Server will take later.
+fn counted(count: usize, later: usize, whom: &str) -> String {
+    if later > 0 {
+        format!("{count} for {whom}, {later} of them later")
+    } else {
+        format!("{count} for {whom}")
     }
 }
 
@@ -249,14 +277,14 @@ fn fields(report: &Report) -> Value {
     let by_address: Vec<Value> = waiting
         .by_address
         .iter()
-        .map(|(address, count)| json!({ "address": address, "waiting": count }))
+        .map(|(address, (count, _))| json!({ "address": address, "waiting": count }))
         .collect();
     fields.insert(
         "waiting".to_owned(),
         json!({
             "forAddress": waiting.for_address,
             "otherAddresses": waiting.other_addresses,
-            "later": waiting.later,
+            "later": waiting.later_for_address + waiting.later_elsewhere,
             "skipped": waiting.skipped,
             "byAddress": by_address,
         }),

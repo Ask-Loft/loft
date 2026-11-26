@@ -193,6 +193,43 @@ fn waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft() 
 }
 
 #[test]
+fn an_entry_counts_as_later_by_the_record_of_the_address_it_is_for_whatever_the_mode() {
+    let yard = Yard::new();
+    write(&yard, STAGE_BATCH, &connected("http://127.0.0.1:1"));
+    write(&yard, &notes(1), &connected("http://127.0.0.1:2"));
+    let mut names: Vec<String> = fs::read_dir(outbox(&yard))
+        .unwrap()
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
+    names.sort();
+    let key = |n: usize| names[n].trim_end_matches(".json").to_owned();
+    let record = |key: String| {
+        json!({
+            "ended": "2026-01-01T00:00:00Z", "outcome": "sent", "why": null,
+            "notBefore": null, "later": { key: "unknown_report_version" },
+        })
+    };
+    fs::write(
+        yard.scratch.home().join(".yard/flush.json"),
+        json!({ "http://127.0.0.1:1": record(key(1)), "http://127.0.0.1:2": record(key(1)) })
+            .to_string(),
+    )
+    .unwrap();
+    let (text, json) = status(&yard, &[]);
+    assert_eq!(
+        line(&text, "waiting"),
+        "waiting: 1 for http://127.0.0.1:1, 1 for http://127.0.0.1:2, 1 of them later"
+    );
+    assert_eq!(json["waiting"]["later"], json!(1));
+    let (text, json) = status(&yard, &connected("http://127.0.0.1:1"));
+    assert_eq!(
+        line(&text, "waiting"),
+        "waiting: 1 for this address; 1 for other addresses, 1 of them later"
+    );
+    assert_eq!(json["waiting"]["later"], json!(1));
+}
+
+#[test]
 fn with_connected_mode_off_waiting_counts_every_entry_with_its_address() {
     let yard = Yard::new();
     write(&yard, STAGE_BATCH, &connected("http://127.0.0.1:1"));
