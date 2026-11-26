@@ -43,13 +43,55 @@ requirements:
       shall: "hold one command hook that runs `loft yard claude hook` for each of the events SessionStart, SessionEnd, SubagentStart, UserPromptSubmit, PostToolUse, Stop and PostCompact, one for PermissionRequest of `ExitPlanMode`, and no other command hook."
     criteria:
       - key: 01a183e9-dfd2-74b1-a45a-14bf569c68bb
-        name: "Each command hook runs `loft` through the `loftCommand` setting, with `LOFT_TELEMETRY` and `LOFT_UPDATE_CHECK` set to `off`."
+        name: "Each command hook runs the plugin's `hooks/run-loft.sh`, which runs `loft` through the `loftCommand` setting, with `LOFT_TELEMETRY` and `LOFT_UPDATE_CHECK` set to `off`."
       - key: 01a183e9-dfd2-74b1-a45a-14c0b6bfae37
         name: "A `loftCommand` of more than one word, such as `pnpm exec loft`, runs its first word with the others as its first arguments."
       - key: 01a183e9-dfd2-74b1-a45a-14c1bcd08990
         name: "Each command hook passes `loft` the id of the Claude Code process that runs it."
       - key: 01a183e9-dfd2-74b1-a45a-14c2f1e0d78d
         name: "The PermissionRequest hook allows a day before Claude Code ends it, so that a plan decided late on the page still reaches Claude Code."
+  - key: 01a21838-627a-77f5-b8f0-19fc129301b8
+    statement:
+      form: ubiquitous
+      system: "The Loft plugin"
+      shall: "look for `loft` on the search path and then at `~/.cargo/bin/loft` while the `loftCommand` setting is `loft`, in the mod and in each command hook alike."
+    body: "`cargo install` puts `loft` in `~/.cargo/bin`, which a shell's startup files add to the search path. A host that starts Claude Code without reading them, such as an app opened from the desktop or a host built on the Agent SDK, starts its sessions with a search path that lacks it."
+    criteria:
+      - key: 01a21838-627a-77f5-b8f0-19fddce71f03
+        name: "Where `loft` is on the search path, the mod and each command hook run it."
+      - key: 01a21838-627a-77f5-b8f0-19fed4433149
+        name: "Where `loft` is not on the search path and `~/.cargo/bin/loft` can be run, the mod and each command hook run `~/.cargo/bin/loft`."
+      - key: 01a21838-627a-77f5-b8f0-19ff52e85eba
+        name: "On Windows, the mod and each command hook look for `loft.exe` in `.cargo/bin` under the home directory."
+      - key: 01a21838-627a-77f5-b8f0-1a00b97f8645
+        name: "A `loftCommand` other than `loft` is run as written, and nothing else is tried."
+      - key: 01a21838-627a-77f5-b8f0-1a011957e079
+        name: "Every later `loft` command the mod runs in a session runs the `loft` that its first command found."
+  - key: 01a21838-627a-77f5-b8f0-1a02457e6313
+    statement:
+      form: unwanted
+      if: "no `loft` can be run as a session starts"
+      system: "the plugin's SessionStart command hook"
+      shall: "tell the agent that Yard Client is off and how to turn it on."
+    body: "The mod's notice is a toast, which a host that draws none, such as one built on the Agent SDK, never shows, and the mod has no way to add to the agent's context as a session starts. Without a word, the agent reads the `yard` skill and looks for tools that were never registered."
+    criteria:
+      - key: 01a21838-627a-77f5-b8f0-1a034adf59d4
+        name: "The hook adds to the agent's context that Yard Client is off because `loft` cannot be run, naming each command it tried."
+      - key: 01a21838-627a-77f5-b8f0-1a0422742550
+        name: "The context names the `loftCommand` setting, and putting `loft` on the search path, as the ways to turn Yard Client on in a new session."
+      - key: 01a21838-627a-77f5-b8f0-1a05aab2e299
+        name: "The hook exits 0."
+  - key: 01a21838-627a-77f5-b8f0-1a06f06a5362
+    statement:
+      form: unwanted
+      if: "no `loft` can be run"
+      system: "each command hook but SessionStart's"
+      shall: "print nothing and exit 0."
+    criteria:
+      - key: 01a21838-627a-77f5-b8f0-1a07e194fa1e
+        name: "The hook prints nothing on standard output or standard error."
+      - key: 01a21838-627a-77f5-b8f0-1a084ef63467
+        name: "The hook exits 0, so that Claude Code reports no hook error."
   - key: 01a183e9-dfd2-74b1-a45a-14c3e87f62d5
     statement:
       form: ubiquitous
@@ -78,11 +120,11 @@ requirements:
   - key: 01a1646f-546c-7521-9643-bc7863e23233
     statement:
       form: unwanted
-      if: "the `loftCommand` setting cannot be run"
+      if: "no `loft` can be run where the plugin looks for it"
       system: "the Loft mod"
       shall: "register no Yard tool and let each tool call of the agent run as it would without the plugin."
     criteria:
       - key: 01a1646f-546c-7521-9643-bc79310dc188
         name: "The agent's `AskUserQuestion` and `ExitPlanMode` calls show Claude Code's own dialogs alone."
       - key: 01a1646f-546c-7521-9643-bc7a303448bb
-        name: "The mod tells the person once that Yard Client cannot run, naming the command."
+        name: "The mod tells the person once that Yard Client cannot run, naming each command it tried."

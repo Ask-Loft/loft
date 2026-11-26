@@ -1,0 +1,80 @@
+key: 01a21838-6272-74ef-9f37-1ddbbcbc7910
+slug: the-plugin-looks-for-loft-in-cargo-s-bin-beyond-the-search-path
+title: "Beyond the search path, the plugin looks for loft in ~/.cargo/bin alone"
+context: "`cargo install` puts `loft` in `~/.cargo/bin`, which a shell's startup files add to the search path. A host that starts Claude Code without reading them, such as an app opened from the desktop or a host built on the Agent SDK, starts sessions in which the bare `loft` cannot be run, so Yard Client is off there although `loft` is installed. The command hooks run on every tool call, so whatever they try costs every call."
+state:
+  kind: accepted
+  selectedOption: 01a21838-6272-74ef-9f37-1ddffe5c3853
+  outcome: "While `loftCommand` is `loft`, the mod and the command hooks run the `loft` on the search path, else `~/.cargo/bin/loft`; a `loftCommand` the person set is run as written. A `loft` installed anywhere else, such as under a version manager for Node, is reached by putting it on the search path or naming it in `loftCommand`."
+drivers:
+  - key: 01a21838-6272-74ef-9f37-1ddc15f14dcf
+    kind: local
+    label: "Finds a cargo install"
+    statement: "A `loft` installed with `cargo install` runs without further setup."
+  - key: 01a21838-6272-74ef-9f37-1ddd2797dc2f
+    kind: local
+    label: "Cheap on every hook"
+    statement: "Finding `loft` adds nothing noticeable to a command hook that runs on every tool call."
+  - key: 01a21838-6272-74ef-9f37-1dde59bfd386
+    kind: local
+    label: "Finds any install"
+    statement: "A `loft` that the person's shell finds runs wherever it was installed."
+options:
+  - key: 01a21838-6272-74ef-9f37-1ddffe5c3853
+    title: "The search path, then ~/.cargo/bin"
+    description: "Run the bare `loft`, and where it cannot be run, `~/.cargo/bin/loft`."
+  - key: 01a21838-6272-74ef-9f37-1de0f7c6368f
+    title: "The search path, ~/.cargo/bin, then the person's shell"
+    description: "Also ask the person's interactive login shell where `loft` is, once a session, with a time limit."
+  - key: 01a21838-6272-74ef-9f37-1de130ce288e
+    title: "The search path alone"
+    description: "Run the bare `loft` only, and say plainly when it cannot be run."
+assessments:
+  - option: 01a21838-6272-74ef-9f37-1ddffe5c3853
+    driver: 01a21838-6272-74ef-9f37-1ddc15f14dcf
+    rating: supports
+    rationale: "`cargo install` puts it there"
+  - option: 01a21838-6272-74ef-9f37-1ddffe5c3853
+    driver: 01a21838-6272-74ef-9f37-1ddd2797dc2f
+    rating: supports
+    rationale: "one more file to try"
+  - option: 01a21838-6272-74ef-9f37-1ddffe5c3853
+    driver: 01a21838-6272-74ef-9f37-1dde59bfd386
+    rating: conflicts
+    rationale: "an install elsewhere needs the search path or `loftCommand`"
+  - option: 01a21838-6272-74ef-9f37-1de0f7c6368f
+    driver: 01a21838-6272-74ef-9f37-1ddc15f14dcf
+    rating: supports
+    rationale: "`~/.cargo/bin` is tried before the shell"
+  - option: 01a21838-6272-74ef-9f37-1de0f7c6368f
+    driver: 01a21838-6272-74ef-9f37-1ddd2797dc2f
+    rating: conflicts
+    rationale: "an interactive shell reads every startup file, can hang or print, and the mod would have to hand what it found to the hooks"
+  - option: 01a21838-6272-74ef-9f37-1de0f7c6368f
+    driver: 01a21838-6272-74ef-9f37-1dde59bfd386
+    rating: supports
+    rationale: "the shell finds what it finds in a terminal"
+  - option: 01a21838-6272-74ef-9f37-1de130ce288e
+    driver: 01a21838-6272-74ef-9f37-1ddc15f14dcf
+    rating: conflicts
+    rationale: "a cargo install needs setup on every such host"
+  - option: 01a21838-6272-74ef-9f37-1de130ce288e
+    driver: 01a21838-6272-74ef-9f37-1ddd2797dc2f
+    rating: supports
+    rationale: "nothing more is tried"
+  - option: 01a21838-6272-74ef-9f37-1de130ce288e
+    driver: 01a21838-6272-74ef-9f37-1dde59bfd386
+    rating: conflicts
+    rationale: "only what the host's search path holds is found"
+consequences:
+  - key: 01a21838-6272-74ef-9f37-1de2d552c0fd
+    kind: benefit
+    statement: "A `loft` installed with `cargo install` works in a session that a desktop app or an Agent SDK host starts."
+  - key: 01a21838-6272-74ef-9f37-1de384632114
+    kind: cost
+    statement: "A `loft` installed elsewhere, outside the host's search path, still needs `loftCommand` or the search path."
+subjects:
+  - role: affected
+    node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc69fcfce2ec
