@@ -19,14 +19,15 @@ if [ "$setting" != loft ]; then
   tried="\`$setting\`"
 else
   if command -v loft >/dev/null 2>&1; then exec loft "$@"; fi
+  tried="\`loft\` on the search path"
   for found in "$HOME/.cargo/bin/loft" "$HOME/.cargo/bin/loft.exe"; do
     if [ -f "$found" ] && [ -x "$found" ]; then exec "$found" "$@"; fi
+    tried="$tried, \`$found\`"
   done
-  tried="\`loft\` on the search path, \`$HOME/.cargo/bin/loft\` and \`$HOME/.cargo/bin/loft.exe\`"
 fi
 
-hook=$(cat)
-if printf '%s' "$hook" | grep -Eq '"hook_event_name"[[:space:]]*:[[:space:]]*"SessionStart"'; then
+# The hook object on standard input names the event; grep reads it all where it is not SessionStart.
+if grep -E '"hook_event_name"[[:space:]]*:[[:space:]]*"SessionStart"' >/dev/null; then
   context="Yard Client is off in this session: the Loft plugin could not run loft. It tried $tried. The tools of the \`yard\` skill, \`mcp__loft__yard_read\` and the others, are not registered. Tell the person that Yard Client is off and how to turn it on: set the loft plugin's \`loftCommand\` setting to a command that runs loft, such as the absolute path of the \`loft\` binary, or put \`loft\` on the search path of the app that starts Claude Code, then start a new session."
   escaped=$(printf '%s' "$context" | sed 's/\\/\\\\/g; s/"/\\"/g')
   printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$escaped"

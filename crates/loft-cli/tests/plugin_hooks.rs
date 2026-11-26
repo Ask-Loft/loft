@@ -9,9 +9,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 
 use crate::common::{Scratch, isolate, stderr, workspace};
+use crate::plugins::{CLAUDE_ROOT, read};
 use serde_json::{Value, json};
-
-const CLAUDE_ROOT: &str = "plugins/claude/loft";
 
 /// The command each of the Claude Code plugin's command hooks runs.
 const CLAUDE_HOOK: &str = "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"";
@@ -31,8 +30,7 @@ const EVENTS: [&str; 8] = [
 #[test]
 fn the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook()
  {
-    let text = fs::read_to_string(workspace().join(CLAUDE_ROOT).join("hooks/hooks.json")).unwrap();
-    let manifest: Value = serde_json::from_str(&text).unwrap();
+    let manifest = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
     let hooks = manifest["hooks"].as_object().unwrap();
     let mut names: Vec<_> = hooks.keys().map(String::as_str).collect();
     names.sort_unstable();

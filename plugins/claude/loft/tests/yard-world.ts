@@ -135,7 +135,11 @@ export function world(
     session: SESSION,
     cwd: TREE,
     protocol: options.protocol ?? 1,
-    /** The programs that can be run, by the first word of their argument vector, where a test names them; any other cannot. */
+    /**
+     * The programs that can be run, by the first word of their argument vector, where a test names
+     * them; any other cannot, `loft`'s own runs and every other program's alike. `protocol:
+     * 'unrunnable'` refuses only the runs of `loft yard`.
+     */
     runnable: options.runnable,
     /** The machine home `loft yard protocol` reports, if any; the token lies in it, else in `~/.yard/`. */
     home: options.home,
@@ -292,9 +296,12 @@ export function world(
     return { value: { status: state.postStatus, ok, headers: {}, text: answer } as never }
   })
 
+  /** Whether the program an argument vector names cannot be run in this world. */
+  const cannotRun = (argv: readonly string[]) => state.runnable !== undefined && !state.runnable.includes(argv[0] ?? '')
+
   on('process.run', async ($, e) => {
     state.runs.push({ argv: e.argv, cwd: e.init?.cwd, env: e.init?.env, stdin: e.init?.stdin, spawned: false })
-    if (state.runnable && !state.runnable.includes(e.argv[0] ?? '')) return { deny: `${e.argv[0] ?? ''}: no such file` }
+    if (cannotRun(e.argv)) return { deny: `${e.argv[0] ?? ''}: no such file` }
     if (!e.argv.includes('yard')) return out(undefined, 0, '')
     if (state.protocol === 'unrunnable') return { deny: 'loft is not on PATH' }
     const sub = subOf(e.argv)
@@ -339,7 +346,7 @@ export function world(
 
   on('process.spawn', async function* ($, e, next) {
     state.runs.push({ argv: e.argv, cwd: e.cwd, env: e.env, spawned: true })
-    if (state.runnable && !state.runnable.includes(e.argv[0] ?? '')) throw new Error(`${e.argv[0] ?? ''}: no such file`)
+    if (cannotRun(e.argv)) throw new Error(`${e.argv[0] ?? ''}: no such file`)
     const sub = subOf(e.argv)
     if (sub === 'serve') {
       yield { stream: 'stdout' as const, text: `${JSON.stringify({ outcome: state.serve, port: state.reportedPort, errors: [] })}\n` }

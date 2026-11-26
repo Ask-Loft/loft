@@ -23648,7 +23648,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: 2101851d12b3a15911e765f162e40c00cbf2b1599717c9fab641a4ca6dfad19d
+        body: 4932fed7a6c61d4313c2aad289e6bf30070ce56f297a353f805069bb342a7220
   - node: 01a144ee-c59e-7325-802c-d71e478c6971
     reviewed: a8e7865b7c32261c3575a15d9a16df55f2ee43b9ae69ce220b201a9d9c92891e
     tests:
@@ -35678,7 +35678,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: 2101851d12b3a15911e765f162e40c00cbf2b1599717c9fab641a4ca6dfad19d
+        body: 4932fed7a6c61d4313c2aad289e6bf30070ce56f297a353f805069bb342a7220
   - node: 01a183e9-dfd2-74b1-a45a-14c0b6bfae37
     reviewed: 7fa34b7a2892b5bd9d4e204a8cd40f272ef02e5a0daeca683e3e74fd0b3971c0
     tests:
@@ -35696,7 +35696,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: 2101851d12b3a15911e765f162e40c00cbf2b1599717c9fab641a4ca6dfad19d
+        body: 4932fed7a6c61d4313c2aad289e6bf30070ce56f297a353f805069bb342a7220
   - node: 01a21838-627a-77f5-b8f0-19fddce71f03
     reviewed: 7bc957950aa56afc1156de893c89f0a6162419e65299cefe488e0373ff807c61
     tests:

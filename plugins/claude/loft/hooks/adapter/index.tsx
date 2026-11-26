@@ -8,7 +8,7 @@
 
 import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
-import { cargoLofts, isBareLoft, QUIET, type Ran } from '../loft'
+import { loftCandidates, QUIET, type Ran } from '../loft'
 import { isAskable } from './answers'
 import { askQuestions, ownDialog, presentPlan, waitOn } from './asking'
 import { capture, checkCapture } from './capture'
@@ -42,8 +42,8 @@ export function ensureYard($: EngineInterface, cwd: string): Promise<boolean> {
 async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   const { checked, tried } = await findLoft($, cwd)
   const protocol = checked.doc?.protocol
-  if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd, tried)
-  if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, tried, protocol)
+  if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd, undefined, tried.slice(1))
+  if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
   state.settings.protocol = protocol
   state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION, protocol) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
@@ -75,19 +75,22 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
  */
 async function findLoft($: EngineInterface, cwd: string): Promise<{ checked: Ran; tried: string[] }> {
   const settings = state.settings
-  const tried = [settings.words.join(' ')]
-  let checked = await yard($, settings, cwd, ['protocol'], { beyond: false })
-  if (checked.unrun === undefined || !isBareLoft(settings.words)) return { checked, tried }
-  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
-  for (const candidate of home ? cargoLofts(home) : []) {
-    tried.push(candidate)
-    checked = await yard($, { ...settings, words: [candidate] }, cwd, ['protocol'], { beyond: false })
+  const tried: string[] = []
+  let checked: Ran = { exitCode: -1, stderr: '', unrun: 'no command to run' }
+  for (const words of loftCandidates(settings.words, await homeOf($))) {
+    tried.push(words.join(' '))
+    checked = await yard($, { ...settings, words }, cwd, ['protocol'], { beyond: false })
     if (checked.unrun === undefined) {
-      settings.words = [candidate]
+      settings.words = words
       break
     }
   }
   return { checked, tried }
+}
+
+/** The person's home directory: `HOME`, else `USERPROFILE` as Windows names it. */
+async function homeOf($: EngineInterface): Promise<string | undefined> {
+  return (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
 }
 
 /**
@@ -96,19 +99,21 @@ async function findLoft($: EngineInterface, cwd: string): Promise<{ checked: Ran
  */
 async function tokenPathOf($: EngineInterface, reported: unknown): Promise<string | undefined> {
   if (typeof reported === 'string' && reported !== '') return `${reported}/token`
-  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
+  const home = await homeOf($)
   return home ? `${home}/.yard/token` : undefined
 }
 
-/** Tells the person once why Yard Client is off; Claude Code's own dialogs then ask alone. */
-async function off($: EngineInterface, checked: Ran, cwd: string, tried: string[], protocol?: number): Promise<false> {
+/**
+ * Tells the person once why Yard Client is off, naming `also`, the commands tried after
+ * `loftCommand`; Claude Code's own dialogs then ask alone.
+ */
+async function off($: EngineInterface, checked: Ran, cwd: string, protocol?: number, also: string[] = []): Promise<false> {
   const command = `\`${state.settings.words.join(' ')}\``
   const speaks = `the yard protocol ${protocolRange(PROTOCOLS)}`
   let text: string
   if (checked.unrun !== undefined) {
-    const named = tried.map(each => `\`${each}\``)
-    const also = named.length > 1 ? ` Also tried: ${named.slice(1).join(', ')}.` : ''
-    text = `Yard Client is off: ${named[0] ?? command} cannot be run (${checked.unrun}).${also} Set the loft plugin's loftCommand setting to a loft that can, or put loft on the search path.`
+    const more = also.length > 0 ? ` Also tried: ${also.map(each => `\`${each}\``).join(', ')}.` : ''
+    text = `Yard Client is off: ${command} cannot be run (${checked.unrun}).${more} Set the loft plugin's loftCommand setting to a loft that can, or put loft on the search path.`
   } else {
     const version = typeof checked.doc?.loft === 'string' ? checked.doc.loft : await versionOf($, cwd)
     const heard = protocol === undefined ? 'which has no yard commands' : `which speaks the yard protocol ${protocol}`

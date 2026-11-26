@@ -14,12 +14,12 @@ use crate::schema;
 use crate::workflow::job;
 use serde_json::{Value, json};
 
-fn read(path: &str) -> Value {
+pub(crate) fn read(path: &str) -> Value {
     let text = fs::read_to_string(workspace().join(path)).unwrap_or_else(|_| panic!("no {path}"));
     serde_json::from_str(&text).unwrap()
 }
 
-const CLAUDE_ROOT: &str = "plugins/claude/loft";
+pub(crate) const CLAUDE_ROOT: &str = "plugins/claude/loft";
 const CODEX_ROOT: &str = "plugins/codex/loft";
 
 #[test]
