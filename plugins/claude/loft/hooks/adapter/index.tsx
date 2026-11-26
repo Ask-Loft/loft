@@ -14,6 +14,7 @@ import { askQuestions, ownDialog, presentPlan, waitOn } from './asking'
 import { capture, checkCapture } from './capture'
 import { descriptor, LISTENS } from './contract'
 import { registerEvents } from './events'
+import { flushAtBeat } from './flushing'
 import { flush } from './outbox'
 import { registerDraw } from './pane/draw'
 import { registerCommand, registerPane } from './pane/follow'
@@ -59,10 +60,13 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
     $.ui.toast(`The loft plugin's yardListen setting waits for a newer loft: loft ${String(checked.doc?.loft ?? '')} speaks the yard protocol ${protocol}, so the page opens on this machine alone until loft is brought up to date.`, { timeoutMs: 15000 })
   }
   void beat($, state.settings, state.server, state.box, await continued($), cwd)
+  flushAtBeat($, state.settings, state.flushing, cwd)
   $.clock.every(BEAT, async () => {
     state.server.ticks += 1
-    void beat($, state.settings, state.server, state.box, await continued($), await $.session.cwd())
+    const now = await $.session.cwd()
+    void beat($, state.settings, state.server, state.box, await continued($), now)
     void flush($, state.box)
+    flushAtBeat($, state.settings, state.flushing, now)
   })
   return true
 }

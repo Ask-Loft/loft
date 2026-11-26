@@ -9,6 +9,7 @@ import type { EngineInterface, PluginOptions } from 'claude-code'
 import { settingsOf, type Ran, type Settings } from '../loft'
 import { relativeTo } from '../model'
 import { HOST, type descriptor } from './contract'
+import { flush, flushingOf, WRITES, type Flushing } from './flushing'
 import { outboxOf, type Outbox } from './outbox'
 import { pageOf, type Asker } from './log'
 import { callerArgs, succeeded, yard, type Caller } from './run'
@@ -33,6 +34,8 @@ export type YardState = {
   adapter: ReturnType<typeof descriptor> | undefined
   server: Server
   box: Outbox
+  /** The flush of the outbox the mod runs in the background. */
+  flushing: Flushing
   /** Each subagent's type, by its id. */
   types: Map<string, string>
   /** This process's sessions, the current one first: a `/clear` or a resume starts another. */
@@ -56,6 +59,7 @@ function fresh(options: PluginOptions): YardState {
     adapter: undefined,
     server: serverOf(),
     box: outboxOf(settings.port),
+    flushing: flushingOf(),
     types: new Map(),
     sessions: [],
     captures: new Map(),
@@ -108,9 +112,13 @@ export function askerOf(caller: Caller): Asker {
   }
 }
 
-/** Runs `loft yard <args>` in `cwd`, noting the page's address and any tree not yet served. */
+/**
+ * Runs `loft yard <args>` in `cwd`, noting the page's address and any tree not yet served, and
+ * flushing the outbox in the background after a write of Yard Log.
+ */
 export async function run($: EngineInterface, cwd: string, args: readonly string[], stdin?: string): Promise<Ran> {
   const ran = await yard($, state.settings, cwd, args, stdin === undefined ? {} : { stdin })
+  if (state.isOn && succeeded(ran) && WRITES.has(args[0] ?? '')) flush($, state.settings, state.flushing, cwd)
   const url = pageOf(ran.doc)
   // Written only when it changes: every dialog and pane that shows it is drawn again on a write.
   if (url && url !== (await read($, page))) await update($, page, () => url)

@@ -40716,6 +40716,78 @@ links:
       - file: "crates/loft-cli/tests/yard_status.rs"
         name: "status_runs_outside_a_repository_without_a_session"
         body: f1963e8f730d04bf8f212299b2f8a221848afc3eed29032d9874a06ac0ce601c
+  - node: 01a213ce-418e-700f-b0fe-78c49e9b08cb
+    reviewed: 9629fb494b53b55a999c28a1633867e6e896ba7d019b1173a3a936eae0cdd84e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "after a write through Yard's tools the mod runs loft yard flush, and the call does not wait for it"
+        body: ca6beb9c47141b1782e418011dbf9cb79648efa47feb9b7d300416728f2fb9c4
+  - node: 01a213ce-418e-700f-b0fe-78c5795d8969
+    reviewed: f4ea8d935934ccdcdc6464751df5a5b5dddcd6bfb1f1ebaed94398bf8159a44f
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "after a write mirrored from a task, a question or a plan the mod runs loft yard flush, and the native call does not wait for it"
+        body: d5807afec90efd9b6161a371d52375e7ad0939a5c7055881ede9af27db89b74a
+  - node: 01a213ce-418e-700f-b0fe-78c60b95b0ec
+    reviewed: 37b84a1c2fa529921f6489da3cb416425db1ad473fce184ca90fa48d972a02b8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the session's first beat runs loft yard flush"
+        body: b2972f628f73bac70b6838ca3b7e464e63567a76ce2bdbec23c8ae76c12c1706
+  - node: 01a213ce-418e-700f-b0fe-78c740190611
+    reviewed: 95725475d3cc6ad28542357fc34fab974710f58cf9a885d93f2133031f13d359
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one ended failed"
+        body: cde5c7c3a2b64a77afede23eff442df36f14b7fa5d79a1019158a5f5d51d70f0
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one ended busy"
+        body: 19571050c9c626232ec9e98c241b9b4936f30b3639ec39ee6078b26033ab7d62
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one ended paused"
+        body: 09157b62503fb39331938705ef10145b7c98143f393a22d54bcec7e184abd3cf
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one counted entries remaining"
+        body: 5bb60e7bc3e1db3a63824ce6e00005bf9558cfd9fd31ad5260a4323af6dc9f86
+  - node: 01a213ce-418e-700f-b0fe-78c8c00b45f7
+    reviewed: 01d45be6fecf230c8561186088734df3beae7c9184cf9bb265558bbe28fd025c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs no flush where the last one ended sent with no entry remaining"
+        body: 87c93f53287804538b03c3473b790cbf14612615e43b8079a26121e8a7435bcf
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs no flush where the last one ended empty"
+        body: 9b08e87bd7c9c25eb747ce14c7bf56ca8f7a7f50d0435a0014c1899ed1c402ad
+  - node: 01a21406-1007-7756-963c-2309d5987ae6
+    reviewed: 889775a97c1b2857e4e4f4bc97c4d0567a2daf1cc2ee234ae7e79c8e99a380e0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "once a flush has ended off, the mod runs no flush for the rest of the session"
+        body: 01eb08e21c710c09811c073e53898ab93f3a93c1f4e99bcfbd177542c88fab35
+  - node: 01a213ce-418e-700f-b0fe-78c944debb80
+    reviewed: 5213bcde2ffa171b92df36f8013c07698a79912f1660d623f3a14f49e8b05d3b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod starts no flush while one it started runs, and one write made meanwhile is followed by one more flush"
+        body: 2cee0a9df4c6091f330329d311015dea63b35e00d6886a70838b3b7c62a6e114
+  - node: 01a21406-1007-7756-963c-230adb7104a0
+    reviewed: 20d1dae5849f64ec4149b06ae7af7ca643e23c08c7a4cdbd6122bc14c0850421
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod starts no flush while one it started runs, and one write made meanwhile is followed by one more flush"
+        body: 2cee0a9df4c6091f330329d311015dea63b35e00d6886a70838b3b7c62a6e114
+  - node: 01a213ce-418e-700f-b0fe-78caebc522b9
+    reviewed: cf06b852c5e8cbc895b63f48cbe77e0db833010cb6733f05f8e4869b97b17811
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod has Claude Code stop a flush it started that still runs 6 minutes later"
+        body: dfbc6e968d3c22d7e115a58e17c1f809d7b376a5723a0d3145d01150e7075114
+  - node: 01a21406-1007-7756-963c-230b88b94598
+    reviewed: f4993bb09c3cf76a4a4d579a6bc4ffb7a266cd2f02cb0ca15abd128b410690d3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod runs loft yard flush only where the loft it runs speaks protocol 5 or a later one"
+        body: 579a1d6a153a17ace29d69d4767b22c49f1d884baeb64abbf8c753f6006a59bd
   - node: 01a213ce-418e-700f-b0fe-78cc9c749faa
     reviewed: 339fdef988762213f919f0f1aecdcd2c117a68ef2cae2f77ddd084f06cf51cb2
     tests:
@@ -40779,6 +40851,12 @@ links:
       - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
         name: "the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_minutes"
         body: 2a8119e5ad3add78bcf6ecca6143ccb3b47156934cad027cc870d8c013bf0973
+  - node: 01a213ce-418e-700f-b0fe-78d25a8c9e5e
+    reviewed: 7aba52e0be259edf571a122616c0116c5700d3e0329901a0cb65240373cb2753
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a flush the mod starts runs as every loft command does, adding only the quiet variables to the session's environment"
+        body: 63948396b8b7bfe0fb055fbca76d6c2b7020b544afac8e997da9c4c7ee42eb03
   - node: 01a213ce-418e-700f-b0fe-78d3600e06ba
     reviewed: 5dafdf36fe71dd550ed08c4e816838c70ee59648a66d870432c4f263fe84ee12
     tests:
