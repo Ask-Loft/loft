@@ -15,7 +15,10 @@ use super::classify_event;
 use super::commands;
 use super::state::Files;
 use super::translate::{Hook, HookKind};
+use crate::yard::flush;
 use crate::yard::post::post;
+use flushing::Flushing;
+use loft_ports::clock::Clock as _;
 
 const BEAT: Duration = Duration::from_secs(5);
 const LIFETIME: Duration = Duration::from_hours(24);
@@ -41,6 +44,7 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
     let home = Home::from_env().ok_or("no machine home for Yard")?;
     let clock = crate::yard::clock();
     let mut server = ServerChild(None);
+    let mut flushing = Flushing::default();
     let mut observer = super::observer::Observer::default();
     let mut notifications = super::notification_worker::Monitor::default();
     // Learned on each beat; looked up between beats only while no page server is known or
@@ -85,6 +89,18 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
                 "/api/register",
                 &json!({"tree":hook.dir()}),
             );
+        }
+        if !state.stopped {
+            flushing.tick(
+                clock,
+                beat,
+                || flush::due(&flush::mode(), clock.now().unwrap_or_default()),
+                || {
+                    commands::flush(hook.dir())?
+                        .spawn()
+                        .map_err(|e| e.to_string())
+                },
+            )?;
         }
         let queued = !state.events.is_empty() || !state.in_flight.is_empty();
         if queued || accounted || state.stopped {
@@ -134,6 +150,7 @@ fn drive(
     Ok(())
 }
 
+mod flushing;
 #[cfg(test)]
 mod tests;
 

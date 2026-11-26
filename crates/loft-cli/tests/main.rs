@@ -147,6 +147,7 @@ mod yard_codex_cachewrite;
 mod yard_codex_consult;
 mod yard_codex_contract;
 mod yard_codex_delegation;
+mod yard_codex_flush;
 mod yard_codex_notifications;
 mod yard_codex_outbox;
 mod yard_codex_skill;

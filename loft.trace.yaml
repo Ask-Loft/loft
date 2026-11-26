@@ -40716,6 +40716,75 @@ links:
       - file: "crates/loft-cli/tests/yard_status.rs"
         name: "status_runs_outside_a_repository_without_a_session"
         body: f1963e8f730d04bf8f212299b2f8a221848afc3eed29032d9874a06ac0ce601c
+  - node: 01a213ce-418e-700f-b0fe-78cc9c749faa
+    reviewed: 339fdef988762213f919f0f1aecdcd2c117a68ef2cae2f77ddd084f06cf51cb2
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "an_entry_written_after_the_worker_started_is_flushed_at_its_next_beat"
+        body: 61ae12e39902cad0b383da82e143caef610593dc110d9d02dfdf8620d8749a82
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "the_worker_flushes_at_its_first_beat_with_the_address_and_the_token_codex_gives_it"
+        body: 06da9a749f5f6c6285bd492854fd4118dd88d0953daea97bdf0c613ef1b4d55c
+  - node: 01a213ce-418e-700f-b0fe-78cd7bde2ffb
+    reviewed: e9008dae4e9a16b37831d9ce304d0468943637554d46b52f43d9d61e29011a78
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_flush_is_due_once_an_entry_for_the_address_waits"
+        body: 9ddc37be05e6f5394b35604c1fbc001892f0574e768ebae549e806df531b56a8
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "the_worker_starts_a_flush_only_on_a_beat_where_one_is_due"
+        body: d8524816f4bc6808bfe4d4a653942628a3540038151a885490991772ae3514f7
+  - node: 01a21406-1007-7756-963c-230cbc0e6521
+    reviewed: 4b4fc423d3e0570a105efa82c00bc539b5b952c219333def7fd56ea8d5de8953
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_for_entries_of_another_address_or_of_a_newer_format"
+        body: e39fe36c9514f1939a837ca7bcfc85d8c4fd7a24118c28f6ef6b3060fbefad4d
+  - node: 01a216fa-feab-729d-9d66-ce58f509b86b
+    reviewed: 3efba99797fac8cb9d11253e25b1ba1120ea97aa505d19964c465686609df744
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_for_entries_yard_server_will_take_later_alone"
+        body: 7d50ab31d13052302d2c3e7d2a265626787c039cc6a7ea8f9266564d145deade
+  - node: 01a21406-1007-7756-963c-230dcfa9347f
+    reviewed: d8026beed81567bd8c4b15469be890231e8a5e4ef52326bb1449c0466cfb1e17
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_before_the_time_yard_server_asked_to_come_back_after"
+        body: 039cf9877b1a60831238559382bbb0b4bc187cd025f47d7e678432b1eb67b9ca
+  - node: 01a21406-1007-7756-963c-230e4274c2ec
+    reviewed: 9fa27112d67ffbb641d0306b7fc51271e3636fa44dc928d43f017d585cb03b9e
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_without_connected_mode"
+        body: ca6bc14094d3aac6370d6ff1ee732c8c53fa457e678dbed0ada6cfacb7112658
+  - node: 01a213ce-418e-700f-b0fe-78ceec407043
+    reviewed: 0d0874e15d53d0ff166fdae124e3cdd14fb22898b43790c25ab4928a48d8b217
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_minutes"
+        body: 2a8119e5ad3add78bcf6ecca6143ccb3b47156934cad027cc870d8c013bf0973
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "a_flush_the_worker_started_that_has_ended_is_forgotten"
+        body: 7515260c5f30ca9b416fef2645420efed7184259bef766f8533b173d040e935c
+  - node: 01a213ce-418e-700f-b0fe-78cfc3e397d6
+    reviewed: c24ad36e4a498464426e2bc4ccbbb1763493cae879b53ccdbefeb9f02e9ca682
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "the_worker_delivers_events_while_its_flush_waits_on_a_silent_yard_server"
+        body: d639ad66df7176da4b10a33924ca41fc16ace5d4074f62366e06c03a73cce818
+  - node: 01a21406-1007-7756-963c-230f3c2ad7a3
+    reviewed: 04cd999e045b14ca369786a0d3b076b2337b6b87490c5a045750cbdd00621d23
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_minutes"
+        body: 2a8119e5ad3add78bcf6ecca6143ccb3b47156934cad027cc870d8c013bf0973
+  - node: 01a213ce-418e-700f-b0fe-78d3600e06ba
+    reviewed: 5dafdf36fe71dd550ed08c4e816838c70ee59648a66d870432c4f263fe84ee12
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "the_worker_flushes_at_its_first_beat_with_the_address_and_the_token_codex_gives_it"
+        body: 06da9a749f5f6c6285bd492854fd4118dd88d0953daea97bdf0c613ef1b4d55c
   - node: 01a1d600-053c-73ed-b18e-e5a0c1114446
     reviewed: 9053d55a1c2bb4d36c39e44ae7192c5f2555f7b328a282a3c8fa0547644c5b8c
     tests:

@@ -63,6 +63,13 @@ pub fn plan_update(mut input: Value, steps: &[(&str, &str)]) -> Value {
 /// A running `yard codex watch`; dropping it ends the session its input names and stops it.
 pub struct Worker<'a>(pub Child, &'a Yard, Value);
 
+impl<'a> Worker<'a> {
+    /// The worker `process` of `yard`, started on the hook `input`.
+    pub fn new(process: Child, yard: &'a Yard, input: Value) -> Self {
+        Self(process, yard, input)
+    }
+}
+
 impl Drop for Worker<'_> {
     fn drop(&mut self) {
         let mut end = self.2.clone();

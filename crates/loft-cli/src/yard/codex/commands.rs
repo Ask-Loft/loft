@@ -92,6 +92,20 @@ pub fn command(dir: &str, args: &[String], port: u16) -> Result<Command> {
     Ok(command)
 }
 
+/// `loft yard flush`, run in `dir` with the worker's own environment, its output discarded.
+pub fn flush(dir: &str) -> Result<Command> {
+    let mut command = Command::new(std::env::current_exe().map_err(|e| e.to_string())?);
+    command
+        .current_dir(dir)
+        .args(["yard", "flush", "--format", "json"])
+        .env("LOFT_TELEMETRY", "off")
+        .env("LOFT_UPDATE_CHECK", "off")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    Ok(command)
+}
+
 const fn json_output() -> Output {
     Output {
         format: Some(Format::Json),

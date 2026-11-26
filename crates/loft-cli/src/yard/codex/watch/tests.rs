@@ -172,3 +172,64 @@ fn a_background_handler_for_a_canceled_nudge_cannot_resume_an_ended_session() {
     assert!(!files.read().unwrap().stopped);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+/// A child that runs until it is stopped, standing in for a flush that hangs.
+#[cfg(unix)]
+fn hanging() -> super::Result<std::process::Child> {
+    std::process::Command::new("sleep")
+        .arg("600")
+        .spawn()
+        .map_err(|e| e.to_string())
+}
+
+#[cfg(unix)]
+#[test]
+fn the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_minutes() {
+    let clock = SystemClock::with_epoch(Some("0")).passing_if(true);
+    let mut flushing = super::flushing::Flushing::default();
+    let started = std::cell::Cell::new(0);
+    let start = || {
+        started.set(started.get() + 1);
+        hanging()
+    };
+    flushing.tick(&clock, true, || true, start).unwrap();
+    assert!(flushing.runs());
+    clock.wait(std::time::Duration::from_secs(5));
+    flushing.tick(&clock, true, || true, start).unwrap();
+    assert_eq!(started.get(), 1);
+    clock.wait(super::flushing::MOST_TIME);
+    flushing.tick(&clock, false, || true, start).unwrap();
+    assert!(!flushing.runs());
+    flushing.tick(&clock, true, || true, start).unwrap();
+    assert_eq!(started.get(), 2);
+}
+
+#[cfg(unix)]
+#[test]
+fn the_worker_starts_a_flush_only_on_a_beat_where_one_is_due() {
+    let clock = SystemClock::with_epoch(Some("0")).passing_if(true);
+    let mut flushing = super::flushing::Flushing::default();
+    flushing.tick(&clock, true, || false, hanging).unwrap();
+    assert!(!flushing.runs());
+    flushing.tick(&clock, false, || true, hanging).unwrap();
+    assert!(!flushing.runs());
+    flushing.tick(&clock, true, || true, hanging).unwrap();
+    assert!(flushing.runs());
+}
+
+#[cfg(unix)]
+#[test]
+fn a_flush_the_worker_started_that_has_ended_is_forgotten() {
+    let clock = SystemClock::with_epoch(Some("0")).passing_if(true);
+    let mut flushing = super::flushing::Flushing::default();
+    let quick = || {
+        std::process::Command::new("true")
+            .spawn()
+            .map_err(|e| e.to_string())
+    };
+    flushing.tick(&clock, true, || true, quick).unwrap();
+    assert!(flushing.runs());
+    flushing.wait();
+    flushing.tick(&clock, false, || false, quick).unwrap();
+    assert!(!flushing.runs());
+}

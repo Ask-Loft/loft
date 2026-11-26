@@ -187,3 +187,119 @@ fn a_record_keeps_the_later_key_of_each_entry_the_run_did_not_take_while_it_wait
     let next = super::record::next(&previous, &run, &keys(&["a", "b", "d"]));
     assert_eq!(next.later, codes(&[("a", "old"), ("d", "new")]));
 }
+
+/// Connected mode on for `endpoint`, with the home of Yard in a fresh directory.
+fn on(endpoint: &str) -> super::Mode {
+    let dir = std::env::temp_dir().join(format!("loft-due-{}", uuid::Uuid::new_v4()));
+    let home = yardlog_store::home::Home::at(&dir);
+    let outbox = home.outbox(endpoint);
+    super::Mode::On(super::Connection {
+        home,
+        outbox,
+        token: "token".to_owned(),
+    })
+}
+
+/// Puts an entry of `format` for `endpoint` into the outbox of `mode`, named by `key`.
+fn put(mode: &super::Mode, endpoint: &str, key: &str, format: &str) {
+    let super::Mode::On(connection) = mode else {
+        unreachable!()
+    };
+    let dir = connection.outbox.dir();
+    fs::create_dir_all(dir).unwrap();
+    let mut entry: serde_json::Value =
+        serde_json::from_str(&yardlog::entry::write(endpoint, r#"{"record":"version"}"#)).unwrap();
+    entry["format"] = serde_json::json!(format);
+    fs::write(dir.join(format!("{key}.json")), entry.to_string()).unwrap();
+}
+
+/// Writes `record` as the last run for `endpoint` in the home of `mode`.
+fn recorded(mode: &super::Mode, endpoint: &str, record: &serde_json::Value) {
+    let super::Mode::On(connection) = mode else {
+        unreachable!()
+    };
+    fs::create_dir_all(connection.home.dir()).unwrap();
+    fs::write(
+        connection.home.dir().join("flush.json"),
+        serde_json::json!({ endpoint: record }).to_string(),
+    )
+    .unwrap();
+}
+
+const ADDRESS: &str = "http://127.0.0.1:1";
+
+#[test]
+fn a_flush_is_due_once_an_entry_for_the_address_waits() {
+    let mode = on(ADDRESS);
+    assert!(!super::due(&mode, 0));
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000001",
+        "yardlog-outbox/1",
+    );
+    assert!(super::due(&mode, 0));
+}
+
+#[test]
+fn no_flush_is_due_without_connected_mode() {
+    assert!(!super::due(&super::Mode::Off, 0));
+    assert!(!super::due(&super::Mode::Homeless, 0));
+}
+
+#[test]
+fn no_flush_is_due_for_entries_of_another_address_or_of_a_newer_format() {
+    let mode = on(ADDRESS);
+    put(
+        &mode,
+        "http://127.0.0.1:2",
+        "00000000-0000-7000-8000-000000000001",
+        "yardlog-outbox/1",
+    );
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000002",
+        "yardlog-outbox/9",
+    );
+    assert!(!super::due(&mode, 0));
+}
+
+#[test]
+fn no_flush_is_due_for_entries_yard_server_will_take_later_alone() {
+    let mode = on(ADDRESS);
+    let key = "00000000-0000-7000-8000-000000000001";
+    put(&mode, ADDRESS, key, "yardlog-outbox/1");
+    recorded(
+        &mode,
+        ADDRESS,
+        &serde_json::json!({"ended": "2026-01-01T00:00:00Z", "outcome": "sent", "later": {key: "unknown_report_version"}}),
+    );
+    assert!(!super::due(&mode, 0));
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000002",
+        "yardlog-outbox/1",
+    );
+    assert!(super::due(&mode, 0));
+}
+
+#[test]
+fn no_flush_is_due_before_the_time_yard_server_asked_to_come_back_after() {
+    let mode = on(ADDRESS);
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000001",
+        "yardlog-outbox/1",
+    );
+    recorded(
+        &mode,
+        ADDRESS,
+        &serde_json::json!({"ended": "2026-01-01T00:00:00Z", "outcome": "paused", "notBefore": "2026-01-01T00:02:00Z"}),
+    );
+    let at = 1_767_225_600;
+    assert!(!super::due(&mode, at + 119));
+    assert!(super::due(&mode, at + 120));
+}

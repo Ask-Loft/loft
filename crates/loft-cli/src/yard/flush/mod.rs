@@ -51,14 +51,14 @@ pub const LOCK: &str = "flush.lock";
 const WAIT: Duration = Duration::from_secs(10);
 
 /// Where connected mode sends: the home of Yard, the outbox of the address and the token.
-pub(super) struct Connection {
+pub(in crate::yard) struct Connection {
     pub home: Home,
     pub outbox: Outbox,
     token: String,
 }
 
 /// Whether connected mode is on, as the environment says.
-pub(super) enum Mode {
+pub(in crate::yard) enum Mode {
     /// A variable is unset or empty.
     Off,
     /// Both variables are set, and no home directory is known to keep the outbox in.
@@ -66,7 +66,7 @@ pub(super) enum Mode {
     On(Connection),
 }
 
-pub(super) fn mode() -> Mode {
+pub(in crate::yard) fn mode() -> Mode {
     let (Some(endpoint), Some(token)) = (environment::text(ENDPOINT), environment::text(TOKEN))
     else {
         return Mode::Off;
@@ -88,6 +88,25 @@ pub fn outbox() -> Option<Outbox> {
         Mode::On(connection) => Some(connection.outbox),
         Mode::Off | Mode::Homeless => None,
     }
+}
+
+/// Whether a flush has work it may do at `now`, in seconds since the Unix epoch: connected mode
+/// is on, the outbox holds an entry for its address that the last run did not record as one Yard
+/// Server will take later, and Yard Server asked to come back after no time that has not come.
+pub(in crate::yard) fn due(mode: &Mode, now: u64) -> bool {
+    let Mode::On(connection) = mode else {
+        return false;
+    };
+    let last = record::read(&connection.home, connection.outbox.endpoint());
+    let paused = last
+        .as_ref()
+        .and_then(|last| last.not_before)
+        .is_some_and(|time| now < time);
+    let later = last.map(|last| last.later).unwrap_or_default();
+    !paused
+        && waiting(&connection.outbox)
+            .iter()
+            .any(|key| !later.contains_key(key))
 }
 
 /// How long a flush waits for an answer: `seconds` where [`TIMEOUT`] gives them, else 10 seconds.
