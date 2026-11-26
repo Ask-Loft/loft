@@ -4,7 +4,6 @@
 //! `~/.cargo/bin`. Where no `loft` can be run, the `SessionStart` hook tells the agent that Yard
 //! Client is off and how to turn it on, and every other hook prints nothing and exits 0.
 
-#[cfg(unix)]
 use std::fs;
 #[cfg(unix)]
 use std::path::{Path, PathBuf};
@@ -63,6 +62,19 @@ fn the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_lo
             .join("hooks/run-loft.sh")
             .is_file()
     );
+}
+
+#[test]
+fn the_repository_checks_the_launcher_out_with_line_feeds_alone_on_every_platform() {
+    let attributes = fs::read_to_string(workspace().join(".gitattributes")).unwrap_or_default();
+    assert!(
+        attributes
+            .lines()
+            .any(|line| line.split_whitespace().collect::<Vec<_>>() == ["*.sh", "text", "eol=lf"]),
+        "{attributes}"
+    );
+    let launcher = fs::read(workspace().join(CLAUDE_ROOT).join("hooks/run-loft.sh")).unwrap();
+    assert!(!launcher.contains(&b'\r'));
 }
 
 /// Where a hook runs: its `loftCommand` setting, if any, and the directories of its search path.

@@ -35697,6 +35697,12 @@ links:
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
         body: 4932fed7a6c61d4313c2aad289e6bf30070ce56f297a353f805069bb342a7220
+  - node: 01a218cc-9b78-72be-83c3-b6d050db797b
+    reviewed: 94b5c977c226dc62ca48b6dcdcbfa74ebea5e04b6ec1e83ac7d4cf5766a19037
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_repository_checks_the_launcher_out_with_line_feeds_alone_on_every_platform"
+        body: 0f3d4c4f58e928c98f23fc80cc991defd89d5e30036e26253d01ac5ac8388523
   - node: 01a21838-627a-77f5-b8f0-19fddce71f03
     reviewed: 7bc957950aa56afc1156de893c89f0a6162419e65299cefe488e0373ff807c61
     tests:
@@ -37495,7 +37501,7 @@ links:
         name: "the_common_crate_depends_on_no_other_crate_of_the_workspace"
         body: a81e8c995633a814c697d549a05404f0b8f35dc02667600c3ebf9f0f8346dd78
   - node: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
-    reviewed: a075172b9263bdd9ad1aacc47272cc584b87efba4c6397dccb0ccc570da380c7
+    reviewed: 1aa6bbbde3af60d43cca896cd9b7a18c53561016707bc1b7792fe7df085e4cb1
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every command Yard Client runs is loftCommand with --format json, quietly, and no other program"
@@ -37503,6 +37509,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "with Yard Client off, the notice asks loftCommand alone for its version"
         body: 12b95fe07054b5cbd7d66d8945ef9375e204df6eec36533801f20cfd2885c364
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where the bare loft cannot be run, the loft in ~/.cargo/bin turns Yard Client on and runs every later command"
+        body: 64c52c90747eecb3eefe9f4737bffb44541e43698bc29dc8a8b5896c831b3cc1
   - node: 01a1649f-62ea-7225-80e1-a3d5bf4de21c
     reviewed: eb4056dd9ec58a44693ce237cffdfb6f09f9c4ee4d3bad8a6e2208955d856170
     tests:

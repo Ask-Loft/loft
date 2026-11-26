@@ -1,0 +1,3 @@
+# A shell script is read by sh, which takes a carriage return for part of a command: keep line
+# feeds alone on every checkout, on Windows too.
+*.sh text eol=lf
