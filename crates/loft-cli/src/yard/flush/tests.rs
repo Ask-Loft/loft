@@ -132,6 +132,45 @@ fn a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went() 
     fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
+/// A clock whose time, in seconds since the Unix epoch, is what its cell holds.
+struct Shared(std::sync::Arc<std::sync::atomic::AtomicU64>);
+
+impl Clock for Shared {
+    fn now(&self) -> Result<u64, PortError> {
+        Ok(self.0.load(std::sync::atomic::Ordering::SeqCst))
+    }
+
+    fn elapsed(&self) -> Duration {
+        Duration::ZERO
+    }
+
+    fn wait(&self, _length: Duration) {}
+}
+
+/// Yard Server that takes 9 seconds of the shared clock to ask to come back 5 seconds later.
+struct SlowToComeBack(std::sync::Arc<std::sync::atomic::AtomicU64>);
+
+impl software_plant::http::Responder for SlowToComeBack {
+    fn answer(&mut self, _request: &software_plant::http::Request) -> software_plant::http::Answer {
+        self.0.fetch_add(9, std::sync::atomic::Ordering::SeqCst);
+        let mut response = software_plant::http::Response::empty(429);
+        response
+            .headers
+            .push(("Retry-After".to_owned(), "5".to_owned()));
+        response.into()
+    }
+}
+
+#[test]
+fn a_retry_after_in_seconds_counts_from_the_answer() {
+    let time = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(1000));
+    let server = software_plant::http::Server::start(SlowToComeBack(time.clone()));
+    let outbox = filled(&server.url(), 1);
+    let flushed = drain(&outbox, "token", WAIT, &Shared(time));
+    assert_eq!(flushed.not_before, Some(1014));
+    fs::remove_dir_all(outbox.dir()).unwrap();
+}
+
 fn keys(keys: &[&str]) -> std::collections::BTreeSet<String> {
     keys.iter().map(|key| (*key).to_owned()).collect()
 }

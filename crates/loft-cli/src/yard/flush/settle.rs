@@ -9,6 +9,7 @@
 use std::slice;
 use std::time::Duration;
 
+use loft_ports::clock::Clock;
 use serde_json::Value;
 use yardlog::Time;
 use yardlog::batch::batch;
@@ -52,20 +53,21 @@ pub(super) struct Settled {
     pub dead: usize,
     /// The keys of the entries whose versions Yard Server will take later, each with its code.
     pub later: Vec<(String, String)>,
-    /// The seconds Yard Server asked the run to keep away, where it refused the batch for now.
-    pub come_back: Option<u64>,
+    /// The time Yard Server asked the run not to come back before, in seconds since the Unix
+    /// epoch, where it refused the batch for now.
+    pub not_before: Option<u64>,
     /// Why the batch did not go, or an entry of it could not be settled.
     pub failed: Vec<Failed>,
 }
 
 /// Sends `entries` as one batch with `credential`, waiting at most `wait` for the answer, and
-/// settles each entry by it; `now` dates a `Retry-After` given as an HTTP date.
+/// settles each entry by it; a `Retry-After` counts from the time `clock` gives once it answered.
 pub(super) fn send(
     outbox: &Outbox,
     credential: &str,
     entries: &[Entry],
     wait: Duration,
-    now: u64,
+    clock: &dyn Clock,
 ) -> Settled {
     let records: Vec<&str> = entries.iter().map(|entry| entry.record.as_str()).collect();
     let body = batch(&records);
@@ -96,14 +98,13 @@ pub(super) fn send(
             }
             settled
         }
-        429 | 503 => match reply
-            .retry_after
-            .as_deref()
-            .and_then(|value| crate::remote::retry_after(value, now))
-            .filter(|seconds| Time::from_unix_seconds(now.saturating_add(*seconds)).is_ok())
-        {
-            Some(seconds) => Settled {
-                come_back: Some(seconds),
+        429 | 503 => match reply.retry_after.as_deref().and_then(|value| {
+            let now = clock.now().unwrap_or_default();
+            let seconds = crate::remote::retry_after(value, now)?;
+            Some(now.saturating_add(seconds)).filter(|time| Time::from_unix_seconds(*time).is_ok())
+        }) {
+            Some(time) => Settled {
+                not_before: Some(time),
                 ..Settled::default()
             },
             None => failure(Failed::yard_server(refusal(reply.status, &reply.body))),

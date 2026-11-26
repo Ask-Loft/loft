@@ -40386,6 +40386,9 @@ links:
   - node: 01a213cb-9c28-769e-b7c8-441144b1d80f
     reviewed: 1bd0619545979b847fbd56e55c1ed8b6709d28d2a99cc0d8f5df03420db2c6c6
     tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_retry_after_in_seconds_counts_from_the_answer"
+        body: e5224f7baf934c65760018c6452b05bbf5c9645b34734e1326ca4d4f0f66c057
       - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
         name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
         body: 4cffd700ca3f941675eac7e1a99c4fd60f199a2fd576abbab0bac25a201b1dbb

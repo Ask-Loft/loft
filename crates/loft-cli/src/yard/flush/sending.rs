@@ -112,13 +112,12 @@ pub(super) fn drain(
         flushed.outcome = "sent";
         let keys = taken.entries.iter().map(|entry| entry.key.clone());
         flushed.taken.extend(keys);
-        let now = clock.now().unwrap_or_default();
-        let settled = settle::send(outbox, credential, &taken.entries, wait, now);
+        let settled = settle::send(outbox, credential, &taken.entries, wait, clock);
         flushed.sent += settled.sent;
         flushed.dead += settled.dead;
         flushed.put_off.extend(settled.later);
         flushed.failed.extend(settled.failed);
-        flushed.not_before = settled.come_back.map(|seconds| now.saturating_add(seconds));
+        flushed.not_before = settled.not_before;
     }
     if !flushed.failed.is_empty() {
         flushed.outcome = "failed";
