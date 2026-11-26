@@ -292,7 +292,7 @@ fn last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed() {
         line(&text, "last attempt"),
         format!("last attempt: {ended} paused")
     );
-    assert_eq!(json["lastAttempt"]["notBefore"], serde_json::Value::Null);
+    assert_eq!(json["lastAttempt"]["notBefore"], Value::Null);
 }
 
 #[test]
