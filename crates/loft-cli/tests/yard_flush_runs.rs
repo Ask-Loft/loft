@@ -112,6 +112,7 @@ fn a_flush_that_finds_the_lock_held_is_busy_makes_no_request_and_exits_0() {
     let held_lock = lock::try_lock(&flush_lock(&yard)).unwrap().unwrap();
     let (code, flushed) = flush(&yard, &variables);
     assert_eq!((code, &flushed["outcome"]), (Some(0), &json!("busy")));
+    assert_eq!(flushed["remaining"], 1);
     assert_eq!(server.requests().len(), 0);
     assert_eq!(entries(&yard).len(), 1);
     drop(held_lock);

@@ -52,6 +52,8 @@ struct Report {
     dead: Vec<(String, String)>,
     /// The time now, in seconds since the Unix epoch.
     now: u64,
+    /// Whether a home directory is known to keep `~/.yard/` in.
+    home_known: bool,
 }
 
 pub fn run(args: &StatusArgs) -> Finished {
@@ -79,6 +81,7 @@ fn report() -> Report {
             (Connected::On { endpoint, refused }, last)
         }
     };
+    let home_known = home.is_some();
     let dir = home.map(|home| home.outbox_dir());
     let survey = dir
         .as_deref()
@@ -91,6 +94,7 @@ fn report() -> Report {
         last,
         dead,
         now,
+        home_known,
     }
 }
 
@@ -229,14 +233,15 @@ fn last_line(last: Option<&Record>, now: u64) -> String {
 
 fn fields(report: &Report) -> Value {
     let mut fields = Map::new();
-    let (connected, missing, refused, home) = match &report.connected {
-        Connected::Off(missing) => (false, missing.clone(), false, true),
-        Connected::Homeless => (false, Vec::new(), false, false),
+    let (connected, missing, refused) = match &report.connected {
+        Connected::Off(missing) => (false, missing.clone(), false),
+        Connected::Homeless => (false, Vec::new(), false),
         Connected::On { endpoint, refused } => {
             fields.insert("endpoint".to_owned(), json!(endpoint));
-            (true, Vec::new(), *refused, true)
+            (true, Vec::new(), *refused)
         }
     };
+    let home = report.home_known;
     fields.insert("connected".to_owned(), json!(connected));
     fields.insert("missing".to_owned(), json!(missing));
     fields.insert("refused".to_owned(), json!(refused));

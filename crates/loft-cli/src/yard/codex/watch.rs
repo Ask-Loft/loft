@@ -100,7 +100,7 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
                         .spawn()
                         .map_err(|e| e.to_string())
                 },
-            )?;
+            );
         }
         let queued = !state.events.is_empty() || !state.in_flight.is_empty();
         if queued || accounted || state.stopped {

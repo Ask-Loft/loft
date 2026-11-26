@@ -27,26 +27,26 @@ impl Drop for Flushing {
 
 impl Flushing {
     /// On each tick: forgets a flush that has ended and stops one that has run too long; on a
-    /// beat, and where `due` says a flush has work and none runs, starts one with `start`.
+    /// beat, and where `due` says a flush has work and none runs, starts one with `start`. A
+    /// flush that cannot be started or watched is given up until the next due beat, so that the
+    /// worker's heartbeat and its delivery of events go on whatever becomes of it.
     pub fn tick(
         &mut self,
         clock: &dyn Clock,
         beat: bool,
         due: impl FnOnce() -> bool,
         start: impl FnOnce() -> Result<Child>,
-    ) -> Result<()> {
+    ) {
         if let Some((child, started)) = &mut self.0 {
-            let ended = child.try_wait().map_err(|e| e.to_string())?.is_some();
-            if ended {
-                self.0 = None;
-            } else if clock.elapsed().saturating_sub(*started) >= MOST_TIME {
-                self.stop();
+            match child.try_wait() {
+                Ok(Some(_)) => self.0 = None,
+                Ok(None) if clock.elapsed().saturating_sub(*started) < MOST_TIME => {}
+                Ok(None) | Err(_) => self.stop(),
             }
         }
         if beat && self.0.is_none() && due() {
-            self.0 = Some((start()?, clock.elapsed()));
+            self.0 = start().ok().map(|child| (child, clock.elapsed()));
         }
-        Ok(())
     }
 
     /// Whether a flush the worker started still runs.

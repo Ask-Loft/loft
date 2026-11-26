@@ -226,15 +226,15 @@ impl Outbox {
         if !from.exists() {
             return Ok(false);
         }
-        replace_synced(
-            &dead.join(format!("{name}.{REASON}")),
-            format!("{reason}\n").as_bytes(),
-            false,
-        )?;
+        let reason_file = dead.join(format!("{name}.{REASON}"));
+        replace_synced(&reason_file, format!("{reason}\n").as_bytes(), false)?;
         match move_into_place(&from, &dead.join(name)) {
             Ok(()) => Ok(true),
-            // Gone since it was read: moved or removed by another run.
-            Err(_) if !from.exists() => Ok(false),
+            // Gone since it was read, moved or removed by another run: its reason goes with it.
+            Err(_) if !from.exists() => {
+                remove_if_present(&reason_file)?;
+                Ok(false)
+            }
             Err(error) => Err(error.into()),
         }
     }

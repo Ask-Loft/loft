@@ -142,8 +142,15 @@ pub fn run(args: &FlushArgs) -> Finished {
     let flushed = match lock::try_lock(&connection.home.dir().join(LOCK)) {
         Ok(Some(_held)) => locked(&connection),
         Ok(None) => {
-            let line = format!("busy: another flush sends to Yard Server at {endpoint}.");
-            return report(as_json, &Flushed::quiet("busy"), &line);
+            let busy = Flushed {
+                waiting: waiting(&connection.outbox),
+                ..Flushed::quiet("busy")
+            };
+            let line = format!(
+                "busy: another flush sends to Yard Server at {endpoint}; {} remaining.",
+                busy.remaining()
+            );
+            return report(as_json, &busy, &line);
         }
         Err(error) => Flushed::failed(Failed::outbox(format!(
             "the lock of the flush cannot be taken: {error}"
@@ -180,6 +187,7 @@ fn locked(connection: &Connection) -> Flushed {
     if let Some(time) = pause {
         return Flushed {
             not_before: Some(time),
+            waiting: waiting(&connection.outbox),
             ..Flushed::quiet("paused")
         };
     }

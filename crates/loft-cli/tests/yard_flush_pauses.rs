@@ -48,6 +48,7 @@ fn a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names(
     );
     let (code, again) = flush(&yard, &variables);
     assert_eq!((code, &again["outcome"]), (Some(0), &json!("paused")));
+    assert_eq!(again["remaining"], 1);
     assert_eq!(server.requests().len(), 1);
     yard.clock = Clock::fixed(EPOCH + 121);
     flush(&yard, &variables);

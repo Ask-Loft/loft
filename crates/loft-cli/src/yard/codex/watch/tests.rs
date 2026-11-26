@@ -192,15 +192,15 @@ fn the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_mi
         started.set(started.get() + 1);
         hanging()
     };
-    flushing.tick(&clock, true, || true, start).unwrap();
+    flushing.tick(&clock, true, || true, start);
     assert!(flushing.runs());
     clock.wait(std::time::Duration::from_secs(5));
-    flushing.tick(&clock, true, || true, start).unwrap();
+    flushing.tick(&clock, true, || true, start);
     assert_eq!(started.get(), 1);
     clock.wait(super::flushing::MOST_TIME);
-    flushing.tick(&clock, false, || true, start).unwrap();
+    flushing.tick(&clock, false, || true, start);
     assert!(!flushing.runs());
-    flushing.tick(&clock, true, || true, start).unwrap();
+    flushing.tick(&clock, true, || true, start);
     assert_eq!(started.get(), 2);
 }
 
@@ -209,11 +209,11 @@ fn the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_mi
 fn the_worker_starts_a_flush_only_on_a_beat_where_one_is_due() {
     let clock = SystemClock::with_epoch(Some("0")).passing_if(true);
     let mut flushing = super::flushing::Flushing::default();
-    flushing.tick(&clock, true, || false, hanging).unwrap();
+    flushing.tick(&clock, true, || false, hanging);
     assert!(!flushing.runs());
-    flushing.tick(&clock, false, || true, hanging).unwrap();
+    flushing.tick(&clock, false, || true, hanging);
     assert!(!flushing.runs());
-    flushing.tick(&clock, true, || true, hanging).unwrap();
+    flushing.tick(&clock, true, || true, hanging);
     assert!(flushing.runs());
 }
 
@@ -227,9 +227,24 @@ fn a_flush_the_worker_started_that_has_ended_is_forgotten() {
             .spawn()
             .map_err(|e| e.to_string())
     };
-    flushing.tick(&clock, true, || true, quick).unwrap();
+    flushing.tick(&clock, true, || true, quick);
     assert!(flushing.runs());
     flushing.wait();
-    flushing.tick(&clock, false, || false, quick).unwrap();
+    flushing.tick(&clock, false, || false, quick);
     assert!(!flushing.runs());
+}
+
+#[test]
+fn a_flush_the_worker_cannot_start_leaves_the_worker_running_and_the_next_due_beat_tries_again() {
+    let clock = SystemClock::with_epoch(Some("0")).passing_if(true);
+    let mut flushing = super::flushing::Flushing::default();
+    let tries = std::cell::Cell::new(0);
+    let failing = || -> super::Result<std::process::Child> {
+        tries.set(tries.get() + 1);
+        Err("no such file or directory".to_owned())
+    };
+    flushing.tick(&clock, true, || true, failing);
+    assert!(!flushing.runs());
+    flushing.tick(&clock, true, || true, failing);
+    assert_eq!(tries.get(), 2);
 }

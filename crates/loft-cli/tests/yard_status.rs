@@ -346,3 +346,20 @@ fn status_runs_outside_a_repository_without_a_session() {
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(document("status", &output)["outcome"], "reported");
 }
+
+#[test]
+fn with_connected_mode_off_and_no_home_directory_known_status_says_no_home_is_known() {
+    let yard = Yard::new();
+    let output = yard
+        .scratch
+        .command(Some(&yard.git), &yard.clock)
+        .env("HOME", "not-an-absolute-home")
+        .args(["yard", "status", "--format", "json"])
+        .output()
+        .unwrap();
+    let json = document("status", &output);
+    assert_eq!(
+        (&json["connected"], &json["homeKnown"]),
+        (&json!(false), &json!(false))
+    );
+}
