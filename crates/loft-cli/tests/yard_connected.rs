@@ -135,6 +135,28 @@ fn a_base_address_ending_in_a_slash_takes_one_slash_before_the_path() {
 }
 
 #[test]
+fn an_address_and_the_same_address_with_a_trailing_slash_send_each_other_s_entries() {
+    let yard = Yard::new();
+    let server = YardServer::accepting();
+    let bare = server.url();
+    let slashed = format!("{bare}/");
+    let refused = |endpoint: &str| {
+        [
+            ("LOFT_YARD_SERVER_ENDPOINT", endpoint.to_owned()),
+            ("LOFT_YARD_SERVER_TOKEN", "not-the-token".to_owned()),
+        ]
+    };
+    write(&yard, STAGE_BATCH, &refused(&slashed));
+    assert_eq!(entries(&yard)[0]["to"]["endpoint"], bare.as_str());
+    flush(&yard, &connected(&bare));
+    assert_eq!(held(&server), ["build"]);
+    write(&yard, &notes(1), &refused(&bare));
+    flush(&yard, &connected(&slashed));
+    assert_eq!(held(&server), ["build", "n1"]);
+    assert_eq!(entries(&yard), Vec::<Value>::new());
+}
+
+#[test]
 fn without_both_variables_nothing_is_copied_and_nothing_is_sent() {
     let server = YardServer::accepting();
     for variables in [

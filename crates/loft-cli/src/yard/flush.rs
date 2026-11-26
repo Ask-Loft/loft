@@ -46,7 +46,9 @@ static PUT: AtomicBool = AtomicBool::new(false);
 fn connection() -> Option<(Outbox, String)> {
     let endpoint = environment::text(ENDPOINT)?;
     let token = environment::text(TOKEN)?;
-    Some((Home::from_env()?.outbox(&endpoint), token))
+    // A trailing `/` is no part of the address, so `https://y` and `https://y/` share entries.
+    let endpoint = endpoint.trim_end_matches('/');
+    Some((Home::from_env()?.outbox(endpoint), token))
 }
 
 /// The outbox each new version is copied into, where connected mode is on.

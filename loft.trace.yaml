@@ -40228,7 +40228,7 @@ links:
         name: "an_entry_holds_its_format_its_address_and_the_record_of_a_batch_and_nothing_else"
         body: f8ac6455fa77de29a4027d29c8be9279824561666b3a85a5ffd0c73b3551045a
   - node: 01a20dc8-c593-7357-875c-81ad156d0928
-    reviewed: 3a7c38b8b3c4cfc4f856c6c8362c312729efee54227ce62a4d44bc5769efc86f
+    reviewed: 6af40bbcf23d28a0344d17db096194b674849f9960c2620a16a727342f936455
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay"
@@ -40236,6 +40236,9 @@ links:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "each_address_takes_only_its_own_entries"
         body: 644f6bf1971e509dcf624ea6ff654f1b3915b83f0dc95a44e2025a5db3177c0e
+      - file: "crates/loft-cli/tests/yard_connected.rs"
+        name: "an_address_and_the_same_address_with_a_trailing_slash_send_each_other_s_entries"
+        body: e0d30d050c47cee868c0f1e3e7b8ccd90ddba55723a48c1c4ba3779a2c467521
   - node: 01a20dc8-c593-7357-875c-81ae19c1ae49
     reviewed: b032c99294c5da0d12e4b5484af2b1e4835a7e102715de043ae7b43c0a4c2b4d
     tests:
@@ -40569,6 +40572,12 @@ links:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
         body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+  - node: 01a21980-c4f6-7743-90bb-8eeb58974558
+    reviewed: 4e7e5c8b1f6bd1041f403b153b32382bde8371735f760ddf494e3b06c6b7cd76
+    tests:
+      - file: "crates/loft-cli/tests/yard_connected.rs"
+        name: "an_address_and_the_same_address_with_a_trailing_slash_send_each_other_s_entries"
+        body: e0d30d050c47cee868c0f1e3e7b8ccd90ddba55723a48c1c4ba3779a2c467521
   - node: 01a20dc8-c593-7357-875c-81f6099c291e
     reviewed: 0a6009ab7911e660fff75c7c6cb40a63a96f523f3912cdf1609425e703db44f5
     tests:
