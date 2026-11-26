@@ -5,6 +5,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard Client finds a `loft` installed with `cargo install` where the app that starts Claude Code
+  never read the shell's startup files, as an app opened from the desktop or a host built on the
+  Agent SDK does. While the Claude Code plugin's `loftCommand` setting is `loft`, the mod and the
+  plugin's command hooks now run the `loft` on the search path, else the one in `$CARGO_HOME/bin`
+  or `~/.cargo/bin`, where they used to leave Yard Client off without a word to the agent. Where
+  no `loft` can be run, the session's start tells the agent that Yard Client is off, what was
+  tried and how to turn it on, and every other hook stays silent instead of failing on each tool
+  call. The command hooks run through a new launcher, `hooks/run-loft.sh`. (#39)
 - The Yard page server keeps a session it has heard of in about 3 KB of memory, where it used to
   take about 13 KB: what a session keeps for each Yard Log is now held apart from the map that
   finds it, so the map's empty slots no longer take its full size. With the 256 sessions it keeps

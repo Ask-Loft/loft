@@ -1,0 +1,83 @@
+key: 01a21838-6272-74ef-9f37-1de47fc6bdce
+slug: the-sessionstart-hook-tells-the-agent-that-yard-client-is-off
+title: "The SessionStart command hook tells the agent that Yard Client is off where no loft can be run"
+context: "Where no `loft` can be run, the mod registers no Yard tool and says so in a toast, as the accepted decision \"The mod checks the loft yard protocol and offers no tools across a mismatch\" has it. A host that draws no toast, such as one built on the Agent SDK, shows nobody why, and the agent, reading the `yard` skill, keeps looking for tools that were never registered. The mod cannot add to the agent's context as a session starts: its `session.start` result changes nothing, and the prompt's events are ones Claude Code's built-in guard passes over for a user's mod."
+state:
+  kind: accepted
+  selectedOption: 01a21838-6272-74ef-9f37-1de8944cde2b
+  outcome: "The plugin's command hooks run through a launcher in the plugin, which, finding no `loft` for the SessionStart hook, adds to the agent's context that Yard Client is off and how to turn it on. No Yard tool is registered while Yard Client is off, as before; a protocol mismatch keeps the mod's toast alone."
+drivers:
+  - key: 01a21838-6272-74ef-9f37-1de561fc8cd3
+    kind: local
+    label: "Says plainly why not"
+    statement: "Yard Client either works or says plainly why not, on every host."
+  - key: 01a21838-6272-74ef-9f37-1de61378ddf6
+    kind: local
+    label: "No half-working tools"
+    statement: "No Yard tool is offered that cannot work."
+  - key: 01a21838-6272-74ef-9f37-1de78bc7e501
+    kind: local
+    label: "Before the first call"
+    statement: "The agent knows as the session starts, not after a failed call."
+options:
+  - key: 01a21838-6272-74ef-9f37-1de8944cde2b
+    title: "The SessionStart command hook says so"
+    description: "The launcher that the command hooks run adds a line to the agent's context at the session's start where it finds no `loft`."
+  - key: 01a21838-6272-74ef-9f37-1de97ce5ff0b
+    title: "Tools that refuse with the reason"
+    description: "While Yard Client is off, the mod still registers the six Yard tools, and each call refuses with why and how to fix it."
+  - key: 01a21838-6272-74ef-9f37-1dea4f7f44b1
+    title: "Both"
+    description: "The SessionStart line, and tools that refuse for whatever it misses, such as a protocol mismatch."
+assessments:
+  - option: 01a21838-6272-74ef-9f37-1de8944cde2b
+    driver: 01a21838-6272-74ef-9f37-1de561fc8cd3
+    rating: supports
+    rationale: "the agent's context holds the reason on a host without toasts"
+  - option: 01a21838-6272-74ef-9f37-1de8944cde2b
+    driver: 01a21838-6272-74ef-9f37-1de61378ddf6
+    rating: supports
+    rationale: "no tool is registered"
+  - option: 01a21838-6272-74ef-9f37-1de8944cde2b
+    driver: 01a21838-6272-74ef-9f37-1de78bc7e501
+    rating: supports
+    rationale: "the line is there before the first turn"
+  - option: 01a21838-6272-74ef-9f37-1de97ce5ff0b
+    driver: 01a21838-6272-74ef-9f37-1de561fc8cd3
+    rating: supports
+    rationale: "each call gives the reason, for a mismatch too"
+  - option: 01a21838-6272-74ef-9f37-1de97ce5ff0b
+    driver: 01a21838-6272-74ef-9f37-1de61378ddf6
+    rating: conflicts
+    rationale: "six tools are offered that cannot work"
+  - option: 01a21838-6272-74ef-9f37-1de97ce5ff0b
+    driver: 01a21838-6272-74ef-9f37-1de78bc7e501
+    rating: conflicts
+    rationale: "the agent learns only by calling one"
+  - option: 01a21838-6272-74ef-9f37-1dea4f7f44b1
+    driver: 01a21838-6272-74ef-9f37-1de561fc8cd3
+    rating: supports
+    rationale: "both cases are covered"
+  - option: 01a21838-6272-74ef-9f37-1dea4f7f44b1
+    driver: 01a21838-6272-74ef-9f37-1de61378ddf6
+    rating: conflicts
+    rationale: "the refusing tools are offered"
+  - option: 01a21838-6272-74ef-9f37-1dea4f7f44b1
+    driver: 01a21838-6272-74ef-9f37-1de78bc7e501
+    rating: supports
+    rationale: "the line comes first"
+consequences:
+  - key: 01a21838-6272-74ef-9f37-1deb9f6f7332
+    kind: benefit
+    statement: "On a host without toasts, the agent tells the person that Yard Client is off and how to turn it on."
+  - key: 01a21838-6272-74ef-9f37-1decf8bbca28
+    kind: cost
+    statement: "A protocol mismatch is still told only in the mod's toast."
+  - key: 01a21838-6272-74ef-9f37-1ded66bbb627
+    kind: obligation
+    statement: "The command hooks run through a launcher script that the plugin holds."
+subjects:
+  - role: affected
+    node: 01a144ee-c59d-7512-b23e-0aacc4f16f8e
+  - role: outcome
+    node: 01a1646f-546c-7521-9643-bc69fcfce2ec
