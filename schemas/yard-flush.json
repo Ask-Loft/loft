@@ -11,6 +11,7 @@
         "outcome",
         "sent",
         "remaining",
+        "later",
         "skipped",
         "dead",
         "errors"
@@ -32,12 +33,17 @@
         "sent": {
           "type": "integer",
           "minimum": 0,
-          "description": "The versions Yard Server took, in every batch of the run."
+          "description": "The versions Yard Server stored or already held, in every batch of the run."
         },
         "remaining": {
           "type": "integer",
           "minimum": 0,
-          "description": "The entries for the address left in the outbox."
+          "description": "The entries for the address left in the outbox, other than those counted in later and skipped."
+        },
+        "later": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The entries for the address whose versions Yard Server will take later; they stay in the outbox."
         },
         "skipped": {
           "type": "integer",
@@ -47,7 +53,7 @@
         "dead": {
           "type": "integer",
           "minimum": 0,
-          "description": "The files moved into ~/.yard/outbox/dead/."
+          "description": "The files moved into ~/.yard/outbox/dead/ in the run, each beside a .reason file."
         },
         "errors": {
           "type": "array",
@@ -118,7 +124,8 @@
         "kind": {
           "type": "string",
           "enum": [
-            "yard-server"
+            "yard-server",
+            "outbox"
           ]
         },
         "message": {

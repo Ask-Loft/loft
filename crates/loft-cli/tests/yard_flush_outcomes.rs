@@ -1,0 +1,245 @@
+//! What a flush does with each entry once Yard Server has answered its batch: a version Yard
+//! Server holds leaves the outbox, a version it will never take is moved into `dead/` with the
+//! reason, a version it will take later stays, and an answer the flush cannot read settles
+//! nothing.
+
+use std::fs;
+
+use serde_json::{Value, json};
+use software_plant::YardServer;
+
+use crate::yard::Yard;
+use crate::yard_connected::{STAGE_BATCH, connected, entries, flush, notes, outbox, write};
+
+/// The keys of the entries waiting in the outbox, oldest first.
+fn keys(yard: &Yard) -> Vec<String> {
+    let Ok(listing) = fs::read_dir(outbox(yard)) else {
+        return Vec::new();
+    };
+    let mut keys: Vec<String> = listing
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .filter_map(|name| name.strip_suffix(".json").map(str::to_owned))
+        .collect();
+    keys.sort();
+    keys
+}
+
+/// The files of `dead/`, each with the reason kept beside it.
+fn dead(yard: &Yard) -> Vec<(String, String)> {
+    let dir = outbox(yard).join("dead");
+    let Ok(listing) = fs::read_dir(&dir) else {
+        return Vec::new();
+    };
+    let mut found: Vec<(String, String)> = listing
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .filter(|name| !name.ends_with(".reason"))
+        .map(|name| {
+            let reason = fs::read_to_string(dir.join(format!("{name}.reason"))).unwrap();
+            (name, reason.trim_end().to_owned())
+        })
+        .collect();
+    found.sort();
+    found
+}
+
+/// Writes the stage offline and `count` notes for `server`'s address: the keys of the notes'
+/// entries.
+fn waiting(yard: &Yard, endpoint: &str, count: usize) -> Vec<String> {
+    write(yard, STAGE_BATCH, &[]);
+    write(yard, &notes(count), &connected(endpoint));
+    keys(yard)
+}
+
+#[test]
+fn an_entry_whose_version_is_stored_or_held_leaves_the_outbox_and_counts_as_sent() {
+    let yard = Yard::new();
+    let server = YardServer::accepting();
+    let variables = connected(&server.url());
+    write(&yard, STAGE_BATCH, &variables);
+    let key = keys(&yard)[0].clone();
+    let file = outbox(&yard).join(format!("{key}.json"));
+    let copy = fs::read(&file).unwrap();
+    let (_, stored) = flush(&yard, &variables);
+    assert_eq!(
+        (&stored["outcome"], &stored["sent"]),
+        (&json!("sent"), &json!(1))
+    );
+    fs::write(&file, copy).unwrap();
+    let (code, held) = flush(&yard, &variables);
+    assert_eq!((code, &held["outcome"]), (Some(0), &json!("sent")));
+    assert_eq!(held["sent"], 1);
+    assert_eq!(entries(&yard), Vec::<Value>::new());
+}
+
+#[test]
+fn an_entry_whose_version_is_in_conflict_is_moved_into_dead_with_the_reason_conflict() {
+    let yard = Yard::new();
+    let server = YardServer::accepting();
+    let variables = connected(&server.url());
+    write(&yard, STAGE_BATCH, &variables);
+    let key = keys(&yard)[0].clone();
+    let file = outbox(&yard).join(format!("{key}.json"));
+    let mut other: Value = serde_json::from_slice(&fs::read(&file).unwrap()).unwrap();
+    other["record"]["version"]["title"] = json!("Another title");
+    flush(&yard, &variables);
+    fs::write(&file, other.to_string()).unwrap();
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(0), &json!("sent")));
+    assert_eq!((&flushed["sent"], &flushed["dead"]), (&json!(0), &json!(1)));
+    assert_eq!(
+        dead(&yard),
+        [(format!("{key}.json"), "conflict".to_owned())]
+    );
+    assert_eq!(keys(&yard), Vec::<String>::new());
+}
+
+#[test]
+fn an_entry_whose_version_is_refused_is_moved_into_dead_with_the_code() {
+    let yard = Yard::new();
+    let keys_before = waiting(&yard, "http://127.0.0.1:1", 2);
+    let server = YardServer::refusing_versions(&[(&keys_before[0], "too_old")]);
+    // The entries name the address they were written for; rewrite them for the server's.
+    let variables = connected(&server.url());
+    readdress(&yard, &server.url());
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(0), &json!("sent")));
+    assert_eq!((&flushed["sent"], &flushed["dead"]), (&json!(1), &json!(1)));
+    assert_eq!(
+        dead(&yard),
+        [(
+            format!("{}.json", keys_before[0]),
+            "refused too_old".to_owned()
+        )]
+    );
+}
+
+/// Rewrites each entry of the outbox for the address `endpoint`.
+fn readdress(yard: &Yard, endpoint: &str) {
+    for key in keys(yard) {
+        let file = outbox(yard).join(format!("{key}.json"));
+        let mut entry: Value = serde_json::from_slice(&fs::read(&file).unwrap()).unwrap();
+        entry["to"]["endpoint"] = json!(endpoint);
+        fs::write(&file, entry.to_string()).unwrap();
+    }
+}
+
+#[test]
+fn an_entry_whose_version_yard_server_will_take_later_stays_and_a_later_run_sends_it_again() {
+    let yard = Yard::new();
+    let put_off = waiting(&yard, "http://127.0.0.1:1", 3);
+    let server = YardServer::putting_off(&[(&put_off[1], "unknown_report_version")]);
+    let variables = connected(&server.url());
+    readdress(&yard, &server.url());
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(0), &json!("sent")));
+    assert_eq!(
+        (&flushed["sent"], &flushed["later"], &flushed["remaining"]),
+        (&json!(2), &json!(1), &json!(0))
+    );
+    assert_eq!(keys(&yard), [put_off[1].clone()]);
+    assert_eq!(server.requests().len(), 1);
+    flush(&yard, &variables);
+    assert_eq!(server.requests().len(), 2);
+    assert_eq!(keys(&yard), [put_off[1].clone()]);
+}
+
+#[test]
+fn an_entry_a_run_has_taken_once_is_not_taken_again_in_the_same_run() {
+    let yard = Yard::new();
+    let put_off = waiting(&yard, "http://127.0.0.1:1", 17);
+    let server = YardServer::putting_off(&[(&put_off[0], "unknown_report_version")]);
+    readdress(&yard, &server.url());
+    let (_, flushed) = flush(&yard, &connected(&server.url()));
+    assert_eq!(flushed["later"], 1);
+    let sent: Vec<usize> = server
+        .requests()
+        .iter()
+        .map(|request| {
+            let batch: Value = serde_json::from_slice(&request.body).unwrap();
+            batch["records"].as_array().unwrap().len()
+        })
+        .collect();
+    assert_eq!(sent, [16, 1]);
+}
+
+#[test]
+fn after_an_answer_of_200_that_is_not_json_every_entry_stays_and_the_flush_fails() {
+    let yard = Yard::new();
+    let server = YardServer::answering("not json");
+    waiting(&yard, &server.url(), 2);
+    let (code, flushed) = flush(&yard, &connected(&server.url()));
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
+    assert_eq!(keys(&yard).len(), 2);
+    assert_eq!(flushed["errors"][0]["kind"], "yard-server");
+}
+
+#[test]
+fn an_entry_the_answer_leaves_out_or_gives_an_unknown_outcome_stays_and_the_rest_are_settled() {
+    let yard = Yard::new();
+    let put = waiting(&yard, "http://127.0.0.1:1", 3);
+    let body = json!({
+        "format": "yardlog-answer/1",
+        "outcomes": [
+            {"version": put[0], "outcome": "stored"},
+            {"version": put[1], "outcome": "perhaps"},
+        ],
+    });
+    let server = YardServer::answering(&body.to_string());
+    readdress(&yard, &server.url());
+    let (code, flushed) = flush(&yard, &connected(&server.url()));
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
+    assert_eq!(keys(&yard), [put[1].clone(), put[2].clone()]);
+    assert_eq!(flushed["sent"], 1);
+}
+
+#[test]
+fn after_a_400_every_entry_of_the_batch_is_in_dead_and_the_next_batch_is_sent() {
+    let yard = Yard::new();
+    let server = YardServer::failing(400);
+    let put = waiting(&yard, &server.url(), 17);
+    let (code, flushed) = flush(&yard, &connected(&server.url()));
+    assert_eq!((code, &flushed["outcome"]), (Some(0), &json!("sent")));
+    assert_eq!(server.requests().len(), 2);
+    assert_eq!(flushed["dead"], 17);
+    let reasons = dead(&yard);
+    assert_eq!(reasons.len(), 17);
+    assert_eq!(
+        reasons[0],
+        (format!("{}.json", put[0]), "400 invalid_request".to_owned())
+    );
+}
+
+#[test]
+fn after_a_413_the_batch_s_one_entry_is_in_dead_with_the_status_and_code() {
+    let yard = Yard::new();
+    let server = YardServer::failing(413);
+    let put = waiting(&yard, &server.url(), 1);
+    let (_, flushed) = flush(&yard, &connected(&server.url()));
+    assert_eq!(flushed["dead"], 1);
+    assert_eq!(
+        dead(&yard),
+        [(
+            format!("{}.json", put[0]),
+            "413 payload_too_large".to_owned()
+        )]
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn an_entry_that_cannot_be_removed_once_answered_stays_and_the_flush_fails_naming_it() {
+    use std::os::unix::fs::PermissionsExt as _;
+    let yard = Yard::new();
+    let server = YardServer::accepting();
+    let put = waiting(&yard, &server.url(), 1);
+    let dir = outbox(&yard);
+    fs::set_permissions(&dir, fs::Permissions::from_mode(0o555)).unwrap();
+    let (code, flushed) = flush(&yard, &connected(&server.url()));
+    fs::set_permissions(&dir, fs::Permissions::from_mode(0o755)).unwrap();
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
+    assert_eq!(flushed["errors"][0]["kind"], "outbox");
+    let message = flushed["errors"][0]["message"].as_str().unwrap();
+    assert!(message.contains(&put[0]), "{message}");
+    assert_eq!(server.requests().len(), 1);
+    assert_eq!(keys(&yard), put);
+}

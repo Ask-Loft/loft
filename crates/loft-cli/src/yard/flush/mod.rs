@@ -7,8 +7,11 @@
 //! without waiting: a flush that finds it held ends at once as `busy`. A write never takes it.
 
 mod sending;
+mod settle;
 #[cfg(test)]
 mod tests;
+
+use std::time::Duration;
 
 use serde_json::{Value, json};
 use yardlog_store::home::Home;
@@ -22,6 +25,7 @@ use crate::finish::Finished;
 use crate::json;
 use crate::out::{errln, outln};
 use sending::Flushed;
+use settle::Failed;
 
 const SCHEMA: &str = "loft-yard-flush/1";
 
@@ -33,6 +37,9 @@ pub const TOKEN: &str = "LOFT_YARD_SERVER_TOKEN";
 
 /// The lock a flush holds while it sends, in the home of Yard.
 pub const LOCK: &str = "flush.lock";
+
+/// The most a flush waits for Yard Server's answer to one batch.
+const WAIT: Duration = Duration::from_secs(2);
 
 /// Where connected mode sends: the home of Yard, the outbox of the address and the token.
 struct Connection {
@@ -71,19 +78,28 @@ pub fn run(args: &FlushArgs) -> Finished {
     let endpoint = connection.outbox.endpoint().to_owned();
     let path = connection.home.dir().join(LOCK);
     let flushed = match lock::try_lock(&path) {
-        Ok(Some(_held)) => sending::drain(&connection.outbox, &connection.token, super::clock()),
+        Ok(Some(_held)) => {
+            sending::drain(&connection.outbox, &connection.token, WAIT, super::clock())
+        }
         Ok(None) => {
             let line = format!("busy: another flush sends to Yard Server at {endpoint}.");
             return report(as_json, &Flushed::quiet("busy"), &line);
         }
-        Err(error) => Flushed::failed(format!("the lock of the flush cannot be taken: {error}")),
+        Err(error) => Flushed::failed(Failed::outbox(format!(
+            "the lock of the flush cannot be taken: {error}"
+        ))),
     };
     let mut line = format!(
-        "{} to Yard Server at {endpoint}: {} sent, {} remaining, {} skipped, {} moved into dead/.",
-        flushed.outcome, flushed.sent, flushed.remaining, flushed.skipped, flushed.dead
+        "{} to Yard Server at {endpoint}: {} sent, {} remaining, {} later, {} skipped, {} moved into dead/.",
+        flushed.outcome,
+        flushed.sent,
+        flushed.remaining,
+        flushed.later,
+        flushed.skipped,
+        flushed.dead
     );
-    if let Some(why) = &flushed.failed {
-        line = format!("{line} {why}.");
+    for failed in &flushed.failed {
+        line = format!("{line} {}.", failed.why);
     }
     report(as_json, &flushed, &line)
 }
@@ -92,13 +108,14 @@ fn report(as_json: bool, flushed: &Flushed, line: &str) -> Finished {
     let fields = json!({
         "sent": flushed.sent,
         "remaining": flushed.remaining,
+        "later": flushed.later,
         "skipped": flushed.skipped,
         "dead": flushed.dead,
     });
     let errors: Vec<Value> = flushed
         .failed
         .iter()
-        .map(|why| failure::error("yard-server", why))
+        .map(|failed| failure::error(failed.kind, &failed.why))
         .collect();
     let outcome = flushed.outcome;
     let finished = if errors.is_empty() {

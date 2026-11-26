@@ -6,6 +6,7 @@
 pub mod act;
 pub mod adapter;
 pub mod batch;
+pub mod batch_answer;
 pub mod body;
 pub mod codec;
 pub mod consult;

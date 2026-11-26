@@ -9,6 +9,8 @@ use yardlog_store::outbox::Outbox;
 
 use super::sending::{MOST_TIME, drain};
 
+const WAIT: Duration = Duration::from_secs(2);
+
 /// A clock whose every reading of the elapsed time finds `step` more passed than the last.
 struct Stepping {
     step: Duration,
@@ -57,7 +59,7 @@ fn a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_
         step: MOST_TIME / 5 * 2,
         passed: Cell::new(Duration::ZERO),
     };
-    let flushed = drain(&outbox, software_plant::yard_server::TOKEN, &clock);
+    let flushed = drain(&outbox, software_plant::yard_server::TOKEN, WAIT, &clock);
     assert_eq!(server.requests().len(), 2);
     assert_eq!(flushed.outcome, "sent");
     assert_eq!((flushed.sent, flushed.remaining), (32, 8));
@@ -72,7 +74,7 @@ fn a_run_with_time_to_spare_sends_every_batch() {
         step: Duration::from_secs(1),
         passed: Cell::new(Duration::ZERO),
     };
-    let flushed = drain(&outbox, software_plant::yard_server::TOKEN, &clock);
+    let flushed = drain(&outbox, software_plant::yard_server::TOKEN, WAIT, &clock);
     assert_eq!(server.requests().len(), 3);
     assert_eq!((flushed.sent, flushed.remaining), (40, 0));
     fs::remove_dir_all(outbox.dir()).unwrap();

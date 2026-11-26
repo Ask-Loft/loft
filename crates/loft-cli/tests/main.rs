@@ -163,6 +163,7 @@ mod yard_delegation;
 mod yard_dogfood;
 mod yard_event_ids;
 mod yard_flush;
+mod yard_flush_outcomes;
 mod yard_flush_runs;
 mod yard_home;
 mod yard_hosts;
