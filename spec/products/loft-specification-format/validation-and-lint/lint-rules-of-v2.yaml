@@ -311,3 +311,11 @@ requirements:
     criteria:
       - key: 01a21358-4147-72be-a72f-0d0fc0b9991c
         name: "A Quality Attribute whose target's unit is a byte unit states a quantity in that unit."
+  - key: 01a216c4-b982-74c9-aa2c-d6a2636fc1aa
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "read a definition or a count of bytes for `V2-014` within one paragraph, list item or heading."
+    criteria:
+      - key: 01a216c4-b982-74c9-aa2c-d6a324a0eb94
+        name: "A defining word and the count after it, and the parts of a count, lie in one paragraph, list item or heading, so that the list item `- MB is` followed by the list item `- 1,000,000 bytes` defines no unit."
