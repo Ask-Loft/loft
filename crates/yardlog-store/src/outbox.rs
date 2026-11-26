@@ -175,8 +175,10 @@ impl Outbox {
             let Ok(Some(text)) = read_if_present(&path) else {
                 continue;
             };
-            match entry::read(&text) {
-                Read::Entry { endpoint, record } if endpoint == self.endpoint => {
+            match read(&name, &text) {
+                Read::Entry {
+                    endpoint, record, ..
+                } if endpoint == self.endpoint => {
                     room.take(&mut taken.entries, &name, record, size);
                 }
                 Read::Entry { .. } => {}
@@ -269,6 +271,15 @@ impl Room {
     }
 }
 
+/// What the file `name`, holding `bytes`, reads as: an entry is named by its version's key, so one
+/// that holds another key is not an entry.
+fn read<'a>(name: &str, bytes: &'a [u8]) -> Read<'a> {
+    match entry::read(bytes) {
+        Read::Entry { key, .. } if key != key_of(name) => Read::Foreign,
+        read => read,
+    }
+}
+
 /// What waits in the outbox in `dir`, for every address, with no file moved or written.
 ///
 /// # Errors
@@ -280,7 +291,7 @@ pub fn survey(dir: &Path) -> Result<Survey, YardStoreError> {
         let Ok(Some(text)) = read_if_present(&dir.join(&name)) else {
             continue;
         };
-        match entry::read(&text) {
+        match read(&name, &text) {
             Read::Entry { endpoint, .. } => survey
                 .waiting
                 .entry(endpoint.clone())

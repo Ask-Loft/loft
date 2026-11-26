@@ -7,20 +7,18 @@ use yardlog::batch::{MOST_BYTES, MOST_RECORDS};
 use yardlog_store::outbox::{self, DEAD};
 
 use crate::common::Scratch;
-use crate::outbox::{ENDPOINT, entry, outbox};
+use crate::outbox::{ENDPOINT, entry, outbox, padded};
 
 /// The name of the entry file of the version `n`.
 fn name(n: u32) -> String {
     format!("00000000-0000-7000-8000-{n:012}.json")
 }
 
-/// Puts the entry of version `n` for `endpoint`, padded to about `bytes` bytes: the entry holds
-/// its id twice, as the record's id and as its version's key.
+/// Puts the entry of version `n` for `endpoint`, padded to about `bytes` bytes.
 fn put(scratch: &Scratch, endpoint: &str, n: u32, bytes: usize) {
-    let id = format!("{n}{}", "x".repeat(bytes / 2));
     scratch.put(
         &format!(".yard/outbox/{}", name(n)),
-        &entry(endpoint, &id, 1),
+        &padded(endpoint, n, 1, &"x".repeat(bytes)),
     );
 }
 
@@ -118,6 +116,22 @@ fn an_entry_whose_record_holds_no_version_key_is_moved_into_dead_and_the_others_
 }
 
 #[test]
+fn an_entry_named_by_another_key_than_its_version_s_is_moved_into_dead_and_the_others_are_taken() {
+    let scratch = Scratch::new();
+    put(&scratch, ENDPOINT, 1, 10);
+    let elsewhere = fs::read_to_string(scratch.0.join(".yard/outbox").join(name(1))).unwrap();
+    scratch.put(&format!(".yard/outbox/{}", name(2)), &elsewhere);
+    put(&scratch, ENDPOINT, 3, 10);
+    let survey = outbox::survey(&scratch.0.join(".yard/outbox")).unwrap();
+    assert_eq!(survey.waiting[ENDPOINT], [key(1), key(3)]);
+    assert_eq!(taken(&scratch), [key(1), key(3)]);
+    assert_eq!(
+        reason(&scratch, &name(2)).as_deref(),
+        Some("not-an-entry\n")
+    );
+}
+
+#[test]
 fn an_entry_moved_aside_keeps_its_reason_beside_it() {
     let scratch = Scratch::new();
     for n in 1..=3 {
@@ -163,10 +177,7 @@ fn a_survey_counts_what_waits_for_each_address_and_moves_nothing() {
     put(&scratch, ENDPOINT, 1, 10);
     put(&scratch, ENDPOINT, 2, 10);
     put(&scratch, "https://elsewhere.example", 3, 10);
-    scratch.put(
-        &format!(".yard/outbox/{}", name(4)),
-        &entry(ENDPOINT, "4", 2),
-    );
+    scratch.put(&format!(".yard/outbox/{}", name(4)), &entry(ENDPOINT, 4, 2));
     scratch.put(&format!(".yard/outbox/{}", name(5)), "{not json");
     let before = scratch.snapshot();
     let survey = outbox::survey(&scratch.0.join(".yard/outbox")).unwrap();

@@ -252,7 +252,7 @@ fn a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_take
     );
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000003.json",
-        &entry(ENDPOINT, "3", 1),
+        &entry(ENDPOINT, 3, 1),
     );
     scratch.put(
         ".yard/outbox/.00000000-0000-7000-8000-000000000004.json.1.0.tmp",
@@ -281,11 +281,11 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
     let ours = outbox(&scratch, ENDPOINT);
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000001.json",
-        &entry(ENDPOINT, "1", 2),
+        &entry(ENDPOINT, 1, 2),
     );
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000002.json",
-        &entry(ENDPOINT, "2", 1),
+        &entry(ENDPOINT, 2, 1),
     );
     let taken = ours.take(16, MOST_BYTES).unwrap();
     assert_eq!(taken.skipped, 1);
@@ -306,12 +306,22 @@ fn an_empty_or_missing_outbox_has_nothing_to_take() {
     assert_eq!((taken.entries.len(), taken.skipped, taken.dead), (0, 0, 0));
 }
 
-/// An entry of `yardlog-outbox/<version>` for `endpoint`, whose record names `id`.
-pub(crate) fn entry(endpoint: &str, id: &str, version: u32) -> String {
+/// An entry of `yardlog-outbox/<version>` for `endpoint`, of the version `n`, whose file is
+/// named `00000000-0000-7000-8000-<n>.json` with `n` padded to 12 digits.
+pub(crate) fn entry(endpoint: &str, n: u32, version: u32) -> String {
+    padded(endpoint, n, version, "")
+}
+
+/// [`entry`], whose record's id is `n` followed by `padding`.
+pub(crate) fn padded(endpoint: &str, n: u32, version: u32, padding: &str) -> String {
     json!({
         "format": format!("yardlog-outbox/{version}"),
         "to": {"endpoint": endpoint},
-        "record": {"record": "version", "id": id, "version": {"key": id}},
+        "record": {
+            "record": "version",
+            "id": format!("{n}{padding}"),
+            "version": {"key": format!("00000000-0000-7000-8000-{n:012}")},
+        },
     })
     .to_string()
 }
@@ -383,10 +393,10 @@ fn a_file_that_cannot_be_read_is_passed_over_and_the_rest_are_taken() {
     let scratch = Scratch::new();
     let ours = outbox(&scratch, ENDPOINT);
     let locked = ".yard/outbox/00000000-0000-7000-8000-000000000001.json";
-    scratch.put(locked, &entry(ENDPOINT, "1", 1));
+    scratch.put(locked, &entry(ENDPOINT, 1, 1));
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000002.json",
-        &entry(ENDPOINT, "2", 1),
+        &entry(ENDPOINT, 2, 1),
     );
     let path = scratch.0.join(locked);
     fs::set_permissions(&path, fs::Permissions::from_mode(0o000)).unwrap();

@@ -29549,7 +29549,7 @@ links:
         body: 68ee10abc6deca2bc990744984c74febb2b1c1a3db20829fdaca77faf5dcad84
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 524f725f7006c750630cfffb612cb8acdbb4fa563d787aca1a0bd53e7d1b2822
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a21406-1007-7756-963c-233401d4c90e
     reviewed: 789bc401b6a8221b676fce74903e1af1a56b07e9e323972a4b40def5d1c55082
     tests:
@@ -39767,7 +39767,7 @@ links:
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 524f725f7006c750630cfffb612cb8acdbb4fa563d787aca1a0bd53e7d1b2822
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81b69520ca66
     reviewed: 7d1e752eca7ee22fe936de59345fc281b80389f4a296975d57054d40cbdcfa05
     tests:
@@ -39785,7 +39785,7 @@ links:
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 524f725f7006c750630cfffb612cb8acdbb4fa563d787aca1a0bd53e7d1b2822
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_empty_or_missing_outbox_has_nothing_to_take"
         body: caa8269cf23a27be3d9f69d7b10246b0f776fdbabc3ba87101322c57dce52dd7
@@ -39794,43 +39794,46 @@ links:
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 524f725f7006c750630cfffb612cb8acdbb4fa563d787aca1a0bd53e7d1b2822
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81bbb57959a7
     reviewed: 83929c8fed3a51e66b54176c7776a9518c20ae2b71dbf7d0df94d0baf68ba6ac
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 524f725f7006c750630cfffb612cb8acdbb4fa563d787aca1a0bd53e7d1b2822
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81bcccf755b5
     reviewed: 7e066cd484ebd51910efb2b60a5df4fe9309ed268ef86b6636f9a783982fd7e6
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 524f725f7006c750630cfffb612cb8acdbb4fa563d787aca1a0bd53e7d1b2822
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81bde131b8ab
     reviewed: 794f7d9e238f28d2cb5847bb26cab306118f392d01459b9d924ba2bf7f1e8f26
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 524f725f7006c750630cfffb612cb8acdbb4fa563d787aca1a0bd53e7d1b2822
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_file_that_cannot_be_read_is_passed_over_and_the_rest_are_taken"
-        body: 76e82a5ccccfa7e2ebbce0811fb986ac4d2e16625aff4d68f036f71f74740a02
+        body: b0e52697355708cef5a67a1b26e01321d538e47317c28501a657df119d526458
   - node: 01a20dc8-c593-7357-875c-81bfe9bd7572
     reviewed: e9893909680279628abf4cc8aee2a3d15696efe44fa3c2c854a260fdd28fb446
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_entry_of_a_newer_format_stays_and_is_passed_over"
-        body: 6af37ea9a766ac61bd81cc2f240e5013431a98e5e3e2e7d6b03089e32df9028e
+        body: 603380218facef2ec8b1e0a3bbf0eacaf2b89a228776a4c10e40be62924290c3
   - node: 01a20dc8-c593-7357-875c-81c099764854
     reviewed: 79b90f83b0ca277d0d3da6052c65d93e8504015bad865bf5445a1eeca8f527e8
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_entry_of_a_newer_format_stays_and_is_passed_over"
-        body: 6af37ea9a766ac61bd81cc2f240e5013431a98e5e3e2e7d6b03089e32df9028e
+        body: 603380218facef2ec8b1e0a3bbf0eacaf2b89a228776a4c10e40be62924290c3
   - node: 01a213cb-9c28-769e-b7c8-43d3bf1b66b5
     reviewed: f3e456e54b4082ce42408ff4e8b912a79c312639d6114e1ebcabe9524637d137
     tests:
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "an_entry_named_by_another_key_than_its_version_s_is_moved_into_dead_and_the_others_are_taken"
+        body: c0ca33ba8e01225925bbcdb9f60c0f3ae2a8b08114b13b4d211b8aab277e1619
       - file: "crates/yardlog-store/tests/outbox_batches.rs"
         name: "an_entry_whose_record_holds_no_version_key_is_moved_into_dead_and_the_others_are_taken"
         body: 0cb3251b3f405d2caf0f6643c09b0a92e03037a117d01cf512ec5e6b4fefd517

@@ -27,8 +27,13 @@ pub fn write(endpoint: &str, record: &str) -> String {
 /// What the bytes of a file of the outbox read as.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Read<'a> {
-    /// An entry this `loft` reads: its address and its record, as the text it holds.
-    Entry { endpoint: String, record: &'a str },
+    /// An entry this `loft` reads: its address, its version's key and its record, as the text it
+    /// holds.
+    Entry {
+        endpoint: String,
+        key: String,
+        record: &'a str,
+    },
     /// An entry of a newer version of the format, for a newer `loft` to send.
     Newer,
     /// Not an entry: not JSON, another format, or an entry without its address, or without a record
@@ -55,18 +60,24 @@ pub fn read(bytes: &[u8]) -> Read<'_> {
     let endpoint = field("to")
         .and_then(|raw| serde_json::from_str::<serde_json::Value>(raw).ok())
         .and_then(|to| to.get("endpoint")?.as_str().map(str::to_owned));
-    match (endpoint, field("record")) {
-        (Some(endpoint), Some(record)) if keyed(record) => Read::Entry { endpoint, record },
-        _ => Read::Foreign,
+    let (Some(endpoint), Some(record)) = (endpoint, field("record")) else {
+        return Read::Foreign;
+    };
+    let Some(key) = version_key(record) else {
+        return Read::Foreign;
+    };
+    Read::Entry {
+        endpoint,
+        key,
+        record,
     }
 }
 
-/// Whether `record` is an object that holds its version's key, as each record of a batch must:
-/// Yard Server refuses a whole batch where one record's key does not read.
-fn keyed(record: &str) -> bool {
-    field_of(record, "version")
-        .and_then(|version| field_of(version, "key"))
-        .is_some_and(|key| key.starts_with('"'))
+/// The version's key that `record` holds, as each record of a batch must: Yard Server refuses a
+/// whole batch where one record's key does not read.
+fn version_key(record: &str) -> Option<String> {
+    let key = field_of(field_of(record, "version")?, "key")?;
+    serde_json::from_str(key).ok()
 }
 
 /// The text of the field `name` of the JSON object `text`, read without reading its values.
