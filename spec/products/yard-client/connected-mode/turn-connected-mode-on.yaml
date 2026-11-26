@@ -2,7 +2,7 @@ key: 01a20dc8-c593-7357-875c-81f0ef6e3543
 slug: turn-connected-mode-on
 name: "Turn connected mode on"
 body: |
-  Connected mode is off unless the person turns it on, and then Yard Client works as it always has, keeping Yard Log on the machine alone. Two variables of the environment turn it on: `LOFT_YARD_SERVER_ENDPOINT`, the base address of Yard Server, to which each request adds its own path, and `LOFT_YARD_SERVER_TOKEN`, the token Yard Server admits the person by. A request that the contract adds later adds its own path to the same address, with no new variable.
+  Connected mode is off unless the person turns it on, and then Yard Client works as it always has, keeping Yard Log on the machine alone. Two variables of the environment turn it on: `LOFT_YARD_SERVER_ENDPOINT`, the base address of Yard Server, to which each request adds its own path, and of which a trailing `/` is no part, and `LOFT_YARD_SERVER_TOKEN`, the token Yard Server admits the person by. A request that the contract adds later adds its own path to the same address, with no new variable.
 
   In connected mode, Yard Log is still written on the machine first and committed with the work as before; the versions written are also copied into the outbox and sent to Yard Server from there. Retries, sending in the background and the answers of the person come in later waves.
 realizes:
@@ -24,6 +24,8 @@ requirements:
         name: "Each request for Yard Server goes to the address `LOFT_YARD_SERVER_ENDPOINT` names, followed by the request's path with one `/` between them."
       - key: 01a20dc8-c593-7357-875c-81f4c822ad5d
         name: "Each request for Yard Server carries the token `LOFT_YARD_SERVER_TOKEN` names as a bearer token in its `Authorization` header."
+      - key: 01a21980-c4f6-7743-90bb-8eeb58974558
+        name: "An address that differs from another only by a trailing `/` names the same Yard Server, so an entry written under either is sent under the other."
   - key: 01a20dc8-c593-7357-875c-81f5e3e9f4d1
     statement:
       form: event_driven
