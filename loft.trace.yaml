@@ -40200,6 +40200,15 @@ links:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_write_puts_one_entry_for_each_version_it_adds_stages_included"
         body: 68ee10abc6deca2bc990744984c74febb2b1c1a3db20829fdaca77faf5dcad84
+  - node: 01a20dc8-c593-7357-875c-81a4f344ecf0
+    reviewed: 8c21ce505cb9aba4d548385df69ae5e70c2b2f2342ca0d42fa8933e0a74d16d9
+    tests:
+      - file: "crates/yardlog-store/tests/outbox.rs"
+        name: "a_write_that_cannot_be_saved_puts_no_entry"
+        body: ebc58009b06dd11ee66a1fd6ce85d06efa8e368a54c9f12b1c91bb4116d7ec4f
+  - node: 01a20dc8-c593-7357-875c-81a5503fc54f
+    reviewed: 73cbb6797b9bbbae604b5c5ac81c39afbc4583e73cfeab47c5713d6cbda0aaf2
+    unverified: "Read from the code: Outbox::put writes each entry with loft_ports::sync::replace_synced, which writes a temporary file named with a leading dot beside it and moves it into place; the move cannot be seen from outside without injecting a fault between the two."
   - node: 01a20dc8-c593-7357-875c-81a61535463f
     reviewed: aae191c2e0bcfd852cc28cdb8e48c438fc4f1795ea34922bd6741370eb64ecce
     tests:
@@ -40221,6 +40230,15 @@ links:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "the_person_s_answer_puts_no_entry"
         body: 0b528ee6db95140f92398ab13e00e201e17f6b6a5e5da9e9f214939382b77d68
+  - node: 01a20dc8-c593-7357-875c-81a9cf2d6bc2
+    reviewed: 5e1e3be84e50555ea98e92e82ccbf54a13ac4843a19097e00dc7647159417e9b
+    unverified: "No Yard Log can be upgraded yet: yardlog/1 is the only format. Read from the code: an upgrade changes the format and records an Act, adding no version, and the outbox takes only new versions."
+  - node: 01a20dc8-c593-7357-875c-81aafbe7e696
+    reviewed: ed96cb6e77d32b37b32d29cede166d65392d42027ea2d14ef57aa7baeb24f756
+    tests:
+      - file: "crates/loft-cli/tests/yard_settle.rs"
+        name: "settling_yard_log_after_a_merge_puts_no_entry_in_the_outbox"
+        body: 6dd70d19dff4018da78db449fc6613d9363a3e3519c5844214d12cf834e633de
   - node: 01a20dc8-c593-7357-875c-81ac32a6c1c7
     reviewed: e46c1999048a7a09090440e6e80885298b954c887f9ccb7d6f01b7da8334b784
     tests:
@@ -40263,6 +40281,12 @@ links:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_outbox_that_cannot_be_written_keeps_the_write_and_names_the_version_left_out"
         body: 25623bd32545f74b3c014088249475d0c560c3f3a8e22a0f09e1decc3feb232a
+  - node: 01a20dc8-c593-7357-875c-81b24b2f3743
+    reviewed: e4049421bb54d9fa1d39c736c00ca87e5e5490a0d5269d4a157eb6125075f45a
+    tests:
+      - file: "crates/loft-cli/tests/yard_connected.rs"
+        name: "a_write_whose_entries_cannot_be_put_gives_the_result_it_gives_without_connected_mode"
+        body: e5e1b1072f7004276f651e2316bfe75010761c3d9e96d7cbfaa01927378daf81
   - node: 01a20dc8-c593-7357-875c-81b3a3413dd9
     reviewed: 9d894b6894b23bf2b47242ed53cda527351d98e85661015d92eb4e183212daa6
     tests:
@@ -40335,6 +40359,21 @@ links:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_entry_of_a_newer_format_stays_and_is_passed_over"
         body: cb935706c2e5861f10fdef2bffda52d747b78449d0884df619b4d8cd9a2b706b
+  - node: 01a20dc8-c593-7357-875c-81c29dad1e44
+    reviewed: 07c7bdebac8087d7af29bb2075834e2f7536c36319ddbd70b5e2672e6530a043
+    tests:
+      - file: "crates/yardlog-store/src/outbox.rs"
+        name: "an_entry_gone_since_the_listing_is_passed_over_and_the_batch_goes_on_without_it"
+        body: c069a37c6d30f36af2a4f3edd58ab502abc024aa1e7711b52196c18246d217b0
+  - node: 01a20dc8-c593-7357-875c-81c3b1fcdff0
+    reviewed: fc8d5b449580bd41e4b6decc9b293501d382803a146184cdbde8b94b76d6d9eb
+    tests:
+      - file: "crates/yardlog-store/src/outbox.rs"
+        name: "an_entry_gone_since_the_listing_is_passed_over_and_the_batch_goes_on_without_it"
+        body: c069a37c6d30f36af2a4f3edd58ab502abc024aa1e7711b52196c18246d217b0
+      - file: "crates/yardlog-store/tests/outbox.rs"
+        name: "removed_entries_leave_the_outbox_and_one_already_gone_is_no_error"
+        body: 960be84d9b328bb5ffc21a991eab458fcedf62f886057586716df52fede70f0e
   - node: 01a20dc8-c593-7357-875c-81c681815faa
     reviewed: b8ab70373ac993cf364dd3ecda0a0e3d10c06da33289d256fb9f811d3e510bb6
     tests:
@@ -40620,6 +40659,18 @@ links:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "no_file_of_the_outbox_or_of_yard_log_holds_the_token"
         body: ccac5bf09035426cd3419875dc6377d8c24e459b395dc9df89e9ac0ce04b30d4
+  - node: 01a20dc8-c593-7357-875c-81fe7288a2dd
+    reviewed: 2e66f628bce988889a45962fe941da2545e13b47530b50c6cb52994bece398f2
+    tests:
+      - file: "crates/loft-cli/tests/yard_connected.rs"
+        name: "the_token_goes_to_yard_server_and_to_no_other_address_a_command_reaches"
+        body: 1ed09bef4e8f04dfd9c3a4514750e2e336124d434e1acbf49598d177941215cf
+  - node: 01a20dc8-c593-7357-875c-8200cbabf263
+    reviewed: 4f18a00f6c671ca074ad3097741868532bb6089b0c7152057dfa91f6f7047716
+    tests:
+      - file: "crates/loft-cli/tests/yard_connected.rs"
+        name: "an_https_address_is_contacted_where_one_off_the_loopback_interface_over_http_is_not"
+        body: 0c7ef5471782565d1e11ae766dfbe8d9c676e10a0602a124fb6273e1aa8efe49
   - node: 01a20dc8-c593-7357-875c-8201b06c53cf
     reviewed: a6622b499b0f0557c23b8aeb698943c86eddd45501419157f44407d9eaf3708c
     tests:

@@ -5,12 +5,13 @@ use std::collections::BTreeMap;
 use std::fs;
 use std::path::Path;
 
-use software_plant::Clock;
+use software_plant::{Clock, YardServer};
 use yardlog::codec::ROOT;
 use yardlog::merge::merge_file;
 
 use crate::common::EPOCH;
 use crate::yard::{ASK, BRANCH, Yard, block};
+use crate::yard_connected::{connected, entries, run};
 
 /// The files of a folder, by name.
 fn files(dir: &Path) -> BTreeMap<String, Vec<u8>> {
@@ -134,4 +135,19 @@ fn submission_history_reports_when_a_merged_resolution_reached_this_copy() {
     assert_eq!(sent["changes"][1]["act"]["revision"], 2);
     assert!(sent["reached"].as_u64().unwrap() >= 4);
     assert!(sent["reached"].as_u64().unwrap() <= read["revision"].as_u64().unwrap());
+}
+
+#[test]
+fn settling_yard_log_after_a_merge_puts_no_entry_in_the_outbox() {
+    let yard = merged();
+    let server = YardServer::failing(503);
+    let output = run(
+        &yard,
+        &["read", "--session", "s1"],
+        &connected(&server.url()),
+    );
+    assert_eq!(output.status.code(), Some(0));
+    let root = fs::read_to_string(yard.folder(BRANCH).join(ROOT)).unwrap();
+    assert!(!root.contains("unsettledSince"), "{root}");
+    assert_eq!(entries(&yard), Vec::<serde_json::Value>::new());
 }

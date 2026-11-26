@@ -124,8 +124,13 @@ impl Outbox {
     ///
     /// The outbox cannot be listed.
     pub fn take(&self, most: usize) -> Result<Taken, YardStoreError> {
+        Ok(self.take_listed(self.names()?, most))
+    }
+
+    /// [`Self::take`] of the files a listing of the outbox named, some of which may be gone since.
+    fn take_listed(&self, names: Vec<String>, most: usize) -> Taken {
         let mut taken = Taken::default();
-        for name in self.names()? {
+        for name in names {
             let path = self.dir.join(&name);
             // Gone since the listing, sent or moved by another run, or not readable at all.
             let Ok(Some(bytes)) = read_if_present(&path) else {
@@ -145,7 +150,7 @@ impl Outbox {
                 Read::Foreign => taken.dead += usize::from(self.bury(&name).unwrap_or(false)),
             }
         }
-        Ok(taken)
+        taken
     }
 
     /// Removes `entries` from the outbox; one already gone is no error.
@@ -194,5 +199,35 @@ impl Outbox {
             Err(_) if !from.exists() => Ok(false),
             Err(error) => Err(error.into()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::fs;
+
+    use yardlog::keys::VersionKey;
+
+    use super::Outbox;
+
+    #[test]
+    fn an_entry_gone_since_the_listing_is_passed_over_and_the_batch_goes_on_without_it() {
+        let dir = std::env::temp_dir().join(format!("loft-outbox-gone-{}", std::process::id()));
+        let outbox = Outbox::new(&dir, "http://127.0.0.1:7420");
+        let record = |id: &str| format!(r#"{{"id":"{id}"}}"#);
+        let keys = [VersionKey::mint(), VersionKey::mint(), VersionKey::mint()];
+        outbox.put(keys[0], &record("a")).unwrap();
+        outbox.put(keys[2], &record("c")).unwrap();
+        // The listing named the second entry too, which another run sent before it was read.
+        let mut listed: Vec<String> = keys.iter().map(|key| format!("{key}.json")).collect();
+        listed.sort();
+        let mut expected: Vec<String> =
+            [keys[0], keys[2]].iter().map(ToString::to_string).collect();
+        expected.sort();
+        let taken = outbox.take_listed(listed, 16);
+        fs::remove_dir_all(&dir).unwrap();
+        let sent: Vec<String> = taken.entries.into_iter().map(|entry| entry.key).collect();
+        assert_eq!(sent, expected);
+        assert_eq!((taken.waiting, taken.skipped, taken.dead), (2, 0, 0));
     }
 }

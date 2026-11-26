@@ -146,6 +146,29 @@ fn a_refused_write_and_a_write_that_adds_no_version_put_no_entry() {
     assert_eq!(entries(&tree.scratch), before);
 }
 
+#[cfg(unix)]
+#[test]
+fn a_write_that_cannot_be_saved_puts_no_entry() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let tree = Tree::new();
+    let store = connected_store(&tree);
+    write(
+        &store,
+        &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
+    );
+    let before = entries(&tree.scratch);
+    let folder = store.folder();
+    fs::set_permissions(&folder, fs::Permissions::from_mode(0o555)).unwrap();
+    let unsaved = try_write(
+        &store,
+        &json!([{"id": "n1", "kind": "note", "stage": "s1", "markdown": "x"}]),
+    );
+    fs::set_permissions(&folder, fs::Permissions::from_mode(0o755)).unwrap();
+    assert!(unsaved.is_err());
+    assert_eq!(entries(&tree.scratch), before);
+}
+
 #[test]
 fn an_outbox_that_cannot_be_written_keeps_the_write_and_names_the_version_left_out() {
     let tree = Tree::new();
