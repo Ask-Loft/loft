@@ -7,7 +7,6 @@
 use std::fs;
 use std::path::PathBuf;
 use std::process::Output;
-use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 use software_plant::YardServer;
@@ -195,22 +194,6 @@ fn a_write_gives_the_same_result_whether_yard_server_can_be_reached_or_not() {
     for server in [&accepting, &failing, &silent] {
         assert_eq!(server.requests().len(), 0);
     }
-}
-
-#[test]
-fn a_flush_gives_up_on_a_silent_yard_server_once_its_wait_has_passed_and_the_entries_stay() {
-    let yard = Yard::new();
-    let server = YardServer::silent();
-    let variables = connected(&server.url());
-    write(&yard, STAGE_BATCH, &variables);
-    let started = Instant::now();
-    let (code, flushed) = flush(&yard, &variables);
-    let took = started.elapsed();
-    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
-    assert!(took >= Duration::from_secs(2), "{took:?}");
-    assert!(took < Duration::from_secs(5), "{took:?}");
-    assert_eq!(entries(&yard).len(), 1);
-    assert_eq!(server.requests().len(), 1);
 }
 
 #[test]

@@ -26,9 +26,10 @@
             "empty",
             "sent",
             "failed",
-            "busy"
+            "busy",
+            "paused"
           ],
-          "description": "off: connected mode is off; empty: the outbox holds no entry for the address; sent: every batch the run took went; failed: a batch did not go, and errors says why; busy: another flush holds ~/.yard/flush.lock, and no request was made."
+          "description": "off: connected mode is off; empty: the outbox holds no entry for the address; sent: every batch the run took went; failed: a batch did not go, or an entry could not be settled, and errors says why; busy: another flush holds ~/.yard/flush.lock, and no request was made; paused: Yard Server asked to come back later, in this run or an earlier one, and that time has not come."
         },
         "sent": {
           "type": "integer",

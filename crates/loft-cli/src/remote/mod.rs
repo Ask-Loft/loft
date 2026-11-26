@@ -18,6 +18,8 @@ pub mod visibility;
 mod whose;
 mod wire;
 
+pub(crate) use wire::retry_after;
+
 use std::fmt;
 use std::time::Duration;
 

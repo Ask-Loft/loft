@@ -55,8 +55,10 @@ fn a_flush_sends_what_a_write_left_and_counts_it() {
     assert!(message.contains("503"), "{message}");
     assert!(message.contains("service_unavailable"), "{message}");
     let silent = YardServer::silent();
-    write(&yard, STAGE_BATCH, &connected(&silent.url()));
-    let (code, quiet) = flush(&yard, &connected(&silent.url()));
+    let mut quick = connected(&silent.url()).to_vec();
+    quick.push(("LOFT_YARD_SERVER_TIMEOUT", "1".to_owned()));
+    write(&yard, STAGE_BATCH, &quick);
+    let (code, quiet) = flush(&yard, &quick);
     assert_eq!(code, Some(1));
     let message = quiet["errors"][0]["message"].as_str().unwrap();
     assert!(message.contains("did not answer"), "{message}");
@@ -160,7 +162,8 @@ fn the_page_server_makes_no_request_to_yard_server_with_entries_waiting() {
 fn an_answer_that_arrives_too_late_leaves_the_batch_to_be_sent_again_and_stored_once() {
     let yard = Yard::new();
     let server = YardServer::late(Duration::from_secs(3));
-    let variables = connected(&server.url());
+    let mut variables = connected(&server.url()).to_vec();
+    variables.push(("LOFT_YARD_SERVER_TIMEOUT", "1".to_owned()));
     let output = write(&yard, STAGE_BATCH, &variables);
     assert_eq!(document("write", &output)["outcome"], "written");
     let (code, _) = flush(&yard, &variables);

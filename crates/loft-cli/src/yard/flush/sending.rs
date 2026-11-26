@@ -3,14 +3,14 @@
 //! versions through the network client, settles each entry by Yard Server's answer, and takes the
 //! next batch, until no entry is left that it has not taken in this run, a batch does not go, or
 //! 5 minutes have passed. Entries put into the outbox while a batch is on its way go in a later
-//! batch of the same run.
+//! batch of the same run. Where Yard Server asks it to come back later, the run ends `paused`.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::time::Duration;
 
 use loft_ports::clock::Clock;
 use yardlog::batch::{MOST_BYTES, MOST_RECORDS};
-use yardlog_store::outbox::{self, Outbox};
+use yardlog_store::outbox::Outbox;
 
 use super::settle::{self, Failed};
 
@@ -33,6 +33,14 @@ pub(super) struct Flushed {
     pub dead: usize,
     /// Why a batch did not go, or an entry could not be settled, where one did not or could not.
     pub failed: Vec<Failed>,
+    /// The keys of the entries the run took, whatever became of them.
+    pub taken: BTreeSet<String>,
+    /// The versions Yard Server will take later, by key, each with its code.
+    pub put_off: BTreeMap<String, String>,
+    /// The keys of the entries for the address left in the outbox, put off ones included.
+    pub waiting: BTreeSet<String>,
+    /// The time Yard Server asked the run not to come back before, in seconds.
+    pub not_before: Option<u64>,
 }
 
 impl Flushed {
@@ -46,6 +54,10 @@ impl Flushed {
             skipped: 0,
             dead: 0,
             failed: Vec::new(),
+            taken: BTreeSet::new(),
+            put_off: BTreeMap::new(),
+            waiting: BTreeSet::new(),
+            not_before: None,
         }
     }
 
@@ -67,10 +79,11 @@ pub(super) fn drain(
 ) -> Flushed {
     let began = clock.elapsed();
     let mut flushed = Flushed::quiet("empty");
-    let mut passed = BTreeSet::new();
-    let mut later = BTreeSet::new();
-    while flushed.failed.is_empty() && clock.elapsed().saturating_sub(began) < MOST_TIME {
-        let taken = match outbox.take_after(MOST_RECORDS, MOST_BYTES, &passed) {
+    while flushed.failed.is_empty()
+        && flushed.not_before.is_none()
+        && clock.elapsed().saturating_sub(began) < MOST_TIME
+    {
+        let taken = match outbox.take_after(MOST_RECORDS, MOST_BYTES, &flushed.taken) {
             Ok(taken) => taken,
             Err(error) => {
                 flushed.failed.push(Failed::outbox(error.to_string()));
@@ -83,23 +96,27 @@ pub(super) fn drain(
             break;
         }
         flushed.outcome = "sent";
-        passed.extend(taken.entries.iter().map(|entry| entry.key.clone()));
-        let settled = settle::send(outbox, credential, &taken.entries, wait);
+        let keys = taken.entries.iter().map(|entry| entry.key.clone());
+        flushed.taken.extend(keys);
+        let now = clock.now().unwrap_or_default();
+        let settled = settle::send(outbox, credential, &taken.entries, wait, now);
         flushed.sent += settled.sent;
         flushed.dead += settled.dead;
-        later.extend(settled.later);
+        flushed.put_off.extend(settled.later);
         flushed.failed.extend(settled.failed);
+        flushed.not_before = settled.come_back.map(|seconds| now.saturating_add(seconds));
     }
     if !flushed.failed.is_empty() {
         flushed.outcome = "failed";
+    } else if flushed.not_before.is_some() {
+        flushed.outcome = "paused";
     }
-    flushed.later = later.len();
-    flushed.remaining = outbox::survey(outbox.dir())
-        .ok()
-        .and_then(|survey| {
-            let waiting = survey.waiting.get(outbox.endpoint())?;
-            Some(waiting.iter().filter(|key| !later.contains(*key)).count())
-        })
-        .unwrap_or(0);
+    flushed.later = flushed.put_off.len();
+    flushed.waiting = super::waiting(outbox);
+    flushed.remaining = flushed
+        .waiting
+        .iter()
+        .filter(|key| !flushed.put_off.contains_key(*key))
+        .count();
     flushed
 }

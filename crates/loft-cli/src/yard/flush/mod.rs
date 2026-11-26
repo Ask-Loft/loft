@@ -5,18 +5,24 @@
 //!
 //! One flush sends at a time for each home of Yard, under the lock `~/.yard/flush.lock`, taken
 //! without waiting: a flush that finds it held ends at once as `busy`. A write never takes it.
+//! Holding it, a flush first keeps away from an address Yard Server asked it to come back to
+//! later, as `~/.yard/flush.json` records, and records each run it makes there.
 
+mod record;
 mod sending;
 mod settle;
 #[cfg(test)]
 mod tests;
 
+use std::collections::BTreeSet;
 use std::time::Duration;
 
+use loft_ports::clock::Clock as _;
 use serde_json::{Value, json};
+use yardlog::Time;
 use yardlog_store::home::Home;
 use yardlog_store::lock;
-use yardlog_store::outbox::Outbox;
+use yardlog_store::outbox::{self, Outbox};
 
 use super::args::FlushArgs;
 use super::failure;
@@ -35,11 +41,14 @@ pub const ENDPOINT: &str = "LOFT_YARD_SERVER_ENDPOINT";
 /// The variable that names the token Yard Server admits the person by.
 pub const TOKEN: &str = "LOFT_YARD_SERVER_TOKEN";
 
+/// The variable that names how many seconds a flush waits for Yard Server's answer to a batch.
+pub const TIMEOUT: &str = "LOFT_YARD_SERVER_TIMEOUT";
+
 /// The lock a flush holds while it sends, in the home of Yard.
 pub const LOCK: &str = "flush.lock";
 
-/// The most a flush waits for Yard Server's answer to one batch.
-const WAIT: Duration = Duration::from_secs(2);
+/// The most a flush waits for Yard Server's answer to one batch, unless [`TIMEOUT`] says.
+const WAIT: Duration = Duration::from_secs(10);
 
 /// Where connected mode sends: the home of Yard, the outbox of the address and the token.
 struct Connection {
@@ -48,14 +57,25 @@ struct Connection {
     token: String,
 }
 
-/// The connection connected mode names, where it is on, both variables set and not empty, and a
-/// home is known.
-fn connection() -> Option<Connection> {
-    let endpoint = environment::text(ENDPOINT)?;
-    let token = environment::text(TOKEN)?;
-    let home = Home::from_env()?;
+/// Whether connected mode is on, as the environment says.
+enum Mode {
+    /// A variable is unset or empty.
+    Off,
+    /// Both variables are set, and no home directory is known to keep the outbox in.
+    Homeless,
+    On(Connection),
+}
+
+fn mode() -> Mode {
+    let (Some(endpoint), Some(token)) = (environment::text(ENDPOINT), environment::text(TOKEN))
+    else {
+        return Mode::Off;
+    };
+    let Some(home) = Home::from_env() else {
+        return Mode::Homeless;
+    };
     let outbox = home.outbox(&endpoint);
-    Some(Connection {
+    Mode::On(Connection {
         home,
         outbox,
         token,
@@ -64,7 +84,22 @@ fn connection() -> Option<Connection> {
 
 /// The outbox each new version is copied into, where connected mode is on.
 pub fn outbox() -> Option<Outbox> {
-    connection().map(|connection| connection.outbox)
+    match mode() {
+        Mode::On(connection) => Some(connection.outbox),
+        Mode::Off | Mode::Homeless => None,
+    }
+}
+
+/// How long a flush waits for an answer: `seconds` where [`TIMEOUT`] gives them, else 10 seconds.
+fn wait_of(seconds: Option<u64>) -> Duration {
+    seconds.map_or(WAIT, Duration::from_secs)
+}
+
+/// How long this flush waits for an answer, or why [`TIMEOUT`] does not say.
+fn wait() -> Result<Duration, String> {
+    crate::remote::seconds(TIMEOUT)
+        .map(wait_of)
+        .map_err(|error| error.to_string())
 }
 
 /// `loft yard flush`: sends the outbox's entries for its address to Yard Server, batch after
@@ -72,15 +107,20 @@ pub fn outbox() -> Option<Outbox> {
 /// nothing of Yard Log.
 pub fn run(args: &FlushArgs) -> Finished {
     let as_json = args.output.json();
-    let Some(connection) = connection() else {
-        return report(as_json, &Flushed::quiet("off"), "Connected mode is off.");
+    let connection = match mode() {
+        Mode::Off => return report(as_json, &Flushed::quiet("off"), "Connected mode is off."),
+        Mode::Homeless => {
+            let why = format!(
+                "{ENDPOINT} and {TOKEN} are set, but no home directory is known to keep the outbox in"
+            );
+            let line = format!("failed: {why}.");
+            return report(as_json, &Flushed::failed(Failed::outbox(why)), &line);
+        }
+        Mode::On(connection) => connection,
     };
     let endpoint = connection.outbox.endpoint().to_owned();
-    let path = connection.home.dir().join(LOCK);
-    let flushed = match lock::try_lock(&path) {
-        Ok(Some(_held)) => {
-            sending::drain(&connection.outbox, &connection.token, WAIT, super::clock())
-        }
+    let flushed = match lock::try_lock(&connection.home.dir().join(LOCK)) {
+        Ok(Some(_held)) => locked(&connection),
         Ok(None) => {
             let line = format!("busy: another flush sends to Yard Server at {endpoint}.");
             return report(as_json, &Flushed::quiet("busy"), &line);
@@ -98,10 +138,65 @@ pub fn run(args: &FlushArgs) -> Finished {
         flushed.skipped,
         flushed.dead
     );
+    if let Some(time) = flushed
+        .not_before
+        .and_then(|time| Time::from_unix_seconds(time).ok())
+    {
+        line = format!("{line} Yard Server asked to come back after {time}.");
+    }
     for failed in &flushed.failed {
         line = format!("{line} {}.", failed.why);
     }
     report(as_json, &flushed, &line)
+}
+
+/// The run of a flush that holds the lock: none where Yard Server asked to come back after a
+/// time that has not come, else the sending, recorded in `~/.yard/flush.json`.
+fn locked(connection: &Connection) -> Flushed {
+    let clock = super::clock();
+    let endpoint = connection.outbox.endpoint();
+    let now = clock.now().unwrap_or_default();
+    let pause = record::read(&connection.home, endpoint).and_then(|record| record.not_before);
+    if let Some(time) = pause.filter(|time| now < *time) {
+        return Flushed {
+            not_before: Some(time),
+            ..Flushed::quiet("paused")
+        };
+    }
+    let mut flushed = match wait() {
+        Ok(wait) => sending::drain(&connection.outbox, &connection.token, wait, clock),
+        Err(why) => {
+            let mut flushed = Flushed::failed(Failed::yard_server(why));
+            flushed.waiting = waiting(&connection.outbox);
+            flushed
+        }
+    };
+    let run = record::Run {
+        ended: clock.now().unwrap_or(now),
+        outcome: flushed.outcome,
+        why: flushed.failed.first().map(|failed| failed.why.clone()),
+        not_before: flushed.not_before,
+        taken: &flushed.taken,
+        later: &flushed.put_off,
+    };
+    if let Err(error) = record::replace(&connection.home, endpoint, &run, &flushed.waiting) {
+        flushed.failed.push(Failed::outbox(format!(
+            "{} cannot be written: {error}",
+            connection.home.dir().join("flush.json").display()
+        )));
+        flushed.outcome = "failed";
+    }
+    flushed
+}
+
+/// The keys of the entries waiting in `outbox` for its address.
+fn waiting(outbox: &Outbox) -> BTreeSet<String> {
+    outbox::survey(outbox.dir())
+        .ok()
+        .and_then(|mut survey| survey.waiting.remove(outbox.endpoint()))
+        .unwrap_or_default()
+        .into_iter()
+        .collect()
 }
 
 fn report(as_json: bool, flushed: &Flushed, line: &str) -> Finished {

@@ -44,6 +44,8 @@ pub enum HomeFile {
     Token,
     /// A newer page server's request that the running one stop.
     Stop,
+    /// The last run of the flush for each address of Yard Server.
+    Flush,
 }
 
 impl HomeFile {
@@ -59,6 +61,7 @@ impl HomeFile {
             Self::SessionDirs => "session-dirs.json",
             Self::Token => "token",
             Self::Stop => "stop.json",
+            Self::Flush => "flush.json",
         }
     }
 

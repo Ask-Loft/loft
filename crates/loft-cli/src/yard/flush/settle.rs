@@ -3,7 +3,8 @@
 //! it holds other contents for, or refused, is moved into `dead/` with the reason, as is every
 //! entry of a batch it refused whole with `400` or `413`; one it will take later stays. An
 //! answer of `200` that does not read, or gives a version no outcome this `loft` knows, settles
-//! nothing of that version, and the run ends `failed`.
+//! nothing of that version, and the run ends `failed`. A `429` or `503` whose `Retry-After` reads
+//! asks the run to come back later, and settles nothing.
 
 use std::slice;
 use std::time::Duration;
@@ -48,19 +49,22 @@ pub(super) struct Settled {
     pub sent: usize,
     /// The entries moved into `dead/`.
     pub dead: usize,
-    /// The keys of the entries whose versions Yard Server will take later, with its code.
-    pub later: Vec<String>,
+    /// The keys of the entries whose versions Yard Server will take later, each with its code.
+    pub later: Vec<(String, String)>,
+    /// The seconds Yard Server asked the run to keep away, where it refused the batch for now.
+    pub come_back: Option<u64>,
     /// Why the batch did not go, or an entry of it could not be settled.
     pub failed: Vec<Failed>,
 }
 
 /// Sends `entries` as one batch with `credential`, waiting at most `wait` for the answer, and
-/// settles each entry by it.
+/// settles each entry by it; `now` dates a `Retry-After` given as an HTTP date.
 pub(super) fn send(
     outbox: &Outbox,
     credential: &str,
     entries: &[Entry],
     wait: Duration,
+    now: u64,
 ) -> Settled {
     let records: Vec<&str> = entries.iter().map(|entry| entry.record.as_str()).collect();
     let body = batch(&records);
@@ -91,6 +95,17 @@ pub(super) fn send(
             }
             settled
         }
+        429 | 503 => match reply
+            .retry_after
+            .as_deref()
+            .and_then(|value| crate::remote::retry_after(value, now))
+        {
+            Some(seconds) => Settled {
+                come_back: Some(seconds),
+                ..Settled::default()
+            },
+            None => failure(Failed::yard_server(refusal(reply.status, &reply.body))),
+        },
         status => failure(Failed::yard_server(refusal(status, &reply.body))),
     }
 }
@@ -124,7 +139,7 @@ fn settle(outbox: &Outbox, entries: &[Entry], body: &[u8]) -> Settled {
             Some(Outcome::Refused(code)) => {
                 bury(outbox, entry, &format!("refused {code}"), &mut settled);
             }
-            Some(Outcome::Later(_)) => settled.later.push(entry.key.clone()),
+            Some(Outcome::Later(code)) => settled.later.push((entry.key.clone(), code.clone())),
             Some(Outcome::Unknown) | None => unsettled.push(entry.key.as_str()),
         }
     }

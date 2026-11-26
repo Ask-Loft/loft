@@ -79,3 +79,111 @@ fn a_run_with_time_to_spare_sends_every_batch() {
     assert_eq!((flushed.sent, flushed.remaining), (40, 0));
     fs::remove_dir_all(outbox.dir()).unwrap();
 }
+
+#[test]
+fn a_flush_waits_10_seconds_for_an_answer_unless_the_timeout_says_otherwise() {
+    assert_eq!(super::wait_of(None), Duration::from_secs(10));
+    assert_eq!(super::wait_of(Some(3)), Duration::from_secs(3));
+}
+
+/// Yard Server that stores the first batch and asks to come back later to every batch after it.
+struct StoresThenComesBack {
+    answered: usize,
+}
+
+impl software_plant::http::Responder for StoresThenComesBack {
+    fn answer(&mut self, request: &software_plant::http::Request) -> software_plant::http::Answer {
+        self.answered += 1;
+        if self.answered > 1 {
+            let mut response = software_plant::http::Response::empty(429);
+            response
+                .headers
+                .push(("Retry-After".to_owned(), "60".to_owned()));
+            return response.into();
+        }
+        let batch: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
+        let outcomes: Vec<serde_json::Value> = batch["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|record| serde_json::json!({"version": record["version"]["key"], "outcome": "stored"}))
+            .collect();
+        software_plant::http::Response::json(
+            200,
+            &serde_json::json!({"format": "yardlog-answer/1", "outcomes": outcomes}),
+        )
+        .into()
+    }
+}
+
+#[test]
+fn a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went() {
+    let server = software_plant::http::Server::start(StoresThenComesBack { answered: 0 });
+    let outbox = filled(&server.url(), 20);
+    let clock = Stepping {
+        step: Duration::from_secs(1),
+        passed: Cell::new(Duration::ZERO),
+    };
+    let flushed = drain(&outbox, "token", WAIT, &clock);
+    assert_eq!(flushed.outcome, "paused");
+    assert_eq!(flushed.sent, 16);
+    assert_eq!(flushed.not_before, Some(60));
+    assert_eq!(flushed.remaining, 4);
+    fs::remove_dir_all(outbox.dir()).unwrap();
+}
+
+fn keys(keys: &[&str]) -> std::collections::BTreeSet<String> {
+    keys.iter().map(|key| (*key).to_owned()).collect()
+}
+
+fn codes(pairs: &[(&str, &str)]) -> std::collections::BTreeMap<String, String> {
+    pairs
+        .iter()
+        .map(|(key, code)| ((*key).to_owned(), (*code).to_owned()))
+        .collect()
+}
+
+#[test]
+fn a_record_that_replaces_another_keeps_a_time_to_come_back_after_that_has_not_passed() {
+    let previous = super::record::Record {
+        not_before: Some(500),
+        ..super::record::Record::default()
+    };
+    let (taken, later) = (keys(&[]), codes(&[]));
+    let run = |ended| super::record::Run {
+        ended,
+        outcome: "failed",
+        why: None,
+        not_before: None,
+        taken: &taken,
+        later: &later,
+    };
+    assert_eq!(
+        super::record::next(&previous, &run(400), &keys(&[])).not_before,
+        Some(500)
+    );
+    assert_eq!(
+        super::record::next(&previous, &run(500), &keys(&[])).not_before,
+        None
+    );
+}
+
+#[test]
+fn a_record_keeps_the_later_key_of_each_entry_the_run_did_not_take_while_it_waits() {
+    let previous = super::record::Record {
+        later: codes(&[("a", "old"), ("b", "old"), ("c", "old")]),
+        ..super::record::Record::default()
+    };
+    let (taken, later) = (keys(&["b"]), codes(&[("d", "new")]));
+    let run = super::record::Run {
+        ended: 1,
+        outcome: "sent",
+        why: None,
+        not_before: None,
+        taken: &taken,
+        later: &later,
+    };
+    // `a` was not taken and waits; `b` was taken and not put off again; `c` is gone.
+    let next = super::record::next(&previous, &run, &keys(&["a", "b", "d"]));
+    assert_eq!(next.later, codes(&[("a", "old"), ("d", "new")]));
+}
