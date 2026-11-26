@@ -270,9 +270,7 @@ requirements:
       - key: 01a2146f-d6af-70f6-acc1-b8a9a1138a83
         name: "A number inside a web address, or one that comes right after a letter, `_`, `/`, `.`, `-`, `=`, `?`, `&` or `#`, begins no quantity, so that `https://example.com/files/512MB.bin` states none."
       - key: 01a214b5-d973-7194-bf7e-adf2021955c3
-        name: "A number after a `-` that follows a digit, as in `4-16 MB`, begins a quantity, as does a decimal written with a leading `.` and no word before it, such as `.5 MB`."
-      - key: 01a21358-4147-72be-a72f-0d0fc0b9991c
-        name: "A Quality Attribute whose target's unit is a byte unit states a quantity in that unit."
+        name: "A number after a `-` that follows a digit, as in `4-16 MB`, begins a quantity, as does a decimal written with a leading `.`, such as `.5 MB`, only where the number before the `-`, or the `.` itself, comes after none of a letter, `_`, `/`, `.`, `-`, `=`, `?`, `&`, `#` and lies outside a web address, so that `files/2024-512MB.bin` states none."
       - key: 01a21358-4147-72be-a72f-0d104b2a340f
         name: "A node's name, statement, body and Sections, a Quality Attribute's target, a Constraint's required value and a term's definition are read for quantities."
       - key: 01a21358-4147-72be-a72f-0d1106cfdd22
@@ -285,6 +283,8 @@ requirements:
         name: "A document whose quantities are all in decimal byte units, or all in binary byte units, yields no `V2-014` finding."
       - key: 01a21358-4147-72be-a72f-0d152a0876e9
         name: "A document in which a node's text, a decision's text or a term's definition gives a decimal byte unit as a count of bytes, such as `1 MB = 1,000,000 bytes`, `MB: 1,000,000 bytes` or `Sizes are in MB (10^6 bytes).`, yields no `V2-014` finding."
+      - key: 01a21698-e527-74e5-8471-b2bbcea22833
+        name: "A count of bytes is written as digits, as digits grouped by commas in threes after a lead group of one to three digits, such as `1,048,576`, as `LQ-002` reads a grouped number, or as a power, such as `2^20`, so that neither `1.024` nor `1 000 000` is one."
       - key: 01a214b5-d973-7194-bf7e-adf3d86c4219
         name: "A count of bytes gives a decimal byte unit only where it equals 1000^k bytes, or 1024^k bytes, for the unit's power k: 1 for `kB` and `KB`, 2 for `MB`, 3 for `GB`, 4 for `TB`."
       - key: 01a214b5-d973-7194-bf7e-adf44087797f
@@ -296,10 +296,18 @@ requirements:
       - key: 01a21358-4147-72be-a72f-0d1643400930
         name: "A term is named after a decimal byte unit where its name, or one of its aliases, is the unit or its full name, which a lowercase `s` may make plural, such as `MB`, `MBs`, `megabytes`."
       - key: 01a214b5-d973-7194-bf7e-adf55116d7d7
-        name: "A document with a term named after a decimal byte unit, whose definition names the unit's full name or gives its value as a count of bytes, yields no `V2-014` finding, so that a term `KB` defined as `The knowledge base the support agent searches.` settles nothing."
+        name: "A document with a term named after a decimal byte unit, whose definition opens on the unit's full name or on its value as a count of bytes, after at most one of `1`, `one`, `a`, `an`, `the`, `exactly`, yields no `V2-014` finding, so that a term `KB` defined as `The knowledge base, at most 1,000 bytes per article` settles nothing."
       - key: 01a21358-4147-72be-a72f-0d172df94e9d
         name: "A definition of a binary byte unit alone leaves the finding in place."
       - key: 01a21358-4147-72be-a72f-0d18c7a0989c
         name: "The finding names the decimal unit the element uses and the key of a node, decision or term that states a quantity in a binary byte unit."
       - key: 01a21358-4147-72be-a72f-0d199a8c0bae
         name: "The default severity of `V2-014` is warning."
+  - key: 01a216a0-48bf-75d0-b74f-a5f74139c2a7
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "read the unit of a Quality Attribute's target for `V2-014`."
+    criteria:
+      - key: 01a21358-4147-72be-a72f-0d0fc0b9991c
+        name: "A Quality Attribute whose target's unit is a byte unit states a quantity in that unit."
