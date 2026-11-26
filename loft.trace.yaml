@@ -40716,6 +40716,24 @@ links:
       - file: "crates/loft-cli/tests/yard_status.rs"
         name: "with_no_file_in_dead_the_line_reads_dead_none_and_no_file_line_follows"
         body: 78588d845e07d29fdc6de2871ac131b8342c2fce984b8c1397b58bf8611e00f4
+  - node: 01a218ef-b9a6-707b-88be-a52cf268df35
+    reviewed: b9117b36593a08287b7b986d7ab7644c661e1d18ea5917dac5373e76abceb795
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_off_and_no_home_directory_known_status_says_no_home_is_known"
+        body: 1fe9289ab97184e0737be81505fe390c373186af95b5739d9731ea196f9d66dd
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "an_address_the_network_client_refuses_is_named_as_refused"
+        body: 130d48186cea889ad4eb240e0729d1a3891b997086d5c6dc15496b71e73ab51c
+  - node: 01a218ef-b9a6-707b-88be-a52d0448ce2f
+    reviewed: 24695b478d48c23cf721ad2de5ea182a5c2116ecd52dae2ff0e96a3b8e915367
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_off_waiting_counts_every_entry_with_its_address"
+        body: a6bc33409e0a39268371e06c2a96f4e733b21d243f4206a1d24d8de07880917d
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "an_entry_counts_as_later_by_the_record_of_the_address_it_is_for_whatever_the_mode"
+        body: f299bf72b4276bca39cca24d547dc84b7587a1d7cbbc8b951ea3295b55331c87
   - node: 01a213cb-9c28-769e-b7c8-43fa79962c40
     reviewed: a0312bff386349552381cb92a788918876f1141be505a98818ea0293d2d0832b
     tests:
