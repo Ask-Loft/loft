@@ -83,7 +83,7 @@ impl Host<'_> {
 #[cfg(unix)]
 fn run_claude_hook(scratch: &Scratch, host: &Host, hook: &Value) -> Output {
     use std::io::Write as _;
-    let mut command = Command::new("/bin/sh");
+    let mut command = Command::new("sh");
     isolate(&mut command, &scratch.home());
     command
         .args(["-c", CLAUDE_HOOK])
@@ -242,7 +242,7 @@ fn the_context_stays_one_json_document_where_the_home_directory_holds_a_tab_or_a
     fs::create_dir_all(&home).unwrap();
     let dir = scratch.0.canonicalize().unwrap();
     let hook = json!({"session_id": "s1", "cwd": dir, "hook_event_name": "SessionStart", "source": "startup"});
-    let mut command = Command::new("/bin/sh");
+    let mut command = Command::new("sh");
     isolate(&mut command, &home);
     command
         .args(["-c", CLAUDE_HOOK])

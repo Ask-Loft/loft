@@ -35762,7 +35762,7 @@ links:
         body: 7838a3be28c8542bd614e6ad9be651edf11131be5cc48e9c036a6b21cf81f53f
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_context_stays_one_json_document_where_the_home_directory_holds_a_tab_or_a_quote"
-        body: dfd4677fe339ea135a40e0774fc11fc6d54a2a50d9a2be8508d4f9e2e2de872d
+        body: af006d14345f59e18ef45de09c15574d421a90faa4e1ca202385bbc12441ebd0
   - node: 01a21838-627a-77f5-b8f0-1a0422742550
     reviewed: 42f22bc4697b634324de9dc3611dbcc7efffbd052cd07a545d27c2994dd63e12
     tests:
