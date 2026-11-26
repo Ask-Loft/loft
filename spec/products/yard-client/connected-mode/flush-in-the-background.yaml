@@ -4,7 +4,7 @@ name: "Flush in the background"
 body: |
   Every version is written by an agent of a session of Claude Code or Codex, and each such session already has a part that lives as long as it does and acts every 5 seconds: the Loft mod in Claude Code and the Codex Yard worker in Codex. They deliver the session's events to the page server that way, trying again what did not go, and they run `loft yard flush` the same way, without waiting for it. So no command an agent or a hook runs waits for Yard Server, and a batch that did not go is tried again even while the agent waits for the person.
 
-  The two hosts start the flush from what each knows. The Loft mod makes the session's writes of Yard Log itself, so it flushes after each of them and keeps on at its beat only while the last flush left work. A Codex agent writes through the shell, out of the worker's sight, so the worker flushes at its beat whenever the outbox holds entries it can send. Only one flush sends at a time, so the flushes of many sessions cost one sending.
+  The two hosts start the flush from what each knows. The Loft mod makes the session's writes of Yard Log itself, so it flushes after each of them and keeps on at its beat only while the last flush left work. A Codex agent writes through the shell, out of the worker's sight, so the worker flushes at its beat whenever the outbox holds entries it can send, other than those Yard Server has put off until later. Only one flush sends at a time, so the flushes of many sessions cost one sending.
 
   A run of the flush ends by itself after 5 minutes; whoever started it stops it after 6, in case it hangs, so that a stuck flush never holds the lock for long. A flush that runs when its session ends is stopped with it; the versions it did not send wait in the outbox for the next session, whose first beat flushes them.
 
@@ -55,6 +55,8 @@ requirements:
         name: "A beat where the outbox holds no entry for the address runs no flush."
       - key: 01a21406-1007-7756-963c-230cbc0e6521
         name: "A beat where the outbox holds only entries for another address, or of a newer `yardlog-outbox` version, runs no flush."
+      - key: 01a216fa-feab-729d-9d66-ce58f509b86b
+        name: "A beat where every entry for the address is one whose version `~/.yard/flush.json` records as `later` runs no flush."
       - key: 01a21406-1007-7756-963c-230dcfa9347f
         name: "A beat runs no flush before the time Yard Server asked to come back after, as `~/.yard/flush.json` records it."
       - key: 01a21406-1007-7756-963c-230e4274c2ec

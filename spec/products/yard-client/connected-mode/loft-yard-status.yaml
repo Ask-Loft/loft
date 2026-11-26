@@ -41,6 +41,8 @@ requirements:
         name: "With connected mode on, the line `waiting:` counts the entries for the address."
       - key: 01a213cb-9c28-769e-b7c8-43ed8c88dd70
         name: "The same line counts the entries for another address, the entries Yard Server will take later and the entries of a newer `yardlog-outbox` version, where there are any."
+      - key: 01a216fa-feac-7221-aee1-7167ca9c5a19
+        name: "An entry counts among those Yard Server will take later where `~/.yard/flush.json` records its version as `later` for the address it is for."
       - key: 01a21406-1007-7756-963c-2317faa993d5
         name: "With connected mode off, the line `waiting:` counts every entry, with the address each is for."
       - key: 01a213cb-9c28-769e-b7c8-43ee9cac6d49
