@@ -31,9 +31,26 @@ impl Clock for Stepping {
     fn wait(&self, _length: Duration) {}
 }
 
+/// A fresh directory under the system's temporary one, removed when the test ends, whether it
+/// passed or failed.
+struct Fresh(std::path::PathBuf);
+
+impl Fresh {
+    fn new(name: &str) -> Self {
+        Self(std::env::temp_dir().join(format!("{name}-{}", uuid::Uuid::new_v4())))
+    }
+}
+
+impl Drop for Fresh {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
 /// An outbox for `endpoint` in a fresh directory, holding `count` small entries.
-fn filled(endpoint: &str, count: usize) -> Outbox {
-    let dir = std::env::temp_dir().join(format!("loft-flush-{}", uuid::Uuid::new_v4()));
+fn filled(endpoint: &str, count: usize) -> (Outbox, Fresh) {
+    let fresh = Fresh::new("loft-flush");
+    let dir = fresh.0.clone();
     fs::create_dir_all(&dir).unwrap();
     for n in 0..count {
         let key = format!("00000000-0000-7000-8000-{n:012}");
@@ -46,13 +63,13 @@ fn filled(endpoint: &str, count: usize) -> Outbox {
         )
         .unwrap();
     }
-    Outbox::new(dir, endpoint)
+    (Outbox::new(dir, endpoint), fresh)
 }
 
 #[test]
 fn a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_the_rest() {
     let server = YardServer::accepting();
-    let outbox = filled(&server.url(), 40);
+    let (outbox, _fresh) = filled(&server.url(), 40);
     // The run reads the clock as it begins and before each batch: at 0, 2 and 4 minutes it takes
     // a batch, and at 6 minutes, past the 5, it takes no more.
     let clock = Stepping {
@@ -63,13 +80,12 @@ fn a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_
     assert_eq!(server.requests().len(), 2);
     assert_eq!(flushed.outcome, "sent");
     assert_eq!((flushed.sent, flushed.remaining()), (32, 8));
-    fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
 #[test]
 fn a_run_with_time_to_spare_sends_every_batch() {
     let server = YardServer::accepting();
-    let outbox = filled(&server.url(), 40);
+    let (outbox, _fresh) = filled(&server.url(), 40);
     let clock = Stepping {
         step: Duration::from_secs(1),
         passed: Cell::new(Duration::ZERO),
@@ -77,7 +93,6 @@ fn a_run_with_time_to_spare_sends_every_batch() {
     let flushed = drain(&outbox, software_plant::yard_server::TOKEN, WAIT, &clock);
     assert_eq!(server.requests().len(), 3);
     assert_eq!((flushed.sent, flushed.remaining()), (40, 0));
-    fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
 #[test]
@@ -115,7 +130,7 @@ impl software_plant::http::Responder for StoresThenComesBack {
 #[test]
 fn a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went() {
     let server = software_plant::http::Server::start(StoresThenComesBack { answered: 0 });
-    let outbox = filled(&server.url(), 20);
+    let (outbox, _fresh) = filled(&server.url(), 20);
     let clock = Stepping {
         step: Duration::from_secs(1),
         passed: Cell::new(Duration::ZERO),
@@ -125,7 +140,6 @@ fn a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went() 
     assert_eq!(flushed.sent, 16);
     assert_eq!(flushed.not_before, Some(60));
     assert_eq!(flushed.remaining(), 4);
-    fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
 /// A clock whose time, in seconds since the Unix epoch, is what its cell holds.
@@ -166,10 +180,9 @@ fn come_back(retry_after: &str) -> software_plant::http::Answer {
 fn a_retry_after_in_seconds_counts_from_the_answer() {
     let time = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(1000));
     let server = software_plant::http::Server::start(SlowToComeBack(time.clone()));
-    let outbox = filled(&server.url(), 1);
+    let (outbox, _fresh) = filled(&server.url(), 1);
     let flushed = drain(&outbox, "token", WAIT, &Shared(time));
     assert_eq!(flushed.not_before, Some(1014));
-    fs::remove_dir_all(outbox.dir()).unwrap();
 }
 
 fn keys(keys: &[&str]) -> std::collections::BTreeSet<String> {
@@ -245,15 +258,16 @@ fn a_record_keeps_the_later_key_of_an_entry_taken_in_a_batch_yard_server_did_not
 }
 
 /// Connected mode on for `endpoint`, with the home of Yard in a fresh directory.
-fn on(endpoint: &str) -> super::Mode {
-    let dir = std::env::temp_dir().join(format!("loft-due-{}", uuid::Uuid::new_v4()));
-    let home = yardlog_store::home::Home::at(&dir);
+fn on(endpoint: &str) -> (super::Mode, Fresh) {
+    let fresh = Fresh::new("loft-due");
+    let home = yardlog_store::home::Home::at(&fresh.0);
     let outbox = home.outbox(endpoint);
-    super::Mode::On(super::Connection {
+    let mode = super::Mode::On(super::Connection {
         home,
         outbox,
         token: "token".to_owned(),
-    })
+    });
+    (mode, fresh)
 }
 
 /// Puts an entry of `format` for `endpoint` into the outbox of `mode`, named by `key`.
@@ -287,7 +301,7 @@ const ADDRESS: &str = "http://127.0.0.1:1";
 
 #[test]
 fn a_flush_is_due_once_an_entry_for_the_address_waits() {
-    let mode = on(ADDRESS);
+    let (mode, _fresh) = on(ADDRESS);
     assert!(!super::due(&mode, 0));
     put(
         &mode,
@@ -306,7 +320,7 @@ fn no_flush_is_due_without_connected_mode() {
 
 #[test]
 fn no_flush_is_due_for_entries_of_another_address_or_of_a_newer_format() {
-    let mode = on(ADDRESS);
+    let (mode, _fresh) = on(ADDRESS);
     put(
         &mode,
         "http://127.0.0.1:2",
@@ -324,7 +338,7 @@ fn no_flush_is_due_for_entries_of_another_address_or_of_a_newer_format() {
 
 #[test]
 fn no_flush_is_due_for_entries_yard_server_will_take_later_alone() {
-    let mode = on(ADDRESS);
+    let (mode, _fresh) = on(ADDRESS);
     let key = "00000000-0000-7000-8000-000000000001";
     put(&mode, ADDRESS, key, "yardlog-outbox/1");
     recorded(
@@ -344,7 +358,7 @@ fn no_flush_is_due_for_entries_yard_server_will_take_later_alone() {
 
 #[test]
 fn no_flush_is_due_before_the_time_yard_server_asked_to_come_back_after() {
-    let mode = on(ADDRESS);
+    let (mode, _fresh) = on(ADDRESS);
     put(
         &mode,
         ADDRESS,
