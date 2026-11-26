@@ -4,12 +4,13 @@
 //! entry of a batch it refused whole with `400` or `413`; one it will take later stays. An
 //! answer of `200` that does not read, or gives a version no outcome this `loft` knows, settles
 //! nothing of that version, and the run ends `failed`. A `429` or `503` whose `Retry-After` reads
-//! asks the run to come back later, and settles nothing.
+//! as a time that can be dated asks the run to come back later, and settles nothing.
 
 use std::slice;
 use std::time::Duration;
 
 use serde_json::Value;
+use yardlog::Time;
 use yardlog::batch::batch;
 use yardlog::batch_answer::{self, Outcome};
 use yardlog_store::outbox::{Entry, Outbox};
@@ -99,6 +100,7 @@ pub(super) fn send(
             .retry_after
             .as_deref()
             .and_then(|value| crate::remote::retry_after(value, now))
+            .filter(|seconds| Time::from_unix_seconds(now.saturating_add(*seconds)).is_ok())
         {
             Some(seconds) => Settled {
                 come_back: Some(seconds),

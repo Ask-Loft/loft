@@ -91,6 +91,7 @@ fn a_429_or_503_without_a_retry_after_that_reads_is_a_failure() {
         YardServer::failing(429),
         YardServer::failing(503),
         YardServer::coming_back(429, "soon"),
+        YardServer::coming_back(503, "99999999999999"),
     ] {
         let yard = Yard::new();
         let variables = connected(&server.url());
