@@ -5,15 +5,15 @@
 use std::fs;
 
 use serde_json::{Value, json};
-use yardlog::batch::FORMAT as BATCH;
+use yardlog::batch::{FORMAT as BATCH, MOST_BYTES};
 use yardlog_store::home::Home;
 use yardlog_store::outbox::{FORMAT, Outbox};
 
 use crate::common::{Failed, Scratch, Tree, read, try_write, write};
 
-const ENDPOINT: &str = "http://127.0.0.1:7420";
+pub(crate) const ENDPOINT: &str = "http://127.0.0.1:7420";
 
-fn outbox(scratch: &Scratch, endpoint: &str) -> Outbox {
+pub(crate) fn outbox(scratch: &Scratch, endpoint: &str) -> Outbox {
     Home::at(scratch.0.join(".yard")).outbox(endpoint)
 }
 
@@ -181,7 +181,7 @@ fn entries_are_taken_oldest_first_for_their_own_address_alone() {
         );
     }
     let all = entries(&tree.scratch);
-    let taken = ours.take(2).unwrap();
+    let taken = ours.take(2, MOST_BYTES).unwrap();
     let keys: Vec<&str> = taken
         .entries
         .iter()
@@ -207,7 +207,7 @@ fn a_record_is_taken_with_its_fields_in_the_order_written() {
         &store,
         &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
     );
-    let taken = ours.take(16).unwrap();
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     assert!(
         taken.entries[0]
             .record
@@ -233,7 +233,7 @@ fn removed_entries_leave_the_outbox_and_one_already_gone_is_no_error() {
         &store,
         &json!([{"id": "s2", "kind": "stage", "title": "S"}]),
     );
-    let taken = ours.take(16).unwrap();
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     ours.remove(&taken.entries[..1]).unwrap();
     ours.remove(&taken.entries[..1]).unwrap();
     assert_eq!(entries(&tree.scratch).len(), 1);
@@ -259,7 +259,7 @@ fn a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_take
         ".yard/outbox/.00000000-0000-7000-8000-000000000004.json.1.0.tmp",
         "{half",
     );
-    let taken = ours.take(16).unwrap();
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     assert_eq!(taken.dead, 2);
     assert_eq!(taken.entries.len(), 1);
     assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000003");
@@ -272,7 +272,7 @@ fn a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_take
         dead.join("00000000-0000-7000-8000-000000000002.json")
             .is_file()
     );
-    let again = ours.take(16).unwrap();
+    let again = ours.take(16, MOST_BYTES).unwrap();
     assert_eq!((again.dead, again.entries.len()), (0, 1));
 }
 
@@ -288,7 +288,7 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
         ".yard/outbox/00000000-0000-7000-8000-000000000002.json",
         &entry(ENDPOINT, "2", 1),
     );
-    let taken = ours.take(16).unwrap();
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     assert_eq!(taken.skipped, 1);
     assert_eq!(taken.entries.len(), 1);
     assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000002");
@@ -303,7 +303,7 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
 #[test]
 fn an_empty_or_missing_outbox_has_nothing_to_take() {
     let scratch = Scratch::new();
-    let taken = outbox(&scratch, ENDPOINT).take(16).unwrap();
+    let taken = outbox(&scratch, ENDPOINT).take(16, MOST_BYTES).unwrap();
     assert_eq!(
         (
             taken.entries.len(),
@@ -316,7 +316,7 @@ fn an_empty_or_missing_outbox_has_nothing_to_take() {
 }
 
 /// An entry of `yardlog-outbox/<version>` for `endpoint`, whose record names `id`.
-fn entry(endpoint: &str, id: &str, version: u32) -> String {
+pub(crate) fn entry(endpoint: &str, id: &str, version: u32) -> String {
     json!({
         "format": format!("yardlog-outbox/{version}"),
         "to": {"endpoint": endpoint},
@@ -334,7 +334,7 @@ fn a_later_write_puts_no_entry_again_for_a_version_already_sent() {
         &store,
         &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
     );
-    let sent = ours.take(16).unwrap();
+    let sent = ours.take(16, MOST_BYTES).unwrap();
     ours.remove(&sent.entries).unwrap();
     write(
         &store,
@@ -400,7 +400,7 @@ fn a_file_that_cannot_be_read_is_passed_over_and_the_rest_are_taken() {
     let path = scratch.0.join(locked);
     fs::set_permissions(&path, fs::Permissions::from_mode(0o000)).unwrap();
     let readable = fs::read(&path).is_ok();
-    let taken = ours.take(16);
+    let taken = ours.take(16, MOST_BYTES);
     fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
     let taken = taken.unwrap();
     if !readable {

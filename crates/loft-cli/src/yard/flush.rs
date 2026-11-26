@@ -12,7 +12,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use serde_json::{Value, json};
-use yardlog::batch::{MOST_RECORDS, batch};
+use yardlog::batch::{MOST_BYTES, MOST_RECORDS, batch};
 use yardlog_store::home::Home;
 use yardlog_store::outbox::{Outbox, Taken};
 
@@ -83,7 +83,7 @@ impl Flushed {
 
 /// Sends one batch of the oldest entries of `outbox` to Yard Server with `credential`, its token.
 fn once(outbox: &Outbox, credential: &str) -> Flushed {
-    let taken = match outbox.take(MOST_RECORDS) {
+    let taken = match outbox.take(MOST_RECORDS, MOST_BYTES) {
         Ok(taken) => taken,
         Err(error) => return failed(Taken::default(), error.to_string()),
     };

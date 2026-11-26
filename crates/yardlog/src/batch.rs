@@ -22,6 +22,10 @@ pub const FORMAT: &str = "yardlog-batch/1";
 /// The most records a batch carries.
 pub const MOST_RECORDS: usize = 16;
 
+/// The most bytes of entry files a batch carries, 1 MiB, unless one entry alone is larger. A
+/// record is smaller than the entry that holds it, so the batch's body is no larger.
+pub const MOST_BYTES: u64 = 1024 * 1024;
+
 /// The record of `version` of `block`, in the stage `stage` of the Yard Log `yard_log`, as JSON
 /// text. A stage's version names the stage as its block.
 #[must_use]

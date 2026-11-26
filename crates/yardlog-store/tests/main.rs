@@ -15,4 +15,5 @@ mod leases;
 #[cfg(unix)]
 mod lock_probe;
 mod outbox;
+mod outbox_batches;
 mod session_files;
