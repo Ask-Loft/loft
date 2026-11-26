@@ -11,7 +11,7 @@ use crate::common::Scratch;
 use crate::yard::{Yard, document};
 use crate::yard_codex::{event, plan_update};
 use crate::yard_connected::{
-    STAGE_BATCH, connected, entries, flush, held, one_waiting, outbox, pairs, run, write,
+    STAGE_BATCH, connected, entries, flush, held, notes, one_waiting, outbox, pairs, run, write,
 };
 
 #[test]
@@ -266,4 +266,27 @@ fn a_batch_that_does_not_go_ends_the_run_with_no_further_request() {
     assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
     assert_eq!(failing.requests().len(), 1);
     assert_eq!(flushed["remaining"], 17);
+}
+
+#[test]
+fn a_run_cut_short_after_a_full_batch_counts_every_entry_of_a_newer_format() {
+    let yard = Yard::new();
+    let server = YardServer::coming_back(503, "120");
+    let variables = connected(&server.url());
+    write(&yard, STAGE_BATCH, &[]);
+    write(&yard, &notes(20), &variables);
+    let newer = json!({"format": "yardlog-outbox/2", "to": {"endpoint": server.url()}});
+    for name in [
+        "ffffffff-0000-7000-8000-000000000001",
+        "ffffffff-0000-7000-8000-000000000002",
+    ] {
+        std::fs::write(
+            outbox(&yard).join(format!("{name}.json")),
+            newer.to_string(),
+        )
+        .unwrap();
+    }
+    let (_, flushed) = flush(&yard, &variables);
+    assert_eq!(flushed["outcome"], "paused");
+    assert_eq!(flushed["skipped"], json!(2));
 }

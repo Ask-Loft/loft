@@ -142,25 +142,28 @@ pub fn run(args: &FlushArgs) -> Finished {
     let flushed = match lock::try_lock(&connection.home.dir().join(LOCK)) {
         Ok(Some(_held)) => locked(&connection),
         Ok(None) => {
-            let busy = Flushed {
-                waiting: waiting(&connection.outbox),
-                held: record::read(&connection.home, &endpoint)
-                    .map(|record| record.later_keys())
-                    .unwrap_or_default(),
-                ..Flushed::quiet("busy")
-            };
+            let held = record::read(&connection.home, &endpoint)
+                .map(|record| record.later_keys())
+                .unwrap_or_default();
+            let busy = left(
+                Flushed {
+                    held,
+                    ..Flushed::quiet("busy")
+                },
+                &connection.outbox,
+            );
             let line = format!(
                 "busy: another flush sends to Yard Server at {endpoint}; {} remaining.",
                 busy.remaining()
             );
             return report(as_json, &busy, &line);
         }
-        Err(error) => Flushed {
-            waiting: waiting(&connection.outbox),
-            ..Flushed::failed(Failed::outbox(format!(
+        Err(error) => left(
+            Flushed::failed(Failed::outbox(format!(
                 "the lock of the flush cannot be taken: {error}"
-            )))
-        },
+            ))),
+            &connection.outbox,
+        ),
     };
     let mut line = format!(
         "{} to Yard Server at {endpoint}: {} sent, {} remaining, {} later, {} skipped, {} moved into dead/.",
@@ -191,19 +194,19 @@ fn locked(connection: &Connection) -> Flushed {
     let now = clock.now().unwrap_or_default();
     let recorded = record::read(&connection.home, endpoint).unwrap_or_default();
     if let Some(time) = recorded.paused(now) {
-        return Flushed {
+        let paused = Flushed {
             not_before: Some(time),
-            waiting: waiting(&connection.outbox),
             held: recorded.later_keys(),
             ..Flushed::quiet("paused")
         };
+        return left(paused, &connection.outbox);
     }
     let mut flushed = match wait() {
         Ok(wait) => sending::drain(&connection.outbox, &connection.token, wait, clock),
-        Err(why) => Flushed {
-            waiting: waiting(&connection.outbox),
-            ..Flushed::failed(Failed::yard_server(why))
-        },
+        Err(why) => left(
+            Flushed::failed(Failed::yard_server(why)),
+            &connection.outbox,
+        ),
     };
     let run = record::Run {
         ended: clock.now().unwrap_or(now),
@@ -234,6 +237,18 @@ fn waiting(outbox: &Outbox) -> BTreeSet<String> {
         .unwrap_or_default()
         .into_iter()
         .collect()
+}
+
+/// `flushed` with what is left in `outbox` after it: the keys of the entries for its address,
+/// and the entries of a newer format, passed over.
+fn left(flushed: Flushed, outbox: &Outbox) -> Flushed {
+    let mut survey = outbox::survey(outbox.dir()).unwrap_or_default();
+    let waiting = survey.waiting.remove(outbox.endpoint()).unwrap_or_default();
+    Flushed {
+        waiting: waiting.into_iter().collect(),
+        skipped: survey.newer,
+        ..flushed
+    }
 }
 
 fn report(as_json: bool, flushed: &Flushed, line: &str) -> Finished {

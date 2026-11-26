@@ -106,7 +106,6 @@ pub(super) fn drain(
             }
         };
         flushed.dead += taken.dead;
-        flushed.skipped = taken.skipped;
         if taken.entries.is_empty() {
             break;
         }
@@ -126,6 +125,5 @@ pub(super) fn drain(
     } else if flushed.not_before.is_some() {
         flushed.outcome = "paused";
     }
-    flushed.waiting = super::waiting(outbox);
-    flushed
+    super::left(flushed, outbox)
 }

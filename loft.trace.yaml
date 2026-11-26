@@ -40078,6 +40078,9 @@ links:
     reviewed: 43b21c67186170179ec9f1a887533ad227126428d37598c0a52722e69325625d
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_run_cut_short_after_a_full_batch_counts_every_entry_of_a_newer_format"
+        body: 069a18e0cfe6b7b9700b4091f59b0d16c40ef64e2e9974204eb850dfaf6a512c
+      - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "a_flush_counts_and_moves_aside_what_it_cannot_send"
         body: 9f46146e7741742093125f9d431d13f4670c249b872577f3e972cc82a896bc8a
   - node: 01a20dc9-2271-7343-84c0-93e6f2d568f6
