@@ -7,8 +7,9 @@
 //! paragraph, list item and heading stands apart. A quantity is a number followed by a unit, with
 //! nothing, one space, one no-break space or one hyphen between them; units are matched in their
 //! own case, so `Mb` is neither family. A number inside a web address, or right after a letter or
-//! one of `_ / . - = ? & #`, begins no quantity, except a range such as `4-16 MB` and a decimal
-//! such as `.5 MB` where the number before the `-`, or the `.` itself, comes after none of those.
+//! one of `_ / . - = ? & #`, begins no quantity, except a range such as `4-16 MB`, where the
+//! number before the `-` ends in a digit and comes after none of those, and a decimal such as
+//! `.5 MB`, where the `.` comes after none of those.
 //!
 //! One definition of a decimal unit settles every decimal unit of the document. Since one false
 //! definition silences the whole document, a definition is narrow: a count of bytes equal to the
@@ -232,10 +233,11 @@ fn units(text: &str) -> Vec<(usize, &'static str)> {
     found
 }
 
-/// Whether `c` is a space within a line: any white space but the line break, which ends a
-/// paragraph, a list item or a heading in the text shown.
+/// Whether `c` is a space within a line: any white space but a line break or separator (line
+/// feed to carriage return, U+0085, U+2028, U+2029). The text shown ends each paragraph, list
+/// item and heading with a line feed, and a separator ends a line as well.
 fn is_space(c: char) -> bool {
-    c.is_whitespace() && c != '\n'
+    c.is_whitespace() && !matches!(c, '\n'..='\r' | '\u{85}' | '\u{2028}' | '\u{2029}')
 }
 
 fn is_word(c: char) -> bool {

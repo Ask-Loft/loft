@@ -403,3 +403,43 @@ fn any_in_line_space_inside_a_definition_keeps_it() {
         }
     }
 }
+
+#[test]
+fn a_line_separator_inside_a_definition_ends_it() {
+    for text in [
+        "1 MB =\u{2029}1,000,000 bytes.",
+        "1 MB =\u{2028}1,000,000 bytes.",
+        "1 MB = 1,000,000\u{85}bytes.",
+        "1 MB =\u{b}1,000,000 bytes.",
+    ] {
+        for document in with_text(text) {
+            assert!(
+                named(&document).contains(&one(FEATURE, "MB")[0]),
+                "{text:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn a_term_s_definition_reads_in_line_spaces_but_not_a_paragraph_break() {
+    for definition in [
+        "A\u{2009}megabyte.",
+        "The\u{2009}megabyte\u{2009}of 10^6 bytes",
+    ] {
+        let mut document = beside_binary("A page holds 5 MB.");
+        let mut entry = term(65, "MB", &[]);
+        entry.definition = definition.to_owned();
+        document.terms.push(entry);
+        assert_eq!(
+            byte_units(&document),
+            Vec::<Finding>::new(),
+            "{definition:?}"
+        );
+    }
+    let mut document = beside_binary("A page holds 5 MB.");
+    let mut entry = term(65, "MB", &[]);
+    entry.definition = "A\n\nmegabyte.".to_owned();
+    document.terms.push(entry);
+    assert_eq!(named(&document), one(FEATURE, "MB"));
+}
