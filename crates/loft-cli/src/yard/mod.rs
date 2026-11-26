@@ -1,8 +1,8 @@
 //! `loft yard` (the `loft yard` commands Feature): Yard Client's one way in. Each command acts
 //! on the Yard Log of the branch that the worktree holding its directory is on, or the agent's
 //! working tree or `--tree` names in its place (`working_tree`), but `protocol`,
-//! which needs no repository, `upgrade`, which acts on every branch's under the tree, `flush`,
-//! which reads the outbox alone, and `serve`, the page server, which serves every tree registered
+//! which needs no repository, `upgrade`, which acts on every branch's under the tree, `flush`
+//! and `status`, which read the outbox alone, and `serve`, the page server, which serves every tree registered
 //! with it. None sends a command event or asks for an update; in connected mode, `write`, `task`
 //! and `published` only put the versions they wrote into the outbox, and `flush` alone sends them
 //! to Yard Server.
@@ -41,6 +41,7 @@ mod serve;
 mod session_files;
 mod sessions;
 mod standing;
+mod status;
 mod task;
 mod totals;
 mod upgrade;
@@ -77,6 +78,7 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Protocol { output } => protocol::run(output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),
         YardAction::Flush(args) => flush::run(&args),
+        YardAction::Status(args) => status::run(&args),
         YardAction::Consultation(args) => consultation::run(root, &args),
         YardAction::Page(args) => page_command::run(root, &args),
         YardAction::Serve(args) => serve::run(&args),

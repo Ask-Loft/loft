@@ -153,7 +153,7 @@ pub type Entry = (&'static str, &'static [&'static str], Fixture, &'static str);
 
 /// Each command by the slug of its Feature, with the arguments that run it, its fixture and its
 /// schema. `import v1` keeps the schema `import`, released before a second import source existed.
-pub const COMMANDS: [Entry; 40] = [
+pub const COMMANDS: [Entry; 41] = [
     (
         "claude-yard-hook",
         &["yard", "claude", "hook"],
@@ -374,6 +374,13 @@ pub const COMMANDS: [Entry; 40] = [
         &["yard", "flush"],
         Fixture::Empty,
         "yard-flush",
+    ),
+    // A status reads the outbox alone: it needs no repository.
+    (
+        "loft-yard-status",
+        &["yard", "status"],
+        Fixture::Empty,
+        "yard-status",
     ),
     // A continuation is the machine's: it needs no repository.
     (

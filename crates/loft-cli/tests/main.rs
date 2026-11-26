@@ -199,6 +199,7 @@ mod yard_server_e2e;
 mod yard_server_scenarios;
 mod yard_settle;
 mod yard_skill;
+mod yard_status;
 mod yard_take_up;
 mod yard_task;
 mod yard_upgrade;

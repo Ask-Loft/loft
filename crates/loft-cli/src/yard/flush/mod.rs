@@ -8,7 +8,7 @@
 //! Holding it, a flush first keeps away from an address Yard Server asked it to come back to
 //! later, as `~/.yard/flush.json` records, and records each run it makes there.
 
-mod record;
+pub(super) mod record;
 mod sending;
 mod settle;
 #[cfg(test)]
@@ -51,14 +51,14 @@ pub const LOCK: &str = "flush.lock";
 const WAIT: Duration = Duration::from_secs(10);
 
 /// Where connected mode sends: the home of Yard, the outbox of the address and the token.
-struct Connection {
-    home: Home,
-    outbox: Outbox,
+pub(super) struct Connection {
+    pub home: Home,
+    pub outbox: Outbox,
     token: String,
 }
 
 /// Whether connected mode is on, as the environment says.
-enum Mode {
+pub(super) enum Mode {
     /// A variable is unset or empty.
     Off,
     /// Both variables are set, and no home directory is known to keep the outbox in.
@@ -66,7 +66,7 @@ enum Mode {
     On(Connection),
 }
 
-fn mode() -> Mode {
+pub(super) fn mode() -> Mode {
     let (Some(endpoint), Some(token)) = (environment::text(ENDPOINT), environment::text(TOKEN))
     else {
         return Mode::Off;

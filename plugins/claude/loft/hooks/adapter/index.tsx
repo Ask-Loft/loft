@@ -27,7 +27,7 @@ import { argumentsOf, commandOf, specOf, TOOL_NAMES, type ToolName } from './too
 /** The plugin's version: the same as the `loft` it is released with (`tests/plugins.rs`). */
 export const PLUGIN_VERSION = '2.4.1'
 /** The oldest and the newest yard protocol this mod speaks. */
-export const PROTOCOLS = { oldest: 1, newest: 4 } as const
+export const PROTOCOLS = { oldest: 1, newest: 5 } as const
 
 function protocolRange({ oldest, newest }: { oldest: number; newest: number }): string {
   return `${oldest}${newest === oldest ? '' : `–${newest}`}`

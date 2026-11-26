@@ -281,6 +281,46 @@ pub fn survey(dir: &Path) -> Result<Survey, YardStoreError> {
     Ok(survey)
 }
 
+/// A file of `dead/`, with the reason kept beside it, where one is.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Dead {
+    pub file: String,
+    pub reason: Option<String>,
+}
+
+/// The files of `dead/` in the outbox in `dir`, in the order of their names, each with the reason
+/// kept beside it, where one is; a `.reason` file is not listed, nor one without its file.
+///
+/// # Errors
+///
+/// `dead/` is there and cannot be listed.
+pub fn dead(dir: &Path) -> Result<Vec<Dead>, YardStoreError> {
+    let dead = dir.join(DEAD);
+    let listing = match fs::read_dir(&dead) {
+        Ok(listing) => listing,
+        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(io_error(&dead)(error).into()),
+    };
+    let suffix = format!(".{REASON}");
+    let mut names: Vec<String> = listing
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_file()))
+        .filter_map(|entry| entry.file_name().into_string().ok())
+        .filter(|name| !name.ends_with(&suffix) && !name.starts_with('.'))
+        .collect();
+    names.sort();
+    Ok(names
+        .into_iter()
+        .map(|file| {
+            let reason = fs::read_to_string(dead.join(format!("{file}{suffix}")))
+                .ok()
+                .and_then(|text| text.lines().next().map(str::to_owned))
+                .filter(|reason| !reason.is_empty());
+            Dead { file, reason }
+        })
+        .collect())
+}
+
 /// The version key an entry file is named by.
 fn key_of(name: &str) -> String {
     name.trim_end_matches(".json").to_owned()

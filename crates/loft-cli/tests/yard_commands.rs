@@ -152,8 +152,10 @@ fn each_yard_command_has_a_feature_that_lists_yard_command() {
 fn each_yard_command_but_serve_protocol_and_continue_lists_needs_repository() {
     let needing = tagged("needs-repository");
     for (slug, args, ..) in yard_entries() {
-        let needs =
-            !["serve", "protocol", "continue", "flush", "claude", "codex"].contains(&args[1]);
+        let needs = ![
+            "serve", "protocol", "continue", "flush", "status", "claude", "codex",
+        ]
+        .contains(&args[1]);
         assert_eq!(needing.contains(&slug.to_owned()), needs, "{slug}");
     }
 }

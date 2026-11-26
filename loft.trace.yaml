@@ -31631,7 +31631,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 8d1515a8feab3e8a06055b180da52a18bf4ccc87ad2efb10796ecbc4fa0cfefc
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -31643,16 +31643,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
   - node: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
     reviewed: b2e92b9d8b9c74a9d59cd5659f907052d70f12b94cce8d1d02e27351878b33f4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 8d1515a8feab3e8a06055b180da52a18bf4ccc87ad2efb10796ecbc4fa0cfefc
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_mod_names_the_version_of_loft_as_its_own"
         body: 7ad10bfc924b0309c65bc3d6f8b7e88a14c37beb93e1caf74e0eb05a35feda9d
@@ -31661,10 +31661,10 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 8d1515a8feab3e8a06055b180da52a18bf4ccc87ad2efb10796ecbc4fa0cfefc
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -31673,7 +31673,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
   - node: 01a1646f-546e-76cb-8b4f-f1fde62cb279
     reviewed: bc1bfca105244ab915945501c1d149f7e84b784c53afba66d2612967917a7561
     tests:
@@ -39068,10 +39068,37 @@ links:
         body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
   - node: 01a1f074-174c-750c-b689-edae6ba14580
     reviewed: 99b9cf8e0edd272b9d8be43072ecc04ba8c98f82bd86f3742f5f8ac1cb677b9e
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "protocol_4_and_every_later_one_let_serve_take_listen_and_join"
+        body: 4a9b7a24d878b77d17f3ee5b3eaa89b26f92295c8012b9024628702b69513e26
+  - node: 01a21406-1006-7412-b332-118decb19f7a
+    reviewed: 733fed51b236ca91787f2b10c0801bf56dafe146c82c5d35071098dba1cbd3d7
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "the_report_gives_protocol_5_under_which_flush_and_status_exist"
+        body: d87d1186aba850fc453e26e7835c13effb2401ed78f15144ccdaca28302342a4
   - node: 01a177f9-f61a-77e3-89ef-0d0bfe35cd61
     reviewed: 93d0547294280b35e3977faf2c41242110bf16f7eb76d52bffdae891f5ec5cea
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
+        body: dfc949e64409e10150359c87524d6cd41ff0309da68bff9bc91278f086beb7e6
+      - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
+        name: "protocol one keeps the Claude arguments and events without adapter descriptors"
+        body: caeea0d62b51b0c20880d13c521362ec0b7e0b4d58ed12b7cd98d04fefeb19cf
+      - file: "plugins/claude/loft/tests/yard-events.test.ts"
+        name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
+        body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
+        body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks"
+        body: 76d6e55291b2ce28cb68c7e502b8407e94379ce852506a51fd22dfd0b592fa8f
   - node: 01a1646f-546d-7042-befd-ea43c0bb2e34
     reviewed: f9d7ec8d86cde32fd131534ed2250c2467037800d605df6ff6d1cc7923d2b0e4
     tests:
@@ -39284,7 +39311,10 @@ links:
         body: 04b5ffe8207d1c16463ba785361b13aae19637b9b8a709dd51cbeb2f4ac5932b
   - node: 01a1646f-546d-7042-befd-ea6063179e7b
     reviewed: 4855b3a51c6f9961f3df9b691d407913725931dfe3a0c6904f5cb2596adc1622
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "crates/loft-cli/tests/yard_commands.rs"
+        name: "each_yard_command_but_serve_protocol_and_continue_lists_needs_repository"
+        body: 3fbd75b552b9be5a3a934a3cd0e5b283e62e87627711ee781b3debb48f7fd423
   - node: 01a182b6-3c58-7235-ad04-3918a33b8514
     reviewed: 0676bf94426ed7746485bd87e02ef190addf0a7798e9044361dc7d71301114be
     tests:
@@ -40497,6 +40527,195 @@ links:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay"
         body: 5181a7dff39c32db0062c1e6d8c047dc2990bacf64ccf7e3a3f233f5086d07c9
+  - node: 01a213cb-9c28-769e-b7c8-43e7f582e912
+    reviewed: 5ba3d5d347c7fd0e1a041a1b2a62fb60898900b699c14958bff10d8ada77d437
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43e8f96d25e3
+    reviewed: a6e606ab36775214af1341d0bbf7603f31fb95beaa38a197da241d8c2c7cd1d4
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_neither_variable_set_connected_mode_is_off"
+        body: 102371ae29432a4a7b6fb13c91c74de30fadf29dcdfb33f7ddadb3b38e11ee5a
+  - node: 01a21406-1007-7756-963c-2315e982470c
+    reviewed: ccf5bcd2e2160bc8e3bcd8419b9813632f96561e613759d7368d50dc17e0791a
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_one_variable_unset_or_empty_status_names_the_one_missing"
+        body: b956f090545ccfa4a0cf88f0795bd69d41787ed6e5cc92806be03dcccc4d87f1
+  - node: 01a21406-1007-7756-963c-2316163b168a
+    reviewed: 31b3b683c66e7196aa78a815f438d6b0a67cc5f118ee5826e878e5264d47716d
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "an_address_the_network_client_refuses_is_named_as_refused"
+        body: 130d48186cea889ad4eb240e0729d1a3891b997086d5c6dc15496b71e73ab51c
+  - node: 01a213cb-9c28-769e-b7c8-43e9d68b7479
+    reviewed: 152977023baf8954a4ac7c5a2674a8ae1dee8a8f413911cb5c5c7da5538ad3a5
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_both_variables_set_and_no_home_directory_known_status_says_so"
+        body: 6e110e33d9755ccb34fdc5f26b7ebbde9c6addfedc60209dd8a06299adef2b7b
+  - node: 01a213cb-9c28-769e-b7c8-43eaf8f0f08b
+    reviewed: 67105f013c7cf5ebd0133f14686300e6916051e24d1f630b7ef6cadb958f6da3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43ec467145ba
+    reviewed: 5313a03abf1c4acf77fd0584ccb529a6d9d6d5fb40e64dd49c0615979899942e
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43ed8c88dd70
+    reviewed: f8f113caa15466b47e38064033a55200fe45a3b94b0545c78ec554bf44b07548
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft"
+        body: 303ad23225472930f163fba04d44d859b04ade7bea3552edc95c93d125b2bfc3
+  - node: 01a216fa-feac-7221-aee1-7167ca9c5a19
+    reviewed: 2366e7e6ad7f4a92bade16475d5cdca2189f1f1094e6cb67e65215c9560210ec
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft"
+        body: 303ad23225472930f163fba04d44d859b04ade7bea3552edc95c93d125b2bfc3
+  - node: 01a21406-1007-7756-963c-2317faa993d5
+    reviewed: ad529f82c0eb7b47d8448d98fa8c7ff87d50f36bb2b9bc2d207d1de0b9a7ca56
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_off_waiting_counts_every_entry_with_its_address"
+        body: 3a8144d96dd47e5e7270734a3bf0c4778160c4ef28541f97bf3e230d8e10e16d
+  - node: 01a213cb-9c28-769e-b7c8-43ee9cac6d49
+    reviewed: 68ed5208b4f45b842d5fe9053288ea5d303a3acec265ed7a18e649a231ab2316
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_entry_waiting_the_line_reads_waiting_none"
+        body: f0ff85886747a5175909da3109b7fcc1f08bb0c846d08fb9941e9bec671e2a02
+  - node: 01a213cb-9c28-769e-b7c8-43f0dfed8025
+    reviewed: 344b5b4498bee6b994748312da666586286d24afc0b198aff3dd8fa969362a86
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
+        body: 49efc2d76921391565c83fd2599ed8ac247651b5d526d3d0bced998497e24600
+  - node: 01a213cb-9c28-769e-b7c8-43f106e76e68
+    reviewed: a6962ada9184f0afdec5fa77ecb4cc08a234ef986b388214581b26642bfefdc3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
+        body: 49efc2d76921391565c83fd2599ed8ac247651b5d526d3d0bced998497e24600
+  - node: 01a213cb-9c28-769e-b7c8-43f227f72357
+    reviewed: 6353c28677cc8d50159b374764d348bbe8c906f833e91bb5c9b15067f95aeff1
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed"
+        body: 868f86565e79c468cfcbacc2c200238cac553b650dd72a69d2a66c622b256d21
+  - node: 01a213cb-9c28-769e-b7c8-43f3a299d1f9
+    reviewed: 882ae95bdc0f12d96655a9c7d4a28cc106688be08fbcfb64c4be74354a6fc63c
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_run_recorded_or_a_flush_json_that_does_not_read_last_attempt_is_none"
+        body: 63d2dbb30a59472e4d484a796e31d805d419ecda9604e053d9283ce0791be137
+  - node: 01a213cb-9c28-769e-b7c8-43f59872d55b
+    reviewed: 697ebeaa1ed55227e13612b969883759a465629d368fc8b11086a841215d9015
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a213cb-9c28-769e-b7c8-43f6ce052008
+    reviewed: 7e06e5c68601b2aea173661fe0fbe3705afe73d906278e16efa1e4b23b549acf
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a213cb-9c28-769e-b7c8-43f786cba56f
+    reviewed: 6710bf11870e62c8456c73ffea38bc4808f696cb4f49afd5cf1470f641b5b9a5
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a21406-1007-7756-963c-231850362e9a
+    reviewed: 64492f9fb8e4df2145f780523e1209952fd031bb5e0632e761030ebb485b851a
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a213cb-9c28-769e-b7c8-43f870f9c796
+    reviewed: 3fe546eab670bb9bb779e3d67211ac5f6976a4a2b62726148712ea3dfefd87e3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_file_in_dead_the_line_reads_dead_none_and_no_file_line_follows"
+        body: 78588d845e07d29fdc6de2871ac131b8342c2fce984b8c1397b58bf8611e00f4
+  - node: 01a21406-1007-7756-963c-231ae6145a1e
+    reviewed: 31eac3f74705b8365ce9f98071d044ae4feb955f2d8d4cfc58e21f5319e6bfb2
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_neither_variable_set_connected_mode_is_off"
+        body: 102371ae29432a4a7b6fb13c91c74de30fadf29dcdfb33f7ddadb3b38e11ee5a
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_one_variable_unset_or_empty_status_names_the_one_missing"
+        body: b956f090545ccfa4a0cf88f0795bd69d41787ed6e5cc92806be03dcccc4d87f1
+  - node: 01a21406-1007-7756-963c-231b3d51156e
+    reviewed: d79ef33b213d69b5f907555200435a44163d71abc6c6949295a33be258285575
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft"
+        body: 303ad23225472930f163fba04d44d859b04ade7bea3552edc95c93d125b2bfc3
+  - node: 01a21406-1007-7756-963c-231c990cdd6f
+    reviewed: e86f8f60dd59ba9af1275fd5a16f56b5477799ccfa5482b1931834cdd921c8ba
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
+        body: 49efc2d76921391565c83fd2599ed8ac247651b5d526d3d0bced998497e24600
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_run_recorded_or_a_flush_json_that_does_not_read_last_attempt_is_none"
+        body: 63d2dbb30a59472e4d484a796e31d805d419ecda9604e053d9283ce0791be137
+  - node: 01a21406-1007-7756-963c-231d8d01aa2a
+    reviewed: feb3cc6cc6ba9bcc81c32cad434eefb0c453afdc1e9b3e588bb9ec6757c4cbb3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_file_in_dead_the_line_reads_dead_none_and_no_file_line_follows"
+        body: 78588d845e07d29fdc6de2871ac131b8342c2fce984b8c1397b58bf8611e00f4
+  - node: 01a213cb-9c28-769e-b7c8-43fa79962c40
+    reviewed: a0312bff386349552381cb92a788918876f1141be505a98818ea0293d2d0832b
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_exits_0_makes_no_request_and_changes_no_file_whatever_it_finds"
+        body: 0f38194b481b323e5be25dd7a258c63dc85616dd6faf0f19f60f9fd98c4d44ad
+  - node: 01a213cb-9c28-769e-b7c8-43fb5eab1b2c
+    reviewed: a1c2febd23908882a3925f94d98274e745aa477a3e4aee66475add4de21b6b0d
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_exits_0_makes_no_request_and_changes_no_file_whatever_it_finds"
+        body: 0f38194b481b323e5be25dd7a258c63dc85616dd6faf0f19f60f9fd98c4d44ad
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43fce35367cf
+    reviewed: 68e622c469368c198161e0ecaec47910fd0dfb09d508591db54c37cd65b31d62
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_exits_0_makes_no_request_and_changes_no_file_whatever_it_finds"
+        body: 0f38194b481b323e5be25dd7a258c63dc85616dd6faf0f19f60f9fd98c4d44ad
+  - node: 01a213cb-9c28-769e-b7c8-43fdb66632b6
+    reviewed: c6ac45042d92492d9abd7958626166e8b20013d1806a69a36a84498aef27ea3e
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_runs_outside_a_repository_without_a_session"
+        body: f1963e8f730d04bf8f212299b2f8a221848afc3eed29032d9874a06ac0ce601c
+  - node: 01a213cb-9c28-769e-b7c8-43fe3c694ce0
+    reviewed: 7384f96b8e707e63a066b71c3188c86b9ecabd242092f7c2d680eee148ff1692
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_runs_outside_a_repository_without_a_session"
+        body: f1963e8f730d04bf8f212299b2f8a221848afc3eed29032d9874a06ac0ce601c
   - node: 01a1d600-053c-73ed-b18e-e5a0c1114446
     reviewed: 9053d55a1c2bb4d36c39e44ae7192c5f2555f7b328a282a3c8fa0547644c5b8c
     tests:
