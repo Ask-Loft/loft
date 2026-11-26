@@ -71,21 +71,23 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
  * Asks `loft yard protocol` through `loftCommand`; where that is the bare `loft` and it cannot be
  * run, through the `loft` that `cargo install` puts in `~/.cargo/bin`, which a host that never
  * reads the shell's startup files leaves off the search path. The first that runs is the
- * session's `loft` from then on. Gives what the last run gave and each command tried.
+ * session's `loft` from then on. Gives what that run gave, else what `loftCommand`'s gave, and
+ * each command tried.
  */
 async function findLoft($: EngineInterface, cwd: string): Promise<{ checked: Ran; tried: string[] }> {
   const settings = state.settings
   const tried: string[] = []
-  let checked: Ran = { exitCode: -1, stderr: '', unrun: 'no command to run' }
+  let first: Ran | undefined
   for (const words of loftCandidates(settings.words, await homeOf($))) {
     tried.push(words.join(' '))
-    checked = await yard($, { ...settings, words }, cwd, ['protocol'], { beyond: false })
+    const checked = await yard($, { ...settings, words }, cwd, ['protocol'], { beyond: false })
     if (checked.unrun === undefined) {
       settings.words = words
-      break
+      return { checked, tried }
     }
+    first ??= checked
   }
-  return { checked, tried }
+  return { checked: first ?? { exitCode: -1, stderr: '', unrun: 'no command to run' }, tried }
 }
 
 /** The person's home directory: `HOME`, else `USERPROFILE` as Windows names it. */

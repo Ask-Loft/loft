@@ -44,5 +44,7 @@ test('where no loft can be run, the notice names each command the mod tried', as
   expect(w.state.toasts).toHaveLength(1)
   const notice = w.state.toasts[0] ?? ''
   for (const tried of ['`loft`', `\`${CARGO_LOFT}\``, `\`${CARGO_LOFT_EXE}\``]) expect(notice).toContain(tried)
+  expect(notice).toMatch(/^Yard Client is off: `loft` cannot be run \([^)]* loft: no such file\)\./)
+  expect(notice).not.toContain('loft.exe: no such file')
   expect(notice).toMatch(/loftCommand setting/)
 })

@@ -194,6 +194,51 @@ fn the_claude_hooks_run_a_loft_exe_in_cargo_s_bin_as_windows_names_it() {
 
 #[cfg(unix)]
 #[test]
+fn a_loft_command_of_blanks_or_of_loft_between_blanks_is_the_bare_loft_and_looks_in_cargo_s_bin() {
+    for setting in ["", "  ", " loft\t"] {
+        let scratch = Scratch::empty();
+        place_loft(&scratch.home().join(".cargo/bin"), "loft");
+        let host = Host {
+            setting: Some(setting),
+            ..Host::bare()
+        };
+        assert!(hooks_ran_loft(&scratch, &host), "{setting:?}");
+    }
+}
+
+#[cfg(unix)]
+#[test]
+fn the_context_stays_one_json_document_where_the_home_directory_holds_a_tab_or_a_quote() {
+    let scratch = Scratch::empty();
+    let home = scratch.home().join("odd\t\"home");
+    fs::create_dir_all(&home).unwrap();
+    let dir = scratch.0.canonicalize().unwrap();
+    let hook = json!({"session_id": "s1", "cwd": dir, "hook_event_name": "SessionStart", "source": "startup"});
+    let mut command = Command::new("/bin/sh");
+    isolate(&mut command, &home);
+    command
+        .args(["-c", CLAUDE_HOOK])
+        .env("CLAUDE_PLUGIN_ROOT", workspace().join(CLAUDE_ROOT))
+        .env("PATH", "/usr/bin:/bin")
+        .env_remove("CLAUDE_PLUGIN_OPTION_LOFTCOMMAND")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped());
+    let mut child = command.spawn().unwrap();
+    std::io::Write::write_all(
+        &mut child.stdin.take().unwrap(),
+        hook.to_string().as_bytes(),
+    )
+    .unwrap();
+    let ran = child.wait_with_output().unwrap();
+    let printed: Value = serde_json::from_slice(&ran.stdout).expect("one JSON document");
+    let context = printed["hookSpecificOutput"]["additionalContext"]
+        .as_str()
+        .unwrap();
+    assert!(context.contains("odd \"home/.cargo/bin/loft"), "{context}");
+}
+
+#[cfg(unix)]
+#[test]
 fn a_loft_command_the_person_set_is_run_as_written_and_nothing_else_is_tried() {
     let scratch = Scratch::empty();
     place_loft(&scratch.home().join(".cargo/bin"), "loft");
