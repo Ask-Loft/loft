@@ -4,13 +4,20 @@
 //! `~/.cargo/bin`. Where no `loft` can be run, the `SessionStart` hook tells the agent that Yard
 //! Client is off and how to turn it on, and every other hook prints nothing and exits 0.
 
+#[cfg(unix)]
 use std::fs;
+#[cfg(unix)]
 use std::path::{Path, PathBuf};
+#[cfg(unix)]
 use std::process::{Command, Output, Stdio};
 
-use crate::common::{Scratch, isolate, stderr, workspace};
+use crate::common::workspace;
+#[cfg(unix)]
+use crate::common::{Scratch, isolate, stderr};
 use crate::plugins::{CLAUDE_ROOT, read};
-use serde_json::{Value, json};
+#[cfg(unix)]
+use serde_json::Value;
+use serde_json::json;
 
 /// The command each of the Claude Code plugin's command hooks runs.
 const CLAUDE_HOOK: &str = "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"";
