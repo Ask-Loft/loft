@@ -125,13 +125,18 @@ export type World = ReturnType<typeof world>
 /** Settles the clock of the world the running test made last, as a session's start does. */
 let settle: (() => Promise<unknown>) | undefined
 
-export function world(on: On, options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running'; home?: string } = {}) {
+export function world(
+  on: On,
+  options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running'; home?: string; runnable?: readonly string[] } = {},
+) {
   const clock = mock.clock(on, { now: Date.UTC(2026, 9, 22, 9, 30, 0) })
   mock.env(on, { HOME })
   const state = {
     session: SESSION,
     cwd: TREE,
     protocol: options.protocol ?? 1,
+    /** The programs that can be run, by the first word of their argument vector, where a test names them; any other cannot. */
+    runnable: options.runnable,
     /** The machine home `loft yard protocol` reports, if any; the token lies in it, else in `~/.yard/`. */
     home: options.home,
     serve: options.serve ?? 'running',
@@ -289,6 +294,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
 
   on('process.run', async ($, e) => {
     state.runs.push({ argv: e.argv, cwd: e.init?.cwd, env: e.init?.env, stdin: e.init?.stdin, spawned: false })
+    if (state.runnable && !state.runnable.includes(e.argv[0] ?? '')) return { deny: `${e.argv[0] ?? ''}: no such file` }
     if (!e.argv.includes('yard')) return out(undefined, 0, '')
     if (state.protocol === 'unrunnable') return { deny: 'loft is not on PATH' }
     const sub = subOf(e.argv)
@@ -333,6 +339,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
 
   on('process.spawn', async function* ($, e, next) {
     state.runs.push({ argv: e.argv, cwd: e.cwd, env: e.env, spawned: true })
+    if (state.runnable && !state.runnable.includes(e.argv[0] ?? '')) throw new Error(`${e.argv[0] ?? ''}: no such file`)
     const sub = subOf(e.argv)
     if (sub === 'serve') {
       yield { stream: 'stdout' as const, text: `${JSON.stringify({ outcome: state.serve, port: state.reportedPort, errors: [] })}\n` }

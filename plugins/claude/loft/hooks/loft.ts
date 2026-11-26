@@ -50,6 +50,17 @@ export function settingsOf(options: PluginOptions): Settings {
   }
 }
 
+/** Whether the words that run loft are the bare `loft`, the `loftCommand` setting's default. */
+export function isBareLoft(words: readonly string[]): boolean {
+  return words.length === 1 && words[0] === 'loft'
+}
+
+/** Where `cargo install` puts `loft` under `home`: `loft`, and `loft.exe` as Windows names it. */
+export function cargoLofts(home: string): string[] {
+  const bin = `${home.replace(/[\\/]+$/, '')}/.cargo/bin`
+  return [`${bin}/loft`, `${bin}/loft.exe`]
+}
+
 /** A JSON document a `loft` command printed. */
 export type Doc = Record<string, unknown>
 

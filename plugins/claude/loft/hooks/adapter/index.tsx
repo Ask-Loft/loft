@@ -8,7 +8,7 @@
 
 import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
-import { QUIET, type Ran } from '../loft'
+import { cargoLofts, isBareLoft, QUIET, type Ran } from '../loft'
 import { isAskable } from './answers'
 import { askQuestions, ownDialog, presentPlan, waitOn } from './asking'
 import { capture, checkCapture } from './capture'
@@ -40,10 +40,10 @@ export function ensureYard($: EngineInterface, cwd: string): Promise<boolean> {
 }
 
 async function enable($: EngineInterface, cwd: string): Promise<boolean> {
-  const checked = await yard($, state.settings, cwd, ['protocol'], { beyond: false })
+  const { checked, tried } = await findLoft($, cwd)
   const protocol = checked.doc?.protocol
-  if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd)
-  if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
+  if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd, tried)
+  if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, tried, protocol)
   state.settings.protocol = protocol
   state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION, protocol) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
@@ -68,6 +68,29 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
 }
 
 /**
+ * Asks `loft yard protocol` through `loftCommand`; where that is the bare `loft` and it cannot be
+ * run, through the `loft` that `cargo install` puts in `~/.cargo/bin`, which a host that never
+ * reads the shell's startup files leaves off the search path. The first that runs is the
+ * session's `loft` from then on. Gives what the last run gave and each command tried.
+ */
+async function findLoft($: EngineInterface, cwd: string): Promise<{ checked: Ran; tried: string[] }> {
+  const settings = state.settings
+  const tried = [settings.words.join(' ')]
+  let checked = await yard($, settings, cwd, ['protocol'], { beyond: false })
+  if (checked.unrun === undefined || !isBareLoft(settings.words)) return { checked, tried }
+  const home = (await $.env.get('HOME')) ?? (await $.env.get('USERPROFILE'))
+  for (const candidate of home ? cargoLofts(home) : []) {
+    tried.push(candidate)
+    checked = await yard($, { ...settings, words: [candidate] }, cwd, ['protocol'], { beyond: false })
+    if (checked.unrun === undefined) {
+      settings.words = [candidate]
+      break
+    }
+  }
+  return { checked, tried }
+}
+
+/**
  * The control token's file: in the machine home `loft yard protocol` reports, which
  * `LOFT_YARD_HOME` may move, else in `~/.yard/`, for a `loft` that reports none.
  */
@@ -78,12 +101,14 @@ async function tokenPathOf($: EngineInterface, reported: unknown): Promise<strin
 }
 
 /** Tells the person once why Yard Client is off; Claude Code's own dialogs then ask alone. */
-async function off($: EngineInterface, checked: Ran, cwd: string, protocol?: number): Promise<false> {
+async function off($: EngineInterface, checked: Ran, cwd: string, tried: string[], protocol?: number): Promise<false> {
   const command = `\`${state.settings.words.join(' ')}\``
   const speaks = `the yard protocol ${protocolRange(PROTOCOLS)}`
   let text: string
   if (checked.unrun !== undefined) {
-    text = `Yard Client is off: ${command} cannot be run (${checked.unrun}). Set the loft plugin's loftCommand setting to a loft that can.`
+    const named = tried.map(each => `\`${each}\``)
+    const also = named.length > 1 ? ` Also tried: ${named.slice(1).join(', ')}.` : ''
+    text = `Yard Client is off: ${named[0] ?? command} cannot be run (${checked.unrun}).${also} Set the loft plugin's loftCommand setting to a loft that can, or put loft on the search path.`
   } else {
     const version = typeof checked.doc?.loft === 'string' ? checked.doc.loft : await versionOf($, cwd)
     const heard = protocol === undefined ? 'which has no yard commands' : `which speaks the yard protocol ${protocol}`

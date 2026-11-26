@@ -5,6 +5,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+- Yard Client finds a `loft` installed with `cargo install` where the app that starts Claude Code
+  never read the shell's startup files, as an app opened from the desktop or a host built on the
+  Agent SDK does. While the Claude Code plugin's `loftCommand` setting is `loft`, the mod and the
+  plugin's command hooks now run the `loft` on the search path, else `~/.cargo/bin/loft`, where
+  they used to leave Yard Client off without a word to the agent. Where no `loft` can be run, the
+  session's start tells the agent that Yard Client is off, what was tried and how to turn it on,
+  and every other hook stays silent instead of failing on each tool call. The command hooks run
+  through a new launcher, `hooks/run-loft.sh`. (#39)
 - The Yard page keeps what waits on you within its sidebar. A branch's or worktree's name with
   nowhere to break, such as `feature/XYZ-0000_some_very_long_branch_name_without_spaces`, used to
   widen the list past the sidebar's edge and cut every line of it; any name in the sidebar now

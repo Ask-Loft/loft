@@ -23646,9 +23646,9 @@ links:
   - node: 01a14522-b2c9-7634-a3b0-225e35d97412
     reviewed: ac338b3a166693c2febd7069e99a5a899922e7c3b737e0e4e11aafe9f43287c2
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+        body: 2101851d12b3a15911e765f162e40c00cbf2b1599717c9fab641a4ca6dfad19d
   - node: 01a144ee-c59e-7325-802c-d71e478c6971
     reviewed: a8e7865b7c32261c3575a15d9a16df55f2ee43b9ae69ce220b201a9d9c92891e
     tests:
@@ -35674,29 +35674,104 @@ links:
         name: "both_plugins_hold_loft_spec_and_their_adapters_yard_skills"
         body: e71ea6821ef1ba20d2a091883d79ffe0a5da8ad82b45ab20b5f6ed25066b2587
   - node: 01a183e9-dfd2-74b1-a45a-14bf569c68bb
-    reviewed: 079df47ec9f5430a3c95a66df596eb55d4b9dc688ed49f4659d53f42ffa2c68c
+    reviewed: 769800e001e63e4cf4d2e6717c870d43c137f52f9e2fbf9e621fcaf93d37504d
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+        body: 2101851d12b3a15911e765f162e40c00cbf2b1599717c9fab641a4ca6dfad19d
   - node: 01a183e9-dfd2-74b1-a45a-14c0b6bfae37
     reviewed: 7fa34b7a2892b5bd9d4e204a8cd40f272ef02e5a0daeca683e3e74fd0b3971c0
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process"
-        body: 51da38ae4b65ea4a572e8d886c6a2c5d97f009653a039b5406f68c50316f31c1
+        body: f9cf8e879f9f7b4dd98f1ad6057748768f52d339328283846a553545a4ada99f
   - node: 01a183e9-dfd2-74b1-a45a-14c1bcd08990
     reviewed: 29436b5cea974d688dcea016474dd114094c4abb98b41d78df5b78b89f5cda72
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process"
-        body: 51da38ae4b65ea4a572e8d886c6a2c5d97f009653a039b5406f68c50316f31c1
+        body: f9cf8e879f9f7b4dd98f1ad6057748768f52d339328283846a553545a4ada99f
   - node: 01a183e9-dfd2-74b1-a45a-14c2f1e0d78d
     reviewed: 81db55acf6d5c0d5a646c6b486111c8959d632b602ac6c78cb872e3fab8398c4
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+        body: 2101851d12b3a15911e765f162e40c00cbf2b1599717c9fab641a4ca6dfad19d
+  - node: 01a21838-627a-77f5-b8f0-19fddce71f03
+    reviewed: 7bc957950aa56afc1156de893c89f0a6162419e65299cefe488e0373ff807c61
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_run_the_loft_on_the_search_path"
+        body: 31bc57428e52857756fb14b6c25eb7c45df9f513c0c92ba99f35e1908c2d60ce
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start"
+        body: 7a11c06a55dfb881d21494bfa855cde41e6e7df92f93146679ab191879e4c56e
+  - node: 01a21838-627a-77f5-b8f0-19fed4433149
+    reviewed: c6a4fb025b773772d02f0d6f450274a86c542c5fdb378eb295e2c4243af209e6
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_run_the_loft_in_cargo_s_bin_where_the_search_path_has_none"
+        body: 00e7e02c30f8146f005a4895f82627dc2f14d948473dd23c422cd9506bf91584
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where the bare loft cannot be run, the loft in ~/.cargo/bin turns Yard Client on and runs every later command"
+        body: 64c52c90747eecb3eefe9f4737bffb44541e43698bc29dc8a8b5896c831b3cc1
+  - node: 01a21838-627a-77f5-b8f0-19ff52e85eba
+    reviewed: 350f5a97140a9142d5fe966851007170e6b4013185df7188e4c28a115d338d50
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_run_a_loft_exe_in_cargo_s_bin_as_windows_names_it"
+        body: 2475b0b6ccf6006edf61aec396a273f9e16d025b0aedd119f47b936681ce44e0
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where only loft.exe lies in ~/.cargo/bin, as on Windows, the mod runs it"
+        body: 8341f9857a81785280676b014e0d65e33a35d17f0e37e6fd6e18867b92a4fbc0
+  - node: 01a21838-627a-77f5-b8f0-1a00b97f8645
+    reviewed: 7e320e2fbd4591b3c5a3c58220c624914b313a21bbff7549b85c356054e97185
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "a_loft_command_the_person_set_is_run_as_written_and_nothing_else_is_tried"
+        body: 7838a3be28c8542bd614e6ad9be651edf11131be5cc48e9c036a6b21cf81f53f
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "a loftCommand the person set that cannot be run is not looked for in ~/.cargo/bin"
+        body: 92c547ec79c2721ba5d6c0a934d65cacbf6eb5fc5b35a95e7f2d371137a7aa70
+  - node: 01a21838-627a-77f5-b8f0-1a011957e079
+    reviewed: a35aa12a8dedd04a6316f2b8cf6059eea2e67b18fbcd79b702234acd462bc24e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where the bare loft cannot be run, the loft in ~/.cargo/bin turns Yard Client on and runs every later command"
+        body: 64c52c90747eecb3eefe9f4737bffb44541e43698bc29dc8a8b5896c831b3cc1
+  - node: 01a21838-627a-77f5-b8f0-1a034adf59d4
+    reviewed: a52955f111d3d6bc968c528106fa990d93dca9a1f49e009c4ace80b4686b0256
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_the_session_start_hook_tells_the_agent_that_yard_client_is_off_and_how_to_turn_it_on"
+        body: 857928967c25475aa2ea26a265326c96d4c08643933f0b0bbf23797207f2af15
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "a_loft_command_the_person_set_is_run_as_written_and_nothing_else_is_tried"
+        body: 7838a3be28c8542bd614e6ad9be651edf11131be5cc48e9c036a6b21cf81f53f
+  - node: 01a21838-627a-77f5-b8f0-1a0422742550
+    reviewed: 42f22bc4697b634324de9dc3611dbcc7efffbd052cd07a545d27c2994dd63e12
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_the_session_start_hook_tells_the_agent_that_yard_client_is_off_and_how_to_turn_it_on"
+        body: 857928967c25475aa2ea26a265326c96d4c08643933f0b0bbf23797207f2af15
+  - node: 01a21838-627a-77f5-b8f0-1a05aab2e299
+    reviewed: e12220c617767e38794c03221c7d9ad1a9eab98152486e9869cc32a29126c0b8
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_the_session_start_hook_tells_the_agent_that_yard_client_is_off_and_how_to_turn_it_on"
+        body: 857928967c25475aa2ea26a265326c96d4c08643933f0b0bbf23797207f2af15
+  - node: 01a21838-627a-77f5-b8f0-1a07e194fa1e
+    reviewed: 8d15447ea9157f9cf80bbce5e5c39da86abc91405d9fb9c17218fc7ae50e36eb
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_every_other_hook_prints_nothing_and_exits_0"
+        body: cc379b359c6d7664ce6496cad8edb9afbdbbe828bcb73fa3159a9884e9c5a1b7
+  - node: 01a21838-627a-77f5-b8f0-1a084ef63467
+    reviewed: f4fe6d0e3c877073e98c2e89c7434e56f4d40043900c21c57e810403fb12a445
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_every_other_hook_prints_nothing_and_exits_0"
+        body: cc379b359c6d7664ce6496cad8edb9afbdbbe828bcb73fa3159a9884e9c5a1b7
   - node: 01a183e9-dfd2-74b1-a45a-14c4d303077f
     reviewed: 0fc620a0e045b14afe69f5cad45b8dddca86a5b76219c3f1f76005d32c8eaa33
     tests:
@@ -35737,11 +35812,14 @@ links:
         name: "with a loftCommand that cannot be run, the agent asks and plans in Claude Code alone"
         body: ddc2c2bfa35c82859d8c909aeb484aee2fb5ee89660fa6b42f0ad66b483bbfc8
   - node: 01a1646f-546c-7521-9643-bc7a303448bb
-    reviewed: 07e89a2c70e0acc82b88af44bfd334e439288237e749f304c18e39a667455fca
+    reviewed: 313f395d301ff3797156ea4a5ef8e717cdc5af470ed75417cce9053ea080a1bf
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loftCommand that cannot be run leaves Yard Client off and names the setting"
         body: dce1f0626d6a730807981362f3b50bc9a268d4e90e3ee88d0434f4a3934dd9fc
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where no loft can be run, the notice names each command the mod tried"
+        body: 4ff48e04865242993389afeae2b680ec3a8c24f4de56f0dfe55490209603bf46
   - node: 01a1646f-546c-7521-9643-bc7ef0cedbda
     reviewed: 3679a51b373fd3765c880777a300284c799c3ac633b9f6d67c8b3410c7a00455
     tests:
