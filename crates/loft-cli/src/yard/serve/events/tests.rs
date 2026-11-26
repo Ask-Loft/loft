@@ -1,6 +1,8 @@
+use std::collections::BTreeMap;
+
 use serde_json::json;
 
-use super::{Event, arrivals};
+use super::{ByLog, Event, arrivals};
 
 fn event(session: &str, dir: &str) -> Event {
     let posted = json!({
@@ -61,4 +63,13 @@ fn a_batch_opens_the_yard_log_of_each_directory_it_names_once() {
     assert_eq!(found.len(), 1000);
     opened.sort();
     assert_eq!(opened, ["/work/a", "/work/b"]);
+}
+
+fn value_size<K, V>(_: &BTreeMap<K, V>) -> usize {
+    size_of::<V>()
+}
+
+#[test]
+fn a_log_s_slot_in_a_session_s_map_stays_pointer_sized() {
+    assert!(value_size(&ByLog::new()) <= size_of::<usize>());
 }
