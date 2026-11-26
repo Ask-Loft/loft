@@ -6987,9 +6987,6 @@ links:
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_count_defines_a_unit_only_where_it_closes_its_clause"
         body: 6fd4160f66e358b7250b4851af4b1c5cf60f1707e2763de7d14d60ec4a9918f8
-      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
-        name: "a_count_or_a_definition_does_not_run_on_into_the_next_paragraph"
-        body: b30a7a5e3640a69f20f6db4e68e8d509b00626b89f98c652d258ba8110c9534d
   - node: 01a2146f-d6af-70f6-acc1-b8aa3ef9a1da
     reviewed: d85154756a33f66d5963c26e8b35c504b057e8d5f978621303a4d3c11621f1f0
     tests:
@@ -7074,6 +7071,15 @@ links:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_quality_attribute_whose_unit_is_a_byte_unit_states_a_quantity_in_it"
         body: 436a03cf7795d02c88a5bb5618ba1e3373bbd59a92e4f61eed0f8b17cf5e3a4c
+  - node: 01a216c4-b982-74c9-aa2c-d6a324a0eb94
+    reviewed: c9d509f32a41f41becb8861e1376fe194c19c04b54812e83937b7939eeb245dc
+    tests:
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "a_count_or_a_definition_does_not_run_on_into_the_next_paragraph"
+        body: b30a7a5e3640a69f20f6db4e68e8d509b00626b89f98c652d258ba8110c9534d
+      - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
+        name: "any_in_line_space_inside_a_definition_keeps_it"
+        body: b25f071baced03c5f9c4f0aebb543bacfb3d7d39762e908dc582c1805df94db8
   - node: add44f32-26a2-4513-b7aa-9daef87e8a0d
     reviewed: 3668e5999079c9295b1cdeb1c4bf24219069cb3c89ee5a3acb3f45bc5b11eec9
     tests:

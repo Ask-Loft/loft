@@ -385,3 +385,21 @@ fn a_count_or_a_definition_does_not_run_on_into_the_next_paragraph() {
         }
     }
 }
+
+#[test]
+fn any_in_line_space_inside_a_definition_keeps_it() {
+    for text in [
+        "1 MB =\u{2009}1,000,000 bytes.",
+        "MB is\u{2007}1,000,000 bytes",
+        "1 MB =\t1,000,000 bytes.",
+        "1 MB =\u{a0}10\u{202f}^\u{2009}6 bytes.",
+        "1 MB = 1,000,000\u{2009}bytes.",
+        "1 MB = 10^6\tbytes.",
+        "Sizes are in MB\u{2009}(\u{a0}10^6 bytes).",
+        "Sizes are in MB (\u{202f}10^6\u{a0}bytes).",
+    ] {
+        for document in with_text(text) {
+            assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{text:?}");
+        }
+    }
+}

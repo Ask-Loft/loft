@@ -2,7 +2,7 @@
 //! equal to the unit's value, 1000^k or 1024^k bytes for its power k, then `byte` or `bytes`,
 //! closing its clause.
 
-use super::SPACES;
+use super::is_space;
 use crate::lint::text::is_written_number;
 use crate::text::strip_prefix_ignoring_case;
 
@@ -17,7 +17,7 @@ pub(super) fn gives_value(text: &str, k: u32) -> bool {
     let Some((value, rest)) = power(text).or_else(|| number(text)) else {
         return false;
     };
-    let rest = rest.trim_start_matches(SPACES);
+    let rest = rest.trim_start_matches(is_space);
     let word = strip_prefix_ignoring_case(rest, "bytes")
         .or_else(|| strip_prefix_ignoring_case(rest, "byte"));
     let closes = word.is_some_and(|after| after.is_empty() || after.starts_with(CLOSING));
@@ -31,8 +31,8 @@ pub(super) fn gives_value(text: &str, k: u32) -> bool {
 /// its value and the text after it.
 fn power(text: &str) -> Option<(u128, &str)> {
     let (base, rest) = digits(text)?;
-    let rest = rest.trim_start_matches(SPACES).strip_prefix('^')?;
-    let rest = rest.trim_start_matches(SPACES);
+    let rest = rest.trim_start_matches(is_space).strip_prefix('^')?;
+    let rest = rest.trim_start_matches(is_space);
     let (exponent, rest) = digits(rest)?;
     Some((base.checked_pow(u32::try_from(exponent).ok()?)?, rest))
 }

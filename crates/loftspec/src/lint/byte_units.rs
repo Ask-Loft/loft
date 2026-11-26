@@ -37,8 +37,6 @@ const DECIMAL_NAMES: [&str; 4] = ["kilobyte", "megabyte", "gigabyte", "terabyte"
 const DEFINING: [&str; 7] = ["=", ":", "is", "means", "equals", "denotes", "stands for"];
 /// The words that may stand between the opening of a clause and the unit it defines.
 const LEADERS: [&str; 5] = ["1", "one", "a", "an", "the"];
-/// The spaces that may stand between the opening of a clause, a leader and the unit.
-const SPACES: [char; 4] = [' ', '\t', '\u{a0}', '\u{202f}'];
 /// The marks after which a clause opens, beside the start of the text; a line break starts a
 /// paragraph, a list item or a heading in the text shown.
 const CLAUSE_MARKS: [char; 8] = ['\n', '.', '!', '?', ':', ';', ',', '('];
@@ -161,8 +159,8 @@ fn node_use(item: &Item<'_>) -> Use {
 }
 
 /// Whether `term`, named after a decimal unit by its name or an alias, has a definition that
-/// opens on the unit's full name or on its value as a count of bytes, after at most one of
-/// `LEADERS` or `exactly`.
+/// opens on the unit's value as a count of bytes, or on its full name where the name ends its
+/// phrase (`ends_phrase`), after at most one of `LEADERS` or `exactly`.
 fn term_settles(term: &TermEntry) -> bool {
     let names = std::iter::once(&term.name).chain(&term.aliases);
     let mut powers = names.filter_map(|name| named_power(name)).peekable();
@@ -175,8 +173,8 @@ fn term_settles(term: &TermEntry) -> bool {
         .find_map(|leader| {
             let after = strip_prefix_ignoring_case(opening, leader)?;
             after
-                .starts_with(SPACES)
-                .then(|| after.trim_start_matches(SPACES))
+                .starts_with(is_space)
+                .then(|| after.trim_start_matches(is_space))
         })
         .unwrap_or(opening);
     let full = (full_names(opening).into_iter())
@@ -188,8 +186,8 @@ fn term_settles(term: &TermEntry) -> bool {
 /// Whether `after`, the text after a full name opening a term's definition, ends its phrase: it
 /// is the end of the text, opens on one of `.`, `,`, `;`, `)`, `:`, `=`, or on the word `of`.
 fn ends_phrase(after: &str) -> bool {
-    let of = after.starts_with(SPACES)
-        && strip_prefix_ignoring_case(after.trim_start_matches(SPACES), "of")
+    let of = after.starts_with(is_space)
+        && strip_prefix_ignoring_case(after.trim_start_matches(is_space), "of")
             .is_some_and(|rest| !rest.starts_with(is_word));
     after.trim().is_empty() || after.starts_with(['.', ',', ';', ')', ':', '=']) || of
 }
@@ -234,6 +232,12 @@ fn units(text: &str) -> Vec<(usize, &'static str)> {
     found
 }
 
+/// Whether `c` is a space within a line: any white space but the line break, which ends a
+/// paragraph, a list item or a heading in the text shown.
+fn is_space(c: char) -> bool {
+    c.is_whitespace() && c != '\n'
+}
+
 fn is_word(c: char) -> bool {
     c.is_alphanumeric() || c == '_'
 }
@@ -241,8 +245,8 @@ fn is_word(c: char) -> bool {
 /// Whether the unit at `at` follows a number, with nothing, one space, one no-break space (wide
 /// or narrow) or one hyphen between them, where the number lies outside a web address and comes
 /// right after none of a letter, a digit or one of `_ / . - = ? & #`. A range such as `4-16 MB`
-/// and a decimal such as `.5 MB` begin a quantity all the same, where the number before the `-`,
-/// or the `.` itself, comes after none of those.
+/// begins a quantity all the same where the number before the `-` ends in a digit and comes
+/// after none of those, and a decimal such as `.5 MB` where the `.` comes after none of those.
 fn is_quantity(text: &str, at: usize) -> bool {
     let head = &text[..at];
     let head = head
@@ -291,9 +295,9 @@ fn defines_decimal(text: &str, units: &[(usize, &'static str)]) -> bool {
         .map(|&(at, unit)| (at, at + unit.len(), symbol_power(unit)));
     let mut spans = symbols.chain(full_names(text));
     spans.any(|(start, end, k)| {
-        let rest = text[end..].trim_start_matches(SPACES);
+        let rest = text[end..].trim_start_matches(is_space);
         match rest.strip_prefix('(') {
-            Some(inside) => count::gives_value(inside.trim_start_matches(SPACES), k),
+            Some(inside) => count::gives_value(inside.trim_start_matches(is_space), k),
             None => opens_clause(&text[..start]) && defined_after_word(rest, k),
         }
     })
@@ -301,7 +305,7 @@ fn defines_decimal(text: &str, units: &[(usize, &'static str)]) -> bool {
 
 /// Whether a unit after `head` opens a clause, alone or after one of `LEADERS`.
 fn opens_clause(head: &str) -> bool {
-    let head = head.trim_end_matches(SPACES);
+    let head = head.trim_end_matches(is_space);
     let head = (LEADERS.iter())
         .find_map(|leader| {
             let cut = head.len().checked_sub(leader.len())?;
@@ -311,7 +315,7 @@ fn opens_clause(head: &str) -> bool {
             (word.eq_ignore_ascii_case(leader) && bounded).then_some(rest)
         })
         .unwrap_or(head);
-    let head = head.trim_end_matches(SPACES);
+    let head = head.trim_end_matches(is_space);
     head.is_empty() || head.ends_with(CLAUSE_MARKS)
 }
 
@@ -340,10 +344,10 @@ fn full_names(text: &str) -> Vec<(usize, usize, u32)> {
 fn defined_after_word(rest: &str, k: u32) -> bool {
     DEFINING.iter().any(|word| {
         strip_prefix_ignoring_case(rest, word).is_some_and(|after| {
-            let boundary = matches!(*word, "=" | ":") || after.starts_with(SPACES);
-            let after = after.trim_start_matches(SPACES);
+            let boundary = matches!(*word, "=" | ":") || after.starts_with(is_space);
+            let after = after.trim_start_matches(is_space);
             let after = strip_prefix_ignoring_case(after, "exactly")
-                .map_or(after, |rest| rest.trim_start_matches(SPACES));
+                .map_or(after, |rest| rest.trim_start_matches(is_space));
             boundary && count::gives_value(after, k)
         })
     })
