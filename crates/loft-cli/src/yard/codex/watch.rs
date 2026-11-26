@@ -94,7 +94,7 @@ pub fn run(hook: &Hook, port: u16, socket: Option<&PathBuf>) -> Result<Value> {
             flushing.tick(
                 clock,
                 beat,
-                || flush::due(&flush::mode(), clock.now().unwrap_or_default()),
+                || flush::due(&flush::mode(), flush::clock().now().unwrap_or_default()),
                 || {
                     commands::flush(hook.dir())?
                         .spawn()

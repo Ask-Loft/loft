@@ -7,10 +7,12 @@
 use std::fs;
 use std::path::PathBuf;
 use std::process::Output;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::{Value, json};
 use software_plant::YardServer;
 use software_plant::yard_server::{BATCHES, TOKEN};
+use yardlog::Time;
 
 use crate::common::stderr;
 use crate::yard::{Yard, document};
@@ -74,6 +76,56 @@ pub fn readdress(yard: &Yard, endpoint: &str) {
 /// `~/.yard/flush.json` on the machine `yard` runs on.
 pub fn flush_json(yard: &Yard) -> PathBuf {
     yard.scratch.home().join(".yard/flush.json")
+}
+
+/// The record `~/.yard/flush.json` holds for `endpoint`.
+pub fn flush_record(yard: &Yard, endpoint: &str) -> Value {
+    let text = fs::read_to_string(flush_json(yard)).unwrap_or_default();
+    serde_json::from_str::<Value>(&text).unwrap_or(Value::Null)[endpoint].clone()
+}
+
+/// Sets the time Yard Server asked to come back after, in the record `~/.yard/flush.json` holds
+/// for `endpoint`, to `seconds` since the Unix epoch.
+pub fn come_back_after(yard: &Yard, endpoint: &str, seconds: u64) {
+    let mut all: Value = serde_json::from_slice(&fs::read(flush_json(yard)).unwrap()).unwrap();
+    all[endpoint]["notBefore"] = json!(dated(seconds));
+    fs::write(flush_json(yard), all.to_string()).unwrap();
+}
+
+/// The time now, in seconds since the Unix epoch, as the system's clock tells it: a flush dates
+/// its runs and its pauses by it, whatever `SOURCE_DATE_EPOCH` says.
+pub fn system_now() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+}
+
+/// `seconds` since the Unix epoch, as `~/.yard/flush.json` writes a time.
+pub fn dated(seconds: u64) -> String {
+    Time::from_unix_seconds(seconds).unwrap().to_string()
+}
+
+/// The seconds since the Unix epoch of a time as `~/.yard/flush.json` writes it.
+pub fn seconds_of(time: &Value) -> u64 {
+    time.as_str()
+        .unwrap()
+        .parse::<Time>()
+        .unwrap()
+        .unix_seconds()
+}
+
+/// `seconds` since the Unix epoch as an HTTP date, such as `Thu, 01 Jan 2026 01:00:00 GMT`.
+pub fn http_date(seconds: u64) -> String {
+    const DAYS: [&str; 7] = ["Thu", "Fri", "Sat", "Sun", "Mon", "Tue", "Wed"];
+    const MONTHS: [&str; 12] = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+    let text = dated(seconds);
+    let (year, month, day, time) = (&text[0..4], &text[5..7], &text[8..10], &text[11..19]);
+    let weekday = DAYS[usize::try_from(seconds / 86_400 % 7).unwrap()];
+    let month = MONTHS[month.parse::<usize>().unwrap() - 1];
+    format!("{weekday}, {day} {month} {year} {time} GMT")
 }
 
 /// The record of a run, as `~/.yard/flush.json` keeps it, in which Yard Server put off the

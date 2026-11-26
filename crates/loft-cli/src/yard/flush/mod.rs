@@ -14,9 +14,10 @@ mod settle;
 #[cfg(test)]
 mod tests;
 
+use std::sync::OnceLock;
 use std::time::Duration;
 
-use loft_ports::clock::Clock as _;
+use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::{Value, json};
 use yardlog::Time;
 use yardlog_store::home::{Home, HomeFile};
@@ -106,6 +107,14 @@ pub(in crate::yard) fn due(mode: &Mode, now: u64) -> bool {
     !paused && aside(Flushed::quiet("due"), &connection.outbox, last).remaining() > 0
 }
 
+/// The clock of a flush, by which `~/.yard/flush.json` dates its runs and the time Yard Server
+/// asked to come back after: the system's, which `SOURCE_DATE_EPOCH` does not pin, as
+/// [`crate::remote::now`] reads it, so that a pause ends in real time.
+pub(in crate::yard) fn clock() -> &'static SystemClock {
+    static CLOCK: OnceLock<SystemClock> = OnceLock::new();
+    CLOCK.get_or_init(SystemClock::default)
+}
+
 /// How long a flush waits for an answer: `seconds` where [`TIMEOUT`] gives them, else 10 seconds.
 fn wait_of(seconds: Option<u64>) -> Duration {
     seconds.map_or(WAIT, Duration::from_secs)
@@ -177,7 +186,7 @@ pub fn run(args: &FlushArgs) -> Finished {
 /// The run of a flush that holds the lock: none where Yard Server asked to come back after a
 /// time that has not come, else the sending, recorded in `~/.yard/flush.json`.
 fn locked(connection: &Connection) -> Flushed {
-    let clock = super::clock();
+    let clock = clock();
     let endpoint = connection.outbox.endpoint();
     let now = clock.now().unwrap_or_default();
     let recorded = record::read(&connection.home, endpoint).unwrap_or_default();

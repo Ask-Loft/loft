@@ -6,22 +6,15 @@ use std::fs;
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
+use software_plant::YardServer;
 use software_plant::yard_server::TOKEN;
-use software_plant::{Clock, YardServer};
 use yardlog_store::lock;
 
-use crate::common::EPOCH;
 use crate::yard::{Yard, document};
 use crate::yard_connected::{
-    STAGE_BATCH, connected, entries, flush, flush_json, keys, notes, outbox, put_off_record,
-    readdress, write,
+    STAGE_BATCH, come_back_after, connected, dated, entries, flush, flush_json, flush_record,
+    http_date, keys, notes, outbox, put_off_record, readdress, seconds_of, system_now, write,
 };
-
-/// The record `~/.yard/flush.json` holds for `endpoint`.
-fn record(yard: &Yard, endpoint: &str) -> Value {
-    let text = fs::read_to_string(flush_json(yard)).unwrap_or_default();
-    serde_json::from_str::<Value>(&text).unwrap_or(Value::Null)[endpoint].clone()
-}
 
 /// `variables` with `LOFT_YARD_SERVER_TIMEOUT` set to `value`.
 fn timing_out(variables: &[(&'static str, String)], value: &str) -> Vec<(&'static str, String)> {
@@ -32,38 +25,54 @@ fn timing_out(variables: &[(&'static str, String)], value: &str) -> Vec<(&'stati
 
 #[test]
 fn a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names() {
-    let mut yard = Yard::new();
+    let yard = Yard::new();
     let server = YardServer::coming_back(429, "120");
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
+    let before = system_now();
     let (code, paused) = flush(&yard, &variables);
+    let after = system_now();
     assert_eq!((code, &paused["outcome"]), (Some(0), &json!("paused")));
     assert_eq!(entries(&yard).len(), 1);
-    assert_eq!(
-        record(&yard, &server.url())["notBefore"],
-        "2026-01-01T00:02:00Z"
+    let not_before = seconds_of(&flush_record(&yard, &server.url())["notBefore"]);
+    assert!(
+        (before + 120..=after + 120).contains(&not_before),
+        "{not_before}"
     );
     let (code, again) = flush(&yard, &variables);
     assert_eq!((code, &again["outcome"]), (Some(0), &json!("paused")));
     assert_eq!(again["remaining"], 1);
     assert_eq!(server.requests().len(), 1);
-    yard.clock = Clock::fixed(EPOCH + 121);
+    come_back_after(&yard, &server.url(), system_now() - 1);
     flush(&yard, &variables);
     assert_eq!(server.requests().len(), 2);
 }
 
 #[test]
 fn a_503_with_a_retry_after_as_an_http_date_pauses_the_flush_until_that_date() {
-    let mut yard = Yard::new();
-    let server = YardServer::coming_back(503, "Thu, 01 Jan 2026 01:00:00 GMT");
+    let yard = Yard::new();
+    let date = system_now() + 3600;
+    let server = YardServer::coming_back(503, &http_date(date));
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
     let (_, paused) = flush(&yard, &variables);
     assert_eq!(paused["outcome"], "paused");
-    yard.clock = Clock::fixed(EPOCH + 3599);
+    assert_eq!(flush_record(&yard, &server.url())["notBefore"], dated(date));
     flush(&yard, &variables);
     assert_eq!(server.requests().len(), 1);
-    yard.clock = Clock::fixed(EPOCH + 3601);
+    come_back_after(&yard, &server.url(), system_now() - 1);
+    flush(&yard, &variables);
+    assert_eq!(server.requests().len(), 2);
+}
+
+#[test]
+fn a_flush_dates_its_pause_by_the_system_s_clock_whatever_source_date_epoch_says() {
+    let yard = Yard::new();
+    let server = YardServer::coming_back(429, "1");
+    let variables = connected(&server.url());
+    write(&yard, STAGE_BATCH, &variables);
+    flush(&yard, &variables);
+    come_back_after(&yard, &server.url(), system_now() - 1);
     flush(&yard, &variables);
     assert_eq!(server.requests().len(), 2);
 }
@@ -95,7 +104,7 @@ fn a_429_or_503_without_a_retry_after_that_reads_is_a_failure() {
         write(&yard, STAGE_BATCH, &variables);
         let (code, failed) = flush(&yard, &variables);
         assert_eq!((code, &failed["outcome"]), (Some(1), &json!("failed")));
-        assert_eq!(record(&yard, &server.url())["notBefore"], Value::Null);
+        assert_eq!(flush_record(&yard, &server.url())["notBefore"], Value::Null);
     }
 }
 
@@ -185,33 +194,35 @@ fn flush_json_holds_a_record_for_each_address_a_run_has_run_for() {
     let (ours, theirs) = (YardServer::accepting(), YardServer::failing(500));
     write(&yard, STAGE_BATCH, &connected(&ours.url()));
     write(&yard, &notes(1), &connected(&theirs.url()));
+    let before = system_now();
     flush(&yard, &connected(&ours.url()));
+    let after = system_now();
     flush(&yard, &connected(&theirs.url()));
-    let sent = record(&yard, &ours.url());
-    assert_eq!(
-        (&sent["outcome"], &sent["ended"]),
-        (&json!("sent"), &json!("2026-01-01T00:00:00Z"))
+    let sent = flush_record(&yard, &ours.url());
+    assert_eq!(sent["outcome"], "sent");
+    assert!(
+        (before..=after).contains(&seconds_of(&sent["ended"])),
+        "{sent}"
     );
     assert_eq!(sent["why"], Value::Null);
-    let failed = record(&yard, &theirs.url());
+    let failed = flush_record(&yard, &theirs.url());
     assert_eq!(failed["outcome"], "failed");
     assert!(failed["why"].as_str().unwrap().contains("500"), "{failed}");
     let idle = YardServer::accepting();
     flush(&yard, &connected(&idle.url()));
-    assert_eq!(record(&yard, &idle.url())["outcome"], "empty");
+    assert_eq!(flush_record(&yard, &idle.url())["outcome"], "empty");
     let text = fs::read_to_string(flush_json(&yard)).unwrap();
     assert!(!text.contains(TOKEN), "{text}");
 }
 
 #[test]
 fn a_busy_run_or_one_paused_without_a_request_leaves_the_record_as_it_was() {
-    let mut yard = Yard::new();
+    let yard = Yard::new();
     let server = YardServer::coming_back(503, "120");
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
     flush(&yard, &variables);
     let before = fs::read(flush_json(&yard)).unwrap();
-    yard.clock = Clock::fixed(EPOCH + 60);
     let (_, paused) = flush(&yard, &variables);
     assert_eq!(paused["outcome"], "paused");
     assert_eq!(server.requests().len(), 1);
@@ -233,7 +244,7 @@ fn a_run_records_the_versions_yard_server_will_take_later_with_their_codes() {
     readdress(&yard, &server.url());
     flush(&yard, &connected(&server.url()));
     assert_eq!(
-        record(&yard, &server.url())["later"],
+        flush_record(&yard, &server.url())["later"],
         json!({ key: "unknown_report_version" })
     );
 }
@@ -273,7 +284,7 @@ fn a_flush_json_that_does_not_read_is_taken_as_holding_no_record_and_written_ane
     fs::write(flush_json(&yard), "{not json").unwrap();
     let (code, sent) = flush(&yard, &variables);
     assert_eq!((code, &sent["outcome"]), (Some(0), &json!("sent")));
-    assert_eq!(record(&yard, &server.url())["outcome"], "sent");
+    assert_eq!(flush_record(&yard, &server.url())["outcome"], "sent");
 }
 
 #[test]

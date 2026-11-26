@@ -13,7 +13,8 @@ use crate::common::{EPOCH, Scratch};
 use crate::snapshot::snapshot;
 use crate::yard::{Yard, document};
 use crate::yard_connected::{
-    STAGE_BATCH, connected, flush, flush_json, keys, notes, outbox, pairs, put_off_record, write,
+    STAGE_BATCH, come_back_after, connected, dated, flush, flush_json, flush_record, keys, notes,
+    outbox, pairs, put_off_record, system_now, write,
 };
 
 /// `loft yard status` under `variables`, as text and as JSON.
@@ -246,15 +247,19 @@ fn last_attempt_gives_when_the_last_run_ended_how_and_why() {
     let variables = connected(&failing.url());
     write(&yard, STAGE_BATCH, &variables);
     flush(&yard, &variables);
+    let ended = flush_record(&yard, &failing.url())["ended"].clone();
     let (text, json) = status(&yard, &variables);
     assert_eq!(
         line(&text, "last attempt"),
-        "last attempt: 2026-01-01T00:00:00Z failed: Yard Server refused the batch with 503 `service_unavailable`"
+        format!(
+            "last attempt: {} failed: Yard Server refused the batch with 503 `service_unavailable`",
+            ended.as_str().unwrap()
+        )
     );
     assert_eq!(
         json["lastAttempt"],
         json!({
-            "ended": "2026-01-01T00:00:00Z",
+            "ended": ended,
             "outcome": "failed",
             "why": "Yard Server refused the batch with 503 `service_unavailable`",
             "notBefore": null,
@@ -264,23 +269,29 @@ fn last_attempt_gives_when_the_last_run_ended_how_and_why() {
 
 #[test]
 fn last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed() {
-    let mut yard = Yard::new();
+    let yard = Yard::new();
     let server = YardServer::coming_back(429, "120");
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
     flush(&yard, &variables);
+    let record = flush_record(&yard, &server.url());
+    let (ended, not_before) = (record["ended"].as_str().unwrap(), &record["notBefore"]);
     let (text, _) = status(&yard, &variables);
     assert_eq!(
         line(&text, "last attempt"),
-        "last attempt: 2026-01-01T00:00:00Z paused; Yard Server asked to come back after 2026-01-01T00:02:00Z"
+        format!(
+            "last attempt: {ended} paused; Yard Server asked to come back after {}",
+            not_before.as_str().unwrap()
+        )
     );
-    yard.clock = Clock::fixed(EPOCH + 600);
+    let passed = system_now() - 1;
+    come_back_after(&yard, &server.url(), passed);
     let (text, json) = status(&yard, &variables);
     assert_eq!(
         line(&text, "last attempt"),
-        "last attempt: 2026-01-01T00:00:00Z paused"
+        format!("last attempt: {ended} paused")
     );
-    assert_eq!(json["lastAttempt"]["notBefore"], "2026-01-01T00:02:00Z");
+    assert_eq!(json["lastAttempt"]["notBefore"], dated(passed));
 }
 
 #[test]

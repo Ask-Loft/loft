@@ -73,7 +73,7 @@ pub fn run(args: &StatusArgs) -> Finished {
 }
 
 fn report() -> Report {
-    let now = super::clock().now().unwrap_or_default();
+    let now = flush::clock().now().unwrap_or_default();
     let home = Home::from_env();
     let records = home.as_ref().map(record::read_all).unwrap_or_default();
     let (connected, last) = match flush::mode() {
