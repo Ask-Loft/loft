@@ -14,12 +14,12 @@ use crate::schema;
 use crate::workflow::job;
 use serde_json::{Value, json};
 
-fn read(path: &str) -> Value {
+pub(crate) fn read(path: &str) -> Value {
     let text = fs::read_to_string(workspace().join(path)).unwrap_or_else(|_| panic!("no {path}"));
     serde_json::from_str(&text).unwrap()
 }
 
-const CLAUDE_ROOT: &str = "plugins/claude/loft";
+pub(crate) const CLAUDE_ROOT: &str = "plugins/claude/loft";
 const CODEX_ROOT: &str = "plugins/codex/loft";
 
 #[test]
@@ -259,91 +259,6 @@ fn the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks() {
         .and_then(|rest| rest.split(|c: char| !c.is_ascii_digit()).next())
         .unwrap_or_else(|| panic!("PROTOCOLS = {protocols} names no newest"));
     assert_eq!(newest, report["protocol"].to_string());
-}
-
-/// The command each of the Claude Code plugin's command hooks runs.
-const CLAUDE_HOOK: &str = "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"";
-
-#[test]
-fn the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook()
- {
-    let manifest = read(&format!("{CLAUDE_ROOT}/hooks/hooks.json"));
-    let hooks = manifest["hooks"].as_object().unwrap();
-    let mut names: Vec<_> = hooks.keys().map(String::as_str).collect();
-    names.sort_unstable();
-    assert_eq!(
-        names,
-        [
-            "PermissionRequest",
-            "PostCompact",
-            "PostToolUse",
-            "SessionEnd",
-            "SessionStart",
-            "Stop",
-            "SubagentStart",
-            "UserPromptSubmit"
-        ]
-    );
-    for (name, groups) in hooks {
-        let groups = groups.as_array().unwrap();
-        assert_eq!(groups.len(), 1, "{name}");
-        let asking = name == "PermissionRequest";
-        assert_eq!(
-            groups[0].get("matcher"),
-            asking.then(|| json!("ExitPlanMode")).as_ref(),
-            "{name}"
-        );
-        assert_eq!(
-            groups[0]["hooks"],
-            json!([{"type": "command", "command": CLAUDE_HOOK, "timeout": if asking { 86_400 } else { 10 }}]),
-            "{name}"
-        );
-    }
-}
-
-/// Runs the Claude Code plugin's hook command through the shell as Claude Code does, with the
-/// `loftCommand` setting `setting` and the hook object `hook` on its standard input.
-#[cfg(unix)]
-fn run_claude_hook(scratch: &Scratch, setting: &str, hook: &Value) -> std::process::Output {
-    use std::io::Write as _;
-    let mut command = Command::new("sh");
-    command
-        .args(["-c", CLAUDE_HOOK])
-        .env("CLAUDE_PLUGIN_OPTION_LOFTCOMMAND", setting)
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped());
-    isolate(&mut command, &scratch.home());
-    let mut child = command.spawn().unwrap();
-    child
-        .stdin
-        .take()
-        .unwrap()
-        .write_all(hook.to_string().as_bytes())
-        .unwrap();
-    child.wait_with_output().unwrap()
-}
-
-#[cfg(unix)]
-#[test]
-fn the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process()
-{
-    let scratch = Scratch::empty();
-    let setting = format!("/usr/bin/env {}", env!("CARGO_BIN_EXE_loft"));
-    let dir = scratch.0.canonicalize().unwrap();
-    let ended =
-        json!({"session_id": "s1", "cwd": dir, "hook_event_name": "SessionEnd", "reason": "clear"});
-    let ran = run_claude_hook(&scratch, &setting, &ended);
-    assert!(ran.status.success(), "{}", stderr(&ran));
-    let started = json!({"session_id": "s2", "cwd": dir, "hook_event_name": "SessionStart", "source": "clear"});
-    let ran = run_claude_hook(&scratch, &setting, &started);
-    assert!(ran.status.success(), "{}", stderr(&ran));
-    let continued = fs::read_to_string(scratch.home().join(".yard/continuations.json")).unwrap();
-    assert_eq!(
-        serde_json::from_str::<Value>(&continued).unwrap(),
-        json!({"s2": "s1"}),
-        "both hooks ran under one parent, the process the shell names in $PPID"
-    );
 }
 
 /// The events whose hooks Claude Code's built-in guard passes over for a user's mod; `classic.`

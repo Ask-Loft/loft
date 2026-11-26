@@ -22350,6 +22350,12 @@ links:
       - file: "crates/loft-cli/src/yard/codex/app_server/notifications/tests.rs"
         name: "an_explicit_native_refusal_is_distinct_from_an_uncertain_transport_failure"
         body: c29ad2e03f7208049cbfa1b58d69e397395b8e6664d0dd4afd625d62457c5183
+  - node: 01a20888-d898-7799-86ed-19868665e08c
+    reviewed: 6ed1f1d8a5c827e07af4723a1e5f89a06a86282616edea9da7b74f03d536d2cb
+    tests:
+      - file: "crates/software-plant/tests/codex.rs"
+        name: "a_peer_gone_before_its_connection_is_set_up_leaves_the_next_connection_served"
+        body: d4a37063e96e2a0f36c86f86f76efc0c76995de4c323f29be79a1f7325bcce30
   - node: 01a17989-a8b9-74b1-9049-0740529d4832
     reviewed: 1de26044d1e9ad112ed0e4fe1e65d67412acfcaf1afe6bb1e188afbb147216f2
     tests:
@@ -23640,9 +23646,9 @@ links:
   - node: 01a14522-b2c9-7634-a3b0-225e35d97412
     reviewed: ac338b3a166693c2febd7069e99a5a899922e7c3b737e0e4e11aafe9f43287c2
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+        body: 4932fed7a6c61d4313c2aad289e6bf30070ce56f297a353f805069bb342a7220
   - node: 01a144ee-c59e-7325-802c-d71e478c6971
     reviewed: a8e7865b7c32261c3575a15d9a16df55f2ee43b9ae69ce220b201a9d9c92891e
     tests:
@@ -29547,6 +29553,81 @@ links:
       - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
         name: "the sidebar runs down the window’s left from top to bottom, on a ground of its own, and stays while the Yard Log scrolls"
         body: af12dc21376a068daeba959d9bfdc86254f230ef057f6853d229be1da55b8884
+  - node: 01a2084f-948f-74fd-b2ee-eb53a9214bd3
+    reviewed: 926556c4fa879f197596a2a52333e2cc9d7ecd7f6101a3c404674b3ba6f9bdb1
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar first opens 248 pixels wide"
+        body: 3cb5e543572328056e34e2d08935896604d1ce3f94ddbb7d5419038ac916da76
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb54ac8d2681
+    reviewed: e1bb58a2848ac1ff5ca42647b3a2b2c3ce0e09c78aa13b49eef170011df681de
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "dragging the sidebar’s right edge makes the sidebar wider or narrower by the length dragged"
+        body: 37cbfcd3ff6228ec4747d075682d62d9af8c003faa72fb75f9b65b7c8ac9f541
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5555cca310
+    reviewed: 43c733214fe984ce2ff548bc4f7b34dab155d3dde099c8fa9f909d94345b7b49
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb56cbe58216
+    reviewed: 13103bc3d753e4f4e0041329f553053d4ff7ff94e4d64c84b0f604b3d9ef2fec
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar’s edge is reached by the keyboard, and the arrow keys left and right narrow and widen the sidebar"
+        body: 68777557e5161f89276046530e38b12690944e7628e493d76856623d1793d81e
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb57cf73bb7a
+    reviewed: a3245f4677089416f139118b7fd3060d657622473a5ffbe56d59c5d9bbd07a0e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar is never wider than 480 pixels, and always leaves at least 120 pixels of the window beside it, also as the window changes"
+        body: 7c030bcdf44977b2e93b91105ba0d8f4c40ca93fb95bc8bc008021d86c2c2579
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
+  - node: 01a2084f-948f-74fd-b2ee-eb58196f58e2
+    reviewed: 95e1f1344801d486787c32b93c2cb02a5dfbe5e07e888eba43529c03c0642c19
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the sidebar is never narrower than 200 pixels, unless the window is too narrow to leave 120 pixels beside it"
+        body: ce6f512a0dc4300ce5797d09e27423d33abadb8ad30628c7094b9682bdddf23b
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5924b67500
+    reviewed: c0f9afcd1a9aeb73c3634d9207a3b21e0f3c7398a3845bd4292c9d1c7de0eb7c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/side-width.test.js"
+        name: "the width chosen is the sidebar’s width the next time the page opens in this browser, and a resize chooses none"
+        body: 55121031bc5328d15ae60ebd4e3be81ccfb3df2da9bf0ce325d6cd86eb67e7b9
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5a74a1c3b3
+    reviewed: 5fea4ac34cab4aa081f698fca1e5d37102d73c2307b888f1f469d313b5478d22
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width"
+        body: 9d20df86823870d0112c0635cac51ea4f93e825beab4949f683aefefa2a94f84
+  - node: 01a2084f-948f-74fd-b2ee-eb5b9b792af0
+    reviewed: 8a25664ff3d29fa6abbf0328deba1f1e1fca9ec65ab2e80a18e6aab14f96b1d0
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
   - node: 01a1a7a4-51ce-73b8-bd34-87ac9b0845b5
     reviewed: 387e1cd7628f523772aca7c70f7c53798f6ff652df0ae8b3e261147b257bb4dd
     tests:
@@ -30183,9 +30264,18 @@ links:
   - node: 01a16854-53e3-71b2-8192-66b204b471a0
     reviewed: 2101096e3a497fc0a66e69cb08756a4be14318646ac575c1c801fa8042ad41f7
     tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a wide table with a link in its last column scrolls within its block and leaves the pane unscrolled sideways"
+        body: a9d7c07069097d8f41418f23f341f56e09157aadcdc087f44dc81fd7ab78c759
       - file: "crates/loft-cli/yard-page-tests/unit/timeline.test.js"
         name: "a table in a block’s Markdown sits in a wrapper that scrolls sideways, and spans its block"
         body: e33c8bf8307b20d1f7f3517011c9d60bbb4c2a4e2f57612c25331a2236693669
+  - node: 01a2044d-68b3-72a5-af48-16da91c90703
+    reviewed: e3c4053993447409647b2dedcc48cc75b7b3d28799f59f5b09f6847338d3742e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a column of a table that the Markdown aligns to the right or to the center is drawn so aligned"
+        body: 09dc82e9fc8e7242a3e3e5234b795af54fd442399216fa93fef74fc1fe2afe18
   - node: 01a1646f-546d-7042-befd-eb39ce7ffb3c
     reviewed: 2ac4284a49d0c1abbf3155dbc41aff9f39b522535815ec58b1a67ea37054027d
     tests:
@@ -30354,6 +30444,318 @@ links:
       - file: "crates/loft-cli/src/yard/serve/markdown.rs"
         name: "html_in_a_task_s_detail_is_shown_as_text"
         body: b67ca37983c7af5573dd8a90b54327172f49c12d6a0a90d50400ddf3ba7d17d9
+  - node: 01a1f804-56bc-77a4-94e6-74881760b7f4
+    reviewed: 3654b2ef53efe011eca09014aca608987d413391576a31e4fba2855269987995
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_bare_https_address_in_a_note_is_drawn_as_a_link_to_it"
+        body: 2cb3eeeef5b8959c7f796163fd3ffd2493f4db1df89ef288410c580d1275a0f6
+      - file: "crates/loft-cli/tests/yard_serve_page_data.rs"
+        name: "a_bare_address_in_a_block_s_markdown_reaches_the_page_as_a_link"
+        body: b82ab90a967efab7da15942d3c24b204cba8fc6f34a18041c09d3871c3174c03
+  - node: 01a1f89a-bc20-773d-b058-45914917531e
+    reviewed: e2b11d4b4ebd18454da30945652f44f2692108ab1cfc30705d6463f89e2db899
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_underscore_an_asterisk_or_a_tilde_within_an_address_stays_in_its_link"
+        body: 9618db4c0e53e3f2d0a9fdcf9e22b25006ec16875532214fc96760246ee4302c
+  - node: 01a1f804-56bc-77a4-94e6-7489ef413b64
+    reviewed: 47ef20baf41bf48aea70d96df5853f47bdb8f2256715ad57bd18dd82b8ed0a4f
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_bare_http_address_is_drawn_as_a_link"
+        body: abf63ca8a19b434c71892f1a6273bb92b151d826f7a0f2e8452f83d8311a08a7
+  - node: 01a203d2-f2cc-7538-a485-a1a2da1a6018
+    reviewed: 018a02e38138d698560f12b14d301531742ab8d7946b48b415ba221e62c0d047
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_bare_mailto_address_is_drawn_as_a_link"
+        body: e4ea87a7badcf7cfc9507466cbed35ec73da0e5534a8c2b413df439b409e1a12
+  - node: 01a1f804-56bc-77a4-94e6-748a1481c64b
+    reviewed: 213f6cc443db0dc40e944a1bd9944ff922d562b6c2330213e9ca9de836fde9f4
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "a_bare_address_in_every_markdown_field_is_drawn_as_a_link"
+        body: 9eee3f860b53d5c09edc7e7f4df91ddded124386baee568a3cd9400b263ce4ce
+  - node: 01a1f804-56bc-77a4-94e6-748bc1fff885
+    reviewed: 03c9068c23940c1361c3bad962311806b7505b512290db25200a7f2621420733
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_address_within_a_code_span_is_drawn_as_text"
+        body: f27e00fde1c77e3c48635c55612d407bdd866f4ccfa9e8b34bab6fc87d63b2e1
+  - node: 01a1f804-56bc-77a4-94e6-748c732b5a29
+    reviewed: 5c7444339d8f7ed430105e839b0dc8676ed8995d0fdc844c3d9910e9bdc37e49
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_address_within_a_fenced_code_block_is_drawn_as_text"
+        body: 202af0cae6d9daa019ffe0b87e90f6285ab0e9fe6055f31840d9840015fe7e22
+  - node: 01a1f804-56bc-77a4-94e6-748d568ac06c
+    reviewed: d0050898904fda9ccce3375d501e19fd472027607974fc5b5924b71eca228589
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_address_that_a_written_link_holds_is_not_linked_again"
+        body: dd94a856b73683c387d31d8bec6f3f5220a044d8a96df0d7eed93270ff11b356
+  - node: 01a1f804-56bc-77a4-94e6-748eebcde366
+    reviewed: c0616cf291ea581fa960bb89d7ed665ff806123b9f0437988f3b3705e337dda6
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "punctuation_that_ends_an_address_is_drawn_after_the_link"
+        body: eed15fd3cbb942155883310df4566e8943515b118e7c0a2e02a61e580e0c2dac
+  - node: 01a1f89d-6ae4-70f1-a41e-0cf431548485
+    reviewed: cafb67a4710f967da65b55cf994dbc652e9f8eeba3a633408cf219c3f4d2bf43
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_entity_that_ends_an_address_is_drawn_after_the_link"
+        body: 2cf55dc0cc61157f71e8962e2da112d6ee2cf557c45343f35781f7b8c54de9bf
+  - node: 01a1f804-56bc-77a4-94e6-748fb9de9b7d
+    reviewed: 38a6e1a6c504b8313dcd31e9b33130860205be132cac264a4835380d9f85e2be
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_closing_parenthesis_ends_the_link_unless_the_address_opens_one"
+        body: 1e321daef7c2312cabc80036533e4beccf9ae2531c56730203e7dc67fbd9a14c
+  - node: 01a203bd-1d43-752b-92c9-a8f2030660e1
+    reviewed: 505f2e4a23df4b5cc0765eb504f6a268aafdeaa780b2cca5b966a9ff9e6a3352
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_address_after_a_square_bracket_that_opens_no_link_is_drawn_as_text"
+        body: bfed22b21ab9c69e18a86d1c27753784e92002913ff34c0421b96221e0332fd4
+  - node: 01a1f804-56bc-77a4-94e6-749076569e91
+    reviewed: 7918ab486c0cd42b210017384c730b0343ccc821490e26a92d3c49e095b93543
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "no_link_is_drawn_to_an_address_of_any_other_scheme"
+        body: 6efb393e70c9408d40db53bfaf6dc07d3461e90291bf55417ab22998af916f5b
+  - node: 01a203bd-1d43-752b-92c9-a8f3ccd743b5
+    reviewed: 1d0af1e153b3c41759e89cf6553c51058684e43b93d7281b625cd0c07dc674db
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_address_that_begins_with_www_is_drawn_as_text"
+        body: ac6cafd079e85dc78bc49eb721dd812056565e95abee44f30de85850e456d259
+  - node: 01a203d2-f2cc-7538-a485-a1a33f969200
+    reviewed: 262047d9052fba5e31a8bd6e4f3ca4d713dfd48e22a75fe9c369692ccb79a21c
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_email_address_that_no_mailto_begins_is_drawn_as_text"
+        body: f943e8654e42e4c49485eb13c4ca967103db40163d901bc4c43a810e60de6363
+  - node: 01a1f935-07ff-7063-ad69-b209303e008a
+    reviewed: e08fac02e79133b4e89f07e0c2a88d4044fed4e25f7a3e88a72e17d7520755c6
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_http_scheme_that_punctuation_follows_is_drawn_as_text"
+        body: f421423d1ac4643a0a9344b27dfc49fb1eff86e761a1f628e61772a03439d294
+  - node: 01a1f935-07ff-7063-ad69-b20affda0376
+    reviewed: f0235b8e0c999bcd5094037743b51df8d24f04a3579ccc0ad00c5b250c5dc2d1
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_host_name_with_an_underscore_in_either_of_its_last_two_parts_is_drawn_as_text"
+        body: caab2ebe70611cea27e443d924d7cdcdcc7bf655ec61c58e1580992f00806822
+  - node: 01a1f935-07ff-7063-ad69-b20b4d3df35e
+    reviewed: 866eb0bb17e9fe18d222f7877b96f9e865f1014d1b062799dba1264cb36cf9a7
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_mailto_that_no_email_address_follows_is_drawn_as_text"
+        body: a2088612ed5548f3eebecb807d269070ca0cc7496f41e16cabbefd1c7272835e
+  - node: 01a1f935-07ff-7063-ad69-b20c5aaebd64
+    reviewed: 6bbdf3c7e05a54197c7805d0c04fcea07370104519b2551e4e76de73e3c10384
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "the_link_of_a_mailto_address_ends_where_its_email_address_ends"
+        body: 98199f9c9fd38d28656cb34728c543c9dd14eb6d734e379445e2ef9015a99289
+  - node: 01a20409-6c6c-74c7-a5f4-356aa374f8b8
+    reviewed: badee1578c67beec6986f8b172a9ce7e5adbb3bf9d23a20f4aa6a699eac5b39e
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "following a link to a web address in a note opens it in a new tab and leaves the Yard page as it was"
+        body: 529c1d666fa76ca21db7bdd2356152b80e708fabb9513390072ecf2dee85c970
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link to a web address in a block’s Markdown opens in a new tab"
+        body: 3281c5e74c09e08ab0b96a3575cc236f7effec6882495e5bc0002ccbcab3c09c
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link of rendered Markdown to a web address no URL parser reads still opens in a new tab and leaves the rest drawn"
+        body: 731f9c9967469ecefd0e1508584929ef6bae50e657c3e5259c0aaab0e7d79946
+  - node: 01a20409-6c6c-74c7-a5f4-356b67be1720
+    reviewed: b06de897e481a2840355e79a7c53b278cb4f4f252f20ab4726310424195ea30c
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link to a web address in a node’s name opens in a new tab"
+        body: b8c6531a89bffd6d21ddb85dfad16938316cd82b626e6b03216c0e8226f3ea39
+  - node: 01a20411-8aee-7327-83bf-fe31e787baea
+    reviewed: c75e534c321c26b38fe77b483d12fd109ce762160862b42ad837f992446c5bd6
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a page that a link of rendered Markdown opens is given no hold on the Yard page"
+        body: 92a2b38a51291a3f5fd312f9e3d0b849f202331e294156c391d3e33de18d6267
+  - node: 01a20411-8aee-7327-83bf-fe32768e5047
+    reviewed: f6c0580a40e3ddfd111721e14183f47a8b0e390251f5e70b17806b871cda7cbe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a mailto link of rendered Markdown opens no new tab"
+        body: c593dac55b7cf4c83765754729e376492f9ce046470dc270f823b89358c51d02
+  - node: 01a20411-ca50-7135-a74a-ae7cdc6a2564
+    reviewed: d7ee91b4f028aabc8e8e4e2cf4c77d70d1cd5ccb5f00a9db1a475c55b79db9ad
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link of rendered Markdown within the page opens no new tab"
+        body: bd0573a5d2b8035d783c848c7ec48b683dd44d3fbd117f244a5d43d21735d99b
+  - node: 01a20491-456b-7011-9545-1959e81d84c6
+    reviewed: 6b1b17605f74507330a631e2e2c7e13a1a7c849416fdd6e0c4ddcf0554af8ab7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link to the address of a Yard Log on this page opens no new tab and names that Yard Log"
+        body: fd7e76f4293019d19d4c9c1f00bd36005ddf0e540f9d5589b3be8da62a291c8d
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a link drawn from Markdown to the address of a Yard Log on this page opens no new tab and shows that Yard Log"
+        body: 9adf00f4b11abed26d1357adbd110ca36aa1cc0ac260dd0bd5f52de4000c2a6b
+  - node: 01a2041e-7661-702d-9ee1-6b80abef3765
+    reviewed: 773b6b92291514935b64f09236be89fa1ea064e965528a05fba03b90367c9b13
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a screen reader hears that a link of rendered Markdown opens in a new tab"
+        body: 2967ec38443d8c3d4e016e93cc05af0fe6d98229728f45a9d75754b4219a3b8a
+  - node: 01a2044d-68b3-72a5-af48-16dbaebe8f0f
+    reviewed: 948a88d37887ac151321550da218cb94c0832e0db5aff13e207cfb7d1c14546f
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/new-tab.test.js"
+        name: "a link of rendered Markdown that opens in a new tab holds its own words alone"
+        body: e935001fa001081c79ff54c622fd4591fc18816014516fc8b9ce4eba79ecf8db
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "text copied from a block holds the words of a link that opens in a new tab and none of what a screen reader hears of it"
+        body: d93a8b53b058526e1fb68817e30b4992374d5600937132ba33e7ee91204b5662
+  - node: 01a2041e-7661-702d-9ee1-6b8212a958e6
+    reviewed: 998ab6fdb1560e33fa477a6b49ac9060cc7d5e80787b22ad3c97a06a6e1592ae
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "a_link_to_a_script_keeps_only_its_text"
+        body: c564984f8eddc6b550d76a39c3423fba86e4d6815bbcc20657ee1def1ca5e4dc
+  - node: 01a2041e-7661-702d-9ee1-6b83f516a7f7
+    reviewed: 5b279cfc1ae8023ada7587eb6834cecd82b8bab876ff434d855d92fabf0082da
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_link_written_to_an_address_that_begins_with_two_slashes_is_drawn_as_its_text"
+        body: 668ac284fa9decdaf6dd9ab15d8cd911918ab65b42958c58cc92ab951d053e42
+  - node: 01a2041e-7661-702d-9ee1-6b84829ab53b
+    reviewed: d3598368e2dd4303a2a809a700ec124e2467089f93bca7d9ad211d7d69042570
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_link_written_to_a_file_s_address_is_drawn_as_its_text"
+        body: b370f85f0ac4951b6afae9e5815611449baf225354cd7ac58ecb826d7604c980
+  - node: 01a2042b-63a5-7162-b5d3-fc48a97e4525
+    reviewed: f7a982267868377fae154f411cbdf09e2477d4b6564dfe3bb53857ffd7b821cb
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_link_written_to_a_place_within_the_page_is_drawn_as_a_link_to_it"
+        body: 68dd4e56fc19ff909ab6211f847e50109ec21ad2ec0bd43949ce685c40e008cd
+  - node: 01a2041e-7661-702d-9ee1-6b86d7fc6223
+    reviewed: 040a67508063c9a447685e5e48f11f54847aa4385ffb04476e03b590ad0092ca
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "an_image_is_shown_as_a_link_to_it"
+        body: e41cff9a349ec41c32567544fb538c520bffe8e3262b03f6e16fd0388d4ebba9
+  - node: 01a2042b-63a5-7162-b5d3-fc4926dfe87d
+    reviewed: 7fa93b69f223145e7aa15228cf6baca70a1525d359f57fa86a654a7060b94cff
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_image_whose_address_is_a_javascript_one_is_drawn_as_its_description"
+        body: 7bf359d89aac9bb687445f2148585605223b0b8763419ba461157c5410554a29
+  - node: 01a2041e-7661-702d-9ee1-6b87add2cd4c
+    reviewed: 4ffc1fc214754dc6226490df36b6de30049f79c0a4010d3ff86c2ff443c1de22
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "an_image_within_a_link_is_drawn_as_its_description_within_that_link"
+        body: 37c57e29a28fe8c345a9b0bf6f9bc923d6385677f72a47e26bbfe856ebd37794
+  - node: 01a20491-456b-7011-9545-195aedcf1494
+    reviewed: ddaec11dba907f4b6e765cc10487e33dc33f8bca32bf47db4997f3fb524c1eae
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_footnote_s_reference_within_a_written_link_is_drawn_right_after_that_link"
+        body: 41117e720547cf6f92f94b4b2e11d6296ff29f7273631ea77cd717b983300ef3
+  - node: 01a2044d-68b3-72a5-af48-16dcdf93ed51
+    reviewed: 475cb16cdf7309d1b5769a382f1da153502467c0880be8a09f30f9d1d610bed4
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown/links/tests.rs"
+        name: "a_link_within_an_image_s_description_is_drawn_as_its_text_within_the_image_s_link"
+        body: 832ab2e95ee3b856e375fe1cc43cd3a8a515efcd5baeb0ee74a0648697837bad
+  - node: 01a2041e-7661-702d-9ee1-6b897e3d3a6c
+    reviewed: f16c615015d95b211494334a62ef1752c4adb074714736a7e6216efa54dc4d43
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a footnote’s reference in a note brings the note’s footnote into view"
+        body: d14c8bc9514e0ce86e415a671229604111c96f36295abc55881cb4f32c60fb1a
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "following a footnote’s reference in a note brings its footnote into view and keeps the Yard Log shown"
+        body: 5d895d1c9acb20b739c59e3a607a81c0acbf9f3f0e7f5c3cd63ef8626cfa0ff0
+  - node: 01a2041e-7661-702d-9ee1-6b8ac1f4a7cf
+    reviewed: fa658c3bfa6f1ce90874ea1306d4905b6338cfffdb6f8bc69ce48cc7114bad57
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a footnote’s back link brings its reference into view"
+        body: e963404f87d3cd7a56d768515de05d811274381b51d075c14cb6df6acf2a0020
+  - node: 01a20491-456b-7011-9545-195b39215549
+    reviewed: c2b74181d8e340c9d5ea01cce07c34c549b0bac2b2a283c378d7f07ad7bf674a
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "a_heading_is_given_the_id_a_link_within_the_page_names_it_by"
+        body: 022bf62f09cecd0a6979768c57eb69466251357acfa2b678bf775323f755bd8c
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a link in a note to a heading of the same note brings the heading into view"
+        body: d7a2dfd6c9b3f7be58ca05383a58afe5bba6e1ceaf1d92928de725c2b7a69e07
+  - node: 01a2044d-68b3-72a5-af48-16ddb9a98d6c
+    reviewed: e47c882b03d6abf54cdc5d10ecbd8f2fe1dfc79259755c24ad3869fea87653c9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following the reference of a footnote whose name holds a letter outside ASCII brings that footnote into view"
+        body: e097056315c89206c817a935daf518961b2cde9a0e165d037b0652d0f54d7a23
+  - node: 01a2044d-68b3-72a5-af48-16de0d0bd26f
+    reviewed: 9626c5bd228e8878a9af8c31fec80037c27681c536c25412910de43b98d5f4b7
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a link to a place within the page from the keyboard moves the focus to that place"
+        body: 470acb43c245ef25f87be0f9983cc69adec5395a3b98ab8e395ef492ad32b1e5
+  - node: 01a2041e-7661-702d-9ee1-6b8b04dc6743
+    reviewed: 2383cfd9d0b6824962fd74daaf14be86fc06f7dfce1c83f81506c26ad2687af9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a link to a place within the page in a note leaves the address as it was"
+        body: ef08f0b493e5d75993a09a198d6f9fa0371751fb281e50e38011bb6dd8172a5f
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "following a footnote’s reference in a note brings its footnote into view and keeps the Yard Log shown"
+        body: 5d895d1c9acb20b739c59e3a607a81c0acbf9f3f0e7f5c3cd63ef8626cfa0ff0
+  - node: 01a2042b-63a5-7162-b5d3-fc4ab4ecad44
+    reviewed: be1f57ba973f7046be9db853dfcf073c1abf25753765e5da35c4677f2366d70a
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a link to a place within the page in a node’s name leaves the address as it was"
+        body: c0ea6f4c03bb5758f42387a728aaa623fdd362ee26923ed7c99e0f2c029c3888
+  - node: 01a2041e-7661-702d-9ee1-6b8c76b181a8
+    reviewed: e4c03a29309beab0b75ef59a1da413c0474ce997052ea0c5c9fb1259d3d11f9b
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "where two blocks each hold a footnote, the reference in each brings its own block’s footnote into view"
+        body: 8e8795a1e3fea339f277c07baf88f4a6f3d2db0f64834055b49a7b7de0f46905
+  - node: 01a20464-13d3-709a-9add-498b2c07b680
+    reviewed: 17b48d948491bb2147c387e9724ebde07f65823c2472442fe56bf6029381d1f9
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "a footnote’s reference followed with the key for a new tab opens the Yard page on the Yard Log it shows"
+        body: 80a927df7b377f1906b0a346bb40a9938c0fed0d402f18a5fab5639a5b728f92
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "a click on a footnote’s reference that asks for another tab is left to the browser, on the Yard Log shown"
+        body: 1520b580da0454fe5aba0f9b442929e27c4c0998d1aeda1174e633b1bac73e88
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "opening a footnote’s reference in a new tab opens the Yard page on the Yard Log it shows"
+        body: e55462dc7549a0fbd7c4921e09afa47c1b4e2e7d3663274ef9b33fd27d164f35
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "opening a footnote’s reference in a new tab opens the Yard page on the Yard Log it shows"
+        body: 6fbe3bfd5d79f3860cecb23523a9109a1ad92719edb3a5e2ea3f321ad1072fe0
+  - node: 01a20464-13d3-709a-9add-498de251777b
+    reviewed: 3fdef6709d6e0fbf1871abbc57ee7a3400edad12589c9efd5285358fa4650276
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "following a link in a note to the address of a block of a Yard Log shows that block"
+        body: 41012a172db0d76c6c1062e0e510b48cbe84107271214ddc49fb8694cfd7b0b9
+      - file: "crates/loft-cli/yard-page-tests/unit/in-page-link.test.js"
+        name: "following a link in a note to the address of a Yard Log is left to the browser"
+        body: af77e6b19dd1e9669e87af94b4664a81c1afe41aaf269c8825d9af30872770e1
   - node: 01a16838-8fdb-7127-a23e-c559b4afac18
     reviewed: ab3a6127984cfba8c9fb6ed658bb0a401921e14da4ec2b2d8232cdbd57688935
     tests:
@@ -30381,6 +30783,12 @@ links:
       - file: "crates/loft-cli/src/yard/serve/markdown.rs"
         name: "a_name_of_more_than_one_line_is_left_as_its_text"
         body: c964cd0a2c899ee0b3f4593252ef6c6dc97dd34463b05d120eedb541f329ca96
+  - node: 01a1f89a-bc20-773d-b058-459379a6bdb4
+    reviewed: 99a93dd2ccae252ac3d241b541c9469891c158b79161c0c02ec145c2e62fff84
+    tests:
+      - file: "crates/loft-cli/src/yard/serve/markdown.rs"
+        name: "a_bare_address_in_a_name_stays_text"
+        body: 9b72399cedc76aa9ca70f6e8e6c652ce5def980ffc88c172c276f82a67598944
   - node: 01a16844-c9d1-72df-8cfa-5cd7aa95dc74
     reviewed: 98e86f39bdb785a479e1bbdfc850f78d9c67477853f08e551a805966115e4a77
     tests:
@@ -30762,6 +31170,51 @@ links:
       - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
         name: "with no open submission anywhere, nothing is shown above the list"
         body: 8c6c565f75c70fe7edafd562fc1918fce0a554d0ac6f7e6ded71d95c3045ed06
+  - node: 01a2084f-948f-74fd-b2ee-eb5d9d331b89
+    reviewed: 878875c60a3c2c32e72ac24ad885ead1a8ee76884aea23ee2c432eddc34751b4
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+  - node: 01a2084f-948f-74fd-b2ee-eb5e20e549b8
+    reviewed: dfe99401598073d77cbc1cb3202979422cce80bb06455fef3dd88f856d395ede
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
+  - node: 01a2084f-948f-74fd-b2ee-eb5fe0efce7e
+    reviewed: 9024a245323c19019cd6ef59b8f50205193dd4b8c0c0e992ed1108acfc2479b5
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
+  - node: 01a2084f-948f-74fd-b2ee-eb6033d9a164
+    reviewed: a05791a191abdaefc23fa5fc39a8dfec1a7f25744ea7682bf114ef06191409fe
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+  - node: 01a2084f-948f-74fd-b2ee-eb61449d1ca3
+    reviewed: 14172afbe59c26a916841588145ba4de2b77ded534dcac19ad4af5599f35e644
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/trees.test.js"
+        name: "the whole prompt or title of a block cut short above the list is given while the pointer rests on it"
+        body: 7a1f9353f02fae729eded153b3416c197d1b5c4bc9633248707ccc07bfcffc99
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines"
+        body: 31be7d1564124596affc7266e123a9a01566aae527c5c184c7b223696fd1a0ac
+  - node: 01a2084f-948f-74fd-b2ee-eb6299e485be
+    reviewed: 279d68e2d33e5f35eff0c226f3bf698144036477d38a894912db87d5f1e8e251
+    tests:
+      - file: "crates/loft-cli/yard-page-tests/browser/page.spec.js"
+        name: "in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it"
+        body: 5984c9a0c576acdeedd3994f4950af52389c6f36875cc4899325a1c8ceeeeb9e
   - node: 01a1646f-546d-7042-befd-eb6376a28807
     reviewed: a9f22f9e332c89c102ebeda46f9d2ac826b573bd556869bd914bfd1ce82c991d
     tests:
@@ -31809,6 +32262,9 @@ links:
   - node: 01a1695a-dd72-7090-817b-abfe03d07189
     reviewed: 12ebbbcfcce50452c92da2ffe226f67687e9ec370bc3d354ec9e87f07d2dbb45
     tests:
+      - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
+        name: "an expanded diagram is named by the words its block’s title shows, without what a screen reader alone hears"
+        body: 6cbad773c87b98a5d8546bf82f9b243fa9b61789a397fc0a37fc788e2fd2e608
       - file: "crates/loft-cli/yard-page-tests/unit/diagrams.test.js"
         name: "expanding a diagram opens it in a modal over the page, named by its block, with no button of its own"
         body: ca05ac61ac0626a2fd83d69e8724196982ede6c47a10213abd4b008d45a15aa7
@@ -33512,7 +33968,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
-        body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+        body: c9b03ad7a7f1c0fb9f3d01c3809cc66d6f440db8697ba801d6454087cff8c05f
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "a full post the page server does not take keeps the newest 1,000 events, and counts the oldest dropped"
         body: 546392e659e12898744ef1a6a9e963b800d67bfba294bd6a7190793ffbf4d055
@@ -33521,7 +33977,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-events.test.ts"
         name: "past 1,000 events kept the oldest is dropped, and the next post says how many were"
-        body: f3ba318a2b1a62c5b83cd6a414e33d2c54e9fb9f1c4e50fbf7e07c080b4de34a
+        body: c9b03ad7a7f1c0fb9f3d01c3809cc66d6f440db8697ba801d6454087cff8c05f
   - node: 01a16a54-ced2-7361-9f2d-5f1bed8103e9
     reviewed: 689cce4d82c418f36b8d6ffec670e7045e86585cbef090c3b19cbdb696698476
     tests:
@@ -35218,29 +35674,125 @@ links:
         name: "both_plugins_hold_loft_spec_and_their_adapters_yard_skills"
         body: e71ea6821ef1ba20d2a091883d79ffe0a5da8ad82b45ab20b5f6ed25066b2587
   - node: 01a183e9-dfd2-74b1-a45a-14bf569c68bb
-    reviewed: 079df47ec9f5430a3c95a66df596eb55d4b9dc688ed49f4659d53f42ffa2c68c
+    reviewed: 769800e001e63e4cf4d2e6717c870d43c137f52f9e2fbf9e621fcaf93d37504d
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+        body: 4932fed7a6c61d4313c2aad289e6bf30070ce56f297a353f805069bb342a7220
   - node: 01a183e9-dfd2-74b1-a45a-14c0b6bfae37
     reviewed: 7fa34b7a2892b5bd9d4e204a8cd40f272ef02e5a0daeca683e3e74fd0b3971c0
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process"
-        body: 51da38ae4b65ea4a572e8d886c6a2c5d97f009653a039b5406f68c50316f31c1
+        body: f9cf8e879f9f7b4dd98f1ad6057748768f52d339328283846a553545a4ada99f
   - node: 01a183e9-dfd2-74b1-a45a-14c1bcd08990
     reviewed: 29436b5cea974d688dcea016474dd114094c4abb98b41d78df5b78b89f5cda72
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process"
-        body: 51da38ae4b65ea4a572e8d886c6a2c5d97f009653a039b5406f68c50316f31c1
+        body: f9cf8e879f9f7b4dd98f1ad6057748768f52d339328283846a553545a4ada99f
   - node: 01a183e9-dfd2-74b1-a45a-14c2f1e0d78d
     reviewed: 81db55acf6d5c0d5a646c6b486111c8959d632b602ac6c78cb872e3fab8398c4
     tests:
-      - file: "crates/loft-cli/tests/plugins.rs"
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_loft_yard_claude_hook"
-        body: e128665869b7f89214b51659a851f10140bd431fee7b9934e228428ce051c824
+        body: 4932fed7a6c61d4313c2aad289e6bf30070ce56f297a353f805069bb342a7220
+  - node: 01a218cc-9b78-72be-83c3-b6d050db797b
+    reviewed: 94b5c977c226dc62ca48b6dcdcbfa74ebea5e04b6ec1e83ac7d4cf5766a19037
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_repository_checks_the_launcher_out_with_line_feeds_alone_on_every_platform"
+        body: 0f3d4c4f58e928c98f23fc80cc991defd89d5e30036e26253d01ac5ac8388523
+  - node: 01a21838-627a-77f5-b8f0-19fddce71f03
+    reviewed: 7bc957950aa56afc1156de893c89f0a6162419e65299cefe488e0373ff807c61
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_run_the_loft_on_the_search_path"
+        body: 31bc57428e52857756fb14b6c25eb7c45df9f513c0c92ba99f35e1908c2d60ce
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start"
+        body: 7a11c06a55dfb881d21494bfa855cde41e6e7df92f93146679ab191879e4c56e
+  - node: 01a21838-627a-77f5-b8f0-19fed4433149
+    reviewed: 7ab5c8e43b685a7bdcdf55b5f48d8f0bad241de54be50918fd28703d7a8caf95
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_run_the_loft_in_cargo_s_bin_where_the_search_path_has_none"
+        body: 00e7e02c30f8146f005a4895f82627dc2f14d948473dd23c422cd9506bf91584
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where the bare loft cannot be run, the loft in ~/.cargo/bin turns Yard Client on and runs every later command"
+        body: 64c52c90747eecb3eefe9f4737bffb44541e43698bc29dc8a8b5896c831b3cc1
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "a_loft_command_of_blanks_or_of_loft_between_blanks_is_the_bare_loft_and_looks_in_cargo_s_bin"
+        body: f79e01e3576122abe6d2dd76b2c72618d29e7deb307491d4d46d6d1c04c7dd4d
+  - node: 01a2184d-23f0-7216-834f-d3abe1ebd826
+    reviewed: d7bbe7a849275cf8ed67b2e637b4c8eabbe132fee8d5f1f2a054d5b73457e8f5
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_look_in_the_bin_of_the_cargo_home_that_cargo_home_names_and_not_in_cargo"
+        body: 908679e027f62fa1916742059de12eb969992e64fec535a875eebbe15ddb2107
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where CARGO_HOME is set, the mod looks in its bin and not in ~/.cargo/bin"
+        body: 4bdf64e484f6caf6b7cfec442fbe0ce1072e299be63b0337013b1e2916c6ef74
+  - node: 01a21838-627a-77f5-b8f0-19ff52e85eba
+    reviewed: 2b53d510a7582deb3b695dcedac85a1fc9442ff32a8003933e3a0f1c24363641
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_run_a_loft_exe_in_cargo_s_bin_as_windows_names_it"
+        body: 2475b0b6ccf6006edf61aec396a273f9e16d025b0aedd119f47b936681ce44e0
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where only loft.exe lies in ~/.cargo/bin, as on Windows, the mod runs it"
+        body: 8341f9857a81785280676b014e0d65e33a35d17f0e37e6fd6e18867b92a4fbc0
+  - node: 01a21838-627a-77f5-b8f0-1a00b97f8645
+    reviewed: 7e320e2fbd4591b3c5a3c58220c624914b313a21bbff7549b85c356054e97185
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "a_loft_command_the_person_set_is_run_as_written_and_nothing_else_is_tried"
+        body: 7838a3be28c8542bd614e6ad9be651edf11131be5cc48e9c036a6b21cf81f53f
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "a loftCommand the person set that cannot be run is not looked for in ~/.cargo/bin"
+        body: 92c547ec79c2721ba5d6c0a934d65cacbf6eb5fc5b35a95e7f2d371137a7aa70
+  - node: 01a21838-627a-77f5-b8f0-1a011957e079
+    reviewed: a35aa12a8dedd04a6316f2b8cf6059eea2e67b18fbcd79b702234acd462bc24e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where the bare loft cannot be run, the loft in ~/.cargo/bin turns Yard Client on and runs every later command"
+        body: 64c52c90747eecb3eefe9f4737bffb44541e43698bc29dc8a8b5896c831b3cc1
+  - node: 01a21838-627a-77f5-b8f0-1a034adf59d4
+    reviewed: a52955f111d3d6bc968c528106fa990d93dca9a1f49e009c4ace80b4686b0256
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_the_session_start_hook_tells_the_agent_that_yard_client_is_off_and_how_to_turn_it_on"
+        body: 857928967c25475aa2ea26a265326c96d4c08643933f0b0bbf23797207f2af15
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "a_loft_command_the_person_set_is_run_as_written_and_nothing_else_is_tried"
+        body: 7838a3be28c8542bd614e6ad9be651edf11131be5cc48e9c036a6b21cf81f53f
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_context_stays_one_json_document_where_the_home_directory_holds_a_tab_or_a_quote"
+        body: af006d14345f59e18ef45de09c15574d421a90faa4e1ca202385bbc12441ebd0
+  - node: 01a21838-627a-77f5-b8f0-1a0422742550
+    reviewed: 42f22bc4697b634324de9dc3611dbcc7efffbd052cd07a545d27c2994dd63e12
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_the_session_start_hook_tells_the_agent_that_yard_client_is_off_and_how_to_turn_it_on"
+        body: 857928967c25475aa2ea26a265326c96d4c08643933f0b0bbf23797207f2af15
+  - node: 01a21838-627a-77f5-b8f0-1a05aab2e299
+    reviewed: e12220c617767e38794c03221c7d9ad1a9eab98152486e9869cc32a29126c0b8
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_the_session_start_hook_tells_the_agent_that_yard_client_is_off_and_how_to_turn_it_on"
+        body: 857928967c25475aa2ea26a265326c96d4c08643933f0b0bbf23797207f2af15
+  - node: 01a21838-627a-77f5-b8f0-1a07e194fa1e
+    reviewed: 8d15447ea9157f9cf80bbce5e5c39da86abc91405d9fb9c17218fc7ae50e36eb
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_every_other_hook_prints_nothing_and_exits_0"
+        body: cc379b359c6d7664ce6496cad8edb9afbdbbe828bcb73fa3159a9884e9c5a1b7
+  - node: 01a21838-627a-77f5-b8f0-1a084ef63467
+    reviewed: f4fe6d0e3c877073e98c2e89c7434e56f4d40043900c21c57e810403fb12a445
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "with_no_loft_to_run_every_other_hook_prints_nothing_and_exits_0"
+        body: cc379b359c6d7664ce6496cad8edb9afbdbbe828bcb73fa3159a9884e9c5a1b7
   - node: 01a183e9-dfd2-74b1-a45a-14c4d303077f
     reviewed: 0fc620a0e045b14afe69f5cad45b8dddca86a5b76219c3f1f76005d32c8eaa33
     tests:
@@ -35281,11 +35833,14 @@ links:
         name: "with a loftCommand that cannot be run, the agent asks and plans in Claude Code alone"
         body: ddc2c2bfa35c82859d8c909aeb484aee2fb5ee89660fa6b42f0ad66b483bbfc8
   - node: 01a1646f-546c-7521-9643-bc7a303448bb
-    reviewed: 07e89a2c70e0acc82b88af44bfd334e439288237e749f304c18e39a667455fca
+    reviewed: 313f395d301ff3797156ea4a5ef8e717cdc5af470ed75417cce9053ea080a1bf
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loftCommand that cannot be run leaves Yard Client off and names the setting"
         body: dce1f0626d6a730807981362f3b50bc9a268d4e90e3ee88d0434f4a3934dd9fc
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where no loft can be run, the notice names each command the mod tried"
+        body: 9121af59894ecbe064591f0b910b730857fe1556558139e7568f28affc9cdb7c
   - node: 01a1646f-546c-7521-9643-bc7ef0cedbda
     reviewed: 3679a51b373fd3765c880777a300284c799c3ac633b9f6d67c8b3410c7a00455
     tests:
@@ -36946,7 +37501,7 @@ links:
         name: "the_common_crate_depends_on_no_other_crate_of_the_workspace"
         body: a81e8c995633a814c697d549a05404f0b8f35dc02667600c3ebf9f0f8346dd78
   - node: 01a144ef-6ca1-721a-b6f1-e98f2c8b35ca
-    reviewed: a075172b9263bdd9ad1aacc47272cc584b87efba4c6397dccb0ccc570da380c7
+    reviewed: 1aa6bbbde3af60d43cca896cd9b7a18c53561016707bc1b7792fe7df085e4cb1
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "every command Yard Client runs is loftCommand with --format json, quietly, and no other program"
@@ -36954,6 +37509,9 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "with Yard Client off, the notice asks loftCommand alone for its version"
         body: 12b95fe07054b5cbd7d66d8945ef9375e204df6eec36533801f20cfd2885c364
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where the bare loft cannot be run, the loft in ~/.cargo/bin turns Yard Client on and runs every later command"
+        body: 64c52c90747eecb3eefe9f4737bffb44541e43698bc29dc8a8b5896c831b3cc1
   - node: 01a1649f-62ea-7225-80e1-a3d5bf4de21c
     reviewed: eb4056dd9ec58a44693ce237cffdfb6f09f9c4ee4d3bad8a6e2208955d856170
     tests:

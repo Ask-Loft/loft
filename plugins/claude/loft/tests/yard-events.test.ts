@@ -126,7 +126,9 @@ test('the events kept while no page server answered are posted, in order, to the
   expect(events(w).some(event => 'dropped' in event)).toBe(false)
 })
 
-test('past 1,000 events kept the oldest is dropped, and the next post says how many were', async ($, on) => {
+// It runs 1,003 turns one after another, which a shared CI runner takes about five seconds to do:
+// the kit's default limit, so the test gets a limit of its own.
+test('past 1,000 events kept the oldest is dropped, and the next post says how many were', { timeoutMs: 30_000 }, async ($, on) => {
   const w = world(on)
   await start($)
   w.state.postStatus = 503

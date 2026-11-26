@@ -67,6 +67,7 @@ pub const ASSETS: &[Asset] = &[
     asset!("lib/prefs.js", JS),
     asset!("lib/route.js", JS),
     asset!("lib/separator.js", JS),
+    asset!("lib/side-width.js", JS),
     asset!("lib/zoom.js", JS),
     asset!("model/answers.js", JS),
     asset!("model/change.js", JS),

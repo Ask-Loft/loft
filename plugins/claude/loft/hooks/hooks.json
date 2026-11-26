@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 10
           }
         ]
@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 10
           }
         ]
@@ -27,7 +27,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 10
           }
         ]
@@ -38,7 +38,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 10
           }
         ]
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 10
           }
         ]
@@ -60,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 10
           }
         ]
@@ -71,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 10
           }
         ]
@@ -83,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec ${CLAUDE_PLUGIN_OPTION_LOFTCOMMAND:-loft} yard claude hook --host-pid \"$PPID\"",
+            "command": "LOFT_TELEMETRY=off LOFT_UPDATE_CHECK=off exec sh \"${CLAUDE_PLUGIN_ROOT}/hooks/run-loft.sh\" yard claude hook --host-pid \"$PPID\"",
             "timeout": 86400
           }
         ]

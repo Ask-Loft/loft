@@ -125,13 +125,29 @@ export type World = ReturnType<typeof world>
 /** Settles the clock of the world the running test made last, as a session's start does. */
 let settle: (() => Promise<unknown>) | undefined
 
-export function world(on: On, options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running'; home?: string } = {}) {
+export function world(
+  on: On,
+  options: {
+    protocol?: number | 'none' | 'unrunnable'
+    serve?: 'serving' | 'running'
+    home?: string
+    runnable?: readonly string[]
+    /** Environment variables beside `HOME`. */
+    env?: Record<string, string>
+  } = {},
+) {
   const clock = mock.clock(on, { now: Date.UTC(2026, 9, 22, 9, 30, 0) })
-  mock.env(on, { HOME })
+  mock.env(on, { HOME, ...options.env })
   const state = {
     session: SESSION,
     cwd: TREE,
     protocol: options.protocol ?? 1,
+    /**
+     * The programs that can be run, by the first word of their argument vector, where a test names
+     * them; any other cannot, `loft`'s own runs and every other program's alike. `protocol:
+     * 'unrunnable'` refuses only the runs of `loft yard`.
+     */
+    runnable: options.runnable,
     /** The machine home `loft yard protocol` reports, if any; the token lies in it, else in `~/.yard/`. */
     home: options.home,
     serve: options.serve ?? 'running',
@@ -287,8 +303,12 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     return { value: { status: state.postStatus, ok, headers: {}, text: answer } as never }
   })
 
+  /** Whether the program an argument vector names cannot be run in this world. */
+  const cannotRun = (argv: readonly string[]) => state.runnable !== undefined && !state.runnable.includes(argv[0] ?? '')
+
   on('process.run', async ($, e) => {
     state.runs.push({ argv: e.argv, cwd: e.init?.cwd, env: e.init?.env, stdin: e.init?.stdin, spawned: false })
+    if (cannotRun(e.argv)) return { deny: `${e.argv[0] ?? ''}: no such file` }
     if (!e.argv.includes('yard')) return out(undefined, 0, '')
     if (state.protocol === 'unrunnable') return { deny: 'loft is not on PATH' }
     const sub = subOf(e.argv)
@@ -333,6 +353,7 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
 
   on('process.spawn', async function* ($, e, next) {
     state.runs.push({ argv: e.argv, cwd: e.cwd, env: e.env, spawned: true })
+    if (cannotRun(e.argv)) throw new Error(`${e.argv[0] ?? ''}: no such file`)
     const sub = subOf(e.argv)
     if (sub === 'serve') {
       yield { stream: 'stdout' as const, text: `${JSON.stringify({ outcome: state.serve, port: state.reportedPort, errors: [] })}\n` }

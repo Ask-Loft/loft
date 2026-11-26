@@ -1,5 +1,5 @@
 // What the page keeps in this browser, and only here: the order of the stages, the view chosen,
-// whether the sidebar is folded, the revision of each Yard Log's last visit, and the answers chosen and not sent. Storage may be
+// whether the sidebar is folded, the sizes the person dragged, the revision of each Yard Log's last visit, and the answers chosen and not sent. Storage may be
 // missing or refuse, as in a private window; the page then works with what it holds in memory.
 
 const PREFIX = 'yard.';
@@ -43,6 +43,16 @@ export function set(name, value) {
   } catch {
     // Storage refused; memory holds it for this visit.
   }
+}
+
+/**
+ * A size kept in pixels, or none where none is kept or what is kept is no positive number.
+ * @param {string} name
+ * @returns {number | null}
+ */
+export function size(name) {
+  const kept = Number(get(name));
+  return Number.isFinite(kept) && kept > 0 ? kept : null;
 }
 
 /**

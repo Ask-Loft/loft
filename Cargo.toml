@@ -21,13 +21,16 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
 # The published crates depend on one another at the release they ship in.
-loft-common = { path = "crates/loft-common", version = "2.4.1" }
-loft-ports = { path = "crates/loft-ports", version = "2.4.1" }
-loftspec = { path = "crates/loftspec", version = "2.4.1" }
-loftspec-store = { path = "crates/loftspec-store", version = "2.4.1" }
-yardlog = { path = "crates/yardlog", version = "2.4.1" }
-yardlog-store = { path = "crates/yardlog-store", version = "2.4.1" }
+loft-common = { path = "crates/loft-common", version = "2.4.2" }
+loft-ports = { path = "crates/loft-ports", version = "2.4.2" }
+loftspec = { path = "crates/loftspec", version = "2.4.2" }
+loftspec-store = { path = "crates/loftspec-store", version = "2.4.2" }
+yardlog = { path = "crates/yardlog", version = "2.4.2" }
+yardlog-store = { path = "crates/yardlog-store", version = "2.4.2" }
 clap = { version = "4", features = ["derive"] }
+# Pinned: the Yard page links a bare address as this version's port of cmark-gfm does, and the
+# criteria of bare addresses are checked against it before a new version is taken.
+comrak = { version = "=1.1.0", default-features = false }
 # Reads a server's skill package, a gzip-compressed tar archive, in Rust alone.
 flate2 = "1"
 getrandom = "0.4"

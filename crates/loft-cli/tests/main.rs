@@ -48,6 +48,7 @@ mod network_client;
 mod npm;
 #[cfg(unix)]
 mod npm_install;
+mod plugin_hooks;
 mod plugin_settings;
 mod plugins;
 mod publish;

@@ -84,6 +84,36 @@ test('every open submission is shown above the list, oldest first, with its repo
   assert.deepEqual(parse(items[1].querySelector('a').getAttribute('href')).branch, 'docs');
 });
 
+test('the whole prompt or title of a block cut short above the list is given while the pointer rests on it', () => {
+  const prompt = 'Which shelf takes the oak books? The lower one holds more, but the upper one is drier. Choose before the move.';
+  const waits = waitingList({
+    waiting: [
+      {
+        repository: '/work/shelf',
+        tree: '/work/shelf',
+        main: true,
+        branch: 'feature/XYZ-0000_some_very_long_branch_name_without_spaces',
+        sent: { at: '2026-01-01T09:00:00Z' },
+        agent: { session: 's1' },
+        blocks: ['q1', 'p1'],
+        asked: [
+          { id: 'q1', kind: 'question', text: prompt },
+          { id: 'p1', kind: 'plan', text: 'Move the shelves' },
+        ],
+      },
+    ],
+  });
+  const asked = [...waits.querySelectorAll('.asked > li')];
+  assert.deepEqual(
+    asked.map((item) => item.getAttribute('title')),
+    [prompt, 'Move the shelves'],
+  );
+  // The text lies in the line that is held to three lines, the kind before it.
+  const line = asked[0].querySelector('.asked-line');
+  assert.equal(line.querySelector('.kind').textContent, 'question');
+  assert.match(line.textContent, /Choose before the move\.$/);
+});
+
 test('with no open submission anywhere, nothing is shown above the list', () => {
   assert.ok(!waitingList(listing()));
 });

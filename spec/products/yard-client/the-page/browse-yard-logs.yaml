@@ -61,6 +61,30 @@ requirements:
         name: "The page draws the sidebar again only when the list of Yard Logs, the Yard Log chosen or the sidebar's fold changes."
       - key: 01a1a7a4-51ce-73b8-bd34-87aa6730ba3d
         name: "The foot of the sidebar says whether the page is following Yard Log live."
+  - key: 01a2084f-948f-74fd-b2ee-eb520cbaa4f3
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "let the person drag the right edge of the open sidebar to make it wider or narrower, and remember in this browser the width chosen."
+    criteria:
+      - key: 01a2084f-948f-74fd-b2ee-eb53a9214bd3
+        name: "The sidebar first opens 248 pixels wide."
+      - key: 01a2084f-948f-74fd-b2ee-eb54ac8d2681
+        name: "Dragging the sidebar's right edge makes the sidebar wider or narrower by the length dragged."
+      - key: 01a2084f-948f-74fd-b2ee-eb5555cca310
+        name: "The page beside the sidebar narrows or widens by as much as the sidebar widens or narrows."
+      - key: 01a2084f-948f-74fd-b2ee-eb56cbe58216
+        name: "The edge is reached by the keyboard, and the arrow keys left and right narrow and widen the sidebar."
+      - key: 01a2084f-948f-74fd-b2ee-eb57cf73bb7a
+        name: "The sidebar is never wider than 480 pixels, and always leaves at least 120 pixels of the window beside it, also as the window's size changes."
+      - key: 01a2084f-948f-74fd-b2ee-eb58196f58e2
+        name: "The sidebar is never narrower than 200 pixels, unless the window is too narrow to leave 120 pixels beside it."
+      - key: 01a2084f-948f-74fd-b2ee-eb5924b67500
+        name: "The width chosen is the sidebar's width the next time the page opens in this browser."
+      - key: 01a2084f-948f-74fd-b2ee-eb5a74a1c3b3
+        name: "Folded, the sidebar is a rail of the rail's own width, and opened again it takes the width chosen."
+      - key: 01a2084f-948f-74fd-b2ee-eb5b9b792af0
+        name: "In a window narrower than 860 pixels, dragging the right edge of the sidebar laid over the page makes it wider or narrower by the length dragged."
   - key: 01a1a7a4-51ce-73b8-bd34-87abe528f508
     statement:
       form: ubiquitous
@@ -322,6 +346,8 @@ requirements:
         name: "Every field that a block or a stage holds in Markdown is drawn as Markdown rendered by `loft`: a stage's goal, a question's context and each option's detail, a decision's consequence, a task's detail and a `loft` block's note, as well as the Markdown of a note, an approval and a plan."
       - key: 01a16854-53e3-71b2-8192-66b204b471a0
         name: "A table in a block's Markdown spans the width of its block, breaks no word within a cell, and scrolls sideways where it is wider than the block."
+      - key: 01a2044d-68b3-72a5-af48-16da91c90703
+        name: "A column of a table that the Markdown aligns to the right or to the center is drawn so aligned."
       - key: 01a1646f-546d-7042-befd-eb39ce7ffb3c
         name: "A question shows its prompt, its context and its options, with each recommended option marked."
       - key: 01a1646f-546d-7042-befd-eb3a326031ea
@@ -391,6 +417,137 @@ requirements:
     criteria:
       - key: 01a1646f-546d-7042-befd-eb47a12567f2
         name: "No element that a block's text names is created in the page."
+  - key: 01a1f804-56bc-77a4-94e6-7487be7d4205
+    statement:
+      form: optional
+      where: "a block's Markdown holds a bare address that begins with `http://`, `https://` or `mailto:`"
+      system: "the page"
+      shall: "draw the address as a link to it where GitHub Flavored Markdown's autolink extension reads it as one, as it draws a link the Markdown writes out."
+    criteria:
+      - key: 01a1f804-56bc-77a4-94e6-74881760b7f4
+        name: "A bare `https://` address in a note's Markdown is drawn as a link to that address."
+      - key: 01a1f89a-bc20-773d-b058-45914917531e
+        name: "An underscore, an asterisk or a tilde within an address is drawn as part of its link, not as emphasis."
+      - key: 01a1f804-56bc-77a4-94e6-7489ef413b64
+        name: "A bare `http://` address is drawn as a link to that address."
+      - key: 01a203d2-f2cc-7538-a485-a1a2da1a6018
+        name: "A bare `mailto:` address is drawn as a link to that address."
+      - key: 01a1f804-56bc-77a4-94e6-748a1481c64b
+        name: "A bare address is drawn as a link in every field that a block or a stage holds in Markdown, not only in a note."
+      - key: 01a1f804-56bc-77a4-94e6-748bc1fff885
+        name: "An address within a code span is drawn as text."
+      - key: 01a1f804-56bc-77a4-94e6-748c732b5a29
+        name: "An address within a fenced code block is drawn as text."
+      - key: 01a1f804-56bc-77a4-94e6-748d568ac06c
+        name: "An address that is already the text of a link the Markdown writes out is not drawn as a second link within it."
+      - key: 01a1f804-56bc-77a4-94e6-748eebcde366
+        name: "A period, a comma, a colon, a semicolon, an exclamation mark, a question mark, an asterisk, an underscore, a tilde, a single quote or a double quote that ends an address is drawn after the link, not in it."
+      - key: 01a1f89d-6ae4-70f1-a41e-0cf431548485
+        name: "A named entity, such as `&amp;`, that ends an address is drawn after the link, not in it."
+      - key: 01a1f804-56bc-77a4-94e6-748fb9de9b7d
+        name: "A closing parenthesis that ends an address is part of the link only where the address opens a parenthesis before it."
+      - key: 01a203bd-1d43-752b-92c9-a8f2030660e1
+        name: "An address that follows a `[` that opens no link, as in `[see https://example.com]`, is drawn as text."
+      - key: 01a1f804-56bc-77a4-94e6-749076569e91
+        name: "No link is drawn to an address of any other scheme, such as `javascript:`."
+      - key: 01a203bd-1d43-752b-92c9-a8f3ccd743b5
+        name: "An address that begins with `www.`, such as `www.example.com`, is drawn as text."
+      - key: 01a203d2-f2cc-7538-a485-a1a33f969200
+        name: "An email address that no `mailto:` begins, such as `someone@example.com`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b209303e008a
+        name: "An `http://` or `https://` that punctuation follows, such as `https:///etc`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20affda0376
+        name: "An address whose host name holds an underscore in either of its last two parts, such as `https://a.b_c.com`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20b4d3df35e
+        name: "A `mailto:` that no email address with a dot in its domain follows, such as `mailto:someone`, is drawn as text."
+      - key: 01a1f935-07ff-7063-ad69-b20c5aaebd64
+        name: "The link of a `mailto:` address ends where its email address ends, so that in `mailto:a@b.com?subject=x` the `?subject=x` is drawn after it."
+  - key: 01a20409-6c6c-74c7-a5f4-3569089495f2
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "open each link to an `http://` or `https://` address that it draws from Markdown, in a block or in a node's name, in a new tab, other than one to the address of a Yard Log on this page."
+    criteria:
+      - key: 01a20409-6c6c-74c7-a5f4-356aa374f8b8
+        name: "Following a link to an `https://` address in a note opens that address in a new tab and leaves the Yard page as it was."
+      - key: 01a20409-6c6c-74c7-a5f4-356b67be1720
+        name: "Following a link to an `https://` address in a node's name opens that address in a new tab."
+      - key: 01a20411-8aee-7327-83bf-fe31e787baea
+        name: "A page that a link drawn from Markdown opens in a new tab is given no hold on the Yard page."
+      - key: 01a20411-8aee-7327-83bf-fe32768e5047
+        name: "A `mailto:` link drawn from Markdown opens no new tab."
+      - key: 01a20411-ca50-7135-a74a-ae7cdc6a2564
+        name: "A link drawn from Markdown to an address within the page opens no new tab."
+      - key: 01a20491-456b-7011-9545-1959e81d84c6
+        name: "A link drawn from Markdown to the address of a Yard Log on this page, such as `http://127.0.0.1:7411/#tree=…&branch=…`, opens no new tab and shows that Yard Log."
+      - key: 01a2041e-7661-702d-9ee1-6b80abef3765
+        name: "A screen reader announces that a link drawn from Markdown to a web address opens in a new tab."
+      - key: 01a2044d-68b3-72a5-af48-16dbaebe8f0f
+        name: "Text copied from a block holds the words of a link that opens in a new tab and none of what a screen reader hears of it."
+  - key: 01a2041e-7661-702d-9ee1-6b81508f5523
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw a link that Markdown writes as its text unless its address begins with `http://`, `https://` or `mailto:` or names a place within the page."
+    criteria:
+      - key: 01a2041e-7661-702d-9ee1-6b8212a958e6
+        name: "A link written to a `javascript:` address is drawn as its text."
+      - key: 01a2041e-7661-702d-9ee1-6b83f516a7f7
+        name: "A link written to an address that begins with `//`, such as `//example.com/x`, is drawn as its text."
+      - key: 01a2041e-7661-702d-9ee1-6b84829ab53b
+        name: "A link written to a file's address, such as `docs/plan.md`, is drawn as its text."
+      - key: 01a2042b-63a5-7162-b5d3-fc48a97e4525
+        name: "A link written to a place within the page, such as `#notes`, is drawn as a link to it."
+  - key: 01a2041e-7661-702d-9ee1-6b8556640fac
+    statement:
+      form: ubiquitous
+      system: "The page"
+      shall: "draw an image that Markdown holds as it draws a link written to the image's address, with the image's description as the link's text."
+    criteria:
+      - key: 01a2041e-7661-702d-9ee1-6b86d7fc6223
+        name: "An image in a note is drawn as a link to its `https://` address, with its description as the link's text, and no image is loaded."
+      - key: 01a2042b-63a5-7162-b5d3-fc4926dfe87d
+        name: "An image whose address is a `javascript:` one is drawn as its description."
+      - key: 01a2041e-7661-702d-9ee1-6b87add2cd4c
+        name: "An image within a link is drawn as its description, within that link."
+      - key: 01a20491-456b-7011-9545-195aedcf1494
+        name: "A footnote's reference within a written link is drawn right after that link."
+      - key: 01a2044d-68b3-72a5-af48-16dcdf93ed51
+        name: "A link within an image's description is drawn as its text, within the link the image is drawn as."
+  - key: 01a2041e-7661-702d-9ee1-6b88675d81a7
+    statement:
+      form: event_driven
+      when: "the person follows a link that Markdown holds, in a block or in a node's name, to a place within the page other than the address of a Yard Log"
+      system: "the page"
+      shall: "keep showing the Yard Log it shows, with that place brought into view where the same block holds it."
+    criteria:
+      - key: 01a2041e-7661-702d-9ee1-6b897e3d3a6c
+        name: "Following a footnote's reference in a note brings the note's footnote into view."
+      - key: 01a2041e-7661-702d-9ee1-6b8ac1f4a7cf
+        name: "Following a footnote's back link brings its reference into view."
+      - key: 01a20491-456b-7011-9545-195b39215549
+        name: "Following a link in a note to a heading of the same note, such as `[notes](#notes)` beside `## Notes`, brings the heading into view."
+      - key: 01a2044d-68b3-72a5-af48-16ddb9a98d6c
+        name: "Following the reference of a footnote whose name holds a letter outside ASCII, such as `[^café]`, brings that footnote into view."
+      - key: 01a2044d-68b3-72a5-af48-16de0d0bd26f
+        name: "Following a link to a place within the page from the keyboard moves the focus to that place."
+      - key: 01a2041e-7661-702d-9ee1-6b8b04dc6743
+        name: "Following a link to a place within the page in a note leaves the page's address and the Yard Log it shows as they were."
+      - key: 01a2042b-63a5-7162-b5d3-fc4ab4ecad44
+        name: "Following a link to a place within the page in a node's name leaves the page's address and the Yard Log it shows as they were."
+      - key: 01a2041e-7661-702d-9ee1-6b8c76b181a8
+        name: "Where two blocks each hold a footnote, the reference in each brings its own block's footnote into view."
+      - key: 01a20464-13d3-709a-9add-498b2c07b680
+        name: "Opening a footnote's reference in a new tab opens the Yard page on the Yard Log it shows."
+  - key: 01a20464-13d3-709a-9add-498cf66287d7
+    statement:
+      form: event_driven
+      when: "the person follows a link that Markdown holds to the address of a Yard Log"
+      system: "the page"
+      shall: "show that Yard Log, at the stage and the block the address names."
+    criteria:
+      - key: 01a20464-13d3-709a-9add-498de251777b
+        name: "Following a link in a note to the address of a block of a Yard Log shows that block."
   - key: 01a16838-8fdb-7127-a23e-c5588e3201c7
     statement:
       form: optional
@@ -404,6 +561,8 @@ requirements:
         name: "Any HTML that a node's name holds is shown as text."
       - key: 01a16838-8fdb-7127-a23e-c55bc6dabc5f
         name: "A name whose Markdown is more than one line of text is shown as its text."
+      - key: 01a1f89a-bc20-773d-b058-459379a6bdb4
+        name: "A bare address in a node's name is shown as text, not as a link."
       - key: 01a16844-c9d1-72df-8cfa-5cd7aa95dc74
         name: "Each slot of a Requirement's statement in an EARS form is drawn as Markdown, as a name is."
   - key: 01a16844-c9d1-72df-8cfa-5cd8fc1947f1

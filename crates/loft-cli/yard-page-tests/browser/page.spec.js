@@ -145,6 +145,122 @@ test('on a wide window the pane holds its stage within 900 pixels, and a note’
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 
+test('following a link to a web address in a note opens it in a new tab and leaves the Yard page as it was', async ({ page }) => {
+  write([{ id: 'linked-note', kind: 'note', stage: 'shape', title: 'A linked note', markdown: 'See https://example.com/plan for it.' }]);
+  // The address is answered here, so that the test reaches no network.
+  await page.context().route('https://example.com/**', (route) => route.fulfill({ contentType: 'text/plain', body: 'plan' }));
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="linked-note"]').click();
+  const link = page.locator('#block-linked-note .prose a');
+  await expect(link).toHaveAttribute('href', 'https://example.com/plan');
+  const before = page.url();
+  const [opened] = await Promise.all([page.waitForEvent('popup'), link.click()]);
+  await opened.waitForLoadState();
+  expect(opened.url()).toBe('https://example.com/plan');
+  expect(page.url()).toBe(before);
+  await expect(page.locator('#block-linked-note')).toBeVisible();
+  await opened.close();
+});
+
+test('following a footnote’s reference in a note brings its footnote into view and keeps the Yard Log shown', async ({ page }) => {
+  write([{ id: 'footnoted-note', kind: 'note', stage: 'shape', title: 'A footnoted note', markdown: 'A claim.[^1]\n\n[^1]: Its source.' }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="footnoted-note"]').click();
+  const before = page.url();
+  await page.locator('#block-footnoted-note a[href="#fn-1"]').click();
+  await expect(page.locator('#block-footnoted-note li#fn-1')).toBeInViewport();
+  expect(page.url()).toBe(before);
+  await expect(page.locator('#block-footnoted-note')).toBeVisible();
+});
+
+test('a column of a table that the Markdown aligns to the right or to the center is drawn so aligned', async ({ page }) => {
+  write([{ id: 'aligned-note', kind: 'note', stage: 'shape', title: 'An aligned table', markdown: '| Name | Kind | Tokens |\n|---|:-:|---:|\n| a | b | 1200 |' }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="aligned-note"]').click();
+  const cells = page.locator('#block-aligned-note .prose td');
+  await expect(cells).toHaveCount(3);
+  await expect(cells.nth(0)).toHaveCSS('text-align', 'left');
+  await expect(cells.nth(1)).toHaveCSS('text-align', 'center');
+  await expect(cells.nth(2)).toHaveCSS('text-align', 'right');
+});
+
+test('text copied from a block holds the words of a link that opens in a new tab and none of what a screen reader hears of it', async ({ page }) => {
+  write([{ id: 'copied-note', kind: 'note', stage: 'shape', title: 'A copied note', markdown: 'See https://example.com/plan for it.' }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="copied-note"]').click();
+  const paragraph = page.locator('#block-copied-note .prose > p');
+  await expect(paragraph.locator('a')).toHaveAttribute('aria-describedby', 'new-tab-note');
+  const copied = await paragraph.evaluate((p) => {
+    getSelection()?.selectAllChildren(p);
+    return getSelection()?.toString();
+  });
+  expect(copied).toBe('See https://example.com/plan for it.');
+});
+
+test('a wide table with a link in its last column scrolls within its block and leaves the pane unscrolled sideways', async ({ page }) => {
+  const cells = Array.from({ length: 11 }, () => 'one long cell of words');
+  write([{ id: 'wide-table-note', kind: 'note', stage: 'shape', title: 'A wide table', markdown: `| ${'x | '.repeat(12)}\n|${'---|'.repeat(12)}\n| ${cells.join(' | ')} | https://example.com/x |` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="wide-table-note"]').click();
+  await expect(page.locator('#block-wide-table-note .table-wrap a')).toBeVisible();
+  const [wrap, pane] = await page.evaluate(() => [document.querySelector('#block-wide-table-note .table-wrap'), document.querySelector('.stage-pane')].map((at) => [at?.scrollWidth ?? 0, at?.clientWidth ?? 0]));
+  expect(wrap[0]).toBeGreaterThan(wrap[1]);
+  expect(pane[0]).toBe(pane[1]);
+});
+
+test('following a link in a note to the address of a block of a Yard Log shows that block', async ({ page }) => {
+  write([{ id: 'route-note', kind: 'note', stage: 'shape', title: 'A route', markdown: `See [the wide note](${new URL(address('wide-note')).hash}).` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="route-note"]').click();
+  await page.locator('#block-route-note .prose a').click();
+  await expect(page).toHaveURL(/block=wide-note/);
+  await expect(page.locator('#block-wide-note')).toBeInViewport();
+});
+
+test('opening a footnote’s reference in a new tab opens the Yard page on the Yard Log it shows', async ({ page }) => {
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="footnoted-note"]').click();
+  const shownLog = new URL(page.url()).hash;
+  const [opened] = await Promise.all([page.context().waitForEvent('page'), page.locator('#block-footnoted-note sup a').click({ button: 'middle' })]);
+  await opened.waitForLoadState();
+  expect(new URL(opened.url()).hash).toBe(shownLog);
+  await opened.close();
+});
+
+test('a footnote’s reference followed with the key for a new tab opens the Yard page on the Yard Log it shows', async ({ page }) => {
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="footnoted-note"]').click();
+  const shownLog = new URL(page.url()).hash;
+  const [opened] = await Promise.all([page.context().waitForEvent('page'), page.locator('#block-footnoted-note sup a').click({ modifiers: ['ControlOrMeta'] })]);
+  await opened.waitForLoadState();
+  expect(new URL(opened.url()).hash).toBe(shownLog);
+  expect(page.url()).toContain(shownLog);
+  await opened.close();
+});
+
+test('a link drawn from Markdown to the address of a Yard Log on this page opens no new tab and shows that Yard Log', async ({ page }) => {
+  write([{ id: 'own-address-note', kind: 'note', stage: 'shape', title: 'An own address', markdown: `Its page: ${address('wide-note')}` }]);
+  await page.goto(address());
+  if (await waitingModal(page).isVisible()) await closeWaiting(page);
+  await page.locator('#row-shape .block-row[data-block="own-address-note"]').click();
+  const link = page.locator('#block-own-address-note .prose a');
+  await expect(link).not.toHaveAttribute('target', '_blank');
+  let opened = false;
+  page.context().once('page', () => { opened = true; });
+  await link.click();
+  await expect(page).toHaveURL(/block=wide-note/);
+  await expect(page.locator('#block-wide-note')).toBeInViewport();
+  expect(opened).toBe(false);
+});
+
 test('a decision’s consequence reads as a paragraph at the width of its block, not in a narrow column', async ({ page }) => {
   write([
     { id: 'wide-q', kind: 'question', stage: 'shape', prompt: 'Which way?', header: 'Way', options: [{ label: 'Left', recommended: true }, { label: 'Right' }] },
@@ -965,6 +1081,150 @@ test('in a window narrower than 860 pixels the open sidebar lies over the page, 
   await expect.poll(async () => (await box(side)).width).toBe(68);
   expect((await box(page.locator('.page'))).x).toBe(68);
   await page.evaluate(() => localStorage.removeItem('yard.list'));
+  await page.setViewportSize({ width: 1280, height: 900 });
+});
+
+/** A branch's name with nowhere to break, and a prompt of several sentences. */
+const LONG_BRANCH = 'feature/XYZ-0000_some_very_long_branch_name_without_spaces';
+const LONG_PROMPT =
+  'Which of the two shelves should take the oak books once the move is done? The lower one holds more of them, but it stands by the door, where the draft dries the wood. The upper one is drier, but it is out of reach for the younger readers, who borrow most of them. Choose before the movers come on Monday, since they will not come back for a second trip.';
+
+/** Routes the listing so that, besides what the page server gives, a submission on `LONG_BRANCH`, in a worktree whose folder has nowhere to break either, waits with `LONG_PROMPT`. */
+async function longWait(page) {
+  await page.route('**/api/trees', async (route) => {
+    const response = await route.fetch();
+    const listing = await response.json();
+    const wait = {
+      repository: setup.tree,
+      tree: '/work/oss_loft_worktree_whose_folder_has_nowhere_at_all_to_break',
+      main: false,
+      branch: LONG_BRANCH,
+      submission: 'long',
+      sent: { at: since(-60) },
+      agent: { host: 'claude-code', session: 's-long' },
+      blocks: ['long-q', 'long-a'],
+      asked: [
+        { id: 'long-q', kind: 'question', text: LONG_PROMPT },
+        { id: 'long-a', kind: 'approval', text: 'Approve the move' },
+      ],
+    };
+    await route.fulfill({ response, json: { ...listing, waiting: [...(listing.waiting ?? []), wait] } });
+  });
+}
+
+/** The sidebar's right edge. */
+function sideEdge(page) {
+  return page.getByRole('separator', { name: 'Width of the sidebar' });
+}
+
+/** Drags the sidebar's right edge `by` pixels to the right. */
+async function dragSide(page, by) {
+  const grip = await box(sideEdge(page));
+  await page.mouse.move(grip.x + grip.width / 2, grip.y + 200);
+  await page.mouse.down();
+  await page.mouse.move(grip.x + grip.width / 2 + by, grip.y + 200, { steps: 4 });
+  await page.mouse.up();
+}
+
+/** Every line of the open submissions above the list, measured: how far each runs past the sidebar's right edge, the sideways scroll of the sidebar, and the lines of the long prompt. */
+async function measureWaits(page) {
+  await expect(page.locator('#side .everywhere .wait-link .branch', { hasText: LONG_BRANCH })).toBeVisible();
+  return page.evaluate((prompt) => {
+    const side = /** @type {HTMLElement} */ (document.getElementById('side')).getBoundingClientRect();
+    const content = /** @type {HTMLElement} */ (document.getElementById('side-content'));
+    const section = /** @type {HTMLElement} */ (document.querySelector('#side .everywhere'));
+    let past = 0;
+    const walker = document.createTreeWalker(section, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects()) past = Math.max(past, rect.right - side.right);
+    }
+    const line = /** @type {HTMLElement} */ ([...section.querySelectorAll('.asked > li')].find((item) => item.getAttribute('title') === prompt)?.querySelector('.asked-line'));
+    const style = getComputedStyle(line);
+    return {
+      section: section.getBoundingClientRect().right - side.right,
+      past,
+      sideways: content.scrollWidth - content.clientWidth,
+      lines: line.getBoundingClientRect().height / Number.parseFloat(style.lineHeight),
+      cut: line.scrollHeight > line.clientHeight,
+    };
+  }, LONG_PROMPT);
+}
+
+test('with a branch whose name has nowhere to break and a prompt of several sentences, the open submissions stay within the sidebar, the prompt held to three lines', async ({ page }) => {
+  await longWait(page);
+  await page.goto(address());
+  const measured = await measureWaits(page);
+  await expect(page.locator('#side .wait-link .branch').last()).toHaveText('feature/XYZ-0000_some_very_long_branch_name_without_spaces');
+  expect(measured.section).toBeLessThanOrEqual(0);
+  expect(measured.past).toBeLessThanOrEqual(0.5);
+  expect(measured.sideways).toBe(0);
+  // Three lines, give or take the fraction of a pixel the box rounds to; a fourth would be 4.
+  expect(measured.lines).toBeLessThan(3.5);
+  expect(measured.cut).toBe(true);
+  const item = page.locator('#side .asked > li', { hasText: 'Which of the two shelves' });
+  await expect(item).toHaveAttribute('title', LONG_PROMPT);
+  expect(await item.locator('.asked-line').evaluate((line) => getComputedStyle(line).webkitLineClamp)).toBe('3');
+});
+
+test('dragging the sidebar’s right edge, or moving it by the keyboard, widens it by as much as the page beside it narrows, and the next visit keeps the width', async ({ page }) => {
+  await page.goto(address());
+  const side = page.locator('#side');
+  const shown = page.locator('.page');
+  const opened = await box(shown);
+  expect((await box(side)).width).toBe(248);
+  const handle = sideEdge(page);
+  await handle.focus();
+  await page.keyboard.press('ArrowRight');
+  await expect.poll(async () => (await box(side)).width).toBe(264);
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  await expect.poll(async () => (await box(side)).width).toBe(232);
+  await dragSide(page, 60);
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  const moved = await box(shown);
+  expect(moved.x).toBe(292);
+  expect(moved.width).toBe(opened.width - 44);
+  await dragSide(page, 1000);
+  await expect.poll(async () => (await box(side)).width).toBe(480);
+  await dragSide(page, -1000);
+  await expect.poll(async () => (await box(side)).width).toBe(200);
+  await dragSide(page, 92);
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  await page.reload();
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  // Folded, the sidebar is the rail, with no edge to drag; opened again, it takes the width chosen.
+  await page.getByRole('button', { name: 'Fold the sidebar' }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(68);
+  await expect(handle).toBeHidden();
+  await page.getByRole('button', { name: /^Open the sidebar/ }).click();
+  await expect.poll(async () => (await box(side)).width).toBe(292);
+  await page.evaluate(() => {
+    localStorage.removeItem('yard.side-width');
+    localStorage.removeItem('yard.list');
+  });
+});
+
+test('in a window narrower than 860 pixels, the sidebar laid over the page drags wider or narrower, leaves 120 pixels beside it, and holds the open submissions within it', async ({ page }) => {
+  await page.setViewportSize({ width: 560, height: 900 });
+  await longWait(page);
+  await page.goto(address());
+  const side = page.locator('#side');
+  expect((await box(side)).width).toBe(248);
+  await dragSide(page, 40);
+  await expect.poll(async () => (await box(side)).width).toBe(288);
+  expect((await box(page.locator('.page'))).x).toBe(68);
+  await dragSide(page, 1000);
+  await expect.poll(async () => (await box(side)).width).toBe(560 - 120);
+  const measured = await measureWaits(page);
+  expect(measured.section).toBeLessThanOrEqual(0);
+  expect(measured.past).toBeLessThanOrEqual(0.5);
+  expect(measured.sideways).toBe(0);
+  await page.setViewportSize({ width: 400, height: 900 });
+  await expect.poll(async () => (await box(side)).width).toBe(400 - 120);
+  expect((await measureWaits(page)).past).toBeLessThanOrEqual(0.5);
+  await page.evaluate(() => localStorage.removeItem('yard.side-width'));
   await page.setViewportSize({ width: 1280, height: 900 });
 });
 

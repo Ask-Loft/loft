@@ -5,6 +5,51 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+## 2.4.2 (2026-11-26)
+
+- Yard Client finds a `loft` installed with `cargo install` where the app that starts Claude Code
+  never read the shell's startup files, as an app opened from the desktop or a host built on the
+  Agent SDK does. While the Claude Code plugin's `loftCommand` setting is `loft`, the mod and the
+  plugin's command hooks now run the `loft` on the search path, else the one in `$CARGO_HOME/bin`
+  or `~/.cargo/bin`, where they used to leave Yard Client off without a word to the agent. Where
+  no `loft` can be run, the session's start tells the agent that Yard Client is off, what was
+  tried and how to turn it on, and every other hook stays silent instead of failing on each tool
+  call. The command hooks run through a new launcher, `hooks/run-loft.sh`. (#39)
+- The Yard page server keeps a session it has heard of in about 3 KB of memory, where it used to
+  take about 13 KB: what a session keeps for each Yard Log is now held apart from the map that
+  finds it, so the map's empty slots no longer take its full size. With the 256 sessions it keeps
+  at most, that is about 3 MB less.
+- The Yard page keeps what waits on you within its sidebar. A branch's or worktree's name with
+  nowhere to break, such as `feature/XYZ-0000_some_very_long_branch_name_without_spaces`, used to
+  widen the list past the sidebar's edge and cut every line of it; any name in the sidebar now
+  breaks where it meets the edge. Each waiting question, approval or plan takes at most three
+  lines there, ending in an ellipsis, and gives its whole text while the pointer rests on it; the
+  panel of what waits still shows it in full. (#26)
+- The Yard page's sidebar can be widened: drag its right edge, or focus it and press the arrow
+  keys left and right. It opens 248 pixels wide and stays between 200 and 480, always leaving 120
+  pixels of the window beside it, and the width chosen is kept in this browser. In a window
+  narrower than 860 pixels the sidebar laid over the page is sized the same way.
+- Every edge the Yard page lets you drag ends a drag the browser cancels where it reached, and
+  drags by the main button only. Such a drag used to stay in hand, so the edge followed a pointer
+  that merely passed over it.
+- The Yard page draws a bare `http://`, `https://` or `mailto:` address in a block's Markdown as
+  a link where GitHub does, where it used to show it as text: the page server now renders
+  Markdown with comrak, a port of GitHub's renderer. An `_`, `*` or `~` within an address stays
+  part of it rather than making emphasis, and a mark or quote that ends a sentence, or a closing
+  parenthesis the address does not open, stays out of the link. An address in code, in a link the
+  Markdown writes out or after a `[` that opens no link stays as it is. A `www.` address and a
+  bare email address stay text, and a node's name still shows an address as text.
+- A link to a web address in a block's Markdown or in a node's name opens in a new tab, so
+  following it leaves the Yard page as it was; a screen reader hears that it does, and text copied
+  from the block does not hold those words. A link written to a file, or to an address that begins
+  with `//`, is drawn as its text, and an image or a link within a link as its text.
+- Following a footnote on the Yard page, a link to a heading of its block, or another link to a
+  place within the page, brings that place into view and moves the focus to it, where it used to
+  replace the Yard Log shown; opened in a new tab, it shows that same Yard Log.
+- A link to the address of a Yard Log, written as its route or as the page's full address, opens
+  that Yard Log in the same tab.
+- A table column that a block's Markdown aligns to the right or to the center stays so aligned.
+
 ## 2.4.1 (2026-11-22)
 
 - `loft review --base` reviews an assertion whose `mentions` entries alone changed as `changed`,

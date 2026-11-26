@@ -47,9 +47,15 @@ export function waitingList(listing) {
           h(
             'ul',
             { class: 'asked' },
-            (wait.asked ?? wait.blocks.map((id) => ({ id }))).map((asked) =>
-              h('li', {}, asked.kind ? h('span', { class: 'kind' }, asked.kind) : null, ' ', asked.text || asked.id),
-            ),
+            (wait.asked ?? wait.blocks.map((id) => ({ id }))).map((asked) => {
+              // Held to three lines; the whole text shows while the pointer rests on it.
+              const text = asked.text || asked.id;
+              return h(
+                'li',
+                { title: text },
+                h('span', { class: 'asked-line' }, asked.kind ? h('span', { class: 'kind' }, asked.kind) : null, ' ', text),
+              );
+            }),
           ),
           h('p', { class: 'sent' }, `Sent by ${who(wait.agent)} at `, h('time', { datetime: wait.sent?.at }, when(wait.sent?.at))),
         ),
