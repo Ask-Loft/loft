@@ -135,6 +135,8 @@ requirements:
         name: "An entry that is not an object of a string `resource` and a non-empty string `kind` is left out."
       - key: 01a202c3-d203-70c5-9d96-10a16a0deed6
         name: "An entry whose `resource` holds user information or a fragment is left out."
+      - key: 01a208d1-f095-73a9-b4f9-adf0e9601d01
+        name: "An entry whose `resource` holds a character other than the visible characters of ASCII is left out."
       - key: 01a202c3-d203-70c5-9d96-10a210f35ffd
         name: "An entry whose `resource` is the remote's protected resource is left out."
       - key: 01a202c3-d203-70c5-9d96-10a3a2de9f04

@@ -10,6 +10,7 @@ use loftspec::publish::Lock;
 use loftspec::slug::Slug;
 
 use super::refused;
+use crate::escaped::Escaped;
 use crate::remote::head::{self, Head};
 use crate::remote::states::{self, StateError};
 use crate::remote::{self, Client, Remedy, RemoteError, SignIn};
@@ -50,7 +51,7 @@ pub(super) fn head_sequence(client: &Client, other: Other<'_>) -> Result<u64, St
                 };
                 refused(format!(
                     "{handle}: the remote at {} holds no such document; check {given}",
-                    client.address()
+                    Escaped(client.address())
                 ))
             }
             error => reached(error, other),
@@ -60,7 +61,7 @@ pub(super) fn head_sequence(client: &Client, other: Other<'_>) -> Result<u64, St
         Some(head) if head.sequence > 0 => Ok(head.sequence),
         _ => Err(refused(format!(
             "{handle}: the remote at {} holds no published state",
-            client.address()
+            Escaped(client.address())
         ))),
     }
 }
@@ -83,7 +84,8 @@ pub(super) fn state(
 /// The refusal of a state the remote at `address` does not hold.
 pub(super) fn not_held(address: &str, sequence: u64) -> Stop {
     refused(format!(
-        "the remote at {address} holds no published state of publish sequence {sequence}"
+        "the remote at {} holds no published state of publish sequence {sequence}",
+        Escaped(address)
     ))
 }
 
@@ -100,7 +102,7 @@ pub(super) fn unreadable(handle: &Slug, sequence: u64, errors: &[ReadError]) -> 
 pub(super) fn another(entry: &OtherDocument, served: &Lock) -> Stop {
     refused(format!(
         "the remote at {} serves the document {}, not {} that `documents` lists under {}",
-        entry.remote,
+        Escaped(&entry.remote),
         served.document_key.key(),
         entry.key.key(),
         entry.handle

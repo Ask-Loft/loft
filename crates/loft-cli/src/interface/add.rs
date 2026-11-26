@@ -16,6 +16,7 @@ use serde_json::json;
 
 use super::reach::{Other, another, head_sequence, not_held, reached, state, unreadable};
 use super::{Interface, Named, Report, clashing, connected, document, named, refused, save};
+use crate::escaped::Escaped;
 use crate::remote::{self, SignIn};
 use crate::stop::Stop;
 
@@ -96,8 +97,9 @@ fn address(
 ) -> Result<String, Stop> {
     match (listed, remote) {
         (Some(entry), Some(given)) if entry.remote != given => Err(refused(format!(
-            "`documents` lists {handle} at {}, not {given}",
-            entry.remote
+            "`documents` lists {handle} at {}, not {}",
+            Escaped(&entry.remote),
+            Escaped(given)
         ))),
         (Some(entry), _) => Ok(entry.remote.clone()),
         (None, Some(given)) => Ok(given.to_owned()),
@@ -118,8 +120,9 @@ fn served(
     let other = lock.document_key;
     if other == document.id {
         return Err(refused(format!(
-            "the remote at {address} serves the document {} itself, which cannot link to its \
-             own Interfaces",
+            "the remote at {} serves the document {} itself, which cannot link to its own \
+             Interfaces",
+            Escaped(address),
             other.key()
         )));
     }
@@ -131,8 +134,9 @@ fn served(
         document.documents.iter().find(|entry| entry.key == other),
     ) {
         (None, Some(entry)) => Err(refused(format!(
-            "the remote at {address} serves the document {}, which `documents` lists under {} \
+            "the remote at {} serves the document {}, which `documents` lists under {} \
              already: name the Interface as {}:<interface>",
+            Escaped(address),
             other.key(),
             entry.handle,
             entry.handle

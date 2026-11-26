@@ -12,6 +12,7 @@ use loft_ports::clock::{Clock as _, SystemClock};
 use serde_json::Value;
 
 use super::{RemoteError, Whose, signin, signins, wire};
+use crate::escaped::Escaped;
 use crate::network::{self, Reply};
 
 /// The codes a remote's problem document may hold.
@@ -93,12 +94,15 @@ impl Refusal {
         said
     }
 
-    /// What the remote answered: its status, and its code and detail where it gave them.
+    /// What the remote answered: its status, and its code and detail where it gave them, written
+    /// escaped.
     #[must_use]
     pub fn answered(&self) -> String {
-        let code =
-            (self.code()).map_or_else(String::new, |code| format!(" with the code `{code}`"));
-        let detail = (self.detail()).map_or_else(String::new, |detail| format!(": {detail}"));
+        let code = (self.code()).map_or_else(String::new, |code| {
+            format!(" with the code `{}`", Escaped(code))
+        });
+        let detail =
+            (self.detail()).map_or_else(String::new, |detail| format!(": {}", Escaped(detail)));
         format!("the remote answered {}{code}{detail}", self.status)
     }
 
@@ -318,7 +322,7 @@ impl Client {
         body: Option<&[u8]>,
     ) -> Result<Reply, RemoteError> {
         let url = format!("{}/{path}", self.address);
-        network::allowed(&url).ok_or_else(|| RemoteError::Address(url.clone()))?;
+        super::contactable(&url)?;
         let bearer = (self.token.borrow().as_ref()).map(|token| format!("Bearer {token}"));
         let mut headers = vec![("Accept", "application/json")];
         if let Some(bearer) = &bearer {

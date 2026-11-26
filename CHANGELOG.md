@@ -28,6 +28,36 @@ Unreleased below, and those of each 2.4 release still to come.
   visibility its scenario sets in its head answer. A scenario can forbid reading the head, as it
   can forbid a create or an import. The remote contract suite holds a real remote's answers for a
   public document to the simulator's, on demand, at `LOFT_REMOTE_CONTRACT_PUBLIC_ADDRESS`.
+- A save's journal is checked whole before any file moves. The next command to open the tree
+  finishes a committed journal only where each path it names is a plain path under `spec/`, or the
+  lock, the trace or an importer's sidecar beside it, with no part a file system may read as
+  `.git` and behind no link that leads out of `spec/`, and each staged file is a regular file
+  under the number the journal gave it. A journal that names anything else, or whose own
+  directory lies behind a link, is refused with exit 1, naming its directory, and no file changes.
+  Until now `loft` moved whatever a `.loft/save/plan.json` named, so a repository that carried
+  one could write and delete files anywhere the person could, on the first `loft` command run in
+  it. A save refuses the same paths before it stages a file, so a tree whose `spec/` is a link
+  out of its directory is no longer saved.
+- `LOFT_REMOTE_TOKEN` without `LOFT_REMOTE_ENDPOINT` is refused, with exit 1, before any
+  connection: a token from the environment goes only to an address from the environment. Until now
+  it went to the address the manifest's `remote` names, which the repository chooses. A run that
+  sets the token alone, in CI or by hand, now sets the address too. `loft remote set` and
+  `loft remote login`, which send no such token, are unchanged.
+- A remote's address that holds a query, a fragment or user information is refused, by
+  `loft remote set` and by every command that reaches the remote, and an error that names an
+  address leaves out its user information. `loft publish` refuses what names its remote, the
+  token rule above included, before it asks another document's remote about an Interface copy.
+- Standard error holds no control character but line feeds and tabs: each other one, in U+0000 to
+  U+001F, U+007F or U+0080 to U+009F, is written as U+FFFD, so that an escape sequence in text a
+  line quotes no longer reaches the terminal. An error of reaching a remote or of signing in to
+  one writes such a character escaped instead, as an entry below says. A carriage return before a
+  line feed is left out.
+- `loft` reads at most 64 MiB of a remote's answer, where it read 256 MiB, and at most 1 MiB of an
+  answer to a sign-in's request for metadata, a registration or tokens. A longer answer is refused
+  with exit 1, naming the address and the limit.
+- The reader refuses a file whose block mappings and block sequences nest more than 64 deep, with
+  an error at the line and column of the one too deep. Until now a file nested a few thousand deep
+  overflowed the reader's stack and ended `loft` with no error.
 
 - An Interface is a new kind of node: a promise made at a boundary, at the root of the tree in
   `spec/interfaces/<slug>.yaml`, holding Requirements, Constraints and Quality Attributes of its
@@ -94,7 +124,10 @@ Unreleased below, and those of each 2.4 release still to come.
   `invalid_target` the repeat of a refresh recorded for a companion resource, the sign-in reads as
   lapsed, since every command of the sign-in would repeat it first: `loft remote login` signs you
   in again. An earlier `loft` that refreshes such a sign-in keeps it for the remote's own resource
-  alone: sign in again to cover the companion resources.
+  alone: sign in again to cover the companion resources. An entry that is not a JSON object, such
+  as a list of a sign-in's values, which an earlier `loft` read as a sign-in, is no sign-in for its
+  address: it is neither refreshed nor sent. A `resources` that lists anything but objects does not
+  read either, and the sign-in then covers the remote's own resource alone.
 - A refresh for the remote's own resource that the authorization server refuses with
   `invalid_target` no longer reads as a lapsed sign-in: `loft` says that the sign-in was made for a
   former resource of the remote and that `loft remote login` signs you in again, or
@@ -107,6 +140,24 @@ Unreleased below, and those of each 2.4 release still to come.
   `loft interface login <handle>` at another document's remote, when a command says that the
   sign-in was made for a former resource of the remote or does not cover a resource, as it does
   when one has lapsed.
+- Every error of reaching a remote or of signing in to one, and every warning of a sign-in about
+  a companion resource it leaves out, writes the text a remote, its authorization server, the
+  tree, `LOFT_REMOTE_ENDPOINT` or `loft/remotes.json` gave with each control character and each
+  bidirectional control escaped, as `\u{1b}` for the escape character, and each backslash as
+  `\\`, on standard error and in the JSON document's `message` alike, so that no character of
+  that text reaches the terminal as a control character. Every other character, a letter beyond
+  ASCII among them, is written as it is. A value of a companion resource's `scopes_supported`
+  that is not a scope is named the same way, a string between double quotes.
+- A remote's address holds visible ASCII alone, `!` to `~`, with every other character
+  percent-encoded. An address that holds another character, as the manifest's `remote` can
+  through the escapes of a double-quoted value, is refused before any request, whether the
+  manifest, `LOFT_REMOTE_ENDPOINT`, `loft remote set` or an entry of `documents` gives it, and the
+  error names it escaped. An address that also holds a query, a fragment or user information is
+  refused for its characters, and the error leaves out its user information. `loft remote remove`, which reaches no remote, still disconnects such a
+  document, naming its address escaped. A sign-in holds the resource and the issuer that its
+  metadata names to the same rule, as it holds the authorization server's endpoints, and leaves
+  out, with a warning and before anything is asked of it, a companion resource whose identifier
+  holds another character.
 
 ## Unreleased
 

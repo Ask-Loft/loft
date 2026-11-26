@@ -90,8 +90,9 @@ pub fn get_json(url: &str, left: Duration) -> Option<(u16, Vec<u8>)> {
     Some((status, body))
 }
 
-/// The most a body read from a remote may hold.
-const BODY_LIMIT: u64 = 256 << 20;
+/// The most bytes read of an answer, unless its caller sets another limit: 64 MiB, which a
+/// published state of a document stays well within.
+const BODY_LIMIT: u64 = 64 << 20;
 
 /// An answer as it came: its status, the headers a caller reads, and its body.
 #[derive(Debug, Clone)]
@@ -108,8 +109,25 @@ pub struct Reply {
 ///
 /// # Errors
 ///
-/// `url` may not be contacted, or no answer came in full within `timeout`.
+/// `url` may not be contacted, no answer came in full within `timeout`, or the answer is longer
+/// than [`BODY_LIMIT`].
 pub fn call(
+    method: &str,
+    url: &str,
+    headers: &[(&str, &str)],
+    body: Option<&[u8]>,
+    timeout: Duration,
+) -> Result<Reply, String> {
+    call_within(BODY_LIMIT, method, url, headers, body, timeout)
+}
+
+/// [`call`], reading at most `limit` bytes of the answer.
+///
+/// # Errors
+///
+/// As [`call`], with `limit` in place of [`BODY_LIMIT`].
+pub fn call_within(
+    limit: u64,
     method: &str,
     url: &str,
     headers: &[(&str, &str)],
@@ -147,9 +165,16 @@ pub fn call(
     let body = response
         .body_mut()
         .with_config()
-        .limit(BODY_LIMIT)
+        // The client refuses a body as long as the limit it is given, so it is given one
+        // byte more: an answer of `limit` bytes is read whole.
+        .limit(limit.saturating_add(1))
         .read_to_vec()
-        .map_err(|error| error.to_string())?;
+        .map_err(|error| match error {
+            ureq::Error::BodyExceedsLimit(_) => {
+                format!("its answer is longer than {limit} bytes, the most `loft` reads of it")
+            }
+            other => other.to_string(),
+        })?;
     Ok(Reply {
         status,
         retry_after,

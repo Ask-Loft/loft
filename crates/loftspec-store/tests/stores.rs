@@ -114,13 +114,13 @@ fn an_import_writes_its_sidecar_beside_spec_under_the_name_it_is_given() {
         .import(
             codec::write(&reading_list()),
             SidecarFile {
-                name: "source-sidecar.json",
+                name: "openspec-sidecar.json",
                 bytes: b"{}\n".to_vec(),
             },
         )
         .unwrap();
     let snapshot = scratch.snapshot();
-    assert_eq!(snapshot["source-sidecar.json"], b"{}\n");
+    assert_eq!(snapshot["openspec-sidecar.json"], b"{}\n");
     assert!(
         !snapshot.contains_key("v1-sidecar.json"),
         "{:?}",

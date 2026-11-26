@@ -13,6 +13,7 @@ pub(super) fn document(text: &str) -> Result<Option<Node>, Error> {
     let mut parser = Parser {
         lines: Line::split(text),
         next: 0,
+        depth: 0,
     };
     let Some(first) = parser.peek()? else {
         return Ok(None);
@@ -36,7 +37,13 @@ pub(super) fn document(text: &str) -> Result<Option<Node>, Error> {
 struct Parser<'a> {
     lines: Vec<Line<'a>>,
     next: usize,
+    /// How many mappings and sequences enclose the next line.
+    depth: usize,
 }
+
+/// The most mappings and sequences one may lie inside another. The parser reads a nested one by
+/// calling itself, so a bound on the depth is a bound on its stack, whatever a file holds.
+pub(super) const MAX_DEPTH: usize = 64;
 
 /// Whether a line's text starts a sequence entry.
 fn is_entry(text: &str) -> bool {
@@ -73,9 +80,25 @@ impl<'a> Parser<'a> {
     /// The mapping or sequence whose first line is the next one, at `indent`.
     fn block(&mut self, indent: usize) -> Result<Node, Error> {
         match self.peek()? {
-            Some(line) if is_entry(line.text) => self.sequence(indent),
-            _ => self.mapping(indent),
+            Some(line) if is_entry(line.text) => self.nested(|parser| parser.sequence(indent)),
+            _ => self.nested(|parser| parser.mapping(indent)),
         }
+    }
+
+    /// What `read` reads of the mapping or sequence that starts at the next line, one deeper
+    /// than the one that holds it; refused at that line where [`MAX_DEPTH`] others hold it.
+    fn nested(
+        &mut self,
+        read: impl FnOnce(&mut Self) -> Result<Node, Error>,
+    ) -> Result<Node, Error> {
+        if self.depth == MAX_DEPTH {
+            let position = (self.peek()?).map_or(Position::new(1, 1), |line| line.start());
+            return Err(Error::at(position, ErrorKind::TooDeep));
+        }
+        self.depth += 1;
+        let node = read(self);
+        self.depth -= 1;
+        node
     }
 
     fn mapping(&mut self, indent: usize) -> Result<Node, Error> {
@@ -161,7 +184,7 @@ impl<'a> Parser<'a> {
             text: content,
             ..line
         };
-        self.mapping(indent + offset)
+        self.nested(|parser| parser.mapping(indent + offset))
     }
 
     /// The value after a key or a dash at `offset` on `line`, whose parent is at `indent`. Under
@@ -183,7 +206,7 @@ impl<'a> Parser<'a> {
             Inline::Nothing => match self.peek()? {
                 Some(next) if next.indent > indent => return self.block(next.indent),
                 Some(next) if under_key && next.indent == indent && is_entry(next.text) => {
-                    return self.sequence(indent);
+                    return self.nested(|parser| parser.sequence(indent));
                 }
                 _ => Value::Empty,
             },

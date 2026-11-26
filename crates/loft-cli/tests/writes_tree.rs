@@ -127,6 +127,39 @@ fn each_tagged_command_finishes_a_committed_save_before_it_acts() {
     }
 }
 
+/// Plants a committed journal that no save wrote: its plan moves a staged file to `path`.
+fn plant_plan(scratch: &Scratch, path: &str) {
+    let dir = scratch.0.join(JOURNAL);
+    fs::create_dir_all(dir.join("files")).unwrap();
+    fs::write(dir.join("files/0"), "planted\n").unwrap();
+    let plan = format!(
+        r#"{{"format":"loftspec-save/1","write":[{{"path":{path:?},"staged":"0"}}],"remove":[]}}"#
+    );
+    fs::write(dir.join("plan.json"), plan).unwrap();
+}
+
+#[test]
+fn each_tagged_command_refuses_a_journal_that_names_a_file_no_save_writes() {
+    for (slug, args, kind, _) in tagged_commands(TAG) {
+        for path in ["../escaped.yaml", "README.md", ".github/workflows/run.yaml"] {
+            let scratch = fixture(kind);
+            // The scratch directory's own name keeps a file that escapes it apart from every
+            // other test's.
+            let name = scratch.0.file_name().unwrap().to_str().unwrap();
+            let path = path.replace("escaped", &format!("{name}-escaped"));
+            plant_plan(&scratch, &path);
+            let before = snapshot(&scratch.0);
+            let output = run(&scratch, kind, args);
+            assert_exit(slug, &output, 1);
+            let said = stderr(&output) + &stdout(&output);
+            assert!(said.contains(".loft"), "{slug}: {said}");
+            assert!(said.contains(path.as_str()), "{slug}: {said}");
+            assert_eq!(snapshot(&scratch.0), before, "{slug}: {path}");
+            assert!(!scratch.0.join(&path).exists(), "{slug}: {path}");
+        }
+    }
+}
+
 #[test]
 fn each_tagged_command_discards_an_uncommitted_save_before_it_acts() {
     for (slug, args, kind, _) in tagged_commands(TAG) {

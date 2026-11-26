@@ -8,6 +8,7 @@ mod check;
 mod cli;
 mod endpoints;
 mod environment;
+mod escaped;
 mod find;
 mod finish;
 mod fmt;

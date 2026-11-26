@@ -8,3 +8,4 @@ mod boundary;
 mod clock;
 mod git;
 mod journal;
+mod journal_checks;
