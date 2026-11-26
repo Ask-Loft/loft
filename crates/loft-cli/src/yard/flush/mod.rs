@@ -209,7 +209,6 @@ fn locked(connection: &Connection) -> Flushed {
         outcome: flushed.outcome,
         why: flushed.failed.first().map(|failed| failed.why.clone()),
         not_before: flushed.not_before,
-        taken: &flushed.taken,
         later: &flushed.put_off,
     };
     match record::replace(&connection.home, endpoint, &run, &flushed.waiting) {

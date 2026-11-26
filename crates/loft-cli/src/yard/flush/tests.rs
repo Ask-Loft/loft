@@ -189,13 +189,12 @@ fn a_record_that_replaces_another_keeps_a_time_to_come_back_after_that_has_not_p
         not_before: Some(500),
         ..super::record::Record::default()
     };
-    let (taken, later) = (keys(&[]), codes(&[]));
+    let later = codes(&[]);
     let run = |ended| super::record::Run {
         ended,
         outcome: "failed",
         why: None,
         not_before: None,
-        taken: &taken,
         later: &later,
     };
     assert_eq!(
@@ -214,18 +213,35 @@ fn a_record_keeps_the_later_key_of_each_entry_the_run_did_not_take_while_it_wait
         later: codes(&[("a", "old"), ("b", "old"), ("c", "old")]),
         ..super::record::Record::default()
     };
-    let (taken, later) = (keys(&["b"]), codes(&[("d", "new")]));
+    let later = codes(&[("d", "new")]);
     let run = super::record::Run {
         ended: 1,
         outcome: "sent",
         why: None,
         not_before: None,
-        taken: &taken,
         later: &later,
     };
-    // `a` was not taken and waits; `b` was taken and not put off again; `c` is gone.
-    let next = super::record::next(&previous, &run, &keys(&["a", "b", "d"]));
+    // `a` was not taken and waits; `b` was taken and stored, and `c` is gone, so neither waits.
+    let next = super::record::next(&previous, &run, &keys(&["a", "d"]));
     assert_eq!(next.later, codes(&[("a", "old"), ("d", "new")]));
+}
+
+#[test]
+fn a_record_keeps_the_later_key_of_an_entry_taken_in_a_batch_yard_server_did_not_answer() {
+    let previous = super::record::Record {
+        later: codes(&[("k", "unknown_report_version")]),
+        ..super::record::Record::default()
+    };
+    let later = codes(&[]);
+    let run = super::record::Run {
+        ended: 1,
+        outcome: "paused",
+        why: None,
+        not_before: Some(60),
+        later: &later,
+    };
+    let next = super::record::next(&previous, &run, &keys(&["k"]));
+    assert_eq!(next.later, codes(&[("k", "unknown_report_version")]));
 }
 
 /// Connected mode on for `endpoint`, with the home of Yard in a fresh directory.

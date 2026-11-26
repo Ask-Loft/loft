@@ -39893,10 +39893,13 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/flush/tests.rs"
         name: "a_record_that_replaces_another_keeps_a_time_to_come_back_after_that_has_not_passed"
-        body: e95031dc81e8df2cfe84ae38aef582abc5c7b8b8d64caace7d7096c8c3e1d75c
+        body: dc2e69d1c2de23cbc1e99c308bec182804558cbb6d662f3de51e040409f64dba
   - node: 01a216fa-feac-7221-aee1-71657260358f
     reviewed: 6fe5580ddb5cbac48055a470bf9e781277b4159b470c4dd8defe5251ad3bb484
     tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_record_keeps_the_later_key_of_an_entry_taken_in_a_batch_yard_server_did_not_answer"
+        body: b3abd8969dccffbc8157a4f3cb18826a5452d58dbf3f0db84a4344d44444d55d
       - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
         name: "a_run_records_the_versions_yard_server_will_take_later_with_their_codes"
         body: 51206f8b3b284e336933e516e33cc03270621bd13a9081c33010354ce9a691d5
@@ -39905,7 +39908,7 @@ links:
     tests:
       - file: "crates/loft-cli/src/yard/flush/tests.rs"
         name: "a_record_keeps_the_later_key_of_each_entry_the_run_did_not_take_while_it_waits"
-        body: 71cab62dd99991beadfcc2892278b1c8bb807d2e2ee0323c80f520e768c87519
+        body: f10f967306bde4f9bdd71689ab1185624e028d78006488ae88fae5d746a8b675
   - node: 01a21406-1007-7756-963c-231094699bf7
     reviewed: ca6dd02963041eeb971888f01f1a2f686a057164fc53ddebd43b42720a385c5a
     tests:

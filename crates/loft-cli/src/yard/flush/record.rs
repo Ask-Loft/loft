@@ -48,8 +48,6 @@ pub struct Run<'a> {
     pub outcome: &'static str,
     pub why: Option<String>,
     pub not_before: Option<u64>,
-    /// The keys of the entries the run took, whatever became of them.
-    pub taken: &'a BTreeSet<String>,
     /// The versions Yard Server answered `later` in the run, by key, with their codes.
     pub later: &'a BTreeMap<String, String>,
 }
@@ -71,8 +69,10 @@ pub fn read_all(home: &Home) -> BTreeMap<String, Record> {
 }
 
 /// Replaces `endpoint`'s record with `run`'s, keeping from the record it replaces a time to come
-/// back after that has not passed, and the `later` key of each entry the run did not take while
-/// `waiting`, the keys of the entries for the address, holds it: the record written.
+/// back after that has not passed, and the `later` key of each entry `waiting`, the keys of the
+/// entries for the address, still holds, unless Yard Server answered it in the run: the record
+/// written. An entry Yard Server stored, held or refused is no longer waiting, and one it put off
+/// again takes the code of its new answer.
 ///
 /// # Errors
 ///
@@ -100,7 +100,7 @@ pub(super) fn next(previous: &Record, run: &Run<'_>, waiting: &BTreeSet<String>)
     let mut later: BTreeMap<String, String> = previous
         .later
         .iter()
-        .filter(|(key, _)| !run.taken.contains(*key) && waiting.contains(*key))
+        .filter(|(key, _)| waiting.contains(*key))
         .map(|(key, code)| (key.clone(), code.clone()))
         .collect();
     later.extend(
