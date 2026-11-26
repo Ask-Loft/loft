@@ -8,14 +8,16 @@
 //! nothing, one space, one no-break space or one hyphen between them; units are matched in their
 //! own case, so `Mb` is neither family. A number inside a web address, or right after a letter or
 //! one of `_ / . - = ? & #`, begins no quantity, except a range such as `4-16 MB` and a decimal
-//! such as `.5 MB`.
+//! such as `.5 MB` where the number before the `-`, or the `.` itself, comes after none of those.
 //!
 //! One definition of a decimal unit settles every decimal unit of the document. Since one false
 //! definition silences the whole document, a definition is narrow: a count of bytes equal to the
 //! unit's value, 1000^k or 1024^k, that closes its clause, given in parentheses right after the
 //! unit (`MB (10^6 bytes)`), or after a defining word where the unit opens a clause
 //! (`1 MB = 1,000,000 bytes`, `A megabyte is 2^20 bytes`); or a term named after the unit whose
-//! definition names its full name or gives its value.
+//! definition opens on its value, or on its full name ending its phrase (`A megabyte.`,
+//! `A kilobyte: 1,000 bytes.`), after at most one leader or `exactly`. A count or a definition
+//! never runs on past the end of its paragraph, list item or heading.
 
 use super::context::{Context, Item};
 use super::text::plain;
@@ -177,9 +179,19 @@ fn term_settles(term: &TermEntry) -> bool {
                 .then(|| after.trim_start_matches(SPACES))
         })
         .unwrap_or(opening);
-    let full =
-        (full_names(opening).into_iter()).find_map(|(start, _, k)| (start == 0).then_some(k));
+    let full = (full_names(opening).into_iter())
+        .find(|&(start, end, _)| start == 0 && ends_phrase(&opening[end..]))
+        .map(|(.., k)| k);
     powers.any(|k| full == Some(k) || count::gives_value(opening, k))
+}
+
+/// Whether `after`, the text after a full name opening a term's definition, ends its phrase: it
+/// is the end of the text, opens on one of `.`, `,`, `;`, `)`, `:`, `=`, or on the word `of`.
+fn ends_phrase(after: &str) -> bool {
+    let of = after.starts_with(SPACES)
+        && strip_prefix_ignoring_case(after.trim_start_matches(SPACES), "of")
+            .is_some_and(|rest| !rest.starts_with(is_word));
+    after.trim().is_empty() || after.starts_with(['.', ',', ';', ')', ':', '=']) || of
 }
 
 /// The power of the decimal unit a term's name is, by its symbol or its full name, in either
@@ -239,7 +251,7 @@ fn is_quantity(text: &str, at: usize) -> bool {
     let (before, number) = split_number(head);
     let range = before.strip_suffix('-').is_some_and(|rest| {
         let (earlier, first) = split_number(rest);
-        !first.is_empty() && !blocked(earlier)
+        first.ends_with(|c: char| c.is_ascii_digit()) && !blocked(earlier)
     });
     let decimal = before.strip_suffix('.').is_some_and(|rest| !blocked(rest));
     number.ends_with(|c: char| c.is_ascii_digit())
@@ -281,7 +293,7 @@ fn defines_decimal(text: &str, units: &[(usize, &'static str)]) -> bool {
     spans.any(|(start, end, k)| {
         let rest = text[end..].trim_start_matches(SPACES);
         match rest.strip_prefix('(') {
-            Some(inside) => count::gives_value(inside.trim_start(), k),
+            Some(inside) => count::gives_value(inside.trim_start_matches(SPACES), k),
             None => opens_clause(&text[..start]) && defined_after_word(rest, k),
         }
     })
@@ -328,9 +340,10 @@ fn full_names(text: &str) -> Vec<(usize, usize, u32)> {
 fn defined_after_word(rest: &str, k: u32) -> bool {
     DEFINING.iter().any(|word| {
         strip_prefix_ignoring_case(rest, word).is_some_and(|after| {
-            let boundary = matches!(*word, "=" | ":") || after.starts_with(char::is_whitespace);
-            let after = after.trim_start();
-            let after = strip_prefix_ignoring_case(after, "exactly").map_or(after, str::trim_start);
+            let boundary = matches!(*word, "=" | ":") || after.starts_with(SPACES);
+            let after = after.trim_start_matches(SPACES);
+            let after = strip_prefix_ignoring_case(after, "exactly")
+                .map_or(after, |rest| rest.trim_start_matches(SPACES));
             boundary && count::gives_value(after, k)
         })
     })

@@ -333,3 +333,55 @@ fn a_parenthesis_on_the_next_list_item_defines_nothing() {
         assert!(named(&document).contains(&one(FEATURE, "MB")[0]));
     }
 }
+
+#[test]
+fn a_term_s_full_name_settles_only_where_it_ends_its_phrase() {
+    for (name, definition) in [
+        ("MB", "The megabyte broker that relays uploads."),
+        ("GB", "Gigabyte Builds, the CI farm."),
+        ("KB", "Kilobyte-aligned blocks of the knowledge base."),
+    ] {
+        let mut document = beside_binary("A page holds 5 MB.");
+        let mut entry = term(65, name, &[]);
+        entry.definition = definition.to_owned();
+        document.terms.push(entry);
+        assert_eq!(named(&document), one(FEATURE, "MB"), "{definition}");
+    }
+    for (name, definition) in [
+        ("MB", "A megabyte."),
+        ("KB", "A kilobyte: 1,000 bytes."),
+        ("MB", "A megabyte, in decimal."),
+        ("KB", "Kilobytes of 1,024 bytes each."),
+        ("MB", "The megabyte"),
+    ] {
+        let mut document = beside_binary("A page holds 5 MB.");
+        let mut entry = term(65, name, &[]);
+        entry.definition = definition.to_owned();
+        document.terms.push(entry);
+        assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");
+    }
+}
+
+#[test]
+fn a_range_needs_a_number_that_ends_in_a_digit_before_its_hyphen() {
+    for written in ["Sizes 4.-16 MB", "Sizes 4,-16 MB"] {
+        let document = beside_binary(&format!("{written} each."));
+        assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{written}");
+    }
+}
+
+#[test]
+fn a_count_or_a_definition_does_not_run_on_into_the_next_paragraph() {
+    for text in [
+        "1 MB = 1000000\n\n# Bytes",
+        "- MB is\n- 1,000,000 bytes",
+        "1 MB = 10\n\n^6 bytes.",
+        "1 MB = 10^\n\n6 bytes.",
+        "- MB =\n- 1,000,000 bytes",
+        "MB (\n\n1,000,000 bytes)",
+    ] {
+        for document in with_text(text) {
+            assert!(named(&document).contains(&one(FEATURE, "MB")[0]), "{text}");
+        }
+    }
+}
