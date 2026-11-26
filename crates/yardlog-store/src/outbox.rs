@@ -59,8 +59,6 @@ pub struct Entry {
 pub struct Taken {
     /// The oldest entries, at most as many as were asked for.
     pub entries: Vec<Entry>,
-    /// Every entry waiting for the address, those taken included.
-    pub waiting: usize,
     /// The entries of a newer format, left in place.
     pub skipped: usize,
     /// The files moved into `dead/`.
@@ -135,8 +133,9 @@ impl Outbox {
     /// The oldest entries for this outbox's address, in the order of their version keys, at
     /// most `most` of them and at most `most_bytes` of entry files in all, and at least one: an
     /// entry that would bring them over `most_bytes` waits for the next take, unless it is the
-    /// first. The files that are not entries are moved into `dead/` on the way. A file that
-    /// cannot be read, or moved, is passed over, so that one file never holds up the rest.
+    /// first. It reads no file once no entry fits. The files that are not entries are moved into
+    /// `dead/` on the way, and a file that cannot be read, or moved, is passed over, so that one
+    /// file never holds up the rest.
     ///
     /// # Errors
     ///
@@ -146,8 +145,7 @@ impl Outbox {
     }
 
     /// As [`Outbox::take`], passing over the entries whose keys `passed` holds, as a run passes
-    /// over the entries it has taken once, whatever became of them: they are neither taken nor
-    /// counted as waiting.
+    /// over the entries it has taken once, whatever became of them: they are not read again.
     ///
     /// # Errors
     ///
@@ -166,6 +164,9 @@ impl Outbox {
             full: false,
         };
         for (name, size) in listed(&self.dir)? {
+            if room.is_full(taken.entries.len()) {
+                break;
+            }
             if passed.contains(key_of(&name)) {
                 continue;
             }
@@ -176,7 +177,6 @@ impl Outbox {
             };
             match entry::read(&text) {
                 Read::Entry { endpoint, record } if endpoint == self.endpoint => {
-                    taken.waiting += 1;
                     room.take(&mut taken.entries, &name, record, size);
                 }
                 Read::Entry { .. } => {}
@@ -250,11 +250,15 @@ struct Room {
 }
 
 impl Room {
+    /// Whether no entry fits after the `taken` ones, so that the take reads no further file.
+    fn is_full(&self, taken: usize) -> bool {
+        self.full || taken == self.most
+    }
+
     /// Adds the entry `name`, of `size` bytes and holding `record`, to `entries` where it fits.
     fn take(&mut self, entries: &mut Vec<Entry>, name: &str, record: &str, size: u64) {
         let taken = entries.len();
-        self.full =
-            self.full || taken == self.most || (taken > 0 && self.bytes + size > self.most_bytes);
+        self.full = self.is_full(taken) || (taken > 0 && self.bytes + size > self.most_bytes);
         if !self.full {
             self.bytes += size;
             entries.push(Entry {

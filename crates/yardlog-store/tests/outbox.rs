@@ -192,7 +192,6 @@ fn entries_are_taken_oldest_first_for_their_own_address_alone() {
         .map(|(name, _)| name.trim_end_matches(".json").to_owned())
         .collect();
     assert_eq!(keys, [ours_keys[0].as_str(), ours_keys[1].as_str()]);
-    assert_eq!(taken.waiting, 3);
     let record: Value = serde_json::from_str(&taken.entries[0].record).unwrap();
     assert_eq!(record, all[1].1["record"]);
     assert_eq!(entries(&tree.scratch), all);
@@ -304,15 +303,7 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
 fn an_empty_or_missing_outbox_has_nothing_to_take() {
     let scratch = Scratch::new();
     let taken = outbox(&scratch, ENDPOINT).take(16, MOST_BYTES).unwrap();
-    assert_eq!(
-        (
-            taken.entries.len(),
-            taken.waiting,
-            taken.skipped,
-            taken.dead
-        ),
-        (0, 0, 0, 0)
-    );
+    assert_eq!((taken.entries.len(), taken.skipped, taken.dead), (0, 0, 0));
 }
 
 /// An entry of `yardlog-outbox/<version>` for `endpoint`, whose record names `id`.

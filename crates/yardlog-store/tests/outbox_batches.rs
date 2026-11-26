@@ -93,6 +93,17 @@ fn a_file_that_is_not_an_entry_is_moved_into_dead_with_the_reason_not_an_entry()
 }
 
 #[test]
+fn a_take_reads_no_file_past_a_full_batch() {
+    let scratch = Scratch::new();
+    for n in 1..=16 {
+        put(&scratch, ENDPOINT, n, 10);
+    }
+    scratch.put(&format!(".yard/outbox/{}", name(17)), "{not json");
+    assert_eq!(taken(&scratch).len(), 16);
+    assert!(scratch.0.join(".yard/outbox").join(name(17)).is_file());
+}
+
+#[test]
 fn an_entry_whose_record_holds_no_version_key_is_moved_into_dead_and_the_others_are_taken() {
     let scratch = Scratch::new();
     put(&scratch, ENDPOINT, 1, 10);
