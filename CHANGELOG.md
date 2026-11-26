@@ -5,6 +5,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+## 2.4.2 (2026-11-26)
+
 - Yard Client finds a `loft` installed with `cargo install` where the app that starts Claude Code
   never read the shell's startup files, as an app opened from the desktop or a host built on the
   Agent SDK does. While the Claude Code plugin's `loftCommand` setting is `loft`, the mod and the
