@@ -40640,7 +40640,7 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_status.rs"
         name: "last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed"
-        body: c6d88826e1b7a725ec191ce743ef9f431bce571f65e96233f80db391c4c50f2b
+        body: 3ff2824baf8f3de903fb6398aeffceba9b76de07327e432291724c16cb4e141a
   - node: 01a213cb-9c28-769e-b7c8-43f3a299d1f9
     reviewed: 882ae95bdc0f12d96655a9c7d4a28cc106688be08fbcfb64c4be74354a6fc63c
     tests:

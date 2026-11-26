@@ -14,8 +14,8 @@ use crate::common::{EPOCH, Scratch};
 use crate::snapshot::snapshot;
 use crate::yard::{Yard, document};
 use crate::yard_connected::{
-    STAGE_BATCH, come_back_after, connected, dated, flush, flush_json, flush_record, keys, notes,
-    outbox, pairs, put_off_record, write,
+    STAGE_BATCH, come_back_after, connected, flush, flush_json, flush_record, keys, notes, outbox,
+    pairs, put_off_record, write,
 };
 
 /// `loft yard status` under `variables`, as text and as JSON.
@@ -292,7 +292,7 @@ fn last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed() {
         line(&text, "last attempt"),
         format!("last attempt: {ended} paused")
     );
-    assert_eq!(json["lastAttempt"]["notBefore"], dated(passed));
+    assert_eq!(json["lastAttempt"]["notBefore"], serde_json::Value::Null);
 }
 
 #[test]

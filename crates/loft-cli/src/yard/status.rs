@@ -298,7 +298,7 @@ fn fields(report: &Report) -> Value {
                 "ended": time(last.ended),
                 "outcome": last.outcome,
                 "why": last.why,
-                "notBefore": last.not_before.map(time),
+                "notBefore": last.paused(report.now).map(time),
             })
         }),
     );

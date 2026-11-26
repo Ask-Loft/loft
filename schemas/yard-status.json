@@ -147,7 +147,7 @@
                     "string",
                     "null"
                   ],
-                  "description": "The time Yard Server asked the flush not to come back before, in UTC, where it asked."
+                  "description": "The time Yard Server asked the flush not to come back before, in UTC, where it asked and that time has not passed."
                 }
               }
             }
