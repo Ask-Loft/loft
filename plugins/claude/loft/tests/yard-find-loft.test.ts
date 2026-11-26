@@ -48,3 +48,11 @@ test('where no loft can be run, the notice names each command the mod tried', as
   expect(notice).not.toContain('loft.exe: no such file')
   expect(notice).toMatch(/loftCommand setting/)
 })
+
+test('where CARGO_HOME is set, the mod looks in its bin and not in ~/.cargo/bin', async ($, on) => {
+  const w = world(on, { runnable: ['/opt/cargo/bin/loft', CARGO_LOFT], env: { CARGO_HOME: '/opt/cargo' } })
+  await start($)
+  expect(w.state.tools.map(tool => tool.name)).toContain('yard_read')
+  expect(w.state.runs.map(run => run.argv[0])).not.toContain(CARGO_LOFT)
+  expect(w.state.runs.at(-1)?.argv[0]).toBe('/opt/cargo/bin/loft')
+})

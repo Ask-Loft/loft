@@ -63,6 +63,7 @@ fn the_claude_code_plugins_hooks_record_holds_only_the_command_hooks_that_run_lo
 struct Host<'a> {
     setting: Option<&'a str>,
     path: Vec<PathBuf>,
+    cargo_home: Option<PathBuf>,
 }
 
 #[cfg(unix)]
@@ -72,6 +73,7 @@ impl Host<'_> {
         Self {
             setting: None,
             path: vec![PathBuf::from("/usr/bin"), PathBuf::from("/bin")],
+            cargo_home: None,
         }
     }
 }
@@ -93,6 +95,10 @@ fn run_claude_hook(scratch: &Scratch, host: &Host, hook: &Value) -> Output {
     match host.setting {
         Some(setting) => command.env("CLAUDE_PLUGIN_OPTION_LOFTCOMMAND", setting),
         None => command.env_remove("CLAUDE_PLUGIN_OPTION_LOFTCOMMAND"),
+    };
+    match &host.cargo_home {
+        Some(cargo_home) => command.env("CARGO_HOME", cargo_home),
+        None => command.env_remove("CARGO_HOME"),
     };
     let mut child = command.spawn().unwrap();
     child
@@ -182,6 +188,28 @@ fn the_claude_hooks_run_the_loft_in_cargo_s_bin_where_the_search_path_has_none()
     let scratch = Scratch::empty();
     place_loft(&scratch.home().join(".cargo/bin"), "loft");
     assert!(hooks_ran_loft(&scratch, &Host::bare()));
+}
+
+#[cfg(unix)]
+#[test]
+fn the_claude_hooks_look_in_the_bin_of_the_cargo_home_that_cargo_home_names_and_not_in_cargo() {
+    let scratch = Scratch::empty();
+    let cargo_home = scratch.0.join(".cargo-elsewhere");
+    place_loft(&cargo_home.join("bin"), "loft");
+    let host = Host {
+        cargo_home: Some(cargo_home.clone()),
+        ..Host::bare()
+    };
+    assert!(hooks_ran_loft(&scratch, &host));
+    let other = Scratch::empty();
+    place_loft(&other.home().join(".cargo/bin"), "loft");
+    let host = Host {
+        cargo_home: Some(cargo_home.join("missing")),
+        ..Host::bare()
+    };
+    assert!(!hooks_ran_loft(&other, &host));
+    let context = session_start_context(&other, &host).expect("a context");
+    assert!(context.contains("missing/bin/loft`"), "{context}");
 }
 
 #[cfg(unix)]

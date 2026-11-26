@@ -2,7 +2,7 @@
 # The Loft plugin's command hooks run `loft` through this script, with `loft`'s arguments as its
 # own (the Feature "The Loft plugin"). A `loftCommand` setting other than `loft` is run as
 # written. Otherwise it runs the `loft` on the search path, else the one `cargo install` puts in
-# ~/.cargo/bin, which a host that starts Claude Code without reading the shell's startup files
+# the bin of cargo's home, $CARGO_HOME or else ~/.cargo, which a host that starts Claude Code without reading the shell's startup files
 # leaves off the search path. Where no `loft` can be run, the SessionStart hook tells the agent
 # that Yard Client is off and how to turn it on, and every other hook prints nothing and exits 0,
 # so that Claude Code reports no hook error.
@@ -26,7 +26,8 @@ else
   if command -v loft >/dev/null 2>&1; then exec loft "$@"; fi
   tried="\`loft\` on the search path"
   home=${HOME:-$USERPROFILE}
-  for found in "$home/.cargo/bin/loft" "$home/.cargo/bin/loft.exe"; do
+  cargo=${CARGO_HOME:-$home/.cargo}
+  for found in "$cargo/bin/loft" "$cargo/bin/loft.exe"; do
     if [ -f "$found" ] && [ -x "$found" ]; then exec "$found" "$@"; fi
     tried="$tried, \`$found\`"
   done

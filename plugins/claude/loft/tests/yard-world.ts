@@ -127,10 +127,17 @@ let settle: (() => Promise<unknown>) | undefined
 
 export function world(
   on: On,
-  options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running'; home?: string; runnable?: readonly string[] } = {},
+  options: {
+    protocol?: number | 'none' | 'unrunnable'
+    serve?: 'serving' | 'running'
+    home?: string
+    runnable?: readonly string[]
+    /** Environment variables beside `HOME`. */
+    env?: Record<string, string>
+  } = {},
 ) {
   const clock = mock.clock(on, { now: Date.UTC(2026, 9, 22, 9, 30, 0) })
-  mock.env(on, { HOME })
+  mock.env(on, { HOME, ...options.env })
   const state = {
     session: SESSION,
     cwd: TREE,

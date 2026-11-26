@@ -69,16 +69,16 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
 
 /**
  * Asks `loft yard protocol` through `loftCommand`; where that is the bare `loft` and it cannot be
- * run, through the `loft` that `cargo install` puts in `~/.cargo/bin`, which a host that never
- * reads the shell's startup files leaves off the search path. The first that runs is the
- * session's `loft` from then on. Gives what that run gave, else what `loftCommand`'s gave, and
+ * run, through the `loft` that `cargo install` puts in the `bin` of cargo's home (`CARGO_HOME`,
+ * else `~/.cargo`), which a host that never reads the shell's startup files leaves off the search
+ * path. The first that runs is the session's `loft` from then on. Gives what that run gave, else what `loftCommand`'s gave, and
  * each command tried.
  */
 async function findLoft($: EngineInterface, cwd: string): Promise<{ checked: Ran; tried: string[] }> {
   const settings = state.settings
   const tried: string[] = []
   let first: Ran | undefined
-  for (const words of loftCandidates(settings.words, await homeOf($))) {
+  for (const words of loftCandidates(settings.words, await homeOf($), await $.env.get('CARGO_HOME'))) {
     tried.push(words.join(' '))
     const checked = await yard($, { ...settings, words }, cwd, ['protocol'], { beyond: false })
     if (checked.unrun === undefined) {

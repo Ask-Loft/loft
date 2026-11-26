@@ -35707,7 +35707,7 @@ links:
         name: "a loft that speaks the yard protocol turns Yard Client on: its six tools are registered at the start"
         body: 7a11c06a55dfb881d21494bfa855cde41e6e7df92f93146679ab191879e4c56e
   - node: 01a21838-627a-77f5-b8f0-19fed4433149
-    reviewed: c6a4fb025b773772d02f0d6f450274a86c542c5fdb378eb295e2c4243af209e6
+    reviewed: 7ab5c8e43b685a7bdcdf55b5f48d8f0bad241de54be50918fd28703d7a8caf95
     tests:
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_hooks_run_the_loft_in_cargo_s_bin_where_the_search_path_has_none"
@@ -35718,8 +35718,17 @@ links:
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "a_loft_command_of_blanks_or_of_loft_between_blanks_is_the_bare_loft_and_looks_in_cargo_s_bin"
         body: f79e01e3576122abe6d2dd76b2c72618d29e7deb307491d4d46d6d1c04c7dd4d
+  - node: 01a2184d-23f0-7216-834f-d3abe1ebd826
+    reviewed: d7bbe7a849275cf8ed67b2e637b4c8eabbe132fee8d5f1f2a054d5b73457e8f5
+    tests:
+      - file: "crates/loft-cli/tests/plugin_hooks.rs"
+        name: "the_claude_hooks_look_in_the_bin_of_the_cargo_home_that_cargo_home_names_and_not_in_cargo"
+        body: 908679e027f62fa1916742059de12eb969992e64fec535a875eebbe15ddb2107
+      - file: "plugins/claude/loft/tests/yard-find-loft.test.ts"
+        name: "where CARGO_HOME is set, the mod looks in its bin and not in ~/.cargo/bin"
+        body: 4bdf64e484f6caf6b7cfec442fbe0ce1072e299be63b0337013b1e2916c6ef74
   - node: 01a21838-627a-77f5-b8f0-19ff52e85eba
-    reviewed: 350f5a97140a9142d5fe966851007170e6b4013185df7188e4c28a115d338d50
+    reviewed: 2b53d510a7582deb3b695dcedac85a1fc9442ff32a8003933e3a0f1c24363641
     tests:
       - file: "crates/loft-cli/tests/plugin_hooks.rs"
         name: "the_claude_hooks_run_a_loft_exe_in_cargo_s_bin_as_windows_names_it"
