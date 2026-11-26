@@ -24908,7 +24908,31 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "a_late_simulator_stores_the_batch_and_answers_after_its_delay"
-        body: 5d48424cbc23444a81bd07d63177b31440c99216a9e004750650f82b7794a181
+        body: 8a36dd0664f9e991d54b27315507badc3b30a9884c182fce6e531a695ad72e04
+  - node: 01a213ce-418d-753d-a2da-ac738a0a774b
+    reviewed: eb0ae3cc276961c72bd278614d25393d22014265289654afedeed4252aca8836
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_that_asks_to_come_back_answers_its_status_and_retry_after"
+        body: e2b60fcbc849bcacadaac3de84c38f6a719f3acde3631ff1c41c4d30ab6d5dd7
+  - node: 01a213ce-418d-753d-a2da-ac74599ef1e3
+    reviewed: 5cf186c0c4f9eaf68ac16eb71d4505616fd2c542d3f3b5c67b6533e9f967d180
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_refusing_named_versions_refuses_them_and_stores_the_others"
+        body: 7b65b7e6325afdc228294b82f26ad97d1b911b3353c09d1901446bc2b3b25bdd
+  - node: 01a21406-1006-7412-b332-118ab687b777
+    reviewed: 63718f8c0d42437883f84d80129b3369d508523dcc69f0a0845dc8de0cf3d62d
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_putting_named_versions_off_answers_them_later_and_stores_none_of_them"
+        body: 07f062794c07dd53b2ba3ba16588fa525803d9ac5cab3e0d3a324d69769360e3
+  - node: 01a21406-1006-7412-b332-118b5ca18aa2
+    reviewed: 58e27a7dacd043cd738e71788349844e25f7603615b5ce2a744e43fd0159eba9
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_answering_with_a_named_body_answers_exactly_it"
+        body: baf4116f8ff8fce9497e0f419345600db15174d5bd39a11fe40485c8300783a9
   - node: 01a20de0-8348-72dc-8ab4-3db7fa378c36
     reviewed: f85ab3c55ff39ad8e09fa32aa008972724d2cd30aac8651d7f107ebd7f871be9
     tests:
@@ -24929,10 +24953,37 @@ links:
         body: 69c0093170e973633e59050546593a61c3f228ef6e5304996faaef7070bb1686
   - node: 01a20de0-8348-72dc-8ab4-3dbb2d996fa4
     reviewed: 4c42acae2ec15a7e7ed4873a8cad2abec27bd74b106b71ab82ef35a2b733172e
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
   - node: 01a20de0-8348-72dc-8ab4-3dbc5cd64e8e
     reviewed: 7f5a7218c6a457a788fbdb0b3e01365451fcd204767a2f978dd096b27bacf237
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_refusing_named_versions_refuses_them_and_stores_the_others"
+        body: 7b65b7e6325afdc228294b82f26ad97d1b911b3353c09d1901446bc2b3b25bdd
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_putting_named_versions_off_answers_them_later_and_stores_none_of_them"
+        body: 07f062794c07dd53b2ba3ba16588fa525803d9ac5cab3e0d3a324d69769360e3
+  - node: 01a213ce-418d-753d-a2da-ac753d3ff088
+    reviewed: 04c4c342a4d973196b9bf38c4aadf86a828feb141e5056b8eaa7172195dedfdf
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a21406-1006-7412-b332-118c4411a2ca
+    reviewed: 6d414fd0214b0c8fae8ffd30626b85031a9155ed718814fd5ee04039e04ad822
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_record_that_does_not_read_is_refused_and_the_others_are_stored"
+        body: 88015e0b67908a800e8196d09a9fce33b074220c5285c006e99e83931f528ef4
   - node: 01a20de0-8348-72dc-8ab4-3dbd9fac17e4
     reviewed: 554908e52d0c68883cbdb55e71bcf0a9ef14958070d66e17ee5619963c3e44ca
     tests:
@@ -24941,13 +24992,31 @@ links:
         body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
   - node: 01a20de0-8348-72dc-8ab4-3dbf426be513
     reviewed: 85a3576d45ede1d59689b330aeb3e8829eb5bd77b828c6f7f7aed99d955aecd2
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_holds_each_version_once_in_the_order_first_received"
+        body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
   - node: 01a20de0-8348-72dc-8ab4-3dc0f07af9eb
     reviewed: 543cb494933c14910718d1b0bf478f12919acc104af1511a2e014b12e7f83114
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_version_sent_under_another_yard_log_leaves_one_record_under_the_first"
+        body: 1daf7f3b372f0973b6ac8f7c0fa2709195bbd72410371e8c54c6ea2a5915f6d2
   - node: 01a20de0-8348-72dc-8ab4-3dc1874b3e23
     reviewed: df6d72cc0b8b19a5a858f67763a6ddfe4d3f04f0a35f29268d94b2417beed3a1
-    unverified: "The criterion changes in the second wave of connected mode, and its tests are reviewed again in that build."
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_version_sent_again_with_other_contents_leaves_the_first_record_as_it_was"
+        body: 140882b7b3fef43e592a6280a3d67901301658e5e701afdc1f11026801fa6f0b
   - node: 01a20de0-8348-72dc-8ab4-3dc3c351d49c
     reviewed: 13aade0e5a7a62577f6c640bc069a3820036d68286b13d7009b6fdfdb184a578
     tests:
@@ -24962,6 +25031,12 @@ links:
         body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
   - node: 01a20de0-8348-72dc-8ab4-3dc58f57b905
     reviewed: 2c6b56e15e11e1dbd445377d25101493e707ea5c3aff7cee1cad36d563483d49
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a213ce-418d-753d-a2da-ac76b7258e48
+    reviewed: e6a862f2cf0b9566a6a69d85e5fe13c020fd62e74115a5cf08b7a689eb4cd5c9
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_requires"

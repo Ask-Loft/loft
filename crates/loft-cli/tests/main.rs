@@ -193,6 +193,7 @@ mod yard_serve_usage;
 mod yard_serve_working_tree;
 mod yard_server_contract;
 mod yard_server_e2e;
+mod yard_server_scenarios;
 mod yard_settle;
 mod yard_skill;
 mod yard_take_up;
