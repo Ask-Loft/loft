@@ -296,3 +296,41 @@ fn a_flush_json_that_does_not_read_is_taken_as_holding_no_record_and_written_ane
     assert_eq!((code, &sent["outcome"]), (Some(0), &json!("sent")));
     assert_eq!(record(&yard, &server.url())["outcome"], "sent");
 }
+
+#[test]
+fn a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_as_later() {
+    use std::os::unix::fs::PermissionsExt as _;
+    let yard = Yard::new();
+    let variables = connected("http://127.0.0.1:1");
+    write(&yard, STAGE_BATCH, &variables);
+    let name = fs::read_dir(outbox(&yard))
+        .unwrap()
+        .next()
+        .unwrap()
+        .unwrap()
+        .file_name();
+    let key = name.to_string_lossy().trim_end_matches(".json").to_owned();
+    fs::write(
+        flush_json(&yard),
+        json!({ "http://127.0.0.1:1": {
+            "ended": "2026-01-01T00:00:00Z", "outcome": "sent", "why": null,
+            "notBefore": null, "later": { key: "unknown_report_version" },
+        }})
+        .to_string(),
+    )
+    .unwrap();
+    let lock = yard.scratch.home().join(".yard/flush.lock");
+    fs::write(&lock, "").unwrap();
+    fs::set_permissions(&lock, fs::Permissions::from_mode(0o000)).unwrap();
+    if fs::OpenOptions::new().write(true).open(&lock).is_ok() {
+        eprintln!("skipped: the lock file stays writable for this user, as for root");
+        return;
+    }
+    let (_, failed) = flush(&yard, &variables);
+    fs::set_permissions(&lock, fs::Permissions::from_mode(0o644)).unwrap();
+    assert_eq!(failed["outcome"], "failed");
+    assert_eq!(
+        (&failed["later"], &failed["remaining"]),
+        (&json!(1), &json!(0))
+    );
+}

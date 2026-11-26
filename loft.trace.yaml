@@ -40051,6 +40051,9 @@ links:
     reviewed: 2ee47956b2f49b25c3e3e7fc4505468c45329a992443b93ac7ef30cd8f3c76de
     tests:
       - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_as_later"
+        body: 0f79e97912429c427e379d451490d2f9e9fea0bd796c6a1c3862e269bbb5ba1d
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
         name: "a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later"
         body: c046953488305cb3735253c5b0e9ce174ce7fe1840c941361a3f6fe1750b54c2
       - file: "crates/loft-cli/tests/yard_flush_runs.rs"
@@ -40068,6 +40071,9 @@ links:
   - node: 01a21406-1007-7756-963c-2314f22f8083
     reviewed: 3f75693edd6183fcced3768a122f124d6dcfbaec420524e612af29c5feecc7e6
     tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_as_later"
+        body: 0f79e97912429c427e379d451490d2f9e9fea0bd796c6a1c3862e269bbb5ba1d
       - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
         name: "a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later"
         body: c046953488305cb3735253c5b0e9ce174ce7fe1840c941361a3f6fe1750b54c2

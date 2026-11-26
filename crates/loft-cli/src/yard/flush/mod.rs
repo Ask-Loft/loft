@@ -139,31 +139,25 @@ pub fn run(args: &FlushArgs) -> Finished {
         Mode::On(connection) => connection,
     };
     let endpoint = connection.outbox.endpoint().to_owned();
+    let unlocked = |flushed: Flushed| {
+        let held = record::read(&connection.home, &endpoint)
+            .map(|record| record.later_keys())
+            .unwrap_or_default();
+        left(Flushed { held, ..flushed }, &connection.outbox)
+    };
     let flushed = match lock::try_lock(&connection.home.dir().join(LOCK)) {
         Ok(Some(_held)) => locked(&connection),
         Ok(None) => {
-            let held = record::read(&connection.home, &endpoint)
-                .map(|record| record.later_keys())
-                .unwrap_or_default();
-            let busy = left(
-                Flushed {
-                    held,
-                    ..Flushed::quiet("busy")
-                },
-                &connection.outbox,
-            );
+            let busy = unlocked(Flushed::quiet("busy"));
             let line = format!(
                 "busy: another flush sends to Yard Server at {endpoint}; {} remaining.",
                 busy.remaining()
             );
             return report(as_json, &busy, &line);
         }
-        Err(error) => left(
-            Flushed::failed(Failed::outbox(format!(
-                "the lock of the flush cannot be taken: {error}"
-            ))),
-            &connection.outbox,
-        ),
+        Err(error) => unlocked(Flushed::failed(Failed::outbox(format!(
+            "the lock of the flush cannot be taken: {error}"
+        )))),
     };
     let mut line = format!(
         "{} to Yard Server at {endpoint}: {} sent, {} remaining, {} later, {} skipped, {} moved into dead/.",
