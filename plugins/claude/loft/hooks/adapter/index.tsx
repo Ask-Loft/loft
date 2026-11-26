@@ -63,10 +63,10 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   startFlush($, state.settings, state.flushing, cwd)
   $.clock.every(BEAT, async () => {
     state.server.ticks += 1
-    const now = await $.session.cwd()
-    void beat($, state.settings, state.server, state.box, await continued($), now)
+    const current = await $.session.cwd()
+    void beat($, state.settings, state.server, state.box, await continued($), current)
     void flush($, state.box)
-    flushAtBeat($, state.settings, state.flushing, now)
+    flushAtBeat($, state.settings, state.flushing, current)
   })
   return true
 }
