@@ -1,11 +1,11 @@
 key: 01a21838-6272-74ef-9f37-1ddbbcbc7910
 slug: the-plugin-looks-for-loft-in-cargo-s-bin-beyond-the-search-path
-title: "Beyond the search path, the plugin looks for loft in ~/.cargo/bin alone"
-context: "`cargo install` puts `loft` in `~/.cargo/bin`, which a shell's startup files add to the search path. A host that starts Claude Code without reading them, such as an app opened from the desktop or a host built on the Agent SDK, starts sessions in which the bare `loft` cannot be run, so Yard Client is off there although `loft` is installed. The command hooks run on every tool call, so whatever they try costs every call."
+title: "Beyond the search path, the plugin looks for loft in cargo's bin directory alone"
+context: "`cargo install` puts `loft` in the `bin` directory of cargo's home, `CARGO_HOME` where it is set and `~/.cargo` otherwise, as `loft` itself reckons a cargo install. A shell's startup files add that directory to the search path. A host that starts Claude Code without reading them, such as an app opened from the desktop or a host built on the Agent SDK, starts sessions in which the bare `loft` cannot be run, so Yard Client is off there although `loft` is installed. The command hooks run on every tool call, so whatever they try costs every call."
 state:
   kind: accepted
   selectedOption: 01a21838-6272-74ef-9f37-1ddffe5c3853
-  outcome: "While `loftCommand` is `loft`, the mod and the command hooks run the `loft` on the search path, else `~/.cargo/bin/loft`; a `loftCommand` the person set is run as written. A `loft` installed anywhere else, such as under a version manager for Node, is reached by putting it on the search path or naming it in `loftCommand`."
+  outcome: "While `loftCommand` is `loft`, the mod and the command hooks run the `loft` on the search path, else the `loft` in `$CARGO_HOME/bin`, or `~/.cargo/bin` where `CARGO_HOME` is not set; a `loftCommand` the person set is run as written. A `loft` installed anywhere else, such as under a version manager for Node, is reached by putting it on the search path or naming it in `loftCommand`."
 drivers:
   - key: 01a21838-6272-74ef-9f37-1ddc15f14dcf
     kind: local
@@ -21,10 +21,10 @@ drivers:
     statement: "A `loft` that the person's shell finds runs wherever it was installed."
 options:
   - key: 01a21838-6272-74ef-9f37-1ddffe5c3853
-    title: "The search path, then ~/.cargo/bin"
-    description: "Run the bare `loft`, and where it cannot be run, `~/.cargo/bin/loft`."
+    title: "The search path, then cargo's bin directory"
+    description: "Run the bare `loft`, and where it cannot be run, the `loft` in cargo's `bin` directory."
   - key: 01a21838-6272-74ef-9f37-1de0f7c6368f
-    title: "The search path, ~/.cargo/bin, then the person's shell"
+    title: "The search path, cargo's bin directory, then the person's shell"
     description: "Also ask the person's interactive login shell where `loft` is, once a session, with a time limit."
   - key: 01a21838-6272-74ef-9f37-1de130ce288e
     title: "The search path alone"
@@ -45,7 +45,7 @@ assessments:
   - option: 01a21838-6272-74ef-9f37-1de0f7c6368f
     driver: 01a21838-6272-74ef-9f37-1ddc15f14dcf
     rating: supports
-    rationale: "`~/.cargo/bin` is tried before the shell"
+    rationale: "cargo's `bin` directory is tried before the shell"
   - option: 01a21838-6272-74ef-9f37-1de0f7c6368f
     driver: 01a21838-6272-74ef-9f37-1ddd2797dc2f
     rating: conflicts

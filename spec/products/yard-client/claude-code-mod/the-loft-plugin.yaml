@@ -54,15 +54,17 @@ requirements:
     statement:
       form: ubiquitous
       system: "The Loft plugin"
-      shall: "look for `loft` on the search path and then at `~/.cargo/bin/loft` while the `loftCommand` setting is `loft`, in the mod and in each command hook alike."
-    body: "`cargo install` puts `loft` in `~/.cargo/bin`, which a shell's startup files add to the search path. A host that starts Claude Code without reading them, such as an app opened from the desktop or a host built on the Agent SDK, starts its sessions with a search path that lacks it."
+      shall: "look for `loft` on the search path and then in the `bin` directory of cargo's home while the `loftCommand` setting is `loft`, in the mod and in each command hook alike."
+    body: "`cargo install` puts `loft` in the `bin` directory of cargo's home, `~/.cargo` unless `CARGO_HOME` names another, which a shell's startup files add to the search path. A host that starts Claude Code without reading them, such as an app opened from the desktop or a host built on the Agent SDK, starts its sessions with a search path that lacks it."
     criteria:
       - key: 01a21838-627a-77f5-b8f0-19fddce71f03
         name: "Where `loft` is on the search path, the mod and each command hook run it."
       - key: 01a21838-627a-77f5-b8f0-19fed4433149
-        name: "Where `loft` is not on the search path and `~/.cargo/bin/loft` can be run, the mod and each command hook run `~/.cargo/bin/loft`."
+        name: "Where `loft` is not on the search path and the `loft` in cargo's `bin` directory can be run, the mod and each command hook run it."
+      - key: 01a2184d-23f0-7216-834f-d3abe1ebd826
+        name: "Cargo's home is the directory that `CARGO_HOME` names where it is set, and `~/.cargo` otherwise."
       - key: 01a21838-627a-77f5-b8f0-19ff52e85eba
-        name: "On Windows, the mod and each command hook look for `loft.exe` in `.cargo/bin` under the home directory."
+        name: "On Windows, the mod and each command hook also look for `loft.exe` in cargo's `bin` directory."
       - key: 01a21838-627a-77f5-b8f0-1a00b97f8645
         name: "A `loftCommand` other than `loft` is run as written, and nothing else is tried."
       - key: 01a21838-627a-77f5-b8f0-1a011957e079
