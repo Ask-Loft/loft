@@ -3,7 +3,6 @@
 //! an answer, and `~/.yard/flush.json` records each address's last run.
 
 use std::fs;
-use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
@@ -13,12 +12,10 @@ use yardlog_store::lock;
 
 use crate::common::EPOCH;
 use crate::yard::{Yard, document};
-use crate::yard_connected::{STAGE_BATCH, connected, entries, flush, notes, outbox, write};
-
-/// `~/.yard/flush.json` on the machine `yard` runs on.
-fn flush_json(yard: &Yard) -> PathBuf {
-    yard.scratch.home().join(".yard/flush.json")
-}
+use crate::yard_connected::{
+    STAGE_BATCH, connected, entries, flush, flush_json, keys, notes, outbox, put_off_record,
+    readdress, write,
+};
 
 /// The record `~/.yard/flush.json` holds for `endpoint`.
 fn record(yard: &Yard, endpoint: &str) -> Value {
@@ -231,18 +228,9 @@ fn a_busy_run_or_one_paused_without_a_request_leaves_the_record_as_it_was() {
 fn a_run_records_the_versions_yard_server_will_take_later_with_their_codes() {
     let yard = Yard::new();
     write(&yard, STAGE_BATCH, &connected("http://127.0.0.1:1"));
-    let key = fs::read_dir(outbox(&yard))
-        .unwrap()
-        .next()
-        .unwrap()
-        .unwrap()
-        .file_name();
-    let key = key.to_string_lossy().trim_end_matches(".json").to_owned();
+    let key = keys(&yard)[0].clone();
     let server = YardServer::putting_off(&[(&key, "unknown_report_version")]);
-    let entry = outbox(&yard).join(format!("{key}.json"));
-    let mut readdressed: Value = serde_json::from_slice(&fs::read(&entry).unwrap()).unwrap();
-    readdressed["to"]["endpoint"] = json!(server.url());
-    fs::write(&entry, readdressed.to_string()).unwrap();
+    readdress(&yard, &server.url());
     flush(&yard, &connected(&server.url()));
     assert_eq!(
         record(&yard, &server.url())["later"],
@@ -254,18 +242,9 @@ fn a_run_records_the_versions_yard_server_will_take_later_with_their_codes() {
 fn a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later() {
     let yard = Yard::new();
     write(&yard, STAGE_BATCH, &connected("http://127.0.0.1:1"));
-    let key = fs::read_dir(outbox(&yard))
-        .unwrap()
-        .next()
-        .unwrap()
-        .unwrap()
-        .file_name();
-    let key = key.to_string_lossy().trim_end_matches(".json").to_owned();
+    let key = keys(&yard)[0].clone();
     let server = YardServer::putting_off(&[(&key, "unknown_report_version")]);
-    let entry = outbox(&yard).join(format!("{key}.json"));
-    let mut readdressed: Value = serde_json::from_slice(&fs::read(&entry).unwrap()).unwrap();
-    readdressed["to"]["endpoint"] = json!(server.url());
-    fs::write(&entry, readdressed.to_string()).unwrap();
+    readdress(&yard, &server.url());
     let variables = connected(&server.url());
     let (_, sent) = flush(&yard, &variables);
     let counts = |run: &Value| (run["later"].clone(), run["remaining"].clone());
@@ -303,22 +282,9 @@ fn a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_
     let yard = Yard::new();
     let variables = connected("http://127.0.0.1:1");
     write(&yard, STAGE_BATCH, &variables);
-    let name = fs::read_dir(outbox(&yard))
-        .unwrap()
-        .next()
-        .unwrap()
-        .unwrap()
-        .file_name();
-    let key = name.to_string_lossy().trim_end_matches(".json").to_owned();
-    fs::write(
-        flush_json(&yard),
-        json!({ "http://127.0.0.1:1": {
-            "ended": "2026-01-01T00:00:00Z", "outcome": "sent", "why": null,
-            "notBefore": null, "later": { key: "unknown_report_version" },
-        }})
-        .to_string(),
-    )
-    .unwrap();
+    let key = keys(&yard)[0].clone();
+    let record = json!({ "http://127.0.0.1:1": put_off_record(&key) });
+    fs::write(flush_json(&yard), record.to_string()).unwrap();
     let lock = yard.scratch.home().join(".yard/flush.lock");
     fs::write(&lock, "").unwrap();
     fs::set_permissions(&lock, fs::Permissions::from_mode(0o000)).unwrap();

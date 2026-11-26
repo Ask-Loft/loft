@@ -59,8 +59,6 @@ pub struct Entry {
 pub struct Taken {
     /// The oldest entries, at most as many as were asked for.
     pub entries: Vec<Entry>,
-    /// The entries of a newer format, left in place.
-    pub skipped: usize,
     /// The files moved into `dead/`.
     pub dead: usize,
 }
@@ -177,12 +175,11 @@ impl Outbox {
             };
             match read(&name, &text) {
                 Read::Entry {
-                    endpoint, record, ..
-                } if endpoint == self.endpoint => {
-                    room.take(&mut taken.entries, &name, record, size);
-                }
-                Read::Entry { .. } => {}
-                Read::Newer => taken.skipped += 1,
+                    endpoint,
+                    key,
+                    record,
+                } if endpoint == self.endpoint => room.take(&mut taken.entries, key, record, size),
+                Read::Entry { .. } | Read::Newer => {}
                 Read::Foreign => {
                     taken.dead += usize::from(self.bury_file(&name, NOT_AN_ENTRY).unwrap_or(false));
                 }
@@ -257,14 +254,14 @@ impl Room {
         self.full || taken == self.most
     }
 
-    /// Adds the entry `name`, of `size` bytes and holding `record`, to `entries` where it fits.
-    fn take(&mut self, entries: &mut Vec<Entry>, name: &str, record: &str, size: u64) {
-        let taken = entries.len();
-        self.full = self.is_full(taken) || (taken > 0 && self.bytes + size > self.most_bytes);
+    /// Adds the entry of the version `key`, of `size` bytes and holding `record`, to `entries`
+    /// where it fits, the room not being full.
+    fn take(&mut self, entries: &mut Vec<Entry>, key: String, record: &str, size: u64) {
+        self.full = !entries.is_empty() && self.bytes + size > self.most_bytes;
         if !self.full {
             self.bytes += size;
             entries.push(Entry {
-                key: key_of(name).to_owned(),
+                key,
                 record: record.to_owned(),
             });
         }

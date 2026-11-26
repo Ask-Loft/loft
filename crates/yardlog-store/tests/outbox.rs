@@ -288,7 +288,6 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
         &entry(ENDPOINT, 2, 1),
     );
     let taken = ours.take(16, MOST_BYTES).unwrap();
-    assert_eq!(taken.skipped, 1);
     assert_eq!(taken.entries.len(), 1);
     assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000002");
     assert!(
@@ -303,7 +302,7 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
 fn an_empty_or_missing_outbox_has_nothing_to_take() {
     let scratch = Scratch::new();
     let taken = outbox(&scratch, ENDPOINT).take(16, MOST_BYTES).unwrap();
-    assert_eq!((taken.entries.len(), taken.skipped, taken.dead), (0, 0, 0));
+    assert_eq!((taken.entries.len(), taken.dead), (0, 0));
 }
 
 /// An entry of `yardlog-outbox/<version>` for `endpoint`, of the version `n`, whose file is

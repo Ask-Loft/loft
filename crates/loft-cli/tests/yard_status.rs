@@ -12,7 +12,9 @@ use software_plant::{Clock, YardServer};
 use crate::common::{EPOCH, Scratch};
 use crate::snapshot::snapshot;
 use crate::yard::{Yard, document};
-use crate::yard_connected::{STAGE_BATCH, connected, flush, notes, outbox, pairs, write};
+use crate::yard_connected::{
+    STAGE_BATCH, connected, flush, flush_json, keys, notes, outbox, pairs, put_off_record, write,
+};
 
 /// `loft yard status` under `variables`, as text and as JSON.
 fn status(yard: &Yard, variables: &[(&'static str, String)]) -> (Output, Value) {
@@ -155,22 +157,9 @@ fn waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft() 
     let theirs = YardServer::accepting();
     write(&yard, STAGE_BATCH, &connected(&theirs.url()));
     write(&yard, &notes(2), &connected("http://127.0.0.1:1"));
-    let mut put_off: Vec<String> = fs::read_dir(outbox(&yard))
-        .unwrap()
-        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
-        .collect();
-    put_off.sort();
-    let key = put_off[2].trim_end_matches(".json").to_owned();
-    let home = yard.scratch.home().join(".yard");
-    fs::write(
-        home.join("flush.json"),
-        json!({ "http://127.0.0.1:1": {
-            "ended": "2026-01-01T00:00:00Z", "outcome": "sent", "why": null,
-            "notBefore": null, "later": { key.clone(): "unknown_report_version" },
-        }})
-        .to_string(),
-    )
-    .unwrap();
+    let key = keys(&yard)[2].clone();
+    let record = json!({ "http://127.0.0.1:1": put_off_record(&key) });
+    fs::write(flush_json(&yard), record.to_string()).unwrap();
     fs::write(
         outbox(&yard).join("00000000-0000-7000-8000-000000000000.json"),
         json!({"format": "yardlog-outbox/9"}).to_string(),
@@ -197,24 +186,12 @@ fn an_entry_counts_as_later_by_the_record_of_the_address_it_is_for_whatever_the_
     let yard = Yard::new();
     write(&yard, STAGE_BATCH, &connected("http://127.0.0.1:1"));
     write(&yard, &notes(1), &connected("http://127.0.0.1:2"));
-    let mut names: Vec<String> = fs::read_dir(outbox(&yard))
-        .unwrap()
-        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
-        .collect();
-    names.sort();
-    let key = |n: usize| names[n].trim_end_matches(".json").to_owned();
-    let record = |key: String| {
-        json!({
-            "ended": "2026-01-01T00:00:00Z", "outcome": "sent", "why": null,
-            "notBefore": null, "later": { key: "unknown_report_version" },
-        })
-    };
-    fs::write(
-        yard.scratch.home().join(".yard/flush.json"),
-        json!({ "http://127.0.0.1:1": record(key(1)), "http://127.0.0.1:2": record(key(1)) })
-            .to_string(),
-    )
-    .unwrap();
+    let theirs = &keys(&yard)[1];
+    let records = json!({
+        "http://127.0.0.1:1": put_off_record(theirs),
+        "http://127.0.0.1:2": put_off_record(theirs),
+    });
+    fs::write(flush_json(&yard), records.to_string()).unwrap();
     let (text, json) = status(&yard, &[]);
     assert_eq!(
         line(&text, "waiting"),

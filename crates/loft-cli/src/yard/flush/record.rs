@@ -37,8 +37,8 @@ impl Record {
 
     /// The keys of the versions Yard Server will take later.
     #[must_use]
-    pub fn later_keys(&self) -> BTreeSet<String> {
-        self.later.keys().cloned().collect()
+    pub fn later_keys(self) -> BTreeSet<String> {
+        self.later.into_keys().collect()
     }
 }
 

@@ -14,7 +14,6 @@ mod settle;
 #[cfg(test)]
 mod tests;
 
-use std::collections::BTreeSet;
 use std::time::Duration;
 
 use loft_ports::clock::Clock as _;
@@ -30,6 +29,7 @@ use crate::environment;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::{errln, outln};
+use record::Record;
 use sending::Flushed;
 use settle::Failed;
 
@@ -103,11 +103,7 @@ pub(in crate::yard) fn due(mode: &Mode, now: u64) -> bool {
     };
     let last = record::read(&connection.home, connection.outbox.endpoint());
     let paused = last.as_ref().and_then(|last| last.paused(now)).is_some();
-    let later = last.map(|last| last.later).unwrap_or_default();
-    !paused
-        && waiting(&connection.outbox)
-            .iter()
-            .any(|key| !later.contains_key(key))
+    !paused && aside(Flushed::quiet("due"), &connection.outbox, last).remaining() > 0
 }
 
 /// How long a flush waits for an answer: `seconds` where [`TIMEOUT`] gives them, else 10 seconds.
@@ -139,11 +135,9 @@ pub fn run(args: &FlushArgs) -> Finished {
         Mode::On(connection) => connection,
     };
     let endpoint = connection.outbox.endpoint().to_owned();
-    let unlocked = |flushed: Flushed| {
-        let held = record::read(&connection.home, &endpoint)
-            .map(|record| record.later_keys())
-            .unwrap_or_default();
-        left(Flushed { held, ..flushed }, &connection.outbox)
+    let unlocked = |flushed| {
+        let last = record::read(&connection.home, &endpoint);
+        aside(flushed, &connection.outbox, last)
     };
     let flushed = match lock::try_lock(&connection.home.dir().join(LOCK)) {
         Ok(Some(_held)) => locked(&connection),
@@ -190,10 +184,9 @@ fn locked(connection: &Connection) -> Flushed {
     if let Some(time) = recorded.paused(now) {
         let paused = Flushed {
             not_before: Some(time),
-            held: recorded.later_keys(),
             ..Flushed::quiet("paused")
         };
-        return left(paused, &connection.outbox);
+        return aside(paused, &connection.outbox, Some(recorded));
     }
     let mut flushed = match wait() {
         Ok(wait) => sending::drain(&connection.outbox, &connection.token, wait, clock),
@@ -223,16 +216,6 @@ fn locked(connection: &Connection) -> Flushed {
     flushed
 }
 
-/// The keys of the entries waiting in `outbox` for its address.
-fn waiting(outbox: &Outbox) -> BTreeSet<String> {
-    outbox::survey(outbox.dir())
-        .ok()
-        .and_then(|mut survey| survey.waiting.remove(outbox.endpoint()))
-        .unwrap_or_default()
-        .into_iter()
-        .collect()
-}
-
 /// `flushed` with what is left in `outbox` after it: the keys of the entries for its address,
 /// and the entries of a newer format, passed over.
 fn left(flushed: Flushed, outbox: &Outbox) -> Flushed {
@@ -243,6 +226,13 @@ fn left(flushed: Flushed, outbox: &Outbox) -> Flushed {
         skipped: survey.newer,
         ..flushed
     }
+}
+
+/// `flushed`, of a run that sent nothing, with what is left in `outbox` and the keys `last`, the
+/// record of the address's last run, holds as later.
+fn aside(flushed: Flushed, outbox: &Outbox, last: Option<Record>) -> Flushed {
+    let held = last.map(Record::later_keys).unwrap_or_default();
+    left(Flushed { held, ..flushed }, outbox)
 }
 
 fn report(as_json: bool, flushed: &Flushed, line: &str) -> Finished {

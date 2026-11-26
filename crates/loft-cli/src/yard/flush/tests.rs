@@ -95,11 +95,7 @@ impl software_plant::http::Responder for StoresThenComesBack {
     fn answer(&mut self, request: &software_plant::http::Request) -> software_plant::http::Answer {
         self.answered += 1;
         if self.answered > 1 {
-            let mut response = software_plant::http::Response::empty(429);
-            response
-                .headers
-                .push(("Retry-After".to_owned(), "60".to_owned()));
-            return response.into();
+            return come_back("60");
         }
         let batch: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
         let outcomes: Vec<serde_json::Value> = batch["records"]
@@ -153,12 +149,17 @@ struct SlowToComeBack(std::sync::Arc<std::sync::atomic::AtomicU64>);
 impl software_plant::http::Responder for SlowToComeBack {
     fn answer(&mut self, _request: &software_plant::http::Request) -> software_plant::http::Answer {
         self.0.fetch_add(9, std::sync::atomic::Ordering::SeqCst);
-        let mut response = software_plant::http::Response::empty(429);
-        response
-            .headers
-            .push(("Retry-After".to_owned(), "5".to_owned()));
-        response.into()
+        come_back("5")
     }
+}
+
+/// A `429` asking to come back after `retry_after`.
+fn come_back(retry_after: &str) -> software_plant::http::Answer {
+    let mut response = software_plant::http::Response::empty(429);
+    response
+        .headers
+        .push(("Retry-After".to_owned(), retry_after.to_owned()));
+    response.into()
 }
 
 #[test]

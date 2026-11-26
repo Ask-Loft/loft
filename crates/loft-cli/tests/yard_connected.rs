@@ -48,6 +48,43 @@ pub fn outbox(yard: &Yard) -> PathBuf {
     yard.scratch.home().join(".yard/outbox")
 }
 
+/// The keys of the entries waiting in the outbox, oldest first.
+pub fn keys(yard: &Yard) -> Vec<String> {
+    let Ok(listing) = fs::read_dir(outbox(yard)) else {
+        return Vec::new();
+    };
+    let mut keys: Vec<String> = listing
+        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
+        .filter_map(|name| name.strip_suffix(".json").map(str::to_owned))
+        .collect();
+    keys.sort();
+    keys
+}
+
+/// Rewrites each entry of the outbox for the address `endpoint`.
+pub fn readdress(yard: &Yard, endpoint: &str) {
+    for key in keys(yard) {
+        let file = outbox(yard).join(format!("{key}.json"));
+        let mut entry: Value = serde_json::from_slice(&fs::read(&file).unwrap()).unwrap();
+        entry["to"]["endpoint"] = json!(endpoint);
+        fs::write(&file, entry.to_string()).unwrap();
+    }
+}
+
+/// `~/.yard/flush.json` on the machine `yard` runs on.
+pub fn flush_json(yard: &Yard) -> PathBuf {
+    yard.scratch.home().join(".yard/flush.json")
+}
+
+/// The record of a run, as `~/.yard/flush.json` keeps it, in which Yard Server put off the
+/// version `key`.
+pub fn put_off_record(key: &str) -> Value {
+    json!({
+        "ended": "2026-01-01T00:00:00Z", "outcome": "sent", "why": null,
+        "notBefore": null, "later": { key: "unknown_report_version" },
+    })
+}
+
 /// The entries waiting in the outbox, oldest first, read as JSON.
 pub fn entries(yard: &Yard) -> Vec<Value> {
     let Ok(listing) = fs::read_dir(outbox(yard)) else {

@@ -9,20 +9,9 @@ use serde_json::{Value, json};
 use software_plant::YardServer;
 
 use crate::yard::Yard;
-use crate::yard_connected::{STAGE_BATCH, connected, entries, flush, notes, outbox, write};
-
-/// The keys of the entries waiting in the outbox, oldest first.
-fn keys(yard: &Yard) -> Vec<String> {
-    let Ok(listing) = fs::read_dir(outbox(yard)) else {
-        return Vec::new();
-    };
-    let mut keys: Vec<String> = listing
-        .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
-        .filter_map(|name| name.strip_suffix(".json").map(str::to_owned))
-        .collect();
-    keys.sort();
-    keys
-}
+use crate::yard_connected::{
+    STAGE_BATCH, connected, entries, flush, keys, notes, outbox, readdress, write,
+};
 
 /// The files of `dead/`, each with the reason kept beside it.
 fn dead(yard: &Yard) -> Vec<(String, String)> {
@@ -111,16 +100,6 @@ fn an_entry_whose_version_is_refused_is_moved_into_dead_with_the_code() {
             "refused too_old".to_owned()
         )]
     );
-}
-
-/// Rewrites each entry of the outbox for the address `endpoint`.
-fn readdress(yard: &Yard, endpoint: &str) {
-    for key in keys(yard) {
-        let file = outbox(yard).join(format!("{key}.json"));
-        let mut entry: Value = serde_json::from_slice(&fs::read(&file).unwrap()).unwrap();
-        entry["to"]["endpoint"] = json!(endpoint);
-        fs::write(&file, entry.to_string()).unwrap();
-    }
 }
 
 #[test]
