@@ -207,8 +207,9 @@ fn put(mode: &super::Mode, endpoint: &str, key: &str, format: &str) {
     };
     let dir = connection.outbox.dir();
     fs::create_dir_all(dir).unwrap();
+    let record = format!(r#"{{"record":"version","version":{{"key":"{key}"}}}}"#);
     let mut entry: serde_json::Value =
-        serde_json::from_str(&yardlog::entry::write(endpoint, r#"{"record":"version"}"#)).unwrap();
+        serde_json::from_str(&yardlog::entry::write(endpoint, &record)).unwrap();
     entry["format"] = serde_json::json!(format);
     fs::write(dir.join(format!("{key}.json")), entry.to_string()).unwrap();
 }

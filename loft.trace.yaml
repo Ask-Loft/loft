@@ -39832,6 +39832,9 @@ links:
     reviewed: f3e456e54b4082ce42408ff4e8b912a79c312639d6114e1ebcabe9524637d137
     tests:
       - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "an_entry_whose_record_holds_no_version_key_is_moved_into_dead_and_the_others_are_taken"
+        body: 213816da666aa65d3f1d10c10ab6d51dd5f03411042fd7272a2337319fd64095
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
         name: "a_file_that_is_not_an_entry_is_moved_into_dead_with_the_reason_not_an_entry"
         body: 615bdce42364108bb4eab45753a51c022f90fb171c0e0ea12da4f39f3fe4e0e0
   - node: 01a213cb-9c28-769e-b7c8-43d4b624b399

@@ -31,7 +31,8 @@ pub enum Read<'a> {
     Entry { endpoint: String, record: &'a str },
     /// An entry of a newer version of the format, for a newer `loft` to send.
     Newer,
-    /// Not an entry: not JSON, another format, or an entry without its address or record.
+    /// Not an entry: not JSON, another format, or an entry without its address, or without a record
+    /// that holds its version's key.
     Foreign,
 }
 
@@ -55,9 +56,16 @@ pub fn read(bytes: &[u8]) -> Read<'_> {
         .and_then(|raw| serde_json::from_str::<serde_json::Value>(raw).ok())
         .and_then(|to| to.get("endpoint")?.as_str().map(str::to_owned));
     match (endpoint, field("record")) {
-        (Some(endpoint), Some(record)) if record.starts_with('{') => {
-            Read::Entry { endpoint, record }
-        }
+        (Some(endpoint), Some(record)) if keyed(record) => Read::Entry { endpoint, record },
         _ => Read::Foreign,
     }
+}
+
+/// Whether `record` is an object that holds its version's key, as each record of a batch must:
+/// Yard Server refuses a whole batch where one record's key does not read.
+fn keyed(record: &str) -> bool {
+    serde_json::from_str::<serde_json::Value>(record)
+        .ok()
+        .and_then(|record| record.get("version")?.get("key")?.as_str().map(drop))
+        .is_some()
 }
