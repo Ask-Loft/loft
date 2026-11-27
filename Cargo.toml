@@ -21,12 +21,12 @@ keywords = ["specification", "requirements", "ears", "traceability", "git"]
 
 [workspace.dependencies]
 # The published crates depend on one another at the release they ship in.
-loft-common = { path = "crates/loft-common", version = "2.4.2" }
-loft-ports = { path = "crates/loft-ports", version = "2.4.2" }
-loftspec = { path = "crates/loftspec", version = "2.4.2" }
-loftspec-store = { path = "crates/loftspec-store", version = "2.4.2" }
-yardlog = { path = "crates/yardlog", version = "2.4.2" }
-yardlog-store = { path = "crates/yardlog-store", version = "2.4.2" }
+loft-common = { path = "crates/loft-common", version = "2.4.3" }
+loft-ports = { path = "crates/loft-ports", version = "2.4.3" }
+loftspec = { path = "crates/loftspec", version = "2.4.3" }
+loftspec-store = { path = "crates/loftspec-store", version = "2.4.3" }
+yardlog = { path = "crates/yardlog", version = "2.4.3" }
+yardlog-store = { path = "crates/yardlog-store", version = "2.4.3" }
 clap = { version = "4", features = ["derive"] }
 # Pinned: the Yard page links a bare address as this version's port of cmark-gfm does, and the
 # criteria of bare addresses are checked against it before a new version is taken.

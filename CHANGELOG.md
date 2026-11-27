@@ -5,6 +5,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+## 2.4.3 (2026-11-27)
+
 - A Claude Code session whose `yardListen` setting is empty no longer narrows the Yard page
   server to the loopback interface. A session that loads only the project's settings, such
   as a reviewer started with `claude -p --setting-sources project`, used to replace a page server
