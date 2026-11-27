@@ -41,6 +41,7 @@ mod standing;
 mod task;
 mod totals;
 mod upgrade;
+mod uses_loft;
 mod views;
 mod wait;
 mod withdraw;
@@ -71,7 +72,7 @@ pub fn run(root: &Path, action: YardAction) -> Finished {
         YardAction::Published(args) => published::run(root, args),
         YardAction::Answer(args) => answer::run(root, args),
         YardAction::Continue(args) => continuation::run(&args),
-        YardAction::Protocol { output } => protocol::run(output.json()),
+        YardAction::Protocol { output } => protocol::run(root, output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),
         YardAction::Consultation(args) => consultation::run(root, &args),
         YardAction::Page(args) => page_command::run(root, &args),

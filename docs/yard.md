@@ -94,6 +94,17 @@ move an installed plugin to that version. The plugin's settings:
 | `yardListen` | empty | The IP addresses of the machine the page server listens on beside `127.0.0.1`, separated by commas, `0.0.0.0` for every network; empty, the page opens on this machine alone |
 | `baseBranch` | `develop` | The base branch Yard Log records where git names none |
 
+The plugin can stay enabled for you in every project: Yard Client acts only in a repository that
+uses Loft, and leaves every other session as it would be without the plugin, with no context, no
+tools, no page server and no file written. A repository uses Loft where the session's directory,
+or a directory above it up to the top of its worktree, holds `spec/loftspec.yaml`,
+`loft.lock.json` or a Yard Log of any branch under `.yard/`. Where none of them is there yet, as
+in a repository that keeps only Yard Log, ignores `.yard/` and has a fresh worktree, or a
+monorepo whose `spec/` lies in a package, turn Yard Client on with `git config loft.yard true`,
+which every worktree of the repository shares; `git config --global loft.yard true` turns it on
+in every repository. `loft yard protocol` says whether the directory it runs in uses Loft, and
+what shows it. The Codex plugin follows the same rule.
+
 The plugin works the same on every machine. Where an organization manages Claude Code, or the
 session is signed in with a Team or Enterprise account, Claude Code's built-in guard skips a
 user's hooks on several events. So the plugin gives each session its Yard context, follows plan

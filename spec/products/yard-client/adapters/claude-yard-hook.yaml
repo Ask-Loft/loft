@@ -5,6 +5,8 @@ body: |
   The Loft plugin's command hooks run `loft yard claude hook`, which reads one Claude Code hook object from standard input, or from `--input`, and prints Claude Code's hook output by default. `--format json` wraps that output as `hookOutput` in the standard Loft result.
 
   Claude Code runs a plugin's command hooks where its built-in guard loads, on a machine with managed settings or under a Team or Enterprise login, and there passes over a user's mod's hooks on its settings hook events, on compaction and on the prompt. The command serves what the Claude adapter's mod cannot hear there: the context as a session or a subagent starts, the continuation of a session after `/clear` or a resume, the main agent's permission mode, compactions and the page's decision of a plan. It runs the same way where the guard does not load, so each of these has one path on every machine. It names the session's agents as the mod names them, with the host `claude-code`.
+
+  In a working tree that does not use Loft, the command answers every hook with nothing, as "Stay out of a repository that does not use Loft" states.
 tags:
   - yard-command
 realizes:

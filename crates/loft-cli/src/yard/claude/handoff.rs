@@ -37,6 +37,34 @@ pub fn leave(hook: &Hook, pid: u32, at: Time) -> Result<(), String> {
     })
 }
 
+/// Whether the Claude Code process `pid` left a fresh hand-off of another session that the
+/// `SessionStart` hook, of a start by `/clear` or a resume, would take; read without writing
+/// anything. Only the end of a session Yard Client served leaves one.
+pub fn pending(hook: &Hook, pid: u32, at: Time) -> bool {
+    if !hook
+        .field("source")
+        .is_some_and(|source| CONTINUED.contains(&source))
+    {
+        return false;
+    }
+    let Some(store) = Store::of_home().filter(|store| store.holds(HANDOFFS)) else {
+        return false;
+    };
+    store
+        .peek(HANDOFFS)
+        .get(&pid.to_string())
+        .is_some_and(|left| ended(left, hook, at).is_some())
+}
+
+/// The session a hand-off `left` names, where it is fresh at `at` and names another session than
+/// the hook's.
+fn ended(left: &serde_json::Value, hook: &Hook, at: Time) -> Option<String> {
+    let when = left["at"].as_str()?.parse::<Time>().ok()?;
+    let fresh = at.unix_seconds().saturating_sub(when.unix_seconds()) <= FRESH;
+    let ended = left["session"].as_str()?.to_owned();
+    (fresh && ended != hook.session()).then_some(ended)
+}
+
 /// Takes the hand-off the Claude Code process `pid` left, where the `SessionStart` hook starts by
 /// `/clear` or a resume and the hand-off is fresh, and records that the hook's session continues
 /// the session it names; whether it did.
@@ -51,12 +79,7 @@ pub fn take(hook: &Hook, pid: u32, at: Time) -> Result<bool, String> {
         return Ok(false);
     };
     let taken = store.update(HANDOFFS, |handoffs| handoffs.remove(&pid.to_string()))?;
-    let Some(ended) = taken.and_then(|taken| {
-        let left = taken["at"].as_str()?.parse::<Time>().ok()?;
-        let fresh = at.unix_seconds().saturating_sub(left.unix_seconds()) <= FRESH;
-        let ended = taken["session"].as_str()?.to_owned();
-        (fresh && ended != hook.session()).then_some(ended)
-    }) else {
+    let Some(ended) = taken.and_then(|taken| ended(&taken, hook, at)) else {
         return Ok(false);
     };
     record_continuation(&home, yardlog::act::CLAUDE_CODE, hook.session(), &ended)

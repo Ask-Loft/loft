@@ -8,6 +8,24 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 What 2.5.0 will hold beyond the releases of 2.4, which it holds as well: the entries under
 Unreleased below, and those of each 2.4 release still to come.
 
+- Yard Client acts only in a repository that uses Loft, so the Loft plugin can stay enabled for a
+  person in every project (#37). A working tree uses Loft where its directory, or one above it up
+  to the top of its worktree, holds `spec/loftspec.yaml`, `loft.lock.json` or a Yard Log of any
+  branch under `.yard/`, or where `git config loft.yard true` turns Yard Client on, for every
+  worktree of the repository, or with `--global` for every repository; git reads the value as a
+  boolean, so an empty value or one that is no boolean turns nothing on. Elsewhere
+  `loft yard claude hook`, `loft yard codex hook` and `loft yard codex watch` answer every hook
+  with nothing and write nothing, neither a lock under `.git/` nor a file in `~/.yard/`, and start
+  no worker; until now each briefed the agent toward Yard and left files in any repository. A
+  session that continues after `/clear` one that Yard Client served is served too, and a Codex
+  worker still stops at its session's end where the tree stopped using Loft meanwhile. The Claude
+  Code mod, where its `loft` speaks a protocol it speaks, stays off for such a session without a
+  notice: no Yard tools, no page server and no events, and `AskUserQuestion` and `ExitPlanMode` no
+  longer open Yard Log in the working tree.
+  `loft yard protocol` reports whether the working tree of its directory uses Loft, and what shows
+  it, as `workingTree`; its schema becomes `loft-yard-protocol/3`, and the protocol stays 4. The
+  `yard` skill's description names the repositories it applies to. A repository where an earlier
+  plugin already wrote `.yard/` counts as one that uses Loft until that directory is removed.
 - `loft pull` reads a document its remote serves to anyone, a public document, without a sign-in.
   Where it has no sign-in it can send to the remote's address (none is kept, there is no
   configuration directory, the one kept is for another origin, or its refresh is refused) and

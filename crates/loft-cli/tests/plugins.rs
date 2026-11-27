@@ -328,7 +328,8 @@ fn run_claude_hook(scratch: &Scratch, setting: &str, hook: &Value) -> std::proce
 #[test]
 fn the_claude_hook_command_runs_a_loft_command_of_several_words_and_passes_its_claude_code_process()
 {
-    let scratch = Scratch::empty();
+    // A project that uses Loft, which the hook serves.
+    let scratch = Scratch::with_reading_list();
     let setting = format!("/usr/bin/env {}", env!("CARGO_BIN_EXE_loft"));
     let dir = scratch.0.canonicalize().unwrap();
     let ended =

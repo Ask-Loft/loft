@@ -25,7 +25,7 @@ fn started(yard: &Yard, call: &str, tool: &str, input: &Value) -> Value {
 
 #[test]
 fn a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_read() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let start = started(
         &yard,
         "call-one",
@@ -45,7 +45,7 @@ fn a_codex_shell_command_names_its_loft_subcommands_and_the_classes_its_readers_
 
 #[test]
 fn a_codex_patch_names_the_classes_of_the_files_it_edits() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let patch = "*** Begin Patch\n*** Update File: spec/PRIVATE-A.yaml\n@@\n-a\n+b\n\
                  *** Add File: src/PRIVATE-B.rs\n+fn b() {}\n*** End Patch\n";
     for (call, input) in [
@@ -73,7 +73,7 @@ fn a_codex_patch_names_the_classes_of_the_files_it_edits() {
 
 #[test]
 fn a_codex_patch_run_after_cd_names_its_files_from_where_it_runs() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let patch = "*** Begin Patch\n*** Update File: spec/a.yaml\n@@\n-a\n+b\n*** End Patch\n";
     let shell = format!("cd crates && apply_patch <<'PATCH'\n{patch}PATCH\n");
     let start = started(&yard, "after-cd", "Bash", &json!({"command":shell}));
@@ -86,7 +86,7 @@ fn a_codex_patch_run_after_cd_names_its_files_from_where_it_runs() {
 #[cfg(unix)]
 #[test]
 fn a_codex_hook_from_a_linked_directory_classes_its_paths_in_the_tree_it_leads_to() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let link = yard.scratch.home().join("linked");
     std::os::unix::fs::symlink(yard.scratch.0.canonicalize().unwrap(), &link).unwrap();
     let mut pre = event(&yard, "PreToolUse");
@@ -108,7 +108,7 @@ fn a_codex_hook_from_a_linked_directory_classes_its_paths_in_the_tree_it_leads_t
 
 #[test]
 fn the_codex_descriptor_declares_that_it_classifies_what_each_tool_call_consults() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     hook(&yard, &event(&yard, "UserPromptSubmit"));
     let kept = state(&yard);
     assert_eq!(

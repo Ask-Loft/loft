@@ -87,7 +87,7 @@ fn a_codex_worker_delivers_activity_and_recovers_a_stopped_page_server() {
 
 #[test]
 fn a_page_server_a_codex_worker_starts_listens_on_the_loopback_interface_alone() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let port = free_port();
     let input = event(&yard, "UserPromptSubmit");
     hook(&yard, &input);
@@ -108,7 +108,7 @@ fn a_page_server_a_codex_worker_starts_listens_on_the_loopback_interface_alone()
 
 #[test]
 fn codex_workers_are_unique_per_session_and_one_session_end_leaves_the_other_running() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let served = Served::start(&yard, &[]);
     let input = event(&yard, "UserPromptSubmit");
     hook(&yard, &input);
@@ -155,7 +155,7 @@ fn codex_workers_are_unique_per_session_and_one_session_end_leaves_the_other_run
 
 #[test]
 fn a_resumed_codex_worker_can_start_before_the_other_startup_hook_clears_the_stop_request() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let served = Served::start(&yard, &[]);
     hook(&yard, &event(&yard, "SessionEnd"));
     let input = event(&yard, "SessionStart");

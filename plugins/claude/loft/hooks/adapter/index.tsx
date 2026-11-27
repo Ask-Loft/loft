@@ -2,13 +2,17 @@
 // protocol this mod speaks, they register Yard's tools, keep a page server running, send the
 // agent's questions, plans and tasks to Yard Log and the session's events to the page server.
 // Otherwise they leave Claude Code as it is and tell the person once (the Features "Yard's tools",
-// "Keep the mod and loft in step" and "Start with the session"). They hook no event that Claude
-// Code's built-in guard passes over for a user's mod: the plugin's command hooks serve those
-// (the Feature "The Loft plugin").
+// "Keep the mod and loft in step" and "Start with the session"). Where the protocol is one this
+// mod speaks and the check shows that the session's working tree does not use Loft, they leave
+// Claude Code as it is and say nothing, and run no other `loft` command (the Feature "Stay out of
+// a repository that does not use Loft"). They
+// hook no event that Claude Code's built-in guard passes over for a user's mod: the plugin's
+// command hooks serve those (the Feature "The Loft plugin").
 
 import type { EngineInterface, On, PluginOptions } from 'claude-code'
 
-import { QUIET, type Ran } from '../loft'
+import { QUIET, type Doc, type Ran } from '../loft'
+import { isObject } from '../model'
 import { isAskable } from './answers'
 import { askQuestions, ownDialog, presentPlan, waitOn } from './asking'
 import { capture, checkCapture } from './capture'
@@ -44,6 +48,8 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
   const protocol = checked.doc?.protocol
   if (!succeeded(checked) || typeof protocol !== 'number') return off($, checked, cwd)
   if (protocol < PROTOCOLS.oldest || protocol > PROTOCOLS.newest) return off($, checked, cwd, protocol)
+  // A working tree that does not use Loft is left as it would be without the plugin, silently.
+  if (isWithoutLoft(checked.doc)) return false
   state.settings.protocol = protocol
   state.adapter = protocol >= 2 ? descriptor(PLUGIN_VERSION, protocol) : undefined
   await Promise.all(TOOL_NAMES.map(name => $.tool.register(specOf(name))))
@@ -65,6 +71,15 @@ async function enable($: EngineInterface, cwd: string): Promise<boolean> {
     void flush($, state.box)
   })
   return true
+}
+
+/**
+ * Whether `loft yard protocol` reports that the working tree it ran in does not use Loft; a `loft`
+ * that reports nothing of the working tree leaves Yard Client to the protocol alone.
+ */
+function isWithoutLoft(doc: Doc): boolean {
+  const tree = doc.workingTree
+  return isObject(tree) && tree.usesLoft === false
 }
 
 /**

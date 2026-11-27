@@ -1,6 +1,7 @@
 //! What Yard Client asks of git, through `loft-ports`' runner: where the worktree's top is, which
 //! branch it is on, where git keeps its own files for it and for the repository, whether it
-//! ignores `.yard/`, who the person is, whether a revision holds a path, and which local branch
+//! ignores `.yard/`, who the person is, whether its configuration sets a name to true, such as
+//! the `loft.yard` that turns Yard Client on, whether a revision holds a path, and which local branch
 //! a branch was cut from. Nothing else in this crate runs git.
 
 use std::path::{Component, Path, PathBuf};
@@ -29,6 +30,9 @@ pub const LOCATE: [&str; 5] = [
 pub const CHECK_IGNORE: [&str; 2] = ["check-ignore", "-q"];
 /// A name's value in git's configuration, from every scope; exit 1 when it is unset.
 pub const CONFIG_GET: [&str; 2] = ["config", "--get"];
+/// A name's value in git's configuration as git reads a boolean, `true` or `false`, from every
+/// scope; exit 1 when it is unset, and 128 when git reads no boolean in it.
+pub const CONFIG_BOOL: [&str; 3] = ["config", "--type=bool", "--get"];
 /// The object a `<revision>:<path>` names; exit 1, with no message, when there is none.
 pub const VERIFY: [&str; 3] = ["rev-parse", "-q", "--verify"];
 /// The subject of each entry of a reference's reflog, newest first, completed by the reference
@@ -166,6 +170,19 @@ impl YardGit {
             name: value("user.name")?,
             email: value("user.email")?,
         })
+    }
+
+    /// Whether git's configuration sets `name` to true from `dir`, as git reads a boolean, from
+    /// every scope; none where it is unset. Outside a repository, git reads the person's and the
+    /// system's configuration.
+    ///
+    /// # Errors
+    ///
+    /// git fails or cannot be run, or reads no boolean in the value.
+    pub fn flag(&self, dir: &Path, name: &str) -> Result<Option<bool>, YardStoreError> {
+        let call: Vec<&str> = CONFIG_BOOL.into_iter().chain([name]).collect();
+        let output = self.git.run(dir, &call)?;
+        Ok(if_found(&call, output)?.map(|out| first_line(&out) == "true"))
     }
 
     /// Whether `revision` holds `path`, a path from the top of the worktree; no for a revision

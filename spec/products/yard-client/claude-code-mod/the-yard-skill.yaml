@@ -238,6 +238,16 @@ requirements:
         name: "The description names planning, building, fixing and reviewing a change on a git branch."
       - key: 01a1a75a-9d00-7185-8c68-c298bb99d6ea
         name: "The description names a session that starts or resumes on a branch whose Yard Log is open."
+  - key: 01a21c37-045e-701f-899b-4dd63269d3b6
+    statement:
+      form: ubiquitous
+      system: "The `yard` skill's description"
+      shall: "limit the skill to a repository that uses Loft, so that an agent in another repository does not follow it."
+    criteria:
+      - key: 01a21c37-045e-701f-899b-4dd755baddaa
+        name: "The description names a repository that holds `spec/loftspec.yaml`, `loft.lock.json` or a Yard Log under `.yard/`, or whose session's context holds Yard's briefing."
+      - key: 01a21c37-045e-701f-899b-4dd8afdbe859
+        name: "The description says that the skill does not apply in any other repository."
   - key: 01a1a75a-9d00-7185-8c68-c2996a1ab8a6
     statement:
       form: event_driven

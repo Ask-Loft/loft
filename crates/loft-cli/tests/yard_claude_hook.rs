@@ -232,7 +232,9 @@ fn hand_offs_are_kept_in_the_yard_home_and_never_in_the_tree() {
 
 #[test]
 fn a_session_start_outside_a_git_repository_answers_nothing_and_exits_0() {
-    let mut yard = Yard::new();
+    // A specification outside git, as `loft init` writes one anywhere: the hook serves the
+    // directory, and finds no Yard Log to read there.
+    let mut yard = Yard::with_spec();
     yard.git = GitScenario::outside_repository();
     let answered = hook(&yard, &start(&yard, "s1", "startup"), None);
     assert_eq!(answered["hookOutput"], json!({}));

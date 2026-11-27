@@ -1,7 +1,7 @@
 key: 01a1646f-546c-7521-9643-bc5a6be5a9e6
 slug: start-with-the-session
 name: "Start with the session"
-body: "When a session starts, the agent knows where the work stands without being asked to look. At the same time the Loft mod checks its `loft`, as \"Keep the mod and loft in step\" states, registers Yard's tools and makes sure that a page server runs, as \"Share one page server\" states. The context comes from the plugin's command hooks, which run `loft yard claude hook`, so that it reaches the agent where Claude Code's built-in guard passes over the mod's own hooks."
+body: "When a session starts, the agent knows where the work stands without being asked to look. At the same time the Loft mod checks its `loft`, as \"Keep the mod and loft in step\" states, registers Yard's tools and makes sure that a page server runs, as \"Share one page server\" states. The context comes from the plugin's command hooks, which run `loft yard claude hook`, so that it reaches the agent where Claude Code's built-in guard passes over the mod's own hooks. In a working tree that does not use Loft, none of this happens, as \"Stay out of a repository that does not use Loft\" states."
 realizes:
   - 01a16469-559e-73c4-85f2-71a609a6b01d
   - 01a16469-559e-73c4-85f2-71afd78c6e3e

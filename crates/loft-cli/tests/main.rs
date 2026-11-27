@@ -196,6 +196,7 @@ mod yard_serve_usage;
 mod yard_serve_working_tree;
 mod yard_settle;
 mod yard_skill;
+mod yard_stay_out;
 mod yard_take_up;
 mod yard_task;
 mod yard_upgrade;

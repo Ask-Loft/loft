@@ -68,13 +68,7 @@ pub fn run(action: Action) -> Finished {
         super::input::json(&input.source)
             .map_err(message)
             .and_then(translate::Hook::read)
-            .and_then(|hook| {
-                if watching {
-                    watch::run(&hook, input.port, socket.as_ref())
-                } else {
-                    handle(&hook, input.port)
-                }
-            })
+            .and_then(|hook| serve(&hook, watching, input.port, socket.as_ref()))
     });
     match result {
         Ok(output) => {
@@ -97,6 +91,47 @@ pub fn run(action: Action) -> Finished {
             input.output.json(),
         ),
     }
+}
+
+/// Serves `hook` as the watch, where `watching`, or as the hook. A working tree that does not use
+/// Loft gets nothing: no context, no adapter state, no worker and no page server.
+fn serve(
+    hook: &translate::Hook,
+    watching: bool,
+    port: u16,
+    socket: Option<&PathBuf>,
+) -> Result<Value> {
+    if super::uses_loft::of_agent(std::path::Path::new(hook.dir()), &hook.agent()).is_none() {
+        if !watching {
+            end_served(hook)?;
+        }
+        return Ok(json!({}));
+    }
+    if watching {
+        watch::run(hook, port, socket)
+    } else {
+        handle(hook, port)
+    }
+}
+
+/// Records the end of a session whose adapter state is kept, where its working tree no longer
+/// uses Loft, so that the worker it started where it did stops; nothing for any other hook, or a
+/// session that has no state.
+fn end_served(hook: &translate::Hook) -> Result<()> {
+    if hook.kind() != translate::HookKind::SessionEnd {
+        return Ok(());
+    }
+    let Ok(files) = state::Files::of(hook) else {
+        return Ok(());
+    };
+    if !files.0.join(state::STATE).is_file() {
+        return Ok(());
+    }
+    files.update(|state| {
+        state.stopped = true;
+        state.subagents.clear();
+        Ok(())
+    })
 }
 
 pub(super) fn message(error: super::failure::Failure) -> String {

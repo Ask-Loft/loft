@@ -88,6 +88,13 @@ impl Hook {
         }
     }
 
+    /// The agent that runs the hook, as Yard Log names it.
+    pub fn agent(&self) -> yardlog::Agent {
+        crate::yard::caller::Caller::new(&self.runner())
+            .agent
+            .expect("a hook names its session")
+    }
+
     /// An event of `kind` of the session's main agent at `at`, as the page server takes it: no
     /// agent, and nothing of the hook's words.
     pub fn main_event(&self, kind: &str, at: Time) -> Value {

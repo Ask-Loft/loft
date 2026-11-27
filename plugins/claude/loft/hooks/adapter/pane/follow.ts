@@ -8,7 +8,7 @@ import type { EngineInterface, On, Timer } from 'claude-code'
 import type { YardPane } from '../../../types'
 
 import { callerArgs, failureOf, succeeded } from '../run'
-import { callerOf, run } from '../state'
+import { callerOf, run, state } from '../state'
 import { browserOf, paneOf, setBrowser, setPane } from './atoms'
 import { showPage } from './browser'
 import { answerOf, followed } from './model'
@@ -136,11 +136,15 @@ async function readSince($: EngineInterface, since: number | undefined) {
   return run($, cwd, ['read', ...callerArgs(caller), ...(since === undefined ? [] : ['--since', String(since)])])
 }
 
-/** Hooks `/yard-pane`, and starts the follow over for a module just loaded. */
+/**
+ * Hooks `/yard-pane`, and starts the follow over for a module just loaded. While Yard Client is
+ * off, the command is not offered, and a run of it opens nothing and reads nothing.
+ */
 export function registerPane(on: On) {
   following.timer?.cancel()
   Object.assign(following, { timer: undefined, reading: undefined, again: false, epoch: 0, notice: undefined, isPageAsked: false, read: { view: null, failure: null } })
   on('command.run', { command: COMMAND }, async $ => {
+    if (!state.isOn) return { text: 'Yard Client is off in this session.' }
     const { opened, read } = await openPane($)
     const isDesktop = (await $.session.surfaces()).includes('desktop')
     return { text: answerOf(read, opened.isPlaced, isDesktop) }

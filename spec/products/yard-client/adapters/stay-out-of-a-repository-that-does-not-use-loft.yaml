@@ -1,0 +1,106 @@
+key: 01a21c37-045d-7584-a2b8-578bac0b7304
+slug: stay-out-of-a-repository-that-does-not-use-loft
+name: "Stay out of a repository that does not use Loft"
+body: |
+  A person may enable the Loft plugin for themselves rather than for one project, and Claude Code and Codex then run its hooks, its mod and its `yard` skill in every repository they open. A repository that does not use Loft gets nothing from Yard Client: no briefing that steers the agent to Yard, no Yard Log, no page server and no file. So Yard Client acts only for an agent whose working tree uses Loft, and leaves every other session as it would be without the plugin.
+
+  A working tree shows that it uses Loft by what it holds: the Format's tree or its lock, or Yard Log of any branch. Yard Log needs no specification, so a repository that keeps only Yard Log uses Loft as well. A repository that ignores `.yard/` holds no Yard Log in a fresh worktree or clone; its specification shows it there, and where it has none, `loft.yard` in git's configuration, which every worktree of a repository shares, turns Yard Client on.
+realizes:
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+  - 01a183e9-dfcb-7796-a0a4-3ca11fc1a795
+requirements:
+  - key: 01a21c37-045d-7584-a2b8-578cf9344e86
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "treat an agent's working tree as one that uses Loft where it, or a directory above it up to the top of its worktree, holds `spec/loftspec.yaml`, `loft.lock.json` or a Yard Log of any branch under `.yard/`."
+    criteria:
+      - key: 01a21c37-045d-7584-a2b8-578da73fe338
+        name: "A working tree below a directory that holds `spec/loftspec.yaml` uses Loft."
+      - key: 01a21c37-045d-7584-a2b8-578e0f9c111b
+        name: "A working tree below a directory that holds `loft.lock.json` uses Loft."
+      - key: 01a21c37-045d-7584-a2b8-578fc18cb963
+        name: "A worktree that holds Yard Log of a branch other than its own uses Loft."
+      - key: 01a21c37-045d-7584-a2b8-579059924b26
+        name: "A `spec/` directory that holds no `loftspec.yaml` shows nothing."
+      - key: 01a21c37-045d-7584-a2b8-5791f8e03927
+        name: "A `.yard/` directory that holds no Yard Log shows nothing."
+      - key: 01a21c37-045d-7584-a2b8-5792d6a38798
+        name: "A directory above the top of the worktree shows nothing, and a directory reached through a link is looked at by its real path."
+      - key: 01a21c37-045d-7584-a2b8-579303f931bd
+        name: "An agent whose working stage lies in another worktree works in a tree that uses Loft, whatever its own directory holds."
+      - key: 01a21c5b-c155-757a-af09-34a047bc7dd3
+        name: "A session that continues, after `/clear` or a resume, a session Yard Client served is served from its start, whatever its directory holds."
+      - key: 01a21c37-045d-7584-a2b8-5794348b1183
+        name: "Where the agent's directory shows that it uses Loft, the check runs no git command."
+  - key: 01a21c37-045d-7584-a2b8-57955f08bc4f
+    statement:
+      form: optional
+      where: "git's configuration sets `loft.yard` to true"
+      system: "Yard Client"
+      shall: "treat each working tree of the repository as one that uses Loft."
+    criteria:
+      - key: 01a21c37-045d-7584-a2b8-579685020a36
+        name: "`loft.yard` set to true in a repository's own configuration turns Yard Client on in each worktree of the repository."
+      - key: 01a21c37-045d-7584-a2b8-579752bb4a54
+        name: "`loft.yard` set to true in the person's global configuration turns Yard Client on in every repository."
+      - key: 01a21c37-045d-7584-a2b8-5798aacd5fab
+        name: "A value of `loft.yard` that git reads as false, or none, turns nothing on."
+      - key: 01a21c5b-c155-757a-af09-34a1760be972
+        name: "A value of `loft.yard` that git reads as no boolean turns nothing on."
+      - key: 01a21c37-045d-7584-a2b8-57993562a19b
+        name: "The configuration is read only where the working tree shows nothing."
+  - key: 01a21c37-045d-7584-a2b8-579a55b4c3f5
+    statement:
+      form: state_driven
+      while: "an agent's working tree does not use Loft"
+      system: "a Yard adapter"
+      shall: "answer each of the agent's hooks as it would without Yard: with no output, no file written, no event posted and no page server started."
+    criteria:
+      - key: 01a21c37-045d-7584-a2b8-579b3d103377
+        name: "A Claude SessionStart or SubagentStart hook gives no context."
+      - key: 01a21c37-045d-7584-a2b8-579c36fd4164
+        name: "A Codex SessionStart, SubagentStart or UserPromptSubmit hook gives no context, outside a git repository included."
+      - key: 01a21c37-045d-7584-a2b8-579d2c492f9c
+        name: "No file is written under the repository's git directory."
+      - key: 01a21c37-045d-7584-a2b8-579ea0603262
+        name: "No file of `~/.yard/` is written."
+      - key: 01a21c37-045d-7584-a2b8-579f1baa8495
+        name: "A Codex watch hook starts no worker."
+      - key: 01a21c44-ea94-7049-8a8f-952219bd39c1
+        name: "A running page server hears of no session and records no event."
+  - key: 01a21c37-045d-7584-a2b8-57a136cd09d6
+    statement:
+      form: event_driven
+      when: "a Claude Code session starts in a working tree that does not use Loft, with a `loft` whose protocol the mod speaks"
+      system: "the Loft mod"
+      shall: "leave Yard Client off for the session without telling the person."
+    criteria:
+      - key: 01a21c37-045d-7584-a2b8-57a2ddcdcc5e
+        name: "The mod learns whether the working tree uses Loft from `loft yard protocol`, run in the session's directory."
+      - key: 01a21c37-045d-7584-a2b8-57a3258edb7b
+        name: "No Yard tool and no `/yard-pane` command is registered."
+      - key: 01a21c37-045d-7584-a2b8-57a4887fcc5e
+        name: "No `loft yard serve` runs, and no page server hears of the session."
+      - key: 01a21c37-045d-7584-a2b8-57a5ee652084
+        name: "No event of the session is posted."
+      - key: 01a21c37-045d-7584-a2b8-57a62eead3dd
+        name: "`AskUserQuestion` and `ExitPlanMode` show Claude Code's own dialogs alone, and no Yard Log is opened."
+      - key: 01a21c37-045d-7584-a2b8-57a7c71b8b04
+        name: "No notice is shown."
+      - key: 01a21c37-045d-7584-a2b8-57a8ce7ab19d
+        name: "The mod runs no `loft` command but `loft yard protocol`."
+      - key: 01a21c37-045d-7584-a2b8-57a99bb37797
+        name: "A `loft` whose report does not say whether the working tree uses Loft leaves Yard Client on."
+  - key: 01a21c5b-c155-757a-af09-34a22dd3e620
+    statement:
+      form: event_driven
+      when: "a Codex SessionEnd hook ends a session whose adapter state Yard Client keeps, in a working tree that no longer uses Loft"
+      system: "the Codex Yard adapter"
+      shall: "record that the session ended, so that the worker the session started stops, and do nothing else for the hook."
+    criteria:
+      - key: 01a21c5b-c155-757a-af09-34a38706d33b
+        name: "The worker of a session that started in a working tree that uses Loft stops at the session's end after the working tree stopped using it."
+      - key: 01a21c5b-c155-757a-af09-34a41eb79450
+        name: "The hook answers with no output."

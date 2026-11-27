@@ -125,7 +125,17 @@ export type World = ReturnType<typeof world>
 /** Settles the clock of the world the running test made last, as a session's start does. */
 let settle: (() => Promise<unknown>) | undefined
 
-export function world(on: On, options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running'; home?: string } = {}) {
+/**
+ * Whether the working tree uses Loft, as `loft yard protocol` reports it: by default, as a `loft`
+ * that reports it does in a tree that holds a specification; `unreported`, as an older `loft` that
+ * reports nothing of the working tree.
+ */
+export type WorkingTree = { usesLoft: boolean; by?: string } | 'unreported'
+
+export function world(
+  on: On,
+  options: { protocol?: number | 'none' | 'unrunnable'; serve?: 'serving' | 'running'; home?: string; workingTree?: WorkingTree } = {},
+) {
   const clock = mock.clock(on, { now: Date.UTC(2026, 9, 22, 9, 30, 0) })
   mock.env(on, { HOME })
   const state = {
@@ -134,6 +144,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     protocol: options.protocol ?? 1,
     /** The machine home `loft yard protocol` reports, if any; the token lies in it, else in `~/.yard/`. */
     home: options.home,
+    /** Whether the working tree uses Loft, as `loft yard protocol` reports it. */
+    workingTree: options.workingTree ?? ({ usesLoft: true, by: 'spec' } as WorkingTree),
     serve: options.serve ?? 'running',
     read: readDoc(),
     /** What each command answers, over the defaults, by subcommand. */
@@ -298,8 +310,11 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     const given = sub ? state.answers[sub] : undefined
     if (given) return out(given.doc, given.exitCode ?? 0)
     switch (sub) {
-      case 'protocol':
-        return out({ schema: 'loft-yard-protocol/2', outcome: 'ok', errors: [], protocol: state.protocol, loft: '2.2.1', formats: {}, ...(state.home === undefined ? {} : { home: state.home }) })
+      case 'protocol': {
+        const tree = state.workingTree === 'unreported' ? {} : { workingTree: state.workingTree }
+        const schema = state.workingTree === 'unreported' ? 'loft-yard-protocol/2' : 'loft-yard-protocol/3'
+        return out({ schema, outcome: 'ok', errors: [], protocol: state.protocol, loft: '2.2.1', formats: {}, ...(state.home === undefined ? {} : { home: state.home }), ...tree })
+      }
       case 'read':
         await state.reading
         {

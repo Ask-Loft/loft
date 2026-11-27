@@ -50,6 +50,15 @@ impl Yard {
         }
     }
 
+    /// [`Yard::new`], in which the person turned Yard Client on with `loft.yard`, as in a
+    /// repository that keeps only Yard Log and has opened none yet: an adapter acts there before
+    /// any write, where in an empty repository it does nothing.
+    pub fn opted_in() -> Self {
+        let mut yard = Self::new();
+        yard.git = yard.git.with_config("loft.yard", "true");
+        yard
+    }
+
     /// The Reading List's `spec/` in a repository on `feature`, whose base for `develop` holds
     /// the tree as it is now and whose HEAD is [`HEAD`], with the person named, at [`EPOCH`].
     pub fn with_spec() -> Self {

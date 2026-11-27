@@ -122,14 +122,15 @@ fn failed_malformed_and_unowned_codex_plans_create_no_task_write() {
     other["session_id"] = json!("another-session");
     hook(&yard, &other);
     assert_eq!(read(&yard)["revision"], before);
-    let absent = Yard::new();
+    let absent = Yard::opted_in();
     hook(&absent, &plan(&absent, &[("Check", "pending")]));
     assert_eq!(read(&absent)["revision"], 0);
 }
 
 #[test]
 fn codex_hooks_that_release_tasks_outside_a_git_repository_still_answer() {
-    let mut yard = Yard::new();
+    // A specification outside git: the hooks serve the directory, and find no Yard Log there.
+    let mut yard = Yard::with_spec();
     yard.git = software_plant::GitScenario::outside_repository();
     for name in ["Stop", "Interrupt", "SubagentStop", "SessionEnd"] {
         let mut input = event(&yard, name);

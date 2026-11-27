@@ -1,7 +1,7 @@
 key: 01a1646f-546d-7042-befd-ea405aeffb3b
 slug: loft-yard-protocol
 name: "Report the yard protocol"
-body: "A host checks with `loft yard protocol` that the `loft` it runs speaks the yard commands it was written for, before it offers Yard Client's tools. It needs no repository, so a host can ask it anywhere."
+body: "A host checks with `loft yard protocol` that the `loft` it runs speaks the yard commands it was written for, before it offers Yard Client's tools. It needs no repository, so a host can ask it anywhere. Run in a session's directory, it also tells the host whether Yard Client acts there, as \"Stay out of a repository that does not use Loft\" states."
 tags:
   - yard-command
 realizes:
@@ -33,9 +33,22 @@ requirements:
       - key: 01a1cf7a-0eb7-770e-800d-7eb53956f7b6
         name: "Where no home directory is known, the report gives no `home`."
       - key: 01a1646f-546d-7042-befd-ea45ec21ca68
-        name: "The report is the same inside and outside a git repository."
+        name: "Apart from `workingTree`, the report is the same inside and outside a git repository."
       - key: 01a1646f-546d-7042-befd-ea4652516db4
         name: "No file is written."
+  - key: 01a21c37-045e-701f-899b-4dd95126a97f
+    statement:
+      form: event_driven
+      when: "a host runs `loft yard protocol` in a directory"
+      system: "`loft yard protocol`"
+      shall: "report whether the working tree of that directory uses Loft, and what shows that it does."
+    criteria:
+      - key: 01a21c37-045e-701f-899b-4ddaa1584f08
+        name: "The report gives `workingTree.usesLoft` as true or false."
+      - key: 01a21c37-045e-701f-899b-4ddb40084a89
+        name: "Where the working tree uses Loft, `workingTree.by` names what shows it: `spec`, `lock`, `yard-log` or `config`."
+      - key: 01a21c37-045e-701f-899b-4ddc64df0d70
+        name: "Without `--format json`, the command says whether the working tree uses Loft, and how to turn Yard Client on where it does not."
   - key: 01a1646f-546d-7042-befd-ea476fd579cb
     statement:
       form: ubiquitous

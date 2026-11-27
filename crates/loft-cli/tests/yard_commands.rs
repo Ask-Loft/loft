@@ -69,8 +69,7 @@ fn each_yard_command_prints_one_document_its_own_schema_holds() {
             format!(
                 "loft-{schema}/{}",
                 match args[1] {
-                    "read" => 3,
-                    "protocol" => 2,
+                    "read" | "protocol" => 3,
                     _ => 1,
                 }
             )
