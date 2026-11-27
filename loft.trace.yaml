@@ -25525,11 +25525,8 @@ links:
         name: "a_simulator_putting_named_versions_off_answers_them_later_and_stores_none_of_them"
         body: 07f062794c07dd53b2ba3ba16588fa525803d9ac5cab3e0d3a324d69769360e3
   - node: 01a21406-1006-7412-b332-118b5ca18aa2
-    reviewed: 58e27a7dacd043cd738e71788349844e25f7603615b5ce2a744e43fd0159eba9
-    tests:
-      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
-        name: "a_simulator_answering_with_a_named_body_answers_exactly_it"
-        body: baf4116f8ff8fce9497e0f419345600db15174d5bd39a11fe40485c8300783a9
+    reviewed: cb00f2f0115d2bc8e77831fc3fb95261a52e58d57d545f040d9e4a10fc573f51
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a20de0-8348-72dc-8ab4-3db7fa378c36
     reviewed: f85ab3c55ff39ad8e09fa32aa008972724d2cd30aac8651d7f107ebd7f871be9
     tests:
@@ -40609,11 +40606,8 @@ links:
         name: "without_connected_mode_a_flush_is_off_and_makes_no_request"
         body: 0f7ad7897e46b4fe3c11d28418c0214935e03c2e874c53f89e3ba46d37a35f75
   - node: 01a20dc8-c593-7357-875c-81ccc2919c6f
-    reviewed: 59977b6d8e65d0efabedf7f47d25382cf94cb8953a088978c142a802d7b986b1
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "with_no_entry_for_the_address_a_flush_is_empty_and_makes_no_request"
-        body: 33019a0b978a00dba946aac485848c673b82dde7dc38bda8842ba3817a7903fb
+    reviewed: fc71f353342f827a7c9ec384248eccd95c11e50718eb21902e67a6de215d2d98
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a20dc8-c593-7357-875c-81cd0e4b8123
     reviewed: e47fdca4956a82b0ae08ab90553b73920cdad90d4627ec646f385af87819c49c
     tests:
@@ -40621,14 +40615,8 @@ links:
         name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
         body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
   - node: 01a21406-1007-7756-963c-23122a29debc
-    reviewed: 21ded6d17ca0332f9c25bfbec880a3b5d9c00d041d1df30a5df26d75b069835f
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
-        name: "after_a_400_every_entry_of_the_batch_is_in_dead_and_the_next_batch_is_sent"
-        body: c339776d3f232fc0228bc63621b726d3315d761be440582aab0c711d6cc19365
-      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
-        name: "an_entry_whose_version_is_in_conflict_is_moved_into_dead_with_the_reason_conflict"
-        body: 65fabd0056b3ca940d359b1460cb067da16851c1d6d0a38a9e3ac10be5d80b6a
+    reviewed: 6ca429c1f6690ae10f7b0c5e3c6ad88bee8e2be21f1c560fc5d54534f1943612
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a20dc8-c593-7357-875c-81ced80e7650
     reviewed: 781668176345a48474d4c2331b133691500eb1e609f95500f96b898cd4fc2016
     tests:
@@ -40657,17 +40645,11 @@ links:
         name: "a_flush_that_finds_the_lock_held_is_busy_makes_no_request_and_exits_0"
         body: ce516db3e7f2f14f600f58653a04e8c315fb9d9bd88ac52c5e722a54947eb048
   - node: 01a213cb-9c28-769e-b7c8-43e186d8f806
-    reviewed: 2e70045f009a7daa6bee173e8c6c2e58696ae65c2e18c6c0a590a7bbb402fcd2
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
-        name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
-        body: f116ccf65e6b38585d2a6d4dff4948f1672101adb6d49de0db24364bf058607d
+    reviewed: 853222734fc07abc2a6cc1d876bdf10f56cbc7d6b6fc012c2031df650c2905fc
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a21406-1007-7756-963c-2313e0ff7d15
-    reviewed: 2809c0cb71971b5dd3574926aefcda1201664193182ab4d948846aab0fb7ea57
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
-        name: "a_paused_run_checks_the_time_before_it_reads_the_outbox"
-        body: 8a91c7de63596499eef81d791b80694ff24963b51e5691b1023ea24ac0c96744
+    reviewed: e10666dbc3df6a99d85a85cbaeb6744b122fda5a3fecd9d9e599d66c03a9b057
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a213cb-9c28-769e-b7c8-43e36bbfce79
     reviewed: 724cde7c9757b399b085e213c631f22524ef12e88d13e7d8cbae284246179499
     tests:
@@ -40891,14 +40873,8 @@ links:
         name: "with_a_timeout_of_1_second_a_silent_yard_server_is_given_up_after_it"
         body: 7ea534c0a34aabb448da2e2ccda097d36cb89e817e7fdfcd94f5ef2a0ee911fa
   - node: 01a213cb-9c28-769e-b7c8-4413dbde71be
-    reviewed: 4179cda7608adefe33a467520bcea7789f9385130ee53e4a3092548e7f0d1e53
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
-        name: "with_a_timeout_of_1_second_a_silent_yard_server_is_given_up_after_it"
-        body: 7ea534c0a34aabb448da2e2ccda097d36cb89e817e7fdfcd94f5ef2a0ee911fa
-      - file: "crates/loft-cli/src/yard/flush/tests.rs"
-        name: "a_flush_waits_10_seconds_for_an_answer_unless_the_timeout_says_otherwise"
-        body: a84bd8cc7fde188fb230967c099b78b9171053f1f05307dc1838ead2a436e71f
+    reviewed: 953b33554193f82fe08221a5c4e66fb17ccecc360663a47c956b0d10da146033
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a213cb-9c28-769e-b7c8-4414fcf3ed3a
     reviewed: 9ee22ab2255bfaf2e570573718d6a4c0be695804308c696c283d45a67462c365
     tests:
@@ -40978,17 +40954,11 @@ links:
         name: "an_entry_that_cannot_be_removed_once_answered_stays_and_the_flush_fails_naming_it"
         body: 611e33f20155d87320eae5eec4b31b6e253aa9c19633014da858bde8ba1a743c
   - node: 01a213cb-9c28-769e-b7c8-440a4c4d3e0e
-    reviewed: 7139adec03c584af5b20867fd23349478f9ef81bf6c3280b1205e876adb7e5e1
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
-        name: "after_a_413_the_batch_s_one_entry_is_in_dead_with_the_status_and_code"
-        body: 662f3ef52e40de2910517b613664683d4ad73e46674d49ff27b2176be825c183
+    reviewed: 038109b4ac145a8b0a4cdbf0a48ddc0c48551f9c0760ed0b0e0afb5d8a14e1a8
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a213cb-9c28-769e-b7c8-440bf3183da1
-    reviewed: 40c6ea94be6e64147b37de5adfa9cfec2e928eaada479dad6561946ef71fdd2f
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
-        name: "after_a_400_every_entry_of_the_batch_is_in_dead_and_the_next_batch_is_sent"
-        body: c339776d3f232fc0228bc63621b726d3315d761be440582aab0c711d6cc19365
+    reviewed: edcc56e48383886001711445c0ec2a00ea064e4b54d90768d2c20cd3a048a897
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a213cb-9c28-769e-b7c8-440c30a4edac
     reviewed: f7d92fbfd5a74b94a9a99d375aa6f40b6992790446a6dcca48aaf538493a387c
     tests:
@@ -41296,11 +41266,8 @@ links:
         name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
         body: 13c668d68571eebefbccfbceaa268a6a58d57fb2ec2403694b10600c3e70ef8c
   - node: 01a213cb-9c28-769e-b7c8-43f227f72357
-    reviewed: 6353c28677cc8d50159b374764d348bbe8c906f833e91bb5c9b15067f95aeff1
-    tests:
-      - file: "crates/loft-cli/tests/yard_status.rs"
-        name: "last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed"
-        body: a0830501a834c1004fd027e480cfe5a3666ca2fba50faf66e1309846449066d4
+    reviewed: a7213c4d7c29038f6dd0fc706a656943e81f142077cd2e291e681bda7ad3581d
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a213cb-9c28-769e-b7c8-43f3a299d1f9
     reviewed: 882ae95bdc0f12d96655a9c7d4a28cc106688be08fbcfb64c4be74354a6fc63c
     tests:
@@ -41443,20 +41410,8 @@ links:
         name: "the session's first beat runs loft yard flush"
         body: b2972f628f73bac70b6838ca3b7e464e63567a76ce2bdbec23c8ae76c12c1706
   - node: 01a213ce-418e-700f-b0fe-78c740190611
-    reviewed: 95725475d3cc6ad28542357fc34fab974710f58cf9a885d93f2133031f13d359
-    tests:
-      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
-        name: "a beat runs loft yard flush where the last one ended failed"
-        body: cde5c7c3a2b64a77afede23eff442df36f14b7fa5d79a1019158a5f5d51d70f0
-      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
-        name: "a beat runs loft yard flush where the last one ended busy"
-        body: 19571050c9c626232ec9e98c241b9b4936f30b3639ec39ee6078b26033ab7d62
-      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
-        name: "a beat runs loft yard flush where the last one ended paused"
-        body: 09157b62503fb39331938705ef10145b7c98143f393a22d54bcec7e184abd3cf
-      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
-        name: "a beat runs loft yard flush where the last one counted entries remaining"
-        body: 5bb60e7bc3e1db3a63824ce6e00005bf9558cfd9fd31ad5260a4323af6dc9f86
+    reviewed: cd4cc18a881b2c524a24f9ea5a4fe879ea2fb182f7e2fd361b9bd2998bf71090
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a213ce-418e-700f-b0fe-78c8c00b45f7
     reviewed: 01d45be6fecf230c8561186088734df3beae7c9184cf9bb265558bbe28fd025c
     tests:
@@ -41527,11 +41482,8 @@ links:
         name: "no_flush_is_due_for_entries_yard_server_will_take_later_alone"
         body: 7d3d1c98cc756d3def401c334a48d0a1463c44c7d491ffcb8b3ebab09fb31d02
   - node: 01a21406-1007-7756-963c-230dcfa9347f
-    reviewed: d8026beed81567bd8c4b15469be890231e8a5e4ef52326bb1449c0466cfb1e17
-    tests:
-      - file: "crates/loft-cli/src/yard/flush/tests.rs"
-        name: "no_flush_is_due_before_the_time_yard_server_asked_to_come_back_after"
-        body: 9f5c8ef7d50f36d3bfefc23aa6b0595c470cd17e784640190ab3793571608534
+    reviewed: f06eed97e9b23881f54bc8b5e7cb6ae45d0c8a71256030480ba54d8ab0c781a1
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a21406-1007-7756-963c-230e4274c2ec
     reviewed: 9fa27112d67ffbb641d0306b7fc51271e3636fa44dc928d43f017d585cb03b9e
     tests:

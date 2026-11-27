@@ -6,7 +6,9 @@ body: |
 
   No command an agent or a hook runs waits for Yard Server: `loft yard write`, `loft yard task` and `loft yard published` only put entries, and the session of the agent host runs the sending in the background, as "Flush in the background" states. Only one sending runs at a time for each home of Yard, under the lock `~/.yard/flush.lock`, so that two sessions never send one batch twice; a sending that finds the lock held ends at once, and the next beat of its session tries again. A run ends by itself after 5 minutes, so that a long backlog on a slow link does not hold the lock for longer.
 
-  Yard Server answers each version of a batch with an outcome of its own: it stored it, it already held it, it held another version under the same key, it refused it, or it will take it later. A version it holds is gone from the outbox; a version it will never take is moved into `~/.yard/outbox/dead/` with the reason, so that it holds up no other; a version it will take later stays for a later run. A refusal of the whole batch that Yard Server may lift later names the time to come back, and the sending keeps away until then.
+  Yard Server answers each version of a batch with an outcome of its own: it stored it, it already held it, it held another version under the same key, it refused it, or it will take it later. A version it holds is gone from the outbox; a version it will never take is moved into `~/.yard/outbox/dead/` with the reason, so that it holds up no other; a version it will take later stays, and is sent again at most once an hour, as a mail queue holds a deferred message. Only a refusal that Yard Server gives with its own code moves a version aside: a `400` or a `413` without it may come from a proxy on the way, and its entries stay. A batch too large for something on the way is split in halves until each goes, as a Kafka producer splits one, so that only a version too large on its own is moved aside.
+
+  A refusal of the whole batch that Yard Server may lift later names the time to come back, and the sending keeps away until then, an hour at most. A batch that does not go for any other reason keeps the sending away from its address for a while that doubles with each such run in a row, from 5 seconds to 5 minutes and drawn at random within each step, as the clients of AWS and gRPC back off, so that a revoked token or a server that is down does not draw a request from every machine at every beat, all at once.
 
   The order of versions is the order of their keys, which grow with time, and Yard Server may count on it as a best effort only: it breaks around an entry passed over, between the branches of two locks, and between two versions written by two commands within one millisecond.
 realizes:
@@ -51,10 +53,24 @@ requirements:
         name: "Until a batch goes, the next run takes the same oldest entries again, before any newer ones."
       - key: 01a20dc8-c593-7357-875c-81e26152c5c3
         name: "With no entry for the address, no request is made."
+  - key: 01a21dc4-1383-72e5-acab-a99c6819d2d4
+    statement:
+      form: ubiquitous
+      system: "The sending"
+      shall: "pass over each entry whose version `~/.yard/flush.json` records as one Yard Server will take later, until 1 hour has passed since Yard Server last answered a version of the address `later`."
+    criteria:
+      - key: 01a21dc4-1383-72e5-acab-a99d625af275
+        name: "Within the hour, a run takes the entries for the address that are not marked `later` and passes over those that are."
+      - key: 01a21dc4-1383-72e5-acab-a99ef6a55ea8
+        name: "Once the hour has passed, a run takes the marked entries again, with the others, in the order of their version keys."
+      - key: 01a21dc4-1383-72e5-acab-a99f3e0e1acf
+        name: "A run in which every entry for the address is passed over this way makes no request and gives the outcome `empty`."
+      - key: 01a21dc4-1383-72e5-acab-a9a0c286af5b
+        name: "An entry passed over this way is counted in `later`."
   - key: 01a213cb-9c28-769e-b7c8-440245e5d079
     statement:
       form: event_driven
-      when: "Yard Server has answered a batch of versions with `200`, `400` or `413`"
+      when: "Yard Server has answered a batch of versions with `200`, or refused it with `400` or `413` and its own code"
       system: "the sending"
       shall: "take the next batch, until no entry for its address is left that it has not taken in this run."
     criteria:
@@ -92,16 +108,16 @@ requirements:
     statement:
       form: ubiquitous
       system: "The sending"
-      shall: "wait at most 10 seconds for Yard Server to answer a batch, or the number of seconds `LOFT_YARD_SERVER_TIMEOUT` names."
+      shall: "wait at most 10 seconds for Yard Server to answer a batch, or the number of seconds, at most 60, that `LOFT_YARD_SERVER_TIMEOUT` names."
     criteria:
       - key: 01a21406-1007-7756-963c-2325ca64a845
         name: "An answer that has not arrived in full 10 seconds after the batch was sent is treated as no answer."
       - key: 01a213cb-9c28-769e-b7c8-4413dbde71be
-        name: "With `LOFT_YARD_SERVER_TIMEOUT` set to a positive whole number of seconds, that number replaces 10."
+        name: "With `LOFT_YARD_SERVER_TIMEOUT` set to a whole number of seconds from 1 to 60, that number replaces 10."
   - key: 01a21406-1007-7756-963c-23268e49416d
     statement:
       form: unwanted
-      if: "`LOFT_YARD_SERVER_TIMEOUT` is set to a value that is not a positive whole number of seconds"
+      if: "`LOFT_YARD_SERVER_TIMEOUT` is set to a value that is not a whole number of seconds from 1 to 60"
       system: "the sending"
       shall: "make no request and end the run as `failed`, naming the variable and its value."
     criteria:
@@ -109,6 +125,8 @@ requirements:
         name: "The simulator records no request."
       - key: 01a21406-1007-7756-963c-2327f9848aed
         name: "The error names `LOFT_YARD_SERVER_TIMEOUT` and the value it holds."
+      - key: 01a21dc4-1383-72e5-acab-a9a1ec54dfb7
+        name: "A value of 61 is refused, so that a run ends before whoever started it stops it after 6 minutes."
   - key: 01a20dc8-c593-7357-875c-81e7d44446c5
     statement:
       form: event_driven
@@ -155,22 +173,56 @@ requirements:
   - key: 01a213cb-9c28-769e-b7c8-44093a9d9371
     statement:
       form: unwanted
-      if: "Yard Server answers a batch of versions with `400` or `413`"
+      if: "Yard Server refuses a batch of versions with `400` and the code `invalid_request`, or a batch of one version with `413` and the code `payload_too_large`"
       system: "the sending"
       shall: "move each entry of the batch into `~/.yard/outbox/dead/` with the status and the code of the answer as its reason."
     criteria:
       - key: 01a213cb-9c28-769e-b7c8-440a4c4d3e0e
-        name: "After a `413`, the batch's one entry is in `~/.yard/outbox/dead/` with the reason `413` and its code."
+        name: "After a `413` with the code `payload_too_large`, the batch's one entry is in `~/.yard/outbox/dead/` with the reason `413 payload_too_large`."
       - key: 01a213cb-9c28-769e-b7c8-440bf3183da1
-        name: "After a `400`, every entry of the batch is in `~/.yard/outbox/dead/` with the reason `400` and its code."
+        name: "After a `400` with the code `invalid_request`, every entry of the batch is in `~/.yard/outbox/dead/` with the reason `400 invalid_request`."
       - key: 01a213cb-9c28-769e-b7c8-440c30a4edac
         name: "The next batch is sent in the same run."
+  - key: 01a21dc4-1383-72e5-acab-a9a22cf52456
+    statement:
+      form: unwanted
+      if: "a batch of more than one version is answered `413`"
+      system: "the sending"
+      shall: "split the batch into two halves, the older half first, and send each half as a batch of its own in the same run."
+    criteria:
+      - key: 01a21dc4-1383-72e5-acab-a9a35d4b2791
+        name: "After a `413` to a batch of 4 entries, the next two requests carry 2 entries each, the older ones first."
+      - key: 01a21dc4-1383-72e5-acab-a9a4f8835752
+        name: "A half that is answered `413` again is split again."
+      - key: 01a21dc4-1383-72e5-acab-a9a503845cd2
+        name: "No entry of a batch split this way is moved into `~/.yard/outbox/dead/` for the `413` to the batch."
+      - key: 01a21dc4-1383-72e5-acab-a9a64c55c177
+        name: "A `413` without the code `payload_too_large` splits a batch of more than one version as well."
+      - key: 01a21dc4-1383-72e5-acab-a9a7b300182b
+        name: "Each entry of a split batch counts as taken once in the run, in whichever half it went."
+  - key: 01a21dc4-1383-72e5-acab-a9a8ee6f207a
+    statement:
+      form: unwanted
+      if: "Yard Server answers a batch of versions with `400` or `413` without a problem document whose code is the one Yard Server gives that status"
+      system: "the sending"
+      shall: "leave each entry the answer is to in the outbox and end the run as `failed`."
+    criteria:
+      - key: 01a21dc4-1383-72e5-acab-a9a910caf369
+        name: "After a `400` whose body is HTML, every entry of the batch stays in the outbox and the outcome is `failed`."
+      - key: 01a21dc4-1383-72e5-acab-a9aa015e65e9
+        name: "After a `400` with an empty body, every entry of the batch stays in the outbox."
+      - key: 01a21dc4-1383-72e5-acab-a9ab9bd3b531
+        name: "After a `400` whose problem document has another code, or none, every entry of the batch stays in the outbox."
+      - key: 01a21dc4-1383-72e5-acab-a9ac7cc422a3
+        name: "After a `413` without the code `payload_too_large` to a batch of one version, its entry stays in the outbox."
+      - key: 01a21dc4-1383-72e5-acab-a9adb3e50a9e
+        name: "The error names the status and says that the answer is not Yard Server's own."
   - key: 01a213cb-9c28-769e-b7c8-440dfd7f92e4
     statement:
       form: unwanted
       if: "Yard Server answers a batch of versions with `429` or `503` and a `Retry-After`"
       system: "the sending"
-      shall: "leave the batch's entries in the outbox, end the run as `paused`, and make no request to that address before the time `Retry-After` names."
+      shall: "leave the batch's entries in the outbox, end the run as `paused`, and make no request to that address before the time `Retry-After` names or for 1 hour, whichever is sooner."
     criteria:
       - key: 01a213cb-9c28-769e-b7c8-440e97f8fa6b
         name: "No entry of the batch leaves the outbox."
@@ -184,6 +236,10 @@ requirements:
         name: "A `Retry-After` of a number of seconds and one of an HTTP date are both read."
       - key: 01a21406-1007-7756-963c-23316cb33313
         name: "A `Retry-After` of 0 seconds, or of a date already past, lets the next run send."
+      - key: 01a21dc4-1383-72e5-acab-a9ae8833d36c
+        name: "A `Retry-After` that names a time more than 1 hour away keeps the sending away for 1 hour."
+      - key: 01a21dc4-1383-72e5-acab-a9af465554d3
+        name: "The number of runs in a row that ended `failed` for the address is left as it was."
       - key: 01a213cb-9c28-769e-b7c8-441261bba139
         name: "A `429` or `503` without a `Retry-After`, or with one that does not read, is a failure as any other status is."
   - key: 01a20dc8-c593-7357-875c-81eac0f01173
@@ -203,6 +259,29 @@ requirements:
         name: "Where no server listens at the address, every entry stays."
       - key: 01a20dc8-c593-7357-875c-81efcf58f20d
         name: "No request follows the failed one within the same run."
+  - key: 01a21dc4-1383-72e5-acab-a9b02f0d74ae
+    statement:
+      form: unwanted
+      if: "a run of the sending makes a request for a batch of versions and ends `failed` with an error of the kind `yard-server`"
+      system: "the sending"
+      shall: "make no request to that address for a pause of 5 seconds after the first such run in a row, doubled after each further one up to 5 minutes, and drawn at random between half of it and all of it."
+    criteria:
+      - key: 01a21dc4-1383-72e5-acab-a9b110a04816
+        name: "After the first such run, `~/.yard/flush.json` records for the address a time to come back after that is from 2.5 to 5 seconds after the run ended."
+      - key: 01a21dc4-1383-72e5-acab-a9b254bbc35a
+        name: "After the second such run in a row, the time is from 5 to 10 seconds after the run ended."
+      - key: 01a21dc4-1383-72e5-acab-a9b3e57d0dc7
+        name: "After the seventh such run in a row and every later one, the time is from 2.5 to 5 minutes after the run ended."
+      - key: 01a21dc4-1383-72e5-acab-a9b4387871dd
+        name: "A run before that time makes no request and gives the outcome `paused`."
+      - key: 01a21dc4-1383-72e5-acab-a9b51455a4f6
+        name: "A run after that time sends the batch again."
+      - key: 01a21dc4-1383-72e5-acab-a9b64268a3a5
+        name: "A batch that goes sets the number of such runs in a row back to none."
+      - key: 01a21dc4-1383-72e5-acab-a9b79cb71796
+        name: "A run that ends `failed` without a request, as for an address the network client refuses or a value of `LOFT_YARD_SERVER_TIMEOUT` it refuses, adds no pause."
+      - key: 01a21dc4-1383-72e5-acab-a9b805cabf94
+        name: "A run that ends `failed` only because an entry could not be removed or moved adds no pause."
   - key: 01a213cb-9c28-769e-b7c8-4415893db333
     statement:
       form: unwanted

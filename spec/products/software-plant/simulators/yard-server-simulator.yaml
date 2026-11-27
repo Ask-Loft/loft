@@ -26,7 +26,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The Yard Server simulator"
-      shall: "behave toward each request as its scenario names: as Yard Server's contract states, by refusing the connection, with one error status, by asking to come back later, by refusing named versions, by putting named versions off until later, by answering with the outcomes it names, or with silence."
+      shall: "behave toward each request as its scenario names: as Yard Server's contract states, by refusing the connection, with one error status, by asking to come back later, by refusing named versions, by putting named versions off until later, by answering with the status and the body it names, by refusing bodies larger than a size it names, or with silence."
     criteria:
       - key: 01a20de0-8348-72dc-8ab4-3db061a809f1
         name: "An accepting scenario answers each request as Yard Server's contract states."
@@ -47,7 +47,9 @@ requirements:
       - key: 01a21406-1006-7412-b332-118ab687b777
         name: "A scenario that puts named versions off answers each of them `later` with the code it names, stores none of them, and stores and answers the others as an accepting one does."
       - key: 01a21406-1006-7412-b332-118b5ca18aa2
-        name: "A scenario that answers with the outcomes it names answers `200` with exactly the body it names, so that a test can give an answer that does not read, leaves a version out or names an unknown outcome."
+        name: "A scenario that answers with a body it names answers with the status it names, `200` where it names none, and exactly that body, so that a test can give an answer that does not read, leaves a version out, names an unknown outcome or comes from a proxy on the way."
+      - key: 01a21dc4-1382-7665-bfa6-7061e894832b
+        name: "A scenario that refuses bodies larger than a size it names answers such a body `413` with the code `payload_too_large`, and stores and answers a smaller one as an accepting scenario does."
   - key: 01a20de0-8348-72dc-8ab4-3db6eca90288
     statement:
       form: ubiquitous

@@ -6,7 +6,7 @@ body: |
 
   One outbox serves every tree and every Yard Server on the machine. Each entry names the address of the Yard Server it is for, and sending takes only the entries of its own address, so that turning connected mode to another server never sends a version where it was not meant to go. The address goes no further than the machine.
 
-  Beside the outbox, `~/.yard/flush.json` records for each address how the last run of the sending ended and which versions Yard Server will take later, each with its code. A version put off this way stays marked until a run sends it again, as a deferred message of a mail queue does, so that a person reading `loft yard status` sees why it waits, and the Codex Yard worker does not wake the flush for it alone.
+  Beside the outbox, `~/.yard/flush.json` records for each address how the last run of the sending ended, how many runs in a row a batch did not go, the time before which no run makes a request, and which versions Yard Server will take later, each with its code, with the time before which they are not sent again. A version put off this way stays marked until a run sends it again, as a deferred message of a mail queue does, so that a person reading `loft yard status` sees why it waits, and the Codex Yard worker does not wake the flush for it alone.
 
   A version is copied after its write is saved and before the lock of Yard Log is released. A crash between the two leaves the version saved and never sent, which is the better failure: the outbox never holds a version that Yard Log does not. Versions that a merge of Yard Log brings in, and versions a crash left unsent, wait for the history sync of a later wave.
 realizes:
@@ -138,7 +138,7 @@ requirements:
     statement:
       form: ubiquitous
       system: "The sending"
-      shall: "record in `~/.yard/flush.json`, for its address, the time its last run ended, its outcome, why a batch did not go where one did not, the time Yard Server asked it not to come back before, and the key of each version Yard Server will take later with the code it gave."
+      shall: "record in `~/.yard/flush.json`, for its address, the time its last run ended, its outcome, why a batch did not go where one did not, the number of runs in a row that ended `failed` after a request, the time before which no run makes a request, the key of each version Yard Server will take later with the code it gave, and the time before which those versions are not sent again."
     criteria:
       - key: 01a213cb-9c28-769e-b7c8-43d929438c84
         name: "`~/.yard/flush.json` holds one record for each address that a run has run for."
@@ -152,6 +152,12 @@ requirements:
         name: "The record holds the key and the code of each version Yard Server answered `later` in the run."
       - key: 01a216fa-feac-7221-aee1-71669d4c89e6
         name: "A run that replaces the record keeps the `later` key of each entry it did not take, while the entry is in the outbox."
+      - key: 01a21dc4-1383-72e5-acab-a994e837b6dc
+        name: "A run in which Yard Server answered a version `later` sets the time before which the versions marked `later` are not sent again to 1 hour after the answer."
+      - key: 01a21dc4-1383-72e5-acab-a9950d9f2514
+        name: "A run that replaces the record keeps a time before which the versions marked `later` are not sent again that has not passed."
+      - key: 01a21dc4-1383-72e5-acab-a996a119a1be
+        name: "The record holds the number of runs in a row that ended `failed` after a request, and none once a batch has gone."
       - key: 01a21406-1007-7756-963c-231094699bf7
         name: "The file is written only by a run that holds `~/.yard/flush.lock`."
       - key: 01a21406-1007-7756-963c-23119f874a55

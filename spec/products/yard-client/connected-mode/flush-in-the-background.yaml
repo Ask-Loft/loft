@@ -4,7 +4,7 @@ name: "Flush in the background"
 body: |
   Every version is written by an agent of a session of Claude Code or Codex, and each such session already has a part that lives as long as it does and acts every 5 seconds: the Loft mod in Claude Code and the Codex Yard worker in Codex. They deliver the session's events to the page server that way, trying again what did not go, and they run `loft yard flush` the same way, without waiting for it. So no command an agent or a hook runs waits for Yard Server, and a batch that did not go is tried again even while the agent waits for the person.
 
-  The two hosts start the flush from what each knows. The Loft mod makes the session's writes of Yard Log itself, so it flushes after each of them and keeps on at its beat only while the last flush left work. A Codex agent writes through the shell, out of the worker's sight, so the worker flushes at its beat whenever the outbox holds entries it can send, other than those Yard Server has put off until later. Only one flush sends at a time, so the flushes of many sessions cost one sending.
+  The two hosts start the flush from what each knows. The Loft mod makes the session's writes of Yard Log itself, so it flushes after each of them and keeps on at its beat only while the last flush left work. A Codex agent writes through the shell, out of the worker's sight, so the worker flushes at its beat whenever the outbox holds entries it can send, other than those Yard Server has put off until later, and reads the outbox only until it finds one. Neither host starts a process before the time a flush has said no run makes a request, so that a server that is down costs a session no process at each beat. Only one flush sends at a time, so the flushes of many sessions cost one sending.
 
   A run of the flush ends by itself after 5 minutes; whoever started it stops it after 6, in case it hangs, so that a stuck flush never holds the lock for long. A flush that runs when its session ends is stopped with it; the versions it did not send wait in the outbox for the next session, whose first beat flushes them.
 
@@ -29,7 +29,9 @@ requirements:
       - key: 01a213ce-418e-700f-b0fe-78c60b95b0ec
         name: "The session's first beat runs `loft yard flush`."
       - key: 01a213ce-418e-700f-b0fe-78c740190611
-        name: "A beat runs `loft yard flush` where the last one ended `failed`, `busy` or `paused`, or counted entries `remaining`."
+        name: "A beat runs `loft yard flush` where the last one ended `failed`, `busy` or `paused`, or counted entries `remaining`, and the `notBefore` it gave has passed."
+      - key: 01a21dc4-1383-72e5-acab-a991c9068973
+        name: "Neither a beat nor a write runs `loft yard flush` before the `notBefore` the last flush gave, and the first beat after it runs one."
       - key: 01a213ce-418e-700f-b0fe-78c8c00b45f7
         name: "A beat runs no flush where the last one ended `sent` or `empty` with no entry `remaining`."
       - key: 01a21406-1007-7756-963c-2309d5987ae6
@@ -58,7 +60,11 @@ requirements:
       - key: 01a216fa-feab-729d-9d66-ce58f509b86b
         name: "A beat where every entry for the address is one whose version `~/.yard/flush.json` records as `later` runs no flush."
       - key: 01a21406-1007-7756-963c-230dcfa9347f
-        name: "A beat runs no flush before the time Yard Server asked to come back after, as `~/.yard/flush.json` records it."
+        name: "A beat runs no flush before the time before which no run makes a request, as `~/.yard/flush.json` records it."
+      - key: 01a21dc4-1383-72e5-acab-a992c156269d
+        name: "A beat reads the entries of the outbox only until it finds one it would flush for."
+      - key: 01a21dc4-1383-72e5-acab-a9930f582e8f
+        name: "A beat passes over an entry whose version `~/.yard/flush.json` records as `later` by its file name, without reading it."
       - key: 01a21406-1007-7756-963c-230e4274c2ec
         name: "A worker without connected mode runs no flush."
       - key: 01a213ce-418e-700f-b0fe-78ceec407043
