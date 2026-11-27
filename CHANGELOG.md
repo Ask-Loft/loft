@@ -23,7 +23,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   or `~/.cargo/bin`, where they used to leave Yard Client off without a word to the agent. Where
   no `loft` can be run, the session's start tells the agent that Yard Client is off, what was
   tried and how to turn it on, and every other hook stays silent instead of failing on each tool
-  call. The command hooks run through a new launcher, `hooks/run-loft.sh`. (#39)
+  call. The command hooks run through a new launcher, `hooks/run-loft.sh`.
+  ([#39](https://github.com/Ask-Loft/loft/issues/39))
 - The Yard page server keeps a session it has heard of in about 3 KB of memory, where it used to
   take about 13 KB: what a session keeps for each Yard Log is now held apart from the map that
   finds it, so the map's empty slots no longer take its full size. With the 256 sessions it keeps
@@ -33,7 +34,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   widen the list past the sidebar's edge and cut every line of it; any name in the sidebar now
   breaks where it meets the edge. Each waiting question, approval or plan takes at most three
   lines there, ending in an ellipsis, and gives its whole text while the pointer rests on it; the
-  panel of what waits still shows it in full. (#26)
+  panel of what waits still shows it in full.
+  ([#26](https://github.com/Ask-Loft/loft/issues/26))
 - The Yard page's sidebar can be widened: drag its right edge, or focus it and press the arrow
   keys left and right. It opens 248 pixels wide and stays between 200 and 480, always leaving 120
   pixels of the window beside it, and the width chosen is kept in this browser. In a window
