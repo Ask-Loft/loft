@@ -1,14 +1,15 @@
 //! A count of bytes that gives a decimal byte unit: digits, comma groups of three or a power
 //! equal to the unit's value, 1000^k or 1024^k bytes for its power k, then `byte` or `bytes`,
-//! closing its clause.
+//! ending its sentence.
 
 use super::is_space;
 use crate::lint::text::is_written_number;
 use crate::text::strip_prefix_ignoring_case;
 
-/// The marks that may follow a count of bytes that closes its clause, beside the end of the
-/// text; a line break ends a paragraph, a list item or a heading in the text shown.
-const CLOSING: [char; 5] = ['.', ',', ';', ')', '\n'];
+/// The marks that may follow a count of bytes that ends its sentence, beside the end of the
+/// text; a line break ends a paragraph, a list item or a heading in the text shown. A `,` or a
+/// `;` may lead on to another value, as in `1,000,000 bytes, or 1,048,576 bytes`.
+const CLOSING: [char; 3] = ['.', ')', '\n'];
 
 /// Whether `text` opens on a count of bytes equal to the value of a unit of power `k`, such as
 /// `1,000,000 bytes` or `2^20 bytes` for `MB`, with nothing after it but one of `CLOSING` or the

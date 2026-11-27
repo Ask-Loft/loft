@@ -11,14 +11,16 @@
 //! number before the `-` ends in a digit and comes after none of those, and a decimal such as
 //! `.5 MB`, where the `.` comes after none of those.
 //!
-//! One definition of a decimal unit settles every decimal unit of the document. Since one false
-//! definition silences the whole document, a definition is narrow: a count of bytes equal to the
-//! unit's value, 1000^k or 1024^k, that closes its clause, given in parentheses right after the
-//! unit (`MB (10^6 bytes)`), or after a defining word where the unit opens a clause
+//! A definition of a decimal unit settles every decimal unit of its power, `kB` and `KB` alike,
+//! and no other. Since a false definition silences every finding for its units, a definition is
+//! narrow: a count of bytes equal to the unit's value, 1000^k or 1024^k, that ends its sentence,
+//! given in parentheses right after the unit where no number but `1` comes before it
+//! (`MB (10^6 bytes)`), or after a defining word where the unit opens a clause
 //! (`1 MB = 1,000,000 bytes`, `A megabyte is 2^20 bytes`); or a term named after the unit whose
-//! definition opens on its value, or on its full name ending its phrase (`A megabyte.`,
-//! `A kilobyte: 1,000 bytes.`), after at most one leader or `exactly`. A count or a definition
-//! never runs on past the end of its paragraph, list item or heading.
+//! definition opens on its value, or on its full name, `of` and its value
+//! (`A kilobyte of 1,000 bytes.`), after at most one leader or `exactly`. A decision defines a
+//! unit only where it is accepted, and never in an option it did not select. A count or a
+//! definition never runs on past the end of its paragraph, list item or heading.
 
 use super::context::{Context, Item};
 use super::text::plain;
@@ -42,17 +44,22 @@ const LEADERS: [&str; 5] = ["1", "one", "a", "an", "the"];
 /// paragraph, a list item or a heading in the text shown.
 const CLAUSE_MARKS: [char; 8] = ['\n', '.', '!', '?', ':', ';', ',', '('];
 
+/// The powers of every decimal unit, as bits of `Use::defines`: all of them defined.
+const EVERY_POWER: u8 = 0b1_1110;
+
 /// What one element's texts say about byte units.
 #[derive(Default)]
 struct Use {
-    /// The first decimal unit a quantity is stated in, where one is.
-    decimal: Option<&'static str>,
+    /// The decimal units quantities are stated in, each once, in the order first stated.
+    decimal: Vec<&'static str>,
     binary: bool,
-    defines: bool,
+    /// The powers of the decimal units the element defines, bit k for power k.
+    defines: u8,
 }
 
 impl Use {
-    fn read(&mut self, text: &str) {
+    /// Reads `text` for quantities and, where it is in force, for definitions.
+    fn read(&mut self, text: &str, in_force: bool) {
         // Every unit ends in `B`, and a full name holds `byte` or, in capitals, a `B`; most
         // prose holds neither, and is not given a Markdown parse.
         if !text.contains('B') && !text.contains("byte") {
@@ -65,7 +72,9 @@ impl Use {
                 self.note(unit);
             }
         }
-        self.defines |= defines_decimal(&shown, &units);
+        if in_force {
+            self.defines |= defined_powers(&shown, &units);
+        }
     }
 
     /// A Quality Attribute's unit field: a byte unit there is a quantity in it.
@@ -76,17 +85,17 @@ impl Use {
         }
     }
 
-    /// A quantity in `unit`: binary, or the first decimal one.
+    /// A quantity in `unit`, binary or decimal.
     fn note(&mut self, unit: &'static str) {
         if BINARY.contains(&unit) {
             self.binary = true;
-        } else {
-            self.decimal.get_or_insert(unit);
+        } else if !self.decimal.contains(&unit) {
+            self.decimal.push(unit);
         }
     }
 
-    const fn states_a_unit(&self) -> bool {
-        self.binary || self.decimal.is_some()
+    fn states_a_unit(&self) -> bool {
+        self.binary || !self.decimal.is_empty()
     }
 }
 
@@ -94,22 +103,27 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     let document = context.document;
     let terms = (document.terms.iter()).map(|term| {
         let mut each = Use::default();
-        each.read(&term.definition);
-        each.defines |= term_settles(term);
+        each.read(&term.definition, true);
+        each.defines |= term_powers(term);
         (term.id.key(), each)
     });
     let nodes = (context.items.iter()).map(|item| (item.id.key(), node_use(item)));
     let decisions = (document.decisions.iter()).map(|decision| {
         let mut each = Use::default();
         for text in decision.texts() {
-            each.read(text);
+            each.read(text, false);
+        }
+        for text in decision.texts_in_force() {
+            each.read(text, true);
         }
         (decision.id.key(), each)
     });
     let mut uses: Vec<(Key, Use)> = Vec::new();
-    // The elements are read lazily, so that a definition ends the reading.
+    let mut defined = 0;
+    // The elements are read lazily, so that defining every power ends the reading.
     for (key, each) in terms.chain(nodes).chain(decisions) {
-        if each.defines {
+        defined |= each.defines;
+        if defined == EVERY_POWER {
             return;
         }
         if each.states_a_unit() {
@@ -120,14 +134,15 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
         return;
     }
     for (key, each) in &uses {
-        if let Some(unit) = each.decimal {
+        let undefined = (each.decimal.iter()).find(|unit| defined & bit(symbol_power(unit)) == 0);
+        if let Some(&unit) = undefined {
             // Another element where there is one, so that the finding points beyond itself.
             let binary = (uses.iter())
                 .find(|(other, them)| them.binary && other != key)
                 .map_or(*key, |(other, _)| *other);
             let message = format!(
                 "A quantity in a decimal byte unit stands beside quantities in binary byte \
-                 units, as in {binary}, and the document defines no decimal byte unit."
+                 units, as in {binary}, and the document does not define {unit}."
             );
             out.push(Raw::new(RuleId::V2014, vec![*key], message).term(unit));
         }
@@ -137,21 +152,21 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
 /// What a node's name or statement, body, target and required value say.
 fn node_use(item: &Item<'_>) -> Use {
     let mut each = Use::default();
-    each.read(&item.name());
+    each.read(&item.name(), true);
     if let Some(body) = item.body() {
-        each.read(body);
+        each.read(body, true);
     }
     match item.node {
         Node::QualityAttribute(quality) => {
             let target = &quality.target;
             each.unit(&target.unit);
             for text in [&target.metric, &target.scenario, &target.environment] {
-                each.read(text);
+                each.read(text, true);
             }
         }
         Node::Constraint(constraint) => {
             if let Some(binding) = &constraint.binding {
-                each.read(&binding.required_value);
+                each.read(&binding.required_value, true);
             }
         }
         _ => {}
@@ -159,14 +174,14 @@ fn node_use(item: &Item<'_>) -> Use {
     each
 }
 
-/// Whether `term`, named after a decimal unit by its name or an alias, has a definition that
-/// opens on the unit's value as a count of bytes, or on its full name where the name ends its
-/// phrase (`ends_phrase`), after at most one of `LEADERS` or `exactly`.
-fn term_settles(term: &TermEntry) -> bool {
+/// The powers of the decimal units `term` is named after, by its name or an alias, that its
+/// definition gives as a count of bytes: one opening the definition, or after the unit's full
+/// name and `of`, after at most one of `LEADERS` or `exactly`.
+fn term_powers(term: &TermEntry) -> u8 {
     let names = std::iter::once(&term.name).chain(&term.aliases);
-    let mut powers = names.filter_map(|name| named_power(name)).peekable();
-    if powers.peek().is_none() {
-        return false;
+    let powers: Vec<u32> = names.filter_map(|name| named_power(name)).collect();
+    if powers.is_empty() {
+        return 0;
     }
     let shown = plain(&term.definition);
     let opening = shown.trim_start();
@@ -178,19 +193,29 @@ fn term_settles(term: &TermEntry) -> bool {
                 .then(|| after.trim_start_matches(is_space))
         })
         .unwrap_or(opening);
-    let full = (full_names(opening).into_iter())
-        .find(|&(start, end, _)| start == 0 && ends_phrase(&opening[end..]))
-        .map(|(.., k)| k);
-    powers.any(|k| full == Some(k) || count::gives_value(opening, k))
+    let given = |k: u32| count::gives_value(opening, k) || of_value(opening, k);
+    (powers.into_iter().filter(|&k| given(k))).fold(0, |defined, k| defined | bit(k))
 }
 
-/// Whether `after`, the text after a full name opening a term's definition, ends its phrase: it
-/// is the end of the text, opens on one of `.`, `,`, `;`, `)`, `:`, `=`, or on the word `of`.
-fn ends_phrase(after: &str) -> bool {
-    let of = after.starts_with(is_space)
-        && strip_prefix_ignoring_case(after.trim_start_matches(is_space), "of")
-            .is_some_and(|rest| !rest.starts_with(is_word));
-    after.trim().is_empty() || after.starts_with(['.', ',', ';', ')', ':', '=']) || of
+/// Whether `opening` opens on the full name of a unit of power `k`, then `of` and its value as a
+/// count of bytes, as in `kilobyte of 1,000 bytes`.
+fn of_value(opening: &str, k: u32) -> bool {
+    (full_names(opening).into_iter())
+        .filter(|&(start, _, power)| start == 0 && power == k)
+        .any(|(_, end, _)| {
+            let rest = &opening[end..];
+            let after = strip_prefix_ignoring_case(rest.trim_start_matches(is_space), "of");
+            rest.starts_with(is_space)
+                && after.is_some_and(|after| {
+                    after.starts_with(is_space)
+                        && count::gives_value(after.trim_start_matches(is_space), k)
+                })
+        })
+}
+
+/// The bit of `Use::defines` that stands for power `k`.
+const fn bit(k: u32) -> u8 {
+    1 << k
 }
 
 /// The power of the decimal unit a term's name is, by its symbol or its full name, in either
@@ -288,21 +313,35 @@ fn in_web_address(text: &str, at: usize) -> bool {
     word.contains("://") || strip_prefix_ignoring_case(word, "www.").is_some()
 }
 
-/// Whether `text`, whose units are `units`, gives a decimal unit, by its symbol or its full
-/// name, as a count of bytes: in parentheses right after the unit, or after a defining word
-/// where the unit opens a clause.
-fn defines_decimal(text: &str, units: &[(usize, &'static str)]) -> bool {
+/// The powers of the decimal units that `text`, whose units are `units`, gives by symbol or by
+/// full name as a count of bytes: in parentheses right after the unit, where no number but `1`
+/// comes before it, or after a defining word where the unit opens a clause.
+fn defined_powers(text: &str, units: &[(usize, &'static str)]) -> u8 {
     let symbols = (units.iter())
         .filter(|(_, unit)| DECIMAL.contains(unit))
         .map(|&(at, unit)| (at, at + unit.len(), symbol_power(unit)));
-    let mut spans = symbols.chain(full_names(text));
-    spans.any(|(start, end, k)| {
+    let spans = symbols.chain(full_names(text));
+    let given = spans.filter(|&(start, end, k)| {
         let rest = text[end..].trim_start_matches(is_space);
         match rest.strip_prefix('(') {
-            Some(inside) => count::gives_value(inside.trim_start_matches(is_space), k),
+            Some(inside) => {
+                unmultiplied(&text[..start])
+                    && count::gives_value(inside.trim_start_matches(is_space), k)
+            }
             None => opens_clause(&text[..start]) && defined_after_word(rest, k),
         }
-    })
+    });
+    given.fold(0, |defined, (.., k)| defined | bit(k))
+}
+
+/// Whether no number but `1` comes right before a unit after `head`, with nothing, one space,
+/// one no-break space or one hyphen between them, so that `2 MB (2^20 bytes)` defines nothing.
+fn unmultiplied(head: &str) -> bool {
+    let head = head
+        .strip_suffix([' ', '\u{a0}', '\u{202f}', '-'])
+        .unwrap_or(head);
+    let (_, number) = split_number(head);
+    number.is_empty() || number == "1"
 }
 
 /// Whether a unit after `head` opens a clause, alone or after one of `LEADERS`.

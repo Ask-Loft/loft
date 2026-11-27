@@ -42,6 +42,24 @@ impl Decision {
     /// Each record is taken apart whole, so that a field added to one must be placed here.
     #[must_use]
     pub fn texts(&self) -> Vec<&str> {
+        self.prose(None)
+    }
+
+    /// The texts of an accepted decision that are in force: every one of `texts` but the
+    /// options it did not select and their assessments. A decision in any other state has none.
+    pub(crate) fn texts_in_force(&self) -> Vec<&str> {
+        match &self.state {
+            DecisionState::Accepted {
+                selected_option, ..
+            } => self.prose(Some(*selected_option)),
+            _ => Vec::new(),
+        }
+    }
+
+    /// The texts of `texts`, leaving out every option but `selected`, where one is given, and
+    /// the assessments of those options.
+    fn prose(&self, selected: Option<OptionId>) -> Vec<&str> {
+        let kept = |option: &OptionId| selected.is_none_or(|selected| *option == selected);
         let Self {
             id: _,
             slug: _,
@@ -63,21 +81,25 @@ impl Decision {
             }
         }
         for DecisionOption {
-            id: _,
+            id,
             title,
             description,
         } in options
         {
-            texts.extend([title, description].map(String::as_str));
+            if kept(id) {
+                texts.extend([title, description].map(String::as_str));
+            }
         }
         for Assessment {
-            option: _,
+            option,
             driver: _,
             rating: _,
             rationale,
         } in assessments
         {
-            texts.push(rationale);
+            if kept(option) {
+                texts.push(rationale);
+            }
         }
         for Consequence {
             id: _,

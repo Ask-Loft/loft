@@ -167,20 +167,25 @@ Unreleased below, and those of each 2.4 release still to come.
   apart, and a number inside a web address, or right after a letter or one of `_ / . - = ? & #`,
   begins none, except a range such as `4-16 MB` and a decimal such as `.5 MB` where the number
   before them could begin one. Every node, every decision, whatever its state, and every term's
-  definition is read, and one finding names each that states a decimal quantity. One definition of a
-  decimal unit settles the whole document, so a definition is narrow: a count of bytes, written as
-  digits, as comma groups of three (`1,048,576`, as `LQ-002` reads a number) or as a power (`2^20`),
-  equal to the unit's value, 1000^k or 1024^k bytes, that ends its clause, given in parentheses
-  right after the unit, such as `Sizes are in MB (10^6 bytes).`, or after a defining word where the
-  unit opens a clause, alone or after `1`, `one`, `a`, `an` or `the`, such as `1 MB = 1,000,000
-  bytes`, `MB: 2^20 bytes` or `A megabyte is 1,000,000 bytes`; or a term of `spec/terms.yaml` whose
-  name or alias is the unit (a lowercase `s` alone makes it plural, so `KBS` is no unit) and whose
-  definition opens on the unit's value, or on its full name ending its phrase (`A megabyte.`,
-  `Kilobytes of 1,024 bytes each.`). A count or a definition never runs on past the end of its
-  paragraph, list item or heading. So `After compression, 1 MB is 400,000 bytes on disk.` settles
-  nothing, nor does a term `KB` for a knowledge base. Since a resolved decision is not edited, a
-  term is the way to settle units a decision uses. A definition of a binary unit alone does not
-  settle them. `schemas/check.json` lists the rule, and the published lint defaults state it. This
+  definition is read, and one finding names each that states a decimal quantity in a unit the
+  document does not define. A definition settles the decimal units of its own power, `kB` and `KB`
+  alike, and no other, so `kB = 1,000 bytes` leaves `MB` unsettled. Since a false definition
+  silences every finding for its units, a definition is narrow: a count of bytes, written as digits,
+  as comma groups of three (`1,048,576`, as `LQ-002` reads a number) or as a power (`2^20`), equal
+  to the unit's value, 1000^k or 1024^k bytes, that ends its sentence, never before a `,` or a `;`
+  that could lead on to another value; given in parentheses right after the unit where no number
+  but `1` comes before it, such as `Sizes are in MB (10^6 bytes).` and not `a 2 MB (2^20 bytes)
+  buffer`, or after a defining word where the unit opens a clause, alone or after `1`, `one`, `a`,
+  `an` or `the`, such as `1 MB = 1,000,000 bytes`, `MB: 2^20 bytes` or `A megabyte is 1,000,000
+  bytes`; or a term of `spec/terms.yaml` whose name or alias is the unit (a lowercase `s` alone
+  makes it plural, so `KBS` is no unit) and whose definition opens on the unit's value, or on its
+  full name, `of` and its value (`A kilobyte of 1,000 bytes.`); a term defined as `A megabyte.`
+  settles nothing. A decision gives a definition only where it is accepted, and never in an option
+  it did not select or that option's assessments. A count or a definition never runs on past the
+  end of its paragraph, list item or heading. So `After compression, 1 MB is 400,000 bytes on
+  disk.` settles nothing, nor does a term `KB` for a knowledge base. Since a resolved decision is
+  not edited, a term is the way to settle units a decision uses. A definition of a binary unit
+  alone does not settle them. `schemas/check.json` lists the rule, and the published lint defaults state it. This
   repository's specification defines `KB` and `MB` as terms.
 
 ## Unreleased

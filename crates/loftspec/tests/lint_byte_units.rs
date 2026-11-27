@@ -308,12 +308,17 @@ fn a_decimal_unit_given_as_a_count_of_bytes_settles_the_document() {
 #[test]
 fn a_term_named_after_a_decimal_unit_settles_the_document() {
     for (name, definition) in [
-        ("MB", "A megabyte."),
+        ("MB", "1,000,000 bytes."),
         ("KB", "1,000 bytes."),
-        ("megabyte", "A megabyte, in decimal."),
-        ("Kilobytes", "Kilobytes of 1,024 bytes each."),
+        ("megabyte", "A megabyte of 1,000,000 bytes."),
+        ("Kilobytes", "Kilobytes of 1,024 bytes."),
     ] {
-        let mut document = beside_binary("A page holds 5 MB.");
+        let unit = if name.starts_with(['M', 'm']) {
+            "MB"
+        } else {
+            "KB"
+        };
+        let mut document = beside_binary(&format!("A page holds 5 {unit}."));
         let mut entry = term(65, name, &[]);
         entry.definition = definition.to_owned();
         document.terms.push(entry);
@@ -385,8 +390,11 @@ fn a_code_span_beside_a_unit_or_a_number_states_no_quantity() {
 
 #[test]
 fn a_power_of_any_base_is_a_count_of_bytes() {
-    for definition in ["1 MB = 1000^2 bytes.", "A KB is 1000 ^ 1 bytes."] {
-        let mut document = beside_binary("A page holds 5 MB.");
+    for (unit, definition) in [
+        ("MB", "1 MB = 1000^2 bytes."),
+        ("KB", "A KB is 1000 ^ 1 bytes."),
+    ] {
+        let mut document = beside_binary(&format!("A page holds 5 {unit}."));
         document.components[0].component.details.body = Some(definition.to_owned());
         assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");
     }
@@ -394,12 +402,12 @@ fn a_power_of_any_base_is_a_count_of_bytes() {
 
 #[test]
 fn a_decimal_unit_defined_by_its_full_name_settles_the_document() {
-    for definition in [
-        "A megabyte is 1,000,000 bytes.",
-        "One kilobyte means 1,000 bytes.",
-        "Gigabytes (10^9 bytes) are used.",
+    for (unit, definition) in [
+        ("MB", "A megabyte is 1,000,000 bytes."),
+        ("KB", "One kilobyte means 1,000 bytes."),
+        ("GB", "Gigabytes (10^9 bytes) are used."),
     ] {
-        let mut document = beside_binary("A page holds 5 MB.");
+        let mut document = beside_binary(&format!("A page holds 5 {unit}."));
         document.components[0].component.details.body = Some(definition.to_owned());
         assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");
     }
@@ -412,8 +420,8 @@ fn a_decimal_unit_defined_by_its_full_name_settles_the_document() {
 #[test]
 fn a_term_named_after_a_decimal_unit_in_the_plural_settles_the_document() {
     for (name, definition) in [
-        ("MBs", "Megabytes, as the name says."),
-        ("KBs", "1,000 bytes."),
+        ("MBs", "1,000,000 bytes."),
+        ("megabytes", "1,048,576 bytes."),
     ] {
         let mut document = beside_binary("A page holds 5 MB.");
         let mut entry = term(65, name, &[]);

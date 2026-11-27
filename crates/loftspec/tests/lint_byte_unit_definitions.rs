@@ -9,8 +9,13 @@ use loftspec::lint::Finding;
 
 /// The document stating `5 MB` beside `4 KiB`, with `text` once in a Component's body, once in a
 /// decision's context, once in a glossary Section and once in a term's definition.
-fn with_text(text: &str) -> [Document; 4] {
-    let document = beside_binary("A page holds 5 MB.");
+pub(crate) fn with_text(text: &str) -> [Document; 4] {
+    with_text_stating("A page holds 5 MB.", text)
+}
+
+/// The document stating `feature` beside `4 KiB`, with `text` placed as `with_text` places it.
+pub(crate) fn with_text_stating(feature: &str, text: &str) -> [Document; 4] {
+    let document = beside_binary(feature);
     let mut node = document.clone();
     node.components[0].component.details.body = Some(text.to_owned());
     let mut decided = document.clone();
@@ -146,26 +151,31 @@ fn a_count_defines_a_unit_only_where_it_equals_the_unit_s_value() {
             assert!(named(&document).contains(&one(FEATURE, "MB")[0]), "{text}");
         }
     }
-    for text in [
-        "1 MB = 1,048,576 bytes.",
-        "MB: 2^20 bytes",
-        "A KB is 1,024 bytes.",
-        "1 GB = 10^9 bytes.",
-        "1 TB = 1000^4 bytes.",
-        "A kilobyte is 1,024 bytes.",
+    for (unit, text) in [
+        ("MB", "1 MB = 1,048,576 bytes."),
+        ("MB", "MB: 2^20 bytes"),
+        ("KB", "A KB is 1,024 bytes."),
+        ("GB", "1 GB = 10^9 bytes."),
+        ("TB", "1 TB = 1000^4 bytes."),
+        ("KB", "A kilobyte is 1,024 bytes."),
     ] {
-        for document in with_text(text) {
+        for document in with_text_stating(&format!("A page holds 5 {unit}."), text) {
             assert!(byte_units(&document).is_empty(), "{text}");
         }
     }
 }
 
 #[test]
-fn a_count_defines_a_unit_only_where_it_closes_its_clause() {
+fn a_count_defines_a_unit_only_where_it_ends_its_sentence() {
     for text in [
         "1 MB = 1,000,000 bytes of index.",
         "MB (10^6 bytes per entry) is used.",
         "1 MB = 1,000,000 bytes on disk",
+        "1 MB = 1,000,000 bytes, as everywhere.",
+        "1 MB = 1,000,000 bytes; KB likewise.",
+        "MB = 1,000,000 bytes, or 1,048,576 bytes on Windows.",
+        "Sizes are in MB (10^6 bytes, or 2^20 bytes in older tools).",
+        "MB = 1,000,000 bytes; 1,048,576 in memory.",
     ] {
         for document in with_text(text) {
             assert!(named(&document).contains(&one(FEATURE, "MB")[0]), "{text}");
@@ -173,8 +183,8 @@ fn a_count_defines_a_unit_only_where_it_closes_its_clause() {
     }
     for text in [
         "1 MB = 1,000,000 bytes",
-        "1 MB = 1,000,000 bytes, as everywhere.",
-        "1 MB = 1,000,000 bytes; KB likewise.",
+        "1 MB = 1,000,000 bytes. Sizes follow.",
+        "Sizes are in MB (10^6 bytes), as everywhere.",
         "1 MB = 1,000,000 bytes\n\nSizes follow.",
     ] {
         for document in with_text(text) {
@@ -184,26 +194,27 @@ fn a_count_defines_a_unit_only_where_it_closes_its_clause() {
 }
 
 #[test]
-fn a_term_named_after_a_unit_settles_only_where_its_definition_names_or_counts_it() {
+fn a_term_named_after_a_unit_settles_only_where_its_definition_gives_the_value() {
     for definition in [
-        "The knowledge base the support agent searches.",
+        "The message broker the uploads go through.",
         "A megabyte.",
+        "Megabytes.",
         "512 bytes.",
+        "1,000,000 bytes, though some tools use 1,048,576.",
     ] {
         let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, "KB", &[]);
+        let mut entry = term(65, "MB", &[]);
         entry.definition = definition.to_owned();
         document.terms.push(entry);
         assert_eq!(named(&document), one(FEATURE, "MB"), "{definition}");
     }
     for definition in [
-        "A kilobyte: 1,000 bytes.",
-        "1,024 bytes.",
-        "Kilobytes.",
-        "Exactly 1,000 bytes.",
+        "A megabyte: 1,000,000 bytes.",
+        "1,048,576 bytes.",
+        "Exactly 1,000,000 bytes.",
     ] {
         let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, "KB", &[]);
+        let mut entry = term(65, "MB", &[]);
         entry.definition = definition.to_owned();
         document.terms.push(entry);
         assert!(byte_units(&document).is_empty(), "{definition}");
@@ -335,27 +346,28 @@ fn a_parenthesis_on_the_next_list_item_defines_nothing() {
 }
 
 #[test]
-fn a_term_s_full_name_settles_only_where_it_ends_its_phrase() {
-    for (name, definition) in [
-        ("MB", "The megabyte broker that relays uploads."),
-        ("GB", "Gigabyte Builds, the CI farm."),
-        ("KB", "Kilobyte-aligned blocks of the knowledge base."),
+fn a_term_s_full_name_settles_only_with_of_and_the_value() {
+    for definition in [
+        "The megabyte broker that relays uploads.",
+        "A megabyte, in decimal.",
+        "The megabyte",
+        "Megabytes of 1,000,000 bytes each.",
+        "A megabyte of 1,000 bytes.",
+        "A gigabyte of 10^9 bytes.",
     ] {
         let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, name, &[]);
+        let mut entry = term(65, "MB", &[]);
         entry.definition = definition.to_owned();
         document.terms.push(entry);
         assert_eq!(named(&document), one(FEATURE, "MB"), "{definition}");
     }
-    for (name, definition) in [
-        ("MB", "A megabyte."),
-        ("KB", "A kilobyte: 1,000 bytes."),
-        ("MB", "A megabyte, in decimal."),
-        ("KB", "Kilobytes of 1,024 bytes each."),
-        ("MB", "The megabyte"),
+    for definition in [
+        "A megabyte of 1,000,000 bytes.",
+        "Megabytes of 2^20 bytes.",
+        "The megabyte of 10^6 bytes",
     ] {
         let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, name, &[]);
+        let mut entry = term(65, "MB", &[]);
         entry.definition = definition.to_owned();
         document.terms.push(entry);
         assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");
@@ -424,7 +436,7 @@ fn a_line_separator_inside_a_definition_ends_it() {
 #[test]
 fn a_term_s_definition_reads_in_line_spaces_but_not_a_paragraph_break() {
     for definition in [
-        "A\u{2009}megabyte.",
+        "A\u{2009}megabyte of\u{2009}10^6 bytes.",
         "The\u{2009}megabyte\u{2009}of 10^6 bytes",
     ] {
         let mut document = beside_binary("A page holds 5 MB.");
@@ -439,7 +451,7 @@ fn a_term_s_definition_reads_in_line_spaces_but_not_a_paragraph_break() {
     }
     let mut document = beside_binary("A page holds 5 MB.");
     let mut entry = term(65, "MB", &[]);
-    entry.definition = "A\n\nmegabyte.".to_owned();
+    entry.definition = "A\n\nmegabyte of 10^6 bytes.".to_owned();
     document.terms.push(entry);
     assert_eq!(named(&document), one(FEATURE, "MB"));
 }
