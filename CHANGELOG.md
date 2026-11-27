@@ -5,6 +5,25 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
+## 2.4.3 (2026-11-27)
+
+- A Claude Code session whose `yardListen` setting is empty no longer narrows the Yard page
+  server to the loopback interface. A session that loads only the project's settings, such
+  as a reviewer started with `claude -p --setting-sources project`, used to replace a page server
+  listening on the address `yardListen` names, such as a tailnet address, with one on the
+  loopback interface alone, and the page then stayed closed to other devices after it ended. Such
+  a session now joins the running page server. Emptying `yardListen` therefore no longer closes
+  the page to other devices at the next session: run `loft yard serve` to do so.
+  ([#38](https://github.com/Ask-Loft/loft/issues/38))
+- A Claude Code session's plan mode ends on the Yard page's Gantt chart when the person approves
+  its plan, on the page or in the terminal. Under a host built on the Agent SDK, which ends
+  `ExitPlanMode` itself and keeps reporting plan mode after the plan is approved on the page,
+  the work that followed the approval used to be shown as planning until the host's next run.
+  A rejected plan keeps plan mode going while the agent revises it. Entering plan mode again
+  with `EnterPlanMode` now always starts a new stretch of plan mode and ends a stretch of spec
+  mode, where the host had gone on reporting plan mode in between.
+  ([#41](https://github.com/Ask-Loft/loft/issues/41))
+
 ## 2.4.2 (2026-11-26)
 
 - Yard Client finds a `loft` installed with `cargo install` where the app that starts Claude Code
@@ -14,7 +33,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   or `~/.cargo/bin`, where they used to leave Yard Client off without a word to the agent. Where
   no `loft` can be run, the session's start tells the agent that Yard Client is off, what was
   tried and how to turn it on, and every other hook stays silent instead of failing on each tool
-  call. The command hooks run through a new launcher, `hooks/run-loft.sh`. (#39)
+  call. The command hooks run through a new launcher, `hooks/run-loft.sh`.
+  ([#39](https://github.com/Ask-Loft/loft/issues/39))
 - The Yard page server keeps a session it has heard of in about 3 KB of memory, where it used to
   take about 13 KB: what a session keeps for each Yard Log is now held apart from the map that
   finds it, so the map's empty slots no longer take its full size. With the 256 sessions it keeps
@@ -24,7 +44,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   widen the list past the sidebar's edge and cut every line of it; any name in the sidebar now
   breaks where it meets the edge. Each waiting question, approval or plan takes at most three
   lines there, ending in an ellipsis, and gives its whole text while the pointer rests on it; the
-  panel of what waits still shows it in full. (#26)
+  panel of what waits still shows it in full.
+  ([#26](https://github.com/Ask-Loft/loft/issues/26))
 - The Yard page's sidebar can be widened: drag its right edge, or focus it and press the arrow
   keys left and right. It opens 248 pixels wide and stays between 200 and 480, always leaving 120
   pixels of the window beside it, and the width chosen is kept in this browser. In a window

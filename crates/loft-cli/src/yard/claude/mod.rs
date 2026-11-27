@@ -107,24 +107,17 @@ fn answer(hook: &Hook, input: &Input) -> Value {
             json!({})
         }
         "PostCompact" => {
-            post(&hook.main_event("compaction", at));
+            super::post::to_running(&hook.main_event("compaction", at));
             json!({})
         }
         "PermissionRequest" => plan::decide(hook, input.port),
         event if mode::CARRY.contains(&event) => {
             if let Ok(Some(kind)) = mode::heard(hook) {
-                post(&hook.main_event(kind, at));
+                super::post::to_running(&hook.main_event(kind, at));
             }
             json!({})
         }
         _ => json!({}),
-    }
-}
-
-/// Posts an event to the page server that runs; an event no page server takes is dropped.
-fn post(event: &Value) {
-    if let Some(home) = yardlog_store::home::Home::from_env() {
-        let _ = super::post::events(&home, event);
     }
 }
 

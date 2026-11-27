@@ -35,6 +35,18 @@ pub fn strings(value: &Value) -> Vec<String> {
     })
 }
 
+/// An event of `kind` of the main agent of `host`'s session `session` at `at`, in the directory
+/// `dir`, as the page server takes it: no agent, and nothing of the host's words.
+pub fn main_event(host: &str, session: &str, dir: &str, kind: &str, at: Time) -> Value {
+    serde_json::json!({
+        "session": session,
+        "dir": dir,
+        "at": at.to_string(),
+        "host": host,
+        "kind": kind,
+    })
+}
+
 /// A wire request's host: omitted fields retain the legacy identity; invalid fields do not.
 pub fn host_in(value: &Value) -> Result<&str, &'static str> {
     let host = match value.get("host") {
@@ -152,6 +164,12 @@ impl Event {
     /// Whether a tool call's end says it failed.
     pub fn failed(&self) -> Option<bool> {
         self.posted["failed"].as_bool()
+    }
+
+    /// Whether the person made the event, as an approval of a plan does, rather than the
+    /// session: then it is no sign of the session's life or of where its agent works.
+    pub fn by_person(&self) -> bool {
+        self.posted["by"] == "person"
     }
 }
 

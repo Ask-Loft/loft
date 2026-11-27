@@ -9,8 +9,6 @@
 //! `yard_wait`, and the hook, which still runs, must not refuse that wait.
 
 use serde_json::{Value, json};
-use yardlog::YardLog;
-use yardlog::body::Body;
 use yardlog::query::State;
 use yardlog_store::home::Home;
 
@@ -19,6 +17,7 @@ use crate::cli::{Format, Output};
 use crate::yard::args::{Beyond, WaitArgs, Writer};
 use crate::yard::branch::{Branch, log_of};
 use crate::yard::caller::{Caller, Continuations};
+use crate::yard::plan_end;
 use crate::yard::wait::{LONGEST, watch};
 use crate::yard::working_tree::{Follows, target};
 
@@ -60,15 +59,14 @@ fn newest(hook: &Hook, port: u16) -> Option<String> {
                 .agent()
                 .is_some_and(|sender| continuations.identity(sender) == mine)
         })
-        .filter(|submission| submission.blocks.iter().any(|key| is_plan(log, *key)))
+        .filter(|submission| {
+            submission
+                .blocks
+                .iter()
+                .any(|key| plan_end::in_plan_mode(log, *key))
+        })
         .max_by_key(|submission| (submission.sending().at, submission.sending().revision))
         .map(|submission| submission.key.to_string())
-}
-
-fn is_plan(log: &YardLog, key: yardlog::BlockKey) -> bool {
-    log.block(key).is_some_and(
-        |(_, block)| matches!(&block.current().body, Body::Plan(plan) if plan.plan_mode),
-    )
 }
 
 fn wait_args(hook: &Hook, submission: &str, port: u16) -> WaitArgs {

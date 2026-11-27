@@ -4,7 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
-use serde_json::{Value, json};
+use serde_json::Value;
 use yardlog::Time;
 use yardlog::identity::is_session_id;
 
@@ -91,12 +91,12 @@ impl Hook {
     /// An event of `kind` of the session's main agent at `at`, as the page server takes it: no
     /// agent, and nothing of the hook's words.
     pub fn main_event(&self, kind: &str, at: Time) -> Value {
-        json!({
-            "session": self.session,
-            "dir": self.dir.display().to_string(),
-            "at": at.to_string(),
-            "host": yardlog::act::CLAUDE_CODE,
-            "kind": kind,
-        })
+        crate::yard::event::main_event(
+            yardlog::act::CLAUDE_CODE,
+            &self.session,
+            &self.dir.display().to_string(),
+            kind,
+            at,
+        )
     }
 }

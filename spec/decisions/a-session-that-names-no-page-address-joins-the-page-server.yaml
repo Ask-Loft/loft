@@ -1,0 +1,131 @@
+key: 01a21a88-3dbf-7771-85c2-1c20e0fb9401
+slug: a-session-that-names-no-page-address-joins-the-page-server
+title: "The page server listens on the loopback interface by default, on the addresses the person names as well, and a session that names none joins it"
+context: "The page server listened on the loopback interface by default and on the addresses `--listen` named as well, and each session of the Claude Code mod replaced, when it started, a page server of its version that listened on other addresses than its `yardListen` setting named, so that a changed setting took effect at the next session. A session that loaded none of the person's settings, such as a print-mode reviewer started with `--setting-sources project`, read an empty setting and replaced a page server that listened on the person's tailnet address with one on the loopback interface alone; once that session ended, every later `loft yard serve --join` started its page server where that one had listened, and the page stayed closed to the person's phone. The mod cannot tell a setting the person emptied from one the session never loaded."
+state:
+  kind: accepted
+  selectedOption: 01a21a88-3dbf-7771-85c2-1c250f3b7884
+  outcome: "`loft yard serve` listens on `127.0.0.1` alone unless `--listen` names addresses, and then on each of them as well, `0.0.0.0` naming every address of the machine, trying again an address that is missing until it appears. The Claude Code plugin's `yardListen` setting supplies `--listen`; Codex gives the plugin no setting. `~/.yard/server.json` names the addresses, and a `loft yard serve` of the same version that would listen on other addresses replaces the running page server. A session of the mod whose `yardListen` setting is not empty runs `loft yard serve` once when it starts without `--join`, so that a changed setting that is not empty takes effect when the next session starts; every other `loft yard serve` that the mod or the Codex worker runs, each one of a session whose setting is empty among them, is given `--join`, which joins a running page server of its version whatever its addresses. A `loft yard serve --join` that starts a page server listens on the addresses of the last page server that served, as `~/.yard/server.json` records them, so that recovery never opens the page wider than the last session start or `loft yard serve` left it. The person narrows the page server to the loopback interface by running `loft yard serve` without `--listen`. An IPv6 address that names every address, such as `::` or `::ffff:0.0.0.0`, is refused, since an IPv6 socket on Windows takes no IPv4 connection. A request from another machine needs no key: the page server checks `Host` and `Origin` against the address the request reached."
+drivers:
+  - key: 01a21a88-3dbf-7771-85c2-1c217b55e852
+    kind: local
+    label: "Kept through other sessions"
+    statement: "A session that loaded none of the person's settings, such as a print-mode reviewer, leaves the page server listening where it listened."
+  - key: 01a21a88-3dbf-7771-85c2-1c225f1acfaa
+    kind: local
+    label: "Never wider on recovery"
+    statement: "No recovery, and no session started before the person narrowed the setting, opens the page wider than the person last left it."
+  - key: 01a21a88-3dbf-7771-85c2-1c238504083d
+    kind: local
+    label: "Emptying closes the page"
+    statement: "A person who empties the setting closes the page to other devices at the next session, with no command."
+  - key: 01a21a88-3dbf-7771-85c2-1c247f225b7b
+    kind: local
+    label: "Small fix"
+    statement: "The fix changes the mod, `loft` and their contracts as little as it can."
+options:
+  - key: 01a21a88-3dbf-7771-85c2-1c250f3b7884
+    title: "A session naming no address joins"
+    description: "Where `yardListen` is empty, the mod gives every `loft yard serve` `--join`; a setting that is not empty still replaces a page server on other addresses when a session starts."
+  - key: 01a21a88-3dbf-7771-85c2-1c267ec032b6
+    title: "Addresses kept for the machine"
+    description: "The person's addresses are recorded in `~/.yard/` by a command or by the mod, and every session listens on that record rather than on its plugin setting."
+  - key: 01a21a88-3dbf-7771-85c2-1c279ec4e0dc
+    title: "Unset told apart from empty"
+    description: "The mod replaces a page server for an empty setting only where a settings file sets `yardListen` to empty, and joins where no loaded settings file names it."
+  - key: 01a21a88-3dbf-7771-85c2-1c28b5fac97a
+    title: "Join on the union of addresses"
+    description: "A `loft yard serve --join` that starts a page server listens on the last page server's addresses and on its own `--listen` as well."
+assessments:
+  - option: 01a21a88-3dbf-7771-85c2-1c250f3b7884
+    driver: 01a21a88-3dbf-7771-85c2-1c217b55e852
+    rating: supports
+    rationale: "a session that read no address never replaces the page server"
+  - option: 01a21a88-3dbf-7771-85c2-1c250f3b7884
+    driver: 01a21a88-3dbf-7771-85c2-1c225f1acfaa
+    rating: supports
+    rationale: "recovery still listens where the last page server listened"
+  - option: 01a21a88-3dbf-7771-85c2-1c250f3b7884
+    driver: 01a21a88-3dbf-7771-85c2-1c238504083d
+    rating: conflicts
+    rationale: "the person runs `loft yard serve` without `--listen` to narrow the page server"
+  - option: 01a21a88-3dbf-7771-85c2-1c250f3b7884
+    driver: 01a21a88-3dbf-7771-85c2-1c247f225b7b
+    rating: supports
+    rationale: "one condition in the mod; `loft` and its output are unchanged"
+  - option: 01a21a88-3dbf-7771-85c2-1c267ec032b6
+    driver: 01a21a88-3dbf-7771-85c2-1c217b55e852
+    rating: supports
+    rationale: "every session reads the same record"
+  - option: 01a21a88-3dbf-7771-85c2-1c267ec032b6
+    driver: 01a21a88-3dbf-7771-85c2-1c225f1acfaa
+    rating: supports
+    rationale: "the record is the person's latest choice"
+  - option: 01a21a88-3dbf-7771-85c2-1c267ec032b6
+    driver: 01a21a88-3dbf-7771-85c2-1c238504083d
+    rating: unknown
+    rationale: "an empty plugin setting still cannot say whether the person emptied it or the session never loaded it"
+  - option: 01a21a88-3dbf-7771-85c2-1c267ec032b6
+    driver: 01a21a88-3dbf-7771-85c2-1c247f225b7b
+    rating: conflicts
+    rationale: "a new command or file, its schema, and a move away from `yardListen`"
+  - option: 01a21a88-3dbf-7771-85c2-1c279ec4e0dc
+    driver: 01a21a88-3dbf-7771-85c2-1c217b55e852
+    rating: unknown
+    rationale: "holds only where Claude Code gives the mod no value for an option no loaded settings file names, rather than the manifest's empty default"
+  - option: 01a21a88-3dbf-7771-85c2-1c279ec4e0dc
+    driver: 01a21a88-3dbf-7771-85c2-1c225f1acfaa
+    rating: supports
+    rationale: "recovery is unchanged"
+  - option: 01a21a88-3dbf-7771-85c2-1c279ec4e0dc
+    driver: 01a21a88-3dbf-7771-85c2-1c238504083d
+    rating: supports
+    rationale: "a setting emptied in a settings file still replaces the page server"
+  - option: 01a21a88-3dbf-7771-85c2-1c279ec4e0dc
+    driver: 01a21a88-3dbf-7771-85c2-1c247f225b7b
+    rating: supports
+    rationale: "one condition in the mod"
+  - option: 01a21a88-3dbf-7771-85c2-1c28b5fac97a
+    driver: 01a21a88-3dbf-7771-85c2-1c217b55e852
+    rating: neutral
+    rationale: "the main session's next recovery listens on its own addresses again, but a session that read no address still replaces the page server while it runs"
+  - option: 01a21a88-3dbf-7771-85c2-1c28b5fac97a
+    driver: 01a21a88-3dbf-7771-85c2-1c225f1acfaa
+    rating: conflicts
+    rationale: "a session started before the person narrowed the setting opens the page wider again"
+  - option: 01a21a88-3dbf-7771-85c2-1c28b5fac97a
+    driver: 01a21a88-3dbf-7771-85c2-1c238504083d
+    rating: conflicts
+    rationale: "any older session reopens what the person closed"
+  - option: 01a21a88-3dbf-7771-85c2-1c28b5fac97a
+    driver: 01a21a88-3dbf-7771-85c2-1c247f225b7b
+    rating: neutral
+    rationale: "a change to `loft yard serve` alone, against its published criteria"
+consequences:
+  - key: 01a21a88-3dbf-7771-85c2-1c298c17d0f0
+    kind: benefit
+    statement: "A print-mode reviewer, or any session that loaded only the project's settings, leaves the page open on every address the person named."
+  - key: 01a21a88-3dbf-7771-85c2-1c2a293e4a63
+    kind: cost
+    statement: "A person who empties `yardListen` closes the page to other devices only by running `loft yard serve` without `--listen`; a new session no longer does it."
+  - key: 01a21a88-3dbf-7771-85c2-1c2bc5cf3c6a
+    kind: risk
+    statement: "The addresses of a page server started with `--listen` are those every later recovery listens on, across restarts of the machine and changes of network, until a session whose setting names addresses starts or the person runs `loft yard serve` with other addresses."
+  - key: 01a21a88-3dbf-7771-85c2-1c2cd16d8ec3
+    kind: obligation
+    statement: "Each session of the Claude Code mod whose `yardListen` setting names addresses runs `loft yard serve` once when it starts, even where a page server answers; where two projects name different addresses, the page server is replaced each time a session starts in the other one, and never between."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71a8fdbbeaf7
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ac8bfc2fae
+  - role: outcome
+    node: 01a16469-559e-73c4-85f2-71ad0ec2fdf4
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eb82421bcb23
+  - role: outcome
+    node: 01a21a88-3dc7-7075-b690-6e1d722ec957
+  - role: outcome
+    node: 01a21a88-3dc7-7075-b690-6e1ef63f4c6e

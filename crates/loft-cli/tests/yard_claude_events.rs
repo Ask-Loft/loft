@@ -17,14 +17,14 @@ use crate::yard_serve_events::{log, open, session_file};
 use crate::yard_wait::until_leased;
 
 /// A hook of `event` of session `s1`'s main agent naming the permission mode `mode`.
-fn moded(yard: &Yard, event: &str, mode: &str) -> Value {
+pub(crate) fn moded(yard: &Yard, event: &str, mode: &str) -> Value {
     let mut moded = input(yard, event, "s1");
     moded["permission_mode"] = json!(mode);
     moded
 }
 
 /// The kinds of the events session `s1`'s event log holds, in order.
-fn kinds(yard: &Yard) -> Vec<String> {
+pub(crate) fn kinds(yard: &Yard) -> Vec<String> {
     log(yard, "s1")
         .iter()
         .map(|event| event["kind"].as_str().unwrap().to_owned())
@@ -176,7 +176,7 @@ fn answered(mut child: Child) -> Value {
 }
 
 /// Decides `p1` on the page.
-fn decide(yard: &Yard, served: &Served, outcome: &Value) {
+pub(crate) fn decide(yard: &Yard, served: &Served, outcome: &Value) {
     let tree = yard.scratch.0.canonicalize().unwrap().display().to_string();
     let sent = json!({"tree": tree, "branch": BRANCH, "answers": [outcome]});
     let reply = served.post_as_page("/api/answer", &sent);

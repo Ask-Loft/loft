@@ -74,13 +74,26 @@ requirements:
       shall: "post `plan.start` when the session's mode becomes `plan` and `plan.end` when it leaves `plan`, keeping each session's last mode on the machine."
     criteria:
       - key: 01a183e9-dfd2-74b1-a45a-14ab0c96c220
-        name: "A mode heard again unchanged posts nothing."
+        name: "A mode heard again unchanged posts nothing, unless the hook is a PostToolUse hook of `EnterPlanMode`."
       - key: 01a183e9-dfd2-74b1-a45a-14ac7d3db027
         name: "A session first heard outside plan mode posts nothing."
       - key: 01a183e9-dfd2-74b1-a45a-14ad5885fd18
         name: "A subagent's permission mode posts nothing and leaves the session's last mode as it was."
       - key: 01a183e9-dfd2-74b1-a45a-14aea8c471e9
         name: "Each session's last mode is kept in `~/.yard/`, never under the working tree."
+  - key: 01a21ab4-1b3f-7102-9108-135d81f41e1b
+    statement:
+      form: event_driven
+      when: "a PostToolUse hook of the main agent names the tool `EnterPlanMode`"
+      system: "the Claude Yard hook"
+      shall: "post `plan.start` and keep `plan` as the session's last mode, whatever mode it kept before."
+    criteria:
+      - key: 01a21ab4-1b3f-7102-9108-135e315572f4
+        name: "An `EnterPlanMode` heard while the session's last mode is already `plan` posts `plan.start`."
+      - key: 01a21ab4-1b3f-7102-9108-135f8f5b8b58
+        name: "An `EnterPlanMode` heard as the session's mode becomes `plan` posts `plan.start` once."
+      - key: 01a21ab4-1b3f-7102-9108-1360736b2c6b
+        name: "A subagent's `EnterPlanMode` posts nothing and leaves the session's last mode as it was."
   - key: 01a183e9-dfd2-74b1-a45a-14af514c2da9
     statement:
       form: event_driven

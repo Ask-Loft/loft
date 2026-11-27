@@ -15,9 +15,10 @@ use yardlog::{Actor, BlockKey, Channel, Handle, Key, YardLog};
 use super::answer_input::{self, Named};
 use super::args::AnswerArgs;
 use super::branch::{self, Branch, Unapplied};
-use super::caller::Caller;
+use super::caller::{Caller, Continuations};
 use super::change::refusal;
 use super::failure::{self, Failure};
+use super::plan_end;
 use super::working_tree::{Follows, sent_to, target};
 use crate::finish::Finished;
 use crate::json;
@@ -31,7 +32,11 @@ pub const PARTLY: &str = "answered elsewhere";
 pub fn run(root: &Path, args: AnswerArgs) -> Finished {
     let as_json = args.output.json();
     match attempt(root, args) {
-        Ok((fields, errors)) => {
+        Ok(Recorded {
+            fields,
+            errors,
+            plan_ends,
+        }) => {
             let outcome = if errors.is_empty() { OUTCOME } else { PARTLY };
             let code = if errors.is_empty() {
                 ExitCode::SUCCESS
@@ -43,6 +48,10 @@ pub fn run(root: &Path, args: AnswerArgs) -> Finished {
                 json::print(&json::result(SCHEMA, outcome, fields, errors));
             } else {
                 outln!("Recorded the answers at revision {}", fields["revision"]);
+            }
+            // Posted once the answer is reported, so that a slow page server cannot delay the report.
+            if !plan_ends.is_empty() {
+                super::post::to_running(&Value::Array(plan_ends));
             }
             finished
         }
@@ -62,7 +71,7 @@ pub fn person(branch: &Branch) -> Result<(String, String), Failure> {
     }
 }
 
-fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure> {
+fn attempt(dir: &Path, args: AnswerArgs) -> Result<Recorded, Failure> {
     let caller = Caller::new(&args.writer.clone().into());
     let named = answer_input::read(&super::input::json(&args.input)?)?;
     let dir = match &args.writer.tree {
@@ -73,16 +82,23 @@ fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure>
     record(&branch, &named, Channel::Terminal)
 }
 
+/// What recording the person's answers gave.
+pub struct Recorded {
+    /// The result's fields.
+    pub fields: Value,
+    /// An error for each block answered or decided elsewhere first.
+    pub errors: Vec<Value>,
+    /// The `plan.end` event of each session whose plan in plan mode the answers approved.
+    pub plan_ends: Vec<Value>,
+}
+
 /// Records the person's answers and decisions `named` in the branch's Yard Log, given on
-/// `channel`: the result's fields, and an error for each block answered or decided elsewhere
-/// first.
-pub fn record(
-    branch: &Branch,
-    named: &[Named],
-    channel: Channel,
-) -> Result<(Value, Vec<Value>), Failure> {
+/// `channel`.
+pub fn record(branch: &Branch, named: &[Named], channel: Channel) -> Result<Recorded, Failure> {
     let (name, email) = person(branch)?;
     let at = super::now()?;
+    // Read before Yard Log's lock is taken; an unreadable file only leaves continuations unknown.
+    let continuations = Continuations::read(yardlog_store::home::Home::from_env().as_ref()).ok();
     let settler = Actor::Person {
         name: name.clone(),
         email: email.clone(),
@@ -101,16 +117,32 @@ pub fn record(
         let answered = log
             .answer(&replies, &who)
             .map_err(|refused| Unapplied::Refused(refusal(&refused)))?;
-        let fields = answered_fields(&log, &answered);
-        Ok((log, fields))
+        let (fields, errors) = answered_fields(&log, &answered);
+        let plan_ends = plan_end::events(
+            &log,
+            (&replies, &answered),
+            continuations.as_ref(),
+            at,
+            &branch.place().tree,
+        );
+        let recorded = Recorded {
+            fields,
+            errors,
+            plan_ends,
+        };
+        Ok((log, recorded))
     })?;
     match applied {
-        Ok((mut fields, errors)) => {
-            let mut located = branch.fields(fields["revision"].as_u64().unwrap_or_default());
-            if let (Some(all), Some(own)) = (located.as_object_mut(), fields.as_object_mut()) {
+        Ok(mut recorded) => {
+            let revision = recorded.fields["revision"].as_u64().unwrap_or_default();
+            let mut located = branch.fields(revision);
+            if let (Some(all), Some(own)) =
+                (located.as_object_mut(), recorded.fields.as_object_mut())
+            {
                 all.append(own);
             }
-            Ok((located, errors))
+            recorded.fields = located;
+            Ok(recorded)
         }
         Err(error) => Err(branch.refused(&branch.store.read()?, vec![error])),
     }

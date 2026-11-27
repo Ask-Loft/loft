@@ -107,7 +107,7 @@ fn respond(server: &Server, request: &Request, reached: Reached) -> Response {
             request.param("branch"),
             server.port,
         ),
-        ("POST", "/api/answer") => logs::answer(home, &request.body, server.port),
+        ("POST", "/api/answer") => logs::answer(home, &server.sessions, &request.body, server.port),
         ("POST", "/api/register") => register(server, &request.body),
         ("POST", "/api/heard") => heard(server, &request.body),
         ("POST", "/api/events") => server.sessions.record(home, &request.body),
