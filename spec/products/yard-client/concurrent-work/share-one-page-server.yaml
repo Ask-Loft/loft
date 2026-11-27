@@ -4,7 +4,7 @@ name: "Share one page server"
 body: |
   One page server on the machine serves the page for every tree whose sessions use Yard Client, in every repository. The first mod that needs it starts it, every other mod registers its tree with it, and when the session that started it ends, a live mod starts another. A `loft yard` command that gives the page's address adds its tree to those served as well, so that a session that runs `loft` without the mod, such as one an agent host starts in a worktree of its own, is on the page too. The person keeps one address for every branch's Yard Log on the machine. A `loft` under development, run by the dogfood launcher with `LOFT_YARD_HOME`, keeps a page server of its own beside it, on the dogfood port.
 
-  A mod starts the page server as a child that lives as long as the mod does, or until another `loft yard serve` replaces it, so the page is up while any session with the Loft plugin runs. Each mod tells the page server every 5 seconds that its session is live. It runs `loft yard serve`, which reads `~/.yard/server.json`, once when its session starts, so that a page server of its version that listens on other addresses than the `yardListen` setting names is replaced. A session whose setting names no address joins whatever page server of its version runs, even then, since the mod cannot tell a setting the person emptied from one the session never loaded, as in a print-mode reviewer started with the project's settings alone; the person narrows the page server to the loopback interface by running `loft yard serve` without `--listen`. After that it runs it only where no page server answers, and joins whatever page server of its version runs by then. Where none runs by then, the page server it starts listens where the last one listened, not on the session's `yardListen`, so that a session started before the setting changed never opens the page wider again.
+  A mod starts the page server as a child that lives as long as the mod does, or until another `loft yard serve` replaces it, so the page is up while any session with the Loft plugin runs. Each mod tells the page server every 5 seconds that its session is live. It runs `loft yard serve`, which reads `~/.yard/server.json`, once when its session starts, so that a page server of its version that listens on other addresses than the `yardListen` setting names is replaced. A session whose setting is empty joins whatever page server of its version runs, even then, since the mod cannot tell a setting the person emptied from one the session never loaded, as in a print-mode reviewer started with the project's settings alone; the person narrows the page server to the loopback interface by running `loft yard serve` without `--listen`. After its first run, the mod runs `loft yard serve` only where no page server answers, and joins whatever page server of its version runs by then. Where none runs by then, the page server it starts listens where the last one listened, not on the session's `yardListen`, so that a session started before the setting changed never opens the page wider again.
 realizes:
   - 01a16469-559e-73c4-85f2-71a8fdbbeaf7
   - 01a16469-559e-73c4-85f2-71afd78c6e3e
@@ -82,7 +82,7 @@ requirements:
       form: event_driven
       when: "a session starts in a worktree and the mod's protocol check passes"
       system: "the Loft mod"
-      shall: "run `loft yard serve`, so that a page server of its own `loft`'s version or a newer one serves the port, on the addresses of the plugin's `yardListen` setting where it is of the same version, whenever that setting names addresses."
+      shall: "run `loft yard serve`, so that a page server of its own `loft`'s version or a newer one serves the port, on the addresses of the plugin's `yardListen` setting where it is of the same version, whenever that setting is not empty."
     criteria:
       - key: 01a16475-f84e-74f3-8ba1-d6d4265f7b74
         name: "The mod registers the session's tree with the page server that serves the port."
@@ -103,11 +103,13 @@ requirements:
       - key: 01a1f46e-0730-77fd-88d2-5fe5a5fcde0f
         name: "A first run that the mod could not make within 30 seconds of its session's start is given `--join`."
       - key: 01a1f03b-b432-7709-92e2-1d44792792e2
-        name: "A page server of the same version that listens on addresses other than the `yardListen` setting names is replaced when a session starts whose setting names addresses."
+        name: "A page server of the same version that listens on addresses other than the `yardListen` setting names is replaced when a session starts whose setting is not empty."
       - key: 01a21a88-3dc7-7075-b690-6e1d722ec957
-        name: "Where the plugin's `yardListen` setting names no address, every `loft yard serve` the mod runs is given `--join`, the one at the session's first beat among them."
+        name: "Where the plugin's `yardListen` setting is empty, every `loft yard serve` the mod runs is given `--join`, the one at the session's first beat among them."
       - key: 01a21a88-3dc7-7075-b690-6e1ef63f4c6e
-        name: "A session whose `yardListen` setting names no address leaves a running page server of its version on the addresses it listens on."
+        name: "A session whose `yardListen` setting is empty leaves a running page server of its version on the addresses it listens on."
+      - key: 01a21a91-2904-7791-b0a0-1a9dbe45b785
+        name: "A session whose `yardListen` setting names only entries that are not IP addresses runs its first `loft yard serve` without `--join`, so that the page server it starts listens on the loopback interface alone."
       - key: 01a1f069-3ebc-77f4-882f-9102f2aee1e0
         name: "Each `loft yard serve` the mod runs after the session's first beat is given `--join`, so that a page server that another session started on other addresses is reached and not replaced."
       - key: 01a1f41d-c02f-775e-9141-8c77128977d3
