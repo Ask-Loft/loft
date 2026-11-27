@@ -3,8 +3,8 @@
 //! accepted, outside the options it did not select.
 
 use crate::common::decisions::{decision, set_state, superseded};
-use crate::common::{key, term};
-use crate::lint_byte_unit_definitions::{with_text, with_text_stating};
+use crate::common::key;
+use crate::lint_byte_unit_definitions::{termed, with_text, with_text_stating};
 use crate::lint_byte_units::{FEATURE, beside_binary, byte_units, named, one};
 use loftspec::decision::DecisionState;
 use loftspec::ids::OptionId;
@@ -51,12 +51,9 @@ fn a_power_given_both_values_is_defined_by_neither() {
             assert_eq!(named(&document), one(FEATURE, unit), "{first} {second}");
         }
     }
-    let mut termed = beside_binary("A page holds 5 MB.");
-    termed.components[0].component.details.body = Some(DEFINES_MB.to_owned());
-    let mut entry = term(65, "MB", &[]);
-    entry.definition = "1,048,576 bytes.".to_owned();
-    termed.terms.push(entry);
-    assert_eq!(named(&termed), one(FEATURE, "MB"));
+    let mut document = termed("MB", "1,048,576 bytes.");
+    document.components[0].component.details.body = Some(DEFINES_MB.to_owned());
+    assert_eq!(named(&document), one(FEATURE, "MB"));
     let mut agreed = beside_binary("A page holds 5 MB.");
     agreed.components[0].component.details.body = Some(DEFINES_MB.to_owned());
     decision(&mut agreed).context = "A megabyte is 10^6 bytes.".to_owned();

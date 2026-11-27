@@ -13,8 +13,9 @@
 //!
 //! A definition of a decimal unit settles every decimal unit of its power, `kB` and `KB` alike,
 //! and no other, and only where no definition gives that power the other value: a document that
-//! gives `MB` both 1,000,000 and 1,048,576 bytes contradicts itself. Since a false definition silences every finding for its units, a definition is
-//! narrow: a count of bytes equal to the unit's value, 1000^k or 1024^k, that ends its sentence,
+//! gives `MB` both 1,000,000 and 1,048,576 bytes contradicts itself. Since a false definition
+//! silences every finding for its units, a definition is narrow: a count of bytes equal to the
+//! unit's value, 1000^k or 1024^k, that ends its sentence,
 //! given in parentheses right after the unit where no number but `1` comes before it
 //! (`MB (10^6 bytes)`), or after a defining word where the unit opens a clause
 //! (`1 MB = 1,000,000 bytes`, `A megabyte is 2^20 bytes`); or a term named after the unit whose
@@ -204,22 +205,17 @@ fn node_use(item: &Item<'_>) -> Use {
 /// `of`, after at most one of `LEADERS` or `exactly`.
 fn term_values(term: &TermEntry) -> Values {
     let names = std::iter::once(&term.name).chain(&term.aliases);
-    let powers: Vec<u32> = names.filter_map(|name| named_power(name)).collect();
+    let powers = (names.filter_map(|name| named_power(name))).fold(0, |powers, k| powers | bit(k));
     let mut values = Values::default();
-    if powers.is_empty() {
+    if powers == 0 {
         return values;
     }
     let shown = plain(&term.definition);
     let opening = shown.trim_start();
     let opening = (LEADERS.iter().chain(&["exactly"]))
-        .find_map(|leader| {
-            let after = strip_prefix_ignoring_case(opening, leader)?;
-            after
-                .starts_with(is_space)
-                .then(|| after.trim_start_matches(is_space))
-        })
+        .find_map(|leader| after_word(opening, leader))
         .unwrap_or(opening);
-    for k in powers {
+    for k in (1..=4).filter(|&k| powers & bit(k) != 0) {
         if let Some(base) = count::given_base(opening, k).or_else(|| of_value(opening, k)) {
             values.give(k, base);
         }
@@ -230,15 +226,22 @@ fn term_values(term: &TermEntry) -> Values {
 /// The base of the value that `opening` gives a unit of power `k` after its full name and `of`,
 /// as in `kilobyte of 1,000 bytes`.
 fn of_value(opening: &str, k: u32) -> Option<Base> {
-    (full_names(opening).into_iter())
-        .filter(|&(start, _, power)| start == 0 && power == k)
-        .find_map(|(_, end, _)| {
-            let rest = &opening[end..];
-            let after = strip_prefix_ignoring_case(rest.trim_start_matches(is_space), "of")?;
-            (rest.starts_with(is_space) && after.starts_with(is_space))
-                .then(|| count::given_base(after.trim_start_matches(is_space), k))
-                .flatten()
-        })
+    let name = DECIMAL_NAMES.get(usize::try_from(k).ok()?.checked_sub(1)?)?;
+    let rest = strip_prefix_ignoring_case(opening, name)?;
+    let rest = strip_prefix_ignoring_case(rest, "s").unwrap_or(rest);
+    if !rest.starts_with(is_space) {
+        return None;
+    }
+    count::given_base(after_word(rest.trim_start_matches(is_space), "of")?, k)
+}
+
+/// `text` after `word`, matched in any case, where in-line space follows the word, with that
+/// space skipped.
+fn after_word<'a>(text: &'a str, word: &str) -> Option<&'a str> {
+    let after = strip_prefix_ignoring_case(text, word)?;
+    after
+        .starts_with(is_space)
+        .then(|| after.trim_start_matches(is_space))
 }
 
 /// The bit of `Values` that stands for power `k`.
@@ -303,11 +306,7 @@ fn is_word(c: char) -> bool {
 /// begins a quantity all the same where the number before the `-` ends in a digit and comes
 /// after none of those, and a decimal such as `.5 MB` where the `.` comes after none of those.
 fn is_quantity(text: &str, at: usize) -> bool {
-    let head = &text[..at];
-    let head = head
-        .strip_suffix([' ', '\u{a0}', '\u{202f}', '-'])
-        .unwrap_or(head);
-    let (before, number) = split_number(head);
+    let (before, number) = number_before(&text[..at]);
     let range = before.strip_suffix('-').is_some_and(|rest| {
         let (earlier, first) = split_number(rest);
         first.ends_with(|c: char| c.is_ascii_digit()) && !blocked(earlier)
@@ -316,6 +315,15 @@ fn is_quantity(text: &str, at: usize) -> bool {
     number.ends_with(|c: char| c.is_ascii_digit())
         && (range || decimal || !blocked(before))
         && !in_web_address(text, before.len())
+}
+
+/// `head`, the text before a unit, cut before the number that comes right before the unit, with
+/// nothing, one space, one no-break space (wide or narrow) or one hyphen between them.
+fn number_before(head: &str) -> (&str, &str) {
+    let head = head
+        .strip_suffix([' ', '\u{a0}', '\u{202f}', '-'])
+        .unwrap_or(head);
+    split_number(head)
 }
 
 /// `head` cut before the number that ends it: digits with commas and full stops between them,
@@ -366,13 +374,10 @@ fn definitions(text: &str, units: &[(usize, &'static str)]) -> Values {
     values
 }
 
-/// Whether no number but `1` comes right before a unit after `head`, with nothing, one space,
-/// one no-break space or one hyphen between them, so that `2 MB (2^20 bytes)` defines nothing.
+/// Whether no number but `1` comes right before a unit after `head`, as `number_before` reads
+/// one, so that `2 MB (2^20 bytes)` defines nothing.
 fn unmultiplied(head: &str) -> bool {
-    let head = head
-        .strip_suffix([' ', '\u{a0}', '\u{202f}', '-'])
-        .unwrap_or(head);
-    let (_, number) = split_number(head);
+    let (_, number) = number_before(head);
     number.is_empty() || number == "1"
 }
 
@@ -417,10 +422,12 @@ fn full_names(text: &str) -> Vec<(usize, usize, u32)> {
 fn defined_after_word(rest: &str, k: u32) -> Option<Base> {
     DEFINING.iter().find_map(|word| {
         let after = strip_prefix_ignoring_case(rest, word)?;
-        let boundary = matches!(*word, "=" | ":") || after.starts_with(is_space);
+        if !matches!(*word, "=" | ":") && !after.starts_with(is_space) {
+            return None;
+        }
         let after = after.trim_start_matches(is_space);
         let after = strip_prefix_ignoring_case(after, "exactly")
             .map_or(after, |rest| rest.trim_start_matches(is_space));
-        boundary.then(|| count::given_base(after, k)).flatten()
+        count::given_base(after, k)
     })
 }

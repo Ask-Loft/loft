@@ -307,17 +307,12 @@ fn a_decimal_unit_given_as_a_count_of_bytes_settles_the_document() {
 
 #[test]
 fn a_term_named_after_a_decimal_unit_settles_the_document() {
-    for (name, definition) in [
-        ("MB", "1,000,000 bytes."),
-        ("KB", "1,000 bytes."),
-        ("megabyte", "A megabyte of 1,000,000 bytes."),
-        ("Kilobytes", "Kilobytes of 1,024 bytes."),
+    for (name, unit, definition) in [
+        ("MB", "MB", "1,000,000 bytes."),
+        ("KB", "KB", "1,000 bytes."),
+        ("megabyte", "MB", "A megabyte of 1,000,000 bytes."),
+        ("Kilobytes", "KB", "Kilobytes of 1,024 bytes."),
     ] {
-        let unit = if name.starts_with(['M', 'm']) {
-            "MB"
-        } else {
-            "KB"
-        };
         let mut document = beside_binary(&format!("A page holds 5 {unit}."));
         let mut entry = term(65, name, &[]);
         entry.definition = definition.to_owned();

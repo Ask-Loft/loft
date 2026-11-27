@@ -13,6 +13,15 @@ pub(crate) fn with_text(text: &str) -> [Document; 4] {
     with_text_stating("A page holds 5 MB.", text)
 }
 
+/// The document stating `5 MB` beside `4 KiB`, with a term `name` defined as `definition`.
+pub(crate) fn termed(name: &str, definition: &str) -> Document {
+    let mut document = beside_binary("A page holds 5 MB.");
+    let mut entry = term(65, name, &[]);
+    definition.clone_into(&mut entry.definition);
+    document.terms.push(entry);
+    document
+}
+
 /// The document stating `feature` beside `4 KiB`, with `text` placed as `with_text` places it.
 pub(crate) fn with_text_stating(feature: &str, text: &str) -> [Document; 4] {
     let document = beside_binary(feature);
@@ -202,10 +211,7 @@ fn a_term_named_after_a_unit_settles_only_where_its_definition_gives_the_value()
         "512 bytes.",
         "1,000,000 bytes, though some tools use 1,048,576.",
     ] {
-        let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, "MB", &[]);
-        entry.definition = definition.to_owned();
-        document.terms.push(entry);
+        let document = termed("MB", definition);
         assert_eq!(named(&document), one(FEATURE, "MB"), "{definition}");
     }
     for definition in [
@@ -213,10 +219,7 @@ fn a_term_named_after_a_unit_settles_only_where_its_definition_gives_the_value()
         "1,048,576 bytes.",
         "Exactly 1,000,000 bytes.",
     ] {
-        let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, "MB", &[]);
-        entry.definition = definition.to_owned();
-        document.terms.push(entry);
+        let document = termed("MB", definition);
         assert!(byte_units(&document).is_empty(), "{definition}");
     }
 }
@@ -355,10 +358,7 @@ fn a_term_s_full_name_settles_only_with_of_and_the_value() {
         "A megabyte of 1,000 bytes.",
         "A gigabyte of 10^9 bytes.",
     ] {
-        let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, "MB", &[]);
-        entry.definition = definition.to_owned();
-        document.terms.push(entry);
+        let document = termed("MB", definition);
         assert_eq!(named(&document), one(FEATURE, "MB"), "{definition}");
     }
     for definition in [
@@ -366,10 +366,7 @@ fn a_term_s_full_name_settles_only_with_of_and_the_value() {
         "Megabytes of 2^20 bytes.",
         "The megabyte of 10^6 bytes",
     ] {
-        let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, "MB", &[]);
-        entry.definition = definition.to_owned();
-        document.terms.push(entry);
+        let document = termed("MB", definition);
         assert_eq!(byte_units(&document), Vec::<Finding>::new(), "{definition}");
     }
 }
@@ -439,10 +436,7 @@ fn a_term_s_definition_reads_in_line_spaces_but_not_a_paragraph_break() {
         "A\u{2009}megabyte of\u{2009}10^6 bytes.",
         "The\u{2009}megabyte\u{2009}of 10^6 bytes",
     ] {
-        let mut document = beside_binary("A page holds 5 MB.");
-        let mut entry = term(65, "MB", &[]);
-        entry.definition = definition.to_owned();
-        document.terms.push(entry);
+        let document = termed("MB", definition);
         assert_eq!(
             byte_units(&document),
             Vec::<Finding>::new(),

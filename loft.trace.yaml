@@ -7058,7 +7058,7 @@ links:
         body: 398bbff16b3aaff0f4a369ed15b2baf05772940cf08347fde56b3f1785d79c8b
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_s_definition_reads_in_line_spaces_but_not_a_paragraph_break"
-        body: a6d370d637662e4362e74793132eab5c047d0e970e14aedb6c15b12ccb277343
+        body: b45849dab09e89329ef1b669d508dfdb392ecabed18ebfe31c0064ec33f83fc7
   - node: 01a21d6e-46d7-71fe-b062-d01f31c0e88a
     reviewed: 7968846284f945de0b44930ac3ada1c103d1c19dfdefe7a68fd4d89e1ed579f8
     tests:
@@ -7070,13 +7070,13 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_byte_unit_scope.rs"
         name: "a_power_given_both_values_is_defined_by_neither"
-        body: bdba4ee156bd21a323c01b7d9c451ce1cc7027e7a96c4f9d4aa36520c7611d07
+        body: 3ca82758acb009d188a0872e017d521b4cb229e1525e5063373be232d00690ec
   - node: 01a21358-4147-72be-a72f-0d1643400930
     reviewed: 582ea7d2a858b77c413f6a9b5f37ce39dea76430071c4326de66d4ef8b886ffb
     tests:
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_settles_the_document"
-        body: b98e1f94f28a8b0224d20dc444754c104206db5a00861530d7c27970d7446483
+        body: 7f5a674c0d1c6a75b7c9156ee0b43ae45c6e66b6c40b38c0092d0d5f926a0a6f
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_in_the_plural_settles_the_document"
         body: 9ea273fdc0445817cb8f46c7df7c75f22167b44ad8ec855e84be6a6d5d21c6af
@@ -7091,10 +7091,10 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_named_after_a_unit_settles_only_where_its_definition_gives_the_value"
-        body: 22b50623e1b949b6d9a2c254f80be6104b0f22610ad3a821f3bcc0584471553e
+        body: 8b5e3a2450a34abd3982746f820919acc5cac3039552437e7acd8d2dd7f9898d
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_settles_the_document"
-        body: b98e1f94f28a8b0224d20dc444754c104206db5a00861530d7c27970d7446483
+        body: 7f5a674c0d1c6a75b7c9156ee0b43ae45c6e66b6c40b38c0092d0d5f926a0a6f
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_whose_alias_is_a_decimal_unit_settles_the_document"
         body: 1662e2a5a7e928c1d7e0c6dabbafde608d9a6b7857fdcc1a8ff6b7dc41376445
@@ -7103,28 +7103,28 @@ links:
         body: b2b35fb039db2f8cecf46a8bb14e40a1b660b188296df3871dffc3ceffbef2be
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_s_definition_reads_in_line_spaces_but_not_a_paragraph_break"
-        body: a6d370d637662e4362e74793132eab5c047d0e970e14aedb6c15b12ccb277343
+        body: b45849dab09e89329ef1b669d508dfdb392ecabed18ebfe31c0064ec33f83fc7
   - node: 01a21d6e-46d7-71fe-b062-d022d0766cc5
     reviewed: 0c4ba2b5a4bf79847c29f39e1f613cc4b694226a16fe9e769e2b7609e1eae9ca
     tests:
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_s_full_name_settles_only_with_of_and_the_value"
-        body: ba3b564f54fab02854704c9939833f35fbd36645ac031faee10f52e17be82f3b
+        body: c27dc35a9aebc924c2e9238639958004113f2a1b6b8b958a500264c5fe23a88e
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_s_definition_reads_in_line_spaces_but_not_a_paragraph_break"
-        body: a6d370d637662e4362e74793132eab5c047d0e970e14aedb6c15b12ccb277343
+        body: b45849dab09e89329ef1b669d508dfdb392ecabed18ebfe31c0064ec33f83fc7
       - file: "crates/loftspec/tests/lint_byte_units.rs"
         name: "a_term_named_after_a_decimal_unit_settles_the_document"
-        body: b98e1f94f28a8b0224d20dc444754c104206db5a00861530d7c27970d7446483
+        body: 7f5a674c0d1c6a75b7c9156ee0b43ae45c6e66b6c40b38c0092d0d5f926a0a6f
   - node: 01a21d6e-46d7-71fe-b062-d023a30dbdd7
     reviewed: f069f12aafddf351d4a5db1363c3a9aa9302338c4215d5bfbef69523df8103ff
     tests:
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_named_after_a_unit_settles_only_where_its_definition_gives_the_value"
-        body: 22b50623e1b949b6d9a2c254f80be6104b0f22610ad3a821f3bcc0584471553e
+        body: 8b5e3a2450a34abd3982746f820919acc5cac3039552437e7acd8d2dd7f9898d
       - file: "crates/loftspec/tests/lint_byte_unit_definitions.rs"
         name: "a_term_s_full_name_settles_only_with_of_and_the_value"
-        body: ba3b564f54fab02854704c9939833f35fbd36645ac031faee10f52e17be82f3b
+        body: c27dc35a9aebc924c2e9238639958004113f2a1b6b8b958a500264c5fe23a88e
   - node: 01a21d6e-46d7-71fe-b062-d025a4b920a3
     reviewed: c59ac93ce2a000f71da0994e3b4a362e23c78035ef5ccbf1f5bcf6581bac6fdb
     tests:

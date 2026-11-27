@@ -39,8 +39,6 @@ impl Decision {
     /// Every prose field of the decision, in the order of its file: its title and context, each
     /// local driver's label and statement, each option's title and description, each
     /// assessment's rationale, each consequence's statement, and what its state records in words.
-    /// Each record is taken apart whole, so that a field added to one must be placed here.
-    #[must_use]
     pub(crate) fn texts(&self) -> Vec<&str> {
         self.prose(None)
     }
@@ -57,7 +55,8 @@ impl Decision {
     }
 
     /// The texts of `texts`, leaving out every option but `selected`, where one is given, and
-    /// the assessments of those options.
+    /// the assessments of those options. Each record is taken apart whole, so that a field added
+    /// to one must be placed here.
     fn prose(&self, selected: Option<OptionId>) -> Vec<&str> {
         let kept = |option: &OptionId| selected.is_none_or(|selected| *option == selected);
         let Self {
