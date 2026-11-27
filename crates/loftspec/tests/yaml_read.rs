@@ -263,3 +263,71 @@ fn structure_the_subset_does_not_define_is_refused() {
         (at(1, 3), ErrorKind::UnexpectedIndentation)
     );
 }
+
+/// A scalar inside nested mappings or sequences, a line to each step inward: line `level` is
+/// `step` repeated `level` times and then `head`, and the last line ends with the scalar.
+fn nested(lines: usize, step: &str, head: &str) -> String {
+    (0..lines)
+        .map(|level| {
+            let value = if level + 1 == lines { " x" } else { "" };
+            [step.repeat(level).as_str(), head, value, "\n"].concat()
+        })
+        .collect()
+}
+
+/// A scalar inside `depth` nested mappings.
+fn nested_mappings(depth: usize) -> String {
+    nested(depth, "  ", "a:")
+}
+
+/// A scalar inside `depth` nested sequences.
+fn nested_sequences(depth: usize) -> String {
+    nested(depth, "  ", "-")
+}
+
+/// A scalar inside `pairs` nested sequences of mappings, a sequence and a mapping to a line.
+fn nested_pairs(pairs: usize) -> String {
+    nested(pairs, "    ", "- a:")
+}
+
+#[test]
+fn a_value_inside_64_nested_mappings_and_sequences_is_read() {
+    for text in [nested_mappings(64), nested_sequences(64), nested_pairs(32)] {
+        let mut node = read(&text);
+        let mut depth = 0;
+        loop {
+            node = match node.value {
+                Value::Mapping(mut entries) => entries.remove(0).value,
+                Value::Sequence(mut items) => items.remove(0),
+                _ => break,
+            };
+            depth += 1;
+        }
+        assert_eq!(depth, 64);
+        assert_eq!(scalar(&node), (Style::Plain, "x"));
+    }
+}
+
+#[test]
+fn a_mapping_or_sequence_inside_64_others_is_refused_at_its_first_line() {
+    assert_eq!(
+        refused(&nested_mappings(65)),
+        (at(65, 129), ErrorKind::TooDeep)
+    );
+    assert_eq!(
+        refused(&nested_sequences(65)),
+        (at(65, 129), ErrorKind::TooDeep)
+    );
+    // The 33rd line's sequence is the 65th collection.
+    assert_eq!(
+        refused(&nested_pairs(33)),
+        (at(33, 129), ErrorKind::TooDeep)
+    );
+}
+
+#[test]
+fn a_file_nested_2000_deep_is_refused_as_one_nested_65_deep_is() {
+    for text in [nested_mappings(2000), nested_sequences(2000)] {
+        assert_eq!(refused(&text), (at(65, 129), ErrorKind::TooDeep));
+    }
+}

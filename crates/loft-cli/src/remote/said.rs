@@ -3,7 +3,8 @@
 //! document's, mended by `loft interface login` and the handle's entry of `documents`. Both
 //! wordings lie here, side by side, so that neither drifts from the other.
 
-use super::{RemoteError, TOKEN_ENV};
+use super::{ENDPOINT_ENV, RemoteError, TOKEN_ENV};
+use crate::escaped::Escaped;
 use crate::network;
 
 /// Whose remote an error came from, for the words of what mends it.
@@ -48,42 +49,26 @@ impl RemoteError {
         let own = remedy == Remedy::Own;
         let token = |said: String| {
             if own {
-                format!("{said}, or {TOKEN_ENV} names a token for one run")
+                format!(
+                    "{said}, or {TOKEN_ENV} names a token for one run, sent to the address {ENDPOINT_ENV} names"
+                )
             } else {
                 said
             }
         };
+        // Every text the error holds is written escaped, as `Display` writes it.
         Some(match self {
             Self::NoSignIn { address } => {
+                let address = Escaped(address);
                 let signs_in =
                     login.map_or_else(String::new, |login| format!(": {login} signs in"));
                 token(format!("no sign-in to {address} {kept}{signs_in}"))
             }
             Self::SignInElsewhere { address, resource } => {
-                let origin = network::origin(resource)
-                    .map_or_else(|| resource.clone(), |origin| origin.to_string());
-                let readdress = match remedy {
-                    Remedy::Own => format!(
-                        "`loft remote set <address>` with an address on {origin} names the \
-                         remote by it and signs in to it"
-                    ),
-                    Remedy::Other { handle, .. } => format!(
-                        "an address on {origin} in the entry of `documents` for {handle} names \
-                         the remote by it"
-                    ),
-                };
-                let again = login.map_or_else(String::new, |login| {
-                    format!(
-                        ", {login} signs in again once the remote serves its protected resource \
-                         on the address's origin"
-                    )
-                });
-                token(format!(
-                    "the sign-in kept under {address} {kept} is for a protected resource on \
-                     another origin than the address, {resource}: {readdress}{again}"
-                ))
+                token(elsewhere(address, resource, remedy))
             }
             Self::Lapsed { address, error } => {
+                let (address, error) = (Escaped(address), Escaped(error));
                 let again =
                     login.map_or_else(String::new, |login| format!(": {login} signs in again"));
                 token(format!(
@@ -91,6 +76,7 @@ impl RemoteError {
                 ))
             }
             Self::FormerResource { address, resource } => {
+                let (address, resource) = (Escaped(address), Escaped(resource));
                 let again =
                     login.map_or_else(String::new, |login| format!(": {login} signs in again"));
                 token(format!(
@@ -99,6 +85,7 @@ impl RemoteError {
                 ))
             }
             Self::NotCovered { address, resource } => {
+                let (address, resource) = (Escaped(address), Escaped(resource));
                 let again = login.map_or_else(String::new, |login| {
                     format!(": {login} signs in again to reach it")
                 });
@@ -107,6 +94,7 @@ impl RemoteError {
                 ))
             }
             Self::Refused { address, refusal } => {
+                let address = Escaped(address);
                 format!("{address}: {}", refusal.said(login.as_deref()))
             }
             Self::Unsigned {
@@ -115,8 +103,10 @@ impl RemoteError {
                 refusal,
                 missing,
             } => format!(
-                "{address}: {} to a request for the document {key} sent without a token: {}",
+                "{}: {} to a request for the document {} sent without a token: {}",
+                Escaped(address),
                 refusal.answered(),
+                Escaped(key),
                 missing.said(remedy)?
             ),
             _ => return None,
@@ -124,10 +114,44 @@ impl RemoteError {
     }
 }
 
+/// The error for the sign-in kept under `address`, which is for `resource`, a protected resource
+/// on another origin, in words for the remote `remedy` names, before the token that mends it for
+/// one run. Every text it holds is written escaped.
+fn elsewhere(address: &str, resource: &str, remedy: Remedy<'_>) -> String {
+    let origin =
+        network::origin(resource).map_or_else(|| resource.to_owned(), |origin| origin.to_string());
+    let (address, origin) = (Escaped(address), Escaped(&origin));
+    let resource = Escaped(resource);
+    let readdress = match remedy {
+        Remedy::Own => format!(
+            "`loft remote set <address>` with an address on {origin} names the remote by it and \
+             signs in to it"
+        ),
+        Remedy::Other { handle, .. } => format!(
+            "an address on {origin} in the entry of `documents` for {handle} names the remote by \
+             it"
+        ),
+    };
+    let again = remedy.login().map_or_else(String::new, |login| {
+        format!(
+            ", {login} signs in again once the remote serves its protected resource on the \
+             address's origin"
+        )
+    });
+    format!(
+        "the sign-in kept under {address} {} is for a protected resource on another origin than \
+         the address, {resource}: {readdress}{again}",
+        remedy.kept()
+    )
+}
+
 #[cfg(test)]
 mod tests {
-    use super::Remedy;
-    use crate::remote::RemoteError;
+    use serde_json::json;
+
+    use super::{Remedy, RemoteError};
+    use crate::escaped::{ESCAPED, HOSTILE, shown};
+    use crate::remote::{Refusal, TIMEOUT_ENV};
 
     #[test]
     fn a_resource_not_covered_is_said_with_the_login_of_whose_remote_it_is() {
@@ -155,5 +179,131 @@ mod tests {
         let login = "`loft interface login shelves` signs in again to reach it";
         assert!(other.contains(login), "{other}");
         assert!(!other.contains("loft remote"), "{other}");
+    }
+
+    /// The place of each variant among the samples of [`errors`]: a match with no wildcard, so
+    /// that a variant added to the type does not compile here until it is placed. `TokenAlone`
+    /// and `File`, the two variants without a sample, are placed after them all, so that a
+    /// variant placed before them fails the test below until it is sampled.
+    const fn place(error: &RemoteError) -> usize {
+        match error {
+            RemoteError::NoAddress { .. } => 0,
+            RemoteError::NoSignIn { .. } => 1,
+            RemoteError::SignInElsewhere { .. } => 2,
+            RemoteError::Address(_) => 3,
+            RemoteError::Characters(_) => 4,
+            RemoteError::AddressPart { .. } => 5,
+            RemoteError::NotHeld { .. } => 6,
+            RemoteError::StateNotHeld { .. } => 7,
+            RemoteError::Variable { .. } => 8,
+            RemoteError::Unreachable { .. } => 9,
+            RemoteError::Unreadable { .. } => 10,
+            RemoteError::Refused { .. } => 11,
+            RemoteError::Unsigned { .. } => 12,
+            RemoteError::Lapsed { .. } => 13,
+            RemoteError::FormerResource { .. } => 14,
+            RemoteError::NotCovered { .. } => 15,
+            RemoteError::SignIn { .. } => 16,
+            RemoteError::TokenAlone => 17,
+            RemoteError::File(_) => 18,
+        }
+    }
+
+    /// Each error that names text it was given, with [`HOSTILE`] in every text it holds: each
+    /// but [`RemoteError::TokenAlone`], which names none, and [`RemoteError::File`], whose
+    /// reason is the system's own words about a local file. The sign-in kept for another origin
+    /// stands twice, the second time with [`HOSTILE`] in a resource whose origin reads.
+    fn errors() -> Vec<RemoteError> {
+        let text = || HOSTILE.to_owned();
+        let refusal = Refusal {
+            status: 418,
+            problem: json!({ "code": HOSTILE, "detail": HOSTILE }),
+        };
+        vec![
+            RemoteError::NoAddress { key: text() },
+            RemoteError::NoSignIn { address: text() },
+            RemoteError::SignInElsewhere {
+                address: text(),
+                resource: text(),
+            },
+            RemoteError::SignInElsewhere {
+                address: "https://remote.example/documents/one".to_owned(),
+                resource: format!("https://elsewhere.example/documents#{HOSTILE}"),
+            },
+            RemoteError::Address(text()),
+            RemoteError::Characters(text()),
+            RemoteError::AddressPart {
+                address: text(),
+                part: "query",
+            },
+            RemoteError::NotHeld { key: text() },
+            RemoteError::StateNotHeld {
+                sequence: 1,
+                state_root: text(),
+            },
+            RemoteError::Variable {
+                name: TIMEOUT_ENV,
+                value: text(),
+            },
+            RemoteError::Unreachable {
+                address: text(),
+                reason: text(),
+            },
+            RemoteError::Unreadable {
+                address: text(),
+                what: "head",
+            },
+            RemoteError::Refused {
+                address: text(),
+                refusal: refusal.clone(),
+            },
+            RemoteError::Unsigned {
+                key: text(),
+                address: text(),
+                refusal,
+                missing: Box::new(RemoteError::NoSignIn { address: text() }),
+            },
+            RemoteError::Lapsed {
+                address: text(),
+                error: text(),
+            },
+            RemoteError::FormerResource {
+                address: text(),
+                resource: text(),
+            },
+            RemoteError::NotCovered {
+                address: text(),
+                resource: text(),
+            },
+            RemoteError::SignIn {
+                address: text(),
+                reason: text(),
+            },
+        ]
+    }
+
+    #[test]
+    fn every_remote_error_that_names_text_it_was_given_is_sampled_in_order() {
+        let mut places: Vec<usize> = errors().iter().map(place).collect();
+        places.dedup();
+        let unsampled = place(&RemoteError::TokenAlone);
+        assert_eq!(places, (0..unsampled).collect::<Vec<_>>());
+        assert_eq!(place(&RemoteError::File(String::new())), unsampled + 1);
+    }
+
+    #[test]
+    fn every_text_a_remote_error_names_is_written_with_its_control_characters_escaped() {
+        let other = Remedy::Other {
+            handle: "shelves",
+            listed: true,
+        };
+        for error in errors() {
+            let mut said = vec![error.to_string()];
+            said.extend(error.said(other));
+            for said in said {
+                assert!(shown(&said), "{error:?}: {said:?}");
+                assert!(said.contains(ESCAPED), "{error:?}: {said}");
+            }
+        }
     }
 }

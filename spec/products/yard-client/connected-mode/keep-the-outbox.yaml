@@ -49,7 +49,7 @@ requirements:
       - key: 01a20dc8-c593-7357-875c-81ac32a6c1c7
         name: "An entry is a JSON object of `format`, `to` and `record`."
       - key: 01a20dc8-c593-7357-875c-81ad156d0928
-        name: "`to.endpoint` is the address `LOFT_YARD_SERVER_ENDPOINT` named when the version was written."
+        name: "`to.endpoint` is the address `LOFT_YARD_SERVER_ENDPOINT` named when the version was written, without a trailing `/`."
       - key: 01a20dc8-c593-7357-875c-81ae19c1ae49
         name: "`record` is the record that a batch of versions carries for the version."
       - key: 01a20dc8-c593-7357-875c-81af8c1c1fd0

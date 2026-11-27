@@ -78,7 +78,8 @@ pub(in crate::yard) fn mode() -> Mode {
     let Some(home) = Home::from_env() else {
         return Mode::Homeless;
     };
-    let outbox = home.outbox(&endpoint);
+    // A trailing `/` is no part of the address, so `https://y` and `https://y/` share entries.
+    let outbox = home.outbox(endpoint.trim_end_matches('/'));
     Mode::On(Connection {
         home,
         outbox,

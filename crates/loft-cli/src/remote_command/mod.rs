@@ -13,6 +13,7 @@ use loftspec::document::Document;
 use loftspec_store::FileStore;
 use serde_json::{Value, json};
 
+use crate::escaped::Escaped;
 use crate::finish::Finished;
 use crate::json;
 use crate::out::outln;
@@ -191,7 +192,9 @@ fn remove(root: &Path) -> Result<Report, Stop> {
         lines: vec![
             format!(
                 "disconnected the document {key}{}",
-                address.map(|a| format!(" from {a}")).unwrap_or_default()
+                (address.as_deref())
+                    .map(|address| format!(" from {}", Escaped(address)))
+                    .unwrap_or_default()
             ),
             "Commit spec/loftspec.yaml: the document no longer publishes through its remote."
                 .to_owned(),

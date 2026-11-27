@@ -154,6 +154,18 @@ impl Outbox {
         most_bytes: u64,
         passed: &BTreeSet<String>,
     ) -> Result<Taken, YardStoreError> {
+        Ok(self.take_listed(listed(&self.dir)?, most, most_bytes, passed))
+    }
+
+    /// [`Self::take_after`] of the files a listing of the outbox named, with their sizes, some
+    /// of which may be gone since.
+    fn take_listed(
+        &self,
+        listing: Vec<(String, u64)>,
+        most: usize,
+        most_bytes: u64,
+        passed: &BTreeSet<String>,
+    ) -> Taken {
         let mut taken = Taken::default();
         let mut room = Room {
             most,
@@ -161,7 +173,7 @@ impl Outbox {
             bytes: 0,
             full: false,
         };
-        for (name, size) in listed(&self.dir)? {
+        for (name, size) in listing {
             if room.is_full(taken.entries.len()) {
                 break;
             }
@@ -185,7 +197,7 @@ impl Outbox {
                 }
             }
         }
-        Ok(taken)
+        taken
     }
 
     /// The path of `entry`'s file.
@@ -368,4 +380,36 @@ fn files(dir: &Path, keep: impl Fn(&str) -> bool) -> Result<Vec<(String, u64)>, 
         .collect();
     names.sort();
     Ok(names)
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeSet;
+    use std::fs;
+
+    use yardlog::keys::VersionKey;
+
+    use super::Outbox;
+
+    #[test]
+    fn an_entry_gone_since_the_listing_is_passed_over_and_the_batch_goes_on_without_it() {
+        let dir = std::env::temp_dir().join(format!("loft-outbox-gone-{}", std::process::id()));
+        let outbox = Outbox::new(&dir, "http://127.0.0.1:7420");
+        let record = |key: VersionKey| format!(r#"{{"version":{{"key":"{key}"}}}}"#);
+        let keys = [VersionKey::mint(), VersionKey::mint(), VersionKey::mint()];
+        outbox.put(keys[0], &record(keys[0])).unwrap();
+        outbox.put(keys[2], &record(keys[2])).unwrap();
+        // The listing named the second entry too, which another run sent before it was read.
+        let mut listed: Vec<(String, u64)> =
+            keys.iter().map(|key| (format!("{key}.json"), 64)).collect();
+        listed.sort();
+        let mut expected: Vec<String> =
+            [keys[0], keys[2]].iter().map(ToString::to_string).collect();
+        expected.sort();
+        let taken = outbox.take_listed(listed, 16, 1 << 20, &BTreeSet::new());
+        fs::remove_dir_all(&dir).unwrap();
+        let sent: Vec<String> = taken.entries.into_iter().map(|entry| entry.key).collect();
+        assert_eq!(sent, expected);
+        assert_eq!(taken.dead, 0);
+    }
 }

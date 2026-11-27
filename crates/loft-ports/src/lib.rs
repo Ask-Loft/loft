@@ -3,6 +3,7 @@
 //! finishes or undoes after a crash; the runner through which Loft reaches git, which the
 //! Software Plant's simulator stands in for; and the clock.
 
+mod check;
 pub mod clock;
 mod error;
 pub mod git;

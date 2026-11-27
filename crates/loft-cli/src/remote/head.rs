@@ -3,6 +3,7 @@
 use loftspec::publish::Lock;
 use serde_json::{Value, json};
 
+use crate::escaped::Escaped;
 use crate::remote::visibility::Visibility;
 use crate::remote::{Client, RemoteError};
 
@@ -85,13 +86,15 @@ impl Head {
     }
 }
 
+/// The head in words, its state root, which a remote may have given, written escaped.
 impl std::fmt::Display for Head {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.state_root {
             Some(root) => write!(
                 formatter,
-                "publish sequence {}, state root {root}",
-                self.sequence
+                "publish sequence {}, state root {}",
+                self.sequence,
+                Escaped(root)
             ),
             None => write!(
                 formatter,
@@ -99,5 +102,21 @@ impl std::fmt::Display for Head {
                 self.sequence
             ),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use serde_json::json;
+
+    use super::Head;
+
+    #[test]
+    fn a_head_s_state_root_is_written_with_its_control_characters_escaped() {
+        let head = Head::read(&json!({ "publishSequence": 2, "stateRoot": "ab\u{1b}[0m\u{9b}" }));
+        assert_eq!(
+            head.unwrap().to_string(),
+            "publish sequence 2, state root ab\\u{1b}[0m\\u{9b}"
+        );
     }
 }

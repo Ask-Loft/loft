@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::journal::{Journal, RelPath};
 use crate::sync::{move_into_place, read_if_present, remove_if_present, sync_dir};
-use crate::{PortError, io_error};
+use crate::{PortError, check, io_error};
 
 pub(crate) const PLAN: &str = "plan.json";
 pub(crate) const PLAN_STAGED: &str = "plan.json.tmp";
@@ -46,7 +46,37 @@ impl Plan {
                 format!("unknown format `{}`", plan.format),
             ));
         }
+        plan.check(journal)?;
         Ok(Some(plan))
+    }
+
+    /// Refuses a plan that names a path the journal does not save, or a staged file that is
+    /// not the journal's own, before any file moves: the plan was read from disk, where
+    /// anything may have written it.
+    fn check(&self, journal: &Journal) -> Result<(), PortError> {
+        let refused = |named: &str, why: &str| {
+            PortError::Journal(journal.dir().to_owned(), Self::not_a_save(Some(named), why))
+        };
+        let staged_dir = journal.dir().join(STAGED);
+        for entry in &self.write {
+            check::staged(&staged_dir, &entry.staged).map_err(|why| refused(&entry.staged, why))?;
+        }
+        let named = (self.write.iter().map(|entry| &entry.path)).chain(&self.remove);
+        check::paths(journal, named.map(RelPath::as_str))
+            .map_err(|found| refused(found.path, found.why))
+    }
+
+    /// The words for a journal that no save wrote: what it names, where it names something,
+    /// why that is refused, and what to do about it.
+    pub(crate) fn not_a_save(named: Option<&str>, why: &str) -> String {
+        let what = named.map_or_else(
+            || "it".to_owned(),
+            |named| format!("it names `{named}`, which"),
+        );
+        format!(
+            "no save wrote this journal: {what} {why}. No file was changed; delete the journal's \
+             directory, or the link to it, to go on"
+        )
     }
 
     /// Puts every staged file in place, removes the files to remove, and deletes the journal.

@@ -28,6 +28,19 @@ requirements:
         name: "A second document in one stream is an error naming the file, line and column."
       - key: 87d00847-4d40-405d-8bb5-c3bacbbf0e35
         name: "A comment is an error naming the file, line and column."
+  - key: 01a209e1-45d3-75c7-ad35-ece16b1b7adc
+    statement:
+      form: unwanted
+      if: "a file nests block mappings and block sequences more than 64 deep"
+      system: "the reader"
+      shall: "refuse the file with an error naming the file, line and column."
+    criteria:
+      - key: 01a209e1-45d3-75c7-ad35-ece27ddc20dc
+        name: "A value inside 64 nested block mappings and block sequences is read."
+      - key: 01a209e1-45d3-75c7-ad35-ece3d42ef1b5
+        name: "A block mapping or block sequence inside 64 others is an error naming its file, line and column."
+      - key: 01a209e1-45d3-75c7-ad35-ece4864ed1f2
+        name: "A file that nests 2,000 deep is refused with that error."
   - key: 38716538-528a-4e9d-a568-0c4c96b7efa5
     statement:
       form: ubiquitous

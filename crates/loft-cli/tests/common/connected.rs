@@ -80,6 +80,28 @@ impl Connected {
         self.publish_with(&[])
     }
 
+    /// The `loft` command over the repository, with no browser, in a run whose waits pass at
+    /// once.
+    pub fn command(&self) -> Command {
+        let clock = Clock::fixed(EPOCH).passing();
+        signed_in::command_at(
+            &self.scratch,
+            BrowserScenario::Absent,
+            Some(&self.git),
+            &clock,
+        )
+        .0
+    }
+
+    /// Keeps a sign-in to the remote that is about to expire, so that the next command
+    /// refreshes it first, at `token_endpoint`.
+    pub fn refreshing_at(&self, token_endpoint: &str) {
+        let mut kept = signed_in::granted(&self.remote, 60);
+        kept["tokenEndpoint"] = serde_json::json!(token_endpoint);
+        let address = self.remote.address();
+        signed_in::keep(&self.scratch, &serde_json::json!({ address: kept }));
+    }
+
     /// Publishes with the variables `env`, in a run whose waits pass at once.
     pub fn publish_with(&self, env: &[(&str, &str)]) -> Output {
         self.publish_by(|command| {
@@ -90,12 +112,7 @@ impl Connected {
     /// Publishes in a run whose waits pass at once, with `prepare` setting the command's
     /// environment.
     pub fn publish_by(&self, prepare: impl FnOnce(&mut Command)) -> Output {
-        let (mut command, _) = signed_in::command_at(
-            &self.scratch,
-            BrowserScenario::Absent,
-            Some(&self.git),
-            &Clock::fixed(EPOCH).passing(),
-        );
+        let mut command = self.command();
         prepare(&mut command);
         command
             .args(["publish", "--format", "json"])
