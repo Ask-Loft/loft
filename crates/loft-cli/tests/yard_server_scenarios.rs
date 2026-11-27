@@ -1,6 +1,6 @@
 //! The scenarios a test scripts the Yard Server simulator with, beyond Yard Server's contract:
-//! asking to come back later, refusing or putting off named versions, and answering with a
-//! body the test names. A real Yard Server cannot be scripted, so these run against the
+//! asking to come back later, refusing or putting off named versions, answering with a status
+//! and a body the test names, and refusing bodies over a size it names. A real Yard Server cannot be scripted, so these run against the
 //! simulator alone; the contract suite holds what both must answer alike.
 
 use serde_json::{Value, json};
@@ -85,6 +85,39 @@ fn a_simulator_answering_with_a_named_body_answers_exactly_it() {
         assert_eq!(answer.into_body().read_to_string().unwrap(), body);
         assert_eq!(server.records(), Vec::<Value>::new());
     }
+}
+
+#[test]
+fn a_simulator_answering_with_a_named_status_and_body_answers_as_a_proxy_would() {
+    let html = "<html><body>400 Bad Request</body></html>";
+    let server = YardServer::answering_with(400, html);
+    let answer = agent()
+        .post(Target::simulated(&server).batches())
+        .header("Authorization", format!("Bearer {TOKEN}"))
+        .header("Content-Type", "application/json")
+        .send(fresh(1).to_string())
+        .expect("the simulator answers");
+    assert_eq!(answer.status(), 400);
+    assert_eq!(answer.into_body().read_to_string().unwrap(), html);
+    assert_eq!(server.records(), Vec::<Value>::new());
+}
+
+#[test]
+fn a_simulator_refusing_bodies_over_a_size_refuses_them_with_413_and_stores_smaller_ones() {
+    let small = fresh(1);
+    let limit = small.to_string().len();
+    let server = YardServer::limiting(limit);
+    let target = Target::simulated(&server);
+    let refused = target.post(&fresh(2));
+    assert_eq!(refused.status, 413);
+    assert_eq!(refused.body["code"], "payload_too_large");
+    assert_eq!(server.records(), Vec::<Value>::new());
+    let taken = target.post(&small);
+    assert_eq!(outcomes(&taken), ["stored"]);
+    assert_eq!(
+        server.records(),
+        small["records"].as_array().unwrap().clone()
+    );
 }
 
 #[test]

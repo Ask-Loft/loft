@@ -254,9 +254,10 @@ simulator from the Software Plant in front of the unchanged binary under test:
   version once by its key and answers each version of a batch with its outcome
   (`yardlog-answer/1`: `stored`, `held`, `conflict`, `refused` or `later`), refusing a body over
   1 MiB with `413`; it can also fail with a status, ask to come back later with `429` or `503`
-  and a `Retry-After`, refuse or put off the versions a test names, answer with a body the test
-  names, stay silent, refuse the connection, store a batch and hang up, or store it and answer
-  late. It records every request and the records it holds. A test turns connected mode on with
+  and a `Retry-After`, refuse or put off the versions a test names, answer with a status and a
+  body the test names, as a proxy on the way would, refuse a body over a smaller size the test
+  names with `413`, stay silent, refuse the connection, store a batch and hang up, or store it
+  and answer late. It records every request and the records it holds. A test turns connected mode on with
   `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN`, and shortens a flush's wait for an
   answer with `LOFT_YARD_SERVER_TIMEOUT`; `tests/yard_connected.rs` holds the harness,
   `tests/yard_server_scenarios.rs` the scenarios a real server cannot be scripted with, and

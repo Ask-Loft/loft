@@ -25526,7 +25526,19 @@ links:
         body: 07f062794c07dd53b2ba3ba16588fa525803d9ac5cab3e0d3a324d69769360e3
   - node: 01a21406-1006-7412-b332-118b5ca18aa2
     reviewed: cb00f2f0115d2bc8e77831fc3fb95261a52e58d57d545f040d9e4a10fc573f51
-    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_answering_with_a_named_body_answers_exactly_it"
+        body: baf4116f8ff8fce9497e0f419345600db15174d5bd39a11fe40485c8300783a9
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_answering_with_a_named_status_and_body_answers_as_a_proxy_would"
+        body: a12998214661066ad083dae6648b785bd761a9ed77759be6ea544ac0d95d161a
+  - node: 01a21dc4-1382-7665-bfa6-7061e894832b
+    reviewed: b9751d27797f1ba4f7b1abcedffca9cec335e66a371eb2ae379b63e0ae99b6c5
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_refusing_bodies_over_a_size_refuses_them_with_413_and_stores_smaller_ones"
+        body: 9c4eb2e71642db11cf505595bab6b05decbf2609950a2cd92c45d64c526fdfda
   - node: 01a20de0-8348-72dc-8ab4-3db7fa378c36
     reviewed: f85ab3c55ff39ad8e09fa32aa008972724d2cd30aac8651d7f107ebd7f871be9
     tests:

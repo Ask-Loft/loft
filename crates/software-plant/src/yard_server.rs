@@ -44,8 +44,8 @@ enum Behavior {
     Failing(u16),
     /// Answers every request with this status and `Retry-After`, as a problem document.
     ComeBack { status: u16, retry_after: String },
-    /// Answers every batch it admits `200` with exactly this body, storing nothing.
-    Answering(String),
+    /// Answers every batch it admits with this status and exactly this body, storing nothing.
+    Answering { status: u16, body: String },
     /// Accepts each connection and never answers.
     Silent,
 }
@@ -118,7 +118,27 @@ impl YardServer {
     /// nothing: an answer that does not read, leaves a version out or names an unknown outcome.
     #[must_use]
     pub fn answering(body: &str) -> Self {
-        Self::start(Batches::new(Behavior::Answering(body.to_owned())))
+        Self::answering_with(200, body)
+    }
+
+    /// A server that answers every batch it admits with `status` and exactly `body`, and
+    /// stores nothing, as a proxy on the way that answers in Yard Server's place does.
+    #[must_use]
+    pub fn answering_with(status: u16, body: &str) -> Self {
+        Self::start(Batches::new(Behavior::Answering {
+            status,
+            body: body.to_owned(),
+        }))
+    }
+
+    /// A server that refuses a body larger than `most_bytes` with `413` and the code
+    /// `payload_too_large`, as something on the way with a smaller limit than Yard Server's
+    /// does, and takes a smaller one as an accepting server does.
+    #[must_use]
+    pub fn limiting(most_bytes: usize) -> Self {
+        let mut batches = Batches::new(Behavior::Accepting);
+        batches.most_bytes = most_bytes;
+        Self::start(batches)
     }
 
     /// A server that accepts each connection and never answers.
@@ -172,6 +192,8 @@ struct Batches {
     behavior: Behavior,
     refused: Named,
     put_off: Named,
+    /// The largest body the server takes.
+    most_bytes: usize,
     stored: Arc<Mutex<Vec<Value>>>,
 }
 
@@ -192,12 +214,12 @@ impl Responder for Batches {
             }
             _ => {}
         }
-        let records = match admit(request) {
+        let records = match admit(request, self.most_bytes) {
             Ok(records) => records,
             Err(refusal) => return refusal.into(),
         };
-        if let Behavior::Answering(body) = &self.behavior {
-            let mut response = Response::json(200, &Value::Null);
+        if let Behavior::Answering { status, body } = &self.behavior {
+            let mut response = Response::json(*status, &Value::Null);
             response.body = body.clone().into_bytes();
             return response.into();
         }
@@ -223,6 +245,7 @@ impl Batches {
             behavior,
             refused: Vec::new(),
             put_off: Vec::new(),
+            most_bytes: MOST_BYTES,
             stored: Arc::new(Mutex::new(Vec::new())),
         }
     }
@@ -265,8 +288,8 @@ fn outcome(key: &str, outcome: &str, code: Option<&str>) -> Value {
     value
 }
 
-/// The records of `request`, or the refusal it is answered with.
-fn admit(request: &Request) -> Result<Vec<Value>, Response> {
+/// The records of `request`, a body of at most `most_bytes`, or the refusal it is answered with.
+fn admit(request: &Request, most_bytes: usize) -> Result<Vec<Value>, Response> {
     if request.path != BATCHES {
         return Err(refusal("not_found"));
     }
@@ -284,7 +307,7 @@ fn admit(request: &Request) -> Result<Vec<Value>, Response> {
     if !json {
         return Err(problem(415, "unsupported_media_type", Map::new()));
     }
-    if request.body.len() > MOST_BYTES {
+    if request.body.len() > most_bytes {
         return Err(refusal("payload_too_large"));
     }
     records(&request.body).ok_or_else(|| refusal("invalid_request"))
