@@ -202,6 +202,31 @@ impl Outbox {
         taken
     }
 
+    /// Whether the outbox holds an entry for its address that this `loft` reads, other than those
+    /// whose keys `passed` holds: it reads the files in the order of their names, passes over
+    /// those `passed` holds by their names alone, and stops at the first such entry. It moves and
+    /// writes nothing, so it needs no lock.
+    ///
+    /// # Errors
+    ///
+    /// The outbox cannot be listed.
+    pub fn holds_one_after(&self, passed: &BTreeSet<String>) -> Result<bool, YardStoreError> {
+        for (name, _) in listed(&self.dir)? {
+            if passed.contains(key_of(&name)) {
+                continue;
+            }
+            let Ok(Some(text)) = read_if_present(&self.dir.join(&name)) else {
+                continue;
+            };
+            if let Read::Entry { endpoint, .. } = read(&name, &text)
+                && endpoint == self.endpoint
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
     /// The path of `entry`'s file.
     #[must_use]
     pub fn path_of(&self, entry: &Entry) -> PathBuf {

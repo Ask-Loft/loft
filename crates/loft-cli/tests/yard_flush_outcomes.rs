@@ -9,9 +9,11 @@ use std::fs;
 use serde_json::{Value, json};
 use software_plant::YardServer;
 
+use crate::common::signed_in::real_now;
 use crate::yard::Yard;
 use crate::yard_connected::{
-    STAGE_BATCH, connected, entries, flush, keys, notes, outbox, readdress, write,
+    STAGE_BATCH, connected, entries, flush, keys, later_after, notes, outbox, readdress,
+    records_sent, write,
 };
 
 /// The files of `dead/`, each with the reason kept beside it.
@@ -118,6 +120,7 @@ fn an_entry_whose_version_yard_server_will_take_later_stays_and_a_later_run_send
     );
     assert_eq!(keys(&yard), [put_off[1].clone()]);
     assert_eq!(server.requests().len(), 1);
+    later_after(&yard, &server.url(), real_now() - 1);
     flush(&yard, &variables);
     assert_eq!(server.requests().len(), 2);
     assert_eq!(keys(&yard), [put_off[1].clone()]);
@@ -131,15 +134,7 @@ fn an_entry_a_run_has_taken_once_is_not_taken_again_in_the_same_run() {
     readdress(&yard, &server.url());
     let (_, flushed) = flush(&yard, &connected(&server.url()));
     assert_eq!(flushed["later"], 1);
-    let sent: Vec<usize> = server
-        .requests()
-        .iter()
-        .map(|request| {
-            let batch: Value = serde_json::from_slice(&request.body).unwrap();
-            batch["records"].as_array().unwrap().len()
-        })
-        .collect();
-    assert_eq!(sent, [16, 1]);
+    assert_eq!(batch_sizes(&server), [16, 1]);
 }
 
 #[test]
@@ -207,14 +202,7 @@ fn after_a_413_the_batch_s_one_entry_is_in_dead_with_the_status_and_code() {
 
 /// The number of records each request to `server` carried, in the order sent.
 fn batch_sizes(server: &YardServer) -> Vec<usize> {
-    server
-        .requests()
-        .iter()
-        .map(|request| {
-            let batch: Value = serde_json::from_slice(&request.body).unwrap();
-            batch["records"].as_array().unwrap().len()
-        })
-        .collect()
+    records_sent(server).iter().map(Vec::len).collect()
 }
 
 /// The sizes of the entry files of `keys`.

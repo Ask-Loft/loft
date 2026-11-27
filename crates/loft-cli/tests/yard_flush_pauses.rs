@@ -132,7 +132,7 @@ fn a_429_or_503_without_a_retry_after_that_reads_is_a_failure() {
         write(&yard, STAGE_BATCH, &variables);
         let (code, failed) = flush(&yard, &variables);
         assert_eq!((code, &failed["outcome"]), (Some(1), &json!("failed")));
-        assert_eq!(flush_record(&yard, &server.url())["notBefore"], Value::Null);
+        assert_eq!(flush_record(&yard, &server.url())["failures"], 1);
     }
 }
 

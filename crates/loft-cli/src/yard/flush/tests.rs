@@ -1,4 +1,5 @@
 use std::cell::Cell;
+use std::collections::BTreeSet;
 use std::fs;
 use std::time::Duration;
 
@@ -70,13 +71,19 @@ fn filled(endpoint: &str, count: usize) -> (Outbox, Fresh) {
 fn a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_the_rest() {
     let server = YardServer::accepting();
     let (outbox, _fresh) = filled(&server.url(), 40);
-    // The run reads the clock as it begins and before each batch: at 0, 2 and 4 minutes it takes
-    // a batch, and at 6 minutes, past the 5, it takes no more.
+    // The run reads the clock at 0 to set its limit, takes a batch at 2 and at 4 minutes, and at
+    // 6 minutes, past the 5, takes no more.
     let clock = Stepping {
         step: MOST_TIME / 5 * 2,
         passed: Cell::new(Duration::ZERO),
     };
-    let flushed = drain(&outbox, software_plant::yard_server::TOKEN, WAIT, &clock);
+    let flushed = drain(
+        &outbox,
+        software_plant::yard_server::TOKEN,
+        WAIT,
+        &clock,
+        BTreeSet::new(),
+    );
     assert_eq!(server.requests().len(), 2);
     assert_eq!(flushed.outcome, "sent");
     assert_eq!((flushed.sent, flushed.remaining()), (32, 8));
@@ -90,7 +97,13 @@ fn a_run_with_time_to_spare_sends_every_batch() {
         step: Duration::from_secs(1),
         passed: Cell::new(Duration::ZERO),
     };
-    let flushed = drain(&outbox, software_plant::yard_server::TOKEN, WAIT, &clock);
+    let flushed = drain(
+        &outbox,
+        software_plant::yard_server::TOKEN,
+        WAIT,
+        &clock,
+        BTreeSet::new(),
+    );
     assert_eq!(server.requests().len(), 3);
     assert_eq!((flushed.sent, flushed.remaining()), (40, 0));
 }
@@ -135,10 +148,10 @@ fn a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went() 
         step: Duration::from_secs(1),
         passed: Cell::new(Duration::ZERO),
     };
-    let flushed = drain(&outbox, "token", WAIT, &clock);
+    let flushed = drain(&outbox, "token", WAIT, &clock, BTreeSet::new());
     assert_eq!(flushed.outcome, "paused");
     assert_eq!(flushed.sent, 16);
-    assert_eq!(flushed.not_before, Some(60));
+    assert_eq!(flushed.retry_after, Some(60));
     assert_eq!(flushed.remaining(), 4);
 }
 
@@ -181,8 +194,8 @@ fn a_retry_after_in_seconds_counts_from_the_answer() {
     let time = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(1000));
     let server = software_plant::http::Server::start(SlowToComeBack(time.clone()));
     let (outbox, _fresh) = filled(&server.url(), 1);
-    let flushed = drain(&outbox, "token", WAIT, &Shared(time));
-    assert_eq!(flushed.not_before, Some(1014));
+    let flushed = drain(&outbox, "token", WAIT, &Shared(time), BTreeSet::new());
+    assert_eq!(flushed.retry_after, Some(1014));
 }
 
 fn keys(keys: &[&str]) -> std::collections::BTreeSet<String> {
@@ -209,6 +222,8 @@ fn a_record_that_replaces_another_keeps_a_time_to_come_back_after_that_has_not_p
         why: None,
         not_before: None,
         later: &later,
+        later_at: None,
+        failures: 0,
     };
     assert_eq!(
         super::record::next(&previous, &run(400), &keys(&[])).not_before,
@@ -233,6 +248,8 @@ fn a_record_keeps_the_later_key_of_each_entry_the_run_did_not_take_while_it_wait
         why: None,
         not_before: None,
         later: &later,
+        later_at: None,
+        failures: 0,
     };
     // `a` was not taken and waits; `b` was taken and stored, and `c` is gone, so neither waits.
     let next = super::record::next(&previous, &run, &keys(&["a", "d"]));
@@ -252,6 +269,8 @@ fn a_record_keeps_the_later_key_of_an_entry_taken_in_a_batch_yard_server_did_not
         why: None,
         not_before: Some(60),
         later: &later,
+        later_at: None,
+        failures: 0,
     };
     let next = super::record::next(&previous, &run, &keys(&["k"]));
     assert_eq!(next.later, codes(&[("k", "unknown_report_version")]));
@@ -373,4 +392,41 @@ fn no_flush_is_due_before_the_time_yard_server_asked_to_come_back_after() {
     let at = 1_767_225_600;
     assert!(!super::due(&mode, at + 119));
     assert!(super::due(&mode, at + 120));
+}
+
+#[test]
+fn a_batch_split_after_a_413_sends_no_half_once_the_run_s_5_minutes_have_passed() {
+    let server = YardServer::limiting(16);
+    let (outbox, _fresh) = filled(&server.url(), 4);
+    // The run sets its limit at 0, takes the batch at 3 minutes and finds 6 minutes passed once
+    // Yard Server has answered it `413`.
+    let clock = Stepping {
+        step: Duration::from_mins(3),
+        passed: Cell::new(Duration::ZERO),
+    };
+    let flushed = drain(
+        &outbox,
+        software_plant::yard_server::TOKEN,
+        WAIT,
+        &clock,
+        BTreeSet::new(),
+    );
+    assert_eq!(server.requests().len(), 1);
+    assert_eq!((flushed.outcome, flushed.remaining()), ("sent", 4));
+}
+
+#[test]
+fn the_hour_of_the_versions_put_off_counts_from_yard_server_s_answer() {
+    let later = codes(&[("k", "unknown_report_version")]);
+    let run = super::record::Run {
+        ended: 400,
+        outcome: "sent",
+        why: None,
+        not_before: None,
+        later: &later,
+        later_at: Some(100),
+        failures: 0,
+    };
+    let next = super::record::next(&super::record::Record::default(), &run, &keys(&["k"]));
+    assert_eq!(next.later_not_before, Some(3700));
 }

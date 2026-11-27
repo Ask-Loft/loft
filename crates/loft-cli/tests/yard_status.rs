@@ -248,13 +248,16 @@ fn last_attempt_gives_when_the_last_run_ended_how_and_why() {
     let variables = connected(&failing.url());
     write(&yard, STAGE_BATCH, &variables);
     flush(&yard, &variables);
-    let ended = flush_record(&yard, &failing.url())["ended"].clone();
+    let record = flush_record(&yard, &failing.url());
+    let (ended, not_before) = (record["ended"].clone(), record["notBefore"].clone());
     let (text, json) = status(&yard, &variables);
     assert_eq!(
         line(&text, "last attempt"),
         format!(
-            "last attempt: {} failed: Yard Server refused the batch with 503 `service_unavailable`",
-            ended.as_str().unwrap()
+            "last attempt: {} failed: Yard Server refused the batch with 503 `service_unavailable`; \
+             no request before {}",
+            ended.as_str().unwrap(),
+            not_before.as_str().unwrap()
         )
     );
     assert_eq!(
@@ -263,7 +266,7 @@ fn last_attempt_gives_when_the_last_run_ended_how_and_why() {
             "ended": ended,
             "outcome": "failed",
             "why": "Yard Server refused the batch with 503 `service_unavailable`",
-            "notBefore": null,
+            "notBefore": not_before,
         })
     );
 }
@@ -281,7 +284,7 @@ fn last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed() {
     assert_eq!(
         line(&text, "last attempt"),
         format!(
-            "last attempt: {ended} paused; Yard Server asked to come back after {}",
+            "last attempt: {ended} paused; no request before {}",
             not_before.as_str().unwrap()
         )
     );

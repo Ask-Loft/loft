@@ -14,6 +14,7 @@
         "later",
         "skipped",
         "dead",
+        "notBefore",
         "errors"
       ],
       "properties": {
@@ -29,7 +30,7 @@
             "busy",
             "paused"
           ],
-          "description": "off: connected mode is off; empty: the outbox holds no entry for the address; sent: every batch the run took went; failed: a batch did not go, or an entry could not be settled, and errors says why; busy: another flush holds ~/.yard/flush.lock, and no request was made; paused: Yard Server asked to come back later, in this run or an earlier one, and that time has not come."
+          "description": "off: connected mode is off; empty: the outbox holds no entry for the address; sent: every batch the run took went; failed: a batch did not go, or an entry could not be settled, and errors says why; busy: another flush holds ~/.yard/flush.lock, and no request was made; paused: Yard Server asked to come back later, or the flush keeps away after runs that made a request and failed, and that time has not come."
         },
         "sent": {
           "type": "integer",
@@ -55,6 +56,14 @@
           "type": "integer",
           "minimum": 0,
           "description": "The files moved into ~/.yard/outbox/dead/ in the run, each beside a .reason file."
+        },
+        "notBefore": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "The time, in UTC, before which no run makes a request to the address, where one is recorded and has not passed; null where none is. Whoever runs the flush in the background starts none before it."
         },
         "errors": {
           "type": "array",

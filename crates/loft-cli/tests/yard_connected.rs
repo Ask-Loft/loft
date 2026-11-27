@@ -83,12 +83,35 @@ pub fn flush_record(yard: &Yard, endpoint: &str) -> Value {
     serde_json::from_str::<Value>(&text).unwrap_or(Value::Null)[endpoint].clone()
 }
 
-/// Sets the time Yard Server asked to come back after, in the record `~/.yard/flush.json` holds
+/// Sets `field` of the record `~/.yard/flush.json` holds for `endpoint` to `value`.
+pub fn set_record_field(yard: &Yard, endpoint: &str, field: &str, value: Value) {
+    let mut all: Value = serde_json::from_slice(&fs::read(flush_json(yard)).unwrap()).unwrap();
+    all[endpoint][field] = value;
+    fs::write(flush_json(yard), all.to_string()).unwrap();
+}
+
+/// Sets the time before which no run makes a request, in the record `~/.yard/flush.json` holds
 /// for `endpoint`, to `seconds` since the Unix epoch.
 pub fn come_back_after(yard: &Yard, endpoint: &str, seconds: u64) {
-    let mut all: Value = serde_json::from_slice(&fs::read(flush_json(yard)).unwrap()).unwrap();
-    all[endpoint]["notBefore"] = json!(dated(seconds));
-    fs::write(flush_json(yard), all.to_string()).unwrap();
+    set_record_field(yard, endpoint, "notBefore", json!(dated(seconds)));
+}
+
+/// Sets the time before which the versions put off until later are not sent again, in the record
+/// `~/.yard/flush.json` holds for `endpoint`, to `seconds` since the Unix epoch.
+pub fn later_after(yard: &Yard, endpoint: &str, seconds: u64) {
+    set_record_field(yard, endpoint, "laterNotBefore", json!(dated(seconds)));
+}
+
+/// The records each request to `server` carried, in the order sent.
+pub fn records_sent(server: &YardServer) -> Vec<Vec<Value>> {
+    server
+        .requests()
+        .iter()
+        .map(|request| {
+            let batch: Value = serde_json::from_slice(&request.body).unwrap();
+            batch["records"].as_array().unwrap().clone()
+        })
+        .collect()
 }
 
 /// `seconds` since the Unix epoch, as `~/.yard/flush.json` writes a time.
@@ -341,6 +364,11 @@ fn until_a_batch_is_taken_the_next_sending_takes_the_same_oldest_entries_again()
     write(&yard, STAGE_BATCH, &variables);
     flush(&yard, &variables);
     write(&yard, &notes(1), &variables);
+    come_back_after(
+        &yard,
+        &server.url(),
+        crate::common::signed_in::real_now() - 1,
+    );
     flush(&yard, &variables);
     let requests = server.requests();
     let second: Value = serde_json::from_slice(&requests[1].body).unwrap();

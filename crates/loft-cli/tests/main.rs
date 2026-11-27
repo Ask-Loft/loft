@@ -170,6 +170,8 @@ mod yard_delegation;
 mod yard_dogfood;
 mod yard_event_ids;
 mod yard_flush;
+mod yard_flush_backoff;
+mod yard_flush_later;
 mod yard_flush_outcomes;
 mod yard_flush_pauses;
 mod yard_flush_runs;

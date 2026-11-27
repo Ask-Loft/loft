@@ -251,10 +251,7 @@ fn last_line(last: Option<&Record>, now: u64) -> String {
         line = format!("{line}: {why}");
     }
     if let Some(after) = last.paused(now) {
-        line = format!(
-            "{line}; Yard Server asked to come back after {}",
-            time(after)
-        );
+        line = format!("{line}; no request before {}", time(after));
     }
     line
 }

@@ -1,6 +1,7 @@
 //! `~/.yard/flush.json`: for each address of Yard Server, the last run of the flush that sent to
 //! it: when it ended and how, why a batch did not go, the time Yard Server asked it not to come
-//! back before, and the versions Yard Server will take later, each with its code. Only a run
+//! back before, the runs in a row that made a request and failed, and the versions Yard Server
+//! will take later, each with its code, with the time before which they are not sent again. Only a run
 //! that holds `~/.yard/flush.lock` writes it, through a temporary file renamed into place; a file
 //! that does not read holds no record. It holds no token.
 
@@ -25,7 +26,15 @@ pub struct Record {
     pub not_before: Option<u64>,
     /// The versions Yard Server will take later, by key, each with its code.
     pub later: BTreeMap<String, String>,
+    /// The runs in a row that made a request and failed.
+    pub failures: u32,
+    /// The time before which the versions Yard Server will take later are not sent again: an
+    /// hour after it last answered one of them `later`, in seconds.
+    pub later_not_before: Option<u64>,
 }
+
+/// How long the versions Yard Server put off are not sent again, in seconds.
+const LATER: u64 = 60 * 60;
 
 impl Record {
     /// The time Yard Server asked the flush not to come back before, where it has not come by
@@ -40,6 +49,16 @@ impl Record {
     pub fn later_keys(self) -> BTreeSet<String> {
         self.later.into_keys().collect()
     }
+
+    /// The keys of the versions Yard Server will take later that are not sent again by `now`.
+    #[must_use]
+    pub fn deferred(&self, now: u64) -> BTreeSet<String> {
+        if self.later_not_before.is_some_and(|time| now < time) {
+            self.later.keys().cloned().collect()
+        } else {
+            BTreeSet::new()
+        }
+    }
 }
 
 /// What a run that replaces its address's record did.
@@ -50,6 +69,10 @@ pub struct Run<'a> {
     pub not_before: Option<u64>,
     /// The versions Yard Server answered `later` in the run, by key, with their codes.
     pub later: &'a BTreeMap<String, String>,
+    /// When Yard Server last answered a version `later` in the run.
+    pub later_at: Option<u64>,
+    /// The runs in a row that made a request and failed, this one included.
+    pub failures: u32,
 }
 
 /// The record `home` holds for `endpoint`, where it holds one that reads.
@@ -97,6 +120,11 @@ pub fn replace(
 /// The record that replaces `previous` after `run`.
 pub(super) fn next(previous: &Record, run: &Run<'_>, waiting: &BTreeSet<String>) -> Record {
     let kept = previous.not_before.filter(|time| *time > run.ended);
+    let later_not_before = if run.later.is_empty() {
+        previous.later_not_before.filter(|time| *time > run.ended)
+    } else {
+        Some(run.later_at.unwrap_or(run.ended).saturating_add(LATER))
+    };
     let mut later: BTreeMap<String, String> = previous
         .later
         .iter()
@@ -114,6 +142,8 @@ pub(super) fn next(previous: &Record, run: &Run<'_>, waiting: &BTreeSet<String>)
         why: run.why.clone(),
         not_before: run.not_before.max(kept),
         later,
+        failures: run.failures,
+        later_not_before,
     }
 }
 
@@ -137,6 +167,8 @@ fn value(record: &Record) -> Value {
         "why": record.why,
         "notBefore": record.not_before.map_or(Value::Null, time),
         "later": later,
+        "failures": record.failures,
+        "laterNotBefore": record.later_not_before.map_or(Value::Null, time),
     })
 }
 
@@ -156,5 +188,11 @@ fn parse(value: &Value) -> Option<Record> {
                     .collect()
             })
             .unwrap_or_default(),
+        failures: value
+            .get("failures")
+            .and_then(Value::as_u64)
+            .and_then(|failures| u32::try_from(failures).ok())
+            .unwrap_or_default(),
+        later_not_before: value.get("laterNotBefore").and_then(seconds),
     })
 }

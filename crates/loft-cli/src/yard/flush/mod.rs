@@ -8,6 +8,7 @@
 //! Holding it, a flush first keeps away from an address Yard Server asked it to come back to
 //! later, as `~/.yard/flush.json` records, and records each run it makes there.
 
+mod backoff;
 pub(super) mod record;
 mod sending;
 mod settle;
@@ -99,15 +100,19 @@ pub fn outbox() -> Option<Outbox> {
 }
 
 /// Whether a flush has work it may do at `now`, in seconds since the Unix epoch: connected mode
-/// is on, the outbox holds an entry for its address that the last run did not record as one Yard
-/// Server will take later, and Yard Server asked to come back after no time that has not come.
+/// is on, no time before which no run makes a request has not come, and the outbox holds an entry
+/// for its address that the last run did not record as one Yard Server will take later. It reads
+/// the outbox only until it finds one, and passes over those put off by their names alone.
 pub(in crate::yard) fn due(mode: &Mode, now: u64) -> bool {
     let Mode::On(connection) = mode else {
         return false;
     };
-    let last = record::read(&connection.home, connection.outbox.endpoint());
-    let paused = last.as_ref().and_then(|last| last.paused(now)).is_some();
-    !paused && aside(Flushed::quiet("due"), &connection.outbox, last).remaining() > 0
+    let last = record::read(&connection.home, connection.outbox.endpoint()).unwrap_or_default();
+    last.paused(now).is_none()
+        && connection
+            .outbox
+            .holds_one_after(&last.later_keys())
+            .unwrap_or(false)
 }
 
 /// How long a flush waits for an answer: `seconds` where [`TIMEOUT`] gives them, else 10 seconds.
@@ -117,13 +122,15 @@ fn wait_of(seconds: Option<u64>) -> Duration {
 
 /// How long this flush waits for an answer, or why [`TIMEOUT`] does not say.
 fn wait() -> Result<Duration, String> {
-    match crate::remote::seconds(TIMEOUT) {
-        Ok(Some(seconds)) if seconds > MOST_WAIT => Err(format!(
+    let Some(value) = environment::text(TIMEOUT) else {
+        return Ok(WAIT);
+    };
+    match value.parse::<u64>() {
+        Ok(seconds) if (1..=MOST_WAIT).contains(&seconds) => Ok(wait_of(Some(seconds))),
+        _ => Err(format!(
             "{TIMEOUT}={}: not a whole number of seconds from 1 to {MOST_WAIT}",
-            crate::escaped::Escaped(&crate::environment::text(TIMEOUT).unwrap_or_default())
+            crate::escaped::Escaped(&value)
         )),
-        Ok(seconds) => Ok(wait_of(seconds)),
-        Err(error) => Err(error.to_string()),
     }
 }
 
@@ -146,7 +153,16 @@ pub fn run(args: &FlushArgs) -> Finished {
     let endpoint = connection.outbox.endpoint().to_owned();
     let unlocked = |flushed| {
         let last = record::read(&connection.home, &endpoint);
-        aside(flushed, &connection.outbox, last)
+        let now = crate::remote::now().unwrap_or_default();
+        let not_before = last.as_ref().and_then(|last| last.paused(now));
+        aside(
+            Flushed {
+                not_before,
+                ..flushed
+            },
+            &connection.outbox,
+            last,
+        )
     };
     let flushed = match lock::try_lock(&connection.home.dir().join(LOCK)) {
         Ok(Some(_held)) => locked(&connection),
@@ -175,7 +191,7 @@ pub fn run(args: &FlushArgs) -> Finished {
         .not_before
         .and_then(|time| Time::from_unix_seconds(time).ok())
     {
-        line = format!("{line} Yard Server asked to come back after {time}.");
+        line = format!("{line} No request before {time}.");
     }
     for failed in &flushed.failed {
         line = format!("{line} {}.", failed.why);
@@ -183,8 +199,8 @@ pub fn run(args: &FlushArgs) -> Finished {
     report(as_json, &flushed, &line)
 }
 
-/// The run of a flush that holds the lock: none where Yard Server asked to come back after a
-/// time that has not come, else the sending, recorded in `~/.yard/flush.json`.
+/// The run of a flush that holds the lock: none where a time before which no run makes a request
+/// has not come, else the sending, recorded in `~/.yard/flush.json` with the pause it leaves.
 fn locked(connection: &Connection) -> Flushed {
     // The system's clock, which `SOURCE_DATE_EPOCH` does not pin, as `crate::remote::now` reads
     // it, so that a pause Yard Server asks for ends in real time.
@@ -199,23 +215,45 @@ fn locked(connection: &Connection) -> Flushed {
         };
         return aside(paused, &connection.outbox, Some(recorded));
     }
-    let mut flushed = match wait() {
-        Ok(wait) => sending::drain(&connection.outbox, &connection.token, wait, clock),
-        Err(why) => left(
-            Flushed::failed(Failed::yard_server(why)),
-            &connection.outbox,
-        ),
+    // A run that makes no request, for an address the network client refuses or a wait it
+    // cannot take, adds no pause.
+    let started = settle::refused(&connection.outbox).map_or_else(wait, Err);
+    let (mut flushed, sent) = match started {
+        Ok(wait) => {
+            let deferred = recorded.deferred(now);
+            let flushed =
+                sending::drain(&connection.outbox, &connection.token, wait, clock, deferred);
+            (flushed, true)
+        }
+        Err(why) => {
+            let failed = Flushed::failed(Failed::yard_server(why));
+            (left(failed, &connection.outbox), false)
+        }
+    };
+    let ended = clock.now().unwrap_or(now);
+    let (failures, not_before) = if sent {
+        backoff::after(recorded.failures, &flushed, ended, backoff::draw())
+    } else {
+        (recorded.failures, None)
     };
     let run = record::Run {
-        ended: clock.now().unwrap_or(now),
+        ended,
         outcome: flushed.outcome,
         why: flushed.failed.first().map(|failed| failed.why.clone()),
-        not_before: flushed.not_before,
+        not_before,
         later: &flushed.put_off,
+        later_at: flushed.later_at,
+        failures,
     };
     match record::replace(&connection.home, endpoint, &run, &flushed.waiting) {
-        Ok(written) => flushed.held = written.later_keys(),
+        Ok(written) => {
+            flushed.not_before = written.paused(ended);
+            flushed.held = written.later_keys();
+        }
         Err(error) => {
+            // The pause still holds for whoever started the run, though no later run sees it.
+            flushed.not_before = not_before.filter(|time| *time > ended);
+            flushed.held = recorded.later_keys();
             flushed.failed.push(Failed::outbox(format!(
                 "{} cannot be written: {error}",
                 connection.home.path(HomeFile::Flush).display()
@@ -252,6 +290,10 @@ fn report(as_json: bool, flushed: &Flushed, line: &str) -> Finished {
         "later": flushed.later(),
         "skipped": flushed.skipped,
         "dead": flushed.dead,
+        "notBefore": flushed
+            .not_before
+            .and_then(|time| Time::from_unix_seconds(time).ok())
+            .map(|time| time.to_string()),
     });
     let errors: Vec<Value> = flushed
         .failed

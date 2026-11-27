@@ -12,7 +12,7 @@ use loft_ports::clock::Clock;
 use yardlog::batch::{MOST_BYTES, MOST_RECORDS};
 use yardlog_store::outbox::Outbox;
 
-use super::settle::{self, Failed};
+use super::settle::{Failed, Sender, Settled};
 
 /// How long a run takes new batches: after it, the run ends once the batch on its way is settled.
 pub(super) const MOST_TIME: Duration = Duration::from_mins(5);
@@ -29,15 +29,20 @@ pub(super) struct Flushed {
     pub dead: usize,
     /// Why a batch did not go, or an entry could not be settled, where one did not or could not.
     pub failed: Vec<Failed>,
-    /// The keys of the entries the run took, whatever became of them.
-    pub taken: BTreeSet<String>,
     /// The versions Yard Server will take later, by key, each with its code.
     pub put_off: BTreeMap<String, String>,
     /// The keys of the entries for the address left in the outbox, put off ones included.
     pub waiting: BTreeSet<String>,
     /// The keys `~/.yard/flush.json` records as those of versions Yard Server will take later.
     pub held: BTreeSet<String>,
-    /// The time Yard Server asked the run not to come back before, in seconds.
+    /// The time a `Retry-After` of the run asked it not to come back before, in seconds.
+    pub retry_after: Option<u64>,
+    /// When Yard Server last answered a version `later` in the run, in seconds.
+    pub later_at: Option<u64>,
+    /// Whether a batch of the run went.
+    pub went: bool,
+    /// The time before which no run makes a request, in seconds, as recorded once the run ended,
+    /// where it has not passed.
     pub not_before: Option<u64>,
 }
 
@@ -50,11 +55,27 @@ impl Flushed {
             skipped: 0,
             dead: 0,
             failed: Vec::new(),
-            taken: BTreeSet::new(),
             put_off: BTreeMap::new(),
             waiting: BTreeSet::new(),
             held: BTreeSet::new(),
+            retry_after: None,
+            later_at: None,
+            went: false,
             not_before: None,
+        }
+    }
+
+    /// The result of a run that ended `outcome` after its batches came to `settled`.
+    fn of(outcome: &'static str, settled: Settled) -> Self {
+        Self {
+            sent: settled.sent,
+            dead: settled.dead,
+            failed: settled.failed,
+            put_off: settled.later.into_iter().collect(),
+            retry_after: settled.retry_after,
+            later_at: settled.later_at,
+            went: settled.went,
+            ..Self::quiet(outcome)
         }
     }
 
@@ -85,44 +106,50 @@ impl Flushed {
 }
 
 /// Runs the sending of `outbox` with `credential`, its token, waiting at most `wait` for each
-/// answer and reading the time from `clock`.
+/// answer, reading the time from `clock` and passing over the entries whose keys `deferred`
+/// holds.
 pub(super) fn drain(
     outbox: &Outbox,
     credential: &str,
     wait: Duration,
     clock: &dyn Clock,
+    deferred: BTreeSet<String>,
 ) -> Flushed {
-    let began = clock.elapsed();
-    let mut flushed = Flushed::quiet("empty");
-    while flushed.failed.is_empty()
-        && flushed.not_before.is_none()
-        && clock.elapsed().saturating_sub(began) < MOST_TIME
+    let sender = Sender {
+        outbox,
+        credential,
+        wait,
+        clock,
+        until: clock.elapsed().saturating_add(MOST_TIME),
+    };
+    // The entries the run passes over: those put off, and each it has taken once, whatever became
+    // of it.
+    let mut passed = deferred;
+    let mut settled = Settled::default();
+    let mut outcome = "empty";
+    while settled.failed.is_empty()
+        && settled.retry_after.is_none()
+        && clock.elapsed() < sender.until
     {
-        let taken = match outbox.take_after(MOST_RECORDS, MOST_BYTES, &flushed.taken) {
+        let taken = match outbox.take_after(MOST_RECORDS, MOST_BYTES, &passed) {
             Ok(taken) => taken,
             Err(error) => {
-                flushed.failed.push(Failed::outbox(error.to_string()));
+                settled.failed.push(Failed::outbox(error.to_string()));
                 break;
             }
         };
-        flushed.dead += taken.dead;
+        settled.dead += taken.dead;
         if taken.entries.is_empty() {
             break;
         }
-        flushed.outcome = "sent";
-        let keys = taken.entries.iter().map(|entry| entry.key.clone());
-        flushed.taken.extend(keys);
-        let settled = settle::send(outbox, credential, &taken.entries, wait, clock);
-        flushed.sent += settled.sent;
-        flushed.dead += settled.dead;
-        flushed.put_off.extend(settled.later);
-        flushed.failed.extend(settled.failed);
-        flushed.not_before = settled.not_before;
+        outcome = "sent";
+        passed.extend(taken.entries.iter().map(|entry| entry.key.clone()));
+        settled.add(sender.send(&taken.entries));
     }
-    if !flushed.failed.is_empty() {
-        flushed.outcome = "failed";
-    } else if flushed.not_before.is_some() {
-        flushed.outcome = "paused";
+    if !settled.failed.is_empty() {
+        outcome = "failed";
+    } else if settled.retry_after.is_some() {
+        outcome = "paused";
     }
-    super::left(flushed, outbox)
+    super::left(Flushed::of(outcome, settled), outbox)
 }

@@ -68,94 +68,140 @@ pub(super) struct Settled {
     pub dead: usize,
     /// The keys of the entries whose versions Yard Server will take later, each with its code.
     pub later: Vec<(String, String)>,
-    /// The time Yard Server asked the run not to come back before, in seconds since the Unix
-    /// epoch, where it refused the batch for now.
-    pub not_before: Option<u64>,
+    /// The time Yard Server asked the run not to come back before with a `Retry-After`, in
+    /// seconds since the Unix epoch, where it refused the batch for now.
+    pub retry_after: Option<u64>,
+    /// When Yard Server last answered a version of the batch `later`, in seconds since the Unix
+    /// epoch.
+    pub later_at: Option<u64>,
+    /// Whether the batch went: Yard Server answered it with a `200` that reads, or refused it
+    /// for good with its own code.
+    pub went: bool,
     /// Why the batch did not go, or an entry of it could not be settled.
     pub failed: Vec<Failed>,
 }
 
-/// Sends `entries` as one batch with `credential`, waiting at most `wait` for the answer, and
-/// settles each entry by it; a `Retry-After` counts from the time `clock` gives once it answered.
-pub(super) fn send(
-    outbox: &Outbox,
-    credential: &str,
-    entries: &[Entry],
-    wait: Duration,
-    clock: &dyn Clock,
-) -> Settled {
-    let records: Vec<&str> = entries.iter().map(|entry| entry.record.as_str()).collect();
-    let body = batch(&records);
+/// Why the network client refuses `outbox`'s address, where it does: then no batch is sent.
+pub(super) fn refused(outbox: &Outbox) -> Option<String> {
     let url = format!("{}/{BATCHES}", outbox.endpoint());
-    if network::allowed(&url).is_none() {
-        return failure(Failed::yard_server(format!(
+    network::allowed(&url).is_none().then(|| {
+        format!(
             "the address {} is refused: {}",
             outbox.endpoint(),
             network::CONTACTED
-        )));
-    }
-    let bearer = format!("Bearer {credential}");
-    let headers = [
-        ("Authorization", bearer.as_str()),
-        ("Content-Type", "application/json"),
-    ];
-    let reply = match network::call("POST", &url, &headers, Some(body.as_bytes()), wait) {
-        Ok(reply) => reply,
-        Err(error) => {
-            return failure(Failed::yard_server(format!(
+        )
+    })
+}
+
+/// What sends the batches of one run to the address of `outbox`, which the network client
+/// accepts, with `credential`.
+pub(super) struct Sender<'a> {
+    pub outbox: &'a Outbox,
+    pub credential: &'a str,
+    /// The most it waits for each answer.
+    pub wait: Duration,
+    pub clock: &'a dyn Clock,
+    /// The time, as `clock` counts it, past which the halves of a batch split after a `413` are
+    /// no longer sent.
+    pub until: Duration,
+}
+
+impl Sender<'_> {
+    /// Sends `entries` as one batch and settles each entry by the answer; a `Retry-After` counts
+    /// from the time the clock gives once it answered.
+    pub fn send(&self, entries: &[Entry]) -> Settled {
+        let records: Vec<&str> = entries.iter().map(|entry| entry.record.as_str()).collect();
+        let body = batch(&records);
+        let url = format!("{}/{BATCHES}", self.outbox.endpoint());
+        let bearer = format!("Bearer {}", self.credential);
+        let headers = [
+            ("Authorization", bearer.as_str()),
+            ("Content-Type", "application/json"),
+        ];
+        match network::call("POST", &url, &headers, Some(body.as_bytes()), self.wait) {
+            Ok(reply) => self.answered(entries, &reply),
+            Err(error) => failure(Failed::yard_server(format!(
                 "Yard Server did not answer: {error}"
-            )));
+            ))),
         }
-    };
-    match reply.status {
-        200 => settle(outbox, entries, &reply.body),
-        413 if entries.len() > 1 => {
-            let (older, newer) = entries.split_at(entries.len() / 2);
-            let mut settled = send(outbox, credential, older, wait, clock);
-            if settled.failed.is_empty() && settled.not_before.is_none() {
-                settled.add(send(outbox, credential, newer, wait, clock));
+    }
+
+    /// Sends the halves of a batch Yard Server answered `413`, the older first, each while time
+    /// is left.
+    fn split(&self, entries: &[Entry]) -> Settled {
+        let (older, newer) = entries.split_at(entries.len() / 2);
+        let mut settled = Settled::default();
+        for half in [older, newer] {
+            if !settled.failed.is_empty()
+                || settled.retry_after.is_some()
+                || self.clock.elapsed() >= self.until
+            {
+                break;
             }
-            settled
+            settled.add(self.send(half));
         }
-        400 | 413 => {
-            let expected = own_code(reply.status);
-            if code(&reply.body).as_deref() != Some(expected) {
-                return failure(Failed::yard_server(format!(
-                    "the batch was answered {} by something that is not Yard Server: the answer \
+        settled
+    }
+
+    /// Settles `entries` by `reply`, Yard Server's answer to their batch.
+    fn answered(&self, entries: &[Entry], reply: &network::Reply) -> Settled {
+        let (outbox, clock) = (self.outbox, self.clock);
+        match reply.status {
+            200 => {
+                let mut settled = settle(outbox, entries, &reply.body);
+                if !settled.later.is_empty() {
+                    settled.later_at = clock.now().ok();
+                }
+                settled
+            }
+            413 if entries.len() > 1 => self.split(entries),
+            400 | 413 => {
+                let expected = own_code(reply.status);
+                if code(&reply.body).as_deref() != Some(expected) {
+                    return failure(Failed::yard_server(format!(
+                        "the batch was answered {} by something that is not Yard Server: the answer \
                      carries no code `{expected}`",
-                    reply.status
-                )));
+                        reply.status
+                    )));
+                }
+                let reason = format!("{} {expected}", reply.status);
+                let mut settled = Settled {
+                    went: true,
+                    ..Settled::default()
+                };
+                for entry in entries {
+                    bury(outbox, entry, &reason, &mut settled);
+                }
+                settled
             }
-            let reason = format!("{} {expected}", reply.status);
-            let mut settled = Settled::default();
-            for entry in entries {
-                bury(outbox, entry, &reason, &mut settled);
-            }
-            settled
-        }
-        429 | 503 => match reply.retry_after.as_deref().and_then(|value| {
-            let now = clock.now().unwrap_or_default();
-            let seconds = crate::remote::retry_after(value, now)?.min(MOST_PAUSE);
-            Some(now.saturating_add(seconds)).filter(|time| Time::from_unix_seconds(*time).is_ok())
-        }) {
-            Some(time) => Settled {
-                not_before: Some(time),
-                ..Settled::default()
+            429 | 503 => match reply.retry_after.as_deref().and_then(|value| {
+                let now = clock.now().unwrap_or_default();
+                let seconds = crate::remote::retry_after(value, now)?.min(MOST_PAUSE);
+                Some(now.saturating_add(seconds))
+                    .filter(|time| Time::from_unix_seconds(*time).is_ok())
+            }) {
+                Some(time) => Settled {
+                    retry_after: Some(time),
+                    ..Settled::default()
+                },
+                None => failure(Failed::yard_server(refusal(reply.status, &reply.body))),
             },
-            None => failure(Failed::yard_server(refusal(reply.status, &reply.body))),
-        },
-        status => failure(Failed::yard_server(refusal(status, &reply.body))),
+            status => failure(Failed::yard_server(refusal(status, &reply.body))),
+        }
     }
 }
 
 impl Settled {
-    /// Adds what became of a later batch of the same run.
-    fn add(&mut self, other: Self) {
+    /// Adds what became of a later batch of the same run, sent while no batch before it had
+    /// failed or been asked to come back later.
+    pub fn add(&mut self, other: Self) {
         self.sent += other.sent;
         self.dead += other.dead;
         self.later.extend(other.later);
-        self.not_before = other.not_before.or(self.not_before);
+        self.retry_after = other.retry_after;
+        self.later_at = other.later_at.or(self.later_at);
         self.failed.extend(other.failed);
+        self.went |= other.went;
     }
 }
 
@@ -173,7 +219,10 @@ fn settle(outbox: &Outbox, entries: &[Entry], body: &[u8]) -> Settled {
             "Yard Server answered the batch with 200, but its answer does not read".to_owned(),
         ));
     };
-    let mut settled = Settled::default();
+    let mut settled = Settled {
+        went: true,
+        ..Settled::default()
+    };
     let mut unsettled = Vec::new();
     for entry in entries {
         match answer.get(&entry.key) {

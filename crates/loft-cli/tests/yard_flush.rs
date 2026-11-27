@@ -8,10 +8,12 @@ use serde_json::json;
 use software_plant::YardServer;
 
 use crate::common::Scratch;
+use crate::common::signed_in::real_now;
 use crate::yard::{Yard, document};
 use crate::yard_codex::{event, plan_update};
 use crate::yard_connected::{
-    STAGE_BATCH, connected, entries, flush, held, notes, one_waiting, outbox, pairs, run, write,
+    STAGE_BATCH, come_back_after, connected, entries, flush, held, notes, one_waiting, outbox,
+    pairs, run, write,
 };
 
 #[test]
@@ -170,6 +172,7 @@ fn an_answer_that_arrives_too_late_leaves_the_batch_to_be_sent_again_and_stored_
     assert_eq!(code, Some(1));
     assert_eq!(held(&server), ["build"]);
     assert_eq!(entries(&yard).len(), 1);
+    come_back_after(&yard, &server.url(), real_now() - 1);
     let (code, _) = flush(&yard, &variables);
     assert_eq!(code, Some(1));
     assert_eq!(server.requests().len(), 2);

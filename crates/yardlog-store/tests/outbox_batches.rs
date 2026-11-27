@@ -194,3 +194,23 @@ fn a_missing_outbox_has_nothing_to_survey() {
     assert!(survey.waiting.is_empty());
     assert_eq!(survey.newer, 0);
 }
+
+#[test]
+fn an_outbox_holds_one_entry_to_send_where_one_for_its_address_waits_past_those_passed_over() {
+    let scratch = Scratch::new();
+    put(&scratch, ENDPOINT, 1, 10);
+    put(&scratch, "https://other.example", 2, 10);
+    let passed = std::iter::once(key(1)).collect();
+    assert!(!outbox(&scratch, ENDPOINT).holds_one_after(&passed).unwrap());
+    put(&scratch, ENDPOINT, 3, 10);
+    scratch.put(&format!(".yard/outbox/{}", name(4)), "{not json");
+    assert!(outbox(&scratch, ENDPOINT).holds_one_after(&passed).unwrap());
+    assert!(scratch.0.join(".yard/outbox").join(name(4)).is_file());
+}
+
+#[test]
+fn an_empty_or_missing_outbox_holds_no_entry_to_send() {
+    let scratch = Scratch::new();
+    let none = std::collections::BTreeSet::new();
+    assert!(!outbox(&scratch, ENDPOINT).holds_one_after(&none).unwrap());
+}

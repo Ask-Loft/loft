@@ -1,5 +1,6 @@
 import { expect, test } from 'claude-code/testing'
 
+import { timeOf } from '../hooks/adapter/outbox'
 import { deferred, readDoc, SESSION, stage, start, world, yardRuns, type Engine, type World } from './yard-world'
 
 const FLUSH = 'flush --format json'
@@ -14,9 +15,9 @@ function flushing(on: Parameters<typeof world>[0]) {
   return w
 }
 
-/** The flush answers as `loft yard flush` does with `outcome`, counting `remaining` entries. */
-function answering(w: World, outcome: string, remaining = 0) {
-  w.state.answers.flush = { doc: { schema: 'loft-yard-flush/1', outcome, sent: 0, remaining, later: 0, skipped: 0, dead: 0, errors: [] }, exitCode: outcome === 'failed' ? 1 : 0 }
+/** The flush answers as `loft yard flush` does with `outcome`, counting `remaining` entries, and keeps away until `notBefore`. */
+function answering(w: World, outcome: string, remaining = 0, notBefore: string | null = null) {
+  w.state.answers.flush = { doc: { schema: 'loft-yard-flush/1', outcome, sent: 0, remaining, later: 0, skipped: 0, dead: 0, notBefore, errors: [] }, exitCode: outcome === 'failed' ? 1 : 0 }
 }
 
 test("the session's first beat runs loft yard flush", async ($, on) => {
@@ -155,4 +156,21 @@ test('a flush the mod starts runs as every loft command does, adding only the qu
   const run = w.state.runs.find(each => each.argv.includes('flush'))!
   expect(run.env).toEqual({ LOFT_TELEMETRY: 'off', LOFT_UPDATE_CHECK: 'off' })
   expect(run.argv).not.toContain('--port')
+})
+
+test('neither a beat nor a write runs loft yard flush before the notBefore the last flush gave, and the first beat after it runs one', async ($, on) => {
+  const w = flushing(on)
+  answering(w, 'failed', 0, timeOf(Date.UTC(2026, 9, 22, 9, 31, 0)))
+  await start($)
+  await w.clock.settle()
+  expect(flushes(w)).toBe(1)
+  await $.tool.call({ tool: 'mcp__loft__yard_write', ...note } as never)
+  await w.clock.settle()
+  await w.clock.advance(5000)
+  await w.clock.settle()
+  expect(flushes(w)).toBe(1)
+  answering(w, 'sent')
+  await w.clock.advance(60_000)
+  await w.clock.settle()
+  expect(flushes(w)).toBe(2)
 })
