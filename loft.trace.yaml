@@ -7064,7 +7064,7 @@ links:
     tests:
       - file: "crates/loftspec/tests/lint_byte_unit_scope.rs"
         name: "a_definition_settles_only_the_units_of_its_own_power"
-        body: ebdda9efdc3f1ebe6736cb2dde9dc7ef51e797548dd49b56c404aa08c5539838
+        body: ad9c953c10b9f69c9034c3aecf910794932acef669ac24b599d280fee3bfc27f
   - node: 01a21d97-50e7-77f1-95f9-bf9a5faa1b2c
     reviewed: 208647e64fb58212455c6ca03af79951ada2a94a2294bf91e1ad9e0091585a18
     tests:

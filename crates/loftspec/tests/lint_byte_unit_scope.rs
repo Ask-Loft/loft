@@ -23,6 +23,11 @@ fn a_definition_settles_only_the_units_of_its_own_power() {
     }
     for document in with_text_stating("A page holds 5 MB, a book 2 GB.", "1 MB = 10^6 bytes.") {
         assert_eq!(named(&document), one(FEATURE, "GB"));
+        let message = &byte_units(&document)[0].message;
+        assert!(
+            message.ends_with("the document does not define GB."),
+            "{message}"
+        );
     }
     let both = "KB = 1,024 bytes. MB = 1,000,000 bytes.";
     for document in with_text_stating("A page holds 5 KB, a book 2 MB.", both) {
