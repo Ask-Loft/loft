@@ -25356,6 +25356,9 @@ links:
       - file: "crates/loft-cli/tests/yard_claude_events.rs"
         name: "plan_mode_starting_and_ending_is_posted_once_for_each_change_of_the_main_agent_s_mode"
         body: 57e00a634a1e04eaafebe1e1192d67f534c9964557c5b2d6cf21334df738343d
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "enter_plan_mode_starts_a_new_plan_span_and_ends_the_spec_span_while_the_host_reports_plan"
+        body: 005374a22b778cdb6400f4b8ce2a5c6d2c6850b25fd1f44f922549f8025ffdd7
   - node: 01a183e9-dfd2-74b1-a45a-14ac7d3db027
     reviewed: bff07257ec4a73bfde059c491243f63e457ba1b1ec18849e0b93432acb2e470b
     tests:
@@ -25374,6 +25377,24 @@ links:
       - file: "crates/loft-cli/tests/yard_claude_events.rs"
         name: "each_session_s_last_mode_is_kept_in_the_yard_home_and_never_in_the_tree"
         body: 71816d23e397342854ef3bebab45f537805462735b1e1a1936aa4746a72ac5b7
+  - node: 01a21ab4-1b3f-7102-9108-135e315572f4
+    reviewed: 60032e2b85235a8f7628c094d126e902570d9c6fa2d67396ead2c8adc0a9756d
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "enter_plan_mode_starts_a_new_plan_span_and_ends_the_spec_span_while_the_host_reports_plan"
+        body: 005374a22b778cdb6400f4b8ce2a5c6d2c6850b25fd1f44f922549f8025ffdd7
+  - node: 01a21ab4-1b3f-7102-9108-135f8f5b8b58
+    reviewed: b6f8290815294d6e1062454d2f1125bf987a587027a6c9df72f0a6e86276d77c
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "enter_plan_mode_heard_as_the_mode_becomes_plan_posts_plan_start_once"
+        body: f01dbe8eb0138c9509140d06e3ea55dfcdc03db35eb2824c096a2c9407879f51
+  - node: 01a21ab4-1b3f-7102-9108-1360736b2c6b
+    reviewed: c6d3b7bd9adda0a0fe36b25224a84ccc8aeec0586ad494bad5dce576e1b1c406
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_subagent_s_enter_plan_mode_posts_nothing_and_leaves_the_session_s_mode"
+        body: b7847194c0c1055fbc94247088e8b49e0bc567aee930350aed69e645e5e7596f
   - node: 01a183ea-072a-770b-8855-636c42cc6f18
     reviewed: e0ea119997257ed96a00176e87d05d3ede1ba29cb3b16cb3e0763fc3ffdaaf85
     tests:

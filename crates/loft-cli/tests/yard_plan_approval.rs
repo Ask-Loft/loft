@@ -207,3 +207,68 @@ fn a_page_server_that_rebuilds_the_activity_from_the_event_log_ends_the_plan_spa
         "{activity}"
     );
 }
+
+#[test]
+fn enter_plan_mode_starts_a_new_plan_span_and_ends_the_spec_span_while_the_host_reports_plan() {
+    let (yard, served) = presented(true, &[]);
+    planned(&yard);
+    decide(
+        &yard,
+        &served,
+        &json!({"block": "p1", "verdict": "approved"}),
+    );
+    let spec_edit = json!({
+        "session": "s1",
+        "dir": dir(&yard),
+        "at": AT,
+        "kind": "tool.start",
+        "tool": "Edit",
+        "call": "e1",
+        "spec": true,
+    });
+    post(&served, &[spec_edit]);
+    hook(
+        &yard,
+        &planning(&yard, "PostToolUse", Some("EnterPlanMode")),
+        None,
+    );
+    let activity = activity(&yard);
+    assert!(
+        activity.contains(&format!(
+            "plan:\n  - started: {AT}\n    ended: {DECIDED}\n  - started: {AT}\nspec:\n  - started: {AT}\n    ended: {AT}\n"
+        )),
+        "{activity}"
+    );
+    assert_eq!(
+        kinds(&yard),
+        ["plan.start", "plan.end", "tool.start", "plan.start"]
+    );
+}
+
+#[test]
+fn enter_plan_mode_heard_as_the_mode_becomes_plan_posts_plan_start_once() {
+    let (yard, _served) = presented(true, &[]);
+    let mut outside = input(&yard, "UserPromptSubmit", "s1");
+    outside["permission_mode"] = json!("default");
+    hook(&yard, &outside, None);
+    hook(
+        &yard,
+        &planning(&yard, "PostToolUse", Some("EnterPlanMode")),
+        None,
+    );
+    assert_eq!(kinds(&yard), ["plan.start"]);
+}
+
+#[test]
+fn a_subagent_s_enter_plan_mode_posts_nothing_and_leaves_the_session_s_mode() {
+    let (yard, _served) = presented(true, &[]);
+    let mut outside = input(&yard, "Stop", "s1");
+    outside["permission_mode"] = json!("default");
+    hook(&yard, &outside, None);
+    let mut sub = planning(&yard, "PostToolUse", Some("EnterPlanMode"));
+    sub["agent_id"] = json!("worker");
+    sub["agent_type"] = json!("Plan");
+    hook(&yard, &sub, None);
+    assert_eq!(kinds(&yard), Vec::<String>::new());
+    assert_eq!(yard.home_file("claude/modes.json"), json!({"s1": false}));
+}
