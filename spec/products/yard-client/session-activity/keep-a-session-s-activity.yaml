@@ -73,3 +73,13 @@ requirements:
         name: "A hook that still names the mode `plan` after the approval starts no new stretch of plan mode."
       - key: 01a21ab4-1b40-722d-a2f1-ede10a699b91
         name: "A page server that rebuilds the session's activity from its event log ends the stretch at the time of the approval."
+      - key: 01a21ac6-1872-7517-9002-aaa10deb896a
+        name: "A plan approved after its session was continued by `/clear` or a resume also ends the stretch of plan mode of the latest session that continues it."
+      - key: 01a21ac6-1872-7517-9002-aaa2b2db3109
+        name: "The approval's event names the person as who made it, with `by` set to `person`."
+      - key: 01a21ac6-1872-7517-9002-aaa3061378a0
+        name: "An event the person made is not taken as a sign that its session is live."
+      - key: 01a21ac6-1872-7517-9002-aaa49731d775
+        name: "An event the person made leaves the directory kept as where its session's main agent works as it was."
+      - key: 01a21ac6-1872-7517-9002-aaa50d9abef4
+        name: "An event the person made that is the first heard of its session in a Yard Log starts no turn."
