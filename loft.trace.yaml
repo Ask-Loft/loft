@@ -41136,6 +41136,9 @@ links:
   - node: 01a21980-c4f6-7743-90bb-8eeb58974558
     reviewed: 4e7e5c8b1f6bd1041f403b153b32382bde8371735f760ddf494e3b06c6b7cd76
     tests:
+      - file: "crates/yardlog-store/tests/outbox.rs"
+        name: "an_address_with_a_trailing_slash_is_the_same_address_without_it"
+        body: 404e902910c1353e6504190dbf806ea55d34aaa76de44e86167b5f192a009dfa
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_address_and_the_same_address_with_a_trailing_slash_send_each_other_s_entries"
         body: e0d30d050c47cee868c0f1e3e7b8ccd90ddba55723a48c1c4ba3779a2c467521

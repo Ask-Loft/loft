@@ -431,3 +431,10 @@ fn a_file_that_cannot_be_read_is_passed_over_and_the_rest_are_taken() {
         assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000002");
     }
 }
+
+#[test]
+fn an_address_with_a_trailing_slash_is_the_same_address_without_it() {
+    let scratch = Scratch::new();
+    let slashed = outbox(&scratch, &format!("{ENDPOINT}/"));
+    assert_eq!(slashed.endpoint(), ENDPOINT);
+}

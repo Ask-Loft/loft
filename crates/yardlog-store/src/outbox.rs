@@ -69,7 +69,9 @@ impl Outbox {
     pub fn new(dir: impl Into<PathBuf>, endpoint: &str) -> Self {
         Self {
             dir: dir.into(),
-            endpoint: endpoint.to_owned(),
+            // A trailing `/` is no part of the address, so `https://y` and `https://y/` share
+            // their entries.
+            endpoint: endpoint.trim_end_matches('/').to_owned(),
         }
     }
 
