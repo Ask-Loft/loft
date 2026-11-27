@@ -131,7 +131,7 @@ fn invalid_codex_hook_identity_changes_no_adapter_state() {
 
 #[test]
 fn codex_activity_declares_coverage_without_retaining_native_words() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let mut input = event(&yard, "UserPromptSubmit");
     input["prompt"] = json!("PRIVATE PROMPT");
     hook(&yard, &input);
@@ -176,7 +176,7 @@ fn codex_activity_declares_coverage_without_retaining_native_words() {
 
 #[test]
 fn codex_hooks_record_observed_modes_compaction_and_subagent_lifetimes() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let mut input = event(&yard, "UserPromptSubmit");
     input["permission_mode"] = json!("plan");
     hook(&yard, &input);
@@ -299,7 +299,7 @@ fn a_later_prompt_s_context_holds_only_whether_decision_notifications_reach_the_
 
 #[test]
 fn codex_sends_its_descriptor_with_a_session_s_first_event_and_each_turn_start_only() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let mut tool = event(&yard, "PreToolUse");
     tool["tool_name"] = json!("Bash");
     tool["tool_use_id"] = json!("call-one");
@@ -334,7 +334,7 @@ fn codex_sends_its_descriptor_with_a_session_s_first_event_and_each_turn_start_o
 
 #[test]
 fn an_unknown_codex_hook_is_an_empty_native_response() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let input = event(&yard, "FutureEvent");
     let path = yard.scratch.home().join("native-hook.json");
     fs::write(&path, input.to_string()).unwrap();
@@ -353,7 +353,7 @@ fn an_unknown_codex_hook_is_an_empty_native_response() {
 
 #[test]
 fn codex_context_distinguishes_absent_closed_and_ignored_logs_and_supplies_subagent_identity() {
-    let mut yard = Yard::new();
+    let mut yard = Yard::opted_in();
     let absent = hook(&yard, &event(&yard, "SessionStart"));
     assert!(absent.to_string().contains("no Yard Log yet"));
     yard.write(
@@ -381,7 +381,7 @@ fn codex_context_distinguishes_absent_closed_and_ignored_logs_and_supplies_subag
 
 #[test]
 fn codex_omits_ambiguous_agent_events_and_keeps_explicit_tool_failures_distinct_from_unknown() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let mut input = event(&yard, "SubagentStart");
     input["agent_id"] = json!("child");
     input["agent_type"] = json!("reviewer");
@@ -407,7 +407,7 @@ fn codex_omits_ambiguous_agent_events_and_keeps_explicit_tool_failures_distinct_
 
 #[test]
 fn a_codex_hook_queues_activity_without_contacting_the_page_server() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     listener.set_nonblocking(true).unwrap();
     let input = event(&yard, "UserPromptSubmit");
@@ -430,7 +430,7 @@ fn a_codex_hook_queues_activity_without_contacting_the_page_server() {
 
 #[test]
 fn a_codex_session_end_discards_subagents_before_the_session_resumes() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let mut child = event(&yard, "SubagentStart");
     child["agent_id"] = json!("child");
     child["agent_type"] = json!("reviewer");

@@ -103,7 +103,13 @@ fn open(tree: &Path, writers: &Value, identity: &Identity) -> Option<Written> {
     let place = Place::locate(&YardGit::default(), tree).ok()?;
     place.branch.as_ref()?;
     let top = place.tree.clone();
-    let Ok(Held::Log(log)) = YardStore::new(place).ok()?.read() else {
+    let store = YardStore::new(place).ok()?;
+    // A branch whose folder is gone holds no Yard Log: it is not read, so that its lock is not
+    // made in a worktree that may no longer use Loft.
+    if !store.folder().is_dir() {
+        return None;
+    }
+    let Ok(Held::Log(log)) = store.read() else {
         return None;
     };
     if log.is_closed() {

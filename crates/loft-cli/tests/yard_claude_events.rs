@@ -119,7 +119,7 @@ fn an_event_names_the_host_the_session_and_no_agent_and_holds_none_of_the_hook_s
 
 #[test]
 fn a_post_compact_hook_with_no_page_server_running_exits_0_and_drops_its_event() {
-    let yard = Yard::new();
+    let yard = Yard::opted_in();
     let answered = hook(&yard, &input(&yard, "PostCompact", "s1"), None);
     assert_eq!(answered["hookOutput"], json!({}));
     assert!(!yard.scratch.home().join(".yard/events").exists());

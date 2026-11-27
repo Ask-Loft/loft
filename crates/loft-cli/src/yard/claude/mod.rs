@@ -5,7 +5,8 @@
 //! a session or a subagent starts, the continuation of a session after `/clear` or a resume, the
 //! main agent's plan mode, compactions and the page's decision of a plan.
 //! A hook it does not serve, or one it cannot serve because Yard Log or the page server cannot be
-//! reached, it answers with nothing, so that Claude Code goes on as it would without the plugin.
+//! reached, it answers with nothing, so that Claude Code goes on as it would without the plugin;
+//! so it answers every hook whose working tree does not use Loft, writing nothing (`uses_loft`).
 
 mod handoff;
 mod hook;
@@ -82,11 +83,15 @@ pub fn run(action: Action) -> Finished {
     }
 }
 
-/// Claude Code's output for `hook`: empty where the hook asks for none or cannot be served.
+/// Claude Code's output for `hook`: empty where the hook asks for none or cannot be served, and
+/// where its working tree does not use Loft, before anything is read or written for it.
 fn answer(hook: &Hook, input: &Input) -> Value {
     let Ok(at) = super::now() else {
         return json!({});
     };
+    if !served(hook, input, at) {
+        return json!({});
+    }
     match hook.event() {
         "SessionStart" => {
             let source = hook.field("source").unwrap_or_default();
@@ -119,6 +124,16 @@ fn answer(hook: &Hook, input: &Input) -> Value {
         }
         _ => json!({}),
     }
+}
+
+/// Whether Yard Client serves `hook`: where its agent's working tree uses Loft, or where it
+/// starts a session that continues one Yard Client served, whose hand-off is not yet taken.
+fn served(hook: &Hook, input: &Input, at: yardlog::Time) -> bool {
+    super::uses_loft::of_agent(hook.dir(), &hook.agent()).is_some()
+        || (hook.event() == "SessionStart"
+            && input
+                .host_pid
+                .is_some_and(|pid| handoff::pending(hook, pid, at)))
 }
 
 /// Posts an event to the page server that runs; an event no page server takes is dropped.

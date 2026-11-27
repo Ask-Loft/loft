@@ -29,6 +29,20 @@ impl Store {
         self.0.join(file).is_file()
     }
 
+    /// The object of `file` as it is, read without the lock and written by nothing; empty where
+    /// there is none.
+    pub fn peek(&self, file: &str) -> Map<String, Value> {
+        match read_if_present(&self.0.join(file))
+            .ok()
+            .flatten()
+            .as_deref()
+            .map(serde_json::from_slice::<Value>)
+        {
+            Some(Ok(Value::Object(map))) => map,
+            _ => Map::new(),
+        }
+    }
+
     /// Changes the object of `file` under the lock, and writes it only where the change left it
     /// different; what `change` gives.
     pub fn update<R>(

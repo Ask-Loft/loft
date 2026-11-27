@@ -1,6 +1,6 @@
 ---
 name: yard
-description: Keep the branch's Yard Log while planning, building, fixing and reviewing a change on a git branch: its stages and tasks, the person's questions and approvals, and what each step produced and decided. Use for any work on a git branch, even where the person does not name Yard: when work on a new branch or a wave begins, when a session starts or resumes on a branch whose Yard Log is open, when a change is planned, built, fixed or reviewed, and before a branch is merged.
+description: Keep the branch's Yard Log while planning, building, fixing and reviewing a change on a git branch of a repository that uses Loft, one that holds `spec/loftspec.yaml`, `loft.lock.json` or a Yard Log under `.yard/`, or whose session's context holds Yard's briefing: its stages and tasks, the person's questions and approvals, and what each step produced and decided. Use for any work on a branch of such a repository, even where the person does not name Yard: when work on a new branch or a wave begins, when a session starts or resumes on a branch whose Yard Log is open, when a change is planned, built, fixed or reviewed, and before a branch is merged. It does not apply in any other repository.
 ---
 
 # Yard Log

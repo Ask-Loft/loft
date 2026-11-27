@@ -108,6 +108,17 @@ impl Hook {
     pub fn dir(&self) -> &str {
         self.0["cwd"].as_str().unwrap_or_default()
     }
+    /// The agent the hook names: the subagent its `agent_id` names, else the session's main
+    /// agent.
+    pub fn agent(&self) -> yardlog::Agent {
+        match self.0["agent_id"].as_str() {
+            Some(id) => {
+                let kind = self.0["agent_type"].as_str().unwrap_or("subagent");
+                yardlog::Agent::sub_in(super::commands::HOST, self.session(), id, kind)
+            }
+            None => yardlog::Agent::main_in(super::commands::HOST, self.session()),
+        }
+    }
     /// The native event's name, as Codex gave it.
     pub fn name(&self) -> &str {
         self.0["hook_event_name"].as_str().unwrap_or_default()

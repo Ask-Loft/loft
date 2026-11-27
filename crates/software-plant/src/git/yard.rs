@@ -24,6 +24,8 @@ pub enum YardCall {
     Ignored,
     /// `git config --get <name>`
     Config,
+    /// `git config --type=bool --get <name>`
+    Flag,
     /// `git rev-parse -q --verify <revision>:<path>`
     ObjectAt,
     /// `git reflog show --format=%gs refs/heads/<branch> --`
@@ -130,6 +132,7 @@ pub(super) fn parse<'a>(rest: &[&'a str]) -> Option<(YardCall, Vec<&'a str>)> {
         ] => Some((YardCall::Locate, vec![*name])),
         ["check-ignore", "-q", path] => Some((YardCall::Ignored, vec![*path])),
         ["config", "--get", name] => Some((YardCall::Config, vec![*name])),
+        ["config", "--type=bool", "--get", name] => Some((YardCall::Flag, vec![*name])),
         ["rev-parse", "-q", "--verify", object] if object.contains(':') => {
             Some((YardCall::ObjectAt, vec![*object]))
         }
@@ -154,7 +157,7 @@ pub(super) fn directory(args: &[String]) -> PathBuf {
 /// Answers a call outside any repository: git reads its configuration there too.
 pub(super) fn outside(call: YardCall) -> Reply {
     match call {
-        YardCall::Config => Reply::fail(1, ""),
+        YardCall::Config | YardCall::Flag => Reply::fail(1, ""),
         _ => Reply::fail(128, NOT_A_REPOSITORY),
     }
 }
@@ -209,6 +212,10 @@ pub(super) fn answer(
             Some(value) => Reply::ok(format!("{value}\n")),
             None => Reply::fail(1, ""),
         },
+        YardCall::Flag => match repository.config.get(operands[0]) {
+            Some(value) => flag(operands[0], value),
+            None => Reply::fail(1, ""),
+        },
         YardCall::ObjectAt => match repository.yard.objects.get(operands[0]) {
             Some(object) => Reply::ok(format!("{object}\n")),
             None => Reply::fail(1, ""),
@@ -227,6 +234,25 @@ pub(super) fn answer(
                 Reply::fail(1, "")
             }
         }
+    }
+}
+
+/// What `config --type=bool --get <name>` prints of `value`: `true` for `true`, `yes`, `on` in
+/// any case and a number other than 0, `false` for `false`, `no`, `off`, 0 and the empty value,
+/// and git's error for any other.
+fn flag(name: &str, value: &str) -> Reply {
+    let word = value.to_ascii_lowercase();
+    let read = match word.as_str() {
+        "true" | "yes" | "on" => Some(true),
+        "" | "false" | "no" | "off" => Some(false),
+        _ => word.parse::<i64>().ok().map(|number| number != 0),
+    };
+    match read {
+        Some(read) => Reply::ok(format!("{read}\n")),
+        None => Reply::fail(
+            128,
+            format!("fatal: bad boolean config value '{value}' for '{name}'\n"),
+        ),
     }
 }
 

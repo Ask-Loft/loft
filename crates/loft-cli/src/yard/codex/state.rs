@@ -43,6 +43,9 @@ impl State {
     }
 }
 
+/// The file of a session's adapter state, in its directory.
+pub const STATE: &str = "state.json";
+
 pub struct Files(pub PathBuf);
 
 impl Files {
@@ -63,7 +66,7 @@ impl Files {
     }
 
     pub fn read(&self) -> Result<State> {
-        read_if_present(&self.0.join("state.json"))
+        read_if_present(&self.0.join(STATE))
             .map_err(|e| e.to_string())?
             .map_or_else(
                 || Ok(State::default()),
@@ -93,7 +96,7 @@ impl Files {
     pub fn write(&self, state: &State) -> Result<()> {
         fs::create_dir_all(&self.0).map_err(|e| e.to_string())?;
         let bytes = serde_json::to_vec(state).map_err(|e| e.to_string())?;
-        replace_synced(&self.0.join("state.json"), &bytes, true).map_err(|e| e.to_string())
+        replace_synced(&self.0.join(STATE), &bytes, true).map_err(|e| e.to_string())
     }
 }
 

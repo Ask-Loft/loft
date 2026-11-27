@@ -419,6 +419,24 @@ fn the_yard_skill_s_description_names_each_kind_of_work_on_a_branch() {
 }
 
 #[test]
+fn the_yard_skill_s_description_limits_it_to_a_repository_that_uses_loft() {
+    let text = read(&format!("{SKILL}/SKILL.md"));
+    let description = text
+        .lines()
+        .find_map(|line| line.strip_prefix("description: "))
+        .expect("a description");
+    for limit in [
+        "a repository that uses Loft, one that holds `spec/loftspec.yaml`, `loft.lock.json` or a Yard Log under `.yard/`, or whose session's context holds Yard's briefing",
+        "It does not apply in any other repository.",
+    ] {
+        assert!(
+            description.contains(limit),
+            "the description omits: {limit}"
+        );
+    }
+}
+
+#[test]
 fn the_yard_skill_tells_the_agent_to_plan_at_the_start_of_each_branch_that_builds() {
     says(&[
         "When work that builds a change begins on a branch, each wave's branch included, plan the branch's work before you write any of its code",

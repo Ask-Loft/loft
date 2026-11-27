@@ -9,8 +9,8 @@ use crate::common::{Scratch, simulated};
 use software_plant::GitScenario;
 use software_plant::real_git::{git, real_git};
 use yardlog_store::git::{
-    COMMON_DIR, CONFIG_GET, CURRENT_BRANCH, GIT_PATH, LOCATE, REFLOG, SHOW_REF, TOP_LEVEL, VERIFY,
-    YARD_PATHSPEC, YardGit,
+    COMMON_DIR, CONFIG_BOOL, CONFIG_GET, CURRENT_BRANCH, GIT_PATH, LOCATE, REFLOG, SHOW_REF,
+    TOP_LEVEL, VERIFY, YARD_PATHSPEC, YardGit,
 };
 use yardlog_store::{Place, YardStoreError};
 
@@ -63,7 +63,7 @@ type Case = (
     fn(&Path) -> GitScenario,
 );
 
-const CASES: [Case; 11] = [
+const CASES: [Case; 14] = [
     ("clean on main", committed, clean),
     (
         "below the top level",
@@ -182,6 +182,33 @@ const CASES: [Case; 11] = [
         },
         |_| topic(&[]),
     ),
+    (
+        "turning Yard Client on",
+        |dir| {
+            let repo = committed(dir);
+            git(&repo, &["config", "--local", "loft.yard", "Yes"]);
+            repo
+        },
+        |dir| clean(dir).with_config("loft.yard", "Yes"),
+    ),
+    (
+        "with an empty flag",
+        |dir| {
+            let repo = committed(dir);
+            git(&repo, &["config", "--local", "loft.yard", ""]);
+            repo
+        },
+        |dir| clean(dir).with_config("loft.yard", ""),
+    ),
+    (
+        "with a flag that is no boolean",
+        |dir| {
+            let repo = committed(dir);
+            git(&repo, &["config", "--local", "loft.yard", "maybe"]);
+            repo
+        },
+        |dir| clean(dir).with_config("loft.yard", "maybe"),
+    ),
 ];
 
 /// Each call Yard Client makes of git, exactly as the store makes it.
@@ -213,6 +240,8 @@ fn calls() -> Vec<Vec<&'static str>> {
         vec!["check-ignore", "-q", YARD_PATHSPEC],
         with(&CONFIG_GET, "user.name"),
         with(&CONFIG_GET, "user.email"),
+        with(&CONFIG_BOOL, "loft.yard"),
+        with(&CONFIG_BOOL, "loft.other"),
         with(&VERIFY, "HEAD:.yard/main/yardlog.yaml"),
         with(&VERIFY, "HEAD:.yard/other/yardlog.yaml"),
     ]
