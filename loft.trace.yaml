@@ -28051,7 +28051,7 @@ links:
         name: "a first loft yard serve the mod could not run within 30 seconds of the session's start joins the page server"
         body: d395e66ba495f130d0e55e65bbcf468090a188dbe91012ad5010375a49096b0d
   - node: 01a1f03b-b432-7709-92e2-1d44792792e2
-    reviewed: f13db6279a1b09347bd22ace4c0e212da58ed8151719b341e07a167437ada2a7
+    reviewed: b73438939eb35433f891e1d441b82c701bc03ae6d466ec479568827c03efdce1
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "at the first beat the mod runs loft yard serve even where a page server answers, so that one on other addresses is replaced"
@@ -28060,23 +28060,29 @@ links:
         name: "serve_without_listen_replaces_a_page_server_listening_on_every_address"
         body: ef65c56e08dba6795361b7330d3060e81ff1975284c84b1e10b4f7f016d4e5f5
   - node: 01a21a88-3dc7-7075-b690-6e1d722ec957
-    reviewed: 31d841d769477c8c046c2cea099fb08064f1ac357a8183a1649626cd2b5c5491
+    reviewed: f66073e7d629638eaa5c4194006ed8705cb0c779f7a1eff9cf43573df607b1b4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "where yardListen names no address, the mod's first loft yard serve joins the page server"
-        body: 8d204ad0c2f7fec513e85d2f00697348d86ec21f6da89a2a0089a15bd410fe38
+        name: "where yardListen is empty, the mod's first loft yard serve joins the page server"
+        body: 0a745a462bfc594a594b2eba3c69313b29aefd30a88d96b2c969093fa347e395
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "a session whose yardListen names no address leaves a running page server of its version where it listens"
-        body: ef023ea95a17a79ba2af92178c175d9266781fca55b09e8fd80251c202d5741f
+        name: "a session whose yardListen is empty leaves a running page server of its version where it listens"
+        body: e3251dcdaa56ace4bb58378b263a2508a4066c63590d274de9e3b719bfdc5a74
   - node: 01a21a88-3dc7-7075-b690-6e1ef63f4c6e
-    reviewed: f50d0c6fd33b9e29913e8ec86b5140d40cbac976c6049f75115294e56fe98f6e
+    reviewed: a33ad90a179c712b6987002369277359e2b76fa786f12c34cdeeb307623f9a69
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
-        name: "a session whose yardListen names no address leaves a running page server of its version where it listens"
-        body: ef023ea95a17a79ba2af92178c175d9266781fca55b09e8fd80251c202d5741f
+        name: "a session whose yardListen is empty leaves a running page server of its version where it listens"
+        body: e3251dcdaa56ace4bb58378b263a2508a4066c63590d274de9e3b719bfdc5a74
       - file: "crates/loft-cli/tests/yard_serve_networks.rs"
         name: "serve_join_leaves_a_page_server_of_its_version_on_other_addresses_serving"
         body: c46ababef956e73d6ae4342eb7260d1c6e10e8979a8d7a6da4847ee1bfe975cb
+  - node: 01a21a91-2904-7791-b0a0-1a9dbe45b785
+    reviewed: d7a494f5ff2c8b13daa57465e816ddc5cdaa42204cb93e75a1659e60ac025bf5
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where yardListen names only entries that are not IP addresses, the mod's first loft yard serve joins no page server"
+        body: 4e4ca487f9012346b760e28c529fbc145f717385d5cca8bf384dc427a0ace403
   - node: 01a1f069-3ebc-77f4-882f-9102f2aee1e0
     reviewed: 15779123ded850ae80f5bc22263458206bce8eef515cacccdece6359a49b7bd2
     tests:

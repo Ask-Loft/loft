@@ -33,7 +33,7 @@
     "yardListen": {
       "type": "string",
       "title": "Yard page addresses",
-      "description": "The IP addresses of this machine that the Yard page server listens on beside 127.0.0.1, separated by commas, such as your tailnet address to open the page on your phone, or 0.0.0.0 for every network. Anyone who reaches an address named here can read the page and answer for you. Empty, a page server started from this session opens on this machine alone, and a page server that another session opened wider stays as it is until you run loft yard serve. A new value that names addresses takes effect when the next session starts.",
+      "description": "The IP addresses of this machine that the Yard page server listens on beside 127.0.0.1, separated by commas, such as your tailnet address to open the page on your phone, or 0.0.0.0 for every network. Anyone who reaches an address named here can read the page and answer for you. A new value takes effect when the next session starts. Empty, a session leaves the page server listening where it listens, on this machine alone unless an earlier session or loft yard serve opened it wider; run loft yard serve to close the page to other devices.",
       "default": ""
     }
   }

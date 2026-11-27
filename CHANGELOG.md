@@ -5,8 +5,8 @@ Format and the hashing algorithm carry their own versions, which `loft --version
 
 ## Unreleased
 
-- A Claude Code session whose `yardListen` setting names no address no longer narrows the Yard
-  page server to the loopback interface. A session that loads only the project's settings, such
+- A Claude Code session whose `yardListen` setting is empty no longer narrows the Yard page
+  server to the loopback interface. A session that loads only the project's settings, such
   as a reviewer started with `claude -p --setting-sources project`, used to replace a page server
   listening on the address `yardListen` names, such as a tailnet address, with one on the
   loopback interface alone, and the page then stayed closed to other devices after it ended. Such

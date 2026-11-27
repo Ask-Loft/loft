@@ -274,7 +274,7 @@ test("after the session's first beat each loft yard serve the mod runs joins the
   for (const later of serves.slice(1)) expect(later.argv).toContain('--join')
 })
 
-test("where yardListen names no address, the mod's first loft yard serve joins the page server", async ($, on) => {
+test("where yardListen is empty, the mod's first loft yard serve joins the page server", async ($, on) => {
   const w = world(on, { protocol: 4 })
   w.state.answersBeat = true
   await start($)
@@ -285,7 +285,18 @@ test("where yardListen names no address, the mod's first loft yard serve joins t
   expect(serves[0]!.argv).not.toContain('--listen')
 })
 
-test('a session whose yardListen names no address leaves a running page server of its version where it listens', async ($, on) => {
+test("where yardListen names only entries that are not IP addresses, the mod's first loft yard serve joins no page server", { options: { yardListen: 'mac.tailnet.ts.net' } }, async ($, on) => {
+  const w = world(on, { protocol: 4 })
+  w.state.answersBeat = true
+  await start($)
+  await w.clock.advance(1)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves).toHaveLength(1)
+  expect(serves[0]!.argv).not.toContain('--join')
+  expect(serves[0]!.argv).not.toContain('--listen')
+})
+
+test('a session whose yardListen is empty leaves a running page server of its version where it listens', async ($, on) => {
   const w = world(on, { serve: 'running', protocol: 4 })
   await start($)
   await w.clock.advance(10000)

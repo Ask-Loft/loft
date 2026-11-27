@@ -40,21 +40,20 @@ named address can read every Yard Log the page serves and answer for you, an ans
 as your word, so name a tailnet address rather than `0.0.0.0`, which opens the page on every
 network, a coffee shop's included. Run by hand, `loft yard serve --listen <address>` does the same,
 `--listen` given once for each address; it replaces a running page server of its version that
-listens on other addresses, and so does each Claude Code session whose `yardListen` names addresses
+listens on other addresses, and so does each Claude Code session whose `yardListen` is not empty
 when it starts, so keep `yardListen` and a page server you start by hand to the same addresses. A
 page server of a newer `loft` is never replaced, and a Claude Code session replaces one only within
-its first 30 seconds. A session whose `yardListen` names no address, such as a reviewer started
-with `claude -p --setting-sources project`, joins the running page server and never narrows it.
-Where no page server runs, the one the plugin or the Codex watch starts again listens where the
-last one listened, so a session started before you narrowed `yardListen` never opens the page wider
-again; those addresses hold across restarts until a session whose `yardListen` names addresses
-starts or you run `loft yard serve` with other ones, so emptying `yardListen` closes nothing by
-itself: run `loft yard serve` once without `--listen` to close the page to other devices. Name
-`0.0.0.0` for every address: `::` and `::ffff:0.0.0.0` are refused, since on Windows `::` would
-leave `127.0.0.1` unreached. `yardListen` needs a `loft` of the yard protocol 4 or later; with an
-older one the plugin says so once and the page opens on this machine alone. An address the machine
-does not have yet, such as a tailnet address before the VPN is up, is taken within seconds of
-appearing.
+its first 30 seconds. A session whose `yardListen` is empty, such as a reviewer started with
+`claude -p --setting-sources project`, joins the running page server and never narrows it. Where no
+page server runs, the one the plugin or the Codex watch starts again listens where the last one
+listened, so a session started before you narrowed `yardListen` never opens the page wider again;
+those addresses hold across restarts until a session whose `yardListen` is not empty starts or you
+run `loft yard serve` with other ones, so emptying `yardListen` closes nothing by itself: run `loft
+yard serve` once without `--listen` to close the page to other devices. Name `0.0.0.0` for every
+address: `::` and `::ffff:0.0.0.0` are refused, since on Windows `::` would leave `127.0.0.1`
+unreached. `yardListen` needs a `loft` of the yard protocol 4 or later; with an older one the
+plugin says so once and the page opens on this machine alone. An address the machine does not have
+yet, such as a tailnet address before the VPN is up, is taken within seconds of appearing.
 
 - **What waits on you** comes first, across every branch. Inside a branch's Yard Log it opens in
   a panel along the bottom, over a page that stays live, so you can read the log while you
@@ -94,7 +93,7 @@ move an installed plugin to that version. The plugin's settings:
 | --- | --- | --- |
 | `loftCommand` | `loft` | The command that runs `loft`, such as `npx --no-install loft` or `pnpm exec loft` |
 | `yardPort` | `7411` | The port of the page server, shared by every session on the machine |
-| `yardListen` | empty | The IP addresses of the machine the page server listens on beside `127.0.0.1`, separated by commas, `0.0.0.0` for every network; empty, a page server this session starts opens on this machine alone, and one another session opened wider stays as it is |
+| `yardListen` | empty | The IP addresses of the machine the page server listens on beside `127.0.0.1`, separated by commas, `0.0.0.0` for every network; empty, the page server keeps listening where it listens, on this machine alone unless it was opened wider before; `loft yard serve` closes it to other devices |
 | `baseBranch` | `develop` | The base branch Yard Log records where git names none |
 
 The plugin works the same on every machine. Where an organization manages Claude Code, or the
