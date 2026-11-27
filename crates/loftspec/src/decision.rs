@@ -39,26 +39,10 @@ impl Decision {
     /// Every prose field of the decision, in the order of its file: its title and context, each
     /// local driver's label and statement, each option's title and description, each
     /// assessment's rationale, each consequence's statement, and what its state records in words.
-    pub(crate) fn texts(&self) -> Vec<&str> {
-        self.prose(None)
-    }
-
-    /// The texts of an accepted decision that are in force: every one of `texts` but the
-    /// options it did not select and their assessments. A decision in any other state has none.
-    pub(crate) fn texts_in_force(&self) -> Vec<&str> {
-        match &self.state {
-            DecisionState::Accepted {
-                selected_option, ..
-            } => self.prose(Some(*selected_option)),
-            _ => Vec::new(),
-        }
-    }
-
-    /// The texts of `texts`, leaving out every option but `selected`, where one is given, and
-    /// the assessments of those options. Each record is taken apart whole, so that a field added
-    /// to one must be placed here.
-    fn prose(&self, selected: Option<OptionId>) -> Vec<&str> {
-        let kept = |option: &OptionId| selected.is_none_or(|selected| *option == selected);
+    /// Each comes with whether it is in force: every text of an accepted decision is, but the
+    /// options it did not select and their assessments; no text of a decision in another state
+    /// is. Each record is taken apart whole, so that a field added to one must be placed here.
+    pub(crate) fn texts(&self) -> Vec<(&str, bool)> {
         let Self {
             id: _,
             slug: _,
@@ -70,11 +54,19 @@ impl Decision {
             assessments,
             consequences,
         } = self;
-        let mut texts = vec![title.as_str(), context.as_str()];
+        let selected = match state {
+            DecisionState::Accepted {
+                selected_option, ..
+            } => Some(*selected_option),
+            _ => None,
+        };
+        let accepted = selected.is_some();
+        let chosen = |option: &OptionId| selected == Some(*option);
+        let mut texts = vec![(title.as_str(), accepted), (context.as_str(), accepted)];
         for Driver { id: _, payload } in drivers {
             match payload {
                 DriverPayload::Local { label, statement } => {
-                    texts.extend([label, statement].map(String::as_str));
+                    texts.extend([label, statement].map(|text| (text.as_str(), accepted)));
                 }
                 DriverPayload::Subject { subject: _ } => {}
             }
@@ -85,9 +77,7 @@ impl Decision {
             description,
         } in options
         {
-            if kept(id) {
-                texts.extend([title, description].map(String::as_str));
-            }
+            texts.extend([title, description].map(|text| (text.as_str(), chosen(id))));
         }
         for Assessment {
             option,
@@ -96,9 +86,7 @@ impl Decision {
             rationale,
         } in assessments
         {
-            if kept(option) {
-                texts.push(rationale);
-            }
+            texts.push((rationale, chosen(option)));
         }
         for Consequence {
             id: _,
@@ -107,7 +95,7 @@ impl Decision {
             subject: _,
         } in consequences
         {
-            texts.push(statement);
+            texts.push((statement, accepted));
         }
         match state {
             DecisionState::Proposed => {}
@@ -120,15 +108,15 @@ impl Decision {
                 outcome,
                 successor: _,
             } => {
-                texts.push(outcome);
+                texts.push((outcome, accepted));
             }
-            DecisionState::Rejected { rationale } => texts.push(rationale),
+            DecisionState::Rejected { rationale } => texts.push((rationale, false)),
             DecisionState::Retired {
                 selected_option: _,
                 outcome,
                 rationale,
             } => {
-                texts.extend([outcome, rationale].map(String::as_str));
+                texts.extend([outcome, rationale].map(|text| (text.as_str(), false)));
             }
         }
         texts

@@ -83,6 +83,11 @@ impl Values {
     const fn settled(self) -> u8 {
         self.thousand ^ self.kibi
     }
+
+    /// Whether power `k` is given both values.
+    const fn contradicts(self, k: u32) -> bool {
+        self.thousand & self.kibi & bit(k) != 0
+    }
 }
 
 impl Use {
@@ -90,18 +95,21 @@ impl Use {
     fn read(&mut self, text: &str, in_force: bool) {
         // Every unit ends in `B`, and a full name holds `byte` or, in capitals, a `B`; most
         // prose holds neither, and is not given a Markdown parse.
-        if !text.contains('B') && !text.contains("byte") {
-            return;
+        if text.contains('B') || text.contains("byte") {
+            self.read_shown(&plain(text), in_force);
         }
-        let shown = plain(text);
-        let units = units(&shown);
+    }
+
+    /// Reads `shown`, a text as a Markdown reader shows it, as `read` does.
+    fn read_shown(&mut self, shown: &str, in_force: bool) {
+        let units = units(shown);
         for &(at, unit) in &units {
-            if is_quantity(&shown, at) {
+            if is_quantity(shown, at) {
                 self.note(unit);
             }
         }
         if in_force {
-            self.defines.join(definitions(&shown, &units));
+            self.defines.join(definitions(shown, &units));
         }
     }
 
@@ -131,18 +139,21 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     let document = context.document;
     let terms = (document.terms.iter()).map(|term| {
         let mut each = Use::default();
-        each.read(&term.definition, true);
-        each.defines.join(term_values(term));
+        let powers = term_powers(term);
+        if powers == 0 {
+            each.read(&term.definition, true);
+        } else {
+            let shown = plain(&term.definition);
+            each.read_shown(&shown, true);
+            each.defines.join(term_values(&shown, powers));
+        }
         (term.id.key(), each)
     });
     let nodes = (context.items.iter()).map(|item| (item.id.key(), node_use(item)));
     let decisions = (document.decisions.iter()).map(|decision| {
         let mut each = Use::default();
-        for text in decision.texts() {
-            each.read(text, false);
-        }
-        for text in decision.texts_in_force() {
-            each.read(text, true);
+        for (text, in_force) in decision.texts() {
+            each.read(text, in_force);
         }
         (decision.id.key(), each)
     });
@@ -166,9 +177,15 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
             let binary = (uses.iter())
                 .find(|(other, them)| them.binary && other != key)
                 .map_or(*key, |(other, _)| *other);
+            let k = symbol_power(unit);
+            let lack = if values.contradicts(k) {
+                format!("the document gives {unit} both 1000^{k} and 1024^{k} bytes")
+            } else {
+                format!("the document does not define {unit}")
+            };
             let message = format!(
                 "A quantity in a decimal byte unit stands beside quantities in binary byte \
-                 units, as in {binary}, and the document does not define {unit}."
+                 units, as in {binary}, and {lack}."
             );
             out.push(Raw::new(RuleId::V2014, vec![*key], message).term(unit));
         }
@@ -200,17 +217,17 @@ fn node_use(item: &Item<'_>) -> Use {
     each
 }
 
-/// The values `term`'s definition gives the decimal units it is named after, by its name or an
-/// alias, as a count of bytes: one opening the definition, or after the unit's full name and
-/// `of`, after at most one of `LEADERS` or `exactly`.
-fn term_values(term: &TermEntry) -> Values {
+/// The powers of the decimal units `term` is named after, by its name or an alias, as bits.
+fn term_powers(term: &TermEntry) -> u8 {
     let names = std::iter::once(&term.name).chain(&term.aliases);
-    let powers = (names.filter_map(|name| named_power(name))).fold(0, |powers, k| powers | bit(k));
+    (names.filter_map(|name| named_power(name))).fold(0, |powers, k| powers | bit(k))
+}
+
+/// The values that `shown`, the definition of a term named after the decimal units of `powers`,
+/// gives those units as a count of bytes: one opening the definition, or after the unit's full
+/// name and `of`, after at most one of `LEADERS` or `exactly`.
+fn term_values(shown: &str, powers: u8) -> Values {
     let mut values = Values::default();
-    if powers == 0 {
-        return values;
-    }
-    let shown = plain(&term.definition);
     let opening = shown.trim_start();
     let opening = (LEADERS.iter().chain(&["exactly"]))
         .find_map(|leader| after_word(opening, leader))
@@ -375,10 +392,10 @@ fn definitions(text: &str, units: &[(usize, &'static str)]) -> Values {
 }
 
 /// Whether no number but `1` comes right before a unit after `head`, as `number_before` reads
-/// one, so that `2 MB (2^20 bytes)` defines nothing.
+/// one, so that neither `2 MB (2^20 bytes)` nor `.1 MB (10^6 bytes)` defines anything.
 fn unmultiplied(head: &str) -> bool {
-    let (_, number) = number_before(head);
-    number.is_empty() || number == "1"
+    let (before, number) = number_before(head);
+    number.is_empty() || (number == "1" && !before.ends_with(['.', ',']))
 }
 
 /// Whether a unit after `head` opens a clause, alone or after one of `LEADERS`.

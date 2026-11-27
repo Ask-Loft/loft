@@ -272,7 +272,7 @@ fn a_narrow_no_break_space_before_a_defined_unit_keeps_its_clause_open() {
 }
 
 #[test]
-fn a_term_settles_only_where_the_full_name_or_the_value_opens_its_definition() {
+fn a_count_later_in_a_term_s_definition_settles_nothing() {
     for (name, definition) in [
         (
             "MB",

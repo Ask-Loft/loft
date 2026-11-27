@@ -54,6 +54,11 @@ fn a_power_given_both_values_is_defined_by_neither() {
     let mut document = termed("MB", "1,048,576 bytes.");
     document.components[0].component.details.body = Some(DEFINES_MB.to_owned());
     assert_eq!(named(&document), one(FEATURE, "MB"));
+    let message = &byte_units(&document)[0].message;
+    assert!(
+        message.contains("gives MB both 1000^2 and 1024^2 bytes"),
+        "{message}"
+    );
     let mut agreed = beside_binary("A page holds 5 MB.");
     agreed.components[0].component.details.body = Some(DEFINES_MB.to_owned());
     decision(&mut agreed).context = "A megabyte is 10^6 bytes.".to_owned();
@@ -66,6 +71,8 @@ fn a_count_in_parentheses_after_a_multiplied_unit_defines_nothing() {
         "A 2 MB (2^20 bytes) buffer.",
         "A 64 MB (1,000,000 bytes) cache.",
         "A 1.5 MB (10^6 bytes) page.",
+        "A .1 MB (10^6 bytes) page.",
+        "A 0,1 MB (10^6 bytes) page.",
         "Pages of 2 megabytes (2^20 bytes) each.",
     ] {
         for document in with_text(text) {
