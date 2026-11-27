@@ -35,7 +35,6 @@ pub fn strings(value: &Value) -> Vec<String> {
     })
 }
 
-/// A wire request's host: omitted fields retain the legacy identity; invalid fields do not.
 /// An event of `kind` of the main agent of `host`'s session `session` at `at`, in the directory
 /// `dir`, as the page server takes it: no agent, and nothing of the host's words.
 pub fn main_event(host: &str, session: &str, dir: &str, kind: &str, at: Time) -> Value {
@@ -48,6 +47,7 @@ pub fn main_event(host: &str, session: &str, dir: &str, kind: &str, at: Time) ->
     })
 }
 
+/// A wire request's host: omitted fields retain the legacy identity; invalid fields do not.
 pub fn host_in(value: &Value) -> Result<&str, &'static str> {
     let host = match value.get("host") {
         None => Some(yardlog::act::CLAUDE_CODE),

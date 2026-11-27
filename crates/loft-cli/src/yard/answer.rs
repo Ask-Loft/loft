@@ -37,9 +37,6 @@ pub fn run(root: &Path, args: AnswerArgs) -> Finished {
             errors,
             plan_ends,
         }) => {
-            if !plan_ends.is_empty() {
-                super::post::to_running(&Value::Array(plan_ends));
-            }
             let outcome = if errors.is_empty() { OUTCOME } else { PARTLY };
             let code = if errors.is_empty() {
                 ExitCode::SUCCESS
@@ -51,6 +48,10 @@ pub fn run(root: &Path, args: AnswerArgs) -> Finished {
                 json::print(&json::result(SCHEMA, outcome, fields, errors));
             } else {
                 outln!("Recorded the answers at revision {}", fields["revision"]);
+            }
+            // Posted once the answer is reported, so that a slow page server cannot delay the report.
+            if !plan_ends.is_empty() {
+                super::post::to_running(&Value::Array(plan_ends));
             }
             finished
         }
