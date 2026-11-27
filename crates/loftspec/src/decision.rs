@@ -41,7 +41,7 @@ impl Decision {
     /// assessment's rationale, each consequence's statement, and what its state records in words.
     /// Each record is taken apart whole, so that a field added to one must be placed here.
     #[must_use]
-    pub fn texts(&self) -> Vec<&str> {
+    pub(crate) fn texts(&self) -> Vec<&str> {
         self.prose(None)
     }
 
