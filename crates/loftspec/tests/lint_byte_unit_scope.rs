@@ -3,7 +3,7 @@
 //! accepted, outside the options it did not select.
 
 use crate::common::decisions::{decision, set_state, superseded};
-use crate::common::key;
+use crate::common::{key, term};
 use crate::lint_byte_unit_definitions::{with_text, with_text_stating};
 use crate::lint_byte_units::{FEATURE, beside_binary, byte_units, named, one};
 use loftspec::decision::DecisionState;
@@ -28,6 +28,39 @@ fn a_definition_settles_only_the_units_of_its_own_power() {
     for document in with_text_stating("A page holds 5 KB, a book 2 MB.", both) {
         assert_eq!(byte_units(&document), Vec::<Finding>::new());
     }
+}
+
+#[test]
+fn a_power_given_both_values_is_defined_by_neither() {
+    for (unit, first, second) in [
+        ("MB", "MB = 1,000,000 bytes.", "MB = 1,048,576 bytes."),
+        ("KB", "kB = 1,000 bytes.", "A KB is 1,024 bytes."),
+        (
+            "MB",
+            "Sizes are in MB (10^6 bytes).",
+            "A megabyte is 2^20 bytes.",
+        ),
+    ] {
+        let stated = format!("A page holds 5 {unit}.");
+        let mut apart = beside_binary(&stated);
+        apart.components[0].component.details.body = Some(first.to_owned());
+        decision(&mut apart).context = second.to_owned();
+        let mut together = beside_binary(&stated);
+        together.components[0].component.details.body = Some(format!("{first}\n\n{second}"));
+        for document in [apart, together] {
+            assert_eq!(named(&document), one(FEATURE, unit), "{first} {second}");
+        }
+    }
+    let mut termed = beside_binary("A page holds 5 MB.");
+    termed.components[0].component.details.body = Some(DEFINES_MB.to_owned());
+    let mut entry = term(65, "MB", &[]);
+    entry.definition = "1,048,576 bytes.".to_owned();
+    termed.terms.push(entry);
+    assert_eq!(named(&termed), one(FEATURE, "MB"));
+    let mut agreed = beside_binary("A page holds 5 MB.");
+    agreed.components[0].component.details.body = Some(DEFINES_MB.to_owned());
+    decision(&mut agreed).context = "A megabyte is 10^6 bytes.".to_owned();
+    assert_eq!(byte_units(&agreed), Vec::<Finding>::new());
 }
 
 #[test]

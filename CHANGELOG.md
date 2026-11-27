@@ -169,7 +169,9 @@ Unreleased below, and those of each 2.4 release still to come.
   before them could begin one. Every node, every decision, whatever its state, and every term's
   definition is read, and one finding names each that states a decimal quantity in a unit the
   document does not define. A definition settles the decimal units of its own power, `kB` and `KB`
-  alike, and no other, so `kB = 1,000 bytes` leaves `MB` unsettled. Since a false definition
+  alike, and no other, so `kB = 1,000 bytes` leaves `MB` unsettled; a power given both 1000^k and
+  1024^k bytes, such as `MB = 1,000,000 bytes` beside `MB = 1,048,576 bytes`, is settled by
+  neither. Since a false definition
   silences every finding for its units, a definition is narrow: a count of bytes, written as digits,
   as comma groups of three (`1,048,576`, as `LQ-002` reads a number) or as a power (`2^20`), equal
   to the unit's value, 1000^k or 1024^k bytes, that ends its sentence, never before a `,` or a `;`

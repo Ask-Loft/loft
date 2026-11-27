@@ -11,21 +11,28 @@ use crate::text::strip_prefix_ignoring_case;
 /// `;` may lead on to another value, as in `1,000,000 bytes, or 1,048,576 bytes`.
 const CLOSING: [char; 3] = ['.', ')', '\n'];
 
-/// Whether `text` opens on a count of bytes equal to the value of a unit of power `k`, such as
+/// The base of a decimal unit's value: 1000^k bytes, or 1024^k bytes, for its power k.
+#[derive(Clone, Copy)]
+pub(super) enum Base {
+    Thousand,
+    Kibi,
+}
+
+/// The base of the value of a unit of power `k` that `text` opens on as a count of bytes, such as
 /// `1,000,000 bytes` or `2^20 bytes` for `MB`, with nothing after it but one of `CLOSING` or the
-/// end of the text.
-pub(super) fn gives_value(text: &str, k: u32) -> bool {
-    let Some((value, rest)) = power(text).or_else(|| number(text)) else {
-        return false;
-    };
+/// end of the text; none where `text` opens on no such count.
+pub(super) fn given_base(text: &str, k: u32) -> Option<Base> {
+    let (value, rest) = power(text).or_else(|| number(text))?;
     let rest = rest.trim_start_matches(is_space);
     let word = strip_prefix_ignoring_case(rest, "bytes")
-        .or_else(|| strip_prefix_ignoring_case(rest, "byte"));
-    let closes = word.is_some_and(|after| after.is_empty() || after.starts_with(CLOSING));
-    closes
-        && [1000_u128, 1024]
-            .iter()
-            .any(|base| base.checked_pow(k) == Some(value))
+        .or_else(|| strip_prefix_ignoring_case(rest, "byte"))?;
+    if !(word.is_empty() || word.starts_with(CLOSING)) {
+        return None;
+    }
+    [(1000_u128, Base::Thousand), (1024, Base::Kibi)]
+        .into_iter()
+        .find(|(base, _)| base.checked_pow(k) == Some(value))
+        .map(|(_, base)| base)
 }
 
 /// A power of any integer base, such as `10^6`, `1000^2` or `2 ^ 20`, at the start of `text`:

@@ -12,7 +12,8 @@
 //! `.5 MB`, where the `.` comes after none of those.
 //!
 //! A definition of a decimal unit settles every decimal unit of its power, `kB` and `KB` alike,
-//! and no other. Since a false definition silences every finding for its units, a definition is
+//! and no other, and only where no definition gives that power the other value: a document that
+//! gives `MB` both 1,000,000 and 1,048,576 bytes contradicts itself. Since a false definition silences every finding for its units, a definition is
 //! narrow: a count of bytes equal to the unit's value, 1000^k or 1024^k, that ends its sentence,
 //! given in parentheses right after the unit where no number but `1` comes before it
 //! (`MB (10^6 bytes)`), or after a defining word where the unit opens a clause
@@ -32,6 +33,8 @@ use crate::text::strip_prefix_ignoring_case;
 
 mod count;
 
+use count::Base;
+
 const DECIMAL: [&str; 5] = ["kB", "KB", "MB", "GB", "TB"];
 const BINARY: [&str; 4] = ["KiB", "MiB", "GiB", "TiB"];
 /// The full names of the decimal units, as a term may be named, in either number.
@@ -44,17 +47,41 @@ const LEADERS: [&str; 5] = ["1", "one", "a", "an", "the"];
 /// paragraph, a list item or a heading in the text shown.
 const CLAUSE_MARKS: [char; 8] = ['\n', '.', '!', '?', ':', ';', ',', '('];
 
-/// The powers of every decimal unit, as bits of `Use::defines`: all of them defined.
-const EVERY_POWER: u8 = 0b1_1110;
-
 /// What one element's texts say about byte units.
 #[derive(Default)]
 struct Use {
     /// The decimal units quantities are stated in, each once, in the order first stated.
     decimal: Vec<&'static str>,
     binary: bool,
-    /// The powers of the decimal units the element defines, bit k for power k.
-    defines: u8,
+    /// The values the element's definitions give the decimal units.
+    defines: Values,
+}
+
+/// The values definitions give the decimal units: bit k of `thousand` where one gives power k
+/// 1000^k bytes, and of `kibi` where one gives it 1024^k bytes.
+#[derive(Default, Clone, Copy)]
+struct Values {
+    thousand: u8,
+    kibi: u8,
+}
+
+impl Values {
+    fn give(&mut self, k: u32, base: Base) {
+        match base {
+            Base::Thousand => self.thousand |= bit(k),
+            Base::Kibi => self.kibi |= bit(k),
+        }
+    }
+
+    const fn join(&mut self, other: Self) {
+        self.thousand |= other.thousand;
+        self.kibi |= other.kibi;
+    }
+
+    /// The powers given one value, not both.
+    const fn settled(self) -> u8 {
+        self.thousand ^ self.kibi
+    }
 }
 
 impl Use {
@@ -73,7 +100,7 @@ impl Use {
             }
         }
         if in_force {
-            self.defines |= defined_powers(&shown, &units);
+            self.defines.join(definitions(&shown, &units));
         }
     }
 
@@ -104,7 +131,7 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
     let terms = (document.terms.iter()).map(|term| {
         let mut each = Use::default();
         each.read(&term.definition, true);
-        each.defines |= term_powers(term);
+        each.defines.join(term_values(term));
         (term.id.key(), each)
     });
     let nodes = (context.items.iter()).map(|item| (item.id.key(), node_use(item)));
@@ -119,17 +146,15 @@ pub(super) fn check(context: &Context<'_>, out: &mut Vec<Raw>) {
         (decision.id.key(), each)
     });
     let mut uses: Vec<(Key, Use)> = Vec::new();
-    let mut defined = 0;
-    // The elements are read lazily, so that defining every power ends the reading.
+    let mut values = Values::default();
+    // Every element is read, since a later definition can contradict an earlier one.
     for (key, each) in terms.chain(nodes).chain(decisions) {
-        defined |= each.defines;
-        if defined == EVERY_POWER {
-            return;
-        }
+        values.join(each.defines);
         if each.states_a_unit() {
             uses.push((key, each));
         }
     }
+    let defined = values.settled();
     if !uses.iter().any(|(_, each)| each.binary) {
         return;
     }
@@ -174,14 +199,15 @@ fn node_use(item: &Item<'_>) -> Use {
     each
 }
 
-/// The powers of the decimal units `term` is named after, by its name or an alias, that its
-/// definition gives as a count of bytes: one opening the definition, or after the unit's full
-/// name and `of`, after at most one of `LEADERS` or `exactly`.
-fn term_powers(term: &TermEntry) -> u8 {
+/// The values `term`'s definition gives the decimal units it is named after, by its name or an
+/// alias, as a count of bytes: one opening the definition, or after the unit's full name and
+/// `of`, after at most one of `LEADERS` or `exactly`.
+fn term_values(term: &TermEntry) -> Values {
     let names = std::iter::once(&term.name).chain(&term.aliases);
     let powers: Vec<u32> = names.filter_map(|name| named_power(name)).collect();
+    let mut values = Values::default();
     if powers.is_empty() {
-        return 0;
+        return values;
     }
     let shown = plain(&term.definition);
     let opening = shown.trim_start();
@@ -193,27 +219,29 @@ fn term_powers(term: &TermEntry) -> u8 {
                 .then(|| after.trim_start_matches(is_space))
         })
         .unwrap_or(opening);
-    let given = |k: u32| count::gives_value(opening, k) || of_value(opening, k);
-    (powers.into_iter().filter(|&k| given(k))).fold(0, |defined, k| defined | bit(k))
+    for k in powers {
+        if let Some(base) = count::given_base(opening, k).or_else(|| of_value(opening, k)) {
+            values.give(k, base);
+        }
+    }
+    values
 }
 
-/// Whether `opening` opens on the full name of a unit of power `k`, then `of` and its value as a
-/// count of bytes, as in `kilobyte of 1,000 bytes`.
-fn of_value(opening: &str, k: u32) -> bool {
+/// The base of the value that `opening` gives a unit of power `k` after its full name and `of`,
+/// as in `kilobyte of 1,000 bytes`.
+fn of_value(opening: &str, k: u32) -> Option<Base> {
     (full_names(opening).into_iter())
         .filter(|&(start, _, power)| start == 0 && power == k)
-        .any(|(_, end, _)| {
+        .find_map(|(_, end, _)| {
             let rest = &opening[end..];
-            let after = strip_prefix_ignoring_case(rest.trim_start_matches(is_space), "of");
-            rest.starts_with(is_space)
-                && after.is_some_and(|after| {
-                    after.starts_with(is_space)
-                        && count::gives_value(after.trim_start_matches(is_space), k)
-                })
+            let after = strip_prefix_ignoring_case(rest.trim_start_matches(is_space), "of")?;
+            (rest.starts_with(is_space) && after.starts_with(is_space))
+                .then(|| count::given_base(after.trim_start_matches(is_space), k))
+                .flatten()
         })
 }
 
-/// The bit of `Use::defines` that stands for power `k`.
+/// The bit of `Values` that stands for power `k`.
 const fn bit(k: u32) -> u8 {
     1 << k
 }
@@ -313,25 +341,29 @@ fn in_web_address(text: &str, at: usize) -> bool {
     word.contains("://") || strip_prefix_ignoring_case(word, "www.").is_some()
 }
 
-/// The powers of the decimal units that `text`, whose units are `units`, gives by symbol or by
-/// full name as a count of bytes: in parentheses right after the unit, where no number but `1`
-/// comes before it, or after a defining word where the unit opens a clause.
-fn defined_powers(text: &str, units: &[(usize, &'static str)]) -> u8 {
+/// The values `text`, whose units are `units`, gives decimal units by symbol or by full name as
+/// a count of bytes: in parentheses right after the unit, where no number but `1` comes before
+/// it, or after a defining word where the unit opens a clause.
+fn definitions(text: &str, units: &[(usize, &'static str)]) -> Values {
     let symbols = (units.iter())
         .filter(|(_, unit)| DECIMAL.contains(unit))
         .map(|&(at, unit)| (at, at + unit.len(), symbol_power(unit)));
-    let spans = symbols.chain(full_names(text));
-    let given = spans.filter(|&(start, end, k)| {
+    let mut values = Values::default();
+    for (start, end, k) in symbols.chain(full_names(text)) {
+        let head = &text[..start];
         let rest = text[end..].trim_start_matches(is_space);
-        match rest.strip_prefix('(') {
-            Some(inside) => {
-                unmultiplied(&text[..start])
-                    && count::gives_value(inside.trim_start_matches(is_space), k)
+        let base = match rest.strip_prefix('(') {
+            Some(inside) if unmultiplied(head) => {
+                count::given_base(inside.trim_start_matches(is_space), k)
             }
-            None => opens_clause(&text[..start]) && defined_after_word(rest, k),
+            None if opens_clause(head) => defined_after_word(rest, k),
+            _ => None,
+        };
+        if let Some(base) = base {
+            values.give(k, base);
         }
-    });
-    given.fold(0, |defined, (.., k)| defined | bit(k))
+    }
+    values
 }
 
 /// Whether no number but `1` comes right before a unit after `head`, with nothing, one space,
@@ -380,16 +412,15 @@ fn full_names(text: &str) -> Vec<(usize, usize, u32)> {
     spans
 }
 
-/// Whether `rest`, the text after a unit of power `k`, defines it: a defining word, then a count
-/// of bytes equal to the unit's value.
-fn defined_after_word(rest: &str, k: u32) -> bool {
-    DEFINING.iter().any(|word| {
-        strip_prefix_ignoring_case(rest, word).is_some_and(|after| {
-            let boundary = matches!(*word, "=" | ":") || after.starts_with(is_space);
-            let after = after.trim_start_matches(is_space);
-            let after = strip_prefix_ignoring_case(after, "exactly")
-                .map_or(after, |rest| rest.trim_start_matches(is_space));
-            boundary && count::gives_value(after, k)
-        })
+/// The base of the value `rest`, the text after a unit of power `k`, gives it: a defining word,
+/// then a count of bytes equal to the unit's value.
+fn defined_after_word(rest: &str, k: u32) -> Option<Base> {
+    DEFINING.iter().find_map(|word| {
+        let after = strip_prefix_ignoring_case(rest, word)?;
+        let boundary = matches!(*word, "=" | ":") || after.starts_with(is_space);
+        let after = after.trim_start_matches(is_space);
+        let after = strip_prefix_ignoring_case(after, "exactly")
+            .map_or(after, |rest| rest.trim_start_matches(is_space));
+        boundary.then(|| count::given_base(after, k)).flatten()
     })
 }
