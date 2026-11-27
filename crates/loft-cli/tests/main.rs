@@ -152,6 +152,7 @@ mod yard_merge_driver;
 mod yard_newer;
 mod yard_page;
 mod yard_page_browser;
+mod yard_plan_approval;
 mod yard_protocol;
 mod yard_published;
 mod yard_read;

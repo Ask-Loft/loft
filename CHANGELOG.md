@@ -13,6 +13,14 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   a session now joins the running page server. Emptying `yardListen` therefore no longer closes
   the page to other devices at the next session: run `loft yard serve` to do so.
   ([#38](https://github.com/Ask-Loft/loft/issues/38))
+- A Claude Code session's plan mode ends on the Yard page's Gantt chart when the person approves
+  its plan, on the page or in the terminal. Under a host built on the Agent SDK, which ends
+  `ExitPlanMode` itself and keeps reporting plan mode after the plan is approved on the page,
+  the work that followed the approval used to be shown as planning until the host's next run.
+  A rejected plan keeps plan mode going while the agent revises it. Entering plan mode again
+  with `EnterPlanMode` now always starts a new stretch of plan mode and ends a stretch of spec
+  mode, where the host had gone on reporting plan mode in between.
+  ([#41](https://github.com/Ask-Loft/loft/issues/41))
 
 ## 2.4.2 (2026-11-26)
 

@@ -52,3 +52,34 @@ requirements:
         name: "No event is kept in the activity file once Yard Log is closed."
       - key: 01a1646f-546d-7042-befd-eafae23372c6
         name: "No other session's activity file is written for the session's events."
+  - key: 01a21ab4-1b40-722d-a2f1-edda3118da28
+    statement:
+      form: event_driven
+      when: "the person approves, on the page or in the terminal, a plan that a session's main agent presented in plan mode"
+      system: "the page server"
+      shall: "end that session's stretch of plan mode at the time of the approval, by an event of the session's main agent kept in its event log."
+    criteria:
+      - key: 01a21ab4-1b40-722d-a2f1-eddb67395023
+        name: "A plan approved on the page ends its session's stretch of plan mode while the session's hooks still name the mode `plan`."
+      - key: 01a21ab4-1b40-722d-a2f1-eddc5528b2e1
+        name: "A plan approved in the terminal ends its session's stretch of plan mode."
+      - key: 01a21ab4-1b40-722d-a2f1-eddd22f0b0ca
+        name: "A rejected plan leaves its session's stretch of plan mode going on."
+      - key: 01a21ab4-1b40-722d-a2f1-edde5c4d7cc6
+        name: "A plan that a subagent presented ends no stretch of plan mode."
+      - key: 01a21ab4-1b40-722d-a2f1-eddf0231230f
+        name: "A plan presented outside plan mode ends no stretch of plan mode."
+      - key: 01a21ab4-1b40-722d-a2f1-ede02e7314fe
+        name: "A hook that still names the mode `plan` after the approval starts no new stretch of plan mode."
+      - key: 01a21ab4-1b40-722d-a2f1-ede10a699b91
+        name: "A page server that rebuilds the session's activity from its event log ends the stretch at the time of the approval."
+      - key: 01a21ac6-1872-7517-9002-aaa10deb896a
+        name: "A plan approved after its session was continued by `/clear` or a resume also ends the stretch of plan mode of the latest session that continues it."
+      - key: 01a21ac6-1872-7517-9002-aaa2b2db3109
+        name: "The approval's event names the person as who made it, with `by` set to `person`."
+      - key: 01a21ac6-1872-7517-9002-aaa3061378a0
+        name: "An event the person made is not taken as a sign that its session is live."
+      - key: 01a21ac6-1872-7517-9002-aaa49731d775
+        name: "An event the person made leaves the directory kept as where its session's main agent works as it was."
+      - key: 01a21ac6-1872-7517-9002-aaa50d9abef4
+        name: "An event the person made that is the first heard of its session in a Yard Log starts no turn."

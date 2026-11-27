@@ -305,17 +305,19 @@ fn replay(home: &Home, session: &str) -> SessionKept {
 impl Sessions {
     /// Records the events `body` holds, one event or a list of them in the order they happened.
     pub fn record(&self, home: &Home, body: &[u8]) -> Response {
-        let posted = match serde_json::from_slice::<Value>(body) {
-            Ok(Value::Array(events)) => events,
-            Ok(event @ Value::Object(_)) => vec![event],
-            _ => {
-                return Response::refused(
-                    400,
-                    "input",
-                    "the request's body is no event or list of events",
-                );
-            }
-        };
+        match serde_json::from_slice::<Value>(body) {
+            Ok(Value::Array(events)) => self.record_events(home, &events),
+            Ok(event @ Value::Object(_)) => self.record_events(home, &[event]),
+            _ => Response::refused(
+                400,
+                "input",
+                "the request's body is no event or list of events",
+            ),
+        }
+    }
+
+    /// Records `posted`, events in the order they happened.
+    pub fn record_events(&self, home: &Home, posted: &[Value]) -> Response {
         let mut recorded = 0;
         let mut skipped = 0;
         let mut rejected = Vec::new();
@@ -327,8 +329,8 @@ impl Sessions {
             }
         }
         let (indices, events): (Vec<usize>, Vec<Event>) = read.into_iter().unzip();
-        hear(home, &events);
-        note_main_dirs(home, &events);
+        hints::hear(home, &events);
+        hints::note_main_dirs(home, &events);
         // git and Yard Log are read before the sessions are locked, so that one session's batch
         // does not hold another's posts while it reads them.
         let arrived = arrivals(&events, |event| working_dir(home, event), open_at);
@@ -461,37 +463,7 @@ fn keep(
     Ok(kept.texts(changed))
 }
 
-/// Records each session a batch holds events of as heard: an event a mod posts tells the page
-/// server its session is live, as its beat does.
-fn hear(home: &Home, events: &[Event]) {
-    let Ok(at) = crate::yard::now() else {
-        return;
-    };
-    let mut sessions: Vec<String> = events.iter().map(Event::session_key).collect();
-    sessions.sort_unstable();
-    sessions.dedup();
-    for session in sessions {
-        // Liveness is a hint for take-up: a failed write of it loses no event.
-        let _ = crate::yard::sessions::heard(home, &session, at);
-    }
-}
-
-/// Records, for each session whose main agent `events` name, the directory of its last event
-/// there, before the batch finds its agents' working trees, so that its subagents are compared
-/// with where the main agent is now.
-fn note_main_dirs(home: &Home, events: &[Event]) {
-    let mut last: HashMap<(&str, &str), &str> = HashMap::new();
-    for event in events.iter().filter(|event| matches!(event.who, Who::Main)) {
-        last.insert(
-            (event.host.as_str(), event.session.as_str()),
-            event.dir.as_str(),
-        );
-    }
-    for ((host, session), dir) in last {
-        // Where the main agent works is a hint for its subagents: a failed write loses no event.
-        let _ = working_tree::note_main_dir(home, &Agent::main_in(host, session), Path::new(dir));
-    }
-}
+mod hints;
 
 #[cfg(test)]
 mod tests;
