@@ -56,7 +56,7 @@ impl Flushing {
     }
 
     /// Waits until the flush the worker started ends by itself, without stopping it.
-    #[cfg(test)]
+    #[cfg(all(test, unix))]
     pub fn wait(&mut self) {
         if let Some((child, _)) = &mut self.0 {
             let _ = child.wait();

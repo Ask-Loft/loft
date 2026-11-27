@@ -276,6 +276,7 @@ fn a_flush_json_that_does_not_read_is_taken_as_holding_no_record_and_written_ane
     assert_eq!(flush_record(&yard, &server.url())["outcome"], "sent");
 }
 
+#[cfg(unix)]
 #[test]
 fn a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_as_later() {
     use std::os::unix::fs::PermissionsExt as _;
