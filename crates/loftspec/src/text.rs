@@ -79,6 +79,13 @@ pub(crate) fn code_spans(text: &str) -> Vec<Range<usize>> {
     spans
 }
 
+/// `text` after `prefix`, where `text` opens on it in any ASCII case.
+pub(crate) fn strip_prefix_ignoring_case<'a>(text: &'a str, prefix: &str) -> Option<&'a str> {
+    let head = text.get(..prefix.len())?;
+    head.eq_ignore_ascii_case(prefix)
+        .then(|| &text[prefix.len()..])
+}
+
 #[cfg(test)]
 mod tests {
     use super::{token_ranges, tokenize};

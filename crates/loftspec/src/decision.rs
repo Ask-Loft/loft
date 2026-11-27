@@ -36,6 +36,92 @@ pub struct Decision {
 }
 
 impl Decision {
+    /// Every prose field of the decision, in the order of its file: its title and context, each
+    /// local driver's label and statement, each option's title and description, each
+    /// assessment's rationale, each consequence's statement, and what its state records in words.
+    /// Each comes with whether it is in force: every text of an accepted decision is, but the
+    /// options it did not select and their assessments; no text of a decision in another state
+    /// is. Each record is taken apart whole, so that a field added to one must be placed here.
+    pub(crate) fn texts(&self) -> Vec<(&str, bool)> {
+        let Self {
+            id: _,
+            slug: _,
+            title,
+            context,
+            state,
+            drivers,
+            options,
+            assessments,
+            consequences,
+        } = self;
+        let selected = match state {
+            DecisionState::Accepted {
+                selected_option, ..
+            } => Some(*selected_option),
+            _ => None,
+        };
+        let accepted = selected.is_some();
+        let chosen = |option: &OptionId| selected == Some(*option);
+        let mut texts = vec![(title.as_str(), accepted), (context.as_str(), accepted)];
+        for Driver { id: _, payload } in drivers {
+            match payload {
+                DriverPayload::Local { label, statement } => {
+                    texts.extend([label, statement].map(|text| (text.as_str(), accepted)));
+                }
+                DriverPayload::Subject { subject: _ } => {}
+            }
+        }
+        for DecisionOption {
+            id,
+            title,
+            description,
+        } in options
+        {
+            texts.extend([title, description].map(|text| (text.as_str(), chosen(id))));
+        }
+        for Assessment {
+            option,
+            driver: _,
+            rating: _,
+            rationale,
+        } in assessments
+        {
+            texts.push((rationale, chosen(option)));
+        }
+        for Consequence {
+            id: _,
+            kind: _,
+            statement,
+            subject: _,
+        } in consequences
+        {
+            texts.push((statement, accepted));
+        }
+        match state {
+            DecisionState::Proposed => {}
+            DecisionState::Accepted {
+                selected_option: _,
+                outcome,
+            }
+            | DecisionState::Superseded {
+                selected_option: _,
+                outcome,
+                successor: _,
+            } => {
+                texts.push((outcome, accepted));
+            }
+            DecisionState::Rejected { rationale } => texts.push((rationale, false)),
+            DecisionState::Retired {
+                selected_option: _,
+                outcome,
+                rationale,
+            } => {
+                texts.extend([outcome, rationale].map(|text| (text.as_str(), false)));
+            }
+        }
+        texts
+    }
+
     /// The nodes the decision names in its drivers and its consequences; its subjects are edges
     /// of its document.
     pub fn named(&self) -> impl Iterator<Item = NodeRef> + '_ {

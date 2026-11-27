@@ -417,7 +417,8 @@ impl RuleId {
             | Self::V2007
             | Self::V2010
             | Self::V2011
-            | Self::V2012 => Severity::Warning,
+            | Self::V2012
+            | Self::V2014 => Severity::Warning,
             Self::Sh002
             | Self::Sh005
             | Self::Sh006

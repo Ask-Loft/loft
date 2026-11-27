@@ -72,8 +72,8 @@ Unreleased below, and those of each 2.4 release still to come.
 - `loft review --format json` follows the schema `loft-review/3`, whose node kinds add
   `interface` to those of `loft-review/2` and whose Component carries `provides` and
   `requires`, the keys of the Interfaces it provides and requires, a change to which alone marks
-  it `changed`; and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012` and
-  `V2-013`. The output is otherwise as it was.
+  it `changed`; and `loft check --format json` follows `loft-check/3`, whose rules add `V2-012`,
+  `V2-013` and `V2-014`. The output is otherwise as it was.
 - A connected document can link to an Interface of another connected document. The manifest's
   `documents` lists the other document under a handle of the document's own choosing, with the
   address of its remote, and a copy of the Interface, as that document published it at one
@@ -158,6 +158,37 @@ Unreleased below, and those of each 2.4 release still to come.
   metadata names to the same rule, as it holds the authorization server's endpoints, and leaves
   out, with a warning and before anything is asked of it, a companion resource whose identifier
   holds another character.
+- `loft check` reports a new lint rule, `V2-014`, at warning: a quantity stated in a decimal byte
+  unit (`kB`, `KB`, `MB`, `GB`, `TB`) in a document that also states one in a binary byte unit
+  (`KiB`, `MiB`, `GiB`, `TiB`) and never says what its decimal units mean, since a reader cannot
+  tell whether `1 MB` is 1,000,000 bytes or 1,048,576. A quantity is a number followed by the unit,
+  with at most one space, no-break space (U+00A0 or U+202F) or hyphen between them; units are
+  matched in their own case, text in code is not read, each paragraph, list item and heading is read
+  apart, and a number inside a web address, or right after a letter or one of `_ / . - = ? & #`,
+  begins none, except a range such as `4-16 MB` and a decimal such as `.5 MB` where the number
+  before them could begin one. Every node, every decision, whatever its state, and every term's
+  definition is read, and one finding names each that states a decimal quantity in a unit the
+  document does not define. A definition settles the decimal units of its own power, `kB` and `KB`
+  alike, and no other, so `kB = 1,000 bytes` leaves `MB` unsettled; a power given both 1000^k and
+  1024^k bytes, such as `MB = 1,000,000 bytes` beside `MB = 1,048,576 bytes`, is settled by
+  neither. Since a false definition
+  silences every finding for its units, a definition is narrow: a count of bytes, written as digits,
+  as comma groups of three (`1,048,576`, as `LQ-002` reads a number) or as a power (`2^20`), equal
+  to the unit's value, 1000^k or 1024^k bytes, that ends its sentence, never before a `,` or a `;`
+  that could lead on to another value; given in parentheses right after the unit where no number
+  but `1` comes before it, such as `Sizes are in MB (10^6 bytes).` and not `a 2 MB (2^20 bytes)
+  buffer`, or after a defining word where the unit opens a clause, alone or after `1`, `one`, `a`,
+  `an` or `the`, such as `1 MB = 1,000,000 bytes`, `MB: 2^20 bytes` or `A megabyte is 1,000,000
+  bytes`; or a term of `spec/terms.yaml` whose name or alias is the unit (a lowercase `s` alone
+  makes it plural, so `KBS` is no unit) and whose definition opens on the unit's value, or on its
+  full name, `of` and its value (`A kilobyte of 1,000 bytes.`); a term defined as `A megabyte.`
+  settles nothing. A decision gives a definition only where it is accepted, and never in an option
+  it did not select or that option's assessments. A count or a definition never runs on past the
+  end of its paragraph, list item or heading. So `After compression, 1 MB is 400,000 bytes on
+  disk.` settles nothing, nor does a term `KB` for a knowledge base. Since a resolved decision is
+  not edited, a term is the way to settle units a decision uses. A definition of a binary unit
+  alone does not settle them. `schemas/check.json` lists the rule, and the published lint defaults state it. This
+  repository's specification defines `KB` and `MB` as terms.
 
 ## Unreleased
 

@@ -170,6 +170,9 @@ rules:
   - rule: V2-013
     enabled: true
     severity: info
+  - rule: V2-014
+    enabled: true
+    severity: warning
   - rule: TD-001
     enabled: true
     severity: hint

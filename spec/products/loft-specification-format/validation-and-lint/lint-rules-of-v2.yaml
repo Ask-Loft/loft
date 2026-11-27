@@ -1,7 +1,7 @@
 key: b97d0eb8-bbcc-45d8-b18d-53c9c629c900
 slug: lint-rules-of-v2
 name: "Lint rules of v2"
-body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset. `V2-010` and `V2-011` concern decision history: an edit to the meaning of a decision that was published resolved, and a change of state that its published state does not allow, deleting a resolved decision among them. Both judge from the state the last publish recorded in `spec/labels.yaml`, which is part of the tree, so they read no history of a repository; a decision is changed by a new decision that supersedes it, never by an edit. `V2-012` and `V2-013` concern Interfaces: one that promises nothing, and one that no Component of its document provides or requires."
+body: "The rules the v2 text form adds. `V2-001` to `V2-004` concern the text form: a heading inside a body, a statement stored as text without slots, a label reference without a `mentions` edge, and a citation of a withdrawn label that a publish cannot rewrite. `V2-005` to `V2-008` concern the writing craft: a compound criterion, an oversized Requirement, normative text in a body, and an article before a proper name. `V2-009` concerns the text form again: a body construct outside the Format's Markdown subset. `V2-010` and `V2-011` concern decision history: an edit to the meaning of a decision that was published resolved, and a change of state that its published state does not allow, deleting a resolved decision among them. Both judge from the state the last publish recorded in `spec/labels.yaml`, which is part of the tree, so they read no history of a repository; a decision is changed by a new decision that supersedes it, never by an edit. `V2-012` and `V2-013` concern Interfaces: one that promises nothing, and one that no Component of its document provides or requires. `V2-014` concerns the writing craft again: a quantity stated in decimal byte units, such as `MB`, in a document that also states quantities in binary byte units, such as `MiB`, and never says what its decimal units mean, so that a reader cannot tell whether `1 MB` is 1,000,000 bytes or 1,048,576. A decision is read as well, whatever its state; since a resolved decision is not edited, a document settles its units once, with a term for each decimal unit in `spec/terms.yaml`."
 realizes:
   - 845fe937-28e9-4c37-883a-1fbdf18c4a1f
 requirements:
@@ -257,3 +257,99 @@ requirements:
         name: "A copy of another document's Interface yields no `V2-013` finding."
       - key: 01a1f981-4db1-765f-a897-2274b5c47615
         name: "The default severity of `V2-013` is info."
+  - key: 01a21358-4147-72be-a72f-0d0903323ed4
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "report as `V2-014` each node, decision or term that states a quantity in a decimal byte unit the document does not define, where the document also states a quantity in a binary byte unit."
+    criteria:
+      - key: 01a21358-4147-72be-a72f-0d0aeaafcebb
+        name: "The decimal byte units are `kB`, `KB`, `MB`, `GB`, `TB` and the binary byte units `KiB`, `MiB`, `GiB`, `TiB`, each matched in its own case, so that `Mb` is neither a decimal nor a binary byte unit."
+      - key: 01a21358-4147-72be-a72f-0d0d5b49c452
+        name: "A quantity is a number followed by a unit, with nothing, one space, one no-break space or one hyphen between them, such as `512 MB`, `64MiB` or `16-KiB`."
+      - key: 01a2146f-d6af-70f6-acc1-b8a9a1138a83
+        name: "A number inside a web address, or one that comes right after a letter, `_`, `/`, `.`, `-`, `=`, `?`, `&` or `#`, begins no quantity, so that `https://example.com/files/512MB.bin` states none."
+      - key: 01a214b5-d973-7194-bf7e-adf2021955c3
+        name: "A number after a `-` that follows a digit, as in `4-16 MB`, begins a quantity, as does a decimal written with a leading `.`, such as `.5 MB`, only where the number before the `-`, or the `.` itself, comes after none of a letter, `_`, `/`, `.`, `-`, `=`, `?`, `&`, `#` and lies outside a web address, so that `files/2024-512MB.bin` states none."
+      - key: 01a21358-4147-72be-a72f-0d104b2a340f
+        name: "A node's name, statement, body and Sections, a Quality Attribute's target, a Constraint's required value and a term's definition are read for quantities."
+      - key: 01a21358-4147-72be-a72f-0d1106cfdd22
+        name: "A decision's title, context, drivers, options, assessments, consequences and the outcome and rationale of its state are read for quantities, whatever the state."
+      - key: 01a21358-4147-72be-a72f-0d125b1ec45c
+        name: "Text inside a code span or a fenced code block states no quantity."
+      - key: 01a21358-4147-72be-a72f-0d13a90eccd7
+        name: "Each node, decision or term that states a quantity in a decimal byte unit yields one `V2-014` finding where the same element or another states a quantity in a binary byte unit."
+      - key: 01a21358-4147-72be-a72f-0d1468b46834
+        name: "A document whose quantities are all in decimal byte units, or all in binary byte units, yields no `V2-014` finding."
+      - key: 01a21358-4147-72be-a72f-0d152a0876e9
+        name: "A node's text, a decision's text or a term's definition that gives a decimal byte unit as a count of bytes, such as `1 MB = 1,000,000 bytes`, `MB: 1,000,000 bytes` or `Sizes are in MB (10^6 bytes).`, defines every decimal byte unit of that power, and none of them then yields a `V2-014` finding."
+      - key: 01a21698-e527-74e5-8471-b2bbcea22833
+        name: "A count of bytes is written as digits, as digits grouped by commas in threes after a lead group of one to three digits, such as `1,048,576`, as `LQ-002` reads a grouped number, or as a power, such as `2^20`, so that neither `1.024` nor `1 000 000` is one."
+      - key: 01a214b5-d973-7194-bf7e-adf3d86c4219
+        name: "A count of bytes gives a decimal byte unit only where it equals 1000^k bytes, or 1024^k bytes, for the unit's power k: 1 for `kB` and `KB`, 2 for `MB`, 3 for `GB`, 4 for `TB`."
+      - key: 01a214b5-d973-7194-bf7e-adf44087797f
+        name: "A count of bytes gives a unit only where nothing but the end of its paragraph, list item or heading, a `.` or a `)` follows it, so that `MB = 1,000,000 bytes, or 1,048,576 bytes on Windows` defines no unit."
+      - key: 01a21d6e-46d7-71fe-b062-d020afdea213
+        name: "A count of bytes in parentheses right after a unit gives that unit only where no number but `1` comes right before the unit, so that `A 2 MB (2^20 bytes) buffer` defines no unit."
+      - key: 01a2146f-d6af-70f6-acc1-b8aa3ef9a1da
+        name: "A count of bytes after a defining word or mark, such as `is`, `=`, `:`, gives a decimal byte unit only where the unit or its full name opens a clause, with at most one of `1`, `one`, `a`, `an`, `the` before it, so that `Here 1 MB = 1,000,000 bytes.` defines no unit."
+      - key: 01a2146f-d6af-70f6-acc1-b8ab93372603
+        name: "A clause opens where a paragraph, a list item or a heading starts, and after any of `.`, `!`, `?`, `:`, `;`, `,`, `(`."
+      - key: 01a21358-4147-72be-a72f-0d172df94e9d
+        name: "A definition of a binary byte unit alone leaves the finding in place."
+      - key: 01a21358-4147-72be-a72f-0d18c7a0989c
+        name: "The finding names the decimal unit the element uses and the key of a node, decision or term that states a quantity in a binary byte unit."
+      - key: 01a21358-4147-72be-a72f-0d199a8c0bae
+        name: "The default severity of `V2-014` is warning."
+  - key: 01a216a0-48bf-75d0-b74f-a5f74139c2a7
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "read the unit of a Quality Attribute's target for `V2-014`."
+    criteria:
+      - key: 01a21358-4147-72be-a72f-0d0fc0b9991c
+        name: "A Quality Attribute whose target's unit is a byte unit states a quantity in that unit."
+  - key: 01a216c4-b982-74c9-aa2c-d6a2636fc1aa
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "read a definition or a count of bytes for `V2-014` within one paragraph, list item or heading."
+    criteria:
+      - key: 01a216c4-b982-74c9-aa2c-d6a324a0eb94
+        name: "A defining word and the count after it, and the parts of a count, lie in one paragraph, list item or heading, so that the list item `- MB is` followed by the list item `- 1,000,000 bytes` defines no unit."
+  - key: 01a21d97-50e6-724a-abc8-73b0f42776fb
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "settle each power of the decimal byte units for `V2-014` apart, and only where the document gives it one value."
+    criteria:
+      - key: 01a21d6e-46d7-71fe-b062-d01f31c0e88a
+        name: "A definition of a decimal byte unit leaves the findings for the units of every other power in place, so that `kB = 1,000 bytes` defines `KB` and not `MB`."
+      - key: 01a21d97-50e7-77f1-95f9-bf9a5faa1b2c
+        name: "A power that the document's definitions give both 1000^k and 1024^k bytes is defined by neither, so that `MB = 1,000,000 bytes` in one text and `MB = 1,048,576 bytes` in another leave the finding for `MB` in place."
+  - key: 01a21d6e-46d7-71fe-b062-d0217ae93125
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "take a term named after a decimal byte unit as a definition of that unit for `V2-014` only where the term's definition gives the unit's value."
+    criteria:
+      - key: 01a21358-4147-72be-a72f-0d1643400930
+        name: "A term is named after a decimal byte unit where its name, or one of its aliases, is the unit or its full name, which a lowercase `s` may make plural, such as `MB`, `MBs`, `megabytes`."
+      - key: 01a214b5-d973-7194-bf7e-adf55116d7d7
+        name: "A term named after a decimal byte unit defines it where its definition opens on the unit's value as a count of bytes, after at most one of `1`, `one`, `a`, `an`, `the`, `exactly`, such as `1,000,000 bytes.` for `MB`."
+      - key: 01a21d6e-46d7-71fe-b062-d022d0766cc5
+        name: "A term named after a decimal byte unit defines it where its definition opens on the unit's full name, after at most one of those words, followed by `of` and the unit's value as a count of bytes, such as `A kilobyte of 1,000 bytes.` for `KB`."
+      - key: 01a21d6e-46d7-71fe-b062-d023a30dbdd7
+        name: "A term named after a decimal byte unit whose definition gives no count of bytes, such as `MB` defined as `A megabyte.`, defines no unit."
+  - key: 01a21d6e-46d7-71fe-b062-d024f555dae7
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "take a definition of a decimal byte unit for `V2-014` from a decision only where the decision is accepted."
+    criteria:
+      - key: 01a21d6e-46d7-71fe-b062-d025a4b920a3
+        name: "An accepted decision gives a definition in its title, context, drivers, consequences and outcome, in the option it selected and in that option's assessments."
+      - key: 01a21d6e-46d7-71fe-b062-d026c727aa09
+        name: "An option that an accepted decision did not select, and that option's assessments, give no definition, so that a rejected option `MB = 1,000,000 bytes.` defines no unit."
+      - key: 01a21d6e-46d7-71fe-b062-d027ddc1f241
+        name: "A proposed, rejected, superseded or retired decision gives no definition, though its quantities are read."

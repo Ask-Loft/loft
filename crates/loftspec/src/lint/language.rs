@@ -10,7 +10,9 @@
 //! `LQ-001`..`LQ-004` use.
 
 use super::context::{Context, Item};
-use super::text::{Body, occurrences, phrase_positions, tokens, without_code_spans, words};
+use super::text::{
+    Body, is_written_number, occurrences, phrase_positions, tokens, without_code_spans, words,
+};
 use super::{LintConfig, Raw, RuleId};
 use crate::identity::Key;
 use crate::kind::NodeKind;
@@ -250,15 +252,7 @@ const NUMBER_WORDS: [&str; 28] = [
 
 /// Digits, digits grouped by commas in threes (`65,536`), or a number word.
 fn is_quantity(token: &str) -> bool {
-    let digits = |text: &str| !text.is_empty() && text.chars().all(|c| c.is_ascii_digit());
-    let grouped = token.split_once(',').is_some_and(|(lead, groups)| {
-        (1..=3).contains(&lead.len())
-            && digits(lead)
-            && groups
-                .split(',')
-                .all(|group| group.len() == 3 && digits(group))
-    });
-    digits(token) || grouped || NUMBER_WORDS.contains(&token)
+    is_written_number(token) || NUMBER_WORDS.contains(&token)
 }
 
 /// `LQ-005`: a statement, or a sentence of its body, with more than one modal verb or with

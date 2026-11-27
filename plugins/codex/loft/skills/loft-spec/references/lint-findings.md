@@ -473,6 +473,7 @@ requirements:
 | `V2-006` | info | A Requirement with more than `maxCriteria` criteria (20) or a body of more than `maxBodyWords` words (150) | Promote it to a Feature, as `writing-rules.md` says |
 | `V2-007` | warning | A word of its `lexicon` ("shall", "must") in a body, outside code | Move the obligation into a statement or a criterion |
 | `V2-008` | info | A statement whose system is "the" and a name in `properNames` | Drop the article |
+| `V2-014` | warning | A quantity in a decimal byte unit (`kB`, `KB`, `MB`, `GB`, `TB`) in a node, decision or term, where the document also states one in a binary byte unit (`KiB`, `MiB`, `GiB`, `TiB`) and does not define that unit; code is not read | State every quantity in one family, or define each decimal unit the document uses once: a definition settles the units of its own power (`kB` and `KB` alike) and no other, and two definitions that give one power both 1000^k and 1024^k bytes settle neither. A term named after it (`MB`, or `MB` as an alias) defines it where its definition opens on the value (`1,000,000 bytes.`) or on the full name, `of` and the value (`A megabyte of 1,000,000 bytes.`); `A megabyte.` defines nothing. A count of bytes is written as digits (`1000000`), as comma groups of three (`1,000,000`) or as a power (`10^6`, `2^20`), never with a full stop or a space between digits. A text defines a unit with a count equal to 1000^k or 1024^k that ends its sentence, never before a `,` or `;`, so define one unit per sentence (`KB = 1,000 bytes. MB = 1,000,000 bytes.`, not one list of them): `1 MB = 1,000,000 bytes`, `MB: 2^20 bytes` or `A megabyte is 10^6 bytes` where the unit opens a clause, or `Sizes are in MB (10^6 bytes).` where no number but `1` comes before the unit. A decision defines a unit only where it is accepted, outside the options it did not select. |
 
 ```yaml rule=V2-005 path=spec/products/notes/writing/write-a-note.yaml
 name: "Write a note"
@@ -532,6 +533,32 @@ requirements:
       shall: "keep the note."
     criteria:
       - name: "The note is listed after it is saved."
+```
+
+A reader cannot tell whether `512 MB` beside `4 KiB` means 512,000,000 bytes or 536,870,912.
+
+```yaml rule=V2-014 path=spec/products/notes/writing/write-a-note.yaml
+name: "Write a note"
+body: "Saving a short note of up to 4 KiB in a store of 512 MB."
+realizes:
+  - 00000000-0000-7000-8000-000000000101
+requirements:
+  - statement:
+      form: event_driven
+      when: "the user saves a note"
+      system: "the note store"
+      shall: "keep the note."
+    criteria:
+      - name: "The note is listed after it is saved."
+```
+
+A term named after a decimal unit, or with one as an alias, whose definition opens on the unit's
+full name or its value, settles every decimal unit of the document, decisions included, which are
+not edited once resolved:
+
+```yaml fragment
+- name: "MB"
+  definition: "A megabyte: 1,000,000 bytes."
 ```
 
 ## Rules of decision history
