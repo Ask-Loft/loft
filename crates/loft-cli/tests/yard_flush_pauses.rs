@@ -14,7 +14,7 @@ use crate::common::signed_in::real_now;
 use crate::yard::{Yard, document};
 use crate::yard_connected::{
     STAGE_BATCH, come_back_after, connected, entries, flush, flush_json, flush_record, keys, notes,
-    outbox, put_off_record, readdress, seconds_of, write,
+    outbox, readdress, seconds_of, write,
 };
 
 /// `variables` with `LOFT_YARD_SERVER_TIMEOUT` set to `value`.
@@ -280,6 +280,8 @@ fn a_flush_json_that_does_not_read_is_taken_as_holding_no_record_and_written_ane
 #[test]
 fn a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_as_later() {
     use std::os::unix::fs::PermissionsExt as _;
+
+    use crate::yard_connected::put_off_record;
     let yard = Yard::new();
     let variables = connected("http://127.0.0.1:1");
     write(&yard, STAGE_BATCH, &variables);
