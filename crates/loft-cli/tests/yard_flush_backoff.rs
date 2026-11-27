@@ -11,8 +11,8 @@ use software_plant::YardServer;
 use crate::common::signed_in::real_now;
 use crate::yard::Yard;
 use crate::yard_connected::{
-    STAGE_BATCH, come_back_after, connected, flush, flush_record, keys, seconds_of,
-    set_record_field, write,
+    STAGE_BATCH, come_back_after, connected, flush, flush_record, seconds_of, set_record_field,
+    write,
 };
 
 /// How many seconds after the run ended the record of `endpoint` keeps the flush away.
@@ -138,7 +138,7 @@ fn a_run_that_fails_without_a_request_adds_no_pause() {
 fn a_run_that_fails_only_on_the_outbox_adds_no_pause() {
     use std::os::unix::fs::PermissionsExt as _;
 
-    use crate::yard_connected::outbox;
+    use crate::yard_connected::{keys, outbox};
     let yard = Yard::new();
     let server = YardServer::accepting();
     let variables = connected(&server.url());
