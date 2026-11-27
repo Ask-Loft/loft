@@ -2,12 +2,12 @@ counters:
   P: 6
   FG: 34
   F: 207
-  RQ: 1258
-  AC: 5589
+  RQ: 1260
+  AC: 5607
   CMP: 45
   CON: 66
   QA: 4
-  ADR: 122
+  ADR: 124
 bindings:
   - key: 00151e20-e536-4b69-b639-6ef96634dd10
     label: AC-395
@@ -12016,8 +12016,8 @@ bindings:
     label: AC-5449
   - key: 01a1eeea-3b9f-72c9-8a32-a5a7ca21f98a
     label: ADR-118
-    publishedState: accepted
-    publishedHistory: 872e4348270c800fa11c1bc0c902fb1fa5f523324de96fdd74a47a07aad60981
+    publishedState: superseded
+    publishedHistory: c0f3664b85de207a136f43c280c5a1ecf9db4809702a9b0bbd48b8b2fccdaf65
   - key: 01a1eeea-3ba5-7122-8e30-23ee66ae5a35
     label: AC-5440
   - key: 01a1eeea-3ba5-7122-8e30-23eff22cdb05
@@ -12510,6 +12510,54 @@ bindings:
     label: AC-5580
   - key: 01a218cc-9b78-72be-83c3-b6d050db797b
     label: AC-5577
+  - key: 01a21a88-3dbf-7771-85c2-1c20e0fb9401
+    label: ADR-123
+    publishedState: accepted
+    publishedHistory: 5469a353a86eb90bac6c9a02ad85e70e3e9b30823d2d9b57129e2351d997fcf6
+  - key: 01a21a88-3dc7-7075-b690-6e1d722ec957
+    label: AC-5592
+  - key: 01a21a88-3dc7-7075-b690-6e1ef63f4c6e
+    label: AC-5593
+  - key: 01a21a91-2904-7791-b0a0-1a9dbe45b785
+    label: AC-5594
+  - key: 01a21ab4-1b38-7737-8b7b-28d2d1189b94
+    label: ADR-122
+    publishedState: accepted
+    publishedHistory: def4e12e82be5268bf47a6527d266034100e9d51aba7e17c46820f06290d029a
+  - key: 01a21ab4-1b3f-7102-9108-135d81f41e1b
+    label: RQ-1258
+  - key: 01a21ab4-1b3f-7102-9108-135e315572f4
+    label: AC-5589
+  - key: 01a21ab4-1b3f-7102-9108-135f8f5b8b58
+    label: AC-5590
+  - key: 01a21ab4-1b3f-7102-9108-1360736b2c6b
+    label: AC-5591
+  - key: 01a21ab4-1b40-722d-a2f1-edda3118da28
+    label: RQ-1259
+  - key: 01a21ab4-1b40-722d-a2f1-eddb67395023
+    label: AC-5595
+  - key: 01a21ab4-1b40-722d-a2f1-eddc5528b2e1
+    label: AC-5596
+  - key: 01a21ab4-1b40-722d-a2f1-eddd22f0b0ca
+    label: AC-5597
+  - key: 01a21ab4-1b40-722d-a2f1-edde5c4d7cc6
+    label: AC-5598
+  - key: 01a21ab4-1b40-722d-a2f1-eddf0231230f
+    label: AC-5599
+  - key: 01a21ab4-1b40-722d-a2f1-ede02e7314fe
+    label: AC-5600
+  - key: 01a21ab4-1b40-722d-a2f1-ede10a699b91
+    label: AC-5601
+  - key: 01a21ac6-1872-7517-9002-aaa10deb896a
+    label: AC-5602
+  - key: 01a21ac6-1872-7517-9002-aaa2b2db3109
+    label: AC-5603
+  - key: 01a21ac6-1872-7517-9002-aaa3061378a0
+    label: AC-5604
+  - key: 01a21ac6-1872-7517-9002-aaa49731d775
+    label: AC-5605
+  - key: 01a21ac6-1872-7517-9002-aaa50d9abef4
+    label: AC-5606
   - key: 01c16dee-867b-4d85-b851-ac07db2a44f2
     label: AC-410
   - key: 01cb4866-fc85-4142-ade6-5a4ae9927beb
