@@ -1,0 +1,64 @@
+key: 01a21ab4-1b38-7737-8b7b-28d2d1189b94
+slug: a-plan-s-approval-ends-its-session-s-plan-mode
+title: "A plan's approval ends its session's plan mode"
+context: "The page marks the stretches in which the main agent planned. Yard Client heard them only from the permission mode each hook names, and ended a stretch when the mode left `plan`. An Agent SDK host may answer `ExitPlanMode` itself: the person then approves the plan on the page, the agent goes on to build, and the host still reports `plan` until its next run, so the build was counted as planning. Yard Log holds the person's decision of every plan presented in plan mode, on every host."
+state:
+  kind: accepted
+  selectedOption: 01a21ab4-1b38-7737-8b7b-28d593613ed2
+  outcome: "A stretch of plan mode ends when the person approves a plan its session's main agent presented in plan mode, or when the host reports another mode, whichever comes first, and `EnterPlanMode` always starts one."
+drivers:
+  - key: 01a21ab4-1b38-7737-8b7b-28d39e966910
+    kind: local
+    label: "Any host"
+    statement: "A stretch of plan mode ends where it ends on every host, whether or not the host changes its mode after the approval."
+  - key: 01a21ab4-1b38-7737-8b7b-28d41cb4dc8f
+    kind: local
+    label: "The person's decision"
+    statement: "Planning ends when the person decides the plan, not at an act of the agent that may come before or after it."
+options:
+  - key: 01a21ab4-1b38-7737-8b7b-28d593613ed2
+    title: "The approval"
+    description: "Yard Client ends the stretch when the person approves a plan presented in plan mode, on the page or in the terminal."
+  - key: 01a21ab4-1b38-7737-8b7b-28d61965433d
+    title: "The host's mode alone"
+    description: "The stretch ends only when a hook names a mode other than `plan`."
+  - key: 01a21ab4-1b38-7737-8b7b-28d732b7f2bd
+    title: "The first edit"
+    description: "The main agent's first edit of a file in the tree, other than its plan file, ends the stretch."
+assessments:
+  - option: 01a21ab4-1b38-7737-8b7b-28d593613ed2
+    driver: 01a21ab4-1b38-7737-8b7b-28d39e966910
+    rating: supports
+    rationale: "Yard Log holds the approval on every host"
+  - option: 01a21ab4-1b38-7737-8b7b-28d593613ed2
+    driver: 01a21ab4-1b38-7737-8b7b-28d41cb4dc8f
+    rating: supports
+    rationale: "the approval is the decision"
+  - option: 01a21ab4-1b38-7737-8b7b-28d61965433d
+    driver: 01a21ab4-1b38-7737-8b7b-28d39e966910
+    rating: conflicts
+    rationale: "an Agent SDK host keeps reporting `plan` after the approval"
+  - option: 01a21ab4-1b38-7737-8b7b-28d61965433d
+    driver: 01a21ab4-1b38-7737-8b7b-28d41cb4dc8f
+    rating: neutral
+    rationale: "the host changes its mode when it hears the decision, where it hears it"
+  - option: 01a21ab4-1b38-7737-8b7b-28d732b7f2bd
+    driver: 01a21ab4-1b38-7737-8b7b-28d39e966910
+    rating: supports
+    rationale: "edits are heard on every host"
+  - option: 01a21ab4-1b38-7737-8b7b-28d732b7f2bd
+    driver: 01a21ab4-1b38-7737-8b7b-28d41cb4dc8f
+    rating: conflicts
+    rationale: "a host that lets edits through in plan mode ends the stretch before the person decides"
+consequences:
+  - key: 01a21ab4-1b38-7737-8b7b-28d801320e24
+    kind: cost
+    statement: "A plan that an Agent SDK host's own dialog approves, outside Yard Log, ends its stretch only when the host reports another mode."
+  - key: 01a21ab4-1b38-7737-8b7b-28d9ea7025a4
+    kind: benefit
+    statement: "A plan rejected on the page keeps its stretch going while the agent revises it."
+subjects:
+  - role: affected
+    node: 01a183e9-dfd2-74b1-a45a-149af1a33579
+  - role: outcome
+    node: 01a1646f-546d-7042-befd-eaefec18d7c5
