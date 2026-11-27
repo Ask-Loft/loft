@@ -37,7 +37,9 @@ pub fn run(root: &Path, args: AnswerArgs) -> Finished {
             errors,
             plan_ends,
         }) => {
-            post_plan_ends(&plan_ends);
+            if !plan_ends.is_empty() {
+                super::post::to_running(&Value::Array(plan_ends));
+            }
             let outcome = if errors.is_empty() { OUTCOME } else { PARTLY };
             let code = if errors.is_empty() {
                 ExitCode::SUCCESS
@@ -65,17 +67,6 @@ pub fn person(branch: &Branch) -> Result<(String, String), Failure> {
             "person",
             "git gives no `user.name` and `user.email` for the repository, which name the person",
         )),
-    }
-}
-
-/// Posts the `plan.end` events of an answer to the page server that runs; with none running,
-/// they are dropped, as a hook's events are.
-fn post_plan_ends(plan_ends: &[Value]) {
-    if plan_ends.is_empty() {
-        return;
-    }
-    if let Some(home) = yardlog_store::home::Home::from_env() {
-        let _ = super::post::events(&home, &json!(plan_ends));
     }
 }
 
@@ -123,21 +114,26 @@ pub fn record(branch: &Branch, named: &[Named], channel: Channel) -> Result<Reco
         let answered = log
             .answer(&replies, &who)
             .map_err(|refused| Unapplied::Refused(refusal(&refused)))?;
-        let plan_ends = plan_end::events(&log, &replies, &answered, at, &branch.place().tree);
         let (fields, errors) = answered_fields(&log, &answered);
-        Ok((log, (fields, errors, plan_ends)))
+        let plan_ends = plan_end::events(&log, &replies, &answered, at, &branch.place().tree);
+        let recorded = Recorded {
+            fields,
+            errors,
+            plan_ends,
+        };
+        Ok((log, recorded))
     })?;
     match applied {
-        Ok((mut fields, errors, plan_ends)) => {
-            let mut located = branch.fields(fields["revision"].as_u64().unwrap_or_default());
-            if let (Some(all), Some(own)) = (located.as_object_mut(), fields.as_object_mut()) {
+        Ok(mut recorded) => {
+            let revision = recorded.fields["revision"].as_u64().unwrap_or_default();
+            let mut located = branch.fields(revision);
+            if let (Some(all), Some(own)) =
+                (located.as_object_mut(), recorded.fields.as_object_mut())
+            {
                 all.append(own);
             }
-            Ok(Recorded {
-                fields: located,
-                errors,
-                plan_ends,
-            })
+            recorded.fields = located;
+            Ok(recorded)
         }
         Err(error) => Err(branch.refused(&branch.store.read()?, vec![error])),
     }

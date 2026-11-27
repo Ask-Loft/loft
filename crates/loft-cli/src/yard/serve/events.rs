@@ -305,17 +305,19 @@ fn replay(home: &Home, session: &str) -> SessionKept {
 impl Sessions {
     /// Records the events `body` holds, one event or a list of them in the order they happened.
     pub fn record(&self, home: &Home, body: &[u8]) -> Response {
-        let posted = match serde_json::from_slice::<Value>(body) {
-            Ok(Value::Array(events)) => events,
-            Ok(event @ Value::Object(_)) => vec![event],
-            _ => {
-                return Response::refused(
-                    400,
-                    "input",
-                    "the request's body is no event or list of events",
-                );
-            }
-        };
+        match serde_json::from_slice::<Value>(body) {
+            Ok(Value::Array(events)) => self.record_events(home, &events),
+            Ok(event @ Value::Object(_)) => self.record_events(home, &[event]),
+            _ => Response::refused(
+                400,
+                "input",
+                "the request's body is no event or list of events",
+            ),
+        }
+    }
+
+    /// Records `posted`, events in the order they happened.
+    pub fn record_events(&self, home: &Home, posted: &[Value]) -> Response {
         let mut recorded = 0;
         let mut skipped = 0;
         let mut rejected = Vec::new();

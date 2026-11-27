@@ -186,7 +186,7 @@ pub fn answer(home: &Home, sessions: &Sessions, body: &[u8], port: u16) -> Respo
             plan_ends,
         }) => {
             if !plan_ends.is_empty() {
-                sessions.record(home, json!(plan_ends).to_string().as_bytes());
+                sessions.record_events(home, &plan_ends);
             }
             let outcome = if errors.is_empty() { OUTCOME } else { PARTLY };
             Response::json(200, &json::result(ANSWER_SCHEMA, outcome, fields, errors))

@@ -10,19 +10,15 @@ use serde_json::{Value, json};
 use crate::common::EPOCH;
 use crate::served::{Served, free_port};
 use crate::yard::{BRANCH, Yard};
-use crate::yard_claude_hook::{hook, input};
-use crate::yard_serve_events::{dir, log, post, session_file};
+use crate::yard_claude_events::{decide, kinds, moded};
+use crate::yard_claude_hook::hook;
+use crate::yard_serve_events::{dir, post, session_file};
 
 /// When the hooks and the terminal's answers happen: the fixed clock's time.
 const AT: &str = "2026-01-01T00:00:00Z";
 
 /// When the page server records what the page decides, a minute and a half later.
 const DECIDED: &str = "2026-01-01T00:01:30Z";
-
-/// The page server's clock, at [`DECIDED`].
-fn deciding() -> String {
-    (EPOCH + 90).to_string()
-}
 
 /// Yard Log with a plan, `p1`, presented in plan mode where `plan_mode` says so and sent by
 /// session `s1`'s agent named by `agent`, and a page server.
@@ -46,7 +42,7 @@ fn serve(yard: &Yard) -> Served {
     Served::start_with(
         yard,
         free_port(),
-        &[("SOURCE_DATE_EPOCH", &deciding())],
+        &[("SOURCE_DATE_EPOCH", &(EPOCH + 90).to_string())],
         &["--tree", &tree],
     )
 }
@@ -54,27 +50,21 @@ fn serve(yard: &Yard) -> Served {
 /// A hook of `event` of session `s1`'s main agent naming the permission mode `plan`, for the tool
 /// `tool` where one is named.
 fn planning(yard: &Yard, event: &str, tool: Option<&str>) -> Value {
-    let mut planning = input(yard, event, "s1");
-    planning["permission_mode"] = json!("plan");
+    let mut planning = moded(yard, event, "plan");
     if let Some(tool) = tool {
         planning["tool_name"] = json!(tool);
     }
     planning
 }
 
-/// Decides `p1` on the page.
-fn decide(yard: &Yard, served: &Served, outcome: &Value) {
-    let sent = json!({"tree": dir(yard), "branch": BRANCH, "answers": [outcome]});
-    let reply = served.post_as_page("/api/answer", &sent);
-    assert_eq!(reply.status, 200, "{}", reply.json());
+/// Runs the hook [`planning`] gives.
+fn hear(yard: &Yard, event: &str, tool: Option<&str>) {
+    hook(yard, &planning(yard, event, tool), None);
 }
 
-/// The kinds of the events session `s1`'s event log holds, in order.
-fn kinds(yard: &Yard) -> Vec<String> {
-    log(yard, "s1")
-        .iter()
-        .map(|event| event["kind"].as_str().unwrap().to_owned())
-        .collect()
+/// Approves `p1` on the page.
+fn approve(yard: &Yard, served: &Served) {
+    decide(yard, served, &json!({"block": "p1", "verdict": "approved"}));
 }
 
 /// Session `s1`'s activity file.
@@ -82,34 +72,35 @@ fn activity(yard: &Yard) -> String {
     session_file(yard, "activity", "s1").unwrap()
 }
 
+/// Asserts that session `s1`'s activity file holds the stretches of plan mode `spans`, and what
+/// follows them where `spans` names it.
+fn assert_plan(yard: &Yard, spans: &str) {
+    let activity = activity(yard);
+    assert!(activity.contains(&format!("plan:\n{spans}")), "{activity}");
+}
+
 /// The main agent enters plan mode and presents `p1`, and the host ends `ExitPlanMode` itself.
 fn planned(yard: &Yard) {
-    hook(
-        yard,
-        &planning(yard, "PostToolUse", Some("EnterPlanMode")),
-        None,
-    );
-    hook(
-        yard,
-        &planning(yard, "PostToolUse", Some("ExitPlanMode")),
-        None,
-    );
+    hear(yard, "PostToolUse", Some("EnterPlanMode"));
+    hear(yard, "PostToolUse", Some("ExitPlanMode"));
 }
 
 /// The main agent goes on building while the host still names the mode `plan`.
 fn builds(yard: &Yard) {
-    hook(yard, &planning(yard, "PostToolUse", Some("Write")), None);
-    hook(yard, &planning(yard, "Stop", None), None);
+    hear(yard, "PostToolUse", Some("Write"));
+    hear(yard, "Stop", None);
 }
 
 /// Asserts that session `s1`'s one stretch of plan mode started at [`AT`] and is going on.
 fn assert_planning(yard: &Yard) {
-    let activity = activity(yard);
-    assert!(
-        activity.contains(&format!("plan:\n  - started: {AT}\n")) && !activity.contains("ended:"),
-        "{activity}"
-    );
+    assert_plan(yard, &format!("  - started: {AT}\n"));
+    assert!(!activity(yard).contains("ended:"), "{}", activity(yard));
     assert_eq!(kinds(yard), ["plan.start"]);
+}
+
+/// Asserts that session `s1`'s one stretch of plan mode started at [`AT`] and ended at `ended`.
+fn assert_ended(yard: &Yard, ended: &str) {
+    assert_plan(yard, &format!("  - started: {AT}\n    ended: {ended}\n"));
 }
 
 #[test]
@@ -117,17 +108,9 @@ fn a_plan_mode_plan_approved_on_the_page_ends_its_session_s_plan_span_while_the_
 {
     let (yard, served) = presented(true, &[]);
     planned(&yard);
-    decide(
-        &yard,
-        &served,
-        &json!({"block": "p1", "verdict": "approved"}),
-    );
+    approve(&yard, &served);
     builds(&yard);
-    let activity = activity(&yard);
-    assert!(
-        activity.contains(&format!("plan:\n  - started: {AT}\n    ended: {DECIDED}\n")),
-        "{activity}"
-    );
+    assert_ended(&yard, DECIDED);
     assert_eq!(kinds(&yard), ["plan.start", "plan.end"]);
 }
 
@@ -137,11 +120,7 @@ fn a_plan_mode_plan_approved_in_the_terminal_ends_its_session_s_plan_span() {
     planned(&yard);
     yard.answer("s1", r#"[{"block": "p1", "verdict": "approved"}]"#);
     builds(&yard);
-    let activity = activity(&yard);
-    assert!(
-        activity.contains(&format!("plan:\n  - started: {AT}\n    ended: {AT}\n")),
-        "{activity}"
-    );
+    assert_ended(&yard, AT);
     assert_eq!(kinds(&yard), ["plan.start", "plan.end"]);
 }
 
@@ -154,7 +133,7 @@ fn a_plan_rejected_on_the_page_leaves_its_session_s_plan_span_going_on() {
         &served,
         &json!({"block": "p1", "verdict": "rejected", "reason": "Smaller steps"}),
     );
-    hook(&yard, &planning(&yard, "PostToolUse", Some("Write")), None);
+    hear(&yard, "PostToolUse", Some("Write"));
     assert_planning(&yard);
 }
 
@@ -162,11 +141,7 @@ fn a_plan_rejected_on_the_page_leaves_its_session_s_plan_span_going_on() {
 fn a_plan_a_subagent_presented_ends_no_plan_span_when_approved() {
     let (yard, served) = presented(true, &["--agent", "planner", "--agent-type", "Plan"]);
     planned(&yard);
-    decide(
-        &yard,
-        &served,
-        &json!({"block": "p1", "verdict": "approved"}),
-    );
+    approve(&yard, &served);
     builds(&yard);
     assert_planning(&yard);
 }
@@ -175,11 +150,7 @@ fn a_plan_a_subagent_presented_ends_no_plan_span_when_approved() {
 fn a_plan_presented_outside_plan_mode_ends_no_plan_span_when_approved() {
     let (yard, served) = presented(false, &[]);
     planned(&yard);
-    decide(
-        &yard,
-        &served,
-        &json!({"block": "p1", "verdict": "approved"}),
-    );
+    approve(&yard, &served);
     builds(&yard);
     assert_planning(&yard);
 }
@@ -189,11 +160,7 @@ fn a_page_server_that_rebuilds_the_activity_from_the_event_log_ends_the_plan_spa
 {
     let (yard, served) = presented(true, &[]);
     planned(&yard);
-    decide(
-        &yard,
-        &served,
-        &json!({"block": "p1", "verdict": "approved"}),
-    );
+    approve(&yard, &served);
     drop(served);
     for copy in [yard.live(BRANCH), yard.folder(BRANCH)] {
         let _ = fs::remove_file(copy.join("activity/s1.yaml"));
@@ -201,22 +168,14 @@ fn a_page_server_that_rebuilds_the_activity_from_the_event_log_ends_the_plan_spa
     let again = serve(&yard);
     let turn_end = json!({"session": "s1", "dir": dir(&yard), "at": "2026-01-01T00:02:00Z", "kind": "turn.end"});
     post(&again, &[turn_end]);
-    let activity = activity(&yard);
-    assert!(
-        activity.contains(&format!("plan:\n  - started: {AT}\n    ended: {DECIDED}\n")),
-        "{activity}"
-    );
+    assert_ended(&yard, DECIDED);
 }
 
 #[test]
 fn enter_plan_mode_starts_a_new_plan_span_and_ends_the_spec_span_while_the_host_reports_plan() {
     let (yard, served) = presented(true, &[]);
     planned(&yard);
-    decide(
-        &yard,
-        &served,
-        &json!({"block": "p1", "verdict": "approved"}),
-    );
+    approve(&yard, &served);
     let spec_edit = json!({
         "session": "s1",
         "dir": dir(&yard),
@@ -227,17 +186,12 @@ fn enter_plan_mode_starts_a_new_plan_span_and_ends_the_spec_span_while_the_host_
         "spec": true,
     });
     post(&served, &[spec_edit]);
-    hook(
+    hear(&yard, "PostToolUse", Some("EnterPlanMode"));
+    assert_plan(
         &yard,
-        &planning(&yard, "PostToolUse", Some("EnterPlanMode")),
-        None,
-    );
-    let activity = activity(&yard);
-    assert!(
-        activity.contains(&format!(
-            "plan:\n  - started: {AT}\n    ended: {DECIDED}\n  - started: {AT}\nspec:\n  - started: {AT}\n    ended: {AT}\n"
-        )),
-        "{activity}"
+        &format!(
+            "  - started: {AT}\n    ended: {DECIDED}\n  - started: {AT}\nspec:\n  - started: {AT}\n    ended: {AT}\n"
+        ),
     );
     assert_eq!(
         kinds(&yard),
@@ -248,23 +202,15 @@ fn enter_plan_mode_starts_a_new_plan_span_and_ends_the_spec_span_while_the_host_
 #[test]
 fn enter_plan_mode_heard_as_the_mode_becomes_plan_posts_plan_start_once() {
     let (yard, _served) = presented(true, &[]);
-    let mut outside = input(&yard, "UserPromptSubmit", "s1");
-    outside["permission_mode"] = json!("default");
-    hook(&yard, &outside, None);
-    hook(
-        &yard,
-        &planning(&yard, "PostToolUse", Some("EnterPlanMode")),
-        None,
-    );
+    hook(&yard, &moded(&yard, "UserPromptSubmit", "default"), None);
+    hear(&yard, "PostToolUse", Some("EnterPlanMode"));
     assert_eq!(kinds(&yard), ["plan.start"]);
 }
 
 #[test]
 fn a_subagent_s_enter_plan_mode_posts_nothing_and_leaves_the_session_s_mode() {
     let (yard, _served) = presented(true, &[]);
-    let mut outside = input(&yard, "Stop", "s1");
-    outside["permission_mode"] = json!("default");
-    hook(&yard, &outside, None);
+    hook(&yard, &moded(&yard, "Stop", "default"), None);
     let mut sub = planning(&yard, "PostToolUse", Some("EnterPlanMode"));
     sub["agent_id"] = json!("worker");
     sub["agent_type"] = json!("Plan");

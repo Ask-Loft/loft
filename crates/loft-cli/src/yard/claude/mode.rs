@@ -18,7 +18,12 @@ pub const CARRY: [&str; 3] = ["UserPromptSubmit", "PostToolUse", "Stop"];
 pub fn heard(hook: &Hook) -> Result<Option<&'static str>, String> {
     let entering =
         hook.event() == "PostToolUse" && hook.field("tool_name") == Some("EnterPlanMode");
-    let Some(mode) = hook.field("permission_mode").or(entering.then_some("plan")) else {
+    let mode = if entering {
+        Some("plan")
+    } else {
+        hook.field("permission_mode")
+    };
+    let Some(mode) = mode else {
         return Ok(None);
     };
     if hook.is_subagent() {
@@ -27,7 +32,7 @@ pub fn heard(hook: &Hook) -> Result<Option<&'static str>, String> {
     let Some(store) = Store::of_home() else {
         return Ok(None);
     };
-    let planning = entering || mode == "plan";
+    let planning = mode == "plan";
     store.update(MODES, |modes| {
         let was = modes.insert(hook.session().to_owned(), planning.into());
         let was = was.and_then(|was| was.as_bool());

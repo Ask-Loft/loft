@@ -6,12 +6,14 @@
 
 use std::path::Path;
 
-use serde_json::{Value, json};
+use serde_json::Value;
 use yardlog::body::{Body, Verdict};
 use yardlog::log::Given;
 use yardlog::query::State;
 use yardlog::respond::{Answered, Reply};
 use yardlog::{Agent, BlockKey, Time, YardLog};
+
+use super::event::main_event;
 
 /// The `plan.end` event, at `at`, of each session whose main agent presented in plan mode a plan
 /// that `replies` approved and `answered` recorded, in the tree `tree`: none for a plan decided
@@ -23,34 +25,20 @@ pub fn events(
     at: Time,
     tree: &Path,
 ) -> Vec<Value> {
+    let dir = tree.display().to_string();
     replies
         .iter()
         .filter(|reply| {
-            matches!(
-                reply.given,
-                Given::Outcome {
-                    verdict: Verdict::Approved,
-                    ..
-                }
-            )
+            let approved = matches!(&reply.given, Given::Outcome { verdict, .. } if *verdict == Verdict::Approved);
+            approved && answered.recorded.contains(&reply.block) && in_plan_mode(log, reply.block)
         })
-        .filter(|reply| answered.recorded.contains(&reply.block) && in_plan_mode(log, reply.block))
-        .filter_map(|reply| presenter(log, reply.block))
-        .filter(|agent| agent.subagent.is_none())
-        .map(|agent| {
-            json!({
-                "session": agent.session,
-                "dir": tree.display().to_string(),
-                "at": at.to_string(),
-                "host": agent.host,
-                "kind": "plan.end",
-            })
-        })
+        .filter_map(|reply| presenter(log, reply.block).filter(|agent| agent.subagent.is_none()))
+        .map(|agent| main_event(&agent.host, &agent.session, &dir, "plan.end", at))
         .collect()
 }
 
 /// Whether `block` is a plan presented in plan mode.
-fn in_plan_mode(log: &YardLog, block: BlockKey) -> bool {
+pub fn in_plan_mode(log: &YardLog, block: BlockKey) -> bool {
     log.block(block).is_some_and(
         |(_, block)| matches!(&block.current().body, Body::Plan(plan) if plan.plan_mode),
     )

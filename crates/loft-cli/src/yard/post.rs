@@ -22,3 +22,11 @@ pub fn events(home: &Home, body: &Value) -> bool {
         _ => false,
     }
 }
+
+/// Posts `body` as [`events`] does, where the machine's Yard home is known; an event no page
+/// server takes is dropped.
+pub fn to_running(body: &Value) {
+    if let Some(home) = Home::from_env() {
+        let _ = events(&home, body);
+    }
+}
