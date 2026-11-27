@@ -50,6 +50,10 @@ pub const LOCK: &str = "flush.lock";
 /// The most a flush waits for Yard Server's answer to one batch, unless [`TIMEOUT`] says.
 const WAIT: Duration = Duration::from_secs(10);
 
+/// The most seconds [`TIMEOUT`] may name: a run that waits no longer for its last batch ends
+/// before whoever started it stops it, 6 minutes after it began.
+const MOST_WAIT: u64 = 60;
+
 /// Where connected mode sends: the home of Yard, the outbox of the address and the token.
 pub(in crate::yard) struct Connection {
     pub home: Home,
@@ -113,9 +117,14 @@ fn wait_of(seconds: Option<u64>) -> Duration {
 
 /// How long this flush waits for an answer, or why [`TIMEOUT`] does not say.
 fn wait() -> Result<Duration, String> {
-    crate::remote::seconds(TIMEOUT)
-        .map(wait_of)
-        .map_err(|error| error.to_string())
+    match crate::remote::seconds(TIMEOUT) {
+        Ok(Some(seconds)) if seconds > MOST_WAIT => Err(format!(
+            "{TIMEOUT}={}: not a whole number of seconds from 1 to {MOST_WAIT}",
+            crate::escaped::Escaped(&crate::environment::text(TIMEOUT).unwrap_or_default())
+        )),
+        Ok(seconds) => Ok(wait_of(seconds)),
+        Err(error) => Err(error.to_string()),
+    }
 }
 
 /// `loft yard flush`: sends the outbox's entries for its address to Yard Server, batch after

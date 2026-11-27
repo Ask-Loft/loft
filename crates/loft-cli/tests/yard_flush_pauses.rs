@@ -13,8 +13,8 @@ use yardlog_store::lock;
 use crate::common::signed_in::real_now;
 use crate::yard::{Yard, document};
 use crate::yard_connected::{
-    STAGE_BATCH, come_back_after, connected, entries, flush, flush_json, flush_record, keys, notes,
-    outbox, readdress, seconds_of, write,
+    STAGE_BATCH, come_back_after, connected, dated, entries, flush, flush_json, flush_record, keys,
+    notes, outbox, readdress, seconds_of, write,
 };
 
 /// `variables` with `LOFT_YARD_SERVER_TIMEOUT` set to `value`.
@@ -49,17 +49,32 @@ fn a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names(
     assert_eq!(server.requests().len(), 2);
 }
 
+/// `seconds` since the Unix epoch as an IMF-fixdate, as `Retry-After` may give a time.
+fn http_date(seconds: u64) -> String {
+    const MONTHS: [&str; 12] = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
+    let time = dated(seconds);
+    let (date, clock) = time.trim_end_matches('Z').split_once('T').unwrap();
+    let [year, month, day] = date.split('-').collect::<Vec<_>>()[..] else {
+        panic!("{time}");
+    };
+    let month = MONTHS[month.parse::<usize>().unwrap() - 1];
+    format!("Thu, {day} {month} {year} {clock} GMT")
+}
+
 #[test]
 fn a_503_with_a_retry_after_as_an_http_date_pauses_the_flush_until_that_date() {
     let yard = Yard::new();
-    let server = YardServer::coming_back(503, "Wed, 21 Oct 2099 07:28:00 GMT");
+    let date = real_now() + 600;
+    let server = YardServer::coming_back(503, &http_date(date));
     let variables = connected(&server.url());
     write(&yard, STAGE_BATCH, &variables);
     let (_, paused) = flush(&yard, &variables);
     assert_eq!(paused["outcome"], "paused");
     assert_eq!(
-        flush_record(&yard, &server.url())["notBefore"],
-        "2099-10-21T07:28:00Z"
+        seconds_of(&flush_record(&yard, &server.url())["notBefore"]),
+        date
     );
     flush(&yard, &variables);
     assert_eq!(server.requests().len(), 1);
@@ -83,12 +98,34 @@ fn a_retry_after_of_0_seconds_or_of_a_date_already_past_lets_the_next_run_send()
 }
 
 #[test]
+fn a_retry_after_more_than_an_hour_away_keeps_the_flush_away_for_an_hour() {
+    for retry_after in [
+        "7200".to_owned(),
+        "99999999999999".to_owned(),
+        "Wed, 21 Oct 2099 07:28:00 GMT".to_owned(),
+    ] {
+        let yard = Yard::new();
+        let server = YardServer::coming_back(429, &retry_after);
+        let variables = connected(&server.url());
+        write(&yard, STAGE_BATCH, &variables);
+        let before = real_now();
+        let (code, paused) = flush(&yard, &variables);
+        let after = real_now();
+        assert_eq!((code, &paused["outcome"]), (Some(0), &json!("paused")));
+        let not_before = seconds_of(&flush_record(&yard, &server.url())["notBefore"]);
+        assert!(
+            (before + 3600..=after + 3600).contains(&not_before),
+            "{retry_after}: {not_before}"
+        );
+    }
+}
+
+#[test]
 fn a_429_or_503_without_a_retry_after_that_reads_is_a_failure() {
     for server in [
         YardServer::failing(429),
         YardServer::failing(503),
         YardServer::coming_back(429, "soon"),
-        YardServer::coming_back(503, "99999999999999"),
     ] {
         let yard = Yard::new();
         let variables = connected(&server.url());
@@ -137,8 +174,19 @@ fn with_a_timeout_of_1_second_a_silent_yard_server_is_given_up_after_it() {
 }
 
 #[test]
-fn a_timeout_that_is_not_a_positive_whole_number_of_seconds_fails_with_no_request() {
-    for value in ["soon", "0", "-3", "1.5"] {
+fn a_timeout_of_60_seconds_is_taken() {
+    let yard = Yard::new();
+    let server = YardServer::accepting();
+    let variables = timing_out(&connected(&server.url()), "60");
+    write(&yard, STAGE_BATCH, &variables);
+    let (code, sent) = flush(&yard, &variables);
+    assert_eq!((code, &sent["outcome"]), (Some(0), &json!("sent")));
+    assert_eq!(server.requests().len(), 1);
+}
+
+#[test]
+fn a_timeout_that_is_not_a_whole_number_of_seconds_from_1_to_60_fails_with_no_request() {
+    for value in ["soon", "0", "-3", "1.5", "61", "3600"] {
         let yard = Yard::new();
         let server = YardServer::accepting();
         let variables = timing_out(&connected(&server.url()), value);

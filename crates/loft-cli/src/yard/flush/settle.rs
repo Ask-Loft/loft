@@ -24,6 +24,9 @@ use crate::network;
 /// The path that takes a batch of versions, under Yard Server's address.
 const BATCHES: &str = "batches";
 
+/// The longest a `Retry-After` keeps the sending away, in seconds.
+const MOST_PAUSE: u64 = 60 * 60;
+
 /// The code of Yard Server's own refusal of a batch with `status`, where it refuses one for good.
 fn own_code(status: u16) -> &'static str {
     if status == 413 {
@@ -132,7 +135,7 @@ pub(super) fn send(
         }
         429 | 503 => match reply.retry_after.as_deref().and_then(|value| {
             let now = clock.now().unwrap_or_default();
-            let seconds = crate::remote::retry_after(value, now)?;
+            let seconds = crate::remote::retry_after(value, now)?.min(MOST_PAUSE);
             Some(now.saturating_add(seconds)).filter(|time| Time::from_unix_seconds(*time).is_ok())
         }) {
             Some(time) => Settled {
