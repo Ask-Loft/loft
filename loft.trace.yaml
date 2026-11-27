@@ -25351,7 +25351,7 @@ links:
         name: "a_hook_given_no_claude_code_process_leaves_and_takes_no_hand_off"
         body: 0f486ee5d6049f218de2de50811ba4b1fb8159dbb719d1ba584070c2068e3404
   - node: 01a183e9-dfd2-74b1-a45a-14ab0c96c220
-    reviewed: 548dba8ed0eaeeeec0b7c174d55556f318e22d0b8626e367caef517f8d505133
+    reviewed: 8514aad25de38b5ed5fe17834cc81efdf2e1ca237cddecd74e741ea66c877433
     tests:
       - file: "crates/loft-cli/tests/yard_claude_events.rs"
         name: "plan_mode_starting_and_ending_is_posted_once_for_each_change_of_the_main_agent_s_mode"
@@ -33780,6 +33780,48 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_events.rs"
         name: "no_other_session_s_activity_file_is_written_for_a_session_s_events"
         body: 9527654d9fcc814bec120db693115b594c98d1f8088168f18fad7665a3dcde01
+  - node: 01a21ab4-1b40-722d-a2f1-eddb67395023
+    reviewed: 2bb4daa5a3ff15836bdb6084893aaf9c117bd466d22a0f1cfbb60fbd9f314b99
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_plan_mode_plan_approved_on_the_page_ends_its_session_s_plan_span_while_the_host_reports_plan"
+        body: 7416a71cca2c3c9f47a699ba7a5bdfc0e8c9e686c108188639b41064b234fb30
+  - node: 01a21ab4-1b40-722d-a2f1-eddc5528b2e1
+    reviewed: 7ef1bee7038ab1ab0776c2e4dce2f5865f4a43e36376d8f0eaa4129d61cd65e1
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_plan_mode_plan_approved_in_the_terminal_ends_its_session_s_plan_span"
+        body: 42b8fd3492c6f4c0bb77095ee6c5a05a01cdab6812e876b0960140a622604f4b
+  - node: 01a21ab4-1b40-722d-a2f1-eddd22f0b0ca
+    reviewed: 2e85d9afe98c075717c0c44dd379126c98769ded3dd5311eea04d5ccda438b36
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_plan_rejected_on_the_page_leaves_its_session_s_plan_span_going_on"
+        body: c8c45b2c6663ab0df75aab61154df1797e02a0484fc7c7b26c212bc8141f1b60
+  - node: 01a21ab4-1b40-722d-a2f1-edde5c4d7cc6
+    reviewed: 0c5cffb0848adc0e512101524af55eddb2f1950db69dba23d348f92136b6e4fa
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_plan_a_subagent_presented_ends_no_plan_span_when_approved"
+        body: 2283921beba091a79d7c9c42de871225b14d895e107fc3a627842d5d508095cc
+  - node: 01a21ab4-1b40-722d-a2f1-eddf0231230f
+    reviewed: 9ca06efc519ce0789554a0e25720fd19d4d00a7d1d809fca6536b540e2a951bb
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_plan_presented_outside_plan_mode_ends_no_plan_span_when_approved"
+        body: 9f4f0393a1bc4710cc451d841d12cad9134aa8cb73ebf1b324e1d091df067c90
+  - node: 01a21ab4-1b40-722d-a2f1-ede02e7314fe
+    reviewed: da18ca7d9f16c56e3b9bf1f3952689745702fe0fbc897779631c2a0ee0013180
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_plan_mode_plan_approved_on_the_page_ends_its_session_s_plan_span_while_the_host_reports_plan"
+        body: 7416a71cca2c3c9f47a699ba7a5bdfc0e8c9e686c108188639b41064b234fb30
+  - node: 01a21ab4-1b40-722d-a2f1-ede10a699b91
+    reviewed: 80e8ff912fe093b4540ffb0ea613fbd11dfb8e639057eb269b72d6661eefd504
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "a_page_server_that_rebuilds_the_activity_from_the_event_log_ends_the_plan_span_at_the_approval"
+        body: 253a5746022b58b7c6c508d50042249746e5141b1fbdfd7117badf578f4c2a5e
   - node: 01a17989-a8ba-7109-a214-b519f2ff0e19
     reviewed: 8cb3d48273dfe919c4e8188c914d946167ed40810f52d83266b96d286b28c2eb
     tests:

@@ -15,11 +15,12 @@ use yardlog_store::git::YardGit;
 use yardlog_store::home::Home;
 use yardlog_store::session::SessionFile;
 
+use super::events::Sessions;
 use super::http::Response;
 use super::trees::is_served;
 use super::{markdown, token_sums};
 use crate::json;
-use crate::yard::answer::{OUTCOME, PARTLY, record};
+use crate::yard::answer::{OUTCOME, PARTLY, Recorded, record};
 use crate::yard::answer_input;
 use crate::yard::args::{Beyond, Runner};
 use crate::yard::branch::Branch;
@@ -152,8 +153,9 @@ fn shown_with_versions(branch: &Branch, held: Held, inherited: bool) -> Result<V
 }
 
 /// Records the answers and decisions the page sent: `{ tree, branch, answers }`, each
-/// answer as `loft yard answer` takes it.
-pub fn answer(home: &Home, body: &[u8], port: u16) -> Response {
+/// answer as `loft yard answer` takes it, and keeps in `sessions` the end of each session's plan
+/// mode that an approval makes.
+pub fn answer(home: &Home, sessions: &Sessions, body: &[u8], port: u16) -> Response {
     let Ok(sent) = serde_json::from_slice::<Value>(body) else {
         return Response::refused(400, "input", "the request's body is not JSON");
     };
@@ -178,7 +180,14 @@ pub fn answer(home: &Home, body: &[u8], port: u16) -> Response {
         Err(failure) => return answer_failure(failure, ANSWER_SCHEMA),
     };
     match record(&branch, &named, Channel::Page) {
-        Ok((fields, errors)) => {
+        Ok(Recorded {
+            fields,
+            errors,
+            plan_ends,
+        }) => {
+            if !plan_ends.is_empty() {
+                sessions.record(home, json!(plan_ends).to_string().as_bytes());
+            }
             let outcome = if errors.is_empty() { OUTCOME } else { PARTLY };
             Response::json(200, &json::result(ANSWER_SCHEMA, outcome, fields, errors))
         }

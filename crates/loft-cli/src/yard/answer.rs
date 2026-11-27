@@ -18,6 +18,7 @@ use super::branch::{self, Branch, Unapplied};
 use super::caller::Caller;
 use super::change::refusal;
 use super::failure::{self, Failure};
+use super::plan_end;
 use super::working_tree::{Follows, sent_to, target};
 use crate::finish::Finished;
 use crate::json;
@@ -31,7 +32,12 @@ pub const PARTLY: &str = "answered elsewhere";
 pub fn run(root: &Path, args: AnswerArgs) -> Finished {
     let as_json = args.output.json();
     match attempt(root, args) {
-        Ok((fields, errors)) => {
+        Ok(Recorded {
+            fields,
+            errors,
+            plan_ends,
+        }) => {
+            post_plan_ends(&plan_ends);
             let outcome = if errors.is_empty() { OUTCOME } else { PARTLY };
             let code = if errors.is_empty() {
                 ExitCode::SUCCESS
@@ -62,7 +68,18 @@ pub fn person(branch: &Branch) -> Result<(String, String), Failure> {
     }
 }
 
-fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure> {
+/// Posts the `plan.end` events of an answer to the page server that runs; with none running,
+/// they are dropped, as a hook's events are.
+fn post_plan_ends(plan_ends: &[Value]) {
+    if plan_ends.is_empty() {
+        return;
+    }
+    if let Some(home) = yardlog_store::home::Home::from_env() {
+        let _ = super::post::events(&home, &json!(plan_ends));
+    }
+}
+
+fn attempt(dir: &Path, args: AnswerArgs) -> Result<Recorded, Failure> {
     let caller = Caller::new(&args.writer.clone().into());
     let named = answer_input::read(&super::input::json(&args.input)?)?;
     let dir = match &args.writer.tree {
@@ -73,14 +90,19 @@ fn attempt(dir: &Path, args: AnswerArgs) -> Result<(Value, Vec<Value>), Failure>
     record(&branch, &named, Channel::Terminal)
 }
 
+/// What recording the person's answers gave.
+pub struct Recorded {
+    /// The result's fields.
+    pub fields: Value,
+    /// An error for each block answered or decided elsewhere first.
+    pub errors: Vec<Value>,
+    /// The `plan.end` event of each session whose plan in plan mode the answers approved.
+    pub plan_ends: Vec<Value>,
+}
+
 /// Records the person's answers and decisions `named` in the branch's Yard Log, given on
-/// `channel`: the result's fields, and an error for each block answered or decided elsewhere
-/// first.
-pub fn record(
-    branch: &Branch,
-    named: &[Named],
-    channel: Channel,
-) -> Result<(Value, Vec<Value>), Failure> {
+/// `channel`.
+pub fn record(branch: &Branch, named: &[Named], channel: Channel) -> Result<Recorded, Failure> {
     let (name, email) = person(branch)?;
     let at = super::now()?;
     let settler = Actor::Person {
@@ -101,16 +123,21 @@ pub fn record(
         let answered = log
             .answer(&replies, &who)
             .map_err(|refused| Unapplied::Refused(refusal(&refused)))?;
-        let fields = answered_fields(&log, &answered);
-        Ok((log, fields))
+        let plan_ends = plan_end::events(&log, &replies, &answered, at, &branch.place().tree);
+        let (fields, errors) = answered_fields(&log, &answered);
+        Ok((log, (fields, errors, plan_ends)))
     })?;
     match applied {
-        Ok((mut fields, errors)) => {
+        Ok((mut fields, errors, plan_ends)) => {
             let mut located = branch.fields(fields["revision"].as_u64().unwrap_or_default());
             if let (Some(all), Some(own)) = (located.as_object_mut(), fields.as_object_mut()) {
                 all.append(own);
             }
-            Ok((located, errors))
+            Ok(Recorded {
+                fields: located,
+                errors,
+                plan_ends,
+            })
         }
         Err(error) => Err(branch.refused(&branch.store.read()?, vec![error])),
     }

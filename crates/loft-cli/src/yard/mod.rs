@@ -27,6 +27,7 @@ mod input;
 pub mod merge;
 mod page;
 mod page_command;
+mod plan_end;
 mod post;
 mod protocol;
 mod published;
