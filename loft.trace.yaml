@@ -39469,7 +39469,7 @@ links:
         name: "the_report_gives_no_home_where_no_home_directory_is_known"
         body: c9f1c3642747c83911ebb2bef7763f374aeb1733bcc2239b5ee486a9f66ea6b3
   - node: 01a1646f-546d-7042-befd-ea45ec21ca68
-    reviewed: 41d76351b9e36ab128440d3f4e66f87370b22431903c4a66918d6c95abca5521
+    reviewed: 2fcb3ba9fe3044d83f7fa7e4dd46d4febfb808a571ae8fbf9d2faadb9baea707
     tests:
       - file: "crates/loft-cli/tests/yard_protocol.rs"
         name: "the_report_is_the_same_inside_and_outside_a_git_repository_and_writes_no_file"

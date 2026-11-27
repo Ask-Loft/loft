@@ -1,0 +1,136 @@
+key: 01a21c37-0456-7725-b4e6-ee569adc9e40
+slug: yard-client-acts-only-in-a-working-tree-that-uses-loft
+title: "Yard Client acts only in a working tree that uses Loft, which its files or a git setting show"
+context: "A person may enable the Loft plugin for themselves rather than for a project, and Claude Code and Codex then run its hooks, its mod and its `yard` skill in every repository. In a repository that has nothing to do with Loft they briefed the agent toward Yard, opened Yard Log in the working tree on its first question or plan, added the repository to the page and left files under git's directory and in `~/.yard/`. A project could keep the plugin out only through a setting of its own, which, kept out of the history, a new worktree does not carry. A mod that stays off starts no page server, as with a protocol mismatch, so ADR-79 holds for the mods that are on."
+state:
+  kind: accepted
+  selectedOption: 01a21c37-0456-7725-b4e6-ee5b147e1c67
+  outcome: "Yard Client acts only for an agent whose working tree, or a directory above it within its worktree, holds `spec/loftspec.yaml`, `loft.lock.json` or Yard Log of any branch, or where git's configuration sets `loft.yard` to true. Everywhere else the command hooks answer nothing and write nothing, and the mod, which learns the answer from `loft yard protocol`, stays off for the session without a notice."
+drivers:
+  - key: 01a21c37-0456-7725-b4e6-ee57ed996db6
+    kind: local
+    label: "Quiet elsewhere"
+    statement: "With the plugin enabled for the person, a repository that does not use Loft runs as it would without the plugin."
+  - key: 01a21c37-0456-7725-b4e6-ee58c386583f
+    kind: local
+    label: "Yard without a specification"
+    statement: "A repository that keeps Yard Log and no specification still gets Yard Client."
+  - key: 01a21c37-0456-7725-b4e6-ee59af12554b
+    kind: local
+    label: "Every worktree"
+    statement: "A new worktree or clone of a repository that uses Loft gets Yard Client with no setup of its own."
+  - key: 01a21c37-0456-7725-b4e6-ee5aa5a39834
+    kind: local
+    label: "A cheap check"
+    statement: "In a repository that uses Loft, the check adds no process to a hook."
+options:
+  - key: 01a21c37-0456-7725-b4e6-ee5b147e1c67
+    title: "Its files, or a git setting"
+    description: "Yard Client acts where the working tree holds `spec/loftspec.yaml`, `loft.lock.json` or Yard Log of any branch, or where git's configuration sets `loft.yard` to true."
+  - key: 01a21c37-0456-7725-b4e6-ee5c597e8297
+    title: "A setting alone"
+    description: "Yard Client acts only where a setting turns it on."
+  - key: 01a21c37-0456-7725-b4e6-ee5d63f976ed
+    title: "The specification alone"
+    description: "Yard Client acts only where the working tree holds `spec/loftspec.yaml` or `loft.lock.json`."
+  - key: 01a21c37-0456-7725-b4e6-ee5ed7b7b56d
+    title: "Each project's own plugin setting"
+    description: "Yard Client acts wherever the plugin is enabled, and a project that does not use Loft disables the plugin in its own settings."
+assessments:
+  - option: 01a21c37-0456-7725-b4e6-ee5b147e1c67
+    driver: 01a21c37-0456-7725-b4e6-ee57ed996db6
+    rating: supports
+    rationale: "a repository that holds none of them and sets nothing gets nothing"
+  - option: 01a21c37-0456-7725-b4e6-ee5b147e1c67
+    driver: 01a21c37-0456-7725-b4e6-ee58c386583f
+    rating: supports
+    rationale: "Yard Log of any branch shows it, and the setting covers a repository that ignores `.yard/`"
+  - option: 01a21c37-0456-7725-b4e6-ee5b147e1c67
+    driver: 01a21c37-0456-7725-b4e6-ee59af12554b
+    rating: supports
+    rationale: "the specification and its lock are committed, and every worktree of a repository shares its configuration"
+  - option: 01a21c37-0456-7725-b4e6-ee5b147e1c67
+    driver: 01a21c37-0456-7725-b4e6-ee5aa5a39834
+    rating: supports
+    rationale: "a few file lookups decide it where the working tree uses Loft, and git is asked only elsewhere"
+  - option: 01a21c37-0456-7725-b4e6-ee5c597e8297
+    driver: 01a21c37-0456-7725-b4e6-ee57ed996db6
+    rating: supports
+    rationale: "nothing acts until it is turned on"
+  - option: 01a21c37-0456-7725-b4e6-ee5c597e8297
+    driver: 01a21c37-0456-7725-b4e6-ee58c386583f
+    rating: supports
+    rationale: "the setting turns it on there as anywhere"
+  - option: 01a21c37-0456-7725-b4e6-ee5c597e8297
+    driver: 01a21c37-0456-7725-b4e6-ee59af12554b
+    rating: conflicts
+    rationale: "each clone of every repository that uses Loft is set up by hand"
+  - option: 01a21c37-0456-7725-b4e6-ee5c597e8297
+    driver: 01a21c37-0456-7725-b4e6-ee5aa5a39834
+    rating: conflicts
+    rationale: "every hook asks git for the setting"
+  - option: 01a21c37-0456-7725-b4e6-ee5d63f976ed
+    driver: 01a21c37-0456-7725-b4e6-ee57ed996db6
+    rating: supports
+    rationale: "a repository without the Format's files gets nothing"
+  - option: 01a21c37-0456-7725-b4e6-ee5d63f976ed
+    driver: 01a21c37-0456-7725-b4e6-ee58c386583f
+    rating: conflicts
+    rationale: "a repository that keeps only Yard Log loses Yard Client"
+  - option: 01a21c37-0456-7725-b4e6-ee5d63f976ed
+    driver: 01a21c37-0456-7725-b4e6-ee59af12554b
+    rating: supports
+    rationale: "both files are committed"
+  - option: 01a21c37-0456-7725-b4e6-ee5d63f976ed
+    driver: 01a21c37-0456-7725-b4e6-ee5aa5a39834
+    rating: supports
+    rationale: "two file lookups decide it"
+  - option: 01a21c37-0456-7725-b4e6-ee5ed7b7b56d
+    driver: 01a21c37-0456-7725-b4e6-ee57ed996db6
+    rating: conflicts
+    rationale: "every repository runs the hooks until the person disables the plugin there, and again in each new worktree, since that setting stays out of the history"
+  - option: 01a21c37-0456-7725-b4e6-ee5ed7b7b56d
+    driver: 01a21c37-0456-7725-b4e6-ee58c386583f
+    rating: supports
+    rationale: "Yard Client acts wherever the plugin is enabled"
+  - option: 01a21c37-0456-7725-b4e6-ee5ed7b7b56d
+    driver: 01a21c37-0456-7725-b4e6-ee59af12554b
+    rating: supports
+    rationale: "a repository that uses Loft needs no setting, so each of its worktrees gets Yard Client"
+  - option: 01a21c37-0456-7725-b4e6-ee5ed7b7b56d
+    driver: 01a21c37-0456-7725-b4e6-ee5aa5a39834
+    rating: neutral
+    rationale: "nothing is checked, and every hook does its whole work"
+consequences:
+  - key: 01a21c37-0456-7725-b4e6-ee5f5a1d323d
+    kind: benefit
+    statement: "The plugin can stay enabled for the person in every repository."
+  - key: 01a21c37-0456-7725-b4e6-ee602d7ec53f
+    kind: cost
+    statement: "A repository that ignores `.yard/` and holds no specification, and a monorepo whose `spec/` lies in a package entered from above it, need `loft.yard` set before Yard Client acts there."
+  - key: 01a21c37-0456-7725-b4e6-ee61b01c0ce8
+    kind: cost
+    statement: "In a repository that does not use Loft, each hook still starts `loft`, which asks git for `loft.yard` before it answers nothing."
+  - key: 01a21c37-0456-7725-b4e6-ee625afcb58f
+    kind: risk
+    statement: "A repository where an earlier plugin wrote `.yard/` uses Loft until that directory is removed."
+  - key: 01a21c37-0456-7725-b4e6-ee63c7d597cf
+    kind: obligation
+    statement: "`loft yard protocol` reports whether the working tree of its directory uses Loft, so that the mod decides without reading files itself."
+subjects:
+  - role: affected
+    node: 01a1646f-546c-7521-9643-bc5a6be5a9e6
+  - role: affected
+    node: 01a1646f-546c-7521-9643-bc7c4e7a1936
+  - role: affected
+    node: 01a1646f-546d-7042-befd-ea405aeffb3b
+  - role: affected
+    node: 01a1787c-f803-70b1-b946-b6ee1da9af0b
+  - role: affected
+    node: 01a1787c-f803-70b1-b946-b70ceb2b1660
+  - role: affected
+    node: 01a183e9-dfd2-74b1-a45a-149af1a33579
+  - role: outcome
+    node: 01a21c37-045d-7584-a2b8-578bac0b7304
+mentions:
+  - 01a1646f-5467-7025-8a88-4e648446890f
