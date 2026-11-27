@@ -469,7 +469,11 @@ fn hear(home: &Home, events: &[Event]) {
     let Ok(at) = crate::yard::now() else {
         return;
     };
-    let mut sessions: Vec<String> = events.iter().map(Event::session_key).collect();
+    let mut sessions: Vec<String> = events
+        .iter()
+        .filter(|event| !event.by_person())
+        .map(Event::session_key)
+        .collect();
     sessions.sort_unstable();
     sessions.dedup();
     for session in sessions {
@@ -483,7 +487,10 @@ fn hear(home: &Home, events: &[Event]) {
 /// with where the main agent is now.
 fn note_main_dirs(home: &Home, events: &[Event]) {
     let mut last: HashMap<(&str, &str), &str> = HashMap::new();
-    for event in events.iter().filter(|event| matches!(event.who, Who::Main)) {
+    for event in events
+        .iter()
+        .filter(|event| matches!(event.who, Who::Main) && !event.by_person())
+    {
         last.insert(
             (event.host.as_str(), event.session.as_str()),
             event.dir.as_str(),

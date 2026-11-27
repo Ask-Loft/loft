@@ -165,6 +165,12 @@ impl Event {
     pub fn failed(&self) -> Option<bool> {
         self.posted["failed"].as_bool()
     }
+
+    /// Whether the person made the event, as an approval of a plan does, rather than the
+    /// session: then it is no sign of the session's life or of where its agent works.
+    pub fn by_person(&self) -> bool {
+        self.posted["by"] == "person"
+    }
 }
 
 #[cfg(test)]

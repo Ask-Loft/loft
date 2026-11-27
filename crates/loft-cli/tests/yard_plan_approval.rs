@@ -12,7 +12,7 @@ use crate::served::{Served, free_port};
 use crate::yard::{BRANCH, Yard};
 use crate::yard_claude_events::{decide, kinds, moded};
 use crate::yard_claude_hook::hook;
-use crate::yard_serve_events::{dir, post, session_file};
+use crate::yard_serve_events::{dir, log, post, session_file};
 
 /// When the hooks and the terminal's answers happen: the fixed clock's time.
 const AT: &str = "2026-01-01T00:00:00Z";
@@ -217,4 +217,50 @@ fn a_subagent_s_enter_plan_mode_posts_nothing_and_leaves_the_session_s_mode() {
     hook(&yard, &sub, None);
     assert_eq!(kinds(&yard), Vec::<String>::new());
     assert_eq!(yard.home_file("claude/modes.json"), json!({"s1": false}));
+}
+
+/// The text of `~/.yard/<name>`, where it is there.
+fn home_text(yard: &Yard, name: &str) -> Option<String> {
+    fs::read_to_string(yard.scratch.home().join(".yard").join(name)).ok()
+}
+
+#[test]
+fn the_approval_s_event_names_the_person_as_who_made_it() {
+    let (yard, served) = presented(true, &[]);
+    planned(&yard);
+    approve(&yard, &served);
+    let events = log(&yard, "s1");
+    let last = events.last().unwrap();
+    assert_eq!(last["kind"], "plan.end", "{last}");
+    assert_eq!(last["by"], "person", "{last}");
+}
+
+#[test]
+fn an_approval_is_not_taken_as_a_sign_that_its_session_is_live() {
+    let (yard, served) = presented(true, &[]);
+    let before = home_text(&yard, "sessions.json");
+    approve(&yard, &served);
+    assert_eq!(home_text(&yard, "sessions.json"), before);
+    assert_eq!(kinds(&yard), ["plan.end"]);
+}
+
+#[test]
+fn an_approval_leaves_the_directory_kept_for_its_session_s_main_agent_as_it_was() {
+    let (yard, served) = presented(true, &[]);
+    let elsewhere = Yard::new();
+    let main_dir = dir(&elsewhere);
+    let dirs = yard.scratch.home().join(".yard/session-dirs.json");
+    fs::write(&dirs, json!({"s1": main_dir}).to_string()).unwrap();
+    approve(&yard, &served);
+    assert_eq!(yard.home_file("session-dirs.json"), json!({"s1": main_dir}));
+    assert_eq!(kinds(&yard), ["plan.end"]);
+}
+
+#[test]
+fn an_approval_that_is_the_first_event_heard_of_its_session_starts_no_turn() {
+    let (yard, served) = presented(true, &[]);
+    approve(&yard, &served);
+    assert_eq!(kinds(&yard), ["plan.end"]);
+    let activity = session_file(&yard, "activity", "s1").unwrap_or_default();
+    assert!(!activity.contains("turns:"), "{activity}");
 }

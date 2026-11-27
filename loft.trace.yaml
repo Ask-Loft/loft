@@ -33843,6 +33843,30 @@ links:
       - file: "crates/loft-cli/tests/yard_plan_approval.rs"
         name: "a_page_server_that_rebuilds_the_activity_from_the_event_log_ends_the_plan_span_at_the_approval"
         body: 287d9cffa78ee144f44179edb856f9b907d2e02b19279806f027a80827b6be98
+  - node: 01a21ac6-1872-7517-9002-aaa2b2db3109
+    reviewed: 7e5043c9c09a5a22a17df1b96c730f7981aa5229e780408370b05c996915d494
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "the_approval_s_event_names_the_person_as_who_made_it"
+        body: 83331a566affb097b9fe22f36d8f721e0dd4f5c4e5b7ac10cc7dba16e2bb6dbe
+  - node: 01a21ac6-1872-7517-9002-aaa3061378a0
+    reviewed: b5f4c4beff71f5c7af5832a478f7523ec6249dd645f8d7a674a4c5c66d4d5ef5
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "an_approval_is_not_taken_as_a_sign_that_its_session_is_live"
+        body: 5e16052416ad19ec59e39163397f46d24ed19abe84a62ab4d4490e8038a01c8c
+  - node: 01a21ac6-1872-7517-9002-aaa49731d775
+    reviewed: a2c30124376162dcca499ea9bc7d67c0e341116a83807579c1e869ce42e558c4
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "an_approval_leaves_the_directory_kept_for_its_session_s_main_agent_as_it_was"
+        body: e403e6e5aca31996237dbd133e658ff60684a3137fa73f8b3672f6a4f707082e
+  - node: 01a21ac6-1872-7517-9002-aaa50d9abef4
+    reviewed: 7b3be4baa76993e427aace1268543ab37a9e515b98d6601a9447c4039b80eabb
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "an_approval_that_is_the_first_event_heard_of_its_session_starts_no_turn"
+        body: 8e28556379a5baeeeb6b483fad737589d77bafb54ea4047e24a28dee604b88db
   - node: 01a17989-a8ba-7109-a214-b519f2ff0e19
     reviewed: 8cb3d48273dfe919c4e8188c914d946167ed40810f52d83266b96d286b28c2eb
     tests:

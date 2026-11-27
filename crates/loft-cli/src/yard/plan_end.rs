@@ -33,7 +33,11 @@ pub fn events(
             approved && answered.recorded.contains(&reply.block) && in_plan_mode(log, reply.block)
         })
         .filter_map(|reply| presenter(log, reply.block).filter(|agent| agent.subagent.is_none()))
-        .map(|agent| main_event(&agent.host, &agent.session, &dir, "plan.end", at))
+        .map(|agent| {
+            let mut event = main_event(&agent.host, &agent.session, &dir, "plan.end", at);
+            event["by"] = "person".into();
+            event
+        })
         .collect()
 }
 

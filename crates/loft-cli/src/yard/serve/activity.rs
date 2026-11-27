@@ -120,9 +120,10 @@ impl Activity {
         let at = event.at;
         let main = event.who.is_main();
         let mut changed = metadata_changed;
-        if !self.heard {
+        if !self.heard && !event.by_person() {
             self.heard = true;
-            // A turn under way when Yard Log opened is kept from the first event heard of it.
+            // A turn under way when Yard Log opened is kept from the first event heard of it;
+            // an event the person made, such as an approval's, is not one of the session's own.
             if main && event.kind != "turn.start" {
                 changed |= start(&mut self.turns, at);
             }
