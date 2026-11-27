@@ -264,3 +264,26 @@ fn an_approval_that_is_the_first_event_heard_of_its_session_starts_no_turn() {
     let activity = session_file(&yard, "activity", "s1").unwrap_or_default();
     assert!(!activity.contains("turns:"), "{activity}");
 }
+
+#[test]
+fn an_approval_also_ends_the_plan_span_of_the_latest_session_that_continues_its_presenter() {
+    let (yard, served) = presented(true, &[]);
+    planned(&yard);
+    let continued = json!({"s2": "s1", "s3": "s2"});
+    fs::write(
+        yard.scratch.home().join(".yard/continuations.json"),
+        continued.to_string(),
+    )
+    .unwrap();
+    let mut entering = planning(&yard, "PostToolUse", Some("EnterPlanMode"));
+    entering["session_id"] = json!("s3");
+    hook(&yard, &entering, None);
+    approve(&yard, &served);
+    let activity = session_file(&yard, "activity", "s3").unwrap();
+    assert!(
+        activity.contains(&format!("plan:\n  - started: {AT}\n    ended: {DECIDED}\n")),
+        "{activity}"
+    );
+    assert_ended(&yard, DECIDED);
+    assert_eq!(log(&yard, "s2"), Vec::<Value>::new());
+}

@@ -15,7 +15,7 @@ use yardlog::{Actor, BlockKey, Channel, Handle, Key, YardLog};
 use super::answer_input::{self, Named};
 use super::args::AnswerArgs;
 use super::branch::{self, Branch, Unapplied};
-use super::caller::Caller;
+use super::caller::{Caller, Continuations};
 use super::change::refusal;
 use super::failure::{self, Failure};
 use super::plan_end;
@@ -97,6 +97,8 @@ pub struct Recorded {
 pub fn record(branch: &Branch, named: &[Named], channel: Channel) -> Result<Recorded, Failure> {
     let (name, email) = person(branch)?;
     let at = super::now()?;
+    // Read before Yard Log's lock is taken; an unreadable file only leaves continuations unknown.
+    let continuations = Continuations::read(yardlog_store::home::Home::from_env().as_ref()).ok();
     let settler = Actor::Person {
         name: name.clone(),
         email: email.clone(),
@@ -116,7 +118,13 @@ pub fn record(branch: &Branch, named: &[Named], channel: Channel) -> Result<Reco
             .answer(&replies, &who)
             .map_err(|refused| Unapplied::Refused(refusal(&refused)))?;
         let (fields, errors) = answered_fields(&log, &answered);
-        let plan_ends = plan_end::events(&log, &replies, &answered, at, &branch.place().tree);
+        let plan_ends = plan_end::events(
+            &log,
+            (&replies, &answered),
+            continuations.as_ref(),
+            at,
+            &branch.place().tree,
+        );
         let recorded = Recorded {
             fields,
             errors,

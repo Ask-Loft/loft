@@ -13,15 +13,17 @@ use yardlog::query::State;
 use yardlog::respond::{Answered, Reply};
 use yardlog::{Agent, BlockKey, Time, YardLog};
 
+use super::caller::Continuations;
 use super::event::main_event;
 
 /// The `plan.end` event, at `at`, of each session whose main agent presented in plan mode a plan
-/// that `replies` approved and `answered` recorded, in the tree `tree`: none for a plan decided
+/// that `replies` approved and `answered` recorded, and of the latest session that
+/// `continuations` record as continuing it, in the tree `tree`: none for a plan decided
 /// elsewhere first, rejected, presented by a subagent or presented outside plan mode.
 pub fn events(
     log: &YardLog,
-    replies: &[Reply],
-    answered: &Answered,
+    (replies, answered): (&[Reply], &Answered),
+    continuations: Option<&Continuations>,
     at: Time,
     tree: &Path,
 ) -> Vec<Value> {
@@ -33,12 +35,29 @@ pub fn events(
             approved && answered.recorded.contains(&reply.block) && in_plan_mode(log, reply.block)
         })
         .filter_map(|reply| presenter(log, reply.block).filter(|agent| agent.subagent.is_none()))
-        .map(|agent| {
-            let mut event = main_event(&agent.host, &agent.session, &dir, "plan.end", at);
-            event["by"] = "person".into();
-            event
+        .flat_map(|agent| {
+            let latest = continuations.and_then(|known| latest(known, agent));
+            let sessions = std::iter::once(agent.session.clone()).chain(latest);
+            sessions.map(|session| {
+                let mut event = main_event(&agent.host, &session, &dir, "plan.end", at);
+                event["by"] = "person".into();
+                event
+            })
         })
         .collect()
+}
+
+/// The latest session that continues `agent`'s, where one does: the end of its chain of
+/// continuations, which a chain that comes back on itself ends where it would repeat.
+fn latest(continuations: &Continuations, agent: &Agent) -> Option<String> {
+    let mut seen = vec![agent.session.clone()];
+    while let Some(next) = continuations.continued_by(&agent.host, seen.last()?) {
+        if seen.contains(&next) {
+            break;
+        }
+        seen.push(next);
+    }
+    seen.pop().filter(|last| *last != agent.session)
 }
 
 /// Whether `block` is a plan presented in plan mode.

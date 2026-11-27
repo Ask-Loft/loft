@@ -33843,6 +33843,12 @@ links:
       - file: "crates/loft-cli/tests/yard_plan_approval.rs"
         name: "a_page_server_that_rebuilds_the_activity_from_the_event_log_ends_the_plan_span_at_the_approval"
         body: 287d9cffa78ee144f44179edb856f9b907d2e02b19279806f027a80827b6be98
+  - node: 01a21ac6-1872-7517-9002-aaa10deb896a
+    reviewed: 4973eb04668fdf9edcf22cb25996ec39dab2b7d02a4cfcc305a734f3dd6f3873
+    tests:
+      - file: "crates/loft-cli/tests/yard_plan_approval.rs"
+        name: "an_approval_also_ends_the_plan_span_of_the_latest_session_that_continues_its_presenter"
+        body: 7a57214a8610c74847fe34abf70beb45d9c9cf4162e5df964dcc19be360389fd
   - node: 01a21ac6-1872-7517-9002-aaa2b2db3109
     reviewed: 7e5043c9c09a5a22a17df1b96c730f7981aa5229e780408370b05c996915d494
     tests:
