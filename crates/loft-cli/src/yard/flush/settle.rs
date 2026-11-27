@@ -1,7 +1,10 @@
 //! One batch of the sending: sent as `POST <endpoint>/batches`, and each of its entries settled
 //! by Yard Server's answer. A version Yard Server stored or already held leaves the outbox; one
 //! it holds other contents for, or refused, is moved into `dead/` with the reason, as is every
-//! entry of a batch it refused whole with `400` or `413`; one it will take later stays. An
+//! entry of a batch it refused whole with `400` or `413` and its own code; one it will take later
+//! stays. A `400` or `413` without that code comes from something on the way, such as a proxy,
+//! and settles nothing; a `413` to a batch of several versions splits it in halves, each sent as
+//! a batch of its own, the older first. An
 //! answer of `200` that does not read, or gives a version no outcome this `loft` knows, settles
 //! nothing of that version, and the run ends `failed`. A `429` or `503` whose `Retry-After` reads
 //! as a time that can be dated asks the run to come back later, and settles nothing.
@@ -20,6 +23,15 @@ use crate::network;
 
 /// The path that takes a batch of versions, under Yard Server's address.
 const BATCHES: &str = "batches";
+
+/// The code of Yard Server's own refusal of a batch with `status`, where it refuses one for good.
+fn own_code(status: u16) -> &'static str {
+    if status == 413 {
+        "payload_too_large"
+    } else {
+        "invalid_request"
+    }
+}
 
 /// Why a run ends `failed`: the kind of its error, `yard-server` or `outbox`, and what it says.
 #[derive(Debug)]
@@ -94,11 +106,24 @@ pub(super) fn send(
     };
     match reply.status {
         200 => settle(outbox, entries, &reply.body),
+        413 if entries.len() > 1 => {
+            let (older, newer) = entries.split_at(entries.len() / 2);
+            let mut settled = send(outbox, credential, older, wait, clock);
+            if settled.failed.is_empty() && settled.not_before.is_none() {
+                settled.add(send(outbox, credential, newer, wait, clock));
+            }
+            settled
+        }
         400 | 413 => {
-            let reason = match code(&reply.body) {
-                Some(code) => format!("{} {code}", reply.status),
-                None => reply.status.to_string(),
-            };
+            let expected = own_code(reply.status);
+            if code(&reply.body).as_deref() != Some(expected) {
+                return failure(Failed::yard_server(format!(
+                    "the batch was answered {} by something that is not Yard Server: the answer \
+                     carries no code `{expected}`",
+                    reply.status
+                )));
+            }
+            let reason = format!("{} {expected}", reply.status);
             let mut settled = Settled::default();
             for entry in entries {
                 bury(outbox, entry, &reason, &mut settled);
@@ -117,6 +142,17 @@ pub(super) fn send(
             None => failure(Failed::yard_server(refusal(reply.status, &reply.body))),
         },
         status => failure(Failed::yard_server(refusal(status, &reply.body))),
+    }
+}
+
+impl Settled {
+    /// Adds what became of a later batch of the same run.
+    fn add(&mut self, other: Self) {
+        self.sent += other.sent;
+        self.dead += other.dead;
+        self.later.extend(other.later);
+        self.not_before = other.not_before.or(self.not_before);
+        self.failed.extend(other.failed);
     }
 }
 
