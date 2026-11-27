@@ -12,6 +12,7 @@ Format and the hashing algorithm carry their own versions, which `loft --version
   loopback interface alone, and the page then stayed closed to other devices after it ended. Such
   a session now joins the running page server. Emptying `yardListen` therefore no longer closes
   the page to other devices at the next session: run `loft yard serve` to do so.
+  ([#38](https://github.com/Ask-Loft/loft/issues/38))
 
 ## 2.4.2 (2026-11-26)
 
