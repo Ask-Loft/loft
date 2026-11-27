@@ -283,8 +283,6 @@ requirements:
         name: "A document whose quantities are all in decimal byte units, or all in binary byte units, yields no `V2-014` finding."
       - key: 01a21358-4147-72be-a72f-0d152a0876e9
         name: "A node's text, a decision's text or a term's definition that gives a decimal byte unit as a count of bytes, such as `1 MB = 1,000,000 bytes`, `MB: 1,000,000 bytes` or `Sizes are in MB (10^6 bytes).`, defines every decimal byte unit of that power, and none of them then yields a `V2-014` finding."
-      - key: 01a21d6e-46d7-71fe-b062-d01f31c0e88a
-        name: "A definition of a decimal byte unit leaves the findings for the units of every other power in place, so that `kB = 1,000 bytes` defines `KB` and not `MB`."
       - key: 01a21698-e527-74e5-8471-b2bbcea22833
         name: "A count of bytes is written as digits, as digits grouped by commas in threes after a lead group of one to three digits, such as `1,048,576`, as `LQ-002` reads a grouped number, or as a power, such as `2^20`, so that neither `1.024` nor `1 000 000` is one."
       - key: 01a214b5-d973-7194-bf7e-adf3d86c4219
@@ -319,6 +317,16 @@ requirements:
     criteria:
       - key: 01a216c4-b982-74c9-aa2c-d6a324a0eb94
         name: "A defining word and the count after it, and the parts of a count, lie in one paragraph, list item or heading, so that the list item `- MB is` followed by the list item `- 1,000,000 bytes` defines no unit."
+  - key: 01a21d97-50e6-724a-abc8-73b0f42776fb
+    statement:
+      form: ubiquitous
+      system: "The linter"
+      shall: "settle each power of the decimal byte units for `V2-014` apart, and only where the document gives it one value."
+    criteria:
+      - key: 01a21d6e-46d7-71fe-b062-d01f31c0e88a
+        name: "A definition of a decimal byte unit leaves the findings for the units of every other power in place, so that `kB = 1,000 bytes` defines `KB` and not `MB`."
+      - key: 01a21d97-50e7-77f1-95f9-bf9a5faa1b2c
+        name: "A power that the document's definitions give both 1000^k and 1024^k bytes is defined by neither, so that `MB = 1,000,000 bytes` in one text and `MB = 1,048,576 bytes` in another leave the finding for `MB` in place."
   - key: 01a21d6e-46d7-71fe-b062-d0217ae93125
     statement:
       form: ubiquitous
