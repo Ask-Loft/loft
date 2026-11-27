@@ -4,7 +4,9 @@
 // of its version on the addresses of `yardListen` or, given `--join`, on any, serves the port, and
 // otherwise becomes the page server and lives as long as the mod (the Feature "Share one page
 // server"). The first beat runs it even where a page server answers, so that one listening on
-// other addresses than the setting names is replaced. The mod then reaches the page server on the port the command
+// other addresses than the setting names is replaced, unless the setting names none: the mod
+// cannot tell a setting the person emptied from one its session never loaded, so such a session
+// joins whatever page server runs and never narrows it. The mod then reaches the page server on the port the command
 // reports, which is not the plugin's `yardPort` where another `loft` started it elsewhere. A
 // tree a tool call reaches is registered through `loft yard serve` too.
 
@@ -68,8 +70,8 @@ function portOf(doc: Record<string, unknown>): number | undefined {
 /**
  * Runs `loft yard serve` for the session and the tree; resolves with its first document's outcome,
  * and points `box` at the port it reports. Where it says it serves, its loop runs on after this
- * resolves, and ends with the child. Only the session's first beat replaces a page server of its
- * version on other addresses; every other run joins it, so that two sessions naming different
+ * resolves, and ends with the child. Only the session's first beat, where `yardListen` names
+ * addresses, replaces a page server of its version on other addresses; every other run joins it, so that two sessions naming different
  * addresses never replace each other in turn.
  */
 export function serve($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string, join: boolean) {
@@ -120,7 +122,7 @@ async function hear($: EngineInterface, box: Outbox, server: Server, session: st
  * serves or the last run has yet to say what it did. The first run joins no page server, so
  * that one on other addresses than `yardListen` names is replaced, even where a beat that hangs
  * on its answer leaves the run to a later beat, unless it comes later than FIRST_RUN after the
- * session's start. `loft yard serve` reports no top, so a beat that
+ * session's start or `yardListen` names no address. `loft yard serve` reports no top, so a beat that
  * reaches the page server registers the tree once more to learn it.
  */
 export async function beat($: EngineInterface, settings: Settings, server: Server, box: Outbox, session: string, tree: string) {
@@ -128,7 +130,7 @@ export async function beat($: EngineInterface, settings: Settings, server: Serve
   const isBusy = server.isBeating || server.isServing
   if (isHeard && (server.hasServed || isBusy)) return learnTop($, server, box, tree)
   if (isBusy) return
-  const join = server.hasServed || server.ticks * BEAT >= FIRST_RUN
+  const join = server.hasServed || server.ticks * BEAT >= FIRST_RUN || settings.listen.length === 0
   server.hasServed = true
   server.isBeating = true
   try {

@@ -260,7 +260,7 @@ test("a first loft yard serve the mod could not run within 30 seconds of the ses
   for (const run of serves) expect(run.argv).toContain('--join')
 })
 
-test("after the session's first beat each loft yard serve the mod runs joins the page server that runs", async ($, on) => {
+test("after the session's first beat each loft yard serve the mod runs joins the page server that runs", { options: { yardListen: '100.64.0.1' } }, async ($, on) => {
   const w = world(on, { serve: 'running', protocol: 4 })
   await start($)
   await w.clock.advance(5000)
@@ -272,6 +272,29 @@ test("after the session's first beat each loft yard serve the mod runs joins the
   expect(serves.length).toBeGreaterThan(2)
   expect(serves[0]!.argv).not.toContain('--join')
   for (const later of serves.slice(1)) expect(later.argv).toContain('--join')
+})
+
+test("where yardListen names no address, the mod's first loft yard serve joins the page server", async ($, on) => {
+  const w = world(on, { protocol: 4 })
+  w.state.answersBeat = true
+  await start($)
+  await w.clock.advance(1)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves).toHaveLength(1)
+  expect(serves[0]!.argv).toContain('--join')
+  expect(serves[0]!.argv).not.toContain('--listen')
+})
+
+test('a session whose yardListen names no address leaves a running page server of its version where it listens', async ($, on) => {
+  const w = world(on, { serve: 'running', protocol: 4 })
+  await start($)
+  await w.clock.advance(10000)
+  const serves = w.state.runs.filter(run => run.argv.includes('serve'))
+  expect(serves.length).toBeGreaterThan(1)
+  for (const run of serves) {
+    expect(run.argv).toContain('--join')
+    expect(run.argv).not.toContain('--listen')
+  }
 })
 
 test('to a loft of an older protocol the mod passes neither --listen nor --join, and says once that yardListen waits for a newer loft', { options: { yardListen: '100.64.0.1' } }, async ($, on) => {

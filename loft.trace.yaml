@@ -28051,7 +28051,7 @@ links:
         name: "a first loft yard serve the mod could not run within 30 seconds of the session's start joins the page server"
         body: d395e66ba495f130d0e55e65bbcf468090a188dbe91012ad5010375a49096b0d
   - node: 01a1f03b-b432-7709-92e2-1d44792792e2
-    reviewed: 0d3ffc83b559c178b728a3a46a986df715f7d01cf90b6e876e527c51c15c0ca4
+    reviewed: f13db6279a1b09347bd22ace4c0e212da58ed8151719b341e07a167437ada2a7
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "at the first beat the mod runs loft yard serve even where a page server answers, so that one on other addresses is replaced"
@@ -28059,18 +28059,36 @@ links:
       - file: "crates/loft-cli/tests/yard_serve_networks.rs"
         name: "serve_without_listen_replaces_a_page_server_listening_on_every_address"
         body: ef65c56e08dba6795361b7330d3060e81ff1975284c84b1e10b4f7f016d4e5f5
+  - node: 01a21a88-3dc7-7075-b690-6e1d722ec957
+    reviewed: 31d841d769477c8c046c2cea099fb08064f1ac357a8183a1649626cd2b5c5491
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "where yardListen names no address, the mod's first loft yard serve joins the page server"
+        body: 8d204ad0c2f7fec513e85d2f00697348d86ec21f6da89a2a0089a15bd410fe38
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a session whose yardListen names no address leaves a running page server of its version where it listens"
+        body: ef023ea95a17a79ba2af92178c175d9266781fca55b09e8fd80251c202d5741f
+  - node: 01a21a88-3dc7-7075-b690-6e1ef63f4c6e
+    reviewed: f50d0c6fd33b9e29913e8ec86b5140d40cbac976c6049f75115294e56fe98f6e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a session whose yardListen names no address leaves a running page server of its version where it listens"
+        body: ef023ea95a17a79ba2af92178c175d9266781fca55b09e8fd80251c202d5741f
+      - file: "crates/loft-cli/tests/yard_serve_networks.rs"
+        name: "serve_join_leaves_a_page_server_of_its_version_on_other_addresses_serving"
+        body: c46ababef956e73d6ae4342eb7260d1c6e10e8979a8d7a6da4847ee1bfe975cb
   - node: 01a1f069-3ebc-77f4-882f-9102f2aee1e0
     reviewed: 15779123ded850ae80f5bc22263458206bce8eef515cacccdece6359a49b7bd2
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
-        body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+        body: 43880418f6690d8fa09a6d1c760dd267b5b8803d9dd67d9c217bed7fe3159605
   - node: 01a1f41d-c02f-775e-9141-8c77128977d3
     reviewed: d3c45767b0f8cfae698bf48a058c2c46e118f65203165b89426dd634242cfca6
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
-        body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+        body: 43880418f6690d8fa09a6d1c760dd267b5b8803d9dd67d9c217bed7fe3159605
       - file: "crates/loft-cli/tests/yard_serve_networks.rs"
         name: "serve_join_where_none_runs_after_a_loopback_page_server_listens_on_the_loopback_interface_alone"
         body: 51a31d454678724fe44cb5d7a7494b178b22ba46dcd4f03212d3fb0ef6f94e09
@@ -28112,7 +28130,7 @@ links:
         body: 714ef7661a10983fc7a59f7c11702045b6593c9e56457d49a4afda4158d3d2a7
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
-        body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+        body: 43880418f6690d8fa09a6d1c760dd267b5b8803d9dd67d9c217bed7fe3159605
   - node: 01a1f074-174d-7385-9119-36b200eec8a5
     reviewed: 0b492a01691d5a7a6e515c21ed794ee737cd7bc2c4334176454eb8e397576814
     tests:
@@ -36944,7 +36962,7 @@ links:
         body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
-        body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+        body: 43880418f6690d8fa09a6d1c760dd267b5b8803d9dd67d9c217bed7fe3159605
   - node: 01a1646f-546d-7042-befd-ea43c0bb2e34
     reviewed: f9d7ec8d86cde32fd131534ed2250c2467037800d605df6ff6d1cc7923d2b0e4
     tests:
