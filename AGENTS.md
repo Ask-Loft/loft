@@ -131,7 +131,9 @@ change, or v1 reverts it.
   worktree, the control token, in `claude/` the Claude hook's hand-offs and each session's
   last permission mode, and in connected mode the outbox, `outbox/`, of the versions not yet
   sent to Yard Server, with `outbox/dead/` for the files that cannot be sent, each beside a
-  `.reason` file, `flush.json`, the last run of `loft yard flush` for each address, and
+  `.reason` file, `flush.json`, the last run of `loft yard flush` for each address with the
+  runs in a row that failed, the time before which no run makes a request and the versions Yard
+  Server will take later, and
   `flush.lock`, which the one flush that sends holds. `LOFT_YARD_HOME`, an absolute directory, takes the place of `~/.yard/`;
   a relative or empty value is ignored.
 - `scripts/yard-dogfood.sh` runs this worktree's `loft` and plugins beside the installed ones:

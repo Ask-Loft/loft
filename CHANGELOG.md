@@ -164,6 +164,20 @@ Unreleased below, and those of each 2.4 release still to come.
   cannot go yet waits in the outbox for the next send, and the new `loft yard flush` sends what
   waits. The token is sent to Yard Server alone and written to no file. Without both variables,
   Yard Log stays on the machine as before.
+- Connected mode sends in the background: no command an agent or a hook runs waits for Yard
+  Server any more. The Loft mod in Claude Code runs `loft yard flush` after the writes it makes
+  and at its beat while work is left, and the Codex Yard worker runs it at its beat while entries
+  wait; one flush sends at a time, under `~/.yard/flush.lock`. A flush sends batches of at most 16
+  versions and 1 MiB, waits at most 10 seconds for each answer, or the 1 to 60 seconds
+  `LOFT_YARD_SERVER_TIMEOUT` names, and ends by itself after 5 minutes. Yard Server answers each
+  version with its outcome, `yardlog-answer/1`: a version it will never take is moved into
+  `~/.yard/outbox/dead/` beside a `.reason` file, one it will take later is sent again at most
+  once an hour, and only a `400` or `413` that carries Yard Server's own code moves a batch aside,
+  while a `413` splits a batch of several versions in halves. After a `429` or `503` the flush
+  keeps away for the `Retry-After`, an hour at most, and after a batch that did not go for a pause
+  that doubles from 5 seconds to 5 minutes, drawn at random; its result gives that time as
+  `notBefore`. The new `loft yard status` says whether versions leave the machine, and where
+  they do not, why. The yard protocol is 5.
 
 ## Unreleased
 
