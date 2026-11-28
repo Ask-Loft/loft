@@ -18,6 +18,7 @@ use loft_common::yaml::{self, Node, Position, Value};
 
 pub use partial::Partial;
 pub use reader::ReadError;
+pub(crate) use stage::write_version;
 
 use crate::format::Format;
 use crate::keys::{Key, StageKey};

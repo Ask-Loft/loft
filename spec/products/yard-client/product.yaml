@@ -133,6 +133,16 @@ featureGroups:
       - 01a182b6-3c58-7235-ad04-3916200a0c81
       - 01a1c32b-8dbe-7792-8bde-87963dd33a56
       - 01a1d123-dd40-7261-9ea6-092fa0b7887b
+  - key: 01a20dc8-c593-7357-875c-82048f023347
+    slug: connected-mode
+    name: "Connected mode"
+    body: "How Yard Client sends the versions agents write to Yard Server, once the person turns connected mode on: the outbox that keeps a copy of each version until Yard Server has taken it, the batch of versions each request carries, and which commands send it."
+    features:
+      - 01a20dc8-c592-7688-83f8-16e4062e1223
+      - 01a20dc8-c593-7357-875c-81a0c59cbae3
+      - 01a20dc8-c593-7357-875c-81c4d2d63486
+      - 01a20dc8-c593-7357-875c-81d1ad8af92a
+      - 01a20dc8-c593-7357-875c-81f0ef6e3543
 constraints:
   - key: 01a16469-55a3-716f-a42c-3a407e6d0d19
     name: "Yard Client shall change the working tree only under `.yard/`."

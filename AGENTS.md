@@ -128,8 +128,9 @@ change, or v1 reverts it.
   serves, each session's events, when each session was last heard, the revision each agent last
   read, the sessions that continue others, the worktrees each session wrote Yard Log in and its
   main agent's directory, by which an agent's work follows its working stage into another
-  worktree, the control token, and in `claude/` the Claude hook's hand-offs and each session's
-  last permission mode. `LOFT_YARD_HOME`, an absolute directory, takes the place of `~/.yard/`;
+  worktree, the control token, in `claude/` the Claude hook's hand-offs and each session's
+  last permission mode, and in connected mode the outbox, `outbox/`, of the versions not yet
+  sent to Yard Server, with `outbox/dead/` for the files that are not entries. `LOFT_YARD_HOME`, an absolute directory, takes the place of `~/.yard/`;
   a relative or empty value is ignored.
 - `scripts/yard-dogfood.sh` runs this worktree's `loft` and plugins beside the installed ones:
   `claude` and `codex` start a session on them, and `desktop <project>` (`--undo` to reverse)
@@ -202,12 +203,14 @@ text goes to standard error only.
 Loft depends on systems outside it: git, which tells the publisher the current branch, whether
 `spec/` has uncommitted changes and whether a merge or rebase is stopped; the clock, which
 dates a publish; a connected document's remote, with the authorization server that admits to it;
-and the person's web browser, which a sign-in opens. Each is a root Component with the boundary `external` in `spec/`, and Loft
+the person's web browser, which a sign-in opens; and Yard Server, which takes the versions agents
+write in connected mode. Each is a root Component with the boundary `external` in `spec/`, and Loft
 reaches it through one port with one real adapter; `loftspec-store` reaches git only through its
 repository port. Tests never reach an external system directly and never through a hook in a
 shipped binary. The only switches a shipped binary reads for a simulator are its standard and
 named environment variables (`SOURCE_DATE_EPOCH`, `LOFT_CLOCK`, `LOFT_TELEMETRY_ENDPOINT`,
-`LOFT_UPDATE_ENDPOINT`, `LOFT_REMOTE_ENDPOINT` with `LOFT_REMOTE_TOKEN`, and `BROWSER`), and each changes only where its port takes its answers. Tests put a
+`LOFT_UPDATE_ENDPOINT`, `LOFT_REMOTE_ENDPOINT` with `LOFT_REMOTE_TOKEN`,
+`LOFT_YARD_SERVER_ENDPOINT` with `LOFT_YARD_SERVER_TOKEN`, and `BROWSER`), and each changes only where its port takes its answers. Tests put a
 simulator from the Software Plant in front of the unchanged binary under test:
 
 - **git**: `software_plant::GitScenario` scripts a repository: its prefix, its branch or a
@@ -243,11 +246,20 @@ simulator from the Software Plant in front of the unchanged binary under test:
   in `BROWSER`. Visiting, it requests the address it is given and follows each redirect, as a
   person who consents does; absent, it fails as a browser that cannot be opened. It records
   each address it was given.
+- **Yard Server**: `software_plant::YardServer` takes batches of versions at
+  `POST <address>/batches` on a loopback port, admits one bearer token (`TOKEN`), holds each
+  version once by its key and answers with the batch as it stored it; it can also fail with a
+  status, stay silent, refuse the connection, store a batch and hang up, or store it and answer
+  late. It records every request and the records it holds. A test turns connected mode on with
+  `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN`; `tests/yard_connected.rs` holds
+  the harness, and `tests/yard_server_contract.rs` runs its real half on demand against
+  `LOFT_YARD_SERVER_CONTRACT_ADDRESS` and `LOFT_YARD_SERVER_CONTRACT_TOKEN`.
 
-The command event, the update check and every request to a remote reach the network only
-through the network client (`crates/loft-cli/src/network.rs`), which accepts plain `http` only on
-the loopback interface, so `LOFT_TELEMETRY_ENDPOINT`, `LOFT_UPDATE_ENDPOINT` and a remote's
-address can point a run at a simulator and at nothing else unencrypted. The only sockets opened
+The command event, the update check, every request to a remote and every batch of versions sent
+to Yard Server reach the network only through the network client
+(`crates/loft-cli/src/network.rs`), which accepts plain `http` only on the loopback interface, so
+`LOFT_TELEMETRY_ENDPOINT`, `LOFT_UPDATE_ENDPOINT`, a remote's address and
+`LOFT_YARD_SERVER_ENDPOINT` can point a run at a simulator and at nothing else unencrypted. The only sockets opened
 elsewhere are the listen-only listeners of the Yard page server, on the loopback interface and on
 the addresses `--listen` names, and of a sign-in's loopback redirect, which
 `tests/network_client.rs` admits by name. The remote's contract suites run their
@@ -255,7 +267,9 @@ real half on demand, against `LOFT_REMOTE_CONTRACT_ADDRESS` and `LOFT_REMOTE_CON
 both addresses at a closed loopback port; a test that exercises either switches it on through
 `tests/common/telemetry.rs` or `asking` in `tests/update_check.rs`. Run a gate's own `loft`
 through `cargo run`, never `target/debug/loft` directly, or set `LOFT_TELEMETRY=internal`.
-`.cargo/config.toml` also forces `LOFT_YARD_HOME` empty, so no test inherits a dogfood home; a
+`.cargo/config.toml` also forces `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN` empty,
+so connected mode is off unless a test turns it on, and `LOFT_YARD_HOME` empty, so no test
+inherits a dogfood home; a
 `loft yard` command checked by hand against a dogfood home therefore runs `target/debug/loft`
 with `LOFT_TELEMETRY=internal`, not `cargo run`.
 

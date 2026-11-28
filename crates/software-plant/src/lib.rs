@@ -18,6 +18,7 @@ mod install;
 pub mod real_git;
 pub mod releases;
 pub mod remote;
+pub mod yard_server;
 
 pub use browser::{BrowserScenario, InstalledBrowser};
 pub use clock::Clock;
@@ -26,3 +27,4 @@ pub use git::GitScenario;
 pub use install::{Installed, browser_executable, git_executable};
 pub use releases::ReleaseFeed;
 pub use remote::{Remote, RemoteScenario};
+pub use yard_server::YardServer;

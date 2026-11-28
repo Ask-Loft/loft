@@ -158,6 +158,12 @@ Unreleased below, and those of each 2.4 release still to come.
   metadata names to the same rule, as it holds the authorization server's endpoints, and leaves
   out, with a warning and before anything is asked of it, a companion resource whose identifier
   holds another character.
+- Connected mode: with `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN` both set, each
+  version an agent writes to Yard Log is also kept in an outbox on the machine, `~/.yard/outbox/`,
+  and sent from there to Yard Server as a batch of versions, `yardlog-batch/1`. A version that
+  cannot go yet waits in the outbox for the next send, and the new `loft yard flush` sends what
+  waits. The token is sent to Yard Server alone and written to no file. Without both variables,
+  Yard Log stays on the machine as before.
 
 ## Unreleased
 

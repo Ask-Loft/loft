@@ -59,6 +59,8 @@ pub enum YardAction {
     },
     /// Bring every open Yard Log under the tree's `.yard/` up to this `loft`'s format.
     Upgrade(UpgradeArgs),
+    /// In connected mode, send one batch of versions from the outbox to Yard Server.
+    Flush(FlushArgs),
     /// Report what the agents working on the branch consulted: the sums of its consultation
     /// files in all, by stage, by session and by agent type.
     Consultation(ConsultationArgs),
@@ -345,6 +347,12 @@ pub struct AnswerArgs {
     pub writer: Writer,
     #[command(flatten)]
     pub beyond: Beyond,
+    #[command(flatten)]
+    pub output: Output,
+}
+
+#[derive(Args)]
+pub struct FlushArgs {
     #[command(flatten)]
     pub output: Output,
 }

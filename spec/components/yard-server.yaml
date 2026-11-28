@@ -1,0 +1,10 @@
+key: 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+slug: yard-server
+name: "Yard Server"
+body: |
+  A server that takes in the versions of Yard Log that agents write, so that Yard Log can be read beyond the machine it was written on. `loft` reaches it at the base address that `LOFT_YARD_SERVER_ENDPOINT` names, through the network client, with the token that `LOFT_YARD_SERVER_TOKEN` names as a bearer token.
+
+  It takes a batch of versions as `POST <endpoint>/batches` and answers `200` with the batch as it stored it. It holds a version once, by the version's key, across every Yard Log it holds: a version whose key it already holds is accepted again with `200` and not stored a second time, and the first copy stays even where the new one differs. It refuses a request without its token with `401`, a batch that does not read or holds no version or more than 16 with `400`, another method with `405` and another content type with `415`, each as a problem document. How it stores versions and whom it admits are specified outside this repository, and it is built against the contract suite that holds the Software Plant's stand-in for it.
+boundary: external
+scopedTo:
+  - 01a16469-55a3-716f-a42c-3a3548428b77

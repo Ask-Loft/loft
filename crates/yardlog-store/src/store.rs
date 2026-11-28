@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use loft_ports::journal::Journal;
 use yardlog::codec::{FileError, Partial, ROOT};
@@ -15,6 +15,7 @@ use yardlog::{Format, Lineage, YardLog};
 use crate::files::{Folder, YARD};
 use crate::home::{Home, HomeFile};
 use crate::lock;
+use crate::outbox::Outbox;
 use crate::{Place, YardStoreError};
 
 /// Yard Log as a read finds it.
@@ -27,11 +28,15 @@ pub enum Held {
     Newer(Format),
 }
 
-/// What a write returned, and the files it wrote, by their paths from the top of the worktree.
+/// What a write returned, the files it wrote, by their paths from the top of the worktree, how
+/// many entries it put into the outbox, and a warning that names each version the outbox could
+/// not take, where any.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Updated<T> {
     pub value: T,
     pub written: Vec<String>,
+    pub outboxed: usize,
+    pub unsent: Option<String>,
 }
 
 /// The store of one branch's Yard Log in one worktree.
@@ -43,6 +48,8 @@ pub struct YardStore {
     /// The machine's `~/.yard/`, whose chains of continuations each log read carries; with
     /// none, a log compares sessions as they are.
     home: Option<Home>,
+    /// In connected mode, the outbox each new version is copied into.
+    outbox: Option<Outbox>,
 }
 
 impl YardStore {
@@ -59,6 +66,7 @@ impl YardStore {
             branch,
             folder,
             home: Home::from_env(),
+            outbox: None,
         })
     }
 
@@ -66,6 +74,12 @@ impl YardStore {
     #[must_use]
     pub fn with_home(self, home: Option<Home>) -> Self {
         Self { home, ..self }
+    }
+
+    /// The store, copying each version a write adds into `outbox`, in connected mode.
+    #[must_use]
+    pub fn with_outbox(self, outbox: Option<Outbox>) -> Self {
+        Self { outbox, ..self }
     }
 
     #[must_use]
@@ -172,12 +186,23 @@ impl YardStore {
                 .into());
             }
         };
+        // Only the outbox needs the versions held before the change.
+        let before = match (&self.outbox, &current) {
+            (Some(_), Some(log)) => version_keys(log),
+            _ => BTreeSet::new(),
+        };
         let (next, value) = change(current)?;
         let mut changes = self.folder.changes(&read, &next);
         let saved_all = self.save_live(&mut changes);
         self.journal()
             .save(&changes)
             .map_err(YardStoreError::from)?;
+        // Copied once the write is saved and before the lock is released: the outbox never holds
+        // a version Yard Log does not.
+        let (outboxed, unsent) = self
+            .outbox
+            .as_ref()
+            .map_or((0, None), |outbox| outbox.put_new(&before, &next));
         if next.is_closed() && saved_all {
             // Saved above, the live copies take no more events once Yard Log is closed; one left
             // behind holds what the folder holds, so a failure to remove it loses nothing. A copy
@@ -191,6 +216,8 @@ impl YardStore {
                 .keys()
                 .map(|path| path.as_str().to_owned())
                 .collect(),
+            outboxed,
+            unsent,
         })
     }
 
@@ -293,6 +320,11 @@ impl YardStore {
         })?;
         Ok((value, read))
     }
+}
+
+/// The key of every version `log` holds.
+fn version_keys(log: &YardLog) -> BTreeSet<yardlog::keys::VersionKey> {
+    log.versions().map(|(_, _, version)| version.key).collect()
 }
 
 /// `branch`'s name as a single file name: `%` and `/` escaped, so that no two branches, nor a

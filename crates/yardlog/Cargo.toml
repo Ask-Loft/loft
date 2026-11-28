@@ -23,7 +23,8 @@ workspace = true
 [dependencies]
 loft-common.workspace = true
 pulldown-cmark.workspace = true
-serde_json.workspace = true
+# An outbox entry's record is read as the text it is, so its fields keep their order.
+serde_json = { workspace = true, features = ["raw_value"] }
 thiserror.workspace = true
 
 [[test]]

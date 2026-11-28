@@ -1,0 +1,70 @@
+key: 01a20dc8-c592-7688-83f8-16e4062e1223
+slug: a-batch-of-versions
+name: "A batch of versions"
+body: |
+  A batch of versions is what one request carries to Yard Server: a format of its own, `yardlog-batch/1`, of the same family as `yardlog/1`, and kept in `yardlog` beside it. Each version goes as the JSON form of its record in its stage's file, built from the same tree of fields as the YAML, so the file and the batch cannot drift apart. Beside the version, not inside it, go the keys that place it and the block's kind and id, so that Yard Server reads a body by its kind and tells a note from an approval with the same fields.
+
+  Each record names what it is, apart from the block's kind: in this wave every record is a version, and the person's answers, the submissions and the root of Yard Log may join later as records of their own, with no change to the contract. A decision's number is left out, since settling Yard Log after a merge counts it again.
+
+  The contents of a version go as the agent wrote them, unredacted. A `loft` block's snapshot names the branch it was recorded on, and links to the Yard page that an agent writes into a note may name the person's account on the machine; what to remove before a real Yard Server is connected is open.
+realizes:
+  - 01a16469-559e-73c4-85f2-71b98f3a0df7
+mentions:
+  - 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+requirements:
+  - key: 01a20dc8-c592-7688-83f8-16e5c692a1d1
+    statement:
+      form: ubiquitous
+      system: "A batch of versions"
+      shall: "hold `format: yardlog-batch/1` and from one to 16 records as `records`."
+    criteria:
+      - key: 01a20dc8-c592-7688-83f8-16e6faa7bc84
+        name: "A batch is a JSON object of `format` and `records`."
+      - key: 01a20dc8-c592-7688-83f8-16e77537e166
+        name: "A batch holds at least one record."
+      - key: 01a20dc8-c592-7688-83f8-16e8417eb999
+        name: "A batch holds at most 16 records."
+  - key: 01a20dc8-c592-7688-83f8-16e982ae2ecf
+    statement:
+      form: ubiquitous
+      system: "A record of a batch of versions"
+      shall: "hold `record: version`, the keys of its Yard Log, stage and block as `yardLog`, `stage` and `block`, the block's `kind` and `id`, and the version as `version`."
+    criteria:
+      - key: 01a20dc8-c592-7688-83f8-16ea4b18b14d
+        name: "A record of a stage's version holds `kind: stage`, the stage's key as `block` and the stage's id as `id`."
+      - key: 01a20dc8-c593-7357-875c-81924ef805c3
+        name: "A note and an approval whose versions hold the same fields give records that differ in `kind`."
+      - key: 01a20dc8-c593-7357-875c-81935ad74e7c
+        name: "`id` is the block's id when the version was written."
+      - key: 01a20dc8-c593-7357-875c-8194db5b41ff
+        name: "A record holds no decision number."
+  - key: 01a20dc8-c593-7357-875c-8195f82ca8e7
+    statement:
+      form: ubiquitous
+      system: "The version of a record"
+      shall: "be the JSON form of the version's record in its stage's file, field for field and in the same order."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-8196421e3c60
+        name: "A mapping is an object and a sequence an array."
+      - key: 01a20dc8-c593-7357-875c-8197e465bd38
+        name: "Text, keys, times, identifiers and enumerated values are strings."
+      - key: 01a20dc8-c593-7357-875c-8198847821a4
+        name: "An integer is a number."
+      - key: 01a20dc8-c593-7357-875c-81998e450589
+        name: "A flag written `true` is the boolean `true`."
+      - key: 01a20dc8-c593-7357-875c-819a936e5ec8
+        name: "A `loft` block's report is the JSON value it holds, nested in the version, not text."
+      - key: 01a20dc8-c593-7357-875c-819b14cdaa1b
+        name: "Writing a batch changes no byte of Yard Log's files."
+  - key: 01a20dc8-c593-7357-875c-819cc5679ebf
+    statement:
+      form: ubiquitous
+      system: "A batch of versions"
+      shall: "carry only versions of blocks and stages."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-819dc40f121e
+        name: "No batch carries an answer or a decision of the person."
+      - key: 01a20dc8-c593-7357-875c-819e3fbb66fc
+        name: "No batch carries a submission or the root of Yard Log."
+      - key: 01a20dc8-c593-7357-875c-819f28a37c85
+        name: "No batch names a path of a worktree or a branch outside the body of a version."

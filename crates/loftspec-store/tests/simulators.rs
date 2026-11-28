@@ -19,7 +19,7 @@ const PLANT: &str = "software-plant";
 
 /// The contract suite of each simulator, by the slug of its Feature: a test file of the crate
 /// whose port reaches the real system, by its path in the repository.
-const SUITES: [(&str, &str); 7] = [
+const SUITES: [(&str, &str); 8] = [
     (
         "git-simulator",
         "crates/loftspec-store/tests/git_contract.rs",
@@ -47,6 +47,10 @@ const SUITES: [(&str, &str); 7] = [
     (
         "codex-app-server-simulator",
         "crates/loft-cli/src/yard/codex/app_server/contract.rs",
+    ),
+    (
+        "yard-server-simulator",
+        "crates/loft-cli/tests/yard_server_contract.rs",
     ),
 ];
 

@@ -42,18 +42,15 @@ fn write_block(block: &Block) -> Out {
 }
 
 fn versions(block: &Block) -> Out {
-    Out::Sequence(
-        block
-            .versions
-            .iter()
-            .map(|version| {
-                let mut fields: Vec<Field> = vec![("key", token(&version.key))];
-                fields.extend(write_act(&version.act, version.arrived));
-                fields.extend(write_body(&version.body));
-                Out::Mapping(fields)
-            })
-            .collect(),
-    )
+    Out::Sequence(block.versions.iter().map(write_version).collect())
+}
+
+/// One version's record, as its stage's file holds it.
+pub(crate) fn write_version(version: &Version) -> Out {
+    let mut fields: Vec<Field> = vec![("key", token(&version.key))];
+    fields.extend(write_act(&version.act, version.arrived));
+    fields.extend(write_body(&version.body));
+    Out::Mapping(fields)
 }
 
 fn write_response(response: &Response) -> Out {

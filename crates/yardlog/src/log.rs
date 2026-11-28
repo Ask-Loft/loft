@@ -189,6 +189,22 @@ impl YardLog {
             .flat_map(|file| std::iter::once(&file.stage).chain(&file.blocks))
     }
 
+    /// Every version of every block, each stage's before its blocks', in order, with the key of
+    /// the stage that holds it.
+    pub fn versions(&self) -> impl Iterator<Item = (StageKey, &Block, &Version)> {
+        self.stages.iter().flat_map(|file| {
+            let stage = file.stage.key.stage();
+            std::iter::once(&file.stage)
+                .chain(&file.blocks)
+                .flat_map(move |block| {
+                    block
+                        .versions
+                        .iter()
+                        .map(move |version| (stage, block, version))
+                })
+        })
+    }
+
     /// The block whose key is `key`, with the stage that holds it.
     #[must_use]
     pub fn block(&self, key: BlockKey) -> Option<(&StageFile, &Block)> {

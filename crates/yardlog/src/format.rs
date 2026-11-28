@@ -24,15 +24,7 @@ impl Format {
     /// Reads `yardlog/<n>`.
     #[must_use]
     pub fn parse(text: &str) -> Option<Self> {
-        let digits = text.strip_prefix("yardlog/")?;
-        let canonical = !digits.is_empty()
-            && digits.bytes().all(|byte| byte.is_ascii_digit())
-            && !digits.starts_with('0');
-        if canonical {
-            digits.parse().ok().map(Self)
-        } else {
-            None
-        }
+        versioned(text, "yardlog/").map(Self)
     }
 
     /// Whether this `loft` may write Yard Log of this format.
@@ -40,6 +32,17 @@ impl Format {
     pub fn is_known(self) -> bool {
         self <= Self::CURRENT
     }
+}
+
+/// The version `<n>` of `text`, `<prefix><n>`, where `<n>` is written in canonical digits: not
+/// empty, ASCII digits alone and no leading zero.
+#[must_use]
+pub fn versioned(text: &str, prefix: &str) -> Option<u32> {
+    let digits = text.strip_prefix(prefix)?;
+    let canonical = !digits.is_empty()
+        && digits.bytes().all(|byte| byte.is_ascii_digit())
+        && !digits.starts_with('0');
+    if canonical { digits.parse().ok() } else { None }
 }
 
 impl fmt::Display for Format {

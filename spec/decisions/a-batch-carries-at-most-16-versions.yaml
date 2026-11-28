@@ -1,0 +1,84 @@
+key: 01a20dc9-eaae-7491-b6c6-e7f355226276
+slug: a-batch-carries-at-most-16-versions
+title: "A batch carries at most 16 versions"
+context: "A writing command waits at most 2 seconds for its batch to cross. An ordinary version is about 0.6 kilobytes, and a `loft` block's snapshot up to about 232 kilobytes, so a batch of 16 runs from about 10 kilobytes to about 3.7 megabytes."
+state:
+  kind: accepted
+  selectedOption: 01a20dc9-eaae-7491-b6c6-e7f7326794af
+  outcome: "A batch carries from one to 16 versions, a constant of `loft` with no variable to change it, and Yard Server refuses an empty batch and one of more than 16."
+drivers:
+  - key: 01a20dc9-eaae-7491-b6c6-e7f4ed89c9e3
+    kind: local
+    label: "Fits the wait"
+    statement: "An ordinary batch crosses well within 2 seconds."
+  - key: 01a20dc9-eaae-7491-b6c6-e7f5d72e5a2e
+    kind: local
+    label: "Drains a backlog"
+    statement: "A backlog empties in few runs."
+  - key: 01a20dc9-eaae-7491-b6c6-e7f66397bc94
+    kind: local
+    label: "Simple to hold to"
+    statement: "Both sides check the limit without measuring bytes."
+options:
+  - key: 01a20dc9-eaae-7491-b6c6-e7f7326794af
+    title: "16 versions"
+    description: "At most 16 versions in a batch."
+  - key: 01a20dc9-eaae-7491-b6c6-e7f89b1497e7
+    title: "32 versions"
+    description: "At most 32 versions in a batch."
+  - key: 01a20dc9-eaae-7491-b6c6-e7f9bc47c393
+    title: "A limit in bytes"
+    description: "As many versions as fit in a fixed number of bytes."
+assessments:
+  - option: 01a20dc9-eaae-7491-b6c6-e7f7326794af
+    driver: 01a20dc9-eaae-7491-b6c6-e7f4ed89c9e3
+    rating: supports
+    rationale: "an ordinary batch is about 10 kilobytes"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f7326794af
+    driver: 01a20dc9-eaae-7491-b6c6-e7f5d72e5a2e
+    rating: neutral
+    rationale: "a backlog empties 16 versions a run"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f7326794af
+    driver: 01a20dc9-eaae-7491-b6c6-e7f66397bc94
+    rating: supports
+    rationale: "the limit is a count"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f89b1497e7
+    driver: 01a20dc9-eaae-7491-b6c6-e7f4ed89c9e3
+    rating: conflicts
+    rationale: "a batch of snapshots doubles to about 7.4 megabytes"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f89b1497e7
+    driver: 01a20dc9-eaae-7491-b6c6-e7f5d72e5a2e
+    rating: supports
+    rationale: "a backlog empties twice as fast"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f89b1497e7
+    driver: 01a20dc9-eaae-7491-b6c6-e7f66397bc94
+    rating: supports
+    rationale: "the limit is a count"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f9bc47c393
+    driver: 01a20dc9-eaae-7491-b6c6-e7f4ed89c9e3
+    rating: supports
+    rationale: "the size of a batch is bounded"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f9bc47c393
+    driver: 01a20dc9-eaae-7491-b6c6-e7f5d72e5a2e
+    rating: supports
+    rationale: "small versions go many at a time"
+  - option: 01a20dc9-eaae-7491-b6c6-e7f9bc47c393
+    driver: 01a20dc9-eaae-7491-b6c6-e7f66397bc94
+    rating: conflicts
+    rationale: "each side measures the encoded batch"
+consequences:
+  - key: 01a20dc9-eaae-7491-b6c6-e7fa60e32718
+    kind: cost
+    statement: "A backlog of more than 16 versions takes a writing command or `loft yard flush` for each 16."
+  - key: 01a20dc9-eaae-7491-b6c6-e7fb84a8c0fe
+    kind: risk
+    statement: "A batch of 16 snapshots can still be too large for 2 seconds on a slow link."
+subjects:
+  - role: affected
+    node: 01a16469-559e-73c4-85f2-71b98f3a0df7
+  - role: outcome
+    node: 01a20dc8-c592-7688-83f8-16e5c692a1d1
+  - role: outcome
+    node: 01a20dc8-c593-7357-875c-81de86c8a7e6
+mentions:
+  - 01a20dc9-eaae-7491-b6c6-e805d0caa1b1

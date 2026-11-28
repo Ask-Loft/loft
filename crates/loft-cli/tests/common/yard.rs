@@ -124,10 +124,15 @@ impl Yard {
 
     /// Runs `loft yard` with `args` and `--input` naming a file that holds `input`.
     pub fn run_with(&self, args: &[&str], input: &str) -> Output {
+        self.run_with_under(args, input, &[])
+    }
+
+    /// [`Self::run_with`], with `variables` set in the command's environment.
+    pub fn run_with_under(&self, args: &[&str], input: &str, variables: &[(&str, &str)]) -> Output {
         let path = self.input(input);
         let mut all = args.to_vec();
         all.extend_from_slice(&["--input", path.to_str().unwrap()]);
-        self.run(&all)
+        self.run_under(&all, variables)
     }
 
     /// Writes `batch` as session `session`'s main agent, with `extra` arguments.

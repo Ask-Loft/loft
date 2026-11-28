@@ -5,11 +5,13 @@
 
 pub mod act;
 pub mod adapter;
+pub mod batch;
 pub mod body;
 pub mod codec;
 pub mod consult;
 pub mod datum;
 pub mod delegation;
+pub mod entry;
 pub mod format;
 pub mod identity;
 pub mod input;

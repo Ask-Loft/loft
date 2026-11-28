@@ -1,7 +1,8 @@
 //! What belongs to the machine and not to a branch, in `~/.yard/` in the person's home
 //! directory: the running page server, the trees it serves, when each session was last heard,
 //! the revision each agent last read, the sessions that continue others, the worktrees each
-//! session wrote Yard Log in, the directory of each session's main agent, the control token, and each session's events. Each file is written
+//! session wrote Yard Log in, the directory of each session's main agent, the control token, each session's events and,
+//! in connected mode, the outbox of versions not yet sent to Yard Server. Each file is written
 //! whole to a temporary file beside it and renamed into place, so a reader never meets one half
 //! written; a change that reads a file and writes it back holds the directory's lock while it
 //! does.
@@ -13,6 +14,7 @@ use std::path::{Path, PathBuf};
 use loft_ports::io_error;
 use loft_ports::sync::{read_if_present, remove_if_present, replace_synced};
 
+use crate::outbox::Outbox;
 use crate::{YardStoreError, lock};
 
 /// The directory under the person's home directory.
@@ -102,6 +104,12 @@ impl Home {
     #[must_use]
     pub fn path(&self, file: HomeFile) -> PathBuf {
         self.dir.join(file.name())
+    }
+
+    /// The outbox of versions not yet sent to the Yard Server at `endpoint`, `outbox/`.
+    #[must_use]
+    pub fn outbox(&self, endpoint: &str) -> Outbox {
+        Outbox::new(self.dir.join("outbox"), endpoint)
     }
 
     /// A session's event log, `events/<session id>.jsonl`.

@@ -1,0 +1,102 @@
+key: 01a20dc8-c593-7357-875c-81d1ad8af92a
+slug: send-versions-to-yard-server
+name: "Send versions to Yard Server"
+body: |
+  One sending serves every caller: it takes the oldest entries of the outbox for its address, at most 16, sends them as one batch of versions, waits at most 2 seconds for the answer and removes the entries once Yard Server has taken them. The commands that write versions for an agent, `loft yard write`, `loft yard task` and `loft yard published`, run it before they exit, once the lock of Yard Log is released and their own result is printed, and `loft yard flush` runs it alone. A failure leaves the entries where they are, to go with the next writing command or the next `loft yard flush`; while Yard Server cannot be reached, nothing goes and nothing is lost.
+
+  The hooks of the agent hosts and the page server never send: the Codex hook runs under a short time limit of its host and only puts entries, which the next sending takes along, and the Claude hook and the page server write no versions at all. Two commands that run at once may send one version twice, which Yard Server stores once.
+
+  The order of versions is the order of their keys, which grow with time, and Yard Server may count on it as a best effort only: it breaks around an entry passed over, between the branches of two locks, and between two versions written by two commands within one millisecond. A background sender, retries and a pause after a failure come in a later wave, calling the same sending.
+realizes:
+  - 01a13a90-3554-7631-bb13-097e6805bffe
+  - 01a16469-559e-73c4-85f2-71a7729da1ec
+mentions:
+  - 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+requirements:
+  - key: 01a20dc8-c593-7357-875c-81d2b67df0b5
+    statement:
+      form: event_driven
+      when: "`loft yard write`, `loft yard task` or `loft yard published` adds versions in connected mode"
+      system: "the command"
+      shall: "send one batch of versions to Yard Server once it has released the lock of Yard Log and printed its result."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81d35428e233
+        name: "The batch is sent after the command's JSON document is printed."
+      - key: 01a20dc8-c593-7357-875c-81d4e6e716fc
+        name: "No lock of Yard Log is held while the batch is sent."
+      - key: 01a20dc8-c593-7357-875c-81d5f6da6742
+        name: "The command's outcome, exit status and JSON document are the same whether Yard Server takes the batch or not."
+      - key: 01a20dc8-c593-7357-875c-81d687500081
+        name: "A batch Yard Server does not take is reported in one line on standard error."
+      - key: 01a20dc8-c593-7357-875c-81d7cddabf23
+        name: "A `loft yard task` whose outcome is `unchanged` sends nothing."
+      - key: 01a20dc8-c593-7357-875c-81d85de2aa1c
+        name: "A refused write sends nothing."
+  - key: 01a20dc8-c593-7357-875c-81d9c0d5a964
+    statement:
+      form: ubiquitous
+      system: "A `loft yard` command other than `write`, `task`, `published` and `flush`"
+      shall: "make no request to Yard Server."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81da6e94fefe
+        name: "`loft yard codex hook` makes no request to Yard Server, with entries waiting in the outbox."
+      - key: 01a20dc8-c593-7357-875c-81db76e880d5
+        name: "`loft yard claude hook` makes no request to Yard Server, with entries waiting in the outbox."
+      - key: 01a20dc8-c593-7357-875c-81dc17df3dc1
+        name: "The page server makes no request to Yard Server, with entries waiting in the outbox."
+      - key: 01a20dc8-c593-7357-875c-81ddcdf769ff
+        name: "An entry that `loft yard codex hook` put is sent with the batch of the next `loft yard write`."
+  - key: 01a20dc8-c593-7357-875c-81de86c8a7e6
+    statement:
+      form: ubiquitous
+      system: "The sending"
+      shall: "take into one batch of versions the oldest entries of the outbox for its address, at most 16, in the order of their version keys."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81df3a9589ac
+        name: "With 17 entries for the address, the batch holds the 16 oldest and the newest stays in the outbox."
+      - key: 01a20dc8-c593-7357-875c-81e08eb59c4c
+        name: "The records of the batch are in the order of their version keys."
+      - key: 01a20dc8-c593-7357-875c-81e1a071d50a
+        name: "Until a batch is taken, the next sending takes the same oldest entries again, before any newer ones."
+      - key: 01a20dc8-c593-7357-875c-81e26152c5c3
+        name: "With no entry for the address, no request is made."
+      - key: 01a20dc8-c593-7357-875c-81e3d40da5b2
+        name: "Each run sends at most one batch."
+  - key: 01a20dc8-c593-7357-875c-81e4c864dfdc
+    statement:
+      form: ubiquitous
+      system: "The sending"
+      shall: "send a batch of versions as `POST <endpoint>/batches`, with the content type `application/json`."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81e5c11e1ea8
+        name: "The request's body is the batch of versions."
+      - key: 01a20dc8-c593-7357-875c-81e6f263b0fb
+        name: "The request carries the content type `application/json`."
+  - key: 01a20dc8-c593-7357-875c-81e7d44446c5
+    statement:
+      form: event_driven
+      when: "Yard Server answers a batch of versions with `200`"
+      system: "the sending"
+      shall: "remove the batch's entries from the outbox."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81e88d3d0e76
+        name: "Every entry of the batch is gone from the outbox."
+      - key: 01a20dc8-c593-7357-875c-81e92b6a6873
+        name: "An entry put into the outbox while the batch was on its way stays."
+  - key: 01a20dc8-c593-7357-875c-81eac0f01173
+    statement:
+      form: unwanted
+      if: "Yard Server refuses a batch of versions, answers it with another status, or does not answer it within 2 seconds"
+      system: "the sending"
+      shall: "leave the batch's entries in the outbox and try again no sooner than the next sending."
+    criteria:
+      - key: 01a20dc8-c593-7357-875c-81eb86f2fa9a
+        name: "After a refusal, every entry of the batch stays in the outbox."
+      - key: 01a20dc8-c593-7357-875c-81ece9cd459e
+        name: "After a server error, every entry of the batch stays in the outbox."
+      - key: 01a20dc8-c593-7357-875c-81eda327f1fc
+        name: "Where Yard Server accepts the connection and never answers, the sending gives up within 2 seconds and every entry stays."
+      - key: 01a20dc8-c593-7357-875c-81ee69667a91
+        name: "Where no server listens at the address, every entry stays."
+      - key: 01a20dc8-c593-7357-875c-81efcf58f20d
+        name: "No request follows the failed one within the same run."
