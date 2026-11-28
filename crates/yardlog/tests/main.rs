@@ -6,6 +6,7 @@ mod common;
 mod adapter;
 mod answers;
 mod batch;
+mod batch_answer;
 mod block_kinds;
 mod boundaries;
 mod consult;

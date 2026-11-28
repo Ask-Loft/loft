@@ -4,9 +4,10 @@
 //! versions, ready to be sent as it is. One outbox serves every tree and every Yard Server on the
 //! machine; each is read for one address alone, oldest version first, with no git, no lock of
 //! Yard Log and no worktree. A file that is not an entry is moved into `dead/` and never read
-//! again; an entry of a newer format is left for a newer `loft`.
+//! again, as is an entry Yard Server will never take, each beside a `.reason` file that says
+//! why; an entry of a newer format is left for a newer `loft`.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
@@ -21,8 +22,23 @@ use crate::YardStoreError;
 
 pub use yardlog::entry::FORMAT;
 
-/// Where the files that are not entries are moved, inside the outbox.
+/// Where the files that cannot be sent are moved, inside the outbox.
 pub const DEAD: &str = "dead";
+
+/// The extension of the file beside each file of `dead/` that holds why it was moved there.
+pub const REASON: &str = "reason";
+
+/// The reason of a file moved into `dead/` because it is not an entry.
+pub const NOT_AN_ENTRY: &str = "not-an-entry";
+
+/// What waits in the outbox, read without moving a file.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct Survey {
+    /// The version keys of the entries for each address, in their order.
+    pub waiting: BTreeMap<String, Vec<String>>,
+    /// The entries of a newer format, whatever their address.
+    pub newer: usize,
+}
 
 /// The outbox of one Yard Server's address.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -43,10 +59,6 @@ pub struct Entry {
 pub struct Taken {
     /// The oldest entries, at most as many as were asked for.
     pub entries: Vec<Entry>,
-    /// Every entry waiting for the address, those taken included.
-    pub waiting: usize,
-    /// The entries of a newer format, left in place.
-    pub skipped: usize,
     /// The files moved into `dead/`.
     pub dead: usize,
 }
@@ -57,7 +69,9 @@ impl Outbox {
     pub fn new(dir: impl Into<PathBuf>, endpoint: &str) -> Self {
         Self {
             dir: dir.into(),
-            endpoint: endpoint.to_owned(),
+            // A trailing `/` is no part of the address, so `https://y` and `https://y/` share
+            // their entries.
+            endpoint: endpoint.trim_end_matches('/').to_owned(),
         }
     }
 
@@ -80,7 +94,7 @@ impl Outbox {
         fs::create_dir_all(&self.dir).map_err(io_error(&self.dir))?;
         let text = entry::write(&self.endpoint, record);
         Ok(replace_synced(
-            &self.dir.join(format!("{key}.json")),
+            &self.dir.join(file_of(&key.to_string())),
             text.as_bytes(),
             false,
         )?)
@@ -116,41 +130,117 @@ impl Outbox {
         (put, warning)
     }
 
-    /// The oldest `most` entries for this outbox's address, in the order of their version
-    /// keys, with the files that are not entries moved into `dead/` on the way. A file that
-    /// cannot be read, or moved, is passed over, so that one file never holds up the rest.
+    /// The oldest entries for this outbox's address, in the order of their version keys, at
+    /// most `most` of them and at most `most_bytes` of entry files in all, and at least one: an
+    /// entry that would bring them over `most_bytes` waits for the next take, unless it is the
+    /// first. It reads no file once no entry fits. The files that are not entries are moved into
+    /// `dead/` on the way, and a file that cannot be read, or moved, is passed over, so that one
+    /// file never holds up the rest.
     ///
     /// # Errors
     ///
     /// The outbox cannot be listed.
-    pub fn take(&self, most: usize) -> Result<Taken, YardStoreError> {
-        Ok(self.take_listed(self.names()?, most))
+    pub fn take(&self, most: usize, most_bytes: u64) -> Result<Taken, YardStoreError> {
+        self.take_after(most, most_bytes, &BTreeSet::new())
     }
 
-    /// [`Self::take`] of the files a listing of the outbox named, some of which may be gone since.
-    fn take_listed(&self, names: Vec<String>, most: usize) -> Taken {
+    /// As [`Outbox::take`], passing over the entries whose keys `passed` holds, as a run passes
+    /// over the entries it has taken once, whatever became of them: they are not read again.
+    ///
+    /// # Errors
+    ///
+    /// The outbox cannot be listed.
+    pub fn take_after(
+        &self,
+        most: usize,
+        most_bytes: u64,
+        passed: &BTreeSet<String>,
+    ) -> Result<Taken, YardStoreError> {
+        Ok(self.take_listed(listed(&self.dir)?, most, most_bytes, passed))
+    }
+
+    /// [`Self::take_after`] of the files a listing of the outbox named, with their sizes, some
+    /// of which may be gone since.
+    fn take_listed(
+        &self,
+        listing: Vec<(String, u64)>,
+        most: usize,
+        most_bytes: u64,
+        passed: &BTreeSet<String>,
+    ) -> Taken {
         let mut taken = Taken::default();
-        for name in names {
+        let mut room = Room {
+            most,
+            most_bytes,
+            bytes: 0,
+            full: false,
+        };
+        for (name, size) in listing {
+            if room.is_full(taken.entries.len()) {
+                break;
+            }
+            if passed.contains(key_of(&name)) {
+                continue;
+            }
             let path = self.dir.join(&name);
             // Gone since the listing, sent or moved by another run, or not readable at all.
-            let Ok(Some(bytes)) = read_if_present(&path) else {
+            let Ok(Some(text)) = read_if_present(&path) else {
                 continue;
             };
-            match entry::read(&bytes) {
-                Read::Entry { endpoint, record } if endpoint == self.endpoint => {
-                    taken.waiting += 1;
-                    let room = taken.entries.len() < most;
-                    taken.entries.extend(room.then(|| Entry {
-                        key: name.trim_end_matches(".json").to_owned(),
-                        record: record.to_owned(),
-                    }));
+            match read(&name, &text) {
+                Read::Entry {
+                    endpoint,
+                    key,
+                    record,
+                } if endpoint == self.endpoint => room.take(&mut taken.entries, key, record, size),
+                Read::Entry { .. } | Read::Newer => {}
+                Read::Foreign => {
+                    taken.dead += usize::from(self.bury_file(&name, NOT_AN_ENTRY).unwrap_or(false));
                 }
-                Read::Entry { .. } => {}
-                Read::Newer => taken.skipped += 1,
-                Read::Foreign => taken.dead += usize::from(self.bury(&name).unwrap_or(false)),
             }
         }
         taken
+    }
+
+    /// Whether the outbox holds an entry for its address that this `loft` reads, other than those
+    /// whose keys `passed` holds: it reads the files in the order of their names, passes over
+    /// those `passed` holds by their names alone, and stops at the first such entry. It moves and
+    /// writes nothing, so it needs no lock.
+    ///
+    /// # Errors
+    ///
+    /// The outbox cannot be listed.
+    pub fn holds_one_after(&self, passed: &BTreeSet<String>) -> Result<bool, YardStoreError> {
+        for (name, _) in listed(&self.dir)? {
+            if passed.contains(key_of(&name)) {
+                continue;
+            }
+            let Ok(Some(text)) = read_if_present(&self.dir.join(&name)) else {
+                continue;
+            };
+            if let Read::Entry { endpoint, .. } = read(&name, &text)
+                && endpoint == self.endpoint
+            {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+
+    /// The path of `entry`'s file.
+    #[must_use]
+    pub fn path_of(&self, entry: &Entry) -> PathBuf {
+        self.dir.join(file_of(&entry.key))
+    }
+
+    /// Moves `entry` into `dead/`, beside a `.reason` file that holds `reason`: whether it was
+    /// there to move.
+    ///
+    /// # Errors
+    ///
+    /// The entry is there and cannot be moved, or its reason cannot be written.
+    pub fn bury(&self, entry: &Entry, reason: &str) -> Result<bool, YardStoreError> {
+        self.bury_file(&file_of(&entry.key), reason)
     }
 
     /// Removes `entries` from the outbox; one already gone is no error.
@@ -160,50 +250,168 @@ impl Outbox {
     /// An entry is there and cannot be removed.
     pub fn remove(&self, entries: &[Entry]) -> Result<(), YardStoreError> {
         for taken in entries {
-            remove_if_present(&self.dir.join(format!("{}.json", taken.key)))?;
+            remove_if_present(&self.path_of(taken))?;
         }
         Ok(())
     }
 
-    /// The names of the files that may be entries, in order: those ending in `.json`, and not
-    /// a temporary file, whose name starts with `.`.
-    fn names(&self) -> Result<Vec<String>, YardStoreError> {
-        let listing = match fs::read_dir(&self.dir) {
-            Ok(listing) => listing,
-            Err(error) if error.kind() == ErrorKind::NotFound => return Ok(Vec::new()),
-            Err(error) => return Err(io_error(&self.dir)(error).into()),
-        };
-        let mut names: Vec<String> = listing
-            .filter_map(Result::ok)
-            .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_file()))
-            .filter_map(|entry| entry.file_name().into_string().ok())
-            .filter(|name| {
-                Path::new(name)
-                    .extension()
-                    .is_some_and(|extension| extension == "json")
-                    && !name.starts_with('.')
-            })
-            .collect();
-        names.sort();
-        Ok(names)
-    }
-
-    /// Moves the file `name` into `dead/`: whether it was there to move.
-    fn bury(&self, name: &str) -> Result<bool, YardStoreError> {
+    /// Moves the file `name` into `dead/`, writing its reason beside it first, so that a file
+    /// in `dead/` without a reason is one whose move was cut short: whether it was there to move.
+    fn bury_file(&self, name: &str, reason: &str) -> Result<bool, YardStoreError> {
         let dead = self.dir.join(DEAD);
         fs::create_dir_all(&dead).map_err(io_error(&dead))?;
         let from = self.dir.join(name);
+        if !from.exists() {
+            return Ok(false);
+        }
+        let reason_file = dead.join(format!("{name}.{REASON}"));
+        replace_synced(&reason_file, format!("{reason}\n").as_bytes(), false)?;
         match move_into_place(&from, &dead.join(name)) {
             Ok(()) => Ok(true),
-            // Gone since it was read: moved or removed by another run.
-            Err(_) if !from.exists() => Ok(false),
+            // Gone since it was read, moved or removed by another run: its reason goes with it.
+            Err(_) if !from.exists() => {
+                remove_if_present(&reason_file)?;
+                Ok(false)
+            }
             Err(error) => Err(error.into()),
         }
     }
 }
 
+/// The room left in one take: once an entry does not fit, none after it does, so that a batch
+/// keeps the order of the keys.
+struct Room {
+    most: usize,
+    most_bytes: u64,
+    bytes: u64,
+    full: bool,
+}
+
+impl Room {
+    /// Whether no entry fits after the `taken` ones, so that the take reads no further file.
+    fn is_full(&self, taken: usize) -> bool {
+        self.full || taken == self.most
+    }
+
+    /// Adds the entry of the version `key`, of `size` bytes and holding `record`, to `entries`
+    /// where it fits, the room not being full.
+    fn take(&mut self, entries: &mut Vec<Entry>, key: String, record: &str, size: u64) {
+        self.full = !entries.is_empty() && self.bytes + size > self.most_bytes;
+        if !self.full {
+            self.bytes += size;
+            entries.push(Entry {
+                key,
+                record: record.to_owned(),
+            });
+        }
+    }
+}
+
+/// What the file `name`, holding `bytes`, reads as: an entry is named by its version's key, so one
+/// that holds another key is not an entry.
+fn read<'a>(name: &str, bytes: &'a [u8]) -> Read<'a> {
+    match entry::read(bytes) {
+        Read::Entry { key, .. } if key != key_of(name) => Read::Foreign,
+        read => read,
+    }
+}
+
+/// What waits in the outbox in `dir`, for every address, with no file moved or written.
+///
+/// # Errors
+///
+/// The outbox cannot be listed.
+pub fn survey(dir: &Path) -> Result<Survey, YardStoreError> {
+    let mut survey = Survey::default();
+    for (name, _) in listed(dir)? {
+        let Ok(Some(text)) = read_if_present(&dir.join(&name)) else {
+            continue;
+        };
+        match read(&name, &text) {
+            Read::Entry { endpoint, .. } => survey
+                .waiting
+                .entry(endpoint.clone())
+                .or_default()
+                .push(key_of(&name).to_owned()),
+            Read::Newer => survey.newer += 1,
+            Read::Foreign => {}
+        }
+    }
+    Ok(survey)
+}
+
+/// A file of `dead/`, with the reason kept beside it, where one is.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Dead {
+    pub file: String,
+    pub reason: Option<String>,
+}
+
+/// The files of `dead/` in the outbox in `dir`, in the order of their names, each with the reason
+/// kept beside it, where one is; a `.reason` file is not listed, nor one without its file.
+///
+/// # Errors
+///
+/// `dead/` is there and cannot be listed.
+pub fn dead(dir: &Path) -> Result<Vec<Dead>, YardStoreError> {
+    let dead = dir.join(DEAD);
+    let suffix = format!(".{REASON}");
+    Ok(files(&dead, |name| !name.ends_with(&suffix))?
+        .into_iter()
+        .map(|(file, _)| {
+            let reason = fs::read_to_string(dead.join(format!("{file}{suffix}")))
+                .ok()
+                .and_then(|text| text.lines().next().map(str::to_owned))
+                .filter(|reason| !reason.is_empty());
+            Dead { file, reason }
+        })
+        .collect())
+}
+
+/// The version key an entry file is named by.
+fn key_of(name: &str) -> &str {
+    name.strip_suffix(".json").unwrap_or(name)
+}
+
+/// The name of the entry file of the version `key`.
+fn file_of(key: &str) -> String {
+    format!("{key}.json")
+}
+
+/// The files in `dir` that may be entries, in order, each with its size from the listing: those
+/// ending in `.json`, and not a temporary file, whose name starts with `.`.
+fn listed(dir: &Path) -> Result<Vec<(String, u64)>, YardStoreError> {
+    files(dir, |name| {
+        Path::new(name)
+            .extension()
+            .is_some_and(|extension| extension == "json")
+    })
+}
+
+/// The files in `dir` whose names `keep` keeps, in the order of their names, each with its size
+/// from the listing; a temporary file, whose name starts with `.`, never; none where `dir` is not
+/// there.
+fn files(dir: &Path, keep: impl Fn(&str) -> bool) -> Result<Vec<(String, u64)>, YardStoreError> {
+    let listing = match fs::read_dir(dir) {
+        Ok(listing) => listing,
+        Err(error) if error.kind() == ErrorKind::NotFound => return Ok(Vec::new()),
+        Err(error) => return Err(io_error(dir)(error).into()),
+    };
+    let mut names: Vec<(String, u64)> = listing
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let metadata = entry.metadata().ok().filter(fs::Metadata::is_file)?;
+            let name = entry.file_name().into_string().ok()?;
+            (keep(&name) && !name.starts_with('.')).then_some((name, metadata.len()))
+        })
+        .collect();
+    names.sort();
+    Ok(names)
+}
+
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
     use std::fs;
 
     use yardlog::keys::VersionKey;
@@ -214,20 +422,21 @@ mod tests {
     fn an_entry_gone_since_the_listing_is_passed_over_and_the_batch_goes_on_without_it() {
         let dir = std::env::temp_dir().join(format!("loft-outbox-gone-{}", std::process::id()));
         let outbox = Outbox::new(&dir, "http://127.0.0.1:7420");
-        let record = |id: &str| format!(r#"{{"id":"{id}"}}"#);
+        let record = |key: VersionKey| format!(r#"{{"version":{{"key":"{key}"}}}}"#);
         let keys = [VersionKey::mint(), VersionKey::mint(), VersionKey::mint()];
-        outbox.put(keys[0], &record("a")).unwrap();
-        outbox.put(keys[2], &record("c")).unwrap();
+        outbox.put(keys[0], &record(keys[0])).unwrap();
+        outbox.put(keys[2], &record(keys[2])).unwrap();
         // The listing named the second entry too, which another run sent before it was read.
-        let mut listed: Vec<String> = keys.iter().map(|key| format!("{key}.json")).collect();
+        let mut listed: Vec<(String, u64)> =
+            keys.iter().map(|key| (format!("{key}.json"), 64)).collect();
         listed.sort();
         let mut expected: Vec<String> =
             [keys[0], keys[2]].iter().map(ToString::to_string).collect();
         expected.sort();
-        let taken = outbox.take_listed(listed, 16);
+        let taken = outbox.take_listed(listed, 16, 1 << 20, &BTreeSet::new());
         fs::remove_dir_all(&dir).unwrap();
         let sent: Vec<String> = taken.entries.into_iter().map(|entry| entry.key).collect();
         assert_eq!(sent, expected);
-        assert_eq!((taken.waiting, taken.skipped, taken.dead), (2, 0, 0));
+        assert_eq!(taken.dead, 0);
     }
 }

@@ -1,0 +1,85 @@
+key: 01a213ce-4186-77e8-a1fb-b4a6a4c26ecf
+slug: yard-server-answers-each-version-of-a-batch-with-its-outcome
+title: "Yard Server answers each version of a batch with its outcome"
+context: "Yard Server takes a batch of up to 16 versions. One of them may be one it will never take, while the others are fine, and a version may arrive under a key it already holds with other contents. The sending must know which entries are done, which to move aside and which to send again, without one version holding up the others. Yard Server keeps what it takes in typed columns, not as the text it received, and an answer is read by a sending that waits for it."
+state:
+  kind: accepted
+  selectedOption: 01a213ce-4186-77e8-a1fb-b4accd04b86e
+  outcome: "Yard Server answers a batch it can read with `200` and, for each version in the order sent, its key and one outcome: `stored`, `held`, `conflict`, `refused` with a code, or `later` with a code where it may take the version once it is upgraded; it refuses the whole batch only where it cannot read it (`400`), where it is too large (`413`) and where it cannot take any batch now (`429` or `503` with `Retry-After`)."
+drivers:
+  - key: 01a213ce-4186-77e8-a1fb-b4a78f43e507
+    kind: local
+    label: "One bad version holds up none"
+    statement: "A version Yard Server will never take does not keep the others of its batch from going."
+  - key: 01a213ce-4186-77e8-a1fb-b4a87c790a4c
+    kind: local
+    label: "A light answer"
+    statement: "The answer is small next to the batch and needs nothing rebuilt from the store."
+  - key: 01a213ce-4186-77e8-a1fb-b4a9f9b5b9ab
+    kind: local
+    label: "A conflict is seen"
+    statement: "A version Yard Server holds in another form under the same key is told apart from one it holds as sent."
+options:
+  - key: 01a213ce-4186-77e8-a1fb-b4aa1b1c2d81
+    title: "The batch as stored"
+    description: "Yard Server answers with every record it holds for the versions sent, and the sending compares them."
+  - key: 01a213ce-4186-77e8-a1fb-b4ab866a9096
+    title: "A status for the batch"
+    description: "Yard Server answers the batch as a whole, taken or refused."
+  - key: 01a213ce-4186-77e8-a1fb-b4accd04b86e
+    title: "An outcome for each version"
+    description: "Yard Server answers with each version's key and an outcome."
+assessments:
+  - option: 01a213ce-4186-77e8-a1fb-b4aa1b1c2d81
+    driver: 01a213ce-4186-77e8-a1fb-b4a78f43e507
+    rating: conflicts
+    rationale: "a refusal is still of the whole batch"
+  - option: 01a213ce-4186-77e8-a1fb-b4aa1b1c2d81
+    driver: 01a213ce-4186-77e8-a1fb-b4a87c790a4c
+    rating: conflicts
+    rationale: "the answer is as large as the batch and rebuilt from typed columns"
+  - option: 01a213ce-4186-77e8-a1fb-b4aa1b1c2d81
+    driver: 01a213ce-4186-77e8-a1fb-b4a9f9b5b9ab
+    rating: supports
+    rationale: "the sending compares what it sent with what is held"
+  - option: 01a213ce-4186-77e8-a1fb-b4ab866a9096
+    driver: 01a213ce-4186-77e8-a1fb-b4a78f43e507
+    rating: conflicts
+    rationale: "the sending cannot tell which version was refused"
+  - option: 01a213ce-4186-77e8-a1fb-b4ab866a9096
+    driver: 01a213ce-4186-77e8-a1fb-b4a87c790a4c
+    rating: supports
+    rationale: "the answer is one status"
+  - option: 01a213ce-4186-77e8-a1fb-b4ab866a9096
+    driver: 01a213ce-4186-77e8-a1fb-b4a9f9b5b9ab
+    rating: conflicts
+    rationale: "a conflict is not told apart from a version held as sent"
+  - option: 01a213ce-4186-77e8-a1fb-b4accd04b86e
+    driver: 01a213ce-4186-77e8-a1fb-b4a78f43e507
+    rating: supports
+    rationale: "each version is refused or taken on its own"
+  - option: 01a213ce-4186-77e8-a1fb-b4accd04b86e
+    driver: 01a213ce-4186-77e8-a1fb-b4a87c790a4c
+    rating: supports
+    rationale: "the answer is a key and a word for each version"
+  - option: 01a213ce-4186-77e8-a1fb-b4accd04b86e
+    driver: 01a213ce-4186-77e8-a1fb-b4a9f9b5b9ab
+    rating: supports
+    rationale: "Yard Server, which holds both, names the conflict"
+consequences:
+  - key: 01a213ce-4186-77e8-a1fb-b4ad126272b8
+    kind: benefit
+    statement: "The sending settles each entry in one pass over the answer, with no search for the version at fault."
+  - key: 01a213ce-4186-77e8-a1fb-b4ae2ad7ac19
+    kind: cost
+    statement: "The answer no longer shows what Yard Server holds, so a person reads it on Yard Server itself."
+  - key: 01a213ce-4186-77e8-a1fb-b4af83e136e5
+    kind: obligation
+    statement: "A version that Yard Server may take once it is upgraded, such as one with a report of a version it does not know yet, is answered `later`, never `refused`, `400` or `413`, which move the version aside for good."
+subjects:
+  - role: affected
+    node: 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+  - role: outcome
+    node: 01a20dc8-c593-7357-875c-81e7d44446c5
+mentions:
+  - 01a20dc9-eaae-7491-b6c6-e7f355226276

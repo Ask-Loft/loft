@@ -5,15 +5,15 @@
 use std::fs;
 
 use serde_json::{Value, json};
-use yardlog::batch::FORMAT as BATCH;
+use yardlog::batch::{FORMAT as BATCH, MOST_BYTES};
 use yardlog_store::home::Home;
 use yardlog_store::outbox::{FORMAT, Outbox};
 
 use crate::common::{Failed, Scratch, Tree, read, try_write, write};
 
-const ENDPOINT: &str = "http://127.0.0.1:7420";
+pub(crate) const ENDPOINT: &str = "http://127.0.0.1:7420";
 
-fn outbox(scratch: &Scratch, endpoint: &str) -> Outbox {
+pub(crate) fn outbox(scratch: &Scratch, endpoint: &str) -> Outbox {
     Home::at(scratch.0.join(".yard")).outbox(endpoint)
 }
 
@@ -204,7 +204,7 @@ fn entries_are_taken_oldest_first_for_their_own_address_alone() {
         );
     }
     let all = entries(&tree.scratch);
-    let taken = ours.take(2).unwrap();
+    let taken = ours.take(2, MOST_BYTES).unwrap();
     let keys: Vec<&str> = taken
         .entries
         .iter()
@@ -215,7 +215,6 @@ fn entries_are_taken_oldest_first_for_their_own_address_alone() {
         .map(|(name, _)| name.trim_end_matches(".json").to_owned())
         .collect();
     assert_eq!(keys, [ours_keys[0].as_str(), ours_keys[1].as_str()]);
-    assert_eq!(taken.waiting, 3);
     let record: Value = serde_json::from_str(&taken.entries[0].record).unwrap();
     assert_eq!(record, all[1].1["record"]);
     assert_eq!(entries(&tree.scratch), all);
@@ -230,7 +229,7 @@ fn a_record_is_taken_with_its_fields_in_the_order_written() {
         &store,
         &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
     );
-    let taken = ours.take(16).unwrap();
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     assert!(
         taken.entries[0]
             .record
@@ -256,7 +255,7 @@ fn removed_entries_leave_the_outbox_and_one_already_gone_is_no_error() {
         &store,
         &json!([{"id": "s2", "kind": "stage", "title": "S"}]),
     );
-    let taken = ours.take(16).unwrap();
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     ours.remove(&taken.entries[..1]).unwrap();
     ours.remove(&taken.entries[..1]).unwrap();
     assert_eq!(entries(&tree.scratch).len(), 1);
@@ -276,13 +275,13 @@ fn a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_take
     );
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000003.json",
-        &entry(ENDPOINT, "3", 1),
+        &entry(ENDPOINT, 3, 1),
     );
     scratch.put(
         ".yard/outbox/.00000000-0000-7000-8000-000000000004.json.1.0.tmp",
         "{half",
     );
-    let taken = ours.take(16).unwrap();
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     assert_eq!(taken.dead, 2);
     assert_eq!(taken.entries.len(), 1);
     assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000003");
@@ -295,7 +294,7 @@ fn a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_take
         dead.join("00000000-0000-7000-8000-000000000002.json")
             .is_file()
     );
-    let again = ours.take(16).unwrap();
+    let again = ours.take(16, MOST_BYTES).unwrap();
     assert_eq!((again.dead, again.entries.len()), (0, 1));
 }
 
@@ -305,14 +304,13 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
     let ours = outbox(&scratch, ENDPOINT);
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000001.json",
-        &entry(ENDPOINT, "1", 2),
+        &entry(ENDPOINT, 1, 2),
     );
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000002.json",
-        &entry(ENDPOINT, "2", 1),
+        &entry(ENDPOINT, 2, 1),
     );
-    let taken = ours.take(16).unwrap();
-    assert_eq!(taken.skipped, 1);
+    let taken = ours.take(16, MOST_BYTES).unwrap();
     assert_eq!(taken.entries.len(), 1);
     assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000002");
     assert!(
@@ -326,24 +324,26 @@ fn an_entry_of_a_newer_format_stays_and_is_passed_over() {
 #[test]
 fn an_empty_or_missing_outbox_has_nothing_to_take() {
     let scratch = Scratch::new();
-    let taken = outbox(&scratch, ENDPOINT).take(16).unwrap();
-    assert_eq!(
-        (
-            taken.entries.len(),
-            taken.waiting,
-            taken.skipped,
-            taken.dead
-        ),
-        (0, 0, 0, 0)
-    );
+    let taken = outbox(&scratch, ENDPOINT).take(16, MOST_BYTES).unwrap();
+    assert_eq!((taken.entries.len(), taken.dead), (0, 0));
 }
 
-/// An entry of `yardlog-outbox/<version>` for `endpoint`, whose record names `id`.
-fn entry(endpoint: &str, id: &str, version: u32) -> String {
+/// An entry of `yardlog-outbox/<version>` for `endpoint`, of the version `n`, whose file is
+/// named `00000000-0000-7000-8000-<n>.json` with `n` padded to 12 digits.
+pub(crate) fn entry(endpoint: &str, n: u32, version: u32) -> String {
+    padded(endpoint, n, version, "")
+}
+
+/// [`entry`], whose record's id is `n` followed by `padding`.
+pub(crate) fn padded(endpoint: &str, n: u32, version: u32, padding: &str) -> String {
     json!({
         "format": format!("yardlog-outbox/{version}"),
         "to": {"endpoint": endpoint},
-        "record": {"record": "version", "id": id, "version": {"key": id}},
+        "record": {
+            "record": "version",
+            "id": format!("{n}{padding}"),
+            "version": {"key": format!("00000000-0000-7000-8000-{n:012}")},
+        },
     })
     .to_string()
 }
@@ -357,7 +357,7 @@ fn a_later_write_puts_no_entry_again_for_a_version_already_sent() {
         &store,
         &json!([{"id": "s1", "kind": "stage", "title": "S"}]),
     );
-    let sent = ours.take(16).unwrap();
+    let sent = ours.take(16, MOST_BYTES).unwrap();
     ours.remove(&sent.entries).unwrap();
     write(
         &store,
@@ -415,19 +415,26 @@ fn a_file_that_cannot_be_read_is_passed_over_and_the_rest_are_taken() {
     let scratch = Scratch::new();
     let ours = outbox(&scratch, ENDPOINT);
     let locked = ".yard/outbox/00000000-0000-7000-8000-000000000001.json";
-    scratch.put(locked, &entry(ENDPOINT, "1", 1));
+    scratch.put(locked, &entry(ENDPOINT, 1, 1));
     scratch.put(
         ".yard/outbox/00000000-0000-7000-8000-000000000002.json",
-        &entry(ENDPOINT, "2", 1),
+        &entry(ENDPOINT, 2, 1),
     );
     let path = scratch.0.join(locked);
     fs::set_permissions(&path, fs::Permissions::from_mode(0o000)).unwrap();
     let readable = fs::read(&path).is_ok();
-    let taken = ours.take(16);
+    let taken = ours.take(16, MOST_BYTES);
     fs::set_permissions(&path, fs::Permissions::from_mode(0o644)).unwrap();
     let taken = taken.unwrap();
     if !readable {
         assert_eq!(taken.entries.len(), 1);
         assert_eq!(taken.entries[0].key, "00000000-0000-7000-8000-000000000002");
     }
+}
+
+#[test]
+fn an_address_with_a_trailing_slash_is_the_same_address_without_it() {
+    let scratch = Scratch::new();
+    let slashed = outbox(&scratch, &format!("{ENDPOINT}/"));
+    assert_eq!(slashed.endpoint(), ENDPOINT);
 }

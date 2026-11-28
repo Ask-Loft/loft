@@ -25505,7 +25505,40 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "a_late_simulator_stores_the_batch_and_answers_after_its_delay"
-        body: 5d48424cbc23444a81bd07d63177b31440c99216a9e004750650f82b7794a181
+        body: 8a36dd0664f9e991d54b27315507badc3b30a9884c182fce6e531a695ad72e04
+  - node: 01a213ce-418d-753d-a2da-ac738a0a774b
+    reviewed: eb0ae3cc276961c72bd278614d25393d22014265289654afedeed4252aca8836
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_that_asks_to_come_back_answers_its_status_and_retry_after"
+        body: e2b60fcbc849bcacadaac3de84c38f6a719f3acde3631ff1c41c4d30ab6d5dd7
+  - node: 01a213ce-418d-753d-a2da-ac74599ef1e3
+    reviewed: 5cf186c0c4f9eaf68ac16eb71d4505616fd2c542d3f3b5c67b6533e9f967d180
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_refusing_named_versions_refuses_them_and_stores_the_others"
+        body: 7b65b7e6325afdc228294b82f26ad97d1b911b3353c09d1901446bc2b3b25bdd
+  - node: 01a21406-1006-7412-b332-118ab687b777
+    reviewed: 63718f8c0d42437883f84d80129b3369d508523dcc69f0a0845dc8de0cf3d62d
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_putting_named_versions_off_answers_them_later_and_stores_none_of_them"
+        body: 07f062794c07dd53b2ba3ba16588fa525803d9ac5cab3e0d3a324d69769360e3
+  - node: 01a21406-1006-7412-b332-118b5ca18aa2
+    reviewed: cb00f2f0115d2bc8e77831fc3fb95261a52e58d57d545f040d9e4a10fc573f51
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_answering_with_a_named_body_answers_exactly_it"
+        body: baf4116f8ff8fce9497e0f419345600db15174d5bd39a11fe40485c8300783a9
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_answering_with_a_named_status_and_body_answers_as_a_proxy_would"
+        body: a12998214661066ad083dae6648b785bd761a9ed77759be6ea544ac0d95d161a
+  - node: 01a21dc4-1382-7665-bfa6-7061e894832b
+    reviewed: b9751d27797f1ba4f7b1abcedffca9cec335e66a371eb2ae379b63e0ae99b6c5
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_refusing_bodies_over_a_size_refuses_them_with_413_and_stores_smaller_ones"
+        body: 9c4eb2e71642db11cf505595bab6b05decbf2609950a2cd92c45d64c526fdfda
   - node: 01a20de0-8348-72dc-8ab4-3db7fa378c36
     reviewed: f85ab3c55ff39ad8e09fa32aa008972724d2cd30aac8651d7f107ebd7f871be9
     tests:
@@ -25525,17 +25558,38 @@ links:
         name: "a_refused_request_stores_nothing"
         body: 69c0093170e973633e59050546593a61c3f228ef6e5304996faaef7070bb1686
   - node: 01a20de0-8348-72dc-8ab4-3dbb2d996fa4
-    reviewed: ea6671884c3f1fa9972017eb4068ffb062b2742e52bb349b10ec966deb7930d7
+    reviewed: 4c42acae2ec15a7e7ed4873a8cad2abec27bd74b106b71ab82ef35a2b733172e
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_requires"
         body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
   - node: 01a20de0-8348-72dc-8ab4-3dbc5cd64e8e
-    reviewed: a3e616e316c8e68c66bcae9df379d218a8dd2eb900bc5b731bcaf91e9219e765
+    reviewed: 7f5a7218c6a457a788fbdb0b3e01365451fcd204767a2f978dd096b27bacf237
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_requires"
         body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_refusing_named_versions_refuses_them_and_stores_the_others"
+        body: 7b65b7e6325afdc228294b82f26ad97d1b911b3353c09d1901446bc2b3b25bdd
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_simulator_putting_named_versions_off_answers_them_later_and_stores_none_of_them"
+        body: 07f062794c07dd53b2ba3ba16588fa525803d9ac5cab3e0d3a324d69769360e3
+  - node: 01a213ce-418d-753d-a2da-ac753d3ff088
+    reviewed: 04c4c342a4d973196b9bf38c4aadf86a828feb141e5056b8eaa7172195dedfdf
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a21406-1006-7412-b332-118c4411a2ca
+    reviewed: 6d414fd0214b0c8fae8ffd30626b85031a9155ed718814fd5ee04039e04ad822
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_record_that_does_not_read_is_refused_and_the_others_are_stored"
+        body: 88015e0b67908a800e8196d09a9fce33b074220c5285c006e99e83931f528ef4
   - node: 01a20de0-8348-72dc-8ab4-3dbd9fac17e4
     reviewed: 554908e52d0c68883cbdb55e71bcf0a9ef14958070d66e17ee5619963c3e44ca
     tests:
@@ -25543,7 +25597,7 @@ links:
         name: "the_simulator_holds_each_version_once_in_the_order_first_received"
         body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
   - node: 01a20de0-8348-72dc-8ab4-3dbf426be513
-    reviewed: 8554efa0707ff3469d870546aa3476a328ce3dc2053a10a328be8f50b2002f4f
+    reviewed: 85a3576d45ede1d59689b330aeb3e8829eb5bd77b828c6f7f7aed99d955aecd2
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_requires"
@@ -25552,17 +25606,23 @@ links:
         name: "the_simulator_holds_each_version_once_in_the_order_first_received"
         body: cef7c16a03bee1e2311b62d682288ac6135853085998636ff0ad279e2e1844a5
   - node: 01a20de0-8348-72dc-8ab4-3dc0f07af9eb
-    reviewed: 35cb6f8527042b5062502ec9fb4ae8477ea451f74f916285d0a0c02b5f43e6be
+    reviewed: 543cb494933c14910718d1b0bf478f12919acc104af1511a2e014b12e7f83114
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_requires"
         body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_version_sent_under_another_yard_log_leaves_one_record_under_the_first"
+        body: 1daf7f3b372f0973b6ac8f7c0fa2709195bbd72410371e8c54c6ea2a5915f6d2
   - node: 01a20de0-8348-72dc-8ab4-3dc1874b3e23
-    reviewed: cb4fbfce014c593276961827aaacd86d2a3ad53dc96b7c3e7b151c22f6096079
+    reviewed: df6d72cc0b8b19a5a858f67763a6ddfe4d3f04f0a35f29268d94b2417beed3a1
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_requires"
         body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+      - file: "crates/loft-cli/tests/yard_server_scenarios.rs"
+        name: "a_version_sent_again_with_other_contents_leaves_the_first_record_as_it_was"
+        body: 140882b7b3fef43e592a6280a3d67901301658e5e701afdc1f11026801fa6f0b
   - node: 01a20de0-8348-72dc-8ab4-3dc3c351d49c
     reviewed: 13aade0e5a7a62577f6c640bc069a3820036d68286b13d7009b6fdfdb184a578
     tests:
@@ -25577,6 +25637,12 @@ links:
         body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
   - node: 01a20de0-8348-72dc-8ab4-3dc58f57b905
     reviewed: 2c6b56e15e11e1dbd445377d25101493e707ea5c3aff7cee1cad36d563483d49
+    tests:
+      - file: "crates/loft-cli/tests/yard_server_contract.rs"
+        name: "the_simulator_answers_each_scenario_as_the_contract_requires"
+        body: 666c2c7cff34fc55989bdf1871db5991cfec46cf2c4e6a94980a8aa404a50485
+  - node: 01a213ce-418d-753d-a2da-ac76b7258e48
+    reviewed: e6a862f2cf0b9566a6a69d85e5fe13c020fd62e74115a5cf08b7a689eb4cd5c9
     tests:
       - file: "crates/loft-cli/tests/yard_server_contract.rs"
         name: "the_simulator_answers_each_scenario_as_the_contract_requires"
@@ -30082,14 +30148,38 @@ links:
         name: "the_control_token_is_made_once_and_readable_only_by_its_owner"
         body: ebc2cf52a7ae63290c26551aa2a4e3ee174002c0795ee0ff75f642949e47e717
   - node: 01a20dc8-c593-7357-875c-820578f9386b
-    reviewed: 8440ec3dc1250a4b72d49d6ca55bc07d4334a17230a6683d175e048ec065833d
+    reviewed: 23c695dc2bcf453d8380a9c4a946bd0730ab61b44d92f21259eaeb6a9fb0d777
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_write_puts_one_entry_for_each_version_it_adds_stages_included"
         body: 68ee10abc6deca2bc990744984c74febb2b1c1a3db20829fdaca77faf5dcad84
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 323dac7b5dcfc1ba8b8398caa9be95cc901876b865464144bcf5b47868220a92
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
+  - node: 01a21406-1007-7756-963c-233401d4c90e
+    reviewed: 789bc401b6a8221b676fce74903e1af1a56b07e9e323972a4b40def5d1c55082
+    tests:
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "a_file_that_is_not_an_entry_is_moved_into_dead_with_the_reason_not_an_entry"
+        body: 615bdce42364108bb4eab45753a51c022f90fb171c0e0ea12da4f39f3fe4e0e0
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "an_entry_moved_aside_keeps_its_reason_beside_it"
+        body: d8f49539d5728cb8c93d05ab730452d5e578aeddf5fc6d83929a07a3510251ea
+  - node: 01a21406-1007-7756-963c-2335b028dad4
+    reviewed: 675b69a0981645564495f160ac0f757acdbfcbed1fb9eac58cc30cf04d8fbff6
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "flush_json_holds_a_record_for_each_address_a_run_has_run_for"
+        body: d363354961fe799d17d6dbb1225b2334aa44152f6f49a54342bf4005749455df
+  - node: 01a21406-1007-7756-963c-23364d9c2948
+    reviewed: 6ef6d5c6b9033c14d8a94244578c06b419f8d9b29159a9a1d19cd6bcbbae5af5
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "the_flush_that_holds_the_lock_sends_every_batch_while_another_is_busy"
+        body: 8d0bff982c672559b23c4b64526cb737e50a3d03c7d6088460ab16ce4de3685b
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "once_the_flush_that_held_the_lock_is_stopped_the_next_flush_runs"
+        body: 1f77fde99376df5a9dbce02ede744f958749e2e6d87a625f9b4fe1c49ca3d34a
   - node: 01a1649f-62f0-7320-902c-7d8fc94401ef
     reviewed: db79e23a228af47e0d74764652f10e6da4aee21b606991616d503236bfa4e27d
     tests:
@@ -32147,7 +32237,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 8d1515a8feab3e8a06055b180da52a18bf4ccc87ad2efb10796ecbc4fa0cfefc
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -32159,16 +32249,16 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
   - node: 01a1646f-546e-76cb-8b4f-f1fa55bd344c
     reviewed: b2e92b9d8b9c74a9d59cd5659f907052d70f12b94cce8d1d02e27351878b33f4
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 8d1515a8feab3e8a06055b180da52a18bf4ccc87ad2efb10796ecbc4fa0cfefc
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
       - file: "crates/loft-cli/tests/plugins.rs"
         name: "the_mod_names_the_version_of_loft_as_its_own"
         body: 7ad10bfc924b0309c65bc3d6f8b7e88a14c37beb93e1caf74e0eb05a35feda9d
@@ -32177,10 +32267,10 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
-        body: 8d1515a8feab3e8a06055b180da52a18bf4ccc87ad2efb10796ecbc4fa0cfefc
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft of an older protocol than the plugin speaks leaves Yard Client off and names loft to update"
         body: 6f58e3a29cd6ba98864dfbd9fa21fac7a0074072fc70ce853822919ca2bb6c44
@@ -32189,7 +32279,7 @@ links:
     tests:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "a loft with no yard commands leaves Yard Client off, registers no tool and says once which to update"
-        body: 9e932312492be0b2aea07e18270b5c48e6c232303638429bb09c72135aa6654d
+        body: 1c78cea8fb2081fd8837f287f1a45dfc7a3530d7bc6a3a11966decdedbe1d125
   - node: 01a1646f-546e-76cb-8b4f-f1fde62cb279
     reviewed: bc1bfca105244ab915945501c1d149f7e84b784c53afba66d2612967917a7561
     tests:
@@ -39583,13 +39673,19 @@ links:
         name: "under protocol 3 the descriptor declares that the adapter classifies what each tool call consults"
         body: 2aa76df41342bc9c4c4ff78354efe6af7e25c86ccc5926a3ce2b67257a74099d
   - node: 01a1f074-174c-750c-b689-edae6ba14580
-    reviewed: b66892d51e9d30c38fc6e8a3e35fe6999464cf5cd3386aa14a4fc333e3bd96b6
+    reviewed: 99b9cf8e0edd272b9d8be43072ecc04ba8c98f82bd86f3742f5f8ac1cb677b9e
     tests:
       - file: "crates/loft-cli/tests/yard_protocol.rs"
-        name: "the_report_gives_protocol_four_for_listen_and_join"
-        body: 0af7db847037973f95eaa8f7762cc8af4a3c97a9cd8c00b5938ee9654e0f4b86
+        name: "protocol_4_and_every_later_one_let_serve_take_listen_and_join"
+        body: 4a9b7a24d878b77d17f3ee5b3eaa89b26f92295c8012b9024628702b69513e26
+  - node: 01a21406-1006-7412-b332-118decb19f7a
+    reviewed: 733fed51b236ca91787f2b10c0801bf56dafe146c82c5d35071098dba1cbd3d7
+    tests:
+      - file: "crates/loft-cli/tests/yard_protocol.rs"
+        name: "the_report_gives_protocol_5_under_which_flush_and_status_exist"
+        body: d87d1186aba850fc453e26e7835c13effb2401ed78f15144ccdaca28302342a4
   - node: 01a177f9-f61a-77e3-89ef-0d0bfe35cd61
-    reviewed: f31c21c93ee78efda355527190d5d0c5744c00595f80e287901411df6d3f54ad
+    reviewed: 93d0547294280b35e3977faf2c41242110bf16f7eb76d52bffdae891f5ec5cea
     tests:
       - file: "plugins/claude/loft/tests/yard-adapter.test.ts"
         name: "the Claude adapter names its host on protocol two commands, events and heartbeats"
@@ -39603,6 +39699,12 @@ links:
       - file: "plugins/claude/loft/tests/yard-start.test.ts"
         name: "after the session's first beat each loft yard serve the mod runs joins the page server that runs"
         body: 734853ee655e6b765d33d38a1f82088e278407c34b6c9c5e374638dc580db568
+      - file: "plugins/claude/loft/tests/yard-start.test.ts"
+        name: "a loft of a newer protocol than the plugin speaks leaves Yard Client off and names the plugin to update"
+        body: 2bde9849cc0a4bf80331f137e27bd363beb901a87f653dc310ec1f68e21b0be1
+      - file: "crates/loft-cli/tests/plugins.rs"
+        name: "the_newest_yard_protocol_the_mod_speaks_is_the_one_loft_speaks"
+        body: 76d6e55291b2ce28cb68c7e502b8407e94379ce852506a51fd22dfd0b592fa8f
   - node: 01a1646f-546d-7042-befd-ea43c0bb2e34
     reviewed: f9d7ec8d86cde32fd131534ed2250c2467037800d605df6ff6d1cc7923d2b0e4
     tests:
@@ -39814,11 +39916,11 @@ links:
         name: "each_yard_command_has_a_feature_that_lists_yard_command"
         body: 04b5ffe8207d1c16463ba785361b13aae19637b9b8a709dd51cbeb2f4ac5932b
   - node: 01a1646f-546d-7042-befd-ea6063179e7b
-    reviewed: 41bdce8609ee9ed693cfee3d1ed30c6a95b5455a0ca4e9e3162ccae4a6d3c2ae
+    reviewed: 4855b3a51c6f9961f3df9b691d407913725931dfe3a0c6904f5cb2596adc1622
     tests:
       - file: "crates/loft-cli/tests/yard_commands.rs"
         name: "each_yard_command_but_serve_protocol_and_continue_lists_needs_repository"
-        body: a4c46777b838753c64af2b10f7d228a46ec4b3868a43a2a5ed8e3918f6b2b7fe
+        body: 3fbd75b552b9be5a3a934a3cd0e5b283e62e87627711ee781b3debb48f7fd423
   - node: 01a182b6-3c58-7235-ad04-3918a33b8514
     reviewed: 0676bf94426ed7746485bd87e02ef190addf0a7798e9044361dc7d71301114be
     tests:
@@ -40096,8 +40198,8 @@ links:
     reviewed: 25f36d1b78c3c448090c5e628a67d37827802cb4f847d86c74024dc343193b65
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+        name: "a_flush_sends_17_entries_as_the_16_oldest_and_then_the_newest"
+        body: 49aee14763685f528860b3cf59f512b8e471c5ddc7488842f78d7106a5d49b6c
   - node: 01a20dc8-c592-7688-83f8-16ea4b18b14d
     reviewed: e4501f7d86937f182f4568c8328c545d19e818ee93391a70bdf0fd3db3ac2ea6
     tests:
@@ -40183,17 +40285,17 @@ links:
     reviewed: 71ddf02d7651b169797daeba0e3206cb63ebf08591cf8fa814cfd991de2da6ca
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+        name: "a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them"
+        body: 4197f5733502ca61360ed470c0166d5bff182c0754e11c1b95025062319ed8a0
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_refused_write_and_an_unchanged_task_send_nothing"
-        body: 5e7360bbf1430d7f0f9936bae22acd4af58dd80e2bb76f324d68dd3955d562e6
+        name: "a_refused_write_and_an_unchanged_task_put_no_entry"
+        body: d0712de7ed8a738c16a9c4ead7ef8c5245f698019d606a4bdda3fadd71de6b70
       - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "a_recorded_publish_sends_its_version"
-        body: b2306499800b86d3e8e955f940eaf8c20c48daa3b3cc45c3772396e063f1bd84
+        name: "a_recorded_publish_puts_its_version_and_a_flush_sends_it"
+        body: 8931ccb3826a3840d35b1b4f7c97a94cea273e5d8284606cad6e2f76fe4c6a65
       - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_along"
-        body: 58bb492d8ea9a16c7fb869deab0a925508c8c84eb891eaaab1a5e07fe955d421
+        name: "the_codex_hook_puts_entries_and_sends_none_and_a_flush_takes_them"
+        body: da2418a24d96280a2289ef956db65b86046ea9111b2fbddac289e60c06cd886f
   - node: 01a20dc8-c593-7357-875c-81a3c400ca2c
     reviewed: e3487a6b87c67bfe8144edf5c39aba2be782c134309d5902f93b3f9e35310ec0
     tests:
@@ -40223,7 +40325,7 @@ links:
         body: db8b8084a2e7c337ec98a97341936004e190e3f24d5ad779c2e896b720c77922
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_later_write_puts_no_entry_again_for_a_version_already_sent"
-        body: 62cc09d3c0120852ae8e0b844e8eebb48d27326036bdedb04f27a5a5bb3c8560
+        body: e09cfb0a78c2b8b22b415f04c50ff4348dde95e001cb627f6f5b655ec3c83885
   - node: 01a20dc8-c593-7357-875c-81a8ebaaa6b5
     reviewed: 526e060ad7d03a9bc361092017e887efce6c57dd10cb3ab63191187be75919c8
     tests:
@@ -40250,10 +40352,10 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay"
-        body: a7b1fa4a684e4febb4f28fb0603d48ca89b7addd0d26c27df0ab227a436e9a1a
+        body: 39077e502056a4e9a43858fdb01272501f9661b703da9d69a3b2c93510165224
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "each_address_takes_only_its_own_entries"
-        body: 644f6bf1971e509dcf624ea6ff654f1b3915b83f0dc95a44e2025a5db3177c0e
+        body: cfd0a3c74f844f3c8a120b33d8122015b5e3ed2042b955b7608891802d17efd0
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_address_and_the_same_address_with_a_trailing_slash_send_each_other_s_entries"
         body: e0d30d050c47cee868c0f1e3e7b8ccd90ddba55723a48c1c4ba3779a2c467521
@@ -40265,10 +40367,10 @@ links:
         body: f8ac6455fa77de29a4027d29c8be9279824561666b3a85a5ffd0c73b3551045a
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_record_is_taken_with_its_fields_in_the_order_written"
-        body: 05ec327ffcbb77ce7cdb60ead46e2f5da97114e0d26c65db28c735d0c635d5d1
+        body: 90bbe7b20bb5a63b9418bd129e9c3676c91ce825edd2e9acf2b49c04209ec7a6
       - file: "crates/loft-cli/tests/yard_server_e2e.rs"
         name: "a_note_written_by_loft_arrives_in_yard_server_as_yard_log_holds_it"
-        body: 644ead07db786daef310e61d46a149d2946e69e1a523c8aed46bd38d8c0a8300
+        body: 083b98b2937c19d896749ec60a244d83cf50c4db63c346891369fa1d7ebef1b5
   - node: 01a20dc8-c593-7357-875c-81af8c1c1fd0
     reviewed: 41c6f5ba66aafa25b555568d589bf1ccec5af6e24bc2c13ec737ff9f0148f431
     tests:
@@ -40284,7 +40386,7 @@ links:
   - node: 01a20dc8-c593-7357-875c-81b24b2f3743
     reviewed: e4049421bb54d9fa1d39c736c00ca87e5e5490a0d5269d4a157eb6125075f45a
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
+      - file: "crates/loft-cli/tests/yard_connected_safety.rs"
         name: "a_write_whose_entries_cannot_be_put_gives_the_result_it_gives_without_connected_mode"
         body: e5e1b1072f7004276f651e2316bfe75010761c3d9e96d7cbfaa01927378daf81
   - node: 01a20dc8-c593-7357-875c-81b3a3413dd9
@@ -40298,82 +40400,214 @@ links:
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 323dac7b5dcfc1ba8b8398caa9be95cc901876b865464144bcf5b47868220a92
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81b69520ca66
     reviewed: 7d1e752eca7ee22fe936de59345fc281b80389f4a296975d57054d40cbdcfa05
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "entries_are_taken_oldest_first_for_their_own_address_alone"
-        body: eb9e1c3f44dd8f22fb2372302e0e320104fe319957ca31f98ce638ac98beedb3
+        body: c30a0c5baf4735c0f1b003809e08f3b60de9d0ef0a19e2f86a5a1d80fea300fd
   - node: 01a20dc8-c593-7357-875c-81b700c9f2c8
     reviewed: 7b39fc279ff05450e7f472a5a17c3d1d997ddbeb778f4f5d9214ca6e75e0927c
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "entries_are_taken_oldest_first_for_their_own_address_alone"
-        body: eb9e1c3f44dd8f22fb2372302e0e320104fe319957ca31f98ce638ac98beedb3
+        body: c30a0c5baf4735c0f1b003809e08f3b60de9d0ef0a19e2f86a5a1d80fea300fd
   - node: 01a20dc8-c593-7357-875c-81b85c39f0a4
     reviewed: dbd43421a06cb15d3cef917fa1a84ded9725590defc5da86f6d7ea8446621375
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 323dac7b5dcfc1ba8b8398caa9be95cc901876b865464144bcf5b47868220a92
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_empty_or_missing_outbox_has_nothing_to_take"
-        body: 45c6bd86d22f8091d4ea769f75c3a421010462651f90fcc05d300f4d75f8d3e5
+        body: 3df1ced3bcec53707065e99ffe1c83f352dbda3c92cf3306e1c137a1f3422203
   - node: 01a20dc8-c593-7357-875c-81ba34a8bf50
     reviewed: 1493475a2343e694520364e38c2da2a21866f0b561d1c64d64a19a710819266a
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 323dac7b5dcfc1ba8b8398caa9be95cc901876b865464144bcf5b47868220a92
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81bbb57959a7
     reviewed: 83929c8fed3a51e66b54176c7776a9518c20ae2b71dbf7d0df94d0baf68ba6ac
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 323dac7b5dcfc1ba8b8398caa9be95cc901876b865464144bcf5b47868220a92
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81bcccf755b5
     reviewed: 7e066cd484ebd51910efb2b60a5df4fe9309ed268ef86b6636f9a783982fd7e6
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 323dac7b5dcfc1ba8b8398caa9be95cc901876b865464144bcf5b47868220a92
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
   - node: 01a20dc8-c593-7357-875c-81bde131b8ab
     reviewed: 794f7d9e238f28d2cb5847bb26cab306118f392d01459b9d924ba2bf7f1e8f26
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_broken_file_and_a_foreign_json_file_are_moved_to_dead_and_the_rest_are_taken"
-        body: 323dac7b5dcfc1ba8b8398caa9be95cc901876b865464144bcf5b47868220a92
+        body: 137a916211723a8ee56797c0bb534c9b235a24e75b01aa1b234c78fcefae9ae2
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "a_file_that_cannot_be_read_is_passed_over_and_the_rest_are_taken"
-        body: 430f6b81af190704b8fd3823cbf239e396c83f9a6745ec544038e33471d83d2a
+        body: b0e52697355708cef5a67a1b26e01321d538e47317c28501a657df119d526458
   - node: 01a20dc8-c593-7357-875c-81bfe9bd7572
     reviewed: e9893909680279628abf4cc8aee2a3d15696efe44fa3c2c854a260fdd28fb446
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_entry_of_a_newer_format_stays_and_is_passed_over"
-        body: cb935706c2e5861f10fdef2bffda52d747b78449d0884df619b4d8cd9a2b706b
+        body: 3fab5d9b15ff793cd08169af6b548b9e41a5870588e6500d80e388806d0bb9b7
   - node: 01a20dc8-c593-7357-875c-81c099764854
     reviewed: 79b90f83b0ca277d0d3da6052c65d93e8504015bad865bf5445a1eeca8f527e8
     tests:
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "an_entry_of_a_newer_format_stays_and_is_passed_over"
-        body: cb935706c2e5861f10fdef2bffda52d747b78449d0884df619b4d8cd9a2b706b
+        body: 3fab5d9b15ff793cd08169af6b548b9e41a5870588e6500d80e388806d0bb9b7
   - node: 01a20dc8-c593-7357-875c-81c29dad1e44
     reviewed: 07c7bdebac8087d7af29bb2075834e2f7536c36319ddbd70b5e2672e6530a043
     tests:
       - file: "crates/yardlog-store/src/outbox.rs"
         name: "an_entry_gone_since_the_listing_is_passed_over_and_the_batch_goes_on_without_it"
-        body: c069a37c6d30f36af2a4f3edd58ab502abc024aa1e7711b52196c18246d217b0
+        body: 553b2da06cd05b205587338ccb23c9371976cd6b3104a8a046640f6544c3f901
   - node: 01a20dc8-c593-7357-875c-81c3b1fcdff0
     reviewed: fc8d5b449580bd41e4b6decc9b293501d382803a146184cdbde8b94b76d6d9eb
     tests:
       - file: "crates/yardlog-store/src/outbox.rs"
         name: "an_entry_gone_since_the_listing_is_passed_over_and_the_batch_goes_on_without_it"
-        body: c069a37c6d30f36af2a4f3edd58ab502abc024aa1e7711b52196c18246d217b0
+        body: 553b2da06cd05b205587338ccb23c9371976cd6b3104a8a046640f6544c3f901
       - file: "crates/yardlog-store/tests/outbox.rs"
         name: "removed_entries_leave_the_outbox_and_one_already_gone_is_no_error"
-        body: 960be84d9b328bb5ffc21a991eab458fcedf62f886057586716df52fede70f0e
+        body: 2104f9c2e50e257ccbce25e0ed791e46be7d17610986e2e1b78273e665da0226
+  - node: 01a213cb-9c28-769e-b7c8-43d3bf1b66b5
+    reviewed: f3e456e54b4082ce42408ff4e8b912a79c312639d6114e1ebcabe9524637d137
+    tests:
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "an_entry_named_by_another_key_than_its_version_s_is_moved_into_dead_and_the_others_are_taken"
+        body: c0ca33ba8e01225925bbcdb9f60c0f3ae2a8b08114b13b4d211b8aab277e1619
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "an_entry_whose_record_holds_no_version_key_is_moved_into_dead_and_the_others_are_taken"
+        body: 0cb3251b3f405d2caf0f6643c09b0a92e03037a117d01cf512ec5e6b4fefd517
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "a_file_that_is_not_an_entry_is_moved_into_dead_with_the_reason_not_an_entry"
+        body: 615bdce42364108bb4eab45753a51c022f90fb171c0e0ea12da4f39f3fe4e0e0
+  - node: 01a213cb-9c28-769e-b7c8-43d4b624b399
+    reviewed: aa0415b44545c4984a45e5db5273083dcb1a26be1f46fee0a98b52e8adf2690e
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_in_conflict_is_moved_into_dead_with_the_reason_conflict"
+        body: 65fabd0056b3ca940d359b1460cb067da16851c1d6d0a38a9e3ac10be5d80b6a
+  - node: 01a213cb-9c28-769e-b7c8-43d54e128b86
+    reviewed: 0641a907761970d32e02467024a10e936e347e8d107940b7252b5895bc816e9a
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_refused_is_moved_into_dead_with_the_code"
+        body: 442eb4acc402e1fbc4f521d9088463ac7148ff6cc2ce8119a15ce2736e8663a6
+  - node: 01a213cb-9c28-769e-b7c8-43d6c364e52b
+    reviewed: f9cc0eaa9da6dd04e3aee3eefe04811316f19a5213fcf4606852ec534504b494
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_every_entry_of_the_batch_is_in_dead_and_the_next_batch_is_sent"
+        body: c339776d3f232fc0228bc63621b726d3315d761be440582aab0c711d6cc19365
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_413_the_batch_s_one_entry_is_in_dead_with_the_status_and_code"
+        body: 662f3ef52e40de2910517b613664683d4ad73e46674d49ff27b2176be825c183
+  - node: 01a213cb-9c28-769e-b7c8-43d750df95fe
+    reviewed: 1c7cd292fc1b3f2fdb36f8e7d6570f1163b093d4c87f348f7d9a39d37a305327
+    tests:
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "a_reason_file_is_never_taken_as_an_entry_and_never_moved"
+        body: 0e07d4295c16de1543ef318c6f5137d765ee6e336cb84e6f71d6b5751b49e925
+  - node: 01a213cb-9c28-769e-b7c8-43d929438c84
+    reviewed: 25f5cd9ca5c83a061f099fcfb5bc67053194806594be311411ba344e480e4769
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "flush_json_holds_a_record_for_each_address_a_run_has_run_for"
+        body: d363354961fe799d17d6dbb1225b2334aa44152f6f49a54342bf4005749455df
+  - node: 01a213cb-9c28-769e-b7c8-43da463a28a6
+    reviewed: 87f26fbd6ff4adfa2f336767b23b5487388234af768132d0961b4199b3cae3cd
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "flush_json_holds_a_record_for_each_address_a_run_has_run_for"
+        body: d363354961fe799d17d6dbb1225b2334aa44152f6f49a54342bf4005749455df
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
+        body: f116ccf65e6b38585d2a6d4dff4948f1672101adb6d49de0db24364bf058607d
+  - node: 01a213cb-9c28-769e-b7c8-43dbb2ff5f4b
+    reviewed: 339165f02a4e963ddfdb942e6ae8adf957f8a153086e0e1bcfdd3a3efe42c18f
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_busy_run_or_one_paused_without_a_request_leaves_the_record_as_it_was"
+        body: ead713738045f637397e1107e9457f9308cd351e25572af3725a891870f11898
+  - node: 01a213cb-9c28-769e-b7c8-43dc5acc7a87
+    reviewed: 02cb3a358b5b188b956fe57efe361344d470fec6a8d6ab20d8d020040488c86f
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_record_that_replaces_another_keeps_a_time_to_come_back_after_that_has_not_passed"
+        body: 76f5bcd83993d49f662b89fe30a149c897dfa5c4408e96c23908077ad9c62640
+  - node: 01a216fa-feac-7221-aee1-71657260358f
+    reviewed: 6fe5580ddb5cbac48055a470bf9e781277b4159b470c4dd8defe5251ad3bb484
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_record_keeps_the_later_key_of_an_entry_taken_in_a_batch_yard_server_did_not_answer"
+        body: f53919968c12724bc0edbc2ea065d7e133553c298d26134de1566cf03c27d380
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_run_records_the_versions_yard_server_will_take_later_with_their_codes"
+        body: 51206f8b3b284e336933e516e33cc03270621bd13a9081c33010354ce9a691d5
+  - node: 01a216fa-feac-7221-aee1-71669d4c89e6
+    reviewed: f62cf3ade80adabd52578e07f7a88df1cb03acb22c99232aa569c76045462c65
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_record_keeps_the_later_key_of_each_entry_the_run_did_not_take_while_it_waits"
+        body: f33ef0d20ddd7d2c4c6ef02c71447963908d79ded094651919b75c547291f49f
+  - node: 01a21dc4-1383-72e5-acab-a994e837b6dc
+    reviewed: e0a8f2fa484a3e494d13c5b754cb870d53f77e89ad0367fe56852cb8fed05ab6
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_later.rs"
+        name: "a_run_with_an_answer_of_later_keeps_the_versions_put_off_away_for_an_hour"
+        body: 87d05d37f0c81b08cf51bf27eb156e36de79430be0cb6d58a4c8dc755d44b20d
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "the_hour_of_the_versions_put_off_counts_from_yard_server_s_answer"
+        body: 67988c48b007945a9f9d587756f9fd56d91edd263d40265e5c7ea759513cd48c
+  - node: 01a21dc4-1383-72e5-acab-a9950d9f2514
+    reviewed: 0753fa9f9c9a42b2dcfb6e835eb6b8a518785921341c73d710c1a3c99357f253
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_later.rs"
+        name: "within_the_hour_a_run_passes_over_the_entries_put_off_and_sends_the_others"
+        body: ff47815a4ab55071927772e17ace919a5fbff15bf7384fc7295b31a0f3953d14
+  - node: 01a21dc4-1383-72e5-acab-a996a119a1be
+    reviewed: 4b84820148ff02b3cc9dcd81a0fdbdfc4e217e06f57d8a7ab5b6b5301f1b90d1
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "each_further_failed_run_in_a_row_doubles_the_pause_up_to_5_minutes"
+        body: 8c4e81b585aff8b8bf47d8c2b5c25da23fa35751c876f4736ffb60705f70139d
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_batch_that_goes_sets_the_failures_in_a_row_back_to_none"
+        body: d0787e1f35e7b00507cd3b26d0e61b9d7e01f839eb84d8b1ea81c60b6e8feb8d
+  - node: 01a21406-1007-7756-963c-231094699bf7
+    reviewed: ca6dd02963041eeb971888f01f1a2f686a057164fc53ddebd43b42720a385c5a
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_busy_run_or_one_paused_without_a_request_leaves_the_record_as_it_was"
+        body: ead713738045f637397e1107e9457f9308cd351e25572af3725a891870f11898
+  - node: 01a21406-1007-7756-963c-23119f874a55
+    reviewed: c4ddd40cb5714f3f1e0cfd8d87906396903ac7158452a1c5a6cf09cd41047358
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_flush_json_that_does_not_read_is_taken_as_holding_no_record_and_written_anew"
+        body: d56997f1b8d3a699c07d65bf70c9153091f651a4d5bb26f99482401f4b14d2b2
+  - node: 01a213cb-9c28-769e-b7c8-43dd963d501b
+    reviewed: 0f8f2770f6f70e21ca4a86cacaacd6d566d948f1c9164d2128ad99ea609a5131
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "flush_json_holds_a_record_for_each_address_a_run_has_run_for"
+        body: d363354961fe799d17d6dbb1225b2334aa44152f6f49a54342bf4005749455df
+  - node: 01a213cb-9c28-769e-b7c8-43dee6b03715
+    reviewed: efae9d89da9f7328d3c5259b5d3583f4304018745f36856e57d5d1eea380ba48
+    tests:
+      - file: "crates/yardlog-store/tests/home.rs"
+        name: "a_file_is_written_whole_through_a_temporary_file_renamed_into_place"
+        body: f0b77f6507baac8cb085b21a8986ed10665187de7790d5f1833a8e0e87102834
+      - file: "crates/yardlog-store/tests/home.rs"
+        name: "a_file_that_cannot_be_renamed_into_place_leaves_no_temporary_file_and_the_old_file_as_it_was"
+        body: db584449999ea4c0a842d0b25344851dc486eeda045949795c6f8a37cf55d7f1
   - node: 01a20dc8-c593-7357-875c-81c681815faa
     reviewed: b8ab70373ac993cf364dd3ecda0a0e3d10c06da33289d256fb9f811d3e510bb6
     tests:
@@ -40393,11 +40627,14 @@ links:
         name: "a_flush_runs_outside_a_repository_without_a_session_and_writes_no_yard_log"
         body: b546196466d1e5ab092ba4eed821845e177a7f40bae6b4cb36417a6fc6a18ca9
   - node: 01a20dc8-c593-7357-875c-81c96789856e
-    reviewed: d7f947bccaf646985d08fbae91b8918fb099de301fd5fd2b634f478e88c2fd05
+    reviewed: 5943c24b8ef9e4a0a110e09f915035a712c1bd9a1fc77da7b55fa818c81a57ba
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
+        body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
+      - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_flush_sends_what_a_write_left_and_counts_it"
+        body: a60b3c3ebd2ab6b50fb395733c00d3df48ac7dcad055db5af2d6a3e80f0bbc6f
   - node: 01a20dc8-c593-7357-875c-81cb9e5b9242
     reviewed: 99951ba4f25032ce2b9f8a9bf26aadaafeb7c1ec775d14c8d32c33b5396f7fc8
     tests:
@@ -40405,89 +40642,188 @@ links:
         name: "without_connected_mode_a_flush_is_off_and_makes_no_request"
         body: 0f7ad7897e46b4fe3c11d28418c0214935e03c2e874c53f89e3ba46d37a35f75
   - node: 01a20dc8-c593-7357-875c-81ccc2919c6f
-    reviewed: 59977b6d8e65d0efabedf7f47d25382cf94cb8953a088978c142a802d7b986b1
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "with_no_entry_for_the_address_a_flush_is_empty_and_makes_no_request"
-        body: 33019a0b978a00dba946aac485848c673b82dde7dc38bda8842ba3817a7903fb
+    reviewed: fc71f353342f827a7c9ec384248eccd95c11e50718eb21902e67a6de215d2d98
+    unverified: "Pending the fixes of the PR #42 review, which change this criterion; its tests are linked again with them."
   - node: 01a20dc8-c593-7357-875c-81cd0e4b8123
-    reviewed: 3c85757155c26a37baa643bf0f0e84250f099286ab82af246dcd35499b777ff1
+    reviewed: e47fdca4956a82b0ae08ab90553b73920cdad90d4627ec646f385af87819c49c
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
+        body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
+  - node: 01a21406-1007-7756-963c-23122a29debc
+    reviewed: 6ca429c1f6690ae10f7b0c5e3c6ad88bee8e2be21f1c560fc5d54534f1943612
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_every_entry_of_the_batch_is_in_dead_and_the_next_batch_is_sent"
+        body: c339776d3f232fc0228bc63621b726d3315d761be440582aab0c711d6cc19365
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_in_conflict_is_moved_into_dead_with_the_reason_conflict"
+        body: 65fabd0056b3ca940d359b1460cb067da16851c1d6d0a38a9e3ac10be5d80b6a
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_413_to_a_batch_of_4_the_halves_go_older_first_and_none_is_moved_into_dead"
+        body: f9ea4d30491f9c9982ab8ad444537aae4193b5a4b96b78a343db8f4842ca8c72
   - node: 01a20dc8-c593-7357-875c-81ced80e7650
-    reviewed: 094852a8759467ca9bc816eb4e7ff13b50648f68ef06014c29e073d02ae19d11
+    reviewed: 781668176345a48474d4c2331b133691500eb1e609f95500f96b898cd4fc2016
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "a_flush_sends_what_a_write_left_and_counts_it"
-        body: d2646451429250eb08374f786e2716ce383aed0f6dc017a3d117ba110c10f740
+        body: a60b3c3ebd2ab6b50fb395733c00d3df48ac7dcad055db5af2d6a3e80f0bbc6f
   - node: 01a20dc8-c593-7357-875c-81cf6362e4f4
     reviewed: 3dcda61ddb995a9d201c171c56d266f2b57598d638a3f3dc1f5522a0b14daac3
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "a_flush_sends_what_a_write_left_and_counts_it"
-        body: d2646451429250eb08374f786e2716ce383aed0f6dc017a3d117ba110c10f740
+        body: a60b3c3ebd2ab6b50fb395733c00d3df48ac7dcad055db5af2d6a3e80f0bbc6f
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "a_failed_flush_says_why_on_standard_error_without_json"
-        body: 5712dee3aca168d48789efa576d6a473b4ce67fe755d130e2817e7e5c01a4bd0
+        body: 68517473237c1788fc2300d6aee5fdfc7f578940c4211ff83ce15e66c9f623d4
+  - node: 01a213cb-9c28-769e-b7c8-43dff553df00
+    reviewed: 101aebf5205cd3236a64e16785eca6e2b960fe275d74698f3ce2c6f072309c0a
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_that_cannot_be_removed_once_answered_stays_and_the_flush_fails_naming_it"
+        body: 611e33f20155d87320eae5eec4b31b6e253aa9c19633014da858bde8ba1a743c
+  - node: 01a213cb-9c28-769e-b7c8-43e03efc5022
+    reviewed: 554915017be2f6b85a7f2b145710e628fff77d0c605629a5447e5b8d7a2ce26f
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "a_flush_that_finds_the_lock_held_is_busy_makes_no_request_and_exits_0"
+        body: ce516db3e7f2f14f600f58653a04e8c315fb9d9bd88ac52c5e722a54947eb048
+  - node: 01a213cb-9c28-769e-b7c8-43e186d8f806
+    reviewed: 853222734fc07abc2a6cc1d876bdf10f56cbc7d6b6fc012c2031df650c2905fc
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
+        body: f116ccf65e6b38585d2a6d4dff4948f1672101adb6d49de0db24364bf058607d
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_run_within_the_pause_makes_no_request_and_one_after_it_sends_again"
+        body: a7f1e1c08570e46002ed1664abe34ce6001e240b0a615641bc2d92a790907898
+  - node: 01a21406-1007-7756-963c-2313e0ff7d15
+    reviewed: e10666dbc3df6a99d85a85cbaeb6744b122fda5a3fecd9d9e599d66c03a9b057
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_paused_run_checks_the_time_before_it_reads_the_outbox"
+        body: 8a91c7de63596499eef81d791b80694ff24963b51e5691b1023ea24ac0c96744
+  - node: 01a213cb-9c28-769e-b7c8-43e36bbfce79
+    reviewed: 724cde7c9757b399b085e213c631f22524ef12e88d13e7d8cbae284246179499
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "with_both_variables_set_and_no_home_directory_known_a_flush_fails_naming_it"
+        body: 0034d4545b667d2c85eeca121ed3e80f496718bb49b8b69eedf4ace9a350e4a0
+  - node: 01a213cb-9c28-769e-b7c8-43e4b0d030e7
+    reviewed: dcb48ad7ac857d3c9200a8f2ec79e09e169af0e49250828a0238ecd47b0036d8
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "with_both_variables_set_and_no_home_directory_known_a_flush_fails_naming_it"
+        body: 0034d4545b667d2c85eeca121ed3e80f496718bb49b8b69eedf4ace9a350e4a0
   - node: 01a20dc9-2271-7343-84c0-93e4c1dcc394
-    reviewed: d7d62c12afc0c99c40146e62a486ebe7334a180a858a6d0b831ca499dba20d28
+    reviewed: c9b0e97abe789f7849f50818a73c89f9a46ef1d6ed9fc56725fe4b49a4ce8cde
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
+        body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_stored_or_held_leaves_the_outbox_and_counts_as_sent"
+        body: 2d5999da1bcb0d248f19a00bb0927072f372825d45e0eb2eb8e89ebe0c0d89fb
   - node: 01a20dc9-2271-7343-84c0-93e516aaeabd
-    reviewed: 0c4cb8eee472e0a51335321f1dcc2401f83fc19c9d62d0f935079f6d3a2bddbf
+    reviewed: 2ee47956b2f49b25c3e3e7fc4505468c45329a992443b93ac7ef30cd8f3c76de
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_as_later"
+        body: f669cc0ae74e421722e46ed525ef99bd456e0ef70ad98b01bea1719ae5b2cfa2
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later"
+        body: 35e9cb31115ded30ad66a4adbba6ef38e87b96ee623a1e853158261d606976af
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
+        body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "a_flush_sends_what_a_write_left_and_counts_it"
-        body: d2646451429250eb08374f786e2716ce383aed0f6dc017a3d117ba110c10f740
+        body: a60b3c3ebd2ab6b50fb395733c00d3df48ac7dcad055db5af2d6a3e80f0bbc6f
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_the_rest"
+        body: eee810d87a77f7d8cfd15d5af4d0d08af69b09f42c02bba630e9513ea5c70198
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_yard_server_will_take_later_stays_and_a_later_run_sends_it_again"
+        body: 5b1568dc8df8f829bc8d170258251cc3b5da0c1520467b505e77b257884c0705
+  - node: 01a21406-1007-7756-963c-2314f22f8083
+    reviewed: 3f75693edd6183fcced3768a122f124d6dcfbaec420524e612af29c5feecc7e6
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_run_that_cannot_take_the_lock_counts_as_later_the_entries_the_record_holds_as_later"
+        body: f669cc0ae74e421722e46ed525ef99bd456e0ef70ad98b01bea1719ae5b2cfa2
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_busy_or_paused_run_counts_as_later_the_entries_the_record_holds_as_later"
+        body: 35e9cb31115ded30ad66a4adbba6ef38e87b96ee623a1e853158261d606976af
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_yard_server_will_take_later_stays_and_a_later_run_sends_it_again"
+        body: 5b1568dc8df8f829bc8d170258251cc3b5da0c1520467b505e77b257884c0705
   - node: 01a20dc8-c593-7357-875c-81d0b58e58ea
     reviewed: 43b21c67186170179ec9f1a887533ad227126428d37598c0a52722e69325625d
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_run_cut_short_after_a_full_batch_counts_every_entry_of_a_newer_format"
+        body: 069a18e0cfe6b7b9700b4091f59b0d16c40ef64e2e9974204eb850dfaf6a512c
+      - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "a_flush_counts_and_moves_aside_what_it_cannot_send"
         body: 9f46146e7741742093125f9d431d13f4670c249b872577f3e972cc82a896bc8a
   - node: 01a20dc9-2271-7343-84c0-93e6f2d568f6
-    reviewed: 2e9a9453823163a1c230e2cf322514f482371a0822f9e2561682d38c1c23ec8e
+    reviewed: 8584cdb111448a9aee25a0136915381ae70744b5ddd7d345b30fad5a03fcb2e1
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "a_flush_counts_and_moves_aside_what_it_cannot_send"
         body: 9f46146e7741742093125f9d431d13f4670c249b872577f3e972cc82a896bc8a
+  - node: 01a21dc4-1383-72e5-acab-a998c853e068
+    reviewed: 05154f141c544c8dedc904adb4dd4fc428c1dbe60fc8cd1e6ca9bc4078be1504
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "after_the_first_failed_run_the_flush_keeps_away_from_2_5_to_5_seconds"
+        body: 2bbeb657e5fbfcf5f86745702c6b1c9ff26151efe43b703c09f1b5a3b3cb128a
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_pause_that_cannot_be_recorded_is_still_given_as_not_before"
+        body: fe65c7e11416f7c4ca38add141be7176cdf3b705fa40d002d97ed4d3b43ff09c
+  - node: 01a21dc4-1383-72e5-acab-a999b8cbf1f2
+    reviewed: 0f2ca2bbe88ddc89c313cff435e2ae6d222796950520c753cdeea8691783a598
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_run_within_the_pause_makes_no_request_and_one_after_it_sends_again"
+        body: a7f1e1c08570e46002ed1664abe34ce6001e240b0a615641bc2d92a790907898
+  - node: 01a21dc4-1383-72e5-acab-a99a9eee7fe5
+    reviewed: d7afdcb396d02ebfc8f81402170fcb1461b5110fb9c4d216667cd395493eb8ca
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_batch_that_goes_sets_the_failures_in_a_row_back_to_none"
+        body: d0787e1f35e7b00507cd3b26d0e61b9d7e01f839eb84d8b1ea81c60b6e8feb8d
+  - node: 01a21dc4-1383-72e5-acab-a99b6e66f46b
+    reviewed: 8f675d9da8b4722e8e08ac516744c4bad627376cbdf4c6fae719b0a48a38bd1f
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "after_the_first_failed_run_the_flush_keeps_away_from_2_5_to_5_seconds"
+        body: 2bbeb657e5fbfcf5f86745702c6b1c9ff26151efe43b703c09f1b5a3b3cb128a
+  - node: 01a213cb-9c28-769e-b7c8-43ffc3365854
+    reviewed: 502bf753588803211921996da00aa848d31b1fd1888008b9a8bb8abca107af0f
+    tests:
+      - file: "crates/loft-cli/tests/yard_connected.rs"
+        name: "a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them"
+        body: 4197f5733502ca61360ed470c0166d5bff182c0754e11c1b95025062319ed8a0
+      - file: "crates/loft-cli/tests/yard_connected.rs"
+        name: "a_refused_write_and_an_unchanged_task_put_no_entry"
+        body: d0712de7ed8a738c16a9c4ead7ef8c5245f698019d606a4bdda3fadd71de6b70
+      - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_recorded_publish_puts_its_version_and_a_flush_sends_it"
+        body: 8931ccb3826a3840d35b1b4f7c97a94cea273e5d8284606cad6e2f76fe4c6a65
   - node: 01a20dc8-c593-7357-875c-81d5f6da6742
-    reviewed: 474214c4442c5854ca71676f3805e5f89af92688fc4c36a895dde3ba5bf72f06
+    reviewed: 0339d2a5871cabf4ca5d7f176c8fda772d074775d83efd8cf41dc0645bcf98a8
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
-  - node: 01a20dc8-c593-7357-875c-81d687500081
-    reviewed: eaa3f3ec2ca9562eab2405a19296143f7a8e38dc3007577b1ae9713bd8375502
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
-  - node: 01a20dc8-c593-7357-875c-81d7cddabf23
-    reviewed: e1f2e8341abff3224773da8ecaa6e75d17420995e85a729e943afc9932c5d2a8
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_refused_write_and_an_unchanged_task_send_nothing"
-        body: 5e7360bbf1430d7f0f9936bae22acd4af58dd80e2bb76f324d68dd3955d562e6
-  - node: 01a20dc8-c593-7357-875c-81d85de2aa1c
-    reviewed: 0adc63e186cb30793d562a89c8f052278398db83452d7eadeb17249674d8b006
-    tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_refused_write_and_an_unchanged_task_send_nothing"
-        body: 5e7360bbf1430d7f0f9936bae22acd4af58dd80e2bb76f324d68dd3955d562e6
+        name: "a_write_gives_the_same_result_whether_yard_server_can_be_reached_or_not"
+        body: 6d288909535244d02226a09f219e100a881debbfd738c64e3ea971ad747bb2d9
   - node: 01a20dc8-c593-7357-875c-81da6e94fefe
     reviewed: 35d9f01c5961ff575440bdcb3886f3cf8e8a3d7664adbc9e2c3eac648123ce8e
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_along"
-        body: 58bb492d8ea9a16c7fb869deab0a925508c8c84eb891eaaab1a5e07fe955d421
+        name: "the_codex_hook_puts_entries_and_sends_none_and_a_flush_takes_them"
+        body: da2418a24d96280a2289ef956db65b86046ea9111b2fbddac289e60c06cd886f
   - node: 01a20dc8-c593-7357-875c-81db76e880d5
     reviewed: efba209d76fadccdc149d8804eaa8fe8b560e9704a79fe8b96268e551de7cec6
     tests:
@@ -40500,120 +40836,549 @@ links:
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "the_page_server_makes_no_request_to_yard_server_with_entries_waiting"
         body: 728f25222e6e3e500f0db023fcb8f11e8f15f7eb55854cdfa1b3d907c3aa2c1c
-  - node: 01a20dc8-c593-7357-875c-81ddcdf769ff
-    reviewed: f03428617f5d285e5ad02434797b00ccd23071ea2a7abb2a9f9e219d634f89c4
-    tests:
-      - file: "crates/loft-cli/tests/yard_flush.rs"
-        name: "the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_along"
-        body: 58bb492d8ea9a16c7fb869deab0a925508c8c84eb891eaaab1a5e07fe955d421
   - node: 01a20dc8-c593-7357-875c-81df3a9589ac
-    reviewed: 92094be0ef82489b3e2138668588c1cd124018d49198dfd72c84ef7f0413979a
+    reviewed: 520b0627aed2cb36a886bd4647443f81f57b1a174bb9e36a2337b4da94550e4b
     tests:
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "seventeen_small_entries_make_a_batch_of_the_16_oldest"
+        body: 295e8b2634a7293edaa5f9564003dc0bc8bb4f72f70a71be1e6093905a840783
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+        name: "a_flush_sends_17_entries_as_the_16_oldest_and_then_the_newest"
+        body: 49aee14763685f528860b3cf59f512b8e471c5ddc7488842f78d7106a5d49b6c
   - node: 01a20dc8-c593-7357-875c-81e08eb59c4c
     reviewed: 8f62f762600da4557f90d0341f680e2f777d9693d63c31fe4ba23f3fb2f55619
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+        name: "a_flush_sends_17_entries_as_the_16_oldest_and_then_the_newest"
+        body: 49aee14763685f528860b3cf59f512b8e471c5ddc7488842f78d7106a5d49b6c
+  - node: 01a213cb-9c28-769e-b7c8-4400055b787e
+    reviewed: 72a106ac003664942ecf7c10a0993468aae35ff9f170af66fa33e68f78a54b3a
+    tests:
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "an_entry_that_would_bring_a_batch_over_1_mib_goes_in_the_next_batch"
+        body: f6088358f5e36dc35449a73e3af1860ed2d95fb3368aaa292aae1217d21b5d6a
+  - node: 01a213cb-9c28-769e-b7c8-4401ef03aa57
+    reviewed: 92b594730179a9368490f68be5ee41ca232aaab69bed421ce68247ec0942be48
+    tests:
+      - file: "crates/yardlog-store/tests/outbox_batches.rs"
+        name: "an_entry_larger_than_1_mib_goes_in_a_batch_of_its_own"
+        body: adfe29ac1fe66b93c9d83d420f601f6387144cdd61d64e8d2dc8681d09867cbb
+  - node: 01a21406-1007-7756-963c-231ecad404f9
+    reviewed: 9b88fde81fb2d3f7121d23737a4a8c1f1bd7dcabb77f9dc1aa8c2e9e1ca257ab
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "the_body_of_a_batch_is_no_larger_than_the_entry_files_it_carries"
+        body: ace22b68ff2cac0197c19dfb0757c60d6911568e2aca9b6fd0770d6e1071cf1e
   - node: 01a20dc8-c593-7357-875c-81e1a071d50a
-    reviewed: 9e9e79f128d5ad6b06a7a02410db0da0d49d459a43b8fe4105786aea0c0f3225
+    reviewed: 69e85a93fb730fb41d7b55cd967f8af14b160b94c3fd52ceca60a74ffc32190f
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "until_a_batch_is_taken_the_next_sending_takes_the_same_oldest_entries_again"
-        body: 2dfd1ae541ef8483d42740b36a561feecf0876e253ae5f278f145af4784c34f8
+        body: 8391cd1ea8197a10fe894518958662179de075dd17974903db097cfb1c8a5054
       - file: "crates/loft-cli/tests/yard_server_e2e.rs"
         name: "a_batch_stored_and_unanswered_is_sent_again_by_the_next_flush_and_held_once"
-        body: e38e8e4ff365b5d8e89c7fc8e22b8acba60ae8d7925a38bafd24b4980f301557
+        body: 0793d0df893f8a1d082e33b9f8a7907ebfb630d0a150665df57d4fdf42a4f5aa
   - node: 01a20dc8-c593-7357-875c-81e26152c5c3
     reviewed: e23e259210669d6e69aa783ef243264dc1afed49c547859b271e812cf1bed133
     tests:
       - file: "crates/loft-cli/tests/yard_flush.rs"
         name: "with_no_entry_for_the_address_a_flush_is_empty_and_makes_no_request"
         body: 33019a0b978a00dba946aac485848c673b82dde7dc38bda8842ba3817a7903fb
-  - node: 01a20dc8-c593-7357-875c-81e3d40da5b2
-    reviewed: d7f947bccaf646985d08fbae91b8918fb099de301fd5fd2b634f478e88c2fd05
+  - node: 01a21dc4-1383-72e5-acab-a99d625af275
+    reviewed: 603e6d2495e761c0bf21a5907a866f881b02ebe3bd18a900380c846d74046b6e
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_batch_takes_the_16_oldest_entries_and_the_newest_waits_for_the_next_sending"
-        body: d8bfd783d4732e4bf3769d2733eb6a3c779176ae5faab79f0d2345c4cce995bf
+      - file: "crates/loft-cli/tests/yard_flush_later.rs"
+        name: "within_the_hour_a_run_passes_over_the_entries_put_off_and_sends_the_others"
+        body: ff47815a4ab55071927772e17ace919a5fbff15bf7384fc7295b31a0f3953d14
+  - node: 01a21dc4-1383-72e5-acab-a99ef6a55ea8
+    reviewed: eb9321e26584e5be79f895aa077d396dfddf83b7f78a6facb1985317fa071f42
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_later.rs"
+        name: "once_the_hour_has_passed_a_run_sends_the_entries_put_off_again"
+        body: e7ddab12efcd091cecf0b20799b046508b918705402623016ed4034ba78c25e2
+  - node: 01a21dc4-1383-72e5-acab-a99f3e0e1acf
+    reviewed: ad33f2fa8cbe4acbebada85d3f9a8cc1a47309e277d396d392cd3ae9d5be6109
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_later.rs"
+        name: "a_run_with_only_entries_put_off_within_the_hour_makes_no_request_and_is_empty"
+        body: 981bed6f5a5689d104fac82eb3542162da7781e0a5242496e17faab1db691e2f
+  - node: 01a21dc4-1383-72e5-acab-a9a0c286af5b
+    reviewed: 2408e8e5e32767607b1a838579a24e8b147d789eeab05812bd2aab6212c06aac
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_later.rs"
+        name: "within_the_hour_a_run_passes_over_the_entries_put_off_and_sends_the_others"
+        body: ff47815a4ab55071927772e17ace919a5fbff15bf7384fc7295b31a0f3953d14
+      - file: "crates/loft-cli/tests/yard_flush_later.rs"
+        name: "a_run_with_only_entries_put_off_within_the_hour_makes_no_request_and_is_empty"
+        body: 981bed6f5a5689d104fac82eb3542162da7781e0a5242496e17faab1db691e2f
+  - node: 01a213cb-9c28-769e-b7c8-4403c4fe81e3
+    reviewed: ef39c6ef3af8643361cf7c1195cd4db9e866a73866a962144ce89246ba81346f
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
+        body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
+  - node: 01a213cb-9c28-769e-b7c8-44041d79bbe5
+    reviewed: 7d74fc8cc2b8908ef77f0856fb5a84a1726969f44022f047ff91e0c4502a6528
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "an_entry_put_while_a_batch_is_on_its_way_goes_in_a_later_batch_of_the_same_run"
+        body: 8efb175074057fa0df30211116c39bfe36062fb83fc9511bd0f8bd8e611aefbc
+  - node: 01a21406-1007-7756-963c-231ff029b03e
+    reviewed: 6e0a67918ede0a5ef25988277cc01d25c7ba67519c7ff12c172460827cdc62e9
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_a_run_has_taken_once_is_not_taken_again_in_the_same_run"
+        body: a0b20b764e5989bfd9ec9f990a9be1c03d30dfd09f29e4ec6f4fc37b871683ae
+  - node: 01a213cb-9c28-769e-b7c8-440585b9e102
+    reviewed: 08f75308b066d958ac10cbddc7320a9e2e191803d30d6768b33540208d7906fd
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "one_flush_sends_40_entries_in_three_batches_and_ends_once_none_is_left"
+        body: 3787fbaacfe6b42bc19ed29aeef9c5247a3ae200219eae7e66bb217543d5ec41
+  - node: 01a21406-1007-7756-963c-232175bd18f4
+    reviewed: f343f2b1ae7f6ddeb736dc4cef145f6d31f1c38f3636a9647f86a69e609578f2
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_the_rest"
+        body: eee810d87a77f7d8cfd15d5af4d0d08af69b09f42c02bba630e9513ea5c70198
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_batch_split_after_a_413_sends_no_half_once_the_run_s_5_minutes_have_passed"
+        body: ffecbb957628facbfac266240900116a86bcfd70683c5b5975902254ca6735ba
+  - node: 01a21406-1007-7756-963c-2322921b8225
+    reviewed: 3ae41392d0fb34844d8b564fd7043679ef4cac60e2aba9853dbe3364ddbe78b7
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_the_rest"
+        body: eee810d87a77f7d8cfd15d5af4d0d08af69b09f42c02bba630e9513ea5c70198
+  - node: 01a21406-1007-7756-963c-2323b1bcc7c2
+    reviewed: f498aaa081ff7d96c99cf64c01e03bf796ccaf92eb236e57cddecafbae5881a4
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_the_rest"
+        body: eee810d87a77f7d8cfd15d5af4d0d08af69b09f42c02bba630e9513ea5c70198
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_run_with_time_to_spare_sends_every_batch"
+        body: dbf68efa1701b8c63e5f98d53a91f84967f3364323e7cc7eeb74f4e7e4ad9346
   - node: 01a20dc8-c593-7357-875c-81e5c11e1ea8
     reviewed: 4d77466092dec87fd2c03561a751bfaa851bce88f11eac552685b4bf38e1b447
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+        name: "a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them"
+        body: 4197f5733502ca61360ed470c0166d5bff182c0754e11c1b95025062319ed8a0
       - file: "crates/loft-cli/tests/yard_server_e2e.rs"
         name: "a_note_written_by_loft_arrives_in_yard_server_as_yard_log_holds_it"
-        body: 644ead07db786daef310e61d46a149d2946e69e1a523c8aed46bd38d8c0a8300
+        body: 083b98b2937c19d896749ec60a244d83cf50c4db63c346891369fa1d7ebef1b5
   - node: 01a20dc8-c593-7357-875c-81e6f263b0fb
     reviewed: 9810a6212b09725260c6a277994f9457ec3307b9482f0375e1961e661aa02ccb
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+        name: "a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them"
+        body: 4197f5733502ca61360ed470c0166d5bff182c0754e11c1b95025062319ed8a0
+  - node: 01a21406-1007-7756-963c-2325ca64a845
+    reviewed: 8a46aff82ae77d572883453493521185f8eb59d3318142fd97dd4a9a03adec34
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_flush_waits_10_seconds_for_an_answer_unless_the_timeout_says_otherwise"
+        body: a84bd8cc7fde188fb230967c099b78b9171053f1f05307dc1838ead2a436e71f
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "with_a_timeout_of_1_second_a_silent_yard_server_is_given_up_after_it"
+        body: 7ea534c0a34aabb448da2e2ccda097d36cb89e817e7fdfcd94f5ef2a0ee911fa
+  - node: 01a213cb-9c28-769e-b7c8-4413dbde71be
+    reviewed: 953b33554193f82fe08221a5c4e66fb17ccecc360663a47c956b0d10da146033
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "with_a_timeout_of_1_second_a_silent_yard_server_is_given_up_after_it"
+        body: 7ea534c0a34aabb448da2e2ccda097d36cb89e817e7fdfcd94f5ef2a0ee911fa
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_flush_waits_10_seconds_for_an_answer_unless_the_timeout_says_otherwise"
+        body: a84bd8cc7fde188fb230967c099b78b9171053f1f05307dc1838ead2a436e71f
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_timeout_of_60_seconds_is_taken"
+        body: ab72ccf17ab1a8c28e43458c7d31e84ab3ee9d79f17ffa26364a326b4d97165a
+  - node: 01a213cb-9c28-769e-b7c8-4414fcf3ed3a
+    reviewed: 9ee22ab2255bfaf2e570573718d6a4c0be695804308c696c283d45a67462c365
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_timeout_that_is_not_a_whole_number_of_seconds_from_1_to_60_fails_with_no_request"
+        body: a94f5717439ddd784d421b3a59f52ca142a6a645bc6059f59902c3635ce97adb
+  - node: 01a21406-1007-7756-963c-2327f9848aed
+    reviewed: b0851d768888649053f5476c8d5b6ca7a2266c1840f3ab46b9773d8bb5f8b9f3
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_timeout_that_is_not_a_whole_number_of_seconds_from_1_to_60_fails_with_no_request"
+        body: a94f5717439ddd784d421b3a59f52ca142a6a645bc6059f59902c3635ce97adb
+  - node: 01a21dc4-1383-72e5-acab-a9a1ec54dfb7
+    reviewed: ca9d80a5bfe6e14df21b7cd6025cc8023e5505921ca73e9c49bb33021a0b0b0d
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_timeout_that_is_not_a_whole_number_of_seconds_from_1_to_60_fails_with_no_request"
+        body: a94f5717439ddd784d421b3a59f52ca142a6a645bc6059f59902c3635ce97adb
   - node: 01a20dc8-c593-7357-875c-81e88d3d0e76
-    reviewed: bee9a3feae86779ca79a2c13d20213c8b413c7521b93c8c9d1ab0f11812ed047
+    reviewed: c7cbb9e35b8840b646f2608a8c965255794881a89c819a42fdfb3198452c271b
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_stored_or_held_leaves_the_outbox_and_counts_as_sent"
+        body: 2d5999da1bcb0d248f19a00bb0927072f372825d45e0eb2eb8e89ebe0c0d89fb
+  - node: 01a213cb-9c28-769e-b7c8-4406365d8e66
+    reviewed: e7d9438968aee8c909a166247bd8e5df79598affba2bc04d506eeaae87783080
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_stored_or_held_leaves_the_outbox_and_counts_as_sent"
+        body: 2d5999da1bcb0d248f19a00bb0927072f372825d45e0eb2eb8e89ebe0c0d89fb
+  - node: 01a213cb-9c28-769e-b7c8-44076ef9e63f
+    reviewed: a9661f280dc49be4a9e49974374780437df7b7a95a55d84ec484ae42400eb5e4
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_in_conflict_is_moved_into_dead_with_the_reason_conflict"
+        body: 65fabd0056b3ca940d359b1460cb067da16851c1d6d0a38a9e3ac10be5d80b6a
+  - node: 01a213cb-9c28-769e-b7c8-44080d01e290
+    reviewed: 7c955235fa448bf7b00675542bab080f9783bc297c3c21af87334914abc9bde1
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_is_refused_is_moved_into_dead_with_the_code"
+        body: 442eb4acc402e1fbc4f521d9088463ac7148ff6cc2ce8119a15ce2736e8663a6
+  - node: 01a21406-1007-7756-963c-232899501d87
+    reviewed: 4d9280f849f091f673d76779e86adfc05ac88ffa0f1f74fc45fb3e700da5e6c9
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_whose_version_yard_server_will_take_later_stays_and_a_later_run_sends_it_again"
+        body: 5b1568dc8df8f829bc8d170258251cc3b5da0c1520467b505e77b257884c0705
+  - node: 01a20dc8-c593-7357-875c-81e92b6a6873
+    reviewed: 169b583442dd3716a3792eff56fdeed7f8d8d4ffec5fd04472a44b502e839e80
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "an_entry_put_while_a_batch_is_on_its_way_goes_in_a_later_batch_of_the_same_run"
+        body: 8efb175074057fa0df30211116c39bfe36062fb83fc9511bd0f8bd8e611aefbc
+  - node: 01a21406-1007-7756-963c-232a3844f2a0
+    reviewed: 0553b0b74ccbfc5c1a31ebaaf483809c10876adb5735c992419ae84984b3628d
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_an_answer_of_200_that_is_not_json_every_entry_stays_and_the_flush_fails"
+        body: be2a324db148c69f0dbf42a5c26d310db4f1a203b6cba2448c663312a8aa2400
+  - node: 01a21406-1007-7756-963c-232b090998a7
+    reviewed: 275e66f425ddd121254750f2e095ef972d8455e98ed3331113acc01aac9b9de6
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_the_answer_leaves_out_or_gives_an_unknown_outcome_stays_and_the_rest_are_settled"
+        body: 4b0ad22a1cfdb57d82f1a2b2f9c6d39e964af51c9f800dea2e2759cfc84efbf2
+  - node: 01a21406-1007-7756-963c-232c0196f55b
+    reviewed: 9dac1721d49fd7d11262483998cf109c8d87229e5d4789d6aad07cd89635f568
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_the_answer_leaves_out_or_gives_an_unknown_outcome_stays_and_the_rest_are_settled"
+        body: 4b0ad22a1cfdb57d82f1a2b2f9c6d39e964af51c9f800dea2e2759cfc84efbf2
+  - node: 01a21406-1007-7756-963c-232e9257a0ee
+    reviewed: 9e4966a5e7ae538e12799e58fdc88066fe77612315495363e3a327cbe69f4c86
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_that_cannot_be_removed_once_answered_stays_and_the_flush_fails_naming_it"
+        body: 611e33f20155d87320eae5eec4b31b6e253aa9c19633014da858bde8ba1a743c
+  - node: 01a21406-1007-7756-963c-232f2d15b124
+    reviewed: 1e3aa112f49bcf8930373b3af3c37fe2b4234ee8d4522a141289966dea6671ab
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "an_entry_that_cannot_be_removed_once_answered_stays_and_the_flush_fails_naming_it"
+        body: 611e33f20155d87320eae5eec4b31b6e253aa9c19633014da858bde8ba1a743c
+  - node: 01a213cb-9c28-769e-b7c8-440a4c4d3e0e
+    reviewed: 038109b4ac145a8b0a4cdbf0a48ddc0c48551f9c0760ed0b0e0afb5d8a14e1a8
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_413_the_batch_s_one_entry_is_in_dead_with_the_status_and_code"
+        body: 662f3ef52e40de2910517b613664683d4ad73e46674d49ff27b2176be825c183
+  - node: 01a213cb-9c28-769e-b7c8-440bf3183da1
+    reviewed: edcc56e48383886001711445c0ec2a00ea064e4b54d90768d2c20cd3a048a897
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_every_entry_of_the_batch_is_in_dead_and_the_next_batch_is_sent"
+        body: c339776d3f232fc0228bc63621b726d3315d761be440582aab0c711d6cc19365
+  - node: 01a213cb-9c28-769e-b7c8-440c30a4edac
+    reviewed: f7d92fbfd5a74b94a9a99d375aa6f40b6992790446a6dcca48aaf538493a387c
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_every_entry_of_the_batch_is_in_dead_and_the_next_batch_is_sent"
+        body: c339776d3f232fc0228bc63621b726d3315d761be440582aab0c711d6cc19365
+  - node: 01a21dc4-1383-72e5-acab-a9a35d4b2791
+    reviewed: 6eb162da0845a71d852ffef478c43a916c16716ac6aa34d8ac1f425cb9ef4501
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_413_to_a_batch_of_4_the_halves_go_older_first_and_none_is_moved_into_dead"
+        body: f9ea4d30491f9c9982ab8ad444537aae4193b5a4b96b78a343db8f4842ca8c72
+  - node: 01a21dc4-1383-72e5-acab-a9a4f8835752
+    reviewed: 6362505dfd050dbfdb5ae30c13398a55cfbb0878022ad51ce5f818dcd22c8266
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "a_half_answered_413_again_is_split_again_and_each_entry_goes_once"
+        body: 7fa2cb338cffbbfc78596b888e28be576370bf3ec1e047d4dfb4c341fe7046e8
+  - node: 01a21dc4-1383-72e5-acab-a9a503845cd2
+    reviewed: 12a68f1352a0de85d37ad06fe6942e62835d795377a3e975b9306c073e378b0c
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_413_to_a_batch_of_4_the_halves_go_older_first_and_none_is_moved_into_dead"
+        body: f9ea4d30491f9c9982ab8ad444537aae4193b5a4b96b78a343db8f4842ca8c72
+  - node: 01a21dc4-1383-72e5-acab-a9a64c55c177
+    reviewed: 8256d86fc60bb6c482c5f0cea1d4feda063f5f601a988be2f195ed68b71127c0
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "a_413_without_its_code_splits_a_batch_of_several_versions_as_well"
+        body: 20268ce36a47c12f0d05dd8d17dce2c58d50a9b710f9b427ca7d716f7168d4d4
+  - node: 01a21dc4-1383-72e5-acab-a9a7b300182b
+    reviewed: af0b4768f1153fd3c8703da3865ee0a4e4d2daa7c2f2c9b7df667bd712e43859
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "a_half_answered_413_again_is_split_again_and_each_entry_goes_once"
+        body: 7fa2cb338cffbbfc78596b888e28be576370bf3ec1e047d4dfb4c341fe7046e8
+  - node: 01a21dc4-1383-72e5-acab-a9a910caf369
+    reviewed: a883adf3c3f93d9960b8410f3230677284f62403ed6ee485d79e9d639fcb1b44
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_that_is_not_yard_server_s_own_every_entry_stays_and_the_flush_fails"
+        body: 97c5fdf7957daae5a2bbbc5cf1b27db4cf6494c40492f2b40b019135a82bc08c
+  - node: 01a21dc4-1383-72e5-acab-a9aa015e65e9
+    reviewed: 3dcf0bcc15c93ae07cdd2a16cc77e1d2a7ecbd1c3e15b80cb3f46f93fe58c6c8
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_that_is_not_yard_server_s_own_every_entry_stays_and_the_flush_fails"
+        body: 97c5fdf7957daae5a2bbbc5cf1b27db4cf6494c40492f2b40b019135a82bc08c
+  - node: 01a21dc4-1383-72e5-acab-a9ab9bd3b531
+    reviewed: 5170de6adb04b335800410104aea3604b11abbbe5a40f81735d71657caeb704c
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_that_is_not_yard_server_s_own_every_entry_stays_and_the_flush_fails"
+        body: 97c5fdf7957daae5a2bbbc5cf1b27db4cf6494c40492f2b40b019135a82bc08c
+  - node: 01a21dc4-1383-72e5-acab-a9ac7cc422a3
+    reviewed: 10b46782dc65d1adac481bebdeda5a72ee67bd936be69c6be2eaa8225e3b80e3
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_413_without_its_code_to_one_entry_the_entry_stays_and_the_flush_fails"
+        body: 6e43916e30da07c88e6c90540094ded3a67c6c6361a3c367d70b1a76a380df35
+  - node: 01a21dc4-1383-72e5-acab-a9adb3e50a9e
+    reviewed: fd7d9079104c5957ba09815b43c86db740a0070152ef4e601c9cac34f2053223
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_400_that_is_not_yard_server_s_own_every_entry_stays_and_the_flush_fails"
+        body: 97c5fdf7957daae5a2bbbc5cf1b27db4cf6494c40492f2b40b019135a82bc08c
+      - file: "crates/loft-cli/tests/yard_flush_outcomes.rs"
+        name: "after_a_413_without_its_code_to_one_entry_the_entry_stays_and_the_flush_fails"
+        body: 6e43916e30da07c88e6c90540094ded3a67c6c6361a3c367d70b1a76a380df35
+  - node: 01a213cb-9c28-769e-b7c8-440e97f8fa6b
+    reviewed: 0ececf4a4b973e27effe02a8df6a8289ffb8e0c54cf46b7e0dc8dfc2faf020bb
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
+        body: f116ccf65e6b38585d2a6d4dff4948f1672101adb6d49de0db24364bf058607d
+  - node: 01a21406-1007-7756-963c-2330343a3d6f
+    reviewed: d6ecc8a8f9de4a9ae4b69bdb13344be19369c32a29278906a515913ab4a562ef
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went"
+        body: 352dbc48c8f366d407632b08a9c9935ededa7fbdabf2521e1dc63dce9bec9da4
+  - node: 01a213cb-9c28-769e-b7c8-440fa06d3e2b
+    reviewed: b3a36eb3377330f1dfd0c69c887b209656055d5a44fa67a3e6defc1d68b14ee4
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
+        body: f116ccf65e6b38585d2a6d4dff4948f1672101adb6d49de0db24364bf058607d
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_503_with_a_retry_after_as_an_http_date_pauses_the_flush_until_that_date"
+        body: 7e556d8cd2284611e35a0b2295b8ed321e5f4c00e683e848b375a2f66a93c37a
+  - node: 01a213cb-9c28-769e-b7c8-441051faadf9
+    reviewed: 5437f0586100e59f878a1bcdc5b8e541b995fafab3cf9b5b8d4e80d6e0c881ca
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
+        body: f116ccf65e6b38585d2a6d4dff4948f1672101adb6d49de0db24364bf058607d
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_503_with_a_retry_after_as_an_http_date_pauses_the_flush_until_that_date"
+        body: 7e556d8cd2284611e35a0b2295b8ed321e5f4c00e683e848b375a2f66a93c37a
+  - node: 01a213cb-9c28-769e-b7c8-441144b1d80f
+    reviewed: 1bd0619545979b847fbd56e55c1ed8b6709d28d2a99cc0d8f5df03420db2c6c6
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_retry_after_in_seconds_counts_from_the_answer"
+        body: e0e7a9caafe428372527819ad1af434ad97555c25b5b45faa0d91be8071257dc
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_429_with_a_retry_after_in_seconds_pauses_the_flush_until_the_time_it_names"
+        body: f116ccf65e6b38585d2a6d4dff4948f1672101adb6d49de0db24364bf058607d
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_503_with_a_retry_after_as_an_http_date_pauses_the_flush_until_that_date"
+        body: 7e556d8cd2284611e35a0b2295b8ed321e5f4c00e683e848b375a2f66a93c37a
+  - node: 01a21406-1007-7756-963c-23316cb33313
+    reviewed: a10fe3bdb4945f3711a5d424e62eda129a78e7a808d15d699315a39e267d24ee
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_retry_after_of_0_seconds_or_of_a_date_already_past_lets_the_next_run_send"
+        body: 27d473815d910e72b188a5ff6dac6951a010db779b91772098911cc7dc266020
+  - node: 01a21dc4-1383-72e5-acab-a9ae8833d36c
+    reviewed: 8ef602bf34b99d2899eca7617ae5feae971a0daebcde2b21d1ed3f396027f412
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_retry_after_more_than_an_hour_away_keeps_the_flush_away_for_an_hour"
+        body: a318617f48115839a10fbbcb507293aa596c4b398969227a864001595784f09d
+  - node: 01a21dc4-1383-72e5-acab-a9af465554d3
+    reviewed: ef166a3d54a0dc4dfc0cf5e1f4583a9bbb120f7b05c832b5c03f76bd5ad5b5ef
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_retry_after_leaves_the_failures_in_a_row_as_they_were"
+        body: 787f66947e1bfe693922efbe45952243e8c30828f3d1b07520a641ee6dda8e26
+  - node: 01a213cb-9c28-769e-b7c8-441261bba139
+    reviewed: 36ff271d7a7308e9402a82b91f0300ca33b4c6c3693da70387d3dc30aeefd297
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "a_429_or_503_without_a_retry_after_that_reads_is_a_failure"
+        body: 558fc955a9a06b9b92eaab10957d66773903fcc57822b5af6dc613437269751d
   - node: 01a20dc8-c593-7357-875c-81eb86f2fa9a
-    reviewed: 8a3e6c9c86ce125e7c7e8d73f9cca333368cd1d4a55452f49e214f1e8cd88c50
+    reviewed: 206fcf9ca96341d44f6f0f5ea169ec617b1a12d6ec5dc3a4863e8a4a4d3ba6e1
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
+      - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_failed_flush_says_why_on_standard_error_without_json"
+        body: 68517473237c1788fc2300d6aee5fdfc7f578940c4211ff83ce15e66c9f623d4
   - node: 01a20dc8-c593-7357-875c-81ece9cd459e
     reviewed: 47d49e1017215d4056c16eb7b5e74bb59787ed3e35e736b77d74c156d87b531b
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
+      - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_flush_sends_what_a_write_left_and_counts_it"
+        body: a60b3c3ebd2ab6b50fb395733c00d3df48ac7dcad055db5af2d6a3e80f0bbc6f
   - node: 01a20dc8-c593-7357-875c-81eda327f1fc
-    reviewed: 1b8528412e0060a3ce75e9a4774573b1332f61c1d7b6001cf671ac22289f9796
+    reviewed: 3684d29d1faf999f5cb70bc6d38971c50f7dea78e965bd0e12cdeba101e83e95
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_silent_yard_server_holds_a_write_at_most_two_seconds_and_the_entries_stay"
-        body: 14d3e27c2703994da7a7143384e747caea7b8020de63c4d77812691cbfe84edd
+      - file: "crates/loft-cli/tests/yard_flush_pauses.rs"
+        name: "with_a_timeout_of_1_second_a_silent_yard_server_is_given_up_after_it"
+        body: 7ea534c0a34aabb448da2e2ccda097d36cb89e817e7fdfcd94f5ef2a0ee911fa
   - node: 01a20dc8-c593-7357-875c-81ee69667a91
     reviewed: 0f84312ed0af3a5c03863868c62313d81db96e1a50704fefe122fa294e21d00c
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
+      - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_flush_to_an_address_where_no_server_listens_fails_and_the_entries_stay"
+        body: b18aea0d02c6ac569dad159e034644f1f1ceaadda1e4c1f93d0e141a1113edce
   - node: 01a20dc8-c593-7357-875c-81efcf58f20d
     reviewed: cbeb4c3ae81ae81c3c10451fe03c449292a079df99ca55d2a6314cd8efc5d4d0
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
+      - file: "crates/loft-cli/tests/yard_flush.rs"
+        name: "a_batch_that_does_not_go_ends_the_run_with_no_further_request"
+        body: 433c369d3a0f9bdb3221b35974ae3ddb4d2268866866e158cf0444565dffff95
+  - node: 01a21dc4-1383-72e5-acab-a9b110a04816
+    reviewed: f0c7fbf81a509262e743a54e547474a4d2ff7f8616dac0bd9de09dbe510b2ddb
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "after_the_first_failed_run_the_flush_keeps_away_from_2_5_to_5_seconds"
+        body: 2bbeb657e5fbfcf5f86745702c6b1c9ff26151efe43b703c09f1b5a3b3cb128a
+      - file: "crates/loft-cli/src/yard/flush/backoff.rs"
+        name: "the_first_pause_runs_from_2_5_to_5_seconds_rounded_up"
+        body: 17f8d3f9c6c61c5a2f211e5d497f106f8a889f215e123479a4760ef18ac198f1
+  - node: 01a21dc4-1383-72e5-acab-a9b254bbc35a
+    reviewed: b5874ad58a22dcfc5a7f222ba819f1b76a94e19a2c155d872460f715926d9c24
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "each_further_failed_run_in_a_row_doubles_the_pause_up_to_5_minutes"
+        body: 8c4e81b585aff8b8bf47d8c2b5c25da23fa35751c876f4736ffb60705f70139d
+      - file: "crates/loft-cli/src/yard/flush/backoff.rs"
+        name: "each_further_failure_doubles_the_pause_up_to_5_minutes"
+        body: e206bb613f875242720cbe9272933cbe0320589c67fd47eca34d34b65f23cfd2
+  - node: 01a21dc4-1383-72e5-acab-a9b3e57d0dc7
+    reviewed: 44e3f3ce86b5ea2950621aeae4580fb3b8ad874cdec1fc9fe6c6abb9796109b0
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "each_further_failed_run_in_a_row_doubles_the_pause_up_to_5_minutes"
+        body: 8c4e81b585aff8b8bf47d8c2b5c25da23fa35751c876f4736ffb60705f70139d
+      - file: "crates/loft-cli/src/yard/flush/backoff.rs"
+        name: "each_further_failure_doubles_the_pause_up_to_5_minutes"
+        body: e206bb613f875242720cbe9272933cbe0320589c67fd47eca34d34b65f23cfd2
+  - node: 01a21dc4-1383-72e5-acab-a9b4387871dd
+    reviewed: e3bab93d66ff35b72ed5703380d153f072fc7ab29eb5837eaa0294813071223c
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_run_within_the_pause_makes_no_request_and_one_after_it_sends_again"
+        body: a7f1e1c08570e46002ed1664abe34ce6001e240b0a615641bc2d92a790907898
+  - node: 01a21dc4-1383-72e5-acab-a9b51455a4f6
+    reviewed: 49c91d6aa180944524fe440dfdf178f88f7c18f2dfc79d8d5fa59fcb649e5266
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_run_within_the_pause_makes_no_request_and_one_after_it_sends_again"
+        body: a7f1e1c08570e46002ed1664abe34ce6001e240b0a615641bc2d92a790907898
+  - node: 01a21dc4-1383-72e5-acab-a9b64268a3a5
+    reviewed: 87c0e95c24a99536266f9e861fc9e8290213a760576ac8ebb23806dfff84556f
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_batch_that_goes_sets_the_failures_in_a_row_back_to_none"
+        body: d0787e1f35e7b00507cd3b26d0e61b9d7e01f839eb84d8b1ea81c60b6e8feb8d
+      - file: "crates/loft-cli/src/yard/flush/backoff.rs"
+        name: "a_batch_that_goes_clears_the_failures_before_a_later_one_fails"
+        body: 367657ea200d0d11b6965711554f6241a03db8808baf6a7fd978321678e3ad9f
+  - node: 01a21dc4-1383-72e5-acab-a9b79cb71796
+    reviewed: 036b20f53495971ae67067344ab8a3b1d6bb9042c58ccac588975dd29d69f7a6
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_run_that_fails_without_a_request_adds_no_pause"
+        body: d086724de59aa04292e947060176a440a5544894edbd9fa2f9a1c77af526c07b
+  - node: 01a21dc4-1383-72e5-acab-a9b805cabf94
+    reviewed: 673270cdce4b45bbaf1fc5d79e18faff42084e961f492520d1ffd14e15cbbbcf
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_backoff.rs"
+        name: "a_run_that_fails_only_on_the_outbox_adds_no_pause"
+        body: 5f1ebacbef7c6d3fdbc3afd7686017327340b0782bccdabf4eed4eb8f300491e
+      - file: "crates/loft-cli/src/yard/flush/backoff.rs"
+        name: "a_retry_after_or_a_failure_of_the_outbox_leaves_the_failures_as_they_were"
+        body: f310587cabe2f4111f05ebb07c54ea587ea1b1c24b1875414ef048b7e0bfd724
+  - node: 01a213cb-9c28-769e-b7c8-4416b162db84
+    reviewed: 91457a2e3fb99c3988842531e7340d1a3d3ed57b7debe32df6f347f8aaa5de25
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "a_flush_that_finds_the_lock_held_is_busy_makes_no_request_and_exits_0"
+        body: ce516db3e7f2f14f600f58653a04e8c315fb9d9bd88ac52c5e722a54947eb048
+  - node: 01a213cb-9c28-769e-b7c8-441741c9bd05
+    reviewed: 53723adcb47edb6eee50f0ab46ad5a0974991aae31813b34737bc8c0905cdeaf
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "the_flush_that_holds_the_lock_sends_every_batch_while_another_is_busy"
+        body: 8d0bff982c672559b23c4b64526cb737e50a3d03c7d6088460ab16ce4de3685b
+  - node: 01a213cb-9c28-769e-b7c8-4418e7788731
+    reviewed: a312e63f7c870cb115980b4127d5cd35cc36283482f21cf0b9822a07810a1cf1
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "once_the_flush_that_held_the_lock_is_stopped_the_next_flush_runs"
+        body: 1f77fde99376df5a9dbce02ede744f958749e2e6d87a625f9b4fe1c49ca3d34a
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "a_flush_that_finds_the_lock_held_is_busy_makes_no_request_and_exits_0"
+        body: ce516db3e7f2f14f600f58653a04e8c315fb9d9bd88ac52c5e722a54947eb048
+  - node: 01a21406-1007-7756-963c-23322346e3f2
+    reviewed: a086d544d10e0d7471a76857e38ebcb6917ca007ed0cbbeffc1041f34e688c5f
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "a_write_is_not_held_up_by_a_flush_that_holds_the_lock"
+        body: 648a3bc9a8b30697d3911da26d9a68d5f47438be2438c321faf92245ba6efbb6
+  - node: 01a21406-1007-7756-963c-2333edd0e2a2
+    reviewed: 5b9d97a969c4ccdf714bcd77dfb195cc2d7b94dbf9b7d68dced2af00a34b071d
+    tests:
+      - file: "crates/loft-cli/tests/yard_flush_runs.rs"
+        name: "two_homes_of_yard_have_a_lock_each"
+        body: 3d0b96ddddb95cb01e311db1541ce2cfd161f8a90b2d525c7d001fb6704076e8
   - node: 01a20dc8-c593-7357-875c-81f22889dbb7
     reviewed: 8a8e66b54503f8bbe7d89566cf604e4662a17691aa885f1a7f94eb6c36e4f8ed
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_gives_the_same_result_whether_yard_server_takes_the_batch_or_not"
-        body: bf4f0b0b918857353d7b69e20d758f840dac8aa35d2bd633644246fec87b697e
+        name: "a_write_gives_the_same_result_whether_yard_server_can_be_reached_or_not"
+        body: 6d288909535244d02226a09f219e100a881debbfd738c64e3ea971ad747bb2d9
   - node: 01a20dc8-c593-7357-875c-81f36e63a71c
     reviewed: 73a67d12bc80c7618aa85b3946e85b3e0b7fa9dc972f5cd244f75e717d1f3a0e
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+        name: "a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them"
+        body: 4197f5733502ca61360ed470c0166d5bff182c0754e11c1b95025062319ed8a0
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "a_base_address_ending_in_a_slash_takes_one_slash_before_the_path"
-        body: be3c2fdc9fd4d285612f25c3a12964d9b668bf039568532e421f58983feb508f
+        body: 231e19620f059d896f64f80863a539d0a7156b3412bb4645895a6ea23f41b388
   - node: 01a20dc8-c593-7357-875c-81f4c822ad5d
     reviewed: 47a467fcbc432b8c8d36a105c0750cf1863cb4b1c2692e2942012588990ac18c
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+        name: "a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them"
+        body: 4197f5733502ca61360ed470c0166d5bff182c0754e11c1b95025062319ed8a0
   - node: 01a21980-c4f6-7743-90bb-8eeb58974558
     reviewed: 4e7e5c8b1f6bd1041f403b153b32382bde8371735f760ddf494e3b06c6b7cd76
     tests:
+      - file: "crates/yardlog-store/tests/outbox.rs"
+        name: "an_address_with_a_trailing_slash_is_the_same_address_without_it"
+        body: 404e902910c1353e6504190dbf806ea55d34aaa76de44e86167b5f192a009dfa
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_address_and_the_same_address_with_a_trailing_slash_send_each_other_s_entries"
         body: e0d30d050c47cee868c0f1e3e7b8ccd90ddba55723a48c1c4ba3779a2c467521
@@ -40652,43 +41417,421 @@ links:
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "no_file_of_the_outbox_or_of_yard_log_holds_the_token"
-        body: ccac5bf09035426cd3419875dc6377d8c24e459b395dc9df89e9ac0ce04b30d4
+        body: 96457b7e840df1f185951fd8fe50954f7c8eb288b949a754ffa438b55c6e8b66
   - node: 01a20dc8-c593-7357-875c-81fdda5e8ef8
     reviewed: d0401012916d2f57c5a0296ede57e4c97c9356f45021fae0a019d0ab41caf688
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "no_file_of_the_outbox_or_of_yard_log_holds_the_token"
-        body: ccac5bf09035426cd3419875dc6377d8c24e459b395dc9df89e9ac0ce04b30d4
+        body: 96457b7e840df1f185951fd8fe50954f7c8eb288b949a754ffa438b55c6e8b66
   - node: 01a20dc8-c593-7357-875c-81fe7288a2dd
     reviewed: 2e66f628bce988889a45962fe941da2545e13b47530b50c6cb52994bece398f2
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
+      - file: "crates/loft-cli/tests/yard_connected_safety.rs"
         name: "the_token_goes_to_yard_server_and_to_no_other_address_a_command_reaches"
         body: 1ed09bef4e8f04dfd9c3a4514750e2e336124d434e1acbf49598d177941215cf
   - node: 01a20dc8-c593-7357-875c-8200cbabf263
     reviewed: 4f18a00f6c671ca074ad3097741868532bb6089b0c7152057dfa91f6f7047716
     tests:
-      - file: "crates/loft-cli/tests/yard_connected.rs"
+      - file: "crates/loft-cli/tests/yard_connected_safety.rs"
         name: "an_https_address_is_contacted_where_one_off_the_loopback_interface_over_http_is_not"
         body: 0c7ef5471782565d1e11ae766dfbe8d9c676e10a0602a124fb6273e1aa8efe49
   - node: 01a20dc8-c593-7357-875c-8201b06c53cf
     reviewed: a6622b499b0f0557c23b8aeb698943c86eddd45501419157f44407d9eaf3708c
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
-        name: "a_write_sends_its_versions_once_its_result_is_printed_and_empties_the_outbox"
-        body: 4503cdb82d6eaf4c2a01561e7af0068dc94e880a5ac053517016115beefc5a40
+        name: "a_write_puts_its_versions_and_makes_no_request_and_a_flush_sends_them"
+        body: 4197f5733502ca61360ed470c0166d5bff182c0754e11c1b95025062319ed8a0
   - node: 01a20dc8-c593-7357-875c-8202fa019217
     reviewed: 8af2c7e5fc226829f47bcc8817868e228ebbd4bc8ced8f0829ce3e34ddb53ef1
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay"
-        body: a7b1fa4a684e4febb4f28fb0603d48ca89b7addd0d26c27df0ab227a436e9a1a
+        body: 39077e502056a4e9a43858fdb01272501f9661b703da9d69a3b2c93510165224
   - node: 01a20dc8-c593-7357-875c-8203782fac5a
-    reviewed: 9ef914715c749c988427e549400965de223492d45bcdf36e32b5200a84faeb9f
+    reviewed: 983573294aab976389b8f78b976f19f8778a74dd53fec47e09398ec20bdc9caa
     tests:
       - file: "crates/loft-cli/tests/yard_connected.rs"
         name: "an_http_address_off_the_loopback_interface_is_never_contacted_and_the_entries_stay"
-        body: a7b1fa4a684e4febb4f28fb0603d48ca89b7addd0d26c27df0ab227a436e9a1a
+        body: 39077e502056a4e9a43858fdb01272501f9661b703da9d69a3b2c93510165224
+  - node: 01a213cb-9c28-769e-b7c8-43e7f582e912
+    reviewed: 5ba3d5d347c7fd0e1a041a1b2a62fb60898900b699c14958bff10d8ada77d437
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43e8f96d25e3
+    reviewed: a6e606ab36775214af1341d0bbf7603f31fb95beaa38a197da241d8c2c7cd1d4
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_neither_variable_set_connected_mode_is_off"
+        body: 102371ae29432a4a7b6fb13c91c74de30fadf29dcdfb33f7ddadb3b38e11ee5a
+  - node: 01a21406-1007-7756-963c-2315e982470c
+    reviewed: ccf5bcd2e2160bc8e3bcd8419b9813632f96561e613759d7368d50dc17e0791a
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_one_variable_unset_or_empty_status_names_the_one_missing"
+        body: b956f090545ccfa4a0cf88f0795bd69d41787ed6e5cc92806be03dcccc4d87f1
+  - node: 01a21406-1007-7756-963c-2316163b168a
+    reviewed: 31b3b683c66e7196aa78a815f438d6b0a67cc5f118ee5826e878e5264d47716d
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "an_address_the_network_client_refuses_is_named_as_refused"
+        body: 130d48186cea889ad4eb240e0729d1a3891b997086d5c6dc15496b71e73ab51c
+  - node: 01a213cb-9c28-769e-b7c8-43e9d68b7479
+    reviewed: 152977023baf8954a4ac7c5a2674a8ae1dee8a8f413911cb5c5c7da5538ad3a5
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_both_variables_set_and_no_home_directory_known_status_says_so"
+        body: 6e110e33d9755ccb34fdc5f26b7ebbde9c6addfedc60209dd8a06299adef2b7b
+  - node: 01a213cb-9c28-769e-b7c8-43eaf8f0f08b
+    reviewed: 67105f013c7cf5ebd0133f14686300e6916051e24d1f630b7ef6cadb958f6da3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43ec467145ba
+    reviewed: 5313a03abf1c4acf77fd0584ccb529a6d9d6d5fb40e64dd49c0615979899942e
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43ed8c88dd70
+    reviewed: f8f113caa15466b47e38064033a55200fe45a3b94b0545c78ec554bf44b07548
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft"
+        body: 5d3ac688ba88cc8f6592adbec3135c4ebc448a82804488a72afc461404b836bd
+  - node: 01a216fa-feac-7221-aee1-7167ca9c5a19
+    reviewed: 2366e7e6ad7f4a92bade16475d5cdca2189f1f1094e6cb67e65215c9560210ec
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "an_entry_counts_as_later_by_the_record_of_the_address_it_is_for_whatever_the_mode"
+        body: f299bf72b4276bca39cca24d547dc84b7587a1d7cbbc8b951ea3295b55331c87
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft"
+        body: 5d3ac688ba88cc8f6592adbec3135c4ebc448a82804488a72afc461404b836bd
+  - node: 01a21406-1007-7756-963c-2317faa993d5
+    reviewed: ad529f82c0eb7b47d8448d98fa8c7ff87d50f36bb2b9bc2d207d1de0b9a7ca56
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_off_waiting_counts_every_entry_with_its_address"
+        body: a6bc33409e0a39268371e06c2a96f4e733b21d243f4206a1d24d8de07880917d
+  - node: 01a213cb-9c28-769e-b7c8-43ee9cac6d49
+    reviewed: 68ed5208b4f45b842d5fe9053288ea5d303a3acec265ed7a18e649a231ab2316
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_entry_waiting_the_line_reads_waiting_none"
+        body: f0ff85886747a5175909da3109b7fcc1f08bb0c846d08fb9941e9bec671e2a02
+  - node: 01a213cb-9c28-769e-b7c8-43f0dfed8025
+    reviewed: 344b5b4498bee6b994748312da666586286d24afc0b198aff3dd8fa969362a86
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
+        body: f573317114ce154413ff4884014f17c3bb0064fe3535d53e2f5bc34008e9faf4
+  - node: 01a213cb-9c28-769e-b7c8-43f106e76e68
+    reviewed: a6962ada9184f0afdec5fa77ecb4cc08a234ef986b388214581b26642bfefdc3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
+        body: f573317114ce154413ff4884014f17c3bb0064fe3535d53e2f5bc34008e9faf4
+  - node: 01a213cb-9c28-769e-b7c8-43f227f72357
+    reviewed: a7213c4d7c29038f6dd0fc706a656943e81f142077cd2e291e681bda7ad3581d
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_the_time_to_come_back_after_while_it_has_not_passed"
+        body: ccf9a47d32bd4c912148b6396e89f6670b9167d7b895277988e87c9beece6bdf
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
+        body: f573317114ce154413ff4884014f17c3bb0064fe3535d53e2f5bc34008e9faf4
+  - node: 01a213cb-9c28-769e-b7c8-43f3a299d1f9
+    reviewed: 882ae95bdc0f12d96655a9c7d4a28cc106688be08fbcfb64c4be74354a6fc63c
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_run_recorded_or_a_flush_json_that_does_not_read_last_attempt_is_none"
+        body: 63d2dbb30a59472e4d484a796e31d805d419ecda9604e053d9283ce0791be137
+  - node: 01a213cb-9c28-769e-b7c8-43f59872d55b
+    reviewed: 697ebeaa1ed55227e13612b969883759a465629d368fc8b11086a841215d9015
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a213cb-9c28-769e-b7c8-43f6ce052008
+    reviewed: 7e06e5c68601b2aea173661fe0fbe3705afe73d906278e16efa1e4b23b549acf
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a213cb-9c28-769e-b7c8-43f786cba56f
+    reviewed: 6710bf11870e62c8456c73ffea38bc4808f696cb4f49afd5cf1470f641b5b9a5
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a21406-1007-7756-963c-231850362e9a
+    reviewed: 64492f9fb8e4df2145f780523e1209952fd031bb5e0632e761030ebb485b851a
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+  - node: 01a213cb-9c28-769e-b7c8-43f870f9c796
+    reviewed: 3fe546eab670bb9bb779e3d67211ac5f6976a4a2b62726148712ea3dfefd87e3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_file_in_dead_the_line_reads_dead_none_and_no_file_line_follows"
+        body: 78588d845e07d29fdc6de2871ac131b8342c2fce984b8c1397b58bf8611e00f4
+  - node: 01a21406-1007-7756-963c-231ae6145a1e
+    reviewed: 31eac3f74705b8365ce9f98071d044ae4feb955f2d8d4cfc58e21f5319e6bfb2
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_neither_variable_set_connected_mode_is_off"
+        body: 102371ae29432a4a7b6fb13c91c74de30fadf29dcdfb33f7ddadb3b38e11ee5a
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_one_variable_unset_or_empty_status_names_the_one_missing"
+        body: b956f090545ccfa4a0cf88f0795bd69d41787ed6e5cc92806be03dcccc4d87f1
+  - node: 01a21406-1007-7756-963c-231b3d51156e
+    reviewed: d79ef33b213d69b5f907555200435a44163d71abc6c6949295a33be258285575
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "waiting_counts_the_entries_for_other_addresses_put_off_and_of_a_newer_loft"
+        body: 5d3ac688ba88cc8f6592adbec3135c4ebc448a82804488a72afc461404b836bd
+  - node: 01a21406-1007-7756-963c-231c990cdd6f
+    reviewed: e86f8f60dd59ba9af1275fd5a16f56b5477799ccfa5482b1931834cdd921c8ba
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "last_attempt_gives_when_the_last_run_ended_how_and_why"
+        body: f573317114ce154413ff4884014f17c3bb0064fe3535d53e2f5bc34008e9faf4
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_run_recorded_or_a_flush_json_that_does_not_read_last_attempt_is_none"
+        body: 63d2dbb30a59472e4d484a796e31d805d419ecda9604e053d9283ce0791be137
+  - node: 01a21406-1007-7756-963c-231d8d01aa2a
+    reviewed: feb3cc6cc6ba9bcc81c32cad434eefb0c453afdc1e9b3e588bb9ec6757c4cbb3
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "dead_lists_each_file_with_its_reason_in_the_order_of_their_names"
+        body: 24ab85d58d443a6c1e85dc5b956cb190710d6419ed60ce02cba1662181c994c4
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_no_file_in_dead_the_line_reads_dead_none_and_no_file_line_follows"
+        body: 78588d845e07d29fdc6de2871ac131b8342c2fce984b8c1397b58bf8611e00f4
+  - node: 01a218ef-b9a6-707b-88be-a52cf268df35
+    reviewed: b9117b36593a08287b7b986d7ab7644c661e1d18ea5917dac5373e76abceb795
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_off_and_no_home_directory_known_status_says_no_home_is_known"
+        body: 1fe9289ab97184e0737be81505fe390c373186af95b5739d9731ea196f9d66dd
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "an_address_the_network_client_refuses_is_named_as_refused"
+        body: 130d48186cea889ad4eb240e0729d1a3891b997086d5c6dc15496b71e73ab51c
+  - node: 01a218ef-b9a6-707b-88be-a52d0448ce2f
+    reviewed: 24695b478d48c23cf721ad2de5ea182a5c2116ecd52dae2ff0e96a3b8e915367
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_off_waiting_counts_every_entry_with_its_address"
+        body: a6bc33409e0a39268371e06c2a96f4e733b21d243f4206a1d24d8de07880917d
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "an_entry_counts_as_later_by_the_record_of_the_address_it_is_for_whatever_the_mode"
+        body: f299bf72b4276bca39cca24d547dc84b7587a1d7cbbc8b951ea3295b55331c87
+  - node: 01a213cb-9c28-769e-b7c8-43fa79962c40
+    reviewed: a0312bff386349552381cb92a788918876f1141be505a98818ea0293d2d0832b
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_exits_0_makes_no_request_and_changes_no_file_whatever_it_finds"
+        body: 150c99049f08d3eee6b0ccec4d3e1f7ffbecb0fbb9e65bbc36e055660932ed49
+  - node: 01a213cb-9c28-769e-b7c8-43fb5eab1b2c
+    reviewed: a1c2febd23908882a3925f94d98274e745aa477a3e4aee66475add4de21b6b0d
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_exits_0_makes_no_request_and_changes_no_file_whatever_it_finds"
+        body: 150c99049f08d3eee6b0ccec4d3e1f7ffbecb0fbb9e65bbc36e055660932ed49
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "with_connected_mode_on_status_names_the_address_and_counts_what_waits_for_it"
+        body: ba4895cc42246cd4fab82e083acfe9c22bf9697a5006703755cbd48db062c455
+  - node: 01a213cb-9c28-769e-b7c8-43fce35367cf
+    reviewed: 68e622c469368c198161e0ecaec47910fd0dfb09d508591db54c37cd65b31d62
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_exits_0_makes_no_request_and_changes_no_file_whatever_it_finds"
+        body: 150c99049f08d3eee6b0ccec4d3e1f7ffbecb0fbb9e65bbc36e055660932ed49
+  - node: 01a213cb-9c28-769e-b7c8-43fdb66632b6
+    reviewed: c6ac45042d92492d9abd7958626166e8b20013d1806a69a36a84498aef27ea3e
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_runs_outside_a_repository_without_a_session"
+        body: f1963e8f730d04bf8f212299b2f8a221848afc3eed29032d9874a06ac0ce601c
+  - node: 01a213cb-9c28-769e-b7c8-43fe3c694ce0
+    reviewed: 7384f96b8e707e63a066b71c3188c86b9ecabd242092f7c2d680eee148ff1692
+    tests:
+      - file: "crates/loft-cli/tests/yard_status.rs"
+        name: "status_runs_outside_a_repository_without_a_session"
+        body: f1963e8f730d04bf8f212299b2f8a221848afc3eed29032d9874a06ac0ce601c
+  - node: 01a213ce-418e-700f-b0fe-78c49e9b08cb
+    reviewed: 9629fb494b53b55a999c28a1633867e6e896ba7d019b1173a3a936eae0cdd84e
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "after a write through Yard's tools the mod runs loft yard flush, and the call does not wait for it"
+        body: ca6beb9c47141b1782e418011dbf9cb79648efa47feb9b7d300416728f2fb9c4
+  - node: 01a213ce-418e-700f-b0fe-78c5795d8969
+    reviewed: f4ea8d935934ccdcdc6464751df5a5b5dddcd6bfb1f1ebaed94398bf8159a44f
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "after a write mirrored from a task, a question or a plan the mod runs loft yard flush, and the native call does not wait for it"
+        body: d5807afec90efd9b6161a371d52375e7ad0939a5c7055881ede9af27db89b74a
+  - node: 01a213ce-418e-700f-b0fe-78c60b95b0ec
+    reviewed: 37b84a1c2fa529921f6489da3cb416425db1ad473fce184ca90fa48d972a02b8
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the session's first beat runs loft yard flush"
+        body: b2972f628f73bac70b6838ca3b7e464e63567a76ce2bdbec23c8ae76c12c1706
+  - node: 01a213ce-418e-700f-b0fe-78c740190611
+    reviewed: cd4cc18a881b2c524a24f9ea5a4fe879ea2fb182f7e2fd361b9bd2998bf71090
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one ended failed"
+        body: cde5c7c3a2b64a77afede23eff442df36f14b7fa5d79a1019158a5f5d51d70f0
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one ended busy"
+        body: 19571050c9c626232ec9e98c241b9b4936f30b3639ec39ee6078b26033ab7d62
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one ended paused"
+        body: 09157b62503fb39331938705ef10145b7c98143f393a22d54bcec7e184abd3cf
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs loft yard flush where the last one counted entries remaining"
+        body: 5bb60e7bc3e1db3a63824ce6e00005bf9558cfd9fd31ad5260a4323af6dc9f86
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "neither a beat nor a write runs loft yard flush before the notBefore the last flush gave, and the first beat after it runs one"
+        body: 5232db23a3ce91251661e204163398f8bb653857839fe010a74b8ff9344a743d
+  - node: 01a21dc4-1383-72e5-acab-a991c9068973
+    reviewed: 05255134ad0e79366386edc76ff36a738e96c7add7c7d7fc6e39828fc37e4dc2
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "neither a beat nor a write runs loft yard flush before the notBefore the last flush gave, and the first beat after it runs one"
+        body: 5232db23a3ce91251661e204163398f8bb653857839fe010a74b8ff9344a743d
+  - node: 01a213ce-418e-700f-b0fe-78c8c00b45f7
+    reviewed: 01d45be6fecf230c8561186088734df3beae7c9184cf9bb265558bbe28fd025c
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs no flush where the last one ended sent with no entry remaining"
+        body: 87c93f53287804538b03c3473b790cbf14612615e43b8079a26121e8a7435bcf
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a beat runs no flush where the last one ended empty"
+        body: 9b08e87bd7c9c25eb747ce14c7bf56ca8f7a7f50d0435a0014c1899ed1c402ad
+  - node: 01a21406-1007-7756-963c-2309d5987ae6
+    reviewed: 889775a97c1b2857e4e4f4bc97c4d0567a2daf1cc2ee234ae7e79c8e99a380e0
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "once a flush has ended off, the mod runs no flush for the rest of the session"
+        body: 01eb08e21c710c09811c073e53898ab93f3a93c1f4e99bcfbd177542c88fab35
+  - node: 01a213ce-418e-700f-b0fe-78c944debb80
+    reviewed: 5213bcde2ffa171b92df36f8013c07698a79912f1660d623f3a14f49e8b05d3b
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod starts no flush while one it started runs, and one write made meanwhile is followed by one more flush"
+        body: 2cee0a9df4c6091f330329d311015dea63b35e00d6886a70838b3b7c62a6e114
+  - node: 01a21406-1007-7756-963c-230adb7104a0
+    reviewed: 20d1dae5849f64ec4149b06ae7af7ca643e23c08c7a4cdbd6122bc14c0850421
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod starts no flush while one it started runs, and one write made meanwhile is followed by one more flush"
+        body: 2cee0a9df4c6091f330329d311015dea63b35e00d6886a70838b3b7c62a6e114
+  - node: 01a213ce-418e-700f-b0fe-78caebc522b9
+    reviewed: cf06b852c5e8cbc895b63f48cbe77e0db833010cb6733f05f8e4869b97b17811
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod has Claude Code stop a flush it started that still runs 6 minutes later"
+        body: dfbc6e968d3c22d7e115a58e17c1f809d7b376a5723a0d3145d01150e7075114
+  - node: 01a21406-1007-7756-963c-230b88b94598
+    reviewed: f4993bb09c3cf76a4a4d579a6bc4ffb7a266cd2f02cb0ca15abd128b410690d3
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "the mod runs loft yard flush only where the loft it runs speaks protocol 5 or a later one"
+        body: 579a1d6a153a17ace29d69d4767b22c49f1d884baeb64abbf8c753f6006a59bd
+  - node: 01a213ce-418e-700f-b0fe-78cc9c749faa
+    reviewed: 339fdef988762213f919f0f1aecdcd2c117a68ef2cae2f77ddd084f06cf51cb2
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "an_entry_written_after_the_worker_started_is_flushed_at_its_next_beat"
+        body: 61ae12e39902cad0b383da82e143caef610593dc110d9d02dfdf8620d8749a82
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "the_worker_flushes_at_its_first_beat_with_the_address_and_the_token_codex_gives_it"
+        body: 06da9a749f5f6c6285bd492854fd4118dd88d0953daea97bdf0c613ef1b4d55c
+  - node: 01a213ce-418e-700f-b0fe-78cd7bde2ffb
+    reviewed: e9008dae4e9a16b37831d9ce304d0468943637554d46b52f43d9d61e29011a78
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "a_flush_is_due_once_an_entry_for_the_address_waits"
+        body: 245b0af246720881ecd5ded3979935fb8c61c7db9849128c48029aff5681df50
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "the_worker_starts_a_flush_only_on_a_beat_where_one_is_due"
+        body: efdeb20ac6913c5009190c88a7c1c3ccdaf496feb9d6dfdd61aeffe5a53a4dbc
+  - node: 01a21406-1007-7756-963c-230cbc0e6521
+    reviewed: 4b4fc423d3e0570a105efa82c00bc539b5b952c219333def7fd56ea8d5de8953
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_for_entries_of_another_address_or_of_a_newer_format"
+        body: a37b582e42211348ff910db6def763822c543b60f2de8f7d8e7f1560f03ff9fa
+  - node: 01a216fa-feab-729d-9d66-ce58f509b86b
+    reviewed: 3efba99797fac8cb9d11253e25b1ba1120ea97aa505d19964c465686609df744
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_for_entries_yard_server_will_take_later_alone"
+        body: 7d3d1c98cc756d3def401c334a48d0a1463c44c7d491ffcb8b3ebab09fb31d02
+  - node: 01a21406-1007-7756-963c-230dcfa9347f
+    reviewed: f06eed97e9b23881f54bc8b5e7cb6ae45d0c8a71256030480ba54d8ab0c781a1
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_before_the_time_yard_server_asked_to_come_back_after"
+        body: 9f5c8ef7d50f36d3bfefc23aa6b0595c470cd17e784640190ab3793571608534
+  - node: 01a21dc4-1383-72e5-acab-a992c156269d
+    reviewed: 52389d7823fa7f38e1d0ec66c03dbd4952dc0c741be501165e160d1366f6cd43
+    unverified: "A cost, read from the code: the worker's beat asks the outbox whether it holds one entry to send, and holds_one_after returns at the first entry for its address that it reads."
+  - node: 01a21dc4-1383-72e5-acab-a9930f582e8f
+    reviewed: 8f418e480d433f5cf3918e5b10ca62a8ef8a5bfa3bf851d67f8ef505a16b574e
+    unverified: "A cost, read from the code: holds_one_after passes over a key the record holds as later before it opens the file, by the file's name alone."
+  - node: 01a21406-1007-7756-963c-230e4274c2ec
+    reviewed: 9fa27112d67ffbb641d0306b7fc51271e3636fa44dc928d43f017d585cb03b9e
+    tests:
+      - file: "crates/loft-cli/src/yard/flush/tests.rs"
+        name: "no_flush_is_due_without_connected_mode"
+        body: 939a92ee979e9647190f350a54ab21b12db67e916951289414f888a5914d2a6d
+  - node: 01a213ce-418e-700f-b0fe-78ceec407043
+    reviewed: 0d0874e15d53d0ff166fdae124e3cdd14fb22898b43790c25ab4928a48d8b217
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_minutes"
+        body: 310f01eeff0d914d317c4b74fbc3e18a3ba3531fe099d67b22940077c998bf16
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "a_flush_the_worker_started_that_has_ended_is_forgotten"
+        body: 74f19760f8a2a529a28107a28c6ed5a88d2b29d7d1e846c4ba8e48d08fc671af
+  - node: 01a213ce-418e-700f-b0fe-78cfc3e397d6
+    reviewed: c24ad36e4a498464426e2bc4ccbbb1763493cae879b53ccdbefeb9f02e9ca682
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "the_worker_delivers_events_while_its_flush_waits_on_a_silent_yard_server"
+        body: d639ad66df7176da4b10a33924ca41fc16ace5d4074f62366e06c03a73cce818
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "a_flush_the_worker_cannot_start_leaves_the_worker_running_and_the_next_due_beat_tries_again"
+        body: a917c66d69ea70b7ab6ccba14f065ec82fdf9288e64c755e0035442ce946f3c3
+  - node: 01a21406-1007-7756-963c-230f3c2ad7a3
+    reviewed: 04cd999e045b14ca369786a0d3b076b2337b6b87490c5a045750cbdd00621d23
+    tests:
+      - file: "crates/loft-cli/src/yard/codex/watch/tests.rs"
+        name: "the_worker_starts_no_flush_while_one_it_started_runs_and_stops_one_after_6_minutes"
+        body: 310f01eeff0d914d317c4b74fbc3e18a3ba3531fe099d67b22940077c998bf16
+  - node: 01a213ce-418e-700f-b0fe-78d25a8c9e5e
+    reviewed: 7aba52e0be259edf571a122616c0116c5700d3e0329901a0cb65240373cb2753
+    tests:
+      - file: "plugins/claude/loft/tests/yard-flush.test.ts"
+        name: "a flush the mod starts runs as every loft command does, adding only the quiet variables to the session's environment"
+        body: 63948396b8b7bfe0fb055fbca76d6c2b7020b544afac8e997da9c4c7ee42eb03
+  - node: 01a213ce-418e-700f-b0fe-78d3600e06ba
+    reviewed: 5dafdf36fe71dd550ed08c4e816838c70ee59648a66d870432c4f263fe84ee12
+    tests:
+      - file: "crates/loft-cli/tests/yard_codex_flush.rs"
+        name: "the_worker_flushes_at_its_first_beat_with_the_address_and_the_token_codex_gives_it"
+        body: 06da9a749f5f6c6285bd492854fd4118dd88d0953daea97bdf0c613ef1b4d55c
   - node: 01a1d600-053c-73ed-b18e-e5a0c1114446
     reviewed: 9053d55a1c2bb4d36c39e44ae7192c5f2555f7b328a282a3c8fa0547644c5b8c
     tests:

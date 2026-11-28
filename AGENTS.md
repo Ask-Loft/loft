@@ -130,7 +130,11 @@ change, or v1 reverts it.
   main agent's directory, by which an agent's work follows its working stage into another
   worktree, the control token, in `claude/` the Claude hook's hand-offs and each session's
   last permission mode, and in connected mode the outbox, `outbox/`, of the versions not yet
-  sent to Yard Server, with `outbox/dead/` for the files that are not entries. `LOFT_YARD_HOME`, an absolute directory, takes the place of `~/.yard/`;
+  sent to Yard Server, with `outbox/dead/` for the files that cannot be sent, each beside a
+  `.reason` file, `flush.json`, the last run of `loft yard flush` for each address with the
+  runs in a row that failed, the time before which no run makes a request and the versions Yard
+  Server will take later, and
+  `flush.lock`, which the one flush that sends holds. `LOFT_YARD_HOME`, an absolute directory, takes the place of `~/.yard/`;
   a relative or empty value is ignored.
 - `scripts/yard-dogfood.sh` runs this worktree's `loft` and plugins beside the installed ones:
   `claude` and `codex` start a session on them, and `desktop <project>` (`--undo` to reverse)
@@ -210,7 +214,8 @@ repository port. Tests never reach an external system directly and never through
 shipped binary. The only switches a shipped binary reads for a simulator are its standard and
 named environment variables (`SOURCE_DATE_EPOCH`, `LOFT_CLOCK`, `LOFT_TELEMETRY_ENDPOINT`,
 `LOFT_UPDATE_ENDPOINT`, `LOFT_REMOTE_ENDPOINT` with `LOFT_REMOTE_TOKEN`,
-`LOFT_YARD_SERVER_ENDPOINT` with `LOFT_YARD_SERVER_TOKEN`, and `BROWSER`), and each changes only where its port takes its answers. Tests put a
+`LOFT_YARD_SERVER_ENDPOINT` with `LOFT_YARD_SERVER_TOKEN` and `LOFT_YARD_SERVER_TIMEOUT`, and
+`BROWSER`), and each changes only where its port takes its answers. Tests put a
 simulator from the Software Plant in front of the unchanged binary under test:
 
 - **git**: `software_plant::GitScenario` scripts a repository: its prefix, its branch or a
@@ -248,11 +253,17 @@ simulator from the Software Plant in front of the unchanged binary under test:
   each address it was given.
 - **Yard Server**: `software_plant::YardServer` takes batches of versions at
   `POST <address>/batches` on a loopback port, admits one bearer token (`TOKEN`), holds each
-  version once by its key and answers with the batch as it stored it; it can also fail with a
-  status, stay silent, refuse the connection, store a batch and hang up, or store it and answer
-  late. It records every request and the records it holds. A test turns connected mode on with
-  `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN`; `tests/yard_connected.rs` holds
-  the harness, and `tests/yard_server_contract.rs` runs its real half on demand against
+  version once by its key and answers each version of a batch with its outcome
+  (`yardlog-answer/1`: `stored`, `held`, `conflict`, `refused` or `later`), refusing a body over
+  1 MiB with `413`; it can also fail with a status, ask to come back later with `429` or `503`
+  and a `Retry-After`, refuse or put off the versions a test names, answer with a status and a
+  body the test names, as a proxy on the way would, refuse a body over a smaller size the test
+  names with `413`, stay silent, refuse the connection, store a batch and hang up, or store it
+  and answer late. It records every request and the records it holds. A test turns connected mode on with
+  `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN`, and shortens a flush's wait for an
+  answer with `LOFT_YARD_SERVER_TIMEOUT`; `tests/yard_connected.rs` holds the harness,
+  `tests/yard_server_scenarios.rs` the scenarios a real server cannot be scripted with, and
+  `tests/yard_server_contract.rs` runs its real half on demand against
   `LOFT_YARD_SERVER_CONTRACT_ADDRESS` and `LOFT_YARD_SERVER_CONTRACT_TOKEN`.
 
 The command event, the update check, every request to a remote and every batch of versions sent

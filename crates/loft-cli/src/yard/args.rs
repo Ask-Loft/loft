@@ -59,8 +59,12 @@ pub enum YardAction {
     },
     /// Bring every open Yard Log under the tree's `.yard/` up to this `loft`'s format.
     Upgrade(UpgradeArgs),
-    /// In connected mode, send one batch of versions from the outbox to Yard Server.
+    /// In connected mode, send the outbox's versions to Yard Server, batch after batch, unless
+    /// another flush is sending or Yard Server asked to come back later.
     Flush(FlushArgs),
+    /// Say whether the versions agents write leave the machine for Yard Server, and where they
+    /// do not, why: what waits in the outbox, the last flush and the files moved into `dead/`.
+    Status(StatusArgs),
     /// Report what the agents working on the branch consulted: the sums of its consultation
     /// files in all, by stage, by session and by agent type.
     Consultation(ConsultationArgs),
@@ -353,6 +357,12 @@ pub struct AnswerArgs {
 
 #[derive(Args)]
 pub struct FlushArgs {
+    #[command(flatten)]
+    pub output: Output,
+}
+
+#[derive(Args)]
+pub struct StatusArgs {
     #[command(flatten)]
     pub output: Output,
 }

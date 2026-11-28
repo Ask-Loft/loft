@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "loft-yard-flush-1.json",
-  "title": "The result of `loft yard flush --format json`, version 1: what one sending of the outbox to Yard Server did",
+  "title": "The result of `loft yard flush --format json`, version 1: what one run of the sending of the outbox to Yard Server did",
   "oneOf": [
     {
       "type": "object",
@@ -11,8 +11,10 @@
         "outcome",
         "sent",
         "remaining",
+        "later",
         "skipped",
         "dead",
+        "notBefore",
         "errors"
       ],
       "properties": {
@@ -24,19 +26,26 @@
             "off",
             "empty",
             "sent",
-            "failed"
+            "failed",
+            "busy",
+            "paused"
           ],
-          "description": "off: connected mode is off; empty: the outbox holds no entry for the address; sent: Yard Server took a batch; failed: the batch did not go, and errors says why."
+          "description": "off: connected mode is off; empty: the outbox holds no entry for the address; sent: every batch the run took went; failed: a batch did not go, or an entry could not be settled, and errors says why; busy: another flush holds ~/.yard/flush.lock, and no request was made; paused: Yard Server asked to come back later, or the flush keeps away after runs that made a request and failed, and that time has not come."
         },
         "sent": {
           "type": "integer",
           "minimum": 0,
-          "description": "The versions Yard Server took."
+          "description": "The versions Yard Server stored or already held, in every batch of the run."
         },
         "remaining": {
           "type": "integer",
           "minimum": 0,
-          "description": "The entries for the address left in the outbox."
+          "description": "The entries for the address left in the outbox, other than those counted in later and skipped."
+        },
+        "later": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "The entries for the address whose versions Yard Server will take later; they stay in the outbox."
         },
         "skipped": {
           "type": "integer",
@@ -46,7 +55,15 @@
         "dead": {
           "type": "integer",
           "minimum": 0,
-          "description": "The files moved into ~/.yard/outbox/dead/."
+          "description": "The files moved into ~/.yard/outbox/dead/ in the run, each beside a .reason file."
+        },
+        "notBefore": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time",
+          "description": "The time, in UTC, before which no run makes a request to the address, where one is recorded and has not passed; null where none is. Whoever runs the flush in the background starts none before it."
         },
         "errors": {
           "type": "array",
@@ -117,7 +134,8 @@
         "kind": {
           "type": "string",
           "enum": [
-            "yard-server"
+            "yard-server",
+            "outbox"
           ]
         },
         "message": {

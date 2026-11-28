@@ -1,10 +1,11 @@
 //! `loft yard` (the `loft yard` commands Feature): Yard Client's one way in. Each command acts
 //! on the Yard Log of the branch that the worktree holding its directory is on, or the agent's
 //! working tree or `--tree` names in its place (`working_tree`), but `protocol`,
-//! which needs no repository, `upgrade`, which acts on every branch's under the tree, `flush`,
-//! which reads the outbox alone, and `serve`, the page server, which serves every tree registered
+//! which needs no repository, `upgrade`, which acts on every branch's under the tree, `flush`
+//! and `status`, which read the outbox alone, and `serve`, the page server, which serves every tree registered
 //! with it. None sends a command event or asks for an update; in connected mode, `write`, `task`
-//! and `published` send the versions they wrote to Yard Server before they exit (`flush`).
+//! and `published` only put the versions they wrote into the outbox, and `flush` alone sends them
+//! to Yard Server.
 
 mod answer;
 mod answer_input;
@@ -40,6 +41,7 @@ mod serve;
 mod session_files;
 mod sessions;
 mod standing;
+mod status;
 mod task;
 mod totals;
 mod upgrade;
@@ -61,19 +63,6 @@ use failure::Failure;
 
 /// Runs a `loft yard` command in `root`.
 pub fn run(root: &Path, action: YardAction) -> Finished {
-    // The commands that write versions for an agent send them before they exit.
-    let sends = matches!(
-        action,
-        YardAction::Write(_) | YardAction::Task(_) | YardAction::Published(_)
-    );
-    let finished = run_action(root, action);
-    if sends {
-        flush::after_write();
-    }
-    finished
-}
-
-fn run_action(root: &Path, action: YardAction) -> Finished {
     match action {
         YardAction::Claude { action } => claude::run(action),
         YardAction::Codex { action } => codex::run(action),
@@ -89,6 +78,7 @@ fn run_action(root: &Path, action: YardAction) -> Finished {
         YardAction::Protocol { output } => protocol::run(output.json()),
         YardAction::Upgrade(args) => upgrade::run(root, &args),
         YardAction::Flush(args) => flush::run(&args),
+        YardAction::Status(args) => status::run(&args),
         YardAction::Consultation(args) => consultation::run(root, &args),
         YardAction::Page(args) => page_command::run(root, &args),
         YardAction::Serve(args) => serve::run(&args),

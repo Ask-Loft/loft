@@ -1,6 +1,6 @@
-//! `loft yard flush`, and who else sends: the command runs the sending a writing command runs
-//! before it exits, by hand and anywhere, and names its outcome; the hooks of the agent hosts and
-//! the page server never send.
+//! `loft yard flush`, and who else sends: the command runs the sending, by hand and anywhere,
+//! and names its outcome; the writing commands, the hooks of the agent hosts and the page server
+//! never send.
 
 use std::time::Duration;
 
@@ -8,10 +8,12 @@ use serde_json::json;
 use software_plant::YardServer;
 
 use crate::common::Scratch;
+use crate::common::signed_in::real_now;
 use crate::yard::{Yard, document};
 use crate::yard_codex::{event, plan_update};
 use crate::yard_connected::{
-    STAGE_BATCH, connected, entries, flush, held, one_waiting, outbox, pairs, run, write,
+    STAGE_BATCH, come_back_after, connected, entries, flush, held, notes, one_waiting, outbox,
+    pairs, run, write,
 };
 
 #[test]
@@ -55,8 +57,10 @@ fn a_flush_sends_what_a_write_left_and_counts_it() {
     assert!(message.contains("503"), "{message}");
     assert!(message.contains("service_unavailable"), "{message}");
     let silent = YardServer::silent();
-    write(&yard, STAGE_BATCH, &connected(&silent.url()));
-    let (code, quiet) = flush(&yard, &connected(&silent.url()));
+    let mut quick = connected(&silent.url()).to_vec();
+    quick.push(("LOFT_YARD_SERVER_TIMEOUT", "1".to_owned()));
+    write(&yard, STAGE_BATCH, &quick);
+    let (code, quiet) = flush(&yard, &quick);
     assert_eq!(code, Some(1));
     let message = quiet["errors"][0]["message"].as_str().unwrap();
     assert!(message.contains("did not answer"), "{message}");
@@ -109,7 +113,7 @@ fn a_flush_counts_and_moves_aside_what_it_cannot_send() {
 }
 
 #[test]
-fn the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_along() {
+fn the_codex_hook_puts_entries_and_sends_none_and_a_flush_takes_them() {
     let yard = Yard::new();
     let server = YardServer::accepting();
     let variables = connected(&server.url());
@@ -131,17 +135,13 @@ fn the_codex_hook_puts_entries_and_sends_none_and_the_next_write_takes_them_alon
         .collect();
     assert_eq!(ours.len(), 1);
     assert_eq!(ours[0]["record"]["kind"], "task");
-    yard.run_with_under(
-        &["write", "--session", "codex-session", "--host", "codex"],
-        &crate::yard_connected::notes(1),
-        &pairs,
-    );
+    flush(&yard, &variables);
     let kinds: Vec<String> = server
         .records()
         .iter()
         .map(|record| record["kind"].as_str().unwrap().to_owned())
         .collect();
-    assert_eq!(kinds, ["task", "note"]);
+    assert_eq!(kinds, ["task"]);
 }
 
 #[test]
@@ -164,11 +164,15 @@ fn the_page_server_makes_no_request_to_yard_server_with_entries_waiting() {
 fn an_answer_that_arrives_too_late_leaves_the_batch_to_be_sent_again_and_stored_once() {
     let yard = Yard::new();
     let server = YardServer::late(Duration::from_secs(3));
-    let variables = connected(&server.url());
+    let mut variables = connected(&server.url()).to_vec();
+    variables.push(("LOFT_YARD_SERVER_TIMEOUT", "1".to_owned()));
     let output = write(&yard, STAGE_BATCH, &variables);
     assert_eq!(document("write", &output)["outcome"], "written");
+    let (code, _) = flush(&yard, &variables);
+    assert_eq!(code, Some(1));
     assert_eq!(held(&server), ["build"]);
     assert_eq!(entries(&yard).len(), 1);
+    come_back_after(&yard, &server.url(), real_now() - 1);
     let (code, _) = flush(&yard, &variables);
     assert_eq!(code, Some(1));
     assert_eq!(server.requests().len(), 2);
@@ -176,7 +180,7 @@ fn an_answer_that_arrives_too_late_leaves_the_batch_to_be_sent_again_and_stored_
 }
 
 #[test]
-fn a_recorded_publish_sends_its_version() {
+fn a_recorded_publish_puts_its_version_and_a_flush_sends_it() {
     let mut yard = Yard::with_spec();
     let on = |branch: &str| {
         software_plant::GitScenario::clean_on(branch)
@@ -201,6 +205,8 @@ fn a_recorded_publish_sends_its_version() {
         &connected(&server.url()),
     );
     assert_eq!(document("published", &output)["outcome"], "recorded");
+    assert_eq!(server.requests().len(), 0);
+    flush(&yard, &connected(&server.url()));
     assert_eq!(held(&server), ["published"]);
     assert_eq!(entries(&yard), Vec::<serde_json::Value>::new());
 }
@@ -237,4 +243,53 @@ fn a_failed_flush_says_why_on_standard_error_without_json() {
     let said = crate::common::stderr(&output);
     assert!(said.contains("401"), "{said}");
     assert!(said.contains("unauthenticated"), "{said}");
+    assert_eq!(entries(&yard).len(), 1);
+}
+
+#[test]
+fn a_flush_to_an_address_where_no_server_listens_fails_and_the_entries_stay() {
+    let yard = Yard::new();
+    let variables = connected(&YardServer::refusing());
+    write(&yard, STAGE_BATCH, &variables);
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
+    let message = flushed["errors"][0]["message"].as_str().unwrap();
+    assert!(message.contains("did not answer"), "{message}");
+    assert_eq!(entries(&yard).len(), 1);
+}
+
+#[test]
+fn a_batch_that_does_not_go_ends_the_run_with_no_further_request() {
+    let yard = Yard::new();
+    let failing = YardServer::failing(503);
+    let variables = connected(&failing.url());
+    write(&yard, STAGE_BATCH, &[]);
+    write(&yard, &crate::yard_connected::notes(17), &variables);
+    let (code, flushed) = flush(&yard, &variables);
+    assert_eq!((code, &flushed["outcome"]), (Some(1), &json!("failed")));
+    assert_eq!(failing.requests().len(), 1);
+    assert_eq!(flushed["remaining"], 17);
+}
+
+#[test]
+fn a_run_cut_short_after_a_full_batch_counts_every_entry_of_a_newer_format() {
+    let yard = Yard::new();
+    let server = YardServer::coming_back(503, "120");
+    let variables = connected(&server.url());
+    write(&yard, STAGE_BATCH, &[]);
+    write(&yard, &notes(20), &variables);
+    let newer = json!({"format": "yardlog-outbox/2", "to": {"endpoint": server.url()}});
+    for name in [
+        "ffffffff-0000-7000-8000-000000000001",
+        "ffffffff-0000-7000-8000-000000000002",
+    ] {
+        std::fs::write(
+            outbox(&yard).join(format!("{name}.json")),
+            newer.to_string(),
+        )
+        .unwrap();
+    }
+    let (_, flushed) = flush(&yard, &variables);
+    assert_eq!(flushed["outcome"], "paused");
+    assert_eq!(flushed["skipped"], json!(2));
 }

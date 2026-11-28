@@ -1,0 +1,85 @@
+key: 01a213ce-418e-700f-b0fe-78c2aceffeda
+slug: flush-in-the-background
+name: "Flush in the background"
+body: |
+  Every version is written by an agent of a session of Claude Code or Codex, and each such session already has a part that lives as long as it does and acts every 5 seconds: the Loft mod in Claude Code and the Codex Yard worker in Codex. They deliver the session's events to the page server that way, trying again what did not go, and they run `loft yard flush` the same way, without waiting for it. So no command an agent or a hook runs waits for Yard Server, and a batch that did not go is tried again even while the agent waits for the person.
+
+  The two hosts start the flush from what each knows. The Loft mod makes the session's writes of Yard Log itself, so it flushes after each of them and keeps on at its beat only while the last flush left work. A Codex agent writes through the shell, out of the worker's sight, so the worker flushes at its beat whenever the outbox holds entries it can send, other than those Yard Server has put off until later, and reads the outbox only until it finds one. Neither host starts a process before the time a flush has said no run makes a request, so that a server that is down costs a session no process at each beat. Only one flush sends at a time, so the flushes of many sessions cost one sending.
+
+  A run of the flush ends by itself after 5 minutes; whoever started it stops it after 6, in case it hangs, so that a stuck flush never holds the lock for long. A flush that runs when its session ends is stopped with it; the versions it did not send wait in the outbox for the next session, whose first beat flushes them.
+
+  Codex gives its hooks, and so the worker, the environment it was started with, and by default gives the commands an agent runs through the shell the same variables; where a person filters the shell's environment so that `LOFT_YARD_SERVER_TOKEN` is left out, the agent's writes put no entries.
+realizes:
+  - 01a16469-559e-73c4-85f2-71afd78c6e3e
+  - 01a1787c-f7fc-7749-a978-1a96e6c41c4a
+mentions:
+  - 01a20dc8-c593-7357-875c-81d1ad8af92a
+requirements:
+  - key: 01a213ce-418e-700f-b0fe-78c3fa13b973
+    statement:
+      form: state_driven
+      while: "a session with the Loft plugin runs"
+      system: "the Loft mod"
+      shall: "run `loft yard flush` without waiting for it after each write of Yard Log it makes, at the session's first beat, and at each later beat while the last flush it ran left work."
+    criteria:
+      - key: 01a213ce-418e-700f-b0fe-78c49e9b08cb
+        name: "After a write through Yard's tools, the mod runs `loft yard flush` once the tool call has returned, and the call does not wait for it."
+      - key: 01a213ce-418e-700f-b0fe-78c5795d8969
+        name: "After a write mirrored from a task, a question or a plan, the mod runs `loft yard flush`, and the native call does not wait for it."
+      - key: 01a213ce-418e-700f-b0fe-78c60b95b0ec
+        name: "The session's first beat runs `loft yard flush`."
+      - key: 01a213ce-418e-700f-b0fe-78c740190611
+        name: "A beat runs `loft yard flush` where the last one ended `failed`, `busy` or `paused`, or counted entries `remaining`, and the `notBefore` it gave has passed."
+      - key: 01a21dc4-1383-72e5-acab-a991c9068973
+        name: "Neither a beat nor a write runs `loft yard flush` before the `notBefore` the last flush gave, and the first beat after it runs one."
+      - key: 01a213ce-418e-700f-b0fe-78c8c00b45f7
+        name: "A beat runs no flush where the last one ended `sent` or `empty` with no entry `remaining`."
+      - key: 01a21406-1007-7756-963c-2309d5987ae6
+        name: "Once a flush has ended `off`, the mod runs no flush for the rest of the session."
+      - key: 01a213ce-418e-700f-b0fe-78c944debb80
+        name: "The mod starts no flush while a flush it started still runs."
+      - key: 01a21406-1007-7756-963c-230adb7104a0
+        name: "A write made while a flush the mod started still runs is followed by one more flush once that flush ends."
+      - key: 01a213ce-418e-700f-b0fe-78caebc522b9
+        name: "The mod stops a flush it started that still runs 6 minutes later."
+      - key: 01a21406-1007-7756-963c-230b88b94598
+        name: "The mod runs `loft yard flush` only where the `loft` it runs speaks protocol 5 or a later one."
+  - key: 01a213ce-418e-700f-b0fe-78cb515debf0
+    statement:
+      form: state_driven
+      while: "a Codex Yard worker runs in connected mode"
+      system: "the Codex Yard adapter"
+      shall: "run `loft yard flush` as a child process without waiting for it at each beat where the outbox holds an entry for its address that this `loft` can send."
+    criteria:
+      - key: 01a213ce-418e-700f-b0fe-78cc9c749faa
+        name: "The worker's next beat after an entry for its address appears runs `loft yard flush`."
+      - key: 01a213ce-418e-700f-b0fe-78cd7bde2ffb
+        name: "A beat where the outbox holds no entry for the address runs no flush."
+      - key: 01a21406-1007-7756-963c-230cbc0e6521
+        name: "A beat where the outbox holds only entries for another address, or of a newer `yardlog-outbox` version, runs no flush."
+      - key: 01a216fa-feab-729d-9d66-ce58f509b86b
+        name: "A beat where every entry for the address is one whose version `~/.yard/flush.json` records as `later` runs no flush."
+      - key: 01a21406-1007-7756-963c-230dcfa9347f
+        name: "A beat runs no flush before the time before which no run makes a request, as `~/.yard/flush.json` records it."
+      - key: 01a21dc4-1383-72e5-acab-a992c156269d
+        name: "A beat reads the entries of the outbox only until it finds one it would flush for."
+      - key: 01a21dc4-1383-72e5-acab-a9930f582e8f
+        name: "A beat passes over an entry whose version `~/.yard/flush.json` records as `later` by its file name, without reading it."
+      - key: 01a21406-1007-7756-963c-230e4274c2ec
+        name: "A worker without connected mode runs no flush."
+      - key: 01a213ce-418e-700f-b0fe-78ceec407043
+        name: "The worker starts no flush while a flush it started still runs."
+      - key: 01a213ce-418e-700f-b0fe-78cfc3e397d6
+        name: "The worker's heartbeat and its delivery of events go on while a flush runs."
+      - key: 01a21406-1007-7756-963c-230f3c2ad7a3
+        name: "The worker stops a flush it started that still runs 6 minutes later."
+  - key: 01a213ce-418e-700f-b0fe-78d1e8c1db60
+    statement:
+      form: ubiquitous
+      system: "A flush started in the background"
+      shall: "act on the address and the token of the session that started it."
+    criteria:
+      - key: 01a213ce-418e-700f-b0fe-78d25a8c9e5e
+        name: "A flush the Loft mod starts sees the `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN` of the Claude Code session."
+      - key: 01a213ce-418e-700f-b0fe-78d3600e06ba
+        name: "A flush the Codex Yard worker starts sees the `LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN` that Codex gives its hooks."

@@ -10,19 +10,19 @@ use std::time::{Duration, Instant};
 
 use serde_json::{Value, json};
 use software_plant::YardServer;
-use software_plant::yard_server::{BATCHES, FORMAT, TOKEN};
+use software_plant::yard_server::{ANSWER_FORMAT, BATCHES, FORMAT, MOST_BYTES, TOKEN};
 use yardlog::Key;
 
 use crate::common::calls::{Answer, agent, call, read};
 
 /// A Yard Server to ask: its base address and the token it admits.
-struct Target {
+pub(crate) struct Target {
     address: String,
     token: String,
 }
 
 impl Target {
-    fn simulated(server: &YardServer) -> Self {
+    pub(crate) fn simulated(server: &YardServer) -> Self {
         Self {
             address: server.url(),
             token: TOKEN.to_owned(),
@@ -42,17 +42,17 @@ impl Target {
         }
     }
 
-    fn batches(&self) -> String {
+    pub(crate) fn batches(&self) -> String {
         format!("{}{BATCHES}", self.address)
     }
 
-    fn post(&self, batch: &Value) -> Answer {
+    pub(crate) fn post(&self, batch: &Value) -> Answer {
         call("POST", &self.batches(), Some(&self.token), Some(batch))
     }
 }
 
 /// A record of a note's version, in Yard Log `yard_log`, holding `markdown`.
-fn record(yard_log: &str, version: &str, markdown: &str) -> Value {
+pub(crate) fn record(yard_log: &str, version: &str, markdown: &str) -> Value {
     json!({
         "record": "version",
         "yardLog": yard_log,
@@ -71,17 +71,27 @@ fn record(yard_log: &str, version: &str, markdown: &str) -> Value {
 }
 
 /// A batch of the one record `record`.
-fn one(record: &Value) -> Value {
+pub(crate) fn one(record: &Value) -> Value {
     json!({ "format": FORMAT, "records": [record] })
 }
 
 /// A batch of `count` fresh versions in one Yard Log.
-fn fresh(count: usize) -> Value {
+pub(crate) fn fresh(count: usize) -> Value {
     let yard_log = Key::mint().to_string();
     let records: Vec<Value> = (0..count)
         .map(|n| record(&yard_log, &Key::mint().to_string(), &format!("note {n}")))
         .collect();
     json!({ "format": FORMAT, "records": records })
+}
+
+/// A batch of one version whose body is larger than 1 MiB.
+fn too_large() -> Value {
+    let note = "x".repeat(MOST_BYTES);
+    one(&record(
+        &Key::mint().to_string(),
+        &Key::mint().to_string(),
+        &note,
+    ))
 }
 
 /// The status of a refusal and the code of its problem document, where it is one.
@@ -109,57 +119,112 @@ fn scenarios(target: &Target) -> Vec<(&'static str, Value)> {
         ("takes a batch", json!(takes_a_batch(target))),
         ("holds a version once", json!(holds_a_version_once(target))),
         (
-            "keeps the first Yard Log",
+            "holds a version under the first Yard Log",
             json!(keeps_the_first_yard_log(target)),
         ),
         (
             "keeps the first contents",
             json!(keeps_the_first_contents(target)),
         ),
+        (
+            "refuses a record that does not read",
+            json!(refuses_a_record_that_does_not_read(target)),
+        ),
         ("refuses", json!(refusals(target))),
     ]
 }
 
-/// The status of a fresh batch of two, and whether the answer echoes it as sent.
-fn takes_a_batch(target: &Target) -> (u16, bool) {
-    let batch = fresh(2);
-    let answer = target.post(&batch);
-    (answer.status, answer.body == batch)
+/// The outcomes of an answer of `200`, each as its outcome and its code where it has one.
+pub(crate) fn outcomes(answer: &Answer) -> Vec<String> {
+    answer.body["outcomes"]
+        .as_array()
+        .map(|outcomes| {
+            outcomes
+                .iter()
+                .map(|outcome| {
+                    let word = outcome["outcome"].as_str().unwrap_or("?");
+                    match outcome["code"].as_str() {
+                        Some(code) => format!("{word} {code}"),
+                        None => word.to_owned(),
+                    }
+                })
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
-/// The statuses of one batch sent twice, and whether the second answer echoes the first.
-fn holds_a_version_once(target: &Target) -> (u16, u16, bool) {
+/// Whether the answer names the format of an answer and each version of `batch`, in its order.
+fn names_each_version(answer: &Answer, batch: &Value) -> bool {
+    let sent: Vec<&Value> = batch["records"]
+        .as_array()
+        .map(|records| {
+            records
+                .iter()
+                .map(|record| &record["version"]["key"])
+                .collect()
+        })
+        .unwrap_or_default();
+    let named: Vec<&Value> = answer.body["outcomes"]
+        .as_array()
+        .map(|outcomes| outcomes.iter().map(|outcome| &outcome["version"]).collect())
+        .unwrap_or_default();
+    answer.body["format"] == ANSWER_FORMAT && named == sent
+}
+
+/// The status of a fresh batch of two, its outcomes, and whether it names each version in order.
+fn takes_a_batch(target: &Target) -> (u16, Vec<String>, bool) {
+    let batch = fresh(2);
+    let answer = target.post(&batch);
+    (
+        answer.status,
+        outcomes(&answer),
+        names_each_version(&answer, &batch),
+    )
+}
+
+/// The statuses and outcomes of one batch sent twice.
+fn holds_a_version_once(target: &Target) -> (u16, Vec<String>, u16, Vec<String>) {
     let batch = fresh(3);
     let first = target.post(&batch);
     let second = target.post(&batch);
-    (first.status, second.status, second.body == first.body)
+    (
+        first.status,
+        outcomes(&first),
+        second.status,
+        outcomes(&second),
+    )
 }
 
-/// The status of a version sent again under another Yard Log, and the Yard Log it is echoed
-/// under: the first one's, or the second.
-fn keeps_the_first_yard_log(target: &Target) -> (u16, &'static str) {
+/// The status and outcome of a version sent again under another Yard Log.
+fn keeps_the_first_yard_log(target: &Target) -> (u16, Vec<String>) {
     let version = Key::mint().to_string();
     let (first, second) = (Key::mint().to_string(), Key::mint().to_string());
     target.post(&one(&record(&first, &version, "a")));
     let answer = target.post(&one(&record(&second, &version, "a")));
-    let echoed = answer.body["records"][0]["yardLog"].as_str();
-    let under = if echoed == Some(first.as_str()) {
-        "first"
-    } else {
-        "second"
-    };
-    (answer.status, under)
+    (answer.status, outcomes(&answer))
 }
 
-/// The status of a version sent again with other contents, and the contents it is echoed with.
-fn keeps_the_first_contents(target: &Target) -> (u16, Value) {
+/// The outcome of a version sent again with other contents, then with its first contents.
+fn keeps_the_first_contents(target: &Target) -> (u16, Vec<String>, Vec<String>) {
     let (yard_log, version) = (Key::mint().to_string(), Key::mint().to_string());
-    target.post(&one(&record(&yard_log, &version, "first")));
-    let answer = target.post(&one(&record(&yard_log, &version, "second")));
-    (
-        answer.status,
-        answer.body["records"][0]["version"]["markdown"].clone(),
-    )
+    let first = record(&yard_log, &version, "first");
+    target.post(&one(&first));
+    let other = target.post(&one(&record(&yard_log, &version, "second")));
+    let again = target.post(&one(&first));
+    (other.status, outcomes(&other), outcomes(&again))
+}
+
+/// The status and outcomes of a batch whose second record holds a version's key but is not a
+/// record of a batch of versions.
+fn refuses_a_record_that_does_not_read(target: &Target) -> (u16, Vec<String>) {
+    let batch = fresh(1);
+    let mut records = batch["records"].as_array().unwrap().clone();
+    records.push(json!({
+        "record": "something-else",
+        "version": { "key": Key::mint().to_string() },
+    }));
+    let answer = target.post(&json!({ "format": FORMAT, "records": records }));
+    (answer.status, outcomes(&answer))
 }
 
 /// The status and code of each request Yard Server refuses.
@@ -191,6 +256,7 @@ fn refusals(target: &Target) -> Vec<(&'static str, Refusal)> {
         ),
         ("no record", refusal(&target.post(&empty))),
         ("17 records", refusal(&target.post(&fresh(17)))),
+        ("over 1 MiB", refusal(&target.post(&too_large()))),
         ("a record without a key", refusal(&target.post(&keyless))),
         (
             "another method",
@@ -219,10 +285,28 @@ fn refusals(target: &Target) -> Vec<(&'static str, Refusal)> {
 fn required() -> Vec<(&'static str, Value)> {
     let code = |status: u16, code: &str| json!([status, code]);
     vec![
-        ("takes a batch", json!([200, true])),
-        ("holds a version once", json!([200, 200, true])),
-        ("keeps the first Yard Log", json!([200, "first"])),
-        ("keeps the first contents", json!([200, "first"])),
+        ("takes a batch", json!([200, ["stored", "stored"], true])),
+        (
+            "holds a version once",
+            json!([
+                200,
+                ["stored", "stored", "stored"],
+                200,
+                ["held", "held", "held"]
+            ]),
+        ),
+        (
+            "holds a version under the first Yard Log",
+            json!([200, ["held"]]),
+        ),
+        (
+            "keeps the first contents",
+            json!([200, ["conflict"], ["held"]]),
+        ),
+        (
+            "refuses a record that does not read",
+            json!([200, ["stored", "refused invalid_record"]]),
+        ),
         (
             "refuses",
             json!([
@@ -232,6 +316,7 @@ fn required() -> Vec<(&'static str, Value)> {
                 ["another format", code(400, "invalid_request")],
                 ["no record", code(400, "invalid_request")],
                 ["17 records", code(400, "invalid_request")],
+                ["over 1 MiB", code(413, "payload_too_large")],
                 ["a record without a key", code(400, "invalid_request")],
                 ["another method", code(405, "method_not_allowed")],
                 ["another content type", code(415, "unsupported_media_type")],
@@ -360,7 +445,8 @@ fn a_late_simulator_stores_the_batch_and_answers_after_its_delay() {
     let started = Instant::now();
     let answer = Target::simulated(&server).post(&batch);
     assert!(started.elapsed() >= delay);
-    assert_eq!((answer.status, &answer.body), (200, &batch));
+    assert_eq!(answer.status, 200);
+    assert_eq!(outcomes(&answer), ["stored"]);
     assert_eq!(&Value::from(server.records()), &batch["records"]);
 }
 

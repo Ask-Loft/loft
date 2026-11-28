@@ -152,6 +152,25 @@ fn host_aware_callers_and_adapter_descriptors_use_protocol_two_or_later() {
 }
 
 #[test]
-fn the_report_gives_protocol_four_for_listen_and_join() {
-    assert_eq!(protocol(&Scratch::empty(), None)["protocol"], 4);
+fn protocol_4_and_every_later_one_let_serve_take_listen_and_join() {
+    let version = protocol(&Scratch::empty(), None)["protocol"]
+        .as_u64()
+        .unwrap();
+    assert!(version >= 4, "{version}");
+    let help = Scratch::empty().loft(&["yard", "serve", "--help"]);
+    let said = String::from_utf8_lossy(&help.stdout);
+    assert!(
+        said.contains("--listen") && said.contains("--join"),
+        "{said}"
+    );
+}
+
+#[test]
+fn the_report_gives_protocol_5_under_which_flush_and_status_exist() {
+    assert_eq!(protocol(&Scratch::empty(), None)["protocol"], 5);
+    let help = Scratch::empty().loft(&["yard", "--help"]);
+    let said = String::from_utf8_lossy(&help.stdout);
+    for command in ["flush", "status"] {
+        assert!(said.contains(&format!("  {command} ")), "{said}");
+    }
 }

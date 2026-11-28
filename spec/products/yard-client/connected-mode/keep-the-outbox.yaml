@@ -6,6 +6,8 @@ body: |
 
   One outbox serves every tree and every Yard Server on the machine. Each entry names the address of the Yard Server it is for, and sending takes only the entries of its own address, so that turning connected mode to another server never sends a version where it was not meant to go. The address goes no further than the machine.
 
+  Beside the outbox, `~/.yard/flush.json` records for each address how the last run of the sending ended, how many runs in a row a batch did not go, the time before which no run makes a request, and which versions Yard Server will take later, each with its code, with the time before which they are not sent again. A version put off this way stays marked until a run sends it again, as a deferred message of a mail queue does, so that a person reading `loft yard status` sees why it waits, and the Codex Yard worker does not wake the flush for it alone.
+
   A version is copied after its write is saved and before the lock of Yard Log is released. A crash between the two leaves the version saved and never sent, which is the better failure: the outbox never holds a version that Yard Log does not. Versions that a merge of Yard Log brings in, and versions a crash left unsent, wait for the history sync of a later wave.
 realizes:
   - 01a16469-559e-73c4-85f2-71a7729da1ec
@@ -116,3 +118,51 @@ requirements:
         name: "The batch goes on without the vanished entry."
       - key: 01a20dc8-c593-7357-875c-81c3b1fcdff0
         name: "No error or warning names the vanished entry."
+  - key: 01a213cb-9c28-769e-b7c8-43d2f22b5df5
+    statement:
+      form: ubiquitous
+      system: "Yard Client"
+      shall: "keep, beside each file it moves into `~/.yard/outbox/dead/`, the reason it moved it, as one line in a file of the same name followed by `.reason`."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43d3bf1b66b5
+        name: "A file that is not an entry has the reason `not-an-entry`."
+      - key: 01a213cb-9c28-769e-b7c8-43d4b624b399
+        name: "An entry whose version Yard Server holds in another form has the reason `conflict`."
+      - key: 01a213cb-9c28-769e-b7c8-43d54e128b86
+        name: "An entry whose version Yard Server refused has the reason `refused` followed by the code Yard Server gave."
+      - key: 01a213cb-9c28-769e-b7c8-43d6c364e52b
+        name: "An entry of a batch Yard Server refused whole has the status of the answer followed by its code as its reason."
+      - key: 01a213cb-9c28-769e-b7c8-43d750df95fe
+        name: "A `.reason` file is never read as an entry and never moved."
+  - key: 01a213cb-9c28-769e-b7c8-43d8b5b49ecc
+    statement:
+      form: ubiquitous
+      system: "The sending"
+      shall: "record in `~/.yard/flush.json`, for its address, the time its last run ended, its outcome, why a batch did not go where one did not, the number of runs in a row that ended `failed` after a request, the time before which no run makes a request, the key of each version Yard Server will take later with the code it gave, and the time before which those versions are not sent again."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43d929438c84
+        name: "`~/.yard/flush.json` holds one record for each address that a run has run for."
+      - key: 01a213cb-9c28-769e-b7c8-43da463a28a6
+        name: "A run that ends `sent`, `empty` or `failed`, or `paused` by an answer it received, replaces the record of its address."
+      - key: 01a213cb-9c28-769e-b7c8-43dbb2ff5f4b
+        name: "A run that ends `busy`, or `paused` without a request, leaves the record of its address as it was."
+      - key: 01a213cb-9c28-769e-b7c8-43dc5acc7a87
+        name: "A run that replaces the record keeps a time to come back after that has not passed."
+      - key: 01a216fa-feac-7221-aee1-71657260358f
+        name: "The record holds the key and the code of each version Yard Server answered `later` in the run."
+      - key: 01a216fa-feac-7221-aee1-71669d4c89e6
+        name: "A run that replaces the record keeps the `later` key of each entry it did not take, while the entry is in the outbox."
+      - key: 01a21dc4-1383-72e5-acab-a994e837b6dc
+        name: "A run in which Yard Server answered a version `later` sets the time before which the versions marked `later` are not sent again to 1 hour after the answer."
+      - key: 01a21dc4-1383-72e5-acab-a9950d9f2514
+        name: "A run that replaces the record keeps a time before which the versions marked `later` are not sent again that has not passed."
+      - key: 01a21dc4-1383-72e5-acab-a996a119a1be
+        name: "The record holds the number of runs in a row that ended `failed` after a request, and none once a batch has gone."
+      - key: 01a21406-1007-7756-963c-231094699bf7
+        name: "The file is written only by a run that holds `~/.yard/flush.lock`."
+      - key: 01a21406-1007-7756-963c-23119f874a55
+        name: "A file that does not read is taken as holding no record, and the next run that replaces a record writes it anew."
+      - key: 01a213cb-9c28-769e-b7c8-43dd963d501b
+        name: "The file holds no token."
+      - key: 01a213cb-9c28-769e-b7c8-43dee6b03715
+        name: "The file is written to a temporary file and renamed into place."

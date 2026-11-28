@@ -1,0 +1,277 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "loft-yard-status-1.json",
+  "title": "The result of `loft yard status --format json`, version 1: whether the versions agents write leave the machine for Yard Server, and where they do not, why",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "connected",
+        "missing",
+        "refused",
+        "homeKnown",
+        "waiting",
+        "lastAttempt",
+        "dead",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-yard-status/1"
+        },
+        "outcome": {
+          "const": "reported",
+          "description": "The command reports whatever it finds, and exits 0."
+        },
+        "connected": {
+          "type": "boolean",
+          "description": "Whether connected mode is on: both LOFT_YARD_SERVER_ENDPOINT and LOFT_YARD_SERVER_TOKEN set and not empty, and a home directory known."
+        },
+        "endpoint": {
+          "type": "string",
+          "description": "The address of the Yard Server connected mode sends to, where it is on."
+        },
+        "missing": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "LOFT_YARD_SERVER_ENDPOINT",
+              "LOFT_YARD_SERVER_TOKEN"
+            ]
+          },
+          "description": "Each variable that is unset or empty."
+        },
+        "refused": {
+          "type": "boolean",
+          "description": "Whether the network client refuses the address: only an https address, or an http one on the loopback interface, is contacted."
+        },
+        "homeKnown": {
+          "type": "boolean",
+          "description": "Whether a home directory is known to keep ~/.yard/ in."
+        },
+        "waiting": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "forAddress",
+            "otherAddresses",
+            "later",
+            "skipped",
+            "byAddress"
+          ],
+          "properties": {
+            "forAddress": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "The entries waiting for the address connected mode sends to; 0 where it is off."
+            },
+            "otherAddresses": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "The entries waiting for every other address."
+            },
+            "later": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Among the entries waiting for every address, those whose versions ~/.yard/flush.json records, for the address each is for, as ones Yard Server will take later: the sum of byAddress' later."
+            },
+            "skipped": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "The entries of a newer yardlog-outbox version, which wait for a newer loft."
+            },
+            "byAddress": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "address",
+                  "waiting",
+                  "later"
+                ],
+                "properties": {
+                  "address": {
+                    "type": "string"
+                  },
+                  "waiting": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "later": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Among them, those whose versions the address's record in ~/.yard/flush.json holds as ones Yard Server will take later."
+                  }
+                }
+              },
+              "description": "The entries waiting for each address, and among them those Yard Server will take later, in the order of the addresses."
+            }
+          }
+        },
+        "lastAttempt": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "ended",
+                "outcome",
+                "why",
+                "notBefore"
+              ],
+              "properties": {
+                "ended": {
+                  "type": "string",
+                  "description": "When the last run for the address ended, in UTC."
+                },
+                "outcome": {
+                  "type": "string",
+                  "description": "The outcome of the last run, as loft yard flush names it."
+                },
+                "why": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "Why a batch did not go, where one did not."
+                },
+                "notBefore": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "The time Yard Server asked the flush not to come back before, in UTC, where it asked and that time has not passed."
+                }
+              }
+            }
+          ],
+          "description": "The last run of the flush for the address, as ~/.yard/flush.json records it, where connected mode is on; null where none is recorded."
+        },
+        "dead": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "reason"
+            ],
+            "properties": {
+              "file": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string",
+                "description": "The reason kept beside the file, or unknown where none is."
+              }
+            }
+          },
+          "description": "The files of ~/.yard/outbox/dead/, in the order of their names, .reason files left out."
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "outcome",
+        "errors"
+      ],
+      "properties": {
+        "schema": {
+          "const": "loft-yard-status/1"
+        },
+        "outcome": {
+          "const": "error"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/error"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "message",
+        "sites"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "clock"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "column": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "byte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/site"
+          }
+        }
+      }
+    }
+  }
+}

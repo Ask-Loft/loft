@@ -332,11 +332,12 @@ impl Drop for Scratch {
 
 /// The variables that would let a test run reach the user's own settings, or tell `loft` that
 /// an agent or CI started it.
-const OUTSIDE: [&str; 32] = [
+const OUTSIDE: [&str; 33] = [
     "BROWSER",
     "LOFT_YARD_HOME",
     "LOFT_YARD_SERVER_ENDPOINT",
     "LOFT_YARD_SERVER_TOKEN",
+    "LOFT_YARD_SERVER_TIMEOUT",
     "LOFT_REMOTE_ENDPOINT",
     "LOFT_REMOTE_TOKEN",
     "LOFT_REMOTE_TIMEOUT",

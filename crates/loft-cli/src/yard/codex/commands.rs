@@ -78,17 +78,34 @@ impl Caller {
     }
 }
 
-/// The `loft yard` command of `args`, run in `dir` against the page server at `port`.
-pub fn command(dir: &str, args: &[String], port: u16) -> Result<Command> {
+/// This `loft`, run in `dir` with the worker's own environment, quietly, its errors discarded.
+fn loft(dir: &str) -> Result<Command> {
     let mut command = Command::new(std::env::current_exe().map_err(|e| e.to_string())?);
     command
         .current_dir(dir)
-        .arg("yard")
-        .args(args)
-        .args(["--port", &port.to_string(), "--format", "json"])
         .env("LOFT_TELEMETRY", "off")
         .env("LOFT_UPDATE_CHECK", "off")
         .stderr(Stdio::null());
+    Ok(command)
+}
+
+/// The `loft yard` command of `args`, run in `dir` against the page server at `port`.
+pub fn command(dir: &str, args: &[String], port: u16) -> Result<Command> {
+    let mut command = loft(dir)?;
+    command
+        .arg("yard")
+        .args(args)
+        .args(["--port", &port.to_string(), "--format", "json"]);
+    Ok(command)
+}
+
+/// `loft yard flush`, run in `dir`, its output discarded.
+pub fn flush(dir: &str) -> Result<Command> {
+    let mut command = loft(dir)?;
+    command
+        .args(["yard", "flush", "--format", "json"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null());
     Ok(command)
 }
 

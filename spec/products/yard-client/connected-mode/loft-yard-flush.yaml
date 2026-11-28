@@ -2,9 +2,9 @@ key: 01a20dc8-c593-7357-875c-81c4d2d63486
 slug: loft-yard-flush
 name: "`loft yard flush`"
 body: |
-  `loft yard flush` flushes the outbox to Yard Server by hand: it runs the same sending a writing command runs before it exits, once, and writes nothing of Yard Log. It is called flush, not send, since sending in Yard means putting questions to the person. It acts for the person and reads the outbox alone, so it runs anywhere, inside a repository or not, and takes no `--session`.
+  `loft yard flush` flushes the outbox to Yard Server: it runs the sending that "Send versions to Yard Server" states, and writes nothing of Yard Log. The session of an agent host runs it in the background, and the person may run it by hand. It is called flush, not send, since sending in Yard means putting questions to the person. It reads the outbox alone, so it runs anywhere, inside a repository or not, and takes no `--session`.
 
-  Its outcome says what happened: `off` where connected mode is off, `empty` where the outbox holds no entry for the address, `sent` where Yard Server took a batch, and `failed` where the batch did not go. Beside it, the result counts the versions sent, the entries left for the address, the entries passed over and the files moved into `~/.yard/outbox/dead/`.
+  Its outcome says what happened: `off` where connected mode is off, `empty` where the outbox holds no entry for the address that it may send now, `sent` where every batch it took went, `failed` where a batch did not go or the run could not settle an entry, `busy` where another sending runs, and `paused` where Yard Server asked it to come back later or the sending keeps away after batches that did not go. Beside it, the result counts the versions sent, the entries left for the address, the entries passed over and the files moved into `~/.yard/outbox/dead/`, and gives the time before which no run makes a request, so that whoever started it starts no process before then.
 tags:
   - yard-command
 realizes:
@@ -12,13 +12,14 @@ realizes:
   - 01a16469-559e-73c4-85f2-71a7729da1ec
 mentions:
   - 01a20dc8-c58a-758b-b099-8a0a2a0b43e3
+  - 01a20dc8-c593-7357-875c-81d1ad8af92a
 requirements:
   - key: 01a20dc8-c593-7357-875c-81c524194373
     statement:
       form: event_driven
       when: "`loft yard flush` runs in connected mode"
       system: "`loft yard flush`"
-      shall: "send one batch of versions from the outbox to Yard Server, as a writing command does before it exits."
+      shall: "send the entries of the outbox for its address to Yard Server, as the sending states."
     criteria:
       - key: 01a20dc8-c593-7357-875c-81c681815faa
         name: "Yard Log is not written."
@@ -27,23 +28,44 @@ requirements:
       - key: 01a20dc8-c593-7357-875c-81c876c5f72c
         name: "The command runs without `--session` and is not refused for it."
       - key: 01a20dc8-c593-7357-875c-81c96789856e
-        name: "Each run sends at most one batch."
+        name: "A run sends batches until no entry for the address is left that it has not taken, or a batch does not go."
   - key: 01a20dc8-c593-7357-875c-81caa6679480
     statement:
       form: ubiquitous
       system: "`loft yard flush`"
-      shall: "name its outcome as `off`, `empty`, `sent` or `failed`."
+      shall: "name its outcome as `off`, `empty`, `sent`, `failed`, `busy` or `paused`."
     criteria:
       - key: 01a20dc8-c593-7357-875c-81cb9e5b9242
         name: "Without connected mode the outcome is `off`, no request is made and the command exits 0."
       - key: 01a20dc8-c593-7357-875c-81ccc2919c6f
-        name: "With no entry for the address the outcome is `empty`, no request is made and the command exits 0."
+        name: "With no entry for the address that the run may send now, the outcome is `empty`, no request is made and the command exits 0."
       - key: 01a20dc8-c593-7357-875c-81cd0e4b8123
-        name: "Where Yard Server takes the batch the outcome is `sent` and the command exits 0."
+        name: "Where every batch the run took went, the outcome is `sent` and the command exits 0."
+      - key: 01a21406-1007-7756-963c-23122a29debc
+        name: "A batch that Yard Server answered with `200`, or refused with `400` or `413` and its own code, went, whatever it did with each version, and so did a batch split after a `413` whose halves went."
       - key: 01a20dc8-c593-7357-875c-81ced80e7650
-        name: "Where the batch does not go the outcome is `failed` and the command exits 1."
+        name: "Where a batch does not go the outcome is `failed` and the command exits 1."
       - key: 01a20dc8-c593-7357-875c-81cf6362e4f4
         name: "A `failed` result names among its errors the status of the refusal and its code where it is a problem document, or that Yard Server did not answer."
+      - key: 01a213cb-9c28-769e-b7c8-43dff553df00
+        name: "A `failed` result whose cause is the outbox on the machine names it as an error of the kind `outbox`, not `yard-server`."
+      - key: 01a213cb-9c28-769e-b7c8-43e03efc5022
+        name: "Where another sending holds `~/.yard/flush.lock` the outcome is `busy`, no request is made and the command exits 0."
+      - key: 01a213cb-9c28-769e-b7c8-43e186d8f806
+        name: "Where `~/.yard/flush.json` records a time before which no run makes a request, set in this run or an earlier one, and that time has not come, the outcome is `paused` and the command exits 0."
+      - key: 01a21406-1007-7756-963c-2313e0ff7d15
+        name: "A run checks the time before which no run makes a request before it reads the outbox."
+  - key: 01a213cb-9c28-769e-b7c8-43e268e1fdc9
+    statement:
+      form: unwanted
+      if: "`LOFT_YARD_SERVER_ENDPOINT` and `LOFT_YARD_SERVER_TOKEN` are both set and no home directory is known"
+      system: "`loft yard flush`"
+      shall: "give the outcome `failed` and say that no home directory is known."
+    criteria:
+      - key: 01a213cb-9c28-769e-b7c8-43e36bbfce79
+        name: "The outcome is `failed` and the command exits 1."
+      - key: 01a213cb-9c28-769e-b7c8-43e4b0d030e7
+        name: "The error names the missing home directory, not connected mode as off."
   - key: 01a20dc9-2271-7343-84c0-93e347454761
     statement:
       form: ubiquitous
@@ -51,10 +73,26 @@ requirements:
       shall: "count what the run did with the outbox."
     criteria:
       - key: 01a20dc9-2271-7343-84c0-93e4c1dcc394
-        name: "`sent` counts the versions Yard Server took."
+        name: "`sent` counts the versions Yard Server stored or already held, in every batch of the run."
       - key: 01a20dc9-2271-7343-84c0-93e516aaeabd
-        name: "`remaining` counts the entries for the address left in the outbox."
+        name: "`remaining` counts the entries for the address left in the outbox, other than those counted in `later` and `skipped`."
+      - key: 01a21406-1007-7756-963c-2314f22f8083
+        name: "`later` counts the entries for the address whose versions Yard Server will take later."
       - key: 01a20dc8-c593-7357-875c-81d0b58e58ea
         name: "`skipped` counts the entries of a newer `yardlog-outbox` version that were passed over."
       - key: 01a20dc9-2271-7343-84c0-93e6f2d568f6
-        name: "`dead` counts the files moved into `~/.yard/outbox/dead/`."
+        name: "`dead` counts the files moved into `~/.yard/outbox/dead/` in the run."
+  - key: 01a21dc4-1383-72e5-acab-a99739ef87af
+    statement:
+      form: ubiquitous
+      system: "The result of `loft yard flush`"
+      shall: "give as `notBefore` the time before which no run makes a request to its address, where one is recorded and has not passed, and `null` where none is."
+    criteria:
+      - key: 01a21dc4-1383-72e5-acab-a998c853e068
+        name: "After a run that ends `failed` after a request, `notBefore` gives the time its pause ends."
+      - key: 01a21dc4-1383-72e5-acab-a999b8cbf1f2
+        name: "After a run that ends `paused`, `notBefore` gives the time Yard Server asked to come back after, or the time the pause ends."
+      - key: 01a21dc4-1383-72e5-acab-a99a9eee7fe5
+        name: "After a run that ends `sent` or `empty` with no pause recorded, `notBefore` is `null`."
+      - key: 01a21dc4-1383-72e5-acab-a99b6e66f46b
+        name: "`notBefore` is a UTC time in the form the other times of `loft` take."

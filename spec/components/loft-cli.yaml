@@ -7,7 +7,7 @@ scopedTo:
 components:
   - key: 01a13a90-3554-7631-bb13-097e6805bffe
     name: "Network client"
-    body: "The part of `loft` that talks to a service over the network: it sends the command event to the telemetry collector and asks GitHub for the latest release, both after a command's own work is done and under one time limit, makes the calls to a connected document's remote that the command exists to make, and sends batches of versions to Yard Server in connected mode after a `loft yard` command's own work is done, under a time limit of their own."
+    body: "The part of `loft` that talks to a service over the network: it sends the command event to the telemetry collector and asks GitHub for the latest release, both after a command's own work is done and under one time limit, makes the calls to a connected document's remote that the command exists to make, and sends batches of versions to Yard Server in connected mode when `loft yard flush` runs, under a time limit of their own."
     constraints:
       - key: 01a13a90-3554-7631-bb13-097fbc9045c0
         name: "The network client shall be the only part of `loft` that opens a network connection."
@@ -28,19 +28,6 @@ components:
           aggregation: each
           scenario: "One command run that sends its event and fetches the latest release, against a collector and a release feed that accept the connection and never answer"
           environment: "A stand-in collector and release feed on the machine that runs the test"
-        verificationFate: sampled
-      - key: 01a20dc8-c58a-758b-b099-8a09fc4ac8dc
-        name: "The network client shall add at most 2 seconds to a `loft yard` command run for sending a batch of versions to Yard Server, whether or not Yard Server answers."
-        qaKind: latency
-        qualityTarget:
-          metric: "network.yard_server.added_latency"
-          band:
-            kind: at_most
-            upper: "2000"
-          unit: "ms"
-          aggregation: each
-          scenario: "One `loft yard write` in connected mode that sends its batch of versions to a Yard Server that accepts the connection and never answers"
-          environment: "A stand-in Yard Server on the machine that runs the test"
         verificationFate: sampled
   - key: 01a145e8-28eb-7b67-9fe2-edb5e0af3358
     name: "Test locator"

@@ -1,0 +1,432 @@
+use std::cell::Cell;
+use std::collections::BTreeSet;
+use std::fs;
+use std::time::Duration;
+
+use loft_ports::PortError;
+use loft_ports::clock::Clock;
+use software_plant::YardServer;
+use yardlog_store::outbox::Outbox;
+
+use super::sending::{MOST_TIME, drain};
+
+const WAIT: Duration = Duration::from_secs(2);
+
+/// A clock whose every reading of the elapsed time finds `step` more passed than the last.
+struct Stepping {
+    step: Duration,
+    passed: Cell<Duration>,
+}
+
+impl Clock for Stepping {
+    fn now(&self) -> Result<u64, PortError> {
+        Ok(0)
+    }
+
+    fn elapsed(&self) -> Duration {
+        let passed = self.passed.get();
+        self.passed.set(passed + self.step);
+        passed
+    }
+
+    fn wait(&self, _length: Duration) {}
+}
+
+/// A fresh directory under the system's temporary one, removed when the test ends, whether it
+/// passed or failed.
+struct Fresh(std::path::PathBuf);
+
+impl Fresh {
+    fn new(name: &str) -> Self {
+        Self(std::env::temp_dir().join(format!("{name}-{}", uuid::Uuid::new_v4())))
+    }
+}
+
+impl Drop for Fresh {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
+/// An outbox for `endpoint` in a fresh directory, holding `count` small entries.
+fn filled(endpoint: &str, count: usize) -> (Outbox, Fresh) {
+    let fresh = Fresh::new("loft-flush");
+    let dir = fresh.0.clone();
+    fs::create_dir_all(&dir).unwrap();
+    for n in 0..count {
+        let key = format!("00000000-0000-7000-8000-{n:012}");
+        let record = format!(
+            r#"{{"record":"version","yardLog":"y","kind":"note","id":"n{n}","version":{{"key":"{key}"}}}}"#
+        );
+        fs::write(
+            dir.join(format!("{key}.json")),
+            yardlog::entry::write(endpoint, &record),
+        )
+        .unwrap();
+    }
+    (Outbox::new(dir, endpoint), fresh)
+}
+
+#[test]
+fn a_run_that_has_sent_for_5_minutes_ends_after_the_batch_on_its_way_and_counts_the_rest() {
+    let server = YardServer::accepting();
+    let (outbox, _fresh) = filled(&server.url(), 40);
+    // The run reads the clock at 0 to set its limit, takes a batch at 2 and at 4 minutes, and at
+    // 6 minutes, past the 5, takes no more.
+    let clock = Stepping {
+        step: MOST_TIME / 5 * 2,
+        passed: Cell::new(Duration::ZERO),
+    };
+    let flushed = drain(
+        &outbox,
+        software_plant::yard_server::TOKEN,
+        WAIT,
+        &clock,
+        BTreeSet::new(),
+    );
+    assert_eq!(server.requests().len(), 2);
+    assert_eq!(flushed.outcome, "sent");
+    assert_eq!((flushed.sent, flushed.remaining()), (32, 8));
+}
+
+#[test]
+fn a_run_with_time_to_spare_sends_every_batch() {
+    let server = YardServer::accepting();
+    let (outbox, _fresh) = filled(&server.url(), 40);
+    let clock = Stepping {
+        step: Duration::from_secs(1),
+        passed: Cell::new(Duration::ZERO),
+    };
+    let flushed = drain(
+        &outbox,
+        software_plant::yard_server::TOKEN,
+        WAIT,
+        &clock,
+        BTreeSet::new(),
+    );
+    assert_eq!(server.requests().len(), 3);
+    assert_eq!((flushed.sent, flushed.remaining()), (40, 0));
+}
+
+#[test]
+fn a_flush_waits_10_seconds_for_an_answer_unless_the_timeout_says_otherwise() {
+    assert_eq!(super::wait_of(None), Duration::from_secs(10));
+    assert_eq!(super::wait_of(Some(3)), Duration::from_secs(3));
+}
+
+/// Yard Server that stores the first batch and asks to come back later to every batch after it.
+struct StoresThenComesBack {
+    answered: usize,
+}
+
+impl software_plant::http::Responder for StoresThenComesBack {
+    fn answer(&mut self, request: &software_plant::http::Request) -> software_plant::http::Answer {
+        self.answered += 1;
+        if self.answered > 1 {
+            return come_back("60");
+        }
+        let batch: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
+        let outcomes: Vec<serde_json::Value> = batch["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|record| serde_json::json!({"version": record["version"]["key"], "outcome": "stored"}))
+            .collect();
+        software_plant::http::Response::json(
+            200,
+            &serde_json::json!({"format": "yardlog-answer/1", "outcomes": outcomes}),
+        )
+        .into()
+    }
+}
+
+#[test]
+fn a_run_asked_to_come_back_later_ends_paused_even_where_earlier_batches_went() {
+    let server = software_plant::http::Server::start(StoresThenComesBack { answered: 0 });
+    let (outbox, _fresh) = filled(&server.url(), 20);
+    let clock = Stepping {
+        step: Duration::from_secs(1),
+        passed: Cell::new(Duration::ZERO),
+    };
+    let flushed = drain(&outbox, "token", WAIT, &clock, BTreeSet::new());
+    assert_eq!(flushed.outcome, "paused");
+    assert_eq!(flushed.sent, 16);
+    assert_eq!(flushed.retry_after, Some(60));
+    assert_eq!(flushed.remaining(), 4);
+}
+
+/// A clock whose time, in seconds since the Unix epoch, is what its cell holds.
+struct Shared(std::sync::Arc<std::sync::atomic::AtomicU64>);
+
+impl Clock for Shared {
+    fn now(&self) -> Result<u64, PortError> {
+        Ok(self.0.load(std::sync::atomic::Ordering::SeqCst))
+    }
+
+    fn elapsed(&self) -> Duration {
+        Duration::ZERO
+    }
+
+    fn wait(&self, _length: Duration) {}
+}
+
+/// Yard Server that takes 9 seconds of the shared clock to ask to come back 5 seconds later.
+struct SlowToComeBack(std::sync::Arc<std::sync::atomic::AtomicU64>);
+
+impl software_plant::http::Responder for SlowToComeBack {
+    fn answer(&mut self, _request: &software_plant::http::Request) -> software_plant::http::Answer {
+        self.0.fetch_add(9, std::sync::atomic::Ordering::SeqCst);
+        come_back("5")
+    }
+}
+
+/// A `429` asking to come back after `retry_after`.
+fn come_back(retry_after: &str) -> software_plant::http::Answer {
+    let mut response = software_plant::http::Response::empty(429);
+    response
+        .headers
+        .push(("Retry-After".to_owned(), retry_after.to_owned()));
+    response.into()
+}
+
+#[test]
+fn a_retry_after_in_seconds_counts_from_the_answer() {
+    let time = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(1000));
+    let server = software_plant::http::Server::start(SlowToComeBack(time.clone()));
+    let (outbox, _fresh) = filled(&server.url(), 1);
+    let flushed = drain(&outbox, "token", WAIT, &Shared(time), BTreeSet::new());
+    assert_eq!(flushed.retry_after, Some(1014));
+}
+
+fn keys(keys: &[&str]) -> std::collections::BTreeSet<String> {
+    keys.iter().map(|key| (*key).to_owned()).collect()
+}
+
+fn codes(pairs: &[(&str, &str)]) -> std::collections::BTreeMap<String, String> {
+    pairs
+        .iter()
+        .map(|(key, code)| ((*key).to_owned(), (*code).to_owned()))
+        .collect()
+}
+
+#[test]
+fn a_record_that_replaces_another_keeps_a_time_to_come_back_after_that_has_not_passed() {
+    let previous = super::record::Record {
+        not_before: Some(500),
+        ..super::record::Record::default()
+    };
+    let later = codes(&[]);
+    let run = |ended| super::record::Run {
+        ended,
+        outcome: "failed",
+        why: None,
+        not_before: None,
+        later: &later,
+        later_at: None,
+        failures: 0,
+    };
+    assert_eq!(
+        super::record::next(&previous, &run(400), &keys(&[])).not_before,
+        Some(500)
+    );
+    assert_eq!(
+        super::record::next(&previous, &run(500), &keys(&[])).not_before,
+        None
+    );
+}
+
+#[test]
+fn a_record_keeps_the_later_key_of_each_entry_the_run_did_not_take_while_it_waits() {
+    let previous = super::record::Record {
+        later: codes(&[("a", "old"), ("b", "old"), ("c", "old")]),
+        ..super::record::Record::default()
+    };
+    let later = codes(&[("d", "new")]);
+    let run = super::record::Run {
+        ended: 1,
+        outcome: "sent",
+        why: None,
+        not_before: None,
+        later: &later,
+        later_at: None,
+        failures: 0,
+    };
+    // `a` was not taken and waits; `b` was taken and stored, and `c` is gone, so neither waits.
+    let next = super::record::next(&previous, &run, &keys(&["a", "d"]));
+    assert_eq!(next.later, codes(&[("a", "old"), ("d", "new")]));
+}
+
+#[test]
+fn a_record_keeps_the_later_key_of_an_entry_taken_in_a_batch_yard_server_did_not_answer() {
+    let previous = super::record::Record {
+        later: codes(&[("k", "unknown_report_version")]),
+        ..super::record::Record::default()
+    };
+    let later = codes(&[]);
+    let run = super::record::Run {
+        ended: 1,
+        outcome: "paused",
+        why: None,
+        not_before: Some(60),
+        later: &later,
+        later_at: None,
+        failures: 0,
+    };
+    let next = super::record::next(&previous, &run, &keys(&["k"]));
+    assert_eq!(next.later, codes(&[("k", "unknown_report_version")]));
+}
+
+/// Connected mode on for `endpoint`, with the home of Yard in a fresh directory.
+fn on(endpoint: &str) -> (super::Mode, Fresh) {
+    let fresh = Fresh::new("loft-due");
+    let home = yardlog_store::home::Home::at(&fresh.0);
+    let outbox = home.outbox(endpoint);
+    let mode = super::Mode::On(super::Connection {
+        home,
+        outbox,
+        token: "token".to_owned(),
+    });
+    (mode, fresh)
+}
+
+/// Puts an entry of `format` for `endpoint` into the outbox of `mode`, named by `key`.
+fn put(mode: &super::Mode, endpoint: &str, key: &str, format: &str) {
+    let super::Mode::On(connection) = mode else {
+        unreachable!()
+    };
+    let dir = connection.outbox.dir();
+    fs::create_dir_all(dir).unwrap();
+    let record = format!(r#"{{"record":"version","version":{{"key":"{key}"}}}}"#);
+    let mut entry: serde_json::Value =
+        serde_json::from_str(&yardlog::entry::write(endpoint, &record)).unwrap();
+    entry["format"] = serde_json::json!(format);
+    fs::write(dir.join(format!("{key}.json")), entry.to_string()).unwrap();
+}
+
+/// Writes `record` as the last run for `endpoint` in the home of `mode`.
+fn recorded(mode: &super::Mode, endpoint: &str, record: &serde_json::Value) {
+    let super::Mode::On(connection) = mode else {
+        unreachable!()
+    };
+    fs::create_dir_all(connection.home.dir()).unwrap();
+    fs::write(
+        connection.home.dir().join("flush.json"),
+        serde_json::json!({ endpoint: record }).to_string(),
+    )
+    .unwrap();
+}
+
+const ADDRESS: &str = "http://127.0.0.1:1";
+
+#[test]
+fn a_flush_is_due_once_an_entry_for_the_address_waits() {
+    let (mode, _fresh) = on(ADDRESS);
+    assert!(!super::due(&mode, 0));
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000001",
+        "yardlog-outbox/1",
+    );
+    assert!(super::due(&mode, 0));
+}
+
+#[test]
+fn no_flush_is_due_without_connected_mode() {
+    assert!(!super::due(&super::Mode::Off(Vec::new()), 0));
+    assert!(!super::due(&super::Mode::Homeless, 0));
+}
+
+#[test]
+fn no_flush_is_due_for_entries_of_another_address_or_of_a_newer_format() {
+    let (mode, _fresh) = on(ADDRESS);
+    put(
+        &mode,
+        "http://127.0.0.1:2",
+        "00000000-0000-7000-8000-000000000001",
+        "yardlog-outbox/1",
+    );
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000002",
+        "yardlog-outbox/9",
+    );
+    assert!(!super::due(&mode, 0));
+}
+
+#[test]
+fn no_flush_is_due_for_entries_yard_server_will_take_later_alone() {
+    let (mode, _fresh) = on(ADDRESS);
+    let key = "00000000-0000-7000-8000-000000000001";
+    put(&mode, ADDRESS, key, "yardlog-outbox/1");
+    recorded(
+        &mode,
+        ADDRESS,
+        &serde_json::json!({"ended": "2026-01-01T00:00:00Z", "outcome": "sent", "later": {key: "unknown_report_version"}}),
+    );
+    assert!(!super::due(&mode, 0));
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000002",
+        "yardlog-outbox/1",
+    );
+    assert!(super::due(&mode, 0));
+}
+
+#[test]
+fn no_flush_is_due_before_the_time_yard_server_asked_to_come_back_after() {
+    let (mode, _fresh) = on(ADDRESS);
+    put(
+        &mode,
+        ADDRESS,
+        "00000000-0000-7000-8000-000000000001",
+        "yardlog-outbox/1",
+    );
+    recorded(
+        &mode,
+        ADDRESS,
+        &serde_json::json!({"ended": "2026-01-01T00:00:00Z", "outcome": "paused", "notBefore": "2026-01-01T00:02:00Z"}),
+    );
+    let at = 1_767_225_600;
+    assert!(!super::due(&mode, at + 119));
+    assert!(super::due(&mode, at + 120));
+}
+
+#[test]
+fn a_batch_split_after_a_413_sends_no_half_once_the_run_s_5_minutes_have_passed() {
+    let server = YardServer::limiting(16);
+    let (outbox, _fresh) = filled(&server.url(), 4);
+    // The run sets its limit at 0, takes the batch at 3 minutes and finds 6 minutes passed once
+    // Yard Server has answered it `413`.
+    let clock = Stepping {
+        step: Duration::from_mins(3),
+        passed: Cell::new(Duration::ZERO),
+    };
+    let flushed = drain(
+        &outbox,
+        software_plant::yard_server::TOKEN,
+        WAIT,
+        &clock,
+        BTreeSet::new(),
+    );
+    assert_eq!(server.requests().len(), 1);
+    assert_eq!((flushed.outcome, flushed.remaining()), ("sent", 4));
+}
+
+#[test]
+fn the_hour_of_the_versions_put_off_counts_from_yard_server_s_answer() {
+    let later = codes(&[("k", "unknown_report_version")]);
+    let run = super::record::Run {
+        ended: 400,
+        outcome: "sent",
+        why: None,
+        not_before: None,
+        later: &later,
+        later_at: Some(100),
+        failures: 0,
+    };
+    let next = super::record::next(&super::record::Record::default(), &run, &keys(&["k"]));
+    assert_eq!(next.later_not_before, Some(3700));
+}

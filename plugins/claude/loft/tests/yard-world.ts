@@ -105,7 +105,7 @@ export function briefingOf(doc: Doc, argv: readonly string[]): Doc {
   }
 }
 
-export type Run = { argv: readonly string[]; cwd?: string; env?: Record<string, string>; stdin?: string; spawned: boolean }
+export type Run = { argv: readonly string[]; cwd?: string; env?: Record<string, string>; stdin?: string; timeoutMs?: number; spawned: boolean }
 
 const out = (doc: Doc | undefined, exitCode = 0, stderr = '') => ({
   value: { exitCode, stdout: doc === undefined ? '' : JSON.stringify(doc), stderr, isStdoutTruncated: false, isStderrTruncated: false },
@@ -173,6 +173,8 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
     hearing: Promise.resolve() as Promise<unknown>,
     /** What each `loft yard read` waits on before it answers. */
     reading: Promise.resolve() as Promise<unknown>,
+    /** What each `loft yard flush` waits on before it answers. */
+    flushing: Promise.resolve() as Promise<unknown>,
     /** How many `loft yard wait` runs were killed before they printed. */
     killed: 0,
     toasts: [] as string[],
@@ -288,10 +290,11 @@ export function world(on: On, options: { protocol?: number | 'none' | 'unrunnabl
   })
 
   on('process.run', async ($, e) => {
-    state.runs.push({ argv: e.argv, cwd: e.init?.cwd, env: e.init?.env, stdin: e.init?.stdin, spawned: false })
+    state.runs.push({ argv: e.argv, cwd: e.init?.cwd, env: e.init?.env, stdin: e.init?.stdin, timeoutMs: e.init?.timeoutMs, spawned: false })
     if (!e.argv.includes('yard')) return out(undefined, 0, '')
     if (state.protocol === 'unrunnable') return { deny: 'loft is not on PATH' }
     const sub = subOf(e.argv)
+    if (sub === 'flush') await state.flushing
     if (state.protocol === 'none') return out(undefined, 2, "error: unrecognized subcommand 'yard'")
     const raw = sub ? state.printed[sub] : undefined
     if (raw) return { value: { exitCode: 0, stdout: raw.stdout, stderr: raw.stderr ?? '', isStdoutTruncated: raw.truncated ?? false, isStderrTruncated: false } }

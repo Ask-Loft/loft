@@ -134,9 +134,7 @@ pub fn call_within(
     body: Option<&[u8]>,
     timeout: Duration,
 ) -> Result<Reply, String> {
-    let uri = allowed(url).ok_or_else(|| {
-        format!("{url}: an address is `https`, or `http` on the loopback interface")
-    })?;
+    let uri = allowed(url).ok_or_else(|| format!("{url}: {CONTACTED}"))?;
     let mut request = ureq::http::Request::builder().method(method).uri(uri);
     for (name, value) in headers {
         request = request.header(*name, *value);
@@ -194,6 +192,10 @@ fn agent(left: Duration, user_agent: &str) -> Agent {
         .build()
         .into()
 }
+
+/// What the network client contacts, as a refusal of another address says it.
+pub const CONTACTED: &str =
+    "only an https address, or an http one on the loopback interface, is contacted";
 
 /// `url` as the address the request goes to, if it may be contacted: any `https` address, and
 /// an `http` one only on the loopback interface, where nothing crosses a network. The address
